@@ -6916,7 +6916,11 @@ vColumns : vColumn
     one_hot_encode = get_dummies
     # ---#
     def groupby(
-        self, columns: list, expr: list = [], rollup: bool = False, having: str = "",
+        self,
+        columns: Union[list, str],
+        expr: Union[list, str] = [],
+        rollup: Union[bool, list] = False,
+        having: str = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -6927,15 +6931,20 @@ vColumns : vColumn
     columns: list / str
         List of the vColumns used to group the elements or a customized expression. 
         If rollup is set to True, this can be a list of tuples.
-    expr: list, optional
+    expr: list / str, optional
         List of the different aggregations in pure SQL. Aliases can be used.
         For example, 'SUM(column)' or 'AVG(column) AS my_new_alias' are correct 
         whereas 'AVG' is incorrect. Aliases are recommended to keep the track of 
         the features and to prevent ambiguous names. For example, the MODE 
         function does not exist, but can be replicated by using the 'analytic' 
         method and then grouping the result.
-    rollup: bool, optional
+    rollup: bool / list of bools, optional
         If set to True, the rollup operator is used.
+        If set to a list of bools, the rollup operator is used on the matching
+        indexes and the length of 'rollup' must match the length of 'columns.'
+        For example, for columns = ['col1', ('col2', 'col3'), 'col4'] and
+        rollup = [False, True, True], the rollup operator is used on the set
+        ('col2', 'col3') and on 'col4'.
     having: str, optional
         Expression used to filter the result.
 
@@ -6956,7 +6965,12 @@ vColumns : vColumn
         save_to_query_profile(
             name="groupby",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "expr": expr, "rollup": rollup},
+            json_dict={
+                "columns": columns,
+                "expr": expr,
+                "rollup": rollup,
+                "having": having,
+            },
         )
         # -#
         if isinstance(columns, str):
@@ -6967,14 +6981,29 @@ vColumns : vColumn
             [
                 ("columns", columns, [list]),
                 ("expr", expr, [list]),
-                ("rollup", rollup, [bool]),
+                ("rollup", rollup, [bool, list]),
             ]
         )
+        assert not (isinstance(rollup, list)) or len(rollup) == len(
+            columns
+        ), ParameterError(
+            "If parameter 'rollup' is of type list, it should have the same length as the 'columns' parameter."
+        )
         columns_to_select = []
-        rollup_expr = "ROLLUP("
-        for elem in columns:
+        if rollup == True:
+            rollup_expr = "ROLLUP(" if rollup == True else ""
+        else:
+            rollup_expr = ""
+        for idx, elem in enumerate(columns):
             if isinstance(elem, tuple) and rollup:
-                rollup_expr += "("
+                if rollup == True:
+                    rollup_expr += "("
+                elif rollup[idx] == True:
+                    rollup_expr += "ROLLUP("
+                elif not (isinstance(rollup[idx], bool)):
+                    raise ParameterError(
+                        "When parameter 'rollup' is not a boolean, it has to be a list of booleans."
+                    )
                 for item in elem:
                     colname = self.format_colnames([item])
                     if colname:
@@ -6988,17 +7017,25 @@ vColumns : vColumn
             elif isinstance(elem, str):
                 colname = self.format_colnames([elem])
                 if colname:
-                    rollup_expr += colname[0]
+                    if not (isinstance(rollup, bool)) and (rollup[idx] == True):
+                        rollup_expr += "ROLLUP(" + colname[0] + ")"
+                    else:
+                        rollup_expr += colname[0]
                     columns_to_select += [colname[0]]
                 else:
-                    rollup_expr += str(elem)
+                    if not (isinstance(rollup, bool)) and (rollup[idx] == True):
+                        rollup_expr += "ROLLUP(" + str(elem) + ")"
+                    else:
+                        rollup_expr += str(elem)
                     columns_to_select += [elem]
                 rollup_expr += ", "
             else:
                 raise ParameterError(
                     "Parameter 'columns' must be a string; list of strings or tuples (only when rollup is set to True)."
                 )
-        rollup_expr = rollup_expr[:-2] + ")"
+        rollup_expr = rollup_expr[:-2]
+        if rollup == True:
+            rollup_expr += ")"
         if having:
             having = " HAVING {}".format(having)
         relation = "(SELECT {} FROM {} GROUP BY {}{}) VERTICAPY_SUBTABLE".format(
@@ -7021,6 +7058,8 @@ vColumns : vColumn
             "groupby",
             "[Groupby]: The columns were grouped by {}".format(
                 ", ".join([str(elem) for elem in columns_to_select])
+                if not (rollup)
+                else rollup_expr
             ),
         )
 

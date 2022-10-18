@@ -17,7 +17,7 @@ import pytest
 # VerticaPy
 from vertica_python.errors import VerticaSyntaxError
 from verticapy import drop, set_option
-from verticapy.datasets import load_iris, load_market, load_amazon
+from verticapy.datasets import load_iris, load_market, load_amazon, load_titanic
 
 set_option("print_info", False)
 
@@ -41,6 +41,13 @@ def amazon_vd():
     amazon = load_amazon()
     yield amazon
     drop(name="public.amazon")
+
+
+@pytest.fixture(scope="module")
+def titanic_vd():
+    titanic = load_titanic()
+    yield titanic
+    drop(name="public.titanic")
 
 
 class TestvDFCombineJoinSort:
@@ -73,7 +80,7 @@ class TestvDFCombineJoinSort:
             5,
         ), "testing vDataFrame.append(vDataFrame, union_all) failed"
 
-    def testvDF_groupby(self, market_vd):
+    def testvDF_groupby(self, market_vd, titanic_vd):
         result1 = market_vd.groupby(
             columns=["Form", "Name"],
             expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
@@ -110,6 +117,26 @@ class TestvDFCombineJoinSort:
             73,
             4,
         ), "testing vDataFrame.groupby(columns, expr) with rollup and having failed"
+        # with specific rollups
+        result5 = market_vd.groupby(
+            columns=["Form", "Name"],
+            expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
+            rollup=[False, True],
+        )
+        assert result5.shape() == (
+            196,
+            4,
+        ), "testing vDataFrame.groupby(columns, expr) with rollup failed"
+        # with specific rollups + tuples
+        result6 = titanic_vd.groupby(
+            columns=[("pclass", "sex"), "embarked"],
+            expr=["AVG(survived) AS avg_survived"],
+            rollup=[True, False],
+        )
+        assert result6.shape() == (
+            33,
+            4,
+        ), "testing vDataFrame.groupby(columns, expr) with rollup failed"
 
     def test_vDF_join(self, market_vd):
         # CREATE TABLE not_fresh AS SELECT * FROM market WHERE Form != 'Fresh';
