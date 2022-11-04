@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import shutil, re, sys, warnings, random, itertools, datetime, time, html
+import shutil, re, sys, warnings, random, itertools, datetime, time, html, os
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -94,11 +94,13 @@ def arange(start: float, stop: float, step: float):
 
 
 # ---#
-def bin_spatial_to_str(category: str, column: str = "{}"):
-    if category == "binary":
-        return "TO_HEX({})".format(column)
+def bin_spatial_to_str(category: str, column: str = "{}",):
+    if category == "vmap":
+        return f"MAPTOSTRING({column})"
+    elif category == "binary":
+        return f"TO_HEX({column})"
     elif category == "spatial":
-        return "ST_AsText({})".format(column)
+        return f"ST_AsText({column})"
     else:
         return column
 
@@ -187,6 +189,21 @@ def flat_dict(d: dict) -> str:
         res = ", {}".format(res)
     return res
 
+# ---#
+def erase_space_start_end_in_list_values(L: list):
+    L_tmp = [elem for elem in L]
+    for idx in range(len(L_tmp)):
+        h = L_tmp[idx]
+        n = len(h)
+        while n > 0 and h[0] == " ":
+            h = h[1:]
+            n -= 1
+        while n > 0 and h[-1] == " ":
+            h = h[:-1]
+            n -= 1
+        L_tmp[idx] = h
+    return L_tmp
+
 
 # ---#
 def executeSQL(
@@ -233,6 +250,37 @@ def executeSQL(
         return cursor.fetchall()
     return cursor
 
+# ---#
+def extract_col_dt_from_query(query: str, field: str):
+    n, m = len(query), len(field) + 2
+    for i in range(n - m):
+        current_word = query[i:i+m]
+        if current_word.lower() == '"' + field.lower() + '"':
+            i = i + m
+            total_parenthesis = 0
+            k = i + 1
+            while ((query[i] != ',') or (total_parenthesis > 0)) and i < n - m:
+                i += 1
+                if query[i] in ('(', '[', '{'):
+                    total_parenthesis += 1
+                elif query[i] in (')', ']', '}'):
+                    total_parenthesis -= 1
+            return (current_word, query[k:i])
+    return None
+
+# ---#
+def extract_compression(path: str):
+    compression = "UNCOMPRESSED"
+    file_extension = path.split(".")[-1].lower()
+    if file_extension[0:2] == "gz":
+        compression = "GZIP"
+    elif file_extension[0:2] == "bz":
+        compression = "BZIP"
+    elif file_extension[0:2] == "lz":
+        compression = "LZO"
+    elif file_extension[0:2] == "zs":
+        compression = "ZSTD"
+    return compression
 
 # ---#
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
@@ -280,6 +328,8 @@ def get_category_from_python_type(expr):
             category = "text"
         elif isinstance(expr, (datetime.date, datetime.datetime)):
             category = "date"
+        elif isinstance(expr, (dict, list, np.ndarray)):
+            category = "complex"
         else:
             category = ""
     return category
@@ -290,7 +340,9 @@ def get_category_from_vertica_type(ctype: str = ""):
     check_types([("ctype", ctype, [str])])
     ctype = ctype.lower()
     if ctype != "":
-        if (
+        if (ctype[0:5] == "array") or (ctype[0:3] == "row") or (ctype[0:3] == "set"):
+            return "complex"
+        elif (
             (ctype[0:4] == "date")
             or (ctype[0:4] == "time")
             or (ctype == "smalldatetime")
@@ -312,7 +364,7 @@ def get_category_from_vertica_type(ctype: str = ""):
             or (ctype[0:4] == "real")
         ):
             return "float"
-        elif ctype[0:3] == "geo" or ("long varbinary" in ctype.lower()):
+        elif ctype[0:3] == "geo":
             return "spatial"
         elif ("byte" in ctype) or (ctype == "raw") or ("binary" in ctype):
             return "binary"
@@ -323,6 +375,43 @@ def get_category_from_vertica_type(ctype: str = ""):
     else:
         return "undefined"
 
+# ---#
+def get_first_file(path: str, ext: str):
+    dirname = os.path.dirname(path)
+    files = os.listdir(dirname)
+    for f in files:
+        file_ext = f.split(".")[-1]
+        if file_ext == ext:
+            return dirname + "/" + f
+    return None
+
+# ---#
+def get_header_name_csv(path: str, sep: str):
+    f = open(path, "r")
+    file_header = f.readline().replace("\n", "").replace('"', "").split(sep)
+    f.close()
+    for idx, col in enumerate(file_header):
+        if col == "":
+            if idx == 0:
+                position = "beginning"
+            elif idx == len(file_header) - 1:
+                position = "end"
+            else:
+                position = "middle"
+            file_header[idx] = "col{}".format(idx)
+            warning_message = (
+                "An inconsistent name was found in the {0} of the "
+                "file header (isolated separator). It will be replaced "
+                "by col{1}."
+            ).format(position, idx)
+            if idx == 0:
+                warning_message += (
+                    "\nThis can happen when exporting a pandas DataFrame "
+                    "to CSV while retaining its indexes.\nTip: Use "
+                    "index=False when exporting with pandas.DataFrame.to_csv."
+                )
+            warnings.warn(warning_message, Warning)
+    return erase_space_start_end_in_list_values(file_header)
 
 # ---#
 def get_match_index(x: str, col_list: list, str_check: bool = True):
@@ -418,12 +507,12 @@ def get_random_function(rand_int=None):
     random_state = verticapy.options["random_state"]
     if isinstance(rand_int, int):
         if isinstance(random_state, int):
-            random_func = "FLOOR({} * SEEDED_RANDOM({}))".format(rand_int, random_state)
+            random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
         else:
-            random_func = "RANDOMINT({})".format(rand_int)
+            random_func = f"RANDOMINT({rand_int})"
     else:
         if isinstance(random_state, int):
-            random_func = "SEEDED_RANDOM({})".format(random_state)
+            random_func = f"SEEDED_RANDOM({random_state})"
         else:
             random_func = "RANDOM()"
     return random_func
@@ -617,7 +706,6 @@ def insert_verticapy_schema(
             warning_message = "The VerticaPy model could not be stored:\n{}".format(e)
             warnings.warn(warning_message, Warning)
             raise
-
 
 # ---#
 def isnotebook():
@@ -844,15 +932,17 @@ def print_table(
                                     category = (
                                         '<div style="margin-bottom: 6px;">Abc</div>'
                                     )
+                                elif category == "complex":
+                                    category = '<div style="margin-bottom: 6px;">&#128736;</div>'
                                 elif category == "date":
                                     category = '<div style="margin-bottom: 6px;">&#128197;</div>'
                             else:
                                 category = '<div style="margin-bottom: 6px;"></div>'
                         if type_val != "":
                             ctype = (
-                                '<div style="color: #FE5016; margin-top: 6px; '
-                                'font-size: 0.95em;">{0}</div>'
-                            ).format(dtype[data_columns[j][0]].capitalize())
+                                 '<div style="overflow-y: scroll; color: #FE5016; '
+                                f'margin-top: 6px; font-size: 0.95em;">{type_val}</div>'
+                            )
                         else:
                             ctype = '<div style="color: #FE5016; margin-top: 6px; font-size: 0.95em;"></div>'
                         if data_columns[j][0] in percent:
@@ -1034,6 +1124,11 @@ def schema_relation(relation):
             schema, relation = schema_input_relation[0], schema_input_relation[1]
     return (quote_ident(schema), quote_ident(relation))
 
+# ---#
+def format_schema_table(schema: str, table_name: str):
+    if not(schema):
+        schema = "public"
+    return quote_ident(schema) + "." + quote_ident(table_name)
 
 # ---#
 def type_code_to_dtype(

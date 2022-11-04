@@ -288,39 +288,15 @@ vColumns : vColumn
             self._VERTICAPY_VARIABLES_["input_relation"] = input_relation.replace(
                 '"', ""
             )
-            where = (
-                " AND LOWER(column_name) IN ({})".format(
-                    ", ".join(
-                        [
-                            "'{}'".format(elem.lower().replace("'", "''"))
-                            for elem in usecols
-                        ]
-                    )
-                )
-                if (usecols)
-                else ""
-            )
-            query = (
-                "SELECT /*+LABEL('vDataframe.__init__')*/ column_name, data_type FROM ((SELECT column_name, "
-                "data_type, ordinal_position FROM columns WHERE table_name "
-                "= '{0}' AND table_schema = '{1}'{2})"
-            ).format(
-                self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
-                self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
-                where,
-            )
-            query += (
-                " UNION (SELECT column_name, data_type, ordinal_position "
-                "FROM view_columns WHERE table_name = '{0}' AND table_schema "
-                "= '{1}'{2})) x ORDER BY ordinal_position"
-            ).format(
-                self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
-                self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
-                where,
-            )
-            columns_dtype = executeSQL(
-                query, title="Getting the data types.", method="fetchall"
-            )
+            table_name = self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''")
+            schema = self._VERTICAPY_VARIABLES_["schema"].replace("'", "''")
+            isflex = isflextable(table_name=table_name, schema=schema)
+            if isflex:
+                columns_dtype = compute_flextable_keys(flex_name='"{}".{}'.format(schema, table_name), usecols=usecols)
+            else:
+                columns_dtype = get_data_types(table_name=table_name, 
+                                               schema=schema,
+                                               usecols=usecols)
             columns_dtype = [(str(item[0]), str(item[1])) for item in columns_dtype]
             columns = [
                 '"{}"'.format(elem[0].replace('"', "_")) for elem in columns_dtype
@@ -341,28 +317,30 @@ vColumns : vColumn
                         "its alias was changed using underscores '_' to {1}."
                     ).format(column, column.replace('"', "_"))
                     warnings.warn(warning_message, Warning)
+                category = get_category_from_vertica_type(dtype)
+                if "long varbinary" in dtype.lower() and (isflex or isvmap(column, format_schema_table(schema, table_name))):
+                    category = "vmap"
+                column_name = '"' + column.replace('"', "_") + '"'
                 new_vColumn = vColumn(
-                    '"{}"'.format(column.replace('"', "_")),
+                    column_name,
                     parent=self,
                     transformations=[
                         (
-                            '"{}"'.format(column.replace('"', '""')),
+                            quote_ident(column),
                             dtype,
-                            get_category_from_vertica_type(dtype),
+                            category,
                         )
                     ],
                 )
-                setattr(self, '"{}"'.format(column.replace('"', "_")), new_vColumn)
-                setattr(self, column.replace('"', "_"), new_vColumn)
+                setattr(self, column_name, new_vColumn)
+                setattr(self, column_name[1:-1], new_vColumn)
+                new_vColumn.init = False
             self._VERTICAPY_VARIABLES_["exclude_columns"] = []
             self._VERTICAPY_VARIABLES_["where"] = []
             self._VERTICAPY_VARIABLES_["order_by"] = {}
             self._VERTICAPY_VARIABLES_["history"] = []
             self._VERTICAPY_VARIABLES_["saving"] = []
-            self._VERTICAPY_VARIABLES_["main_relation"] = '"{}"."{}"'.format(
-                self._VERTICAPY_VARIABLES_["schema"],
-                self._VERTICAPY_VARIABLES_["input_relation"],
-            )
+            self._VERTICAPY_VARIABLES_["main_relation"] = format_schema_table(self._VERTICAPY_VARIABLES_["schema"], self._VERTICAPY_VARIABLES_["input_relation"])
 
     # ---#
     def __abs__(self):
@@ -511,6 +489,11 @@ vColumns : vColumn
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
+        elif isinstance(val, vColumn) and not(val.init):
+            final_trans, n = val.init_transf, len(val.transformations)
+            for i in range(1, n):
+                final_trans = val.transformations[i][0].replace("{}", final_trans)
+            self.eval(name=attr, expr=final_trans)
         else:
             self.__dict__[attr] = val
 
@@ -1354,9 +1337,7 @@ vColumns : vColumn
                 table,
             )
         main_relation = self._VERTICAPY_VARIABLES_["main_relation"]
-        all_main_relation = "(SELECT * FROM {}) VERTICAPY_SUBTABLE".format(
-            main_relation
-        )
+        all_main_relation = f"(SELECT * FROM {main_relation}) VERTICAPY_SUBTABLE"
         table = table.replace(all_main_relation, main_relation)
         return table
 
@@ -6397,6 +6378,7 @@ vColumns : vColumn
         new_vColumn = vColumn(name, parent=self, transformations=transformations)
         setattr(self, name, new_vColumn)
         setattr(self, name.replace('"', ""), new_vColumn)
+        new_vColumn.init = False
         self._VERTICAPY_VARIABLES_["columns"] += [name]
         self.__add_to_history__(
             "[Eval]: A new vColumn {} was added to the vDataFrame.".format(name)
@@ -6720,9 +6702,7 @@ vColumns : vColumn
             except:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
                 if verticapy.options["print_info"]:
-                    warning_message = "The expression '{}' is incorrect.\nNothing was filtered.".format(
-                        conditions
-                    )
+                    warning_message = f"The expression '{conditions}' is incorrect.\nNothing was filtered."
                     warnings.warn(warning_message, Warning)
                 return self
             if count > 0:

@@ -306,6 +306,15 @@ class TestUtilities:
         drop("public.titanic_verticapy_test_json", method="table")
         # TODO
         # test the param gen_tmp_table_name
+        # test the param start_point
+        # test the param record_terminator
+        # test the param suppress_nonalphanumeric_key_chars
+        # test the param reject_on_materialized_type_error
+        # test the param reject_on_duplicate
+        # test the param reject_on_empty_key
+        # test on multiple file
+        # test on archive
+
 
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
@@ -382,6 +391,8 @@ class TestUtilities:
         assert result[1][0:42] == 'COPY "public"."titanic_verticapy_test_csv"'
         # TODO
         # test the param gen_tmp_table_name
+        # test on multiple files
+        # test on archive
 
     def test_read_shp(self, cities_vd):
         drop(name="public.cities_test")

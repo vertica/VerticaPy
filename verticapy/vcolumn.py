@@ -131,6 +131,8 @@ Attributes
         }
         for elem in catalog:
             self.catalog[elem] = catalog[elem]
+        self.init_transf = self.transformations[0][0]
+        self.init = True
 
     # ---#
     def __getitem__(self, index):
@@ -177,6 +179,19 @@ Attributes
                 title="Getting the vColumn element.",
                 method="fetchfirstelem",
             )
+        elif isinstance(index, str):
+            if (self.category() == "vmap"):
+                elem_to_select = "MAPLOOKUP({0}, '{1}')".format(self.alias, index.replace("'", "''"))
+            else:
+                elem_to_select = self.alias + "." + quote_ident(index)
+            query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
+                elem_to_select,
+                quote_ident(index),
+                self.parent.__genSQL__(),
+            )
+            vcol = vDataFrameSQL(query)[index]
+            vcol.init_transf = elem_to_select
+            return vcol
         else:
             return getattr(self, index)
 
