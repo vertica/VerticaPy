@@ -292,11 +292,13 @@ vColumns : vColumn
             schema = self._VERTICAPY_VARIABLES_["schema"].replace("'", "''")
             isflex = isflextable(table_name=table_name, schema=schema)
             if isflex:
-                columns_dtype = compute_flextable_keys(flex_name='"{}".{}'.format(schema, table_name), usecols=usecols)
+                columns_dtype = compute_flextable_keys(
+                    flex_name='"{}".{}'.format(schema, table_name), usecols=usecols
+                )
             else:
-                columns_dtype = get_data_types(table_name=table_name, 
-                                               schema=schema,
-                                               usecols=usecols)
+                columns_dtype = get_data_types(
+                    table_name=table_name, schema=schema, usecols=usecols
+                )
             columns_dtype = [(str(item[0]), str(item[1])) for item in columns_dtype]
             columns = [
                 '"{}"'.format(elem[0].replace('"', "_")) for elem in columns_dtype
@@ -318,19 +320,18 @@ vColumns : vColumn
                     ).format(column, column.replace('"', "_"))
                     warnings.warn(warning_message, Warning)
                 category = get_category_from_vertica_type(dtype)
-                if "long varbinary" in dtype.lower() and (isflex or isvmap(column, format_schema_table(schema, table_name))):
+                if "long varbinary" in dtype.lower() and (
+                    isflex
+                    or isvmap(
+                        expr=format_schema_table(schema, table_name), column=column,
+                    )
+                ):
                     category = "vmap"
                 column_name = '"' + column.replace('"', "_") + '"'
                 new_vColumn = vColumn(
                     column_name,
                     parent=self,
-                    transformations=[
-                        (
-                            quote_ident(column),
-                            dtype,
-                            category,
-                        )
-                    ],
+                    transformations=[(quote_ident(column), dtype, category,)],
                 )
                 setattr(self, column_name, new_vColumn)
                 setattr(self, column_name[1:-1], new_vColumn)
@@ -340,7 +341,10 @@ vColumns : vColumn
             self._VERTICAPY_VARIABLES_["order_by"] = {}
             self._VERTICAPY_VARIABLES_["history"] = []
             self._VERTICAPY_VARIABLES_["saving"] = []
-            self._VERTICAPY_VARIABLES_["main_relation"] = format_schema_table(self._VERTICAPY_VARIABLES_["schema"], self._VERTICAPY_VARIABLES_["input_relation"])
+            self._VERTICAPY_VARIABLES_["main_relation"] = format_schema_table(
+                self._VERTICAPY_VARIABLES_["schema"],
+                self._VERTICAPY_VARIABLES_["input_relation"],
+            )
 
     # ---#
     def __abs__(self):
@@ -489,7 +493,7 @@ vColumns : vColumn
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
-        elif isinstance(val, vColumn) and not(val.init):
+        elif isinstance(val, vColumn) and not (val.init):
             final_trans, n = val.init_transf, len(val.transformations)
             for i in range(1, n):
                 final_trans = val.transformations[i][0].replace("{}", final_trans)
@@ -6766,6 +6770,44 @@ vColumns : vColumn
         )
         self.filter("{} <= '{}'".format(ts, first_date))
         return self
+
+    # ---#
+    def flat_vmap(
+        self, vmap_col: list, limit: int = 100,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Flat the selected vmap. A new vDataFrame is returned.
+
+    Parameters
+    ----------
+    vmap_col: list
+        List of VMAP columns to flat.
+    limit: int, optional
+        Maximum number of keys to consider for each VMAP. Only the most occurent 
+        ones will be used.
+
+    Returns
+    -------
+    vDataFrame
+        object with the flattened VMAPs.
+        """
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="select",
+            path="vdataframe.vDataFrame",
+            json_dict={"vmap_col": vmap_col, "limit": limit,},
+        )
+        # -#
+        if isinstance(keys, str):
+            keys = [keys]
+        check_types([("vmap_col", vmap_col, [list]), ("limit", limit, [int])])
+        maplookup = []
+        for vmap in vmap_col:
+            keys = compute_vmap_keys(expr=self, vmap_col=vmap_col, limit=limit)
+            keys = [k[0] for k in keys]
+            maplookup += [f"MAPLOOKUP({vmap}, {k})" for k in keys]
+        return self.select(["*"] + maplookup)
 
     # ---#
     def get_columns(self, exclude_columns: list = []):

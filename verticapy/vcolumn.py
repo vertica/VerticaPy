@@ -180,14 +180,14 @@ Attributes
                 method="fetchfirstelem",
             )
         elif isinstance(index, str):
-            if (self.category() == "vmap"):
-                elem_to_select = "MAPLOOKUP({0}, '{1}')".format(self.alias, index.replace("'", "''"))
+            if self.category() == "vmap":
+                elem_to_select = "MAPLOOKUP({0}, '{1}')".format(
+                    self.alias, index.replace("'", "''")
+                )
             else:
                 elem_to_select = self.alias + "." + quote_ident(index)
             query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
-                elem_to_select,
-                quote_ident(index),
-                self.parent.__genSQL__(),
+                elem_to_select, quote_ident(index), self.parent.__genSQL__(),
             )
             vcol = vDataFrameSQL(query)[index]
             vcol.init_transf = elem_to_select
@@ -2634,6 +2634,21 @@ Attributes
 	vDataFrame[].isdate : Returns True if the vColumn category is date.
 		"""
         return self.category() in ("float", "int")
+
+    # ---#
+    def isvmap(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns True if the vColumn category is vmap, False otherwise.
+
+    Returns
+    -------
+    bool
+        True if the vColumn category is vmap.
+        """
+        return self.category() == "vmap" or isvmap(
+            column=self.alias, expr=self.parent.__genSQL__()
+        )
 
     # ---#
     def iv_woe(self, y: str, nbins: int = 10):

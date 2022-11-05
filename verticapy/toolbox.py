@@ -94,7 +94,9 @@ def arange(start: float, stop: float, step: float):
 
 
 # ---#
-def bin_spatial_to_str(category: str, column: str = "{}",):
+def bin_spatial_to_str(
+    category: str, column: str = "{}",
+):
     if category == "vmap":
         return f"MAPTOSTRING({column})"
     elif category == "binary":
@@ -189,6 +191,7 @@ def flat_dict(d: dict) -> str:
         res = ", {}".format(res)
     return res
 
+
 # ---#
 def erase_space_start_end_in_list_values(L: list):
     L_tmp = [elem for elem in L]
@@ -250,23 +253,25 @@ def executeSQL(
         return cursor.fetchall()
     return cursor
 
+
 # ---#
 def extract_col_dt_from_query(query: str, field: str):
     n, m = len(query), len(field) + 2
     for i in range(n - m):
-        current_word = query[i:i+m]
+        current_word = query[i : i + m]
         if current_word.lower() == '"' + field.lower() + '"':
             i = i + m
             total_parenthesis = 0
             k = i + 1
-            while ((query[i] != ',') or (total_parenthesis > 0)) and i < n - m:
+            while ((query[i] != ",") or (total_parenthesis > 0)) and i < n - m:
                 i += 1
-                if query[i] in ('(', '[', '{'):
+                if query[i] in ("(", "[", "{"):
                     total_parenthesis += 1
-                elif query[i] in (')', ']', '}'):
+                elif query[i] in (")", "]", "}"):
                     total_parenthesis -= 1
             return (current_word, query[k:i])
     return None
+
 
 # ---#
 def extract_compression(path: str):
@@ -281,6 +286,7 @@ def extract_compression(path: str):
     elif file_extension[0:2] == "zs":
         compression = "ZSTD"
     return compression
+
 
 # ---#
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
@@ -375,6 +381,7 @@ def get_category_from_vertica_type(ctype: str = ""):
     else:
         return "undefined"
 
+
 # ---#
 def get_first_file(path: str, ext: str):
     dirname = os.path.dirname(path)
@@ -384,6 +391,7 @@ def get_first_file(path: str, ext: str):
         if file_ext == ext:
             return dirname + "/" + f
     return None
+
 
 # ---#
 def get_header_name_csv(path: str, sep: str):
@@ -412,6 +420,7 @@ def get_header_name_csv(path: str, sep: str):
                 )
             warnings.warn(warning_message, Warning)
     return erase_space_start_end_in_list_values(file_header)
+
 
 # ---#
 def get_match_index(x: str, col_list: list, str_check: bool = True):
@@ -707,6 +716,7 @@ def insert_verticapy_schema(
             warnings.warn(warning_message, Warning)
             raise
 
+
 # ---#
 def isnotebook():
     try:
@@ -940,7 +950,7 @@ def print_table(
                                 category = '<div style="margin-bottom: 6px;"></div>'
                         if type_val != "":
                             ctype = (
-                                 '<div style="overflow-y: scroll; color: #FE5016; '
+                                '<div style="overflow-y: scroll; color: #FE5016; '
                                 f'margin-top: 6px; font-size: 0.95em;">{type_val}</div>'
                             )
                         else:
@@ -1124,11 +1134,13 @@ def schema_relation(relation):
             schema, relation = schema_input_relation[0], schema_input_relation[1]
     return (quote_ident(schema), quote_ident(relation))
 
+
 # ---#
 def format_schema_table(schema: str, table_name: str):
-    if not(schema):
+    if not (schema):
         schema = "public"
     return quote_ident(schema) + "." + quote_ident(table_name)
+
 
 # ---#
 def type_code_to_dtype(

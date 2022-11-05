@@ -315,7 +315,6 @@ class TestUtilities:
         # test on multiple file
         # test on archive
 
-
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
         # with schema
