@@ -320,13 +320,20 @@ vColumns : vColumn
                     ).format(column, column.replace('"', "_"))
                     warnings.warn(warning_message, Warning)
                 category = get_category_from_vertica_type(dtype)
-                if "long varbinary" in dtype.lower() and (
+                if (
+                    ("long varbinary" in dtype.lower())
+                    or ("long varchar" in dtype.lower())
+                ) and (
                     isflex
                     or isvmap(
                         expr=format_schema_table(schema, table_name), column=column,
                     )
                 ):
                     category = "vmap"
+                    if "(" in dtype:
+                        dtype = "VMAP(" + "(".join(dtype.split("(")[1:])
+                    else:
+                        dtype = "VMAP"
                 column_name = '"' + column.replace('"', "_") + '"'
                 new_vColumn = vColumn(
                     column_name,
@@ -6799,14 +6806,21 @@ vColumns : vColumn
             json_dict={"vmap_col": vmap_col, "limit": limit,},
         )
         # -#
-        if isinstance(keys, str):
-            keys = [keys]
+        if isinstance(vmap_col, str):
+            vmap_col = [vmap_col]
         check_types([("vmap_col", vmap_col, [list]), ("limit", limit, [int])])
         maplookup = []
         for vmap in vmap_col:
-            keys = compute_vmap_keys(expr=self, vmap_col=vmap_col, limit=limit)
+            keys = compute_vmap_keys(expr=self, vmap_col=vmap, limit=limit)
             keys = [k[0] for k in keys]
-            maplookup += [f"MAPLOOKUP({vmap}, {k})" for k in keys]
+            maplookup += [
+                "MAPLOOKUP({0}, '{1}') AS {2}".format(
+                    quote_ident(vmap),
+                    k,
+                    quote_ident(vmap.replace('"', "") + "." + k.replace('"', "")),
+                )
+                for k in keys
+            ]
         return self.select(["*"] + maplookup)
 
     # ---#

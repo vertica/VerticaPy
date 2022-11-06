@@ -942,7 +942,7 @@ def print_table(
                                     category = (
                                         '<div style="margin-bottom: 6px;">Abc</div>'
                                     )
-                                elif category == "complex":
+                                elif category in ("complex", "vmap"):
                                     category = '<div style="margin-bottom: 6px;">&#128736;</div>'
                                 elif category == "date":
                                     category = '<div style="margin-bottom: 6px;">&#128197;</div>'
@@ -1051,30 +1051,32 @@ def replace_vars_in_query(query: str, locals_dict: dict):
 
     variables, query_tmp = re.findall("(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
-        try:
-            var = v[1:]
-            n, splits = var.count("["), []
-            if var.count("]") == n and n > 0:
-                i, size = 0, len(var)
-                while i < size:
-                    if var[i] == "[":
-                        k = i + 1
-                        while i < size and var[i] != "]":
-                            i += 1
-                        splits += [(k, i)]
-                    i += 1
-                var = var[: splits[0][0] - 1]
-            val = locals_dict[var]
-            if splits:
-                for s in splits:
-                    val = val[int(v[s[0] + 1 : s[1] + 1])]
-            fail = False
-        except Exception as e:
-            warning_message = "Failed to replace variables in the query.\nError: {0}".format(
-                e
-            )
-            warnings.warn(warning_message, Warning)
-            fail = True
+        fail = True
+        if len(v) > 1 and not (v[1].isdigit()):
+            try:
+                var = v[1:]
+                n, splits = var.count("["), []
+                if var.count("]") == n and n > 0:
+                    i, size = 0, len(var)
+                    while i < size:
+                        if var[i] == "[":
+                            k = i + 1
+                            while i < size and var[i] != "]":
+                                i += 1
+                            splits += [(k, i)]
+                        i += 1
+                    var = var[: splits[0][0] - 1]
+                val = locals_dict[var]
+                if splits:
+                    for s in splits:
+                        val = val[int(v[s[0] + 1 : s[1] + 1])]
+                fail = False
+            except Exception as e:
+                warning_message = "Failed to replace variables in the query.\nError: {0}".format(
+                    e
+                )
+                warnings.warn(warning_message, Warning)
+                fail = True
         if not (fail):
             if isinstance(val, vDataFrame):
                 val = val.__genSQL__()

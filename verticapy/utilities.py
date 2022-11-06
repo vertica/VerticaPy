@@ -997,7 +997,7 @@ bool
     check_types(
         [("expr", expr, [str, vDataFrame]), ("column", column, [str]),]
     )
-    column = quote_ident(column.replace('"', '""'))
+    column = quote_ident(column)
     if isinstance(expr, vDataFrame):
         expr = expr.__genSQL__()
     sql = f"SELECT MAPVERSION({column}) AS isvmap, {column} FROM {expr} WHERE {column} IS NOT NULL LIMIT 1;"
@@ -1006,7 +1006,10 @@ bool
             sql, title="Checking if the column is a vmap.", method="fetchall",
         )
         dtype = current_cursor().description[1][1]
-        if dtype != 116:  # 116 is for long varbinary
+        if dtype not in (
+            115,
+            116,
+        ):  # 116 is for long varbinary and 115 is for long varchar
             return False
     except:
         return False
@@ -3257,12 +3260,19 @@ vDataFrame
         from verticapy.vcolumn import vColumn
 
         column_name = '"' + column.replace('"', "_") + '"'
+        category = get_category_from_vertica_type(ctype)
+        if (
+            ("long varbinary" in ctype.lower()) or ("long varchar" in ctype.lower())
+        ) and (isvmap(expr=relation, column=column,)):
+            category = "vmap"
+            if "(" in ctype:
+                ctype = "VMAP(" + "(".join(ctype.split("(")[1:])
+            else:
+                ctype = "VMAP"
         new_vColumn = vColumn(
             column_name,
             parent=vdf,
-            transformations=[
-                (quote_ident(column), ctype, get_category_from_vertica_type(ctype),)
-            ],
+            transformations=[(quote_ident(column), ctype, category,)],
         )
         setattr(vdf, column_name, new_vColumn)
         setattr(vdf, column_name[1:-1], new_vColumn)
