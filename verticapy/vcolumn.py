@@ -692,9 +692,8 @@ Attributes
 
 	Parameters
  	----------
- 	dtype: str or python data type
- 		New type. To convert to a json string, you can set this parameter 
-        to 'json'.
+ 	dtype: str or Python data type
+ 		New type. To convert to a JSON string, set this parameter to 'json'.
 
  	Returns
  	-------
@@ -2507,12 +2506,12 @@ Attributes
     def get_len(self):
         """
     ---------------------------------------------------------------------------
-    Returns a new vColumn which represents the length of each element.
+    Returns a new vColumn that represents the length of each element.
 
     Returns
     -------
     vColumn
-        vcolumn including the length of each element.
+        vColumn that includes the length of each element.
         """
         if cat == "vmap":
             fun = "MAPSIZE"
