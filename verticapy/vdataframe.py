@@ -6784,20 +6784,20 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Flat the selected vmap. A new vDataFrame is returned.
+    Flatten the selected VMap. A new vDataFrame is returned.
 
     Parameters
     ----------
     vmap_col: list
-        List of VMAP columns to flat.
+        List of VMap columns to flatten.
     limit: int, optional
-        Maximum number of keys to consider for each VMAP. Only the most occurent 
-        ones will be used.
+        Maximum number of keys to consider for each VMap. Only the most occurent 
+        keys are used.
 
     Returns
     -------
     vDataFrame
-        object with the flattened VMAPs.
+        object with the flattened VMaps.
         """
         # Saving information to the query profile table
         save_to_query_profile(

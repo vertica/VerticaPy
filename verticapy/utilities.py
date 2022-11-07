@@ -72,19 +72,19 @@ except:
 def compute_flextable_keys(flex_name: str, usecols: list = []):
     """
 ---------------------------------------------------------------------------
-Computes the flex table keys and returns the guessed data types.
+Computes the flex table keys and returns the predicted data types.
 
 Parameters
 ----------
 flex_name: str
-    Flex Table Name.
+    Flex table name.
 usecols: list, optional
     List of columns to consider.
 
 Returns
 -------
 List of tuples
-    List of virtual columns names and their respective data type.
+    List of virtual column names and their respective data types.
     """
     # Saving information to the query profile table
     save_to_query_profile(
@@ -123,23 +123,23 @@ def compute_vmap_keys(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the input vmap most occurent keys.
+Computes the most frequent keys in the input VMap.
 
 Parameters
 ----------
 expr: str / vDataFrame
     Input expression. You can also specify a vDataFrame or a customized 
-    relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
-    is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+    relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
+    is allowed, whereas "(SELECT 1)" and "SELECT 1" are not.
 vmap_col: str
-    VMAP column.
+    VMap column.
 limit: int, optional
     Maximum number of keys to consider.
 
 Returns
 -------
 List of tuples
-    List of virtual columns names and their respective occurence.
+    List of virtual column names and their respective frequencies.
     """
     from verticapy import vDataFrame
 
@@ -570,8 +570,8 @@ def get_data_types(
 Returns customized relation columns and the respective data types.
 This process creates a temporary table.
 
-If table_name is defined then the expression is ignored and the function
-will return the table/view columns names and data types.
+If table_name is defined, the expression is ignored and the function
+returns the table/view column names and data types.
 
 Parameters
 ----------
@@ -581,9 +581,9 @@ column: str, optional
     If not empty, it will return only the data type of the input column if it
     is in the relation.
 table_name: str, optional
-    Input Table Name.
+    Input table Name.
 schema: str, optional
-    Table Schema.
+    Table schema.
 usecols: list, optional
     List of columns to consider. This parameter can not be used if 'column'
     is defined.
@@ -616,10 +616,10 @@ list of tuples
         ]
     )
     assert expr or table_name, ParameterError(
-        "Missing parameter: 'expr' and 'table_name' can not be both empty."
+        "Missing parameter: 'expr' and 'table_name' can not both be empty."
     )
     assert not (column) or not (usecols), ParameterError(
-        "Parameters 'column' and 'usecols' can not be both defined."
+        "Parameters 'column' and 'usecols' can not both be defined."
     )
     if expr and table_name:
         warning_message = (
@@ -733,7 +733,7 @@ VERTICAPY Interactive Help (FAQ).
     message = img1 if (isnotebook()) else img2
     message += (
         "\n\n&#128226; Welcome to the <b>VerticaPy</b> help module."
-        "\n\nFrom here, you can learn how to connect to Vertica, "
+        "\n\nThis module can help you connect to Vertica, "
         "create a Virtual DataFrame, load your data, and more.\n "
         "- <b>[Enter  0]</b> Overview of the library\n "
         "- <b>[Enter  1]</b> Load an example dataset\n "
@@ -935,14 +935,14 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
 def isflextable(table_name: str, schema: str):
     """
 ---------------------------------------------------------------------------
-Check if the input relation is a flextable.
+Checks if the input relation is a flextable.
 
 Parameters
 ----------
 table_name: str
-    The name of the table to check.
+    Name of the table to check.
 schema: str
-    The table schema.
+    Table schema.
 
 Returns
 -------
@@ -971,20 +971,20 @@ def isvmap(
 ):
     """
 ---------------------------------------------------------------------------
-Check if the input column is a vmap.
+Checks if the input column is a VMap.
 
 Parameters
 ----------
 expr: str
-    It can be any kind of relation or an expression. In that case,
-    the expression must be enclosed in parenthesis with an alias.
+    Any relation or expression. If you enter an expression,
+    you must enclose it in parentheses and provide an alias.
 column: str
-    The name of the column to check.
+    Name of the column to check.
 
 Returns
 -------
 bool
-    True if the column is a vmap.
+    True if the column is a VMap.
     """
     # Saving information to the query profile table
     save_to_query_profile(
@@ -1380,50 +1380,50 @@ def read_file(
 ):
     """
 ---------------------------------------------------------------------------
-Inspects a file in CSV, Parquet, ORC, JSON, or Avro format and ingests it.
+Inspects and ingests a file in CSV, Parquet, ORC, JSON, or Avro format.
 This function uses the Vertica complex data type.
 The file must be located in the server.
 
 Parameters
 ----------
 path: str
-    Path to a file or glob. Any path that is valid for COPY and uses a file 
-    format supported by this function is valid. For all formats except JSON, 
-    if a glob specifies more than one file, this function reads a single, 
+    Path to a file or glob. Valid paths include any path that is valid for
+    COPY and that uses a file format supported by this function. For all formats  
+    except JSON, if a glob specifies more than one file, this function reads a single, 
     arbitrarily-chosen file. For JSON, the function might read more than one file.
 schema: str, optional
-    The schema in which to create the table.
+    Schema in which to create the table.
 table_name: str, optional
-    The name of the table to create. If empty, the file name is used.
+    Name of the table to create. If empty, the file name is used.
 dtype: dict, optional
-    Dictionary of customised data type. The guessed data types will be replace by the
-    input ones. The dictionary must include the name of the column as key and the new
-    data type as value.
+    Dictionary of customised data type. The predicted data types will be replaced by
+    the input data types. The dictionary must include the name of the column as key and
+    the new data type as value.
 unknown: str, optional
-    Which type to use in order to replace the unknown data types.
+    Type used to replace unknown data types.
 varchar_varbinary_length: int, optional
     Default length of varchar and varbinary columns.
 max_files: int, optional
-    (JSON only.) Maximum number of files in path to inspect, if path is a glob. 
-    Use this parameter to increase the amount of data the function considers, 
-    for example if you suspect variation among files. Files are chosen arbitrarily 
-    from the glob.
+    (JSON only.) If path is a glob, specifies maximum number of files in path to inspect.
+    Use this parameter to increase the amount of data the function considers. 
+    This can be beneficial if you suspect variation among files. Files are chosen 
+    arbitrarily from the glob.
 max_candidates: int, optional
     (JSON only.) Number of candidate table definitions to show. The function generates 
     only one candidate per file, so if you increase max_candidates, also increase 
     max_files.
 genSQL: bool, optional
-    If set to True, the SQL code for creating the final table will be 
-    generated but not executed. It is a good way to change the final
+    If set to True, the SQL code for creating the final table is 
+    generated but not executed. This is a good way to change the final
     relation types or to customize the data ingestion.
 temporary_table: bool, optional
-    If set to True, a temporary table will be created.
+    If set to True, a temporary table is created.
 temporary_local_table: bool, optional
-    If set to True, a temporary local table will be created. The parameter 'schema'
+    If set to True, a temporary local table is created. The parameter 'schema'
     must be empty, otherwise this parameter is ignored.
 gen_tmp_table_name: bool, optional
     Sets the name of the temporary table. This parameter is only used when the 
-    parameter 'temporary_local_table' is set to True and if the parameters 
+    parameter 'temporary_local_table' is set to True and the parameters 
     "table_name" and "schema" are unspecified.
 
 Returns
@@ -1921,7 +1921,7 @@ gen_tmp_table_name: bool, optional
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 start_point: str, optional
-    String, the name of a key in the JSON load data at which to begin parsing. The parser 
+    String, name of a key in the JSON load data at which to begin parsing. The parser 
     ignores all data before the start_point value. The value is loaded for each object in 
     the file. The parser processes data after the first instance, and up to the second, 
     ignoring any remaining data.
@@ -2267,7 +2267,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     time_on: bool, optional
         If set to True, displays the query elapsed time.
     limit: int, optional
-        Number maximum of elements to display.
+        Maximum number of elements to display.
 
     Returns
     -------

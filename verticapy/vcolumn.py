@@ -2639,12 +2639,12 @@ Attributes
     def isvmap(self):
         """
     ---------------------------------------------------------------------------
-    Returns True if the vColumn category is vmap, False otherwise.
+    Returns True if the vColumn category is VMap, False otherwise.
 
     Returns
     -------
     bool
-        True if the vColumn category is vmap.
+        True if the vColumn category is VMap.
         """
         return self.category() == "vmap" or isvmap(
             column=self.alias, expr=self.parent.__genSQL__()
