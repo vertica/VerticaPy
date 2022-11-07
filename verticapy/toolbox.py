@@ -51,6 +51,7 @@
 # Standard Python Modules
 import shutil, re, sys, warnings, random, itertools, datetime, time, html, os
 from collections.abc import Iterable
+from typing import Union
 
 # VerticaPy Modules
 import verticapy
@@ -123,7 +124,7 @@ def check_types(types_list: list = []):
             if (elem[1] != None) and (
                 elem[1].lower() not in elem[2] and elem[1] not in elem[2]
             ):
-                warning_message = "Parameter '{}' must be in [{}], found '{}'".format(
+                warning_message = "Parameter '{0}' must be in [{1}], found '{2}'".format(
                     elem[0], "|".join(elem[2]), elem[1]
                 )
                 warnings.warn(warning_message, Warning)
@@ -539,6 +540,35 @@ def get_session(add_username: bool = True):
             executeSQL(query, method="fetchfirstelem", print_time_sql=False), result
         )
     return result
+
+
+# ---#
+def get_vertica_type(dtype):
+    if dtype in (str, "str", "string"):
+        dtype = "varchar"
+    elif dtype == float:
+        dtype = "float"
+    elif dtype == int:
+        dtype = "integer"
+    elif dtype == datetime.datetime:
+        dtype = "datetime"
+    elif dtype == datetime.date:
+        dtype = "date"
+    elif dtype == datetime.time:
+        dtype = "time"
+    elif dtype == datetime.timedelta:
+        dtype = "interval"
+    elif dtype == datetime.timezone:
+        dtype = "timestamptz"
+    elif dtype in (np.ndarray, np.array, list):
+        dtype = "array"
+    elif dtype == dict:
+        dtype = "row"
+    elif dtype == Union:
+        dtype = "set"
+    elif isinstance(dtype, str):
+        dtype = dtype.lower()
+    return dtype
 
 
 # ---#
@@ -1210,54 +1240,79 @@ def updated_dict(
 # ---#
 class str_sql:
     # ---#
-    def __init__(self, alias, category=""):
+    def __init__(self, alias, category="", init_transf=""):
         self.alias = alias
         self.category_ = category
+        if not (init_transf):
+            self.init_transf = alias
+        else:
+            self.init_transf = init_transf
 
     # ---#
     def __repr__(self):
-        return str(self.alias)
+        return str(self.init_transf)
 
     # ---#
     def __str__(self):
-        return str(self.alias)
+        return str(self.init_transf)
 
     # ---#
     def __abs__(self):
-        return str_sql("ABS({})".format(self.alias), self.category())
+        return str_sql("ABS({})".format(self.init_transf), self.category())
 
     # ---#
     def __add__(self, x):
+        from verticapy.vcolumn import vColumn
+
+        if (isinstance(self, vColumn) and self.isarray()) and (
+            isinstance(x, vColumn) and x.isarray()
+        ):
+            return str_sql(
+                "ARRAY_CAT({}, {})".format(self.init_transf, x.init_transf), "complex"
+            )
         val = format_magic(x)
         op = (
             "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
         )
-        return str_sql("({}) {} ({})".format(self.alias, op, val), self.category())
+        return str_sql(
+            "({}) {} ({})".format(self.init_transf, op, val), self.category()
+        )
 
     # ---#
     def __radd__(self, x):
+        from verticapy.vcolumn import vColumn
+
+        if (isinstance(self, vColumn) and self.isarray()) and (
+            isinstance(x, vColumn) and x.isarray()
+        ):
+            return str_sql(
+                "ARRAY_CAT({}, {})".format(x.init_transf, self.init_transf), "complex"
+            )
         val = format_magic(x)
         op = (
             "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
         )
-        return str_sql("({}) {} ({})".format(val, op, self.alias), self.category())
+        return str_sql(
+            "({}) {} ({})".format(val, op, self.init_transf), self.category()
+        )
 
     # ---#
     def __and__(self, x):
         val = format_magic(x)
-        return str_sql("({}) AND ({})".format(self.alias, val), self.category())
+        return str_sql("({}) AND ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rand__(self, x):
         val = format_magic(x)
-        return str_sql("({}) AND ({})".format(val, self.alias), self.category())
+        return str_sql("({}) AND ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def _between(self, x, y):
         val1 = str(format_magic(x))
         val2 = str(format_magic(y))
         return str_sql(
-            "({}) BETWEEN ({}) AND ({})".format(self.alias, val1, val2), self.category()
+            "({}) BETWEEN ({}) AND ({})".format(self.init_transf, val1, val2),
+            self.category(),
         )
 
     # ---#
@@ -1275,7 +1330,7 @@ class str_sql:
         )
         val = [str(format_magic(elem)) for elem in x]
         val = ", ".join(val)
-        return str_sql("({}) IN ({})".format(self.alias, val), self.category())
+        return str_sql("({}) IN ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def _not_in(self, *argv):
@@ -1292,15 +1347,17 @@ class str_sql:
         )
         val = [str(format_magic(elem)) for elem in x]
         val = ", ".join(val)
-        return str_sql("({}) NOT IN ({})".format(self.alias, val), self.category())
+        return str_sql(
+            "({}) NOT IN ({})".format(self.init_transf, val), self.category()
+        )
 
     # ---#
     def _as(self, x):
-        return str_sql("({}) AS {}".format(self.alias, x), self.category())
+        return str_sql("({}) AS {}".format(self.init_transf, x), self.category())
 
     # ---#
     def _distinct(self):
-        return str_sql("DISTINCT ({})".format(self.alias), self.category())
+        return str_sql("DISTINCT ({})".format(self.init_transf), self.category())
 
     # ---#
     def _over(self, by: (str, list) = [], order_by: (str, list) = []):
@@ -1315,7 +1372,7 @@ class str_sql:
         if order_by:
             order_by = "ORDER BY {}".format(order_by)
         return str_sql(
-            "{} OVER ({} {})".format(self.alias, by, order_by), self.category()
+            "{} OVER ({} {})".format(self.init_transf, by, order_by), self.category()
         )
 
     # ---#
@@ -1324,7 +1381,7 @@ class str_sql:
         val = format_magic(x)
         if val != "NULL":
             val = "({})".format(val)
-        return str_sql("({}) {} {}".format(self.alias, op, val), self.category())
+        return str_sql("({}) {} {}".format(self.init_transf, op, val), self.category())
 
     # ---#
     def __ne__(self, x):
@@ -1332,129 +1389,133 @@ class str_sql:
         val = format_magic(x)
         if val != "NULL":
             val = "({})".format(val)
-        return str_sql("({}) {} {}".format(self.alias, op, val), self.category())
+        return str_sql("({}) {} {}".format(self.init_transf, op, val), self.category())
 
     # ---#
     def __ge__(self, x):
         val = format_magic(x)
-        return str_sql("({}) >= ({})".format(self.alias, val), self.category())
+        return str_sql("({}) >= ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __gt__(self, x):
         val = format_magic(x)
-        return str_sql("({}) > ({})".format(self.alias, val), self.category())
+        return str_sql("({}) > ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __le__(self, x):
         val = format_magic(x)
-        return str_sql("({}) <= ({})".format(self.alias, val), self.category())
+        return str_sql("({}) <= ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __lt__(self, x):
         val = format_magic(x)
-        return str_sql("({}) < ({})".format(self.alias, val), self.category())
+        return str_sql("({}) < ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __mul__(self, x):
         if self.category() == "text" and isinstance(x, (int)):
-            return str_sql("REPEAT({}, {})".format(self.alias, x), self.category())
+            return str_sql(
+                "REPEAT({}, {})".format(self.init_transf, x), self.category()
+            )
         val = format_magic(x)
-        return str_sql("({}) * ({})".format(self.alias, val), self.category())
+        return str_sql("({}) * ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rmul__(self, x):
         if self.category() == "text" and isinstance(x, (int)):
-            return str_sql("REPEAT({}, {})".format(self.alias, x), self.category())
+            return str_sql(
+                "REPEAT({}, {})".format(self.init_transf, x), self.category()
+            )
         val = format_magic(x)
-        return str_sql("({}) * ({})".format(val, self.alias), self.category())
+        return str_sql("({}) * ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def __or__(self, x):
         val = format_magic(x)
-        return str_sql("({}) OR ({})".format(self.alias, val), self.category())
+        return str_sql("({}) OR ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __ror__(self, x):
         val = format_magic(x)
-        return str_sql("({}) OR ({})".format(val, self.alias), self.category())
+        return str_sql("({}) OR ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def __pos__(self):
-        return str_sql("+({})".format(self.alias), self.category())
+        return str_sql("+({})".format(self.init_transf), self.category())
 
     # ---#
     def __neg__(self):
-        return str_sql("-({})".format(self.alias), self.category())
+        return str_sql("-({})".format(self.init_transf), self.category())
 
     # ---#
     def __pow__(self, x):
         val = format_magic(x)
-        return str_sql("POWER({}, {})".format(self.alias, val), self.category())
+        return str_sql("POWER({}, {})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rpow__(self, x):
         val = format_magic(x)
-        return str_sql("POWER({}, {})".format(val, self.alias), self.category())
+        return str_sql("POWER({}, {})".format(val, self.init_transf), self.category())
 
     # ---#
     def __mod__(self, x):
         val = format_magic(x)
-        return str_sql("MOD({}, {})".format(self.alias, val), self.category())
+        return str_sql("MOD({}, {})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rmod__(self, x):
         val = format_magic(x)
-        return str_sql("MOD({}, {})".format(val, self.alias), self.category())
+        return str_sql("MOD({}, {})".format(val, self.init_transf), self.category())
 
     # ---#
     def __sub__(self, x):
         val = format_magic(x)
-        return str_sql("({}) - ({})".format(self.alias, val), self.category())
+        return str_sql("({}) - ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rsub__(self, x):
         val = format_magic(x)
-        return str_sql("({}) - ({})".format(val, self.alias), self.category())
+        return str_sql("({}) - ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def __truediv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) / ({})".format(self.alias, val), self.category())
+        return str_sql("({}) / ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rtruediv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) / ({})".format(val, self.alias), self.category())
+        return str_sql("({}) / ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def __floordiv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) // ({})".format(self.alias, val), self.category())
+        return str_sql("({}) // ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rfloordiv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) // ({})".format(val, self.alias), self.category())
+        return str_sql("({}) // ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def __ceil__(self):
-        return str_sql("CEIL({})".format(self.alias), self.category())
+        return str_sql("CEIL({})".format(self.init_transf), self.category())
 
     # ---#
     def __floor__(self):
-        return str_sql("FLOOR({})".format(self.alias), self.category())
+        return str_sql("FLOOR({})".format(self.init_transf), self.category())
 
     # ---#
     def __trunc__(self):
-        return str_sql("TRUNC({})".format(self.alias), self.category())
+        return str_sql("TRUNC({})".format(self.init_transf), self.category())
 
     # ---#
     def __invert__(self):
-        return str_sql("-({}) - 1".format(self.alias), self.category())
+        return str_sql("-({}) - 1".format(self.init_transf), self.category())
 
     # ---#
     def __round__(self, x):
-        return str_sql("ROUND({}, {})".format(self.alias, x), self.category())
+        return str_sql("ROUND({}, {})".format(self.init_transf, x), self.category())
 
     def category(self):
         return self.category_
