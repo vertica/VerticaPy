@@ -323,6 +323,19 @@ def gen_name(L: list):
 
 
 # ---#
+def gen_tmp_name(schema: str = "", name: str = ""):
+    session_user = get_session()
+    L = session_user.split("_")
+    L[0] = "".join(filter(str.isalnum, L[0]))
+    L[1] = "".join(filter(str.isalnum, L[1]))
+    random_int = random.randint(0, 10e9)
+    name = '"_verticapy_tmp_{}_{}_{}_{}_"'.format(name.lower(), L[0], L[1], random_int)
+    if schema:
+        name = "{}.{}".format(quote_ident(schema), name)
+    return name
+
+
+# ---#
 def get_category_from_python_type(expr):
     try:
         category = expr.category()
@@ -569,19 +582,6 @@ def get_vertica_type(dtype):
     elif isinstance(dtype, str):
         dtype = dtype.lower()
     return dtype
-
-
-# ---#
-def gen_tmp_name(schema: str = "", name: str = ""):
-    session_user = get_session()
-    L = session_user.split("_")
-    L[0] = "".join(filter(str.isalnum, L[0]))
-    L[1] = "".join(filter(str.isalnum, L[1]))
-    random_int = random.randint(0, 10e9)
-    name = '"_verticapy_tmp_{}_{}_{}_{}_"'.format(name.lower(), L[0], L[1], random_int)
-    if schema:
-        name = "{}.{}".format(quote_ident(schema), name)
-    return name
 
 
 # ---#

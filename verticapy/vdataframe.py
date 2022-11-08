@@ -6390,6 +6390,7 @@ vColumns : vColumn
         setattr(self, name, new_vColumn)
         setattr(self, name.replace('"', ""), new_vColumn)
         new_vColumn.init = False
+        new_vColumn.init_transf = name
         self._VERTICAPY_VARIABLES_["columns"] += [name]
         self.__add_to_history__(
             "[Eval]: A new vColumn {} was added to the vDataFrame.".format(name)

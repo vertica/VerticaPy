@@ -3064,41 +3064,62 @@ The tablesample attributes are the same than the parameters.
     # ---#
     def to_sql(self):
         """
-	---------------------------------------------------------------------------
-	Generates the SQL query associated to the tablesample.
+    ---------------------------------------------------------------------------
+    Generates the SQL query associated to the tablesample.
 
- 	Returns
- 	-------
- 	str
- 		SQL query associated to the tablesample.
+    Returns
+    -------
+    str
+        SQL query associated to the tablesample.
 
-	See Also
-	--------
-	tablesample.to_pandas : Converts the tablesample to a pandas DataFrame.
-	tablesample.to_sql    : Generates the SQL query associated to the tablesample.
-		"""
+    See Also
+    --------
+    tablesample.to_pandas : Converts the tablesample to a pandas DataFrame.
+    tablesample.to_sql    : Generates the SQL query associated to the tablesample.
+        """
+
+        def get_correct_format_and_cast(val):
+            if isinstance(val, str):
+                val = "'" + val.replace("'", "''") + "'"
+            elif val == None:
+                val = "NULL"
+            elif isinstance(val, bytes):
+                val = str(val)[2:-1]
+                val = "'{0}'::binary({1})".format(val, len(val))
+            elif isinstance(val, datetime.datetime):
+                val = f"'{val}'::datetime"
+            elif isinstance(val, datetime.date):
+                val = f"'{val}'::date"
+            elif isinstance(val, datetime.timedelta):
+                val = f"'{val}'::interval"
+            elif isinstance(val, datetime.time):
+                val = f"'{val}'::time"
+            elif isinstance(val, datetime.timezone):
+                val = f"'{val}'::timestamptz"
+            elif isinstance(val, (np.ndarray, list)):
+                val = "ARRAY[{0}]".format(
+                    ",".join([str(get_correct_format_and_cast(k)) for k in val])
+                )
+            elif isinstance(val, dict):
+                all_elems = [
+                    "{0} AS {1}".format(get_correct_format_and_cast(val[k]), k)
+                    for k in val
+                ]
+                val = ", ".join(all_elems)
+                val = f"ROW({val})"
+            try:
+                if math.isnan(val):
+                    val = "NULL"
+            except:
+                pass
+            return val
+
         sql = []
         n = len(self.values[list(self.values.keys())[0]])
         for i in range(n):
             row = []
             for column in self.values:
-                val = self.values[column][i]
-                if isinstance(val, str):
-                    val = "'" + val.replace("'", "''") + "'"
-                elif val == None:
-                    val = "NULL"
-                elif isinstance(val, bytes):
-                    val = str(val)[2:-1]
-                    val = "'{0}'::binary({1})".format(val, len(val))
-                elif isinstance(val, datetime.datetime):
-                    val = f"'{val}'::datetime"
-                elif isinstance(val, datetime.date):
-                    val = f"'{val}'::date"
-                try:
-                    if math.isnan(val):
-                        val = "NULL"
-                except:
-                    pass
+                val = get_correct_format_and_cast(self.values[column][i])
                 row += ["{0} AS {1}".format(val, '"' + column.replace('"', "") + '"')]
             sql += ["(SELECT {0})".format(", ".join(row))]
         sql = " UNION ALL ".join(sql)

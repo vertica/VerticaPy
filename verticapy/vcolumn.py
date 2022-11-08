@@ -665,7 +665,7 @@ Attributes
                 func = "LENTGH"
         elif func in ("max", "min", "sum", "avg", "count"):
             func = "APPLY_" + func
-        elif fun == "dim":
+        elif func == "dim":
             func = "ARRAY_DIMS"
         if func not in ("log", "mod", "pow", "round", "contain", "find"):
             expr = "{}({})".format(func.upper(), "{}")
@@ -713,9 +713,49 @@ Attributes
         check_types([("dtype", dtype, [str])])
         try:
             if dtype == "array" and self.category() == "text":
+                query = "SELECT {0} FROM {1} ORDER BY LENGTH({0}) DESC LIMIT 1".format(
+                    self.alias, self.parent.__genSQL__()
+                )
+                elem = executeSQL(
+                    query, title="getting the biggest string", method="fetchfirstelem"
+                )
+                sep = ","
+                max_occur = elem.count(",")
+                for s in ("|", ";"):
+                    total_occurences = elem.count(s)
+                    if total_occurences > max_occur:
+                        max_occur = total_occurences
+                        sep = s
+                if elem.replace(" ", "").count(sep + sep) > 0:
+                    collection_null_element = ", collection_null_element=''"
+                else:
+                    collection_null_element = ""
+                if max_occur == 0:
+                    sep = " "
+                elem = elem.replace(" ", "")
+                if len(elem) > 2 and (
+                    (elem[0] == "(" and elem[-1] == ")")
+                    or (elem[0] == "{" and elem[-1] == "}")
+                ):
+                    collection_open = ", collection_open='{0}'".format(elem[0])
+                    collection_close = ", collection_close='{0}'".format(elem[-1])
+                else:
+                    collection_open, collection_close = "", ""
                 transformation = (
-                    "STRING_TO_ARRAY({0})".format(self.alias),
-                    "STRING_TO_ARRAY({})",
+                    "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
+                        self.alias,
+                        sep,
+                        collection_open,
+                        collection_close,
+                        collection_null_element,
+                    ),
+                    "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
+                        "{}",
+                        sep,
+                        collection_open,
+                        collection_close,
+                        collection_null_element,
+                    ),
                 )
             elif (
                 dtype[0:7] == "varchar" or dtype[0:4] == "char"
