@@ -395,7 +395,6 @@ def get_category_from_vertica_type(ctype: str = ""):
     else:
         return "undefined"
 
-
 # ---#
 def get_first_file(path: str, ext: str):
     dirname = os.path.dirname(path)
@@ -406,6 +405,19 @@ def get_first_file(path: str, ext: str):
             return dirname + "/" + f
     return None
 
+# ---#
+def get_final_vertica_type(
+    type_name: str, display_size: int = 0, precision: int = 0, scale: int = 0
+):
+    """
+Takes as input the Vertica Python type code and returns its corresponding data type.
+    """
+    result = type_name
+    if (display_size):
+        result += f"({display_size})"
+    elif (scale and precision):
+        result += f"({precision},{scale})"
+    return result
 
 # ---#
 def get_header_name_csv(path: str, sep: str):
@@ -553,7 +565,6 @@ def get_session(add_username: bool = True):
             executeSQL(query, method="fetchfirstelem", print_time_sql=False), result
         )
     return result
-
 
 # ---#
 def get_vertica_type(dtype):
@@ -1172,49 +1183,6 @@ def format_schema_table(schema: str, table_name: str):
     if not (schema):
         schema = "public"
     return quote_ident(schema) + "." + quote_ident(table_name)
-
-
-# ---#
-def type_code_to_dtype(
-    type_code: int, display_size: int = 0, precision: int = 0, scale: int = 0
-):
-    """
-Takes as input the Vertica Python type code and returns its corresponding data type.
-    """
-    types = {
-        5: "Boolean",
-        6: "Integer",
-        7: "Float",
-        8: "Char",
-        9: "Varchar",
-        10: "Date",
-        11: "Time",
-        12: "Datetime",
-        13: "Timestamp with Timezone",
-        14: "Interval",
-        15: "Time with Timezone",
-        16: "Numeric",
-        17: "Varbinary",
-        114: "Interval Year to Month",
-        115: "Long Varchar",
-        116: "Long Varbinary",
-        117: "Binary",
-    }
-    if type_code in types:
-        if display_size == None:
-            display_size = 0
-        if precision == None:
-            precision = 0
-        if scale == None:
-            scale = 0
-        result = types[type_code]
-        if type_code in (8, 9, 17, 115, 116, 117) and (display_size > 0):
-            result += "({})".format(display_size)
-        elif type_code == 16 and (precision > 0):
-            result += "({},{})".format(precision, scale)
-        return result
-    else:
-        return "Undefined"
 
 
 # ---#

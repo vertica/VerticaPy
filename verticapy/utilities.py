@@ -635,9 +635,9 @@ list of tuples
         try:
             if column:
                 column_name_ident = quote_ident(column)
-                query = f"SELECT {column_name_ident} FROM ({expr}) x LIMIT 1;"
+                query = f"SELECT {column_name_ident} FROM ({expr}) x LIMIT 0;"
             elif usecols:
-                query = "SELECT {0} FROM ({1}) x LIMIT 1;".format(
+                query = "SELECT {0} FROM ({1}) x LIMIT 0;".format(
                     ", ".join([quote_ident(elem) for elem in usecols]), expr
                 )
             else:
@@ -648,8 +648,8 @@ list of tuples
                 ctype += [
                     [
                         elem[0],
-                        type_code_to_dtype(
-                            type_code=elem[1],
+                        get_final_vertica_type(
+                            type_name=elem.type_name,
                             display_size=elem[2],
                             precision=elem[4],
                             scale=elem[5],
@@ -3187,8 +3187,8 @@ def to_tablesample(
     cursor = executeSQL(query, print_time_sql=False)
     description, dtype = cursor.description, {}
     for elem in description:
-        dtype[elem[0]] = type_code_to_dtype(
-            type_code=elem[1], display_size=elem[2], precision=elem[4], scale=elem[5]
+        dtype[elem[0]] = get_final_vertica_type(
+            type_name=elem.type_name, display_size=elem[2], precision=elem[4], scale=elem[5]
         )
     elapsed_time = time.time() - start_time
     if verticapy.options["time_on"]:
