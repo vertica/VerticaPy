@@ -135,6 +135,8 @@ Attributes
         for elem in catalog:
             self.catalog[elem] = catalog[elem]
         self.init_transf = self.transformations[0][0]
+        if self.init_transf == "___VERTICAPY_UNDEFINED___":
+            self.init_transf = self.alias
         self.init = True
 
     # ---#
