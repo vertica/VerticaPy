@@ -322,9 +322,11 @@ def load_dataset(
         try:
 
             path = os.path.dirname(verticapy.__file__)
-            if (dataset_name in ("laliga",)):
+            if dataset_name in ("laliga",):
                 path += f"/data/{dataset_name}/*.json"
-                query = "COPY {0}.{1} FROM {2} PARSER FJsonParser();".format(schema, name, "{}")
+                query = "COPY {0}.{1} FROM {2} PARSER FJsonParser();".format(
+                    schema, name, "{}"
+                )
             else:
                 path += f"/data/{dataset_name}.csv"
                 if not (copy_cols):
@@ -337,7 +339,9 @@ def load_dataset(
 
             cur = current_cursor()
 
-            if isinstance(cur, vertica_python.vertica.cursor.Cursor) and (dataset_name not in ("laliga",)):
+            if isinstance(cur, vertica_python.vertica.cursor.Cursor) and (
+                dataset_name not in ("laliga",)
+            ):
 
                 query = query.format("STDIN")
                 executeSQL(query, title="Ingesting the data.", method="copy", path=path)
@@ -593,22 +597,25 @@ vDataFrame
     return load_dataset(
         schema,
         name,
-        {"away_score": "int", 
-         "away_team": 'Row("away_team_gender" varchar, "away_team_group" varchar, "away_team_id" int, "away_team_name" varchar, "country" Row("id" int, "name" varchar))',
-         "competition": 'Row("competition_id" int, "competition_name" varchar, "country_name" varchar)',
-         "competition_stage": 'Row("id" int, "name" varchar)',
-         "home_score": "int",
-         "home_team": 'Row("country" Row("id" int, "name" varchar), "home_team_gender" varchar, "home_team_group" varchar, "home_team_id" int, "home_team_name" varchar)',
-         "kick_off": "time",
-         "last_updated": "date",
-         "match_date": "date",
-         "match_id": "int",
-         "match_status": "varchar",
-         "match_week": "int",
-         "metadata": 'Row("data_version" date, "shot_fidelity_version" int, "xy_fidelity_version" int)',
-         "season": 'Row("season_id" int, "season_name" varchar)'},
+        {
+            "away_score": "int",
+            "away_team": 'Row("away_team_gender" varchar, "away_team_group" varchar, "away_team_id" int, "away_team_name" varchar, "country" Row("id" int, "name" varchar))',
+            "competition": 'Row("competition_id" int, "competition_name" varchar, "country_name" varchar)',
+            "competition_stage": 'Row("id" int, "name" varchar)',
+            "home_score": "int",
+            "home_team": 'Row("country" Row("id" int, "name" varchar), "home_team_gender" varchar, "home_team_group" varchar, "home_team_id" int, "home_team_name" varchar)',
+            "kick_off": "time",
+            "last_updated": "date",
+            "match_date": "date",
+            "match_id": "int",
+            "match_status": "varchar",
+            "match_week": "int",
+            "metadata": 'Row("data_version" date, "shot_fidelity_version" int, "xy_fidelity_version" int)',
+            "season": 'Row("season_id" int, "season_name" varchar)',
+        },
         dataset_name="laliga",
     )
+
 
 # ---#
 def load_market(schema: str = "public", name: str = "market"):

@@ -197,15 +197,7 @@ def flat_dict(d: dict) -> str:
 def erase_space_start_end_in_list_values(L: list):
     L_tmp = [elem for elem in L]
     for idx in range(len(L_tmp)):
-        h = L_tmp[idx]
-        n = len(h)
-        while n > 0 and h[0] == " ":
-            h = h[1:]
-            n -= 1
-        while n > 0 and h[-1] == " ":
-            h = h[:-1]
-            n -= 1
-        L_tmp[idx] = h
+        L_tmp[idx] = L_tmp[idx].strip()
     return L_tmp
 
 
@@ -395,6 +387,7 @@ def get_category_from_vertica_type(ctype: str = ""):
     else:
         return "undefined"
 
+
 # ---#
 def get_first_file(path: str, ext: str):
     dirname = os.path.dirname(path)
@@ -405,6 +398,7 @@ def get_first_file(path: str, ext: str):
             return dirname + "/" + f
     return None
 
+
 # ---#
 def get_final_vertica_type(
     type_name: str, display_size: int = 0, precision: int = 0, scale: int = 0
@@ -413,11 +407,13 @@ def get_final_vertica_type(
 Takes as input the Vertica Python type code and returns its corresponding data type.
     """
     result = type_name
-    if (display_size):
+    is_not_bool = type_name[0:4] != "bool"
+    if display_size and is_not_bool:
         result += f"({display_size})"
-    elif (scale and precision):
+    elif scale and precision and is_not_bool:
         result += f"({precision},{scale})"
     return result
+
 
 # ---#
 def get_header_name_csv(path: str, sep: str):
@@ -566,6 +562,7 @@ def get_session(add_username: bool = True):
         )
     return result
 
+
 # ---#
 def get_vertica_type(dtype):
     if dtype in (str, "str", "string"):
@@ -588,7 +585,7 @@ def get_vertica_type(dtype):
         dtype = "array"
     elif dtype == dict:
         dtype = "row"
-    elif dtype == Union:
+    elif dtype == tuple:
         dtype = "set"
     elif isinstance(dtype, str):
         dtype = dtype.lower()

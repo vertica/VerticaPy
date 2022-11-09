@@ -576,7 +576,8 @@ returns the table/view column names and data types.
 Parameters
 ----------
 expr: str, optional
-    An expression in pure SQL.
+    An expression in pure SQL. If empty, the parameter 'table_name' must be
+    defined.
 column: str, optional
     If not empty, it will return only the data type of the input column if it
     is in the relation.
@@ -2262,7 +2263,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
 
     Parameters
     ----------
-    query: str, optional
+    query: str
         SQL Query.
     time_on: bool, optional
         If set to True, displays the query elapsed time.
@@ -3188,7 +3189,10 @@ def to_tablesample(
     description, dtype = cursor.description, {}
     for elem in description:
         dtype[elem[0]] = get_final_vertica_type(
-            type_name=elem.type_name, display_size=elem[2], precision=elem[4], scale=elem[5]
+            type_name=elem.type_name,
+            display_size=elem[2],
+            precision=elem[4],
+            scale=elem[5],
         )
     elapsed_time = time.time() - start_time
     if verticapy.options["time_on"]:

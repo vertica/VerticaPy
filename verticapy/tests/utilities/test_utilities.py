@@ -187,9 +187,9 @@ class TestUtilities:
             "SELECT 1 AS col1, 'abc' AS col2, '5 minutes'::interval AS col3"
         )
         assert result == [
-            ["col1", "Integer"],
+            ["col1", "Integer(20)"],
             ["col2", "Varchar(3)"],
-            ["col3", "Interval"],
+            ["col3", "Interval Day to Second(26)"],
         ]
 
     def test_insert_into(self):

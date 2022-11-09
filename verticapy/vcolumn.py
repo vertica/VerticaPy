@@ -2762,7 +2762,7 @@ Attributes
     vDataFrame[].isdate : Returns True if the vColumn category is date.
     vDataFrame[].isnum  : Returns True if the vColumn is numerical.
         """
-        return self.ctype().lower() in ("bool", "boolean")
+        return self.ctype()[0:4] == "bool"
 
     # ---#
     def isdate(self):
