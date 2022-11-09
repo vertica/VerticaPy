@@ -1492,7 +1492,7 @@ vDataFrame
             ingest_local=False,
         )
     basename = ".".join(path.split("/")[-1].split(".")[0:-1])
-    if gen_tmp_table_name and temporary_local_table:
+    if gen_tmp_table_name and temporary_local_table and not (table_name):
         table_name = gen_tmp_name(name=basename)
     if not (table_name):
         table_name = basename

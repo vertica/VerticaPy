@@ -477,19 +477,22 @@ class TestUtilities:
 
     def test_read_json(self):
         drop("public.titanic_verticapy_test_json", method="table")
-        path = (
-            os.path.dirname(verticapy.__file__)
-            + "/tests/utilities/"
-        )
+        path = os.path.dirname(verticapy.__file__) + "/tests/utilities/"
         result = read_json(
-            path + "titanic-passengers.json", table_name="titanic_verticapy_test_json", schema="public"
+            path + "titanic-passengers.json",
+            table_name="titanic_verticapy_test_json",
+            schema="public",
         )
         assert result.shape() == (891, 15)
         drop("public.titanic_verticapy_test_json", method="table")
-        result = read_json(path + "titanic-passengers.json", table_name="titanic_verticapy_test_json")
+        result = read_json(
+            path + "titanic-passengers.json", table_name="titanic_verticapy_test_json"
+        )
         assert result.shape() == (891, 15)
         drop("public.titanic_verticapy_test_json", method="table")
-        result = read_json(path + "json_many/*.json", table_name="titanic_verticapy_test_json")
+        result = read_json(
+            path + "json_many/*.json", table_name="titanic_verticapy_test_json"
+        )
         assert result.shape() == (1782, 15)
         drop("public.titanic_verticapy_test_json", method="table")
         # TODO
@@ -541,26 +544,22 @@ class TestUtilities:
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # with dtypes
         dtype = {
-                "pclass": "int",
-                "survived": "bool",
-                "name": "varchar",
-                "sex": "varchar",
-                "age": "float",
-                "sibsp": "int",
-                "parch": "int",
-                "ticket": "varchar",
-                "fare": "float",
-                "cabin": "varchar",
-                "embarked": "varchar",
-                "boat": "varchar",
-                "body": "varchar",
-                "home.dest": "varchar",
-            }
-        result = read_csv(
-            path,
-            table_name="titanic_verticapy_test_csv",
-            dtype=dtype,
-        )
+            "pclass": "int",
+            "survived": "bool",
+            "name": "varchar",
+            "sex": "varchar",
+            "age": "float",
+            "sibsp": "int",
+            "parch": "int",
+            "ticket": "varchar",
+            "fare": "float",
+            "cabin": "varchar",
+            "embarked": "varchar",
+            "boat": "varchar",
+            "body": "varchar",
+            "home.dest": "varchar",
+        }
+        result = read_csv(path, table_name="titanic_verticapy_test_csv", dtype=dtype,)
         assert result.shape() == (1234, 14)
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # genSQL
@@ -581,6 +580,55 @@ class TestUtilities:
 
         # TODO
         # test on archives
+
+    def test_read_file(self, laliga_vd):
+        drop(name="v_temp_schema.laliga_test")
+        path = os.path.dirname(verticapy.__file__) + "/data/laliga/*.json"
+        vdf = read_file(
+            path=path,
+            schema="",
+            table_name="laliga_test",
+            dtype={"away_score": "float", "away_team_id": "float"},
+            unknown="varchar",
+            varchar_varbinary_length=200,
+            max_files=20,
+            max_candidates=1,
+        )
+        assert laliga_vd.shape() == vdf.shape()
+        assert vdf["away_score"].ctype().lower()[0:5] == "float"
+        assert vdf["away_team"]["away_team_id"].ctype().lower()[0:5] == "float"
+        assert vdf["match_status"].ctype().lower() == "varchar(200)"
+        assert drop(name="v_temp_schema.laliga_test")
+        # with genSQL = True
+        sql = read_file(
+            path=path,
+            schema="",
+            table_name="laliga_test",
+            dtype={"away_score": "float", "away_team_id": "float"},
+            unknown="varchar",
+            varchar_varbinary_length=200,
+            max_files=20,
+            max_candidates=1,
+            genSQL=True,
+        )
+        for query in sql:
+            current_cursor().execute(query)
+        vdf = vDataFrame("v_temp_schema.laliga_test")
+        assert laliga_vd.shape() == vdf.shape()
+        assert vdf["away_score"].ctype().lower() == "float"
+        assert vdf["away_team"]["away_team_id"].ctype().lower()[0:5] == "float"
+        assert vdf["match_status"].ctype().lower() == "varchar(200)"
+        drop(name="v_temp_schema.laliga_test", method="table")
+        # without any table name
+        vdf = read_file(
+            path=path,
+            dtype={"away_score": "float", "away_team_id": "float"},
+            unknown="varchar",
+            varchar_varbinary_length=200,
+            max_files=20,
+            max_candidates=1,
+        )
+        assert laliga_vd.shape() == vdf.shape()
 
     def test_read_shp(self, cities_vd):
         drop(name="public.cities_test")

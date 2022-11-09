@@ -402,10 +402,14 @@ def get_final_vertica_type(
 Takes as input the Vertica Python type code and returns its corresponding data type.
     """
     result = type_name
-    is_not_bool = type_name[0:4].lower() != "bool"
-    if display_size and is_not_bool:
+    has_precision_scale = (
+        (type_name[0:4].lower() not in ("uuid", "date", "bool"))
+        and (type_name[0:5].lower() != "array")
+        and (type_name[0:3].lower() not in ("set", "row", "map", "int"))
+    )
+    if display_size and has_precision_scale:
         result += f"({display_size})"
-    elif scale and precision and is_not_bool:
+    elif scale and precision and has_precision_scale:
         result += f"({precision},{scale})"
     return result
 
