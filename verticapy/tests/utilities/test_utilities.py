@@ -484,17 +484,17 @@ class TestUtilities:
             schema="public",
         )
         assert result.shape() == (891, 15)
-        drop("public.titanic_verticapy_test_json", method="table")
+        assert drop("public.titanic_verticapy_test_json", method="table")
         result = read_json(
             path + "titanic-passengers.json", table_name="titanic_verticapy_test_json"
         )
         assert result.shape() == (891, 15)
-        drop("public.titanic_verticapy_test_json", method="table")
+        assert drop("v_temp_schema.titanic_verticapy_test_json", method="table")
         result = read_json(
-            path + "json_many/*.json", table_name="titanic_verticapy_test_json"
+            path + "json_many/*.json", table_name="titanic_verticapy_test_json",
         )
         assert result.shape() == (1782, 15)
-        drop("public.titanic_verticapy_test_json", method="table")
+        assert drop("v_temp_schema.titanic_verticapy_test_json", method="table")
         # TODO
         # test on archives
 
