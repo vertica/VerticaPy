@@ -407,7 +407,7 @@ def get_final_vertica_type(
 Takes as input the Vertica Python type code and returns its corresponding data type.
     """
     result = type_name
-    is_not_bool = type_name[0:4] != "bool"
+    is_not_bool = type_name[0:4].lower() != "bool"
     if display_size and is_not_bool:
         result += f"({display_size})"
     elif scale and precision and is_not_bool:
