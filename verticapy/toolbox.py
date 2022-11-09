@@ -270,15 +270,8 @@ def extract_col_dt_from_query(query: str, field: str):
 def extract_compression(path: str):
     compression = "UNCOMPRESSED"
     file_extension = path.split(".")[-1].lower()
-    if file_extension[0:2] == "gz":
-        compression = "GZIP"
-    elif file_extension[0:2] == "bz":
-        compression = "BZIP"
-    elif file_extension[0:2] == "lz":
-        compression = "LZO"
-    elif file_extension[0:2] == "zs":
-        compression = "ZSTD"
-    return compression
+    lookup_table = {"gz": "GZIP", "bz": "BZIP", "lz": "LZO", "zs": "ZSTD"}
+    return lookup_table[file_extension[0:2]]
 
 
 # ---#

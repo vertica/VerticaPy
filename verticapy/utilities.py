@@ -119,7 +119,7 @@ List of tuples
 
 # ---#
 def compute_vmap_keys(
-    expr: str, vmap_col: str, limit: int = 100,
+    expr, vmap_col: str, limit: int = 100,
 ):
     """
 ---------------------------------------------------------------------------
@@ -3286,14 +3286,11 @@ vDataFrame
 
         column_name = '"' + column.replace('"', "_") + '"'
         category = get_category_from_vertica_type(ctype)
-        if (
-            ("long varbinary" in ctype.lower()) or ("long varchar" in ctype.lower())
-        ) and (isvmap(expr=relation, column=column,)):
+        if (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
+            isvmap(expr=relation, column=column,)
+        ):
             category = "vmap"
-            if "(" in ctype:
-                ctype = "VMAP(" + "(".join(ctype.split("(")[1:])
-            else:
-                ctype = "VMAP"
+            ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
         new_vColumn = vColumn(
             column_name,
             parent=vdf,

@@ -16,9 +16,11 @@ import pytest
 
 # Other Modules
 import pandas as pd
+import os
 
 # VerticaPy
-import vertica_python
+import vertica_python, verticapy
+from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.datasets import load_cities, load_titanic, load_world, load_iris
@@ -178,9 +180,74 @@ class TestUtilities:
             describe_index("world_polygons", True)
         drop()
 
-    def test_readSQL(self):
-        result = readSQL('SELECT 1 AS "verticapy test *+""";')
-        assert result['verticapy test *+"'] == [1]
+    def test_flex_elements(self):
+        # Creating a Flex Table
+        current_cursor().execute(
+            "CREATE FLEX LOCAL TEMP TABLE utilities_flex_test(x int) ON COMMIT PRESERVE ROWS;"
+        )
+        path = os.path.dirname(verticapy.__file__) + "/data/laliga/*.json"
+        current_cursor().execute(
+            f"COPY utilities_flex_test FROM LOCAL '{path}' PARSER FJSONPARSER();"
+        )
+        # Testing isflextable
+        assert isflextable(table_name="utilities_flex_test", schema="v_temp_schema")
+        # Testing compute_flextable_keys
+        keys = compute_flextable_keys(
+            "v_temp_schema.utilities_flex_test",
+            usecols=["referee.country.id", "stadium.id", "metadata.data_version"],
+        )
+        assert keys == [
+            ["referee.country.id", "Integer"],
+            ["stadium.id", "Integer"],
+            ["metadata.data_version", "Date"],
+        ]
+        # Testing compute_vmap_keys
+        home_managers_keys = compute_vmap_keys(
+            expr="v_temp_schema.utilities_flex_test",
+            vmap_col="home_team.managers",
+            limit=2,
+        )
+        assert len(home_managers_keys) == 2
+        assert home_managers_keys[0][1] == home_managers_keys[1][1] == 282
+        # Testing vDataFrame from Flextable
+        vdf = vDataFrame("v_temp_schema.utilities_flex_test")
+        # Testing vDataFrame[].isvmap
+        assert vdf["away_team.managers"].isvmap()
+        # Testing astype: VMAP to str
+        vdf["away_team.managers2"] = vdf["away_team.managers"]
+        vdf["away_team.managers"].astype(str)
+        assert vdf["away_team.managers"].category() == "text"
+        assert (
+            vdf["away_team.managers"].transformations[-1][0]
+            == "MAPTOSTRING({} USING PARAMETERS canonical_json=false)::varchar"
+        )
+        vdf["away_team.managers2"].astype("json")
+        assert vdf["away_team.managers2"].category() == "text"
+        assert (
+            vdf["away_team.managers2"].transformations[-1][0]
+            == "MAPTOSTRING({} USING PARAMETERS canonical_json=true)"
+        )
+        # Testing vDataFrame.__set__ using VMAP sub category
+        vdf["home_team.managers.0.country.id"] = vdf["home_team.managers"][
+            "0.country.id"
+        ]
+        assert (
+            vdf["home_team.managers.0.country.id"].transformations[-1][0]
+            == "MAPLOOKUP(\"home_team.managers\", '0.country.id')"
+        )
+        # Materialising the flex table
+        # vdf_table = vdf.to_db(name = "utilities_table_test", relation_type = "local")
+        # read_json to get a vDataFrame with maps
+        vdf_table = read_json(path)
+        # Testing vDataFrame.flat_vmap
+        vdf_table_flat = vdf_table.flat_vmap()
+        all_flat_count = vdf_table_flat.count_percent()
+        assert len(all_flat_count["count"]) == 52
+        assert all_flat_count["count"][-10] == 105.0
+        assert all_flat_count["count"][-15] == 282.0
+        assert '"away_team.managers.0.country.name"' in all_flat_count["index"]
+        assert '"away_team.managers.0.country.id"' in all_flat_count["index"]
+        assert '"away_team.managers.0.nickname"' in all_flat_count["index"]
 
     def test_get_data_types(self):
         result = get_data_types(
@@ -405,6 +472,10 @@ class TestUtilities:
         except:
             pass
         drop(name="public.cities_test")
+
+    def test_readSQL(self):
+        result = readSQL('SELECT 1 AS "verticapy test *+""";')
+        assert result['verticapy test *+"'] == [1]
 
     def test_save_to_query_profile(self):
         model = LinearRegression("model_test",)

@@ -771,11 +771,10 @@ Attributes
             elif dtype == "json":
                 if self.category() == "vmap":
                     transformation = (
-                        "MAPTOSTRING({0} USING PARAMETERS canonical_json=true)::{1}".format(
-                            self.alias, dtype
+                        "MAPTOSTRING({0} USING PARAMETERS canonical_json=true)".format(
+                            self.alias
                         ),
-                        "MAPTOSTRING({} USING PARAMETERS canonical_json=true)::"
-                        + dtype,
+                        "MAPTOSTRING({} USING PARAMETERS canonical_json=true)",
                     )
                 else:
                     transformation = "TO_JSON({0})".format(self.alias), "TO_JSON({})"

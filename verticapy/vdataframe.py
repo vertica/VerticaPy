@@ -222,6 +222,7 @@ vColumns : vColumn
         self._VERTICAPY_VARIABLES_["max_rows"] = -1
         self._VERTICAPY_VARIABLES_["max_columns"] = -1
         self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
+        self._VERTICAPY_VARIABLES_["isflex"] = False
 
         if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
 
@@ -291,6 +292,7 @@ vColumns : vColumn
             table_name = self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''")
             schema = self._VERTICAPY_VARIABLES_["schema"].replace("'", "''")
             isflex = isflextable(table_name=table_name, schema=schema)
+            self._VERTICAPY_VARIABLES_["isflex"] = isflex
             if isflex:
                 columns_dtype = compute_flextable_keys(
                     flex_name='"{}".{}'.format(schema, table_name), usecols=usecols
@@ -320,20 +322,18 @@ vColumns : vColumn
                     ).format(column, column.replace('"', "_"))
                     warnings.warn(warning_message, Warning)
                 category = get_category_from_vertica_type(dtype)
-                if (
-                    ("long varbinary" in dtype.lower())
-                    or ("long varchar" in dtype.lower())
-                ) and (
+                if (dtype.lower()[0:12] in ("long varbina", "long varchar")) and (
                     isflex
                     or isvmap(
                         expr=format_schema_table(schema, table_name), column=column,
                     )
                 ):
                     category = "vmap"
-                    if "(" in dtype:
-                        dtype = "VMAP(" + "(".join(dtype.split("(")[1:])
-                    else:
-                        dtype = "VMAP"
+                    dtype = (
+                        "VMAP(" + "(".join(dtype.split("(")[1:])
+                        if "(" in dtype
+                        else "VMAP"
+                    )
                 column_name = '"' + column.replace('"', "_") + '"'
                 new_vColumn = vColumn(
                     column_name,
@@ -6354,24 +6354,24 @@ vColumns : vColumn
             self.is_colname_in(name)
         ), f"A vColumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue."
         try:
-            ctype = get_data_types(
-                "SELECT {} AS {} FROM {} LIMIT 0".format(expr, name, self.__genSQL__()),
-                name.replace('"', "").replace("'", "''"),
+            query = "SELECT {0} AS {1} FROM {2} LIMIT 0".format(
+                expr, name, self.__genSQL__()
             )
+            ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
         except:
-            try:
-                ctype = get_data_types(
-                    "SELECT {} AS {} FROM {} LIMIT 0".format(
-                        expr, name, self.__genSQL__()
-                    ),
-                    name.replace('"', "").replace("'", "''"),
-                )
-            except:
-                raise QueryError(
-                    f"The expression '{expr}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work."
-                )
-        ctype = ctype if (ctype) else "undefined"
-        category = get_category_from_vertica_type(ctype=ctype)
+            raise QueryError(
+                f"The expression '{expr}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work."
+            )
+        if not (ctype):
+            ctype = "undefined"
+        elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
+            self._VERTICAPY_VARIABLES_["isflex"]
+            or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
+        ):
+            category = "vmap"
+            ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
+        else:
+            category = get_category_from_vertica_type(ctype=ctype)
         all_cols, max_floor = self.get_columns(), 0
         for column in all_cols:
             if (quote_ident(column) in expr) or (
@@ -6781,15 +6781,20 @@ vColumns : vColumn
 
     # ---#
     def flat_vmap(
-        self, vmap_col: list, limit: int = 100,
+        self, vmap_col: list = [], limit: int = 100,
     ):
         """
     ---------------------------------------------------------------------------
     Flatten the selected VMap. A new vDataFrame is returned.
+    
+    \u26A0 Warning : This function might take some time to run and it can make
+                     your vDataFrame less performant. It will call many times
+                     the MAPLOOKUP function which can be slow if your VMAP is
+                     big.
 
     Parameters
     ----------
-    vmap_col: list
+    vmap_col: list, optional
         List of VMap columns to flatten.
     limit: int, optional
         Maximum number of keys to consider for each VMap. Only the most occurent 
@@ -6807,6 +6812,14 @@ vColumns : vColumn
             json_dict={"vmap_col": vmap_col, "limit": limit,},
         )
         # -#
+        if not (vmap_col):
+            vmap_col = []
+            all_cols = self.get_columns()
+            for col in all_cols:
+                if self[col].isvmap():
+                    vmap_col += [col]
+        if not (vmap_col):
+            raise EmptyParameter("No VMAP was detected.")
         if isinstance(vmap_col, str):
             vmap_col = [vmap_col]
         check_types([("vmap_col", vmap_col, [list]), ("limit", limit, [int])])
