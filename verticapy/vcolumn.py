@@ -2562,7 +2562,7 @@ Attributes
         elif cat == "complex":
             fun = "APPLY_COUNT_ELEMENTS"
         else:
-            fun = "LENTGH"
+            fun = "LENGTH"
         elem_to_select = "{0}({1})".format(fun, self.alias,)
         init_transf = "{0}({1})".format(fun, self.init_transf,)
         new_alias = quote_ident(self.alias[1:-1] + ".length")

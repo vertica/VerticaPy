@@ -125,6 +125,7 @@ class TestUtilities:
         assert vdf2["x"].sum() == 1
         # testing apply_fun - len
         vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7]]}).to_vdf()
+        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
         vdf2["x"].apply_fun(func="len")
         assert vdf2["x"].sum() == 7
         # testing apply_fun - find
@@ -324,6 +325,9 @@ class TestUtilities:
         assert home_managers_keys[0][1] == home_managers_keys[1][1] == 282
         # Testing vDataFrame from Flextable
         vdf = vDataFrame("v_temp_schema.utilities_flex_test")
+        # Testing vDataFrame.get_len
+        vdf["away_team.managers"].get_len().avg() == pytest.approx(3.36725663716814)
+        vdf["stadium.name"].get_len().avg() == pytest.approx(14.5809523809524)
         # Testing vDataFrame[].isvmap
         assert vdf["away_team.managers"].isvmap()
         # Testing astype: VMAP to str
