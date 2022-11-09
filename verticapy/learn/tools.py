@@ -83,18 +83,29 @@ int
     1 if the model exists and is native.
     2 if the model exists and is not native.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="does_model_exist",
+        path="learn.tools",
+        json_dict={
+            "name": name,
+            "raise_error": raise_error,
+            "return_model_type": return_model_type,
+        },
+    )
+    # -#
     check_types([("name", name, [str])])
     model_type = None
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], model_name[1:-1]
     result = executeSQL(
-        "SELECT * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1",
+        "SELECT /*+LABEL('learn.tools.does_model_exist')*/ * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1",
         method="fetchrow",
         print_time_sql=False,
     )
     if result:
         result = executeSQL(
-            "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(
+            "SELECT /*+LABEL('learn.tools.does_model_exist')*/ model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(
                 quote_ident(name)
             ),
             method="fetchrow",
@@ -105,7 +116,7 @@ int
             result = 2
     if not (result):
         result = executeSQL(
-            "SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(
+            "SELECT /*+LABEL('learn.tools.does_model_exist')*/ model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(
                 model_name, schema
             ),
             method="fetchrow",
@@ -117,7 +128,7 @@ int
         else:
             result = 0
     if raise_error and result:
-        raise NameError("The model '{}' already exists !".format(name))
+        raise NameError(f"The model '{name}' already exists !")
     if return_model_type:
         return model_type
     return result
@@ -146,6 +157,17 @@ Returns
 model
     The model.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="load_model",
+        path="learn.tools",
+        json_dict={
+            "name": name,
+            "input_relation": input_relation,
+            "test_relation": test_relation,
+        },
+    )
+    # -#
     check_types(
         [
             ("name", name, [str]),
@@ -156,10 +178,10 @@ model
     does_exist = does_model_exist(name=name, raise_error=False)
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
-    assert does_exist, NameError("The model '{}' doesn't exist.".format(name))
+    assert does_exist, NameError(f"The model '{name}' doesn't exist.")
     if does_exist == 2:
         result = executeSQL(
-            "SELECT attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = LOWER('{}')".format(
+            "SELECT /*+LABEL('learn.tools.load_model')*/ attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = LOWER('{}')".format(
                 quote_ident(name.lower())
             ),
             method="fetchall",
@@ -169,10 +191,10 @@ model
         for elem in result:
             ldic = {}
             try:
-                exec("result_tmp = {}".format(elem[1]), globals(), ldic)
+                exec("result_tmp = {0}".format(elem[1]), globals(), ldic)
             except:
                 exec(
-                    "result_tmp = '{}'".format(elem[1].replace("'", "''")),
+                    "result_tmp = '{0}'".format(elem[1].replace("'", "''")),
                     globals(),
                     ldic,
                 )
@@ -313,7 +335,7 @@ model
         )
         if model_type.lower() == "kmeans":
             info = executeSQL(
-                "SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '"
+                "SELECT /*+LABEL('learn.tools.load_model')*/ GET_MODEL_SUMMARY (USING PARAMETERS model_name = '"
                 + name
                 + "')",
                 method="fetchfirstelem",
@@ -335,7 +357,7 @@ model
             return model
         else:
             info = executeSQL(
-                "SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '"
+                "SELECT /*+LABEL('learn.tools.load_model')*/ GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '"
                 + name
                 + "', attr_name = 'call_string')",
                 method="fetchfirstelem",
@@ -640,7 +662,7 @@ model
         if model_type in ("naive_bayes", "rf_classifier", "xgb_classifier"):
             try:
                 classes = executeSQL(
-                    "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
+                    "SELECT /*+LABEL('learn.tools.load_model')*/ DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
                         model.y, model.input_relation, model.y
                     ),
                     method="fetchall",

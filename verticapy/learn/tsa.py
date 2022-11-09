@@ -55,7 +55,7 @@ from typing import Union
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
-from verticapy import vDataFrame
+from verticapy import vDataFrame, save_to_query_profile
 from verticapy.plot import gen_colors
 from verticapy.learn.tools import *
 
@@ -120,6 +120,27 @@ papprox_ma: int, optional
         max_pik: int = 100,
         papprox_ma: int = 200,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="SARIMAX",
+            path="learn.tsa",
+            json_dict={
+                "name": name,
+                "p": p,
+                "d": d,
+                "q": q,
+                "P": P,
+                "D": D,
+                "Q": Q,
+                "s": s,
+                "tol": tol,
+                "max_iter": max_iter,
+                "solver": solver,
+                "max_pik": max_pik,
+                "papprox_ma": papprox_ma,
+            },
+        )
+        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "SARIMAX", name
         self.set_params(
@@ -383,7 +404,9 @@ papprox_ma: int, optional
             and self.parameters["s"] == 0
             and not (self.exogenous)
         ):
-            query = "SELECT AVG({}) FROM {}".format(self.y, self.input_relation)
+            query = "SELECT /*+LABEL('learn.tsa.SARIMAX.fit')*/ AVG({}) FROM {}".format(
+                self.y, self.input_relation
+            )
             self.ma_avg_ = executeSQL(
                 query, method="fetchfirstelem", print_time_sql=False
             )
@@ -425,7 +448,7 @@ papprox_ma: int, optional
             )
             view_name = gen_tmp_name(schema=schema, name="linear_reg")
             drop(view_name, method="view")
-            query = "CREATE VIEW {} AS SELECT * FROM {}".format(
+            query = "CREATE VIEW {} AS SELECT/*+LABEL('learn.tsa.SARIMAX.fit')*/ * FROM {}".format(
                 view_name,
                 relation.format(self.input_relation)
                 .replace("[VerticaPy_ts]", self.ts)
@@ -543,7 +566,7 @@ papprox_ma: int, optional
                 transform_relation = transform_relation.replace(
                     "[X{}]".format(idx), elem
                 )
-            query = "SELECT COUNT(*), AVG({}) FROM {}".format(
+            query = "SELECT /*+LABEL('learn.tsa.SARIMAX.fit')*/ COUNT(*), AVG({}) FROM {}".format(
                 self.y, transform_relation.format(self.input_relation)
             )
             result = executeSQL(query, method="fetchrow", print_time_sql=False)
@@ -570,7 +593,7 @@ papprox_ma: int, optional
             for idx, elem in enumerate(X):
                 tmp_relation = tmp_relation.replace("[X{}]".format(idx), elem)
             drop(view_name, method="view")
-            query = "CREATE VIEW {} AS SELECT * FROM {}".format(
+            query = "CREATE VIEW {} AS SELECT /*+LABEL('learn.tsa.SARIMAX.fit')*/ * FROM {}".format(
                 view_name,
                 tmp_relation.format(self.input_relation)
                 .replace("[VerticaPy_ts]", self.ts)
@@ -1048,11 +1071,11 @@ papprox_ma: int, optional
         )
         relation = vdf.__genSQL__()
         for i in range(nlead):
-            query = "SELECT ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
+            query = "SELECT /*+LABEL('learn.tsa.SARIMAX.predict')*/ ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
             )
             deltat = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
-            query = "SELECT (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
+            query = "SELECT /*+LABEL('learn.tsa.SARIMAX.predict')*/ (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
                 ts, deltat, relation
             )
             next_t = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
@@ -1073,7 +1096,7 @@ papprox_ma: int, optional
                 relation,
                 new_line,
             )
-            query = "SELECT {} FROM {} ORDER BY {} DESC LIMIT 1".format(
+            query = "SELECT /*+LABEL('learn.tsa.SARIMAX.predict')*/ {} FROM {} ORDER BY {} DESC LIMIT 1".format(
                 self.deploySQL()
                 .replace("[VerticaPy_y]", y)
                 .replace("[VerticaPy_ts]", ts),
@@ -1141,6 +1164,19 @@ solver: str, optional
         max_iter: int = 1000,
         solver: str = "Newton",
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="VAR",
+            path="learn.tsa",
+            json_dict={
+                "name": name,
+                "p": p,
+                "tol": tol,
+                "max_iter": max_iter,
+                "solver": solver,
+            },
+        )
+        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "VAR", name
         assert p > 0, ParameterError(
@@ -1333,7 +1369,9 @@ solver: str, optional
         view_name = gen_tmp_name(schema=schema, name="linear_reg")
         drop(view_name, method="view")
         try:
-            query = "CREATE VIEW {} AS SELECT * FROM {}".format(view_name, relation)
+            query = "CREATE VIEW {} AS SELECT /*+LABEL('learn.tsa.VAR.fit')*/ * FROM {}".format(
+                view_name, relation
+            )
             executeSQL(query, print_time_sql=False)
             self.coef_ = []
             for elem in X:
@@ -1736,11 +1774,11 @@ solver: str, optional
         columns = vdf.get_columns() + all_pred
         relation = vdf.__genSQL__()
         for i in range(nlead):
-            query = "SELECT ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
+            query = "SELECT /*+LABEL('learn.tsa.VAR.predict')*/ ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
             )
             deltat = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
-            query = "SELECT (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
+            query = "SELECT /*+LABEL('learn.tsa.VAR.predict')*/ (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
                 ts, deltat, relation
             )
             next_t = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
@@ -1761,7 +1799,7 @@ solver: str, optional
                 relation,
                 new_line,
             )
-            query = "SELECT {} FROM {} ORDER BY {} DESC LIMIT 1".format(
+            query = "SELECT /*+LABEL('learn.tsa.VAR.predict')*/ {} FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ", ".join(self.deploySQL()), transform_relation.format(relation_tmp), ts
             )
             prediction = executeSQL(query, method="fetchrow", print_time_sql=False)

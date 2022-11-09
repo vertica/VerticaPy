@@ -92,6 +92,14 @@ Returns
 vDataFrame
     Generated dataset.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="gen_dataset",
+        path="datasets",
+        json_dict={"features_ranges": features_ranges, "nrows": nrows,},
+    )
+    # -#
+
     version(condition=[9, 3, 0])
     check_types([("features_ranges", features_ranges, [dict]), ("nrows", nrows, [int])])
 
@@ -194,6 +202,14 @@ Returns
 vDataFrame
     generated dataset.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="gen_meshgrid",
+        path="datasets",
+        json_dict={"features_ranges": features_ranges,},
+    )
+    # -#
+
     check_types([("features_ranges", features_ranges, [dict])])
 
     sql = []
@@ -283,6 +299,14 @@ def load_dataset(
     """
     General Function to ingest a dataset
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="load_" + dataset_name,
+        path="datasets",
+        json_dict={"schema": schema, "name": name,},
+    )
+    # -#
+
     check_types([("schema", schema, [str]), ("name", name, [str])])
 
     try:

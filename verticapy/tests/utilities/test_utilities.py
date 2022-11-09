@@ -24,6 +24,7 @@ from verticapy.utilities import *
 from verticapy.datasets import load_cities, load_titanic, load_world, load_iris
 from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
+from verticapy.learn.linear_model import LinearRegression
 
 set_option("print_info", False)
 
@@ -394,6 +395,96 @@ class TestUtilities:
         except:
             pass
         drop(name="public.cities_test")
+
+    def test_save_to_query_profile(self):
+        model = LinearRegression("model_test",)
+        iris = load_iris()
+        q = save_to_query_profile(
+            name="test",
+            path="test_path.test_value",
+            json_dict={
+                "X0": 1103,
+                "X1": None,
+                "X2": True,
+                "X3": False,
+                "X4": ["x0", "x1", "x2", "x3",],
+                "X5": {"Y0": 3, 1: ["y0", "y1"], None: 4,},
+                "vdf": iris,
+                "model": model,
+            },
+            query_label="verticapy_test_utilities_json",
+            return_query=True,
+            add_identifier=False,
+        )
+        assert (
+            q
+            == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
+        )
+        # with identifier
+        q2 = save_to_query_profile(
+            name="test",
+            path="test_path.test_value",
+            json_dict={
+                "X0": 1103,
+                "X1": None,
+                "X2": True,
+                "X3": False,
+                "X4": ["x0", "x1", "x2", "x3",],
+                "X5": {"Y0": 3, 1: ["y0", "y1"], None: 4,},
+                "vdf": iris,
+                "model": model,
+            },
+            query_label="verticapy_test_utilities_json",
+            return_query=True,
+            add_identifier=True,
+        )
+        assert (
+            q2
+            == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "verticapy_id": "'
+            + str(verticapy.options["identifier"])
+            + '", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
+        )
+        current_cursor().execute(
+            "SELECT MAPKEYS(MAPJSONEXTRACTOR(SUBSTRING('{0}', 53, 241))) OVER ();".format(
+                q.replace("'", "''")
+            )
+        )
+        all_keys = current_cursor().fetchall()
+        all_keys = [elem[0] for elem in all_keys]
+        assert "model" in all_keys
+        assert "vdf" in all_keys
+        assert "verticapy_fname" in all_keys
+        assert "verticapy_fpath" in all_keys
+        assert "X0" in all_keys
+        assert "X1" in all_keys
+        assert "X2" in all_keys
+        assert "X3" in all_keys
+        assert "X4" in all_keys
+        assert "X5.1" in all_keys
+        assert "X5.None" in all_keys
+        assert "X5.Y0" in all_keys
+        save_to_query_profile(
+            name="test",
+            path="test_path.test_value",
+            json_dict={
+                "X0": 1103,
+                "X1": None,
+                "X2": True,
+                "X3": False,
+                "X4": ["x0", "x1", "x2", "x3",],
+                "X5": {"Y0": 3, 1: ["y0", "y1"], None: 4,},
+                "vdf": iris,
+                "model": model,
+            },
+            query_label="verticapy_test_utilities_json",
+            return_query=False,
+            add_identifier=False,
+        )
+        current_cursor().execute(
+            "SELECT query FROM v_monitor.query_profiles WHERE identifier = 'verticapy_test_utilities_json' LIMIT 1;"
+        )
+        q3 = current_cursor().fetchone()[0]
+        assert q == q3
 
     def test_tablesample(self):
         result = tablesample(

@@ -73,6 +73,15 @@ steps: list
 	"""
 
     def __init__(self, steps: list):
+        # Saving information to the query profile table
+        try:
+            model_steps = [item[1].type for item in steps]
+        except:
+            model_steps = []
+        save_to_query_profile(
+            name="Pipeline", path="learn.pipeline", json_dict={"steps": model_steps,},
+        )
+        # -#
         check_types([("steps", steps, [list])])
         self.type = "Pipeline"
         self.steps = []

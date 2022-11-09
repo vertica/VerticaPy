@@ -170,6 +170,30 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="bayesian_search_cv",
+        path="learn.model_selection",
+        json_dict={
+            "estimator": estimator,
+            "input_relation": input_relation,
+            "X": X,
+            "y": y,
+            "metric": metric,
+            "cv": cv,
+            "pos_label": pos_label,
+            "cutoff": cutoff,
+            "param_grid": param_grid,
+            "random_nbins": random_nbins,
+            "bayesian_nbins": bayesian_nbins,
+            "random_grid": random_grid,
+            "lmax": lmax,
+            "nrows": nrows,
+            "k_tops": k_tops,
+            "RFmodel_params": RFmodel_params,
+        },
+    )
+    # -#
     if print_info:
         print(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
         print(
@@ -222,7 +246,7 @@ tablesample
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
     drop(relation, method="table")
-    executeSQL("CREATE TABLE {} AS {}".format(relation, result), print_time_sql=False)
+    executeSQL(f"CREATE TABLE {relation} AS {result}", print_time_sql=False)
     if print_info:
         print(
             f"\033[1m\033[4mStep 2 - Fitting the RF model with the hyperparameters data\033[0m\033[0m\n"
@@ -358,6 +382,21 @@ Returns
 int
 	the KMeans K
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="best_k",
+        path="learn.model_selection",
+        json_dict={
+            "input_relation": input_relation,
+            "X": X,
+            "n_cluster": n_cluster,
+            "init": init,
+            "max_iter": max_iter,
+            "tol": tol,
+            "elbow_score_stop": elbow_score_stop,
+        },
+    )
+    # -#
     if isinstance(X, str):
         X = [X]
     check_types(
@@ -483,6 +522,24 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="cross_validate",
+        path="learn.model_selection",
+        json_dict={
+            "estimator": estimator,
+            "input_relation": input_relation,
+            "X": X,
+            "y": y,
+            "metric": metric,
+            "cv": cv,
+            "pos_label": pos_label,
+            "cutoff": cutoff,
+            "show_time": show_time,
+            "training_score": training_score,
+        },
+    )
+    # -#
     if isinstance(X, str):
         X = [X]
     check_types(
@@ -753,6 +810,23 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="elbow",
+        path="learn.model_selection",
+        json_dict={
+            **{
+                "input_relation": input_relation,
+                "X": X,
+                "n_cluster": n_cluster,
+                "init": init,
+                "max_iter": max_iter,
+                "tol": tol,
+            },
+            **style_kwds,
+        },
+    )
+    # -#
     if isinstance(X, str):
         X = [X]
     check_types(
@@ -881,6 +955,21 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="enet_search_cv",
+        path="learn.model_selection",
+        json_dict={
+            "input_relation": input_relation,
+            "X": X,
+            "y": y,
+            "metric": metric,
+            "cv": cv,
+            "estimator_type": estimator_type,
+            "cutoff": cutoff,
+        },
+    )
+    # -#
     check_types([("estimator_type", estimator_type, ["logit", "enet", "auto"])])
     param_grid = parameter_grid(
         {
@@ -966,6 +1055,19 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="gen_params_grid",
+        path="learn.model_selection",
+        json_dict={
+            "estimator": estimator,
+            "nbins": nbins,
+            "max_nfeatures": max_nfeatures,
+            "lmax": lmax,
+            "optimized_grid": optimized_grid,
+        },
+    )
+    # -#
     from verticapy.learn.cluster import KMeans, BisectingKMeans, DBSCAN
     from verticapy.learn.decomposition import PCA, SVD
     from verticapy.learn.ensemble import (
@@ -1567,6 +1669,24 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="grid_search_cv",
+        path="learn.model_selection",
+        json_dict={
+            "estimator": estimator,
+            "input_relation": input_relation,
+            "X": X,
+            "y": y,
+            "metric": metric,
+            "cv": cv,
+            "pos_label": pos_label,
+            "cutoff": cutoff,
+            "training_score": training_score,
+            "skip_error": skip_error,
+        },
+    )
+    # -#
     if isinstance(X, str):
         X = [X]
     check_types(
@@ -1804,6 +1924,28 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="learning_curve",
+        path="learn.model_selection",
+        json_dict={
+            **{
+                "estimator": estimator,
+                "input_relation": input_relation,
+                "X": X,
+                "y": y,
+                "sizes": sizes,
+                "method": method,
+                "metric": metric,
+                "cv": cv,
+                "pos_label": pos_label,
+                "cutoff": cutoff,
+                "std_coeff": std_coeff,
+            },
+            **style_kwds,
+        },
+    )
+    # -#
     check_types([("method", method, ["efficiency", "performance", "scalability"])])
     from verticapy.plot import range_curve
 
@@ -1979,6 +2121,22 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="lift_chart",
+        path="learn.model_selection",
+        json_dict={
+            **{
+                "y_true": y_true,
+                "y_score": y_score,
+                "input_relation": input_relation,
+                "pos_label": pos_label,
+                "nbins": nbins,
+            },
+            **style_kwds,
+        },
+    )
+    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -1988,7 +2146,7 @@ tablesample
         ]
     )
     version(condition=[8, 0, 0])
-    query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
+    query = "SELECT /*+LABEL('learn.model_selection.lift_chart')*/ LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(
         nbins,
         y_true,
@@ -2068,6 +2226,13 @@ Returns
 list of dict
     List of the different combinations.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="parameter_grid",
+        path="learn.model_selection",
+        json_dict={"param_grid": param_grid,},
+    )
+    # -#
     check_types([("param_grid", param_grid, [dict])])
     return [
         dict(zip(param_grid.keys(), values)) for values in product(*param_grid.values())
@@ -2112,6 +2277,16 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="plot_acf_pacf",
+        path="learn.model_selection",
+        json_dict={
+            **{"vdf": vdf, "column": column, "ts": ts, "by": by, "p": p,},
+            **style_kwds,
+        },
+    )
+    # -#
     if isinstance(by, str):
         by = [by]
     check_types(
@@ -2227,6 +2402,23 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="prc_curve",
+        path="learn.model_selection",
+        json_dict={
+            **{
+                "y_true": y_true,
+                "y_score": y_score,
+                "input_relation": input_relation,
+                "pos_label": pos_label,
+                "nbins": nbins,
+                "auc_prc": auc_prc,
+            },
+            **style_kwds,
+        },
+    )
+    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -2239,7 +2431,7 @@ tablesample
     if nbins < 0:
         nbins = 999999
     version(condition=[9, 1, 0])
-    query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
+    query = "SELECT /*+LABEL('learn.model_selection.prc_curve')*/ PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(
         nbins,
         y_true,
@@ -2383,6 +2575,25 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="randomized_features_search_cv",
+        path="learn.model_selection",
+        json_dict={
+            "estimator": estimator,
+            "input_relation": input_relation,
+            "X": X,
+            "y": y,
+            "metric": metric,
+            "cv": cv,
+            "pos_label": pos_label,
+            "cutoff": cutoff,
+            "training_score": training_score,
+            "comb_limit": comb_limit,
+            "skip_error": skip_error,
+        },
+    )
+    # -#
     if isinstance(X, str):
         X = [X]
     check_types(
@@ -2606,6 +2817,25 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="randomized_search_cv",
+        path="learn.model_selection",
+        json_dict={
+            "estimator": estimator,
+            "input_relation": input_relation,
+            "X": X,
+            "y": y,
+            "metric": metric,
+            "cv": cv,
+            "pos_label": pos_label,
+            "cutoff": cutoff,
+            "nbins": nbins,
+            "lmax": lmax,
+            "optimized_grid": optimized_grid,
+        },
+    )
+    # -#
     param_grid = gen_params_grid(estimator, nbins, len(X), lmax, optimized_grid)
     return grid_search_cv(
         estimator,
@@ -2676,6 +2906,25 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="roc_curve",
+        path="learn.model_selection",
+        json_dict={
+            **{
+                "y_true": y_true,
+                "y_score": y_score,
+                "input_relation": input_relation,
+                "pos_label": pos_label,
+                "auc_roc": auc_roc,
+                "nbins": nbins,
+                "best_threshold": best_threshold,
+                "cutoff_curve": cutoff_curve,
+            },
+            **style_kwds,
+        },
+    )
+    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -2690,7 +2939,7 @@ tablesample
     if nbins < 0:
         nbins = 999999
     version(condition=[8, 0, 0])
-    query = "SELECT decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
+    query = "SELECT /*+LABEL('learn.model_selection.roc_curve')*/ decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
     query = query.format(
         nbins,
         y_true,
@@ -2866,6 +3115,28 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="stepwise",
+        path="learn.model_selection",
+        json_dict={
+            **{
+                "estimator": estimator,
+                "input_relation": input_relation,
+                "X": X,
+                "y": y,
+                "criterion": criterion,
+                "direction": direction,
+                "max_steps": max_steps,
+                "criterion_threshold": criterion_threshold,
+                "drop_final_estimator": drop_final_estimator,
+                "x_order": x_order,
+                "show": show,
+            },
+            **style_kwds,
+        },
+    )
+    # -#
     from verticapy.learn.metrics import aic_bic
 
     if isinstance(X, str):
@@ -2891,7 +3162,9 @@ tablesample
         else input_relation.__genSQL__()
     )
     avg = executeSQL(
-        f"SELECT AVG({y}) FROM {table}", method="fetchfirstelem", print_time_sql=False
+        f"SELECT /*+LABEL('learn.model_selection.stepwise')*/ AVG({y}) FROM {table}",
+        method="fetchfirstelem",
+        print_time_sql=False,
     )
     k = 0 if criterion == "aic" else 1
     if x_order == "random":
@@ -3108,6 +3381,28 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="validation_curve",
+        path="learn.model_selection",
+        json_dict={
+            **{
+                "estimator": estimator,
+                "param_name": param_name,
+                "param_range": param_range,
+                "input_relation": input_relation,
+                "X": X,
+                "y": y,
+                "metric": metric,
+                "cv": cv,
+                "pos_label": pos_label,
+                "cutoff": cutoff,
+                "std_coeff": std_coeff,
+            },
+            **style_kwds,
+        },
+    )
+    # -#
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
         param_range = [param_range]
     from verticapy.plot import range_curve

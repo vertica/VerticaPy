@@ -46,7 +46,7 @@
 # data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.10.1"
+__version__ = "0.10.2"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = (
@@ -74,6 +74,9 @@ import verticapy.stats
 # Learn
 import verticapy.learn
 
+# Other Modules
+import uuid
+
 verticapy.options = {
     "cache": True,
     "colors": [],
@@ -82,6 +85,7 @@ verticapy.options = {
     "interactive": False,
     "count_on": False,
     "footer_on": True,
+    "identifier": str(uuid.uuid1()).replace("-", ""),
     "max_columns": 50,
     "max_rows": 100,
     "mode": None,
