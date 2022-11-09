@@ -171,6 +171,7 @@ Attributes
                     elem_to_select, new_alias, self.parent.__genSQL__(),
                 )
                 vcol = vDataFrameSQL(query)[new_alias]
+                vcol.transformations[-1] = (new_alias, self.ctype(), self.category())
                 vcol.init_transf = "{0}[{1}:{2}]".format(
                     self.init_transf, index_start_str, index_stop_str
                 ).replace("{}", self.init_transf)
@@ -628,6 +629,7 @@ Attributes
                         "avg",
                         "cbrt",
                         "ceil",
+                        "contain",
                         "count",
                         "cos",
                         "cosh",

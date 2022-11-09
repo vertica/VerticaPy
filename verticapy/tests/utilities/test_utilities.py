@@ -248,6 +248,7 @@ class TestUtilities:
         assert '"away_team.managers.0.country.name"' in all_flat_count["index"]
         assert '"away_team.managers.0.country.id"' in all_flat_count["index"]
         assert '"away_team.managers.0.nickname"' in all_flat_count["index"]
+        drop("v_temp_schema.utilities_flex_test")
 
     def test_get_data_types(self):
         result = get_data_types(

@@ -599,11 +599,11 @@ vDataFrame
         name,
         {
             "away_score": "int",
-            "away_team": 'Row("away_team_gender" varchar, "away_team_group" varchar, "away_team_id" int, "away_team_name" varchar, "country" Row("id" int, "name" varchar))',
+            "away_team": 'Row("away_team_gender" varchar, "away_team_group" varchar, "away_team_id" int, "away_team_name" varchar, "country" Row("id" int, "name" varchar), "managers" Array[Row("country" Row("id" int, "name" varchar), "dob" date, "id" int, "name" varchar, "nickname" varchar)])',
             "competition": 'Row("competition_id" int, "competition_name" varchar, "country_name" varchar)',
             "competition_stage": 'Row("id" int, "name" varchar)',
             "home_score": "int",
-            "home_team": 'Row("country" Row("id" int, "name" varchar), "home_team_gender" varchar, "home_team_group" varchar, "home_team_id" int, "home_team_name" varchar)',
+            "home_team": 'Row("country" Row("id" int, "name" varchar), "home_team_gender" varchar, "home_team_group" varchar, "home_team_id" int, "home_team_name" varchar, "managers" Array[Row("country" Row("id" int, "name" varchar), "dob" date, "id" int, "name" varchar, "nickname" varchar)])',
             "kick_off": "time",
             "last_updated": "date",
             "match_date": "date",
