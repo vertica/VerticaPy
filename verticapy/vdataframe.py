@@ -6787,10 +6787,10 @@ vColumns : vColumn
     ---------------------------------------------------------------------------
     Flatten the selected VMap. A new vDataFrame is returned.
     
-    \u26A0 Warning : This function might take some time to run and it can make
-                     your vDataFrame less performant. It will call many times
-                     the MAPLOOKUP function which can be slow if your VMAP is
-                     big.
+    \u26A0 Warning : This function might have a long runtime and can make your
+                     vDataFrame less performant. It makes many calls to the
+                     MAPLOOKUP function, which can be slow if your VMap is
+                     large.
 
     Parameters
     ----------
