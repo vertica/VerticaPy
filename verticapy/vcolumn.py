@@ -2556,6 +2556,7 @@ Attributes
     vColumn
         vColumn that includes the length of each element.
         """
+        cat = self.category()
         if cat == "vmap":
             fun = "MAPSIZE"
         elif cat == "complex":

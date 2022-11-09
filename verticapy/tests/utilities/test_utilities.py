@@ -23,7 +23,13 @@ import vertica_python, verticapy
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
-from verticapy.datasets import load_cities, load_titanic, load_world, load_iris
+from verticapy.datasets import (
+    load_cities,
+    load_titanic,
+    load_world,
+    load_iris,
+    load_laliga,
+)
 from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
 from verticapy.learn.linear_model import LinearRegression
@@ -36,6 +42,13 @@ def cities_vd():
     cities = load_cities()
     yield cities
     drop(name="public.cities")
+
+
+@pytest.fixture(scope="module")
+def laliga_vd():
+    laliga = load_laliga()
+    yield laliga
+    drop(name="public.laliga")
 
 
 @pytest.fixture(scope="module")
@@ -53,6 +66,106 @@ def world_vd():
 
 
 class TestUtilities:
+    def test_complex_elements(self, laliga_vd):
+        vdf = laliga_vd.copy()
+        vdf["away_team_managers"] = vdf["away_team"]["managers"]
+        vdf["home_team_managers"] = vdf["home_team"]["managers"]
+        vdf["away_team_managers"].transformations[-1] = (
+            '"away_team"."managers"',
+            "Array",
+            "complex",
+        )  # doing it manually because the vertica-python client does not support cdt yet
+        vdf["home_team_managers"].transformations[-1] = (
+            '"home_team"."managers"',
+            "Array",
+            "complex",
+        )
+        # testing isarray
+        assert vdf["away_team_managers"].isarray()
+        assert vdf["home_team_managers"].isarray()
+        # testing concatenation
+        assert (
+            vdf["away_team_managers"] + vdf["home_team_managers"]
+            == 'ARRAY_CAT("away_team_managers", "home_team_managers")'
+        )
+        vdf["all_managers"] = vdf["away_team_managers"] + vdf["home_team_managers"]
+        # testing get_item and set_item
+        vdf["id_test"] = vdf["away_team_managers"][0]["Country"]["id"]
+        assert vdf["id_test"].avg() == pytest.approx(181.429078014184)
+        assert vdf["away_team_managers"][0:1][0:1][0:1][0]["id"].avg() == pytest.approx(
+            589.698581560284
+        )
+        # testing apply_fun - count
+        vdf["all_managers"].transformations[-1] = (
+            'ARRAY_CAT("away_team_managers", "home_team_managers")',
+            "Array",
+            "complex",
+        )
+        assert vdf["all_managers"].apply_fun(func="length")
+        assert vdf["all_managers"].max() == 2.0
+        # testing apply_fun - min
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="min")
+        assert vdf2["x"].sum() == 12
+        # testing apply_fun - max
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="max")
+        assert vdf2["x"].sum() == 18
+        # testing apply_fun - avg
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="avg")
+        assert vdf2["x"].sum() == 15
+        # testing apply_fun - sum
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="sum")
+        assert vdf2["x"].sum() == 45
+        # testing apply_fun - contain
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="contain", x=1)
+        assert vdf2["x"].sum() == 1
+        # testing apply_fun - len
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7]]}).to_vdf()
+        vdf2["x"].apply_fun(func="len")
+        assert vdf2["x"].sum() == 7
+        # testing apply_fun - find
+        vdf2 = tablesample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="find", x=2)
+        assert vdf2["x"].sum() == 0
+        # testing string to array
+        vdf2 = tablesample(
+            {"x": ["[1, -2, 3]", "[2,    5,    6]", "[7,   8]"]}
+        ).to_vdf()
+        vdf2["x"].astype("array")
+        vdf2["x"].apply_fun(func="len")
+        assert vdf2["x"].sum() == 8
+        # tablesample with ROW and arrays
+        vdf2 = tablesample(
+            {
+                "x": [[1, 2, 3], [4, 5, 6], [7]],
+                "y": [{"a": 1, "b": 2}, {"a": 2, "b": 3}, {"a": 4, "b": 5}],
+            }
+        ).to_vdf()
+        assert vdf2["y"]["a"].sum() == 7
+        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        vdf2["x"].apply_fun(func="len")
+        assert vdf2["x"].sum() == 7.0
+        # Complex to JSON
+        vdf2 = tablesample(
+            {
+                "x": [[1, 2, 3], [4, 5, 6], [7]],
+                "y": [{"a": 1, "b": 2}, {"a": 2, "b": 3}, {"a": 4, "b": 5}],
+            }
+        ).to_vdf()
+        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        vdf2["x"].astype("json")
+        vdf2["y"].astype("json")
+        assert vdf2["x"].transformations[-1][0] == "TO_JSON({})"
+        assert vdf2["y"].transformations[-1][0] == "TO_JSON({})"
+        # Test get_len
+        vdf2 = tablesample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        assert vdf2["x"].get_len().sum() == 9
+
     def test_create_schema_table(self):
         drop("verticapy_test_create_schema", method="schema")
         create_schema("verticapy_test_create_schema")
