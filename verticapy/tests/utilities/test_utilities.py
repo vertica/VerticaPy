@@ -352,7 +352,7 @@ class TestUtilities:
             vdf["home_team.managers.0.country.id"].transformations[-1][0]
             == "MAPLOOKUP(\"home_team.managers\", '0.country.id')"
         )
-        # Materialising the flex table
+        # Materialising the flex table - TODO
         # vdf_table = vdf.to_db(name = "utilities_table_test", relation_type = "local")
         # read_json to get a vDataFrame with maps
         vdf_table = read_json(path)
@@ -479,26 +479,21 @@ class TestUtilities:
         drop("public.titanic_verticapy_test_json", method="table")
         path = (
             os.path.dirname(verticapy.__file__)
-            + "/tests/utilities/titanic-passengers.json"
+            + "/tests/utilities/"
         )
         result = read_json(
-            path, table_name="titanic_verticapy_test_json", schema="public"
+            path + "titanic-passengers.json", table_name="titanic_verticapy_test_json", schema="public"
         )
         assert result.shape() == (891, 15)
         drop("public.titanic_verticapy_test_json", method="table")
-        result = read_json(path, table_name="titanic_verticapy_test_json")
+        result = read_json(path + "titanic-passengers.json", table_name="titanic_verticapy_test_json")
         assert result.shape() == (891, 15)
         drop("public.titanic_verticapy_test_json", method="table")
+        result = read_json(path + "json_many/*.json", table_name="titanic_verticapy_test_json")
+        assert result.shape() == (1782, 15)
+        drop("public.titanic_verticapy_test_json", method="table")
         # TODO
-        # test the param gen_tmp_table_name
-        # test the param start_point
-        # test the param record_terminator
-        # test the param suppress_nonalphanumeric_key_chars
-        # test the param reject_on_materialized_type_error
-        # test the param reject_on_duplicate
-        # test the param reject_on_empty_key
-        # test on multiple file
-        # test on archive
+        # test on archives
 
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
@@ -545,10 +540,7 @@ class TestUtilities:
         assert result.get_columns() == ['"ucol{}"'.format(i) for i in range(14)]
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # with dtypes
-        result = read_csv(
-            path,
-            table_name="titanic_verticapy_test_csv",
-            dtype={
+        dtype = {
                 "pclass": "int",
                 "survived": "bool",
                 "name": "varchar",
@@ -563,7 +555,11 @@ class TestUtilities:
                 "boat": "varchar",
                 "body": "varchar",
                 "home.dest": "varchar",
-            },
+            }
+        result = read_csv(
+            path,
+            table_name="titanic_verticapy_test_csv",
+            dtype=dtype,
         )
         assert result.shape() == (1234, 14)
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
@@ -573,10 +569,18 @@ class TestUtilities:
         )
         assert result[0][0:50] == 'CREATE TABLE "public"."titanic_verticapy_test_csv"'
         assert result[1][0:42] == 'COPY "public"."titanic_verticapy_test_csv"'
+        # Multiple files
+        path = os.path.dirname(verticapy.__file__) + "/tests/utilities/"
+        result = read_csv(
+            path + "csv_many/*.csv",
+            table_name="titanic_verticapy_test_csv",
+            dtype=dtype,
+        )
+        assert result.shape() == (1870, 14)
+        drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
+
         # TODO
-        # test the param gen_tmp_table_name
-        # test on multiple files
-        # test on archive
+        # test on archives
 
     def test_read_shp(self, cities_vd):
         drop(name="public.cities_test")
