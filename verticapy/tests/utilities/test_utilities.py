@@ -66,7 +66,6 @@ def world_vd():
 
 
 class TestUtilities:
-
     @pytest.mark.skip(reason="this test will be valid for Vertica v12.0.1")
     def test_complex_elements(self, laliga_vd):
         vdf = laliga_vd.copy()

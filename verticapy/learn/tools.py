@@ -649,7 +649,7 @@ model
             "pca",
             "svd",
             "one_hot_encoder_fit",
-            "bisectingkmeans",
+            "bisecting_kmeans",
             "iforest",
             "normalizer",
         ):
@@ -657,7 +657,10 @@ model
             model.y = info.split(",")[2].replace("'", "").replace("\\", "")
         else:
             start = 2
-        model.X = info.split(",")[start : len(info.split(","))]
+        end = len(info.split(","))
+        if model_type in ("bisecting_kmeans",):
+            end -= 1
+        model.X = info.split(",")[start:end]
         model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
         if model_type in ("naive_bayes", "rf_classifier", "xgb_classifier"):
             try:

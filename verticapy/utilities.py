@@ -1264,7 +1264,7 @@ read_json : Ingests a JSON file into the Vertica database.
         },
     )
     # -#
-    if not(flex_name):
+    if not (flex_name):
         flex_name = gen_tmp_name(name="flex")[1:-1]
     query = f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;"
     header_names = (
@@ -1294,8 +1294,12 @@ read_json : Ingests a JSON file into the Vertica database.
     )
     if genSQL:
         return [query, query2]
-    executeSQL(query, title="Creating flex table to identify the data types.",)
-    executeSQL(query2, title="Parsing the data.",)
+    executeSQL(
+        query, title="Creating flex table to identify the data types.",
+    )
+    executeSQL(
+        query2, title="Parsing the data.",
+    )
     result = compute_flextable_keys(flex_name)
     dtype = {}
     for column_dtype in result:
@@ -1396,10 +1400,10 @@ Parameters
 path: str
     Path to a file or glob. Valid paths include any path that is 
     valid for COPY and that uses a file format supported by this 
-    function. For all formats except JSON, if a glob specifies 
-    more than one file, this function reads a single, arbitrarily
-    -chosen file. For JSON, the function might read more than one 
-    file.
+    function. 
+    For inferring the data type, even if a glob specifies more than one 
+    file, only one file will be read. However, in the case of JSON, more 
+    than one files may be read to infer the data type.
 schema: str, optional
     Schema in which to create the table.
 table_name: str, optional
@@ -1483,7 +1487,9 @@ vDataFrame
             ("insert", insert, [bool]),
         ]
     )
-    assert not(ingest_local) or insert, ParameterError('Ingest local to create new relations is not yet supported for \'read_file\'')
+    assert not (ingest_local) or insert, ParameterError(
+        "Ingest local to create new relations is not yet supported for 'read_file'"
+    )
     file_format = path.split(".")[-1].lower()
     if file_format not in ("json", "parquet", "avro", "orc", "csv"):
         raise ExtensionError("The file extension is incorrect !")
@@ -1501,11 +1507,13 @@ vDataFrame
             ingest_local=ingest_local,
         )
     if insert:
-        if not(table_name):
-            raise ParameterError("Parameter 'table_name' must be defined when parameter 'insert' is set to True.")
-        if not(schema) and temporary_local_table:
+        if not (table_name):
+            raise ParameterError(
+                "Parameter 'table_name' must be defined when parameter 'insert' is set to True."
+            )
+        if not (schema) and temporary_local_table:
             schema = "v_temp_schema"
-        elif not(schema):
+        elif not (schema):
             schema = "public"
         input_relation = quote_ident(schema) + "." + quote_ident(table_name)
         file_format = file_format.upper()
@@ -1786,7 +1794,7 @@ read_json : Ingests a JSON file into the Vertica database.
     multiple_files = False
     if "*" in basename:
         multiple_files = True
-    if not(genSQL):
+    if not (genSQL):
         query = """SELECT /*+LABEL('utilities.read_csv')*/
                         column_name 
                    FROM columns 
@@ -1798,13 +1806,13 @@ read_json : Ingests a JSON file into the Vertica database.
         result = executeSQL(
             query, title="Looking if the relation exists.", method="fetchall"
         )
-    if not(genSQL) and (result != []) and not (insert) and not (genSQL):
+    if not (genSQL) and (result != []) and not (insert) and not (genSQL):
         raise NameError(
             "The table {0} already exists !".format(
                 format_schema_table(schema, table_name)
             )
         )
-    elif not(genSQL) and (result == []) and (insert):
+    elif not (genSQL) and (result == []) and (insert):
         raise MissingRelation(
             "The table {0} doesn't exist !".format(
                 format_schema_table(schema, table_name)
@@ -1834,7 +1842,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 "ucol{}".format(i + len(header_names))
                 for i in range(len(file_header) - len(header_names))
             ]
-        if not(materialize):
+        if not (materialize):
             suffix = ""
             final_relation = input_relation
             prefix = " ON COMMIT PRESERVE ROWS;"
@@ -1858,13 +1866,17 @@ read_json : Ingests a JSON file into the Vertica database.
                 flex_name=input_relation,
                 genSQL=True,
             )[1]
-            if genSQL and not(insert):
+            if genSQL and not (insert):
                 return [clean_query(query), clean_query(query2)]
             elif genSQL:
                 return [clean_query(query2)]
-            if not(insert):
-                executeSQL(query, title="Creating the flex table.",)
-            executeSQL(query2, title="Copying the data.",)
+            if not (insert):
+                executeSQL(
+                    query, title="Creating the flex table.",
+                )
+            executeSQL(
+                query2, title="Copying the data.",
+            )
             return vDataFrame(table_name, schema=schema)
         if (parse_nrows > 0) and not (insert):
             f = open(path_first_file_in_folder, "r")
@@ -1929,14 +1941,13 @@ read_json : Ingests a JSON file into the Vertica database.
             else:
                 return [clean_query(query1), clean_query(query2)]
         else:
-            if not(insert):
+            if not (insert):
                 executeSQL(query1, title="Creating the table.")
             executeSQL(
-                query2,
-                title="Ingesting the data.",
+                query2, title="Ingesting the data.",
             )
             if (
-                not(insert)
+                not (insert)
                 and not (temporary_local_table)
                 and verticapy.options["print_info"]
             ):
@@ -2151,7 +2162,7 @@ read_csv : Ingests a CSV file into the Vertica database.
         table_name = gen_tmp_name(name=basename)
     if not (table_name):
         table_name = basename
-    if not(genSQL):
+    if not (genSQL):
         query = (
             "SELECT /*+LABEL('utilities.read_json')*/ column_name, data_type FROM columns WHERE table_name = '{0}' "
             "AND table_schema = '{1}' ORDER BY ordinal_position"
@@ -2159,13 +2170,13 @@ read_csv : Ingests a CSV file into the Vertica database.
         column_name = executeSQL(
             query, title="Looking if the relation exists.", method="fetchall"
         )
-    if not(genSQL) and (column_name != []) and not (insert):
+    if not (genSQL) and (column_name != []) and not (insert):
         raise NameError(
             "The table {} already exists !".format(
                 format_schema_table(schema, table_name)
             )
         )
-    elif not(genSQL) and (column_name == []) and (insert) and not(genSQL):
+    elif not (genSQL) and (column_name == []) and (insert) and not (genSQL):
         raise MissingRelation(
             "The table {} doesn't exist !".format(
                 format_schema_table(schema, table_name)
@@ -2177,7 +2188,7 @@ read_csv : Ingests a CSV file into the Vertica database.
         else:
             input_relation = quote_ident(table_name)
         all_queries = []
-        if not(materialize):
+        if not (materialize):
             suffix = ""
             if temporary_local_table:
                 suffix = "LOCAL TEMP "
@@ -2187,7 +2198,7 @@ read_csv : Ingests a CSV file into the Vertica database.
         else:
             flex_name = gen_tmp_name(name="flex")[1:-1]
             query = f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;"
-        if not(insert):
+        if not (insert):
             all_queries += [clean_query(query)]
         options = []
         if start_point:
@@ -2229,20 +2240,18 @@ read_csv : Ingests a CSV file into the Vertica database.
             ", ".join(options),
         )
         all_queries = all_queries + [clean_query(query2)]
-        if genSQL and insert and not(materialize):
+        if genSQL and insert and not (materialize):
             return [clean_query(query2)]
-        elif genSQL and not(materialize):
+        elif genSQL and not (materialize):
             return all_queries
-        if not(insert):
+        if not (insert):
             executeSQL(
-                query,
-                title="Creating flex table.",
+                query, title="Creating flex table.",
             )
         executeSQL(
-            query2,
-            title="Ingesting the data in the flex table.",
+            query2, title="Ingesting the data in the flex table.",
         )
-        if not(materialize):
+        if not (materialize):
             return vDataFrame(table_name, schema=schema)
         result = compute_flextable_keys(flex_name)
         dtype = {}
@@ -2288,8 +2297,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             if genSQL:
                 return all_queries
             executeSQL(
-                query3,
-                title="Creating table.",
+                query3, title="Creating table.",
             )
             if not (temporary_local_table) and verticapy.options["print_info"]:
                 print(f"The table {input_relation} has been successfully created.")
@@ -2324,8 +2332,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             if genSQL:
                 return [clean_query(query)]
             executeSQL(
-                query,
-                title="Inserting data into table.",
+                query, title="Inserting data into table.",
             )
         drop(name=flex_name, method="table")
         return vDataFrame(table_name, schema=schema)
