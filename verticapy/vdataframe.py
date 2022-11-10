@@ -11425,7 +11425,7 @@ vColumns : vColumn
     # ---#
     def to_csv(
         self,
-        path: str,
+        path: str = "",
         sep: str = ",",
         na_rep: str = "",
         quotechar: str = '"',
@@ -11442,7 +11442,7 @@ vColumns : vColumn
 
     Parameters
     ----------
-    path: str
+    path: str, optional
         File/Folder system path. Be careful: if a CSV file with the same name 
         exists, it will over-write it.
     sep: str, optional
@@ -11471,8 +11471,8 @@ vColumns : vColumn
 
     Returns
     -------
-    vDataFrame
-        self
+    str or list
+        JSON str or list (n_files>1) if 'path' is not defined, nothing otherwise
 
     See Also
     --------
@@ -11527,6 +11527,13 @@ vColumns : vColumn
             if not (usecols)
             else [quote_ident(column) for column in usecols]
         )
+        for col in columns:
+            if self[col].category() in ("vmap", "complex"):
+                raise FunctionError(
+                    f"Impossible to export virtual column {col} as it includes complex "
+                    "data types or vmaps. Use 'astype' method to cast them before using "
+                    "this function."
+                )
         assert not (new_header) or len(new_header) == len(columns), ParsingError(
             "The header has an incorrect number of columns"
         )
@@ -11536,17 +11543,24 @@ vColumns : vColumn
         order_by = self.__get_sort_syntax__(order_by)
         if not (order_by):
             order_by = self.__get_last_order_by__()
-        if n_files > 1:
+        if n_files > 1 and path:
             os.makedirs(file_name)
+        csv_files = []
         while current_nb_rows_written < total:
-            if n_files == 1:
-                file = open(path, "w+")
-            else:
-                file = open("{0}/{1}.csv".format(path, file_id), "w+")
             if new_header:
-                file.write(sep.join(new_header))
+                csv_file = sep.join(
+                    [
+                        quotechar + column.replace('"', "") + quotechar
+                        for column in new_header
+                    ]
+                )
             elif header:
-                file.write(sep.join([column.replace('"', "") for column in columns]))
+                csv_file = sep.join(
+                    [
+                        quotechar + column.replace('"', "") + quotechar
+                        for column in columns
+                    ]
+                )
             result = executeSQL(
                 "SELECT /*+LABEL('vDataframe.to_csv')*/ {} FROM {}{} LIMIT {} OFFSET {}".format(
                     ", ".join(columns),
@@ -11567,11 +11581,24 @@ vColumns : vColumn
                         tmp_row += [na_rep]
                     else:
                         tmp_row += [str(item)]
-                file.write("\n" + sep.join(tmp_row))
+                csv_file += "\n" + sep.join(tmp_row)
             current_nb_rows_written += limit
             file_id += 1
-            file.close()
-        return self
+            if n_files == 1 and path:
+                file = open(path, "w+")
+                file.write(csv_file)
+                file.close()
+            elif path:
+                file = open("{0}/{1}.csv".format(path, file_id), "w+")
+                file.write(csv_file)
+                file.close()
+            else:
+                csv_files += [csv_file]
+        if not (path):
+            if n_files == 1:
+                return csv_files[0]
+            else:
+                return csv_files
 
     # ---#
     def to_db(
@@ -11783,7 +11810,7 @@ vColumns : vColumn
     # ---#
     def to_json(
         self,
-        path: str,
+        path: str = "",
         usecols: list = [],
         order_by: Union[list, dict] = [],
         n_files: int = 1,
@@ -11795,7 +11822,7 @@ vColumns : vColumn
 
     Parameters
     ----------
-    path: str
+    path: str, optional
         File/Folder system path. Be careful: if a JSON file with the same name 
         exists, it will over-write it.
     usecols: list, optional
@@ -11813,8 +11840,8 @@ vColumns : vColumn
 
     Returns
     -------
-    vDataFrame
-        self
+    str or list
+        JSON str or list (n_files>1) if 'path' is not defined, nothing otherwise
 
     See Also
     --------
@@ -11859,23 +11886,32 @@ vColumns : vColumn
             if not (usecols)
             else [quote_ident(column) for column in usecols]
         )
+        transformations, is_complex_vmap = [], []
+        for col in columns:
+            if self[col].category() == "complex":
+                transformations += ["TO_JSON({0}) AS {0}".format(col)]
+                is_complex_vmap += [True]
+            elif self[col].category() == "vmap":
+                transformations += ["MAPTOSTRING({0}) AS {0}".format(col)]
+                is_complex_vmap += [True]
+            else:
+                transformations += [col]
+                is_complex_vmap += [False]
         total = self.shape()[0]
         current_nb_rows_written, file_id = 0, 0
         limit = int(total / n_files) + 1
         order_by = self.__get_sort_syntax__(order_by)
         if not (order_by):
             order_by = self.__get_last_order_by__()
-        if n_files > 1:
+        if n_files > 1 and path:
             os.makedirs(file_name)
+        if not (path):
+            json_files = []
         while current_nb_rows_written < total:
-            if n_files == 1:
-                file = open(path, "w+")
-            else:
-                file = open("{0}/{1}.json".format(path, file_id), "w+")
-            file.write("[\n")
+            json_file = "[\n"
             result = executeSQL(
                 "SELECT /*+LABEL('vDataframe.to_json')*/ {} FROM {}{} LIMIT {} OFFSET {}".format(
-                    ", ".join(columns),
+                    ", ".join(transformations),
                     self.__genSQL__(),
                     order_by,
                     limit,
@@ -11887,16 +11923,31 @@ vColumns : vColumn
             for row in result:
                 tmp_row = []
                 for i, item in enumerate(row):
-                    if isinstance(item, (float, int, decimal.Decimal)):
+                    if isinstance(item, (float, int, decimal.Decimal)) or (
+                        isinstance(item, (str,)) and is_complex_vmap[i]
+                    ):
                         tmp_row += ["{}: {}".format(quote_ident(columns[i]), item)]
                     elif item != None:
                         tmp_row += ['{}: "{}"'.format(quote_ident(columns[i]), item)]
-                file.write("{" + ", ".join(tmp_row) + "},\n")
+                json_file += "{" + ", ".join(tmp_row) + "},\n"
             current_nb_rows_written += limit
             file_id += 1
-            file.write("]")
-            file.close()
-        return self
+            json_file += "]"
+            if n_files == 1 and path:
+                file = open(path, "w+")
+                file.write(json_file)
+                file.close()
+            elif path:
+                file = open("{0}/{1}.json".format(path, file_id), "w+")
+                file.write(json_file)
+                file.close()
+            else:
+                json_files += [json_file]
+        if not (path):
+            if n_files == 1:
+                return json_files[0]
+            else:
+                return json_files
 
     # ---#
     def to_list(self):
