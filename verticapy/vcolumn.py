@@ -59,6 +59,9 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
 
+# Other modules
+import numpy as np
+
 ##
 #
 #   __   __   ______     ______     __         __  __     __    __     __   __
@@ -131,6 +134,10 @@ Attributes
         }
         for elem in catalog:
             self.catalog[elem] = catalog[elem]
+        self.init_transf = self.transformations[0][0]
+        if self.init_transf == "___VERTICAPY_UNDEFINED___":
+            self.init_transf = self.alias
+        self.init = True
 
     # ---#
     def __getitem__(self, index):
@@ -142,41 +149,96 @@ Attributes
             index_start = index.start
             if not (isinstance(index_start, int)):
                 index_start = 0
-            if index_start < 0:
-                index_start += self.parent.shape()[0]
-            if isinstance(index_stop, int):
-                if index_stop < 0:
-                    index_stop += self.parent.shape()[0]
-                limit = index_stop - index_start
-                if limit <= 0:
-                    limit = 0
-                limit = " LIMIT {}".format(limit)
+            if self.isarray():
+                if index_start < 0:
+                    index_start_str = str(index_start) + " + APPLY_COUNT_ELEMENTS({})"
+                else:
+                    index_start_str = str(index_start)
+                if isinstance(index_stop, int):
+                    if index_stop < 0:
+                        index_stop_str = str(index_stop) + " + APPLY_COUNT_ELEMENTS({})"
+                    else:
+                        index_stop_str = str(index_stop)
+                else:
+                    index_stop_str = "1 + APPLY_COUNT_ELEMENTS({})"
+                elem_to_select = "{0}[{1}:{2}]".format(
+                    self.alias, index_start_str, index_stop_str
+                ).replace("{}", self.alias)
+                new_alias = quote_ident(
+                    self.alias[1:-1] + "." + str(index_start) + ":" + str(index_stop)
+                )
+                query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
+                    elem_to_select, new_alias, self.parent.__genSQL__(),
+                )
+                vcol = vDataFrameSQL(query)[new_alias]
+                vcol.transformations[-1] = (new_alias, self.ctype(), self.category())
+                vcol.init_transf = "{0}[{1}:{2}]".format(
+                    self.init_transf, index_start_str, index_stop_str
+                ).replace("{}", self.init_transf)
+                return vcol
             else:
-                limit = ""
-            query = "(SELECT {} FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                self.alias,
-                self.parent.__genSQL__(),
-                self.parent.__get_last_order_by__(),
-                index_start,
-                limit,
-            )
-            return vDataFrameSQL(query)
+                if index_start < 0:
+                    index_start += self.parent.shape()[0]
+                if isinstance(index_stop, int):
+                    if index_stop < 0:
+                        index_stop += self.parent.shape()[0]
+                    limit = index_stop - index_start
+                    if limit <= 0:
+                        limit = 0
+                    limit = f" LIMIT {limit}"
+                else:
+                    limit = ""
+                query = "(SELECT {0} FROM {1}{2} OFFSET {3}{4}) VERTICAPY_SUBTABLE".format(
+                    self.alias,
+                    self.parent.__genSQL__(),
+                    self.parent.__get_last_order_by__(),
+                    index_start,
+                    limit,
+                )
+                return vDataFrameSQL(query)
         elif isinstance(index, int):
-            cast = "::float" if self.category() == "float" else ""
-            if index < 0:
-                index += self.parent.shape()[0]
-            query = "SELECT /*+LABEL('vColumn.__getitem__')*/ {}{} FROM {}{} OFFSET {} LIMIT 1".format(
-                self.alias,
-                cast,
-                self.parent.__genSQL__(),
-                self.parent.__get_last_order_by__(),
-                index,
+            if self.isarray():
+                elem_to_select = "{0}[{1}]".format(self.alias, index)
+                new_alias = quote_ident(self.alias[1:-1] + "." + str(index))
+                query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
+                    elem_to_select, new_alias, self.parent.__genSQL__(),
+                )
+                vcol = vDataFrameSQL(query)[new_alias]
+                vcol.init_transf = "{0}[{1}]".format(self.init_transf, index)
+                return vcol
+            else:
+                cast = "::float" if self.category() == "float" else ""
+                if index < 0:
+                    index += self.parent.shape()[0]
+                query = "SELECT /*+LABEL('vColumn.__getitem__')*/ {}{} FROM {}{} OFFSET {} LIMIT 1".format(
+                    self.alias,
+                    cast,
+                    self.parent.__genSQL__(),
+                    self.parent.__get_last_order_by__(),
+                    index,
+                )
+                return executeSQL(
+                    query=query,
+                    title="Getting the vColumn element.",
+                    method="fetchfirstelem",
+                )
+        elif isinstance(index, str):
+            if self.category() == "vmap":
+                elem_to_select = "MAPLOOKUP({0}, '{1}')".format(
+                    self.alias, index.replace("'", "''")
+                )
+                init_transf = "MAPLOOKUP({0}, '{1}')".format(
+                    self.init_transf, index.replace("'", "''")
+                )
+            else:
+                elem_to_select = self.alias + "." + quote_ident(index)
+                init_transf = self.init_transf + "." + quote_ident(index)
+            query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
+                elem_to_select, quote_ident(index), self.parent.__genSQL__(),
             )
-            return executeSQL(
-                query=query,
-                title="Getting the vColumn element.",
-                method="fetchfirstelem",
-            )
+            vcol = vDataFrameSQL(query)[index]
+            vcol.init_transf = init_transf
+            return vcol
         else:
             return getattr(self, index)
 
@@ -497,30 +559,40 @@ Attributes
  	----------
  	func: str
  		Function to use to transform the vColumn.
-			abs     : absolute value
-			acos    : trigonometric inverse cosine
-			asin    : trigonometric inverse sine
-			atan    : trigonometric inverse tangent
-			cbrt    : cube root
-			ceil    : value up to the next whole number
-			cos     : trigonometric cosine
-			cosh    : hyperbolic cosine
-			cot     : trigonometric cotangent
-			exp     : exponential function
-			floor   : value down to the next whole number
-			ln      : natural logarithm
-			log     : logarithm
-			log10   : base 10 logarithm
-			mod     : remainder of a division operation
-			pow     : number raised to the power of another number
-			round   : rounds a value to a specified number of decimal places
-			sign    : arithmetic sign
-			sin     : trigonometric sine
-			sinh    : hyperbolic sine
-			sqrt    : arithmetic square root
-			tan     : trigonometric tangent
-			tanh    : hyperbolic tangent
-	x: int/float, optional
+			abs          : absolute value
+			acos         : trigonometric inverse cosine
+			asin         : trigonometric inverse sine
+			atan         : trigonometric inverse tangent
+            avg / mean   : average
+			cbrt         : cube root
+			ceil         : value up to the next whole number
+            contain      : checks if 'x' is in the collection
+            count        : number of non-null elements
+			cos          : trigonometric cosine
+			cosh         : hyperbolic cosine
+			cot          : trigonometric cotangent
+            dim          : dimension (only for arrays)
+			exp          : exponential function
+			floor        : value down to the next whole number
+            find         : returns the ordinal position of a specified element 
+                           in an array (only for arrays)
+            len / length : length
+			ln           : natural logarithm
+			log          : logarithm
+			log10        : base 10 logarithm
+            max          : maximum
+            min          : minimum
+			mod          : remainder of a division operation
+			pow          : number raised to the power of another number
+			round        : rounds a value to a specified number of decimal places
+			sign         : arithmetic sign
+			sin          : trigonometric sine
+			sinh         : hyperbolic sine
+			sqrt         : arithmetic square root
+            sum          : sum
+			tan          : trigonometric tangent
+			tanh         : hyperbolic tangent
+	x: int / float / str, optional
 		If the function has two arguments (example, power or mod), 'x' represents 
 		the second argument.
 
@@ -537,6 +609,12 @@ Attributes
         save_to_query_profile(
             name="apply_fun", path="vcolumn.vColumn", json_dict={"func": func, "x": x,},
         )
+        if isinstance(func, str):
+            func = func.lower()
+        if func == "mean":
+            func = "avg"
+        elif func == "length":
+            func = "len"
         # -#
         check_types(
             [
@@ -548,34 +626,66 @@ Attributes
                         "acos",
                         "asin",
                         "atan",
+                        "avg",
                         "cbrt",
                         "ceil",
+                        "contain",
+                        "count",
                         "cos",
                         "cosh",
                         "cot",
+                        "dim",
                         "exp",
+                        "find",
                         "floor",
+                        "len",
                         "ln",
                         "log",
                         "log10",
+                        "max",
                         "mod",
+                        "min",
                         "pow",
                         "round",
                         "sign",
                         "sin",
                         "sinh",
+                        "sum",
                         "sqrt",
                         "tan",
                         "tanh",
                     ],
                 ),
-                ("x", x, [int, float]),
+                ("x", x, [int, float, str]),
             ]
         )
-        if func not in ("log", "mod", "pow", "round"):
+        cat = self.category()
+        if func == "len":
+            if cat == "vmap":
+                func = "MAPSIZE"
+            elif cat == "complex":
+                func = "APPLY_COUNT_ELEMENTS"
+            else:
+                func = "LENTGH"
+        elif func in ("max", "min", "sum", "avg", "count"):
+            func = "APPLY_" + func
+        elif func == "dim":
+            func = "ARRAY_DIMS"
+        if func not in ("log", "mod", "pow", "round", "contain", "find"):
             expr = "{}({})".format(func.upper(), "{}")
-        else:
+        elif func in ("log", "mod", "pow", "round"):
             expr = "{}({}, {})".format(func.upper(), "{}", x)
+        elif func in ("contain", "find"):
+            if func == "contain":
+                if cat == "vmap":
+                    f = "MAPCONTAINSVALUE"
+                else:
+                    f = "CONTAINS"
+            elif func == "find":
+                f = "ARRAY_FIND"
+            if isinstance(x, (str,)):
+                x = "'" + str(x).replace("'", "''") + "'"
+            expr = "{}({}, {})".format(f, "{}", x)
         return self.apply(func=expr)
 
     # ---#
@@ -586,8 +696,8 @@ Attributes
 
 	Parameters
  	----------
- 	dtype: str
- 		New type.
+ 	dtype: str or Python data type
+ 		New type. To convert to a JSON string, set this parameter to 'json'.
 
  	Returns
  	-------
@@ -602,19 +712,83 @@ Attributes
         save_to_query_profile(
             name="astype", path="vcolumn.vColumn", json_dict={"dtype": dtype,},
         )
+        dtype = get_vertica_type(dtype)
         # -#
         check_types([("dtype", dtype, [str])])
         try:
-            query = "SELECT /*+LABEL('vColumn.astype')*/ {}::{} AS {} FROM {} WHERE {} IS NOT NULL LIMIT 20".format(
-                self.alias, dtype, self.alias, self.parent.__genSQL__(), self.alias
+            if dtype == "array" and self.category() == "text":
+                query = "SELECT {0} FROM {1} ORDER BY LENGTH({0}) DESC LIMIT 1".format(
+                    self.alias, self.parent.__genSQL__()
+                )
+                elem = executeSQL(
+                    query, title="getting the biggest string", method="fetchfirstelem"
+                )
+                sep = ","
+                max_occur = elem.count(",")
+                for s in ("|", ";"):
+                    total_occurences = elem.count(s)
+                    if total_occurences > max_occur:
+                        max_occur = total_occurences
+                        sep = s
+                if elem.replace(" ", "").count(sep + sep) > 0:
+                    collection_null_element = ", collection_null_element=''"
+                else:
+                    collection_null_element = ""
+                if max_occur == 0:
+                    sep = " "
+                elem = elem.replace(" ", "")
+                if len(elem) > 2 and (
+                    (elem[0] == "(" and elem[-1] == ")")
+                    or (elem[0] == "{" and elem[-1] == "}")
+                ):
+                    collection_open = ", collection_open='{0}'".format(elem[0])
+                    collection_close = ", collection_close='{0}'".format(elem[-1])
+                else:
+                    collection_open, collection_close = "", ""
+                transformation = (
+                    "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
+                        self.alias,
+                        sep,
+                        collection_open,
+                        collection_close,
+                        collection_null_element,
+                    ),
+                    "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
+                        "{}",
+                        sep,
+                        collection_open,
+                        collection_close,
+                        collection_null_element,
+                    ),
+                )
+            elif (
+                dtype[0:7] == "varchar" or dtype[0:4] == "char"
+            ) and self.category() == "vmap":
+                transformation = (
+                    "MAPTOSTRING({0} USING PARAMETERS canonical_json=false)::{1}".format(
+                        self.alias, dtype
+                    ),
+                    "MAPTOSTRING({} USING PARAMETERS canonical_json=false)::" + dtype,
+                )
+            elif dtype == "json":
+                if self.category() == "vmap":
+                    transformation = (
+                        "MAPTOSTRING({0} USING PARAMETERS canonical_json=true)".format(
+                            self.alias
+                        ),
+                        "MAPTOSTRING({} USING PARAMETERS canonical_json=true)",
+                    )
+                else:
+                    transformation = "TO_JSON({0})".format(self.alias), "TO_JSON({})"
+                dtype = "varchar"
+            else:
+                transformation = "{0}::{1}".format(self.alias, dtype), "{}::" + dtype
+            query = "SELECT /*+LABEL('vColumn.astype')*/ {} AS {} FROM {} WHERE {} IS NOT NULL LIMIT 20".format(
+                transformation[0], self.alias, self.parent.__genSQL__(), self.alias
             )
             executeSQL(query, title="Testing the Type casting.")
             self.transformations += [
-                (
-                    "{}::{}".format("{}", dtype),
-                    dtype,
-                    get_category_from_vertica_type(ctype=dtype),
-                )
+                (transformation[1], dtype, get_category_from_vertica_type(ctype=dtype),)
             ]
             self.parent.__add_to_history__(
                 "[AsType]: The vColumn {} was converted to {}.".format(
@@ -624,7 +798,7 @@ Attributes
             return self.parent
         except Exception as e:
             raise ConversionError(
-                "{}\nThe vColumn {} can not be converted to {}".format(
+                "{0}\nThe vColumn {1} can not be converted to {2}".format(
                     e, self.alias, dtype
                 )
             )
@@ -2370,6 +2544,35 @@ Attributes
         return self.parent
 
     one_hot_encode = get_dummies
+
+    # ---#
+    def get_len(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns a new vColumn that represents the length of each element.
+
+    Returns
+    -------
+    vColumn
+        vColumn that includes the length of each element.
+        """
+        cat = self.category()
+        if cat == "vmap":
+            fun = "MAPSIZE"
+        elif cat == "complex":
+            fun = "APPLY_COUNT_ELEMENTS"
+        else:
+            fun = "LENGTH"
+        elem_to_select = "{0}({1})".format(fun, self.alias,)
+        init_transf = "{0}({1})".format(fun, self.init_transf,)
+        new_alias = quote_ident(self.alias[1:-1] + ".length")
+        query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
+            elem_to_select, new_alias, self.parent.__genSQL__(),
+        )
+        vcol = vDataFrameSQL(query)[new_alias]
+        vcol.init_transf = init_transf
+        return vcol
+
     # ---#
     def head(self, limit: int = 5):
         """
@@ -2533,6 +2736,19 @@ Attributes
         return tail
 
     # ---#
+    def isarray(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns True if the vColumn is an array, False otherwise.
+
+    Returns
+    -------
+    bool
+        True if the vColumn is an array.
+        """
+        return self.ctype()[0:5].lower() == "array"
+
+    # ---#
     def isbool(self):
         """
     ---------------------------------------------------------------------------
@@ -2548,7 +2764,7 @@ Attributes
     vDataFrame[].isdate : Returns True if the vColumn category is date.
     vDataFrame[].isnum  : Returns True if the vColumn is numerical.
         """
-        return self.ctype().lower() in ("bool", "boolean")
+        return self.ctype()[0:4] == "bool"
 
     # ---#
     def isdate(self):
@@ -2619,6 +2835,21 @@ Attributes
 	vDataFrame[].isdate : Returns True if the vColumn category is date.
 		"""
         return self.category() in ("float", "int")
+
+    # ---#
+    def isvmap(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns True if the vColumn category is VMap, False otherwise.
+
+    Returns
+    -------
+    bool
+        True if the vColumn category is VMap.
+        """
+        return self.category() == "vmap" or isvmap(
+            column=self.alias, expr=self.parent.__genSQL__()
+        )
 
     # ---#
     def iv_woe(self, y: str, nbins: int = 10):

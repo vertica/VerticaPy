@@ -222,6 +222,7 @@ vColumns : vColumn
         self._VERTICAPY_VARIABLES_["max_rows"] = -1
         self._VERTICAPY_VARIABLES_["max_columns"] = -1
         self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
+        self._VERTICAPY_VARIABLES_["isflex"] = False
 
         if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
 
@@ -288,39 +289,18 @@ vColumns : vColumn
             self._VERTICAPY_VARIABLES_["input_relation"] = input_relation.replace(
                 '"', ""
             )
-            where = (
-                " AND LOWER(column_name) IN ({})".format(
-                    ", ".join(
-                        [
-                            "'{}'".format(elem.lower().replace("'", "''"))
-                            for elem in usecols
-                        ]
-                    )
+            table_name = self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''")
+            schema = self._VERTICAPY_VARIABLES_["schema"].replace("'", "''")
+            isflex = isflextable(table_name=table_name, schema=schema)
+            self._VERTICAPY_VARIABLES_["isflex"] = isflex
+            if isflex:
+                columns_dtype = compute_flextable_keys(
+                    flex_name='"{}".{}'.format(schema, table_name), usecols=usecols
                 )
-                if (usecols)
-                else ""
-            )
-            query = (
-                "SELECT /*+LABEL('vDataframe.__init__')*/ column_name, data_type FROM ((SELECT column_name, "
-                "data_type, ordinal_position FROM columns WHERE table_name "
-                "= '{0}' AND table_schema = '{1}'{2})"
-            ).format(
-                self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
-                self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
-                where,
-            )
-            query += (
-                " UNION (SELECT column_name, data_type, ordinal_position "
-                "FROM view_columns WHERE table_name = '{0}' AND table_schema "
-                "= '{1}'{2})) x ORDER BY ordinal_position"
-            ).format(
-                self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
-                self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
-                where,
-            )
-            columns_dtype = executeSQL(
-                query, title="Getting the data types.", method="fetchall"
-            )
+            else:
+                columns_dtype = get_data_types(
+                    table_name=table_name, schema=schema, usecols=usecols
+                )
             columns_dtype = [(str(item[0]), str(item[1])) for item in columns_dtype]
             columns = [
                 '"{}"'.format(elem[0].replace('"', "_")) for elem in columns_dtype
@@ -341,25 +321,34 @@ vColumns : vColumn
                         "its alias was changed using underscores '_' to {1}."
                     ).format(column, column.replace('"', "_"))
                     warnings.warn(warning_message, Warning)
+                category = get_category_from_vertica_type(dtype)
+                if (dtype.lower()[0:12] in ("long varbina", "long varchar")) and (
+                    isflex
+                    or isvmap(
+                        expr=format_schema_table(schema, table_name), column=column,
+                    )
+                ):
+                    category = "vmap"
+                    dtype = (
+                        "VMAP(" + "(".join(dtype.split("(")[1:])
+                        if "(" in dtype
+                        else "VMAP"
+                    )
+                column_name = '"' + column.replace('"', "_") + '"'
                 new_vColumn = vColumn(
-                    '"{}"'.format(column.replace('"', "_")),
+                    column_name,
                     parent=self,
-                    transformations=[
-                        (
-                            '"{}"'.format(column.replace('"', '""')),
-                            dtype,
-                            get_category_from_vertica_type(dtype),
-                        )
-                    ],
+                    transformations=[(quote_ident(column), dtype, category,)],
                 )
-                setattr(self, '"{}"'.format(column.replace('"', "_")), new_vColumn)
-                setattr(self, column.replace('"', "_"), new_vColumn)
+                setattr(self, column_name, new_vColumn)
+                setattr(self, column_name[1:-1], new_vColumn)
+                new_vColumn.init = False
             self._VERTICAPY_VARIABLES_["exclude_columns"] = []
             self._VERTICAPY_VARIABLES_["where"] = []
             self._VERTICAPY_VARIABLES_["order_by"] = {}
             self._VERTICAPY_VARIABLES_["history"] = []
             self._VERTICAPY_VARIABLES_["saving"] = []
-            self._VERTICAPY_VARIABLES_["main_relation"] = '"{}"."{}"'.format(
+            self._VERTICAPY_VARIABLES_["main_relation"] = format_schema_table(
                 self._VERTICAPY_VARIABLES_["schema"],
                 self._VERTICAPY_VARIABLES_["input_relation"],
             )
@@ -511,6 +500,11 @@ vColumns : vColumn
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
+        elif isinstance(val, vColumn) and not (val.init):
+            final_trans, n = val.init_transf, len(val.transformations)
+            for i in range(1, n):
+                final_trans = val.transformations[i][0].replace("{}", final_trans)
+            self.eval(name=attr, expr=final_trans)
         else:
             self.__dict__[attr] = val
 
@@ -1354,9 +1348,7 @@ vColumns : vColumn
                 table,
             )
         main_relation = self._VERTICAPY_VARIABLES_["main_relation"]
-        all_main_relation = "(SELECT * FROM {}) VERTICAPY_SUBTABLE".format(
-            main_relation
-        )
+        all_main_relation = f"(SELECT * FROM {main_relation}) VERTICAPY_SUBTABLE"
         table = table.replace(all_main_relation, main_relation)
         return table
 
@@ -6362,24 +6354,24 @@ vColumns : vColumn
             self.is_colname_in(name)
         ), f"A vColumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue."
         try:
-            ctype = get_data_types(
-                "SELECT {} AS {} FROM {} LIMIT 0".format(expr, name, self.__genSQL__()),
-                name.replace('"', "").replace("'", "''"),
+            query = "SELECT {0} AS {1} FROM {2} LIMIT 0".format(
+                expr, name, self.__genSQL__()
             )
+            ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
         except:
-            try:
-                ctype = get_data_types(
-                    "SELECT {} AS {} FROM {} LIMIT 0".format(
-                        expr, name, self.__genSQL__()
-                    ),
-                    name.replace('"', "").replace("'", "''"),
-                )
-            except:
-                raise QueryError(
-                    f"The expression '{expr}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work."
-                )
-        ctype = ctype if (ctype) else "undefined"
-        category = get_category_from_vertica_type(ctype=ctype)
+            raise QueryError(
+                f"The expression '{expr}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work."
+            )
+        if not (ctype):
+            ctype = "undefined"
+        elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
+            self._VERTICAPY_VARIABLES_["isflex"]
+            or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
+        ):
+            category = "vmap"
+            ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
+        else:
+            category = get_category_from_vertica_type(ctype=ctype)
         all_cols, max_floor = self.get_columns(), 0
         for column in all_cols:
             if (quote_ident(column) in expr) or (
@@ -6397,9 +6389,11 @@ vColumns : vColumn
         new_vColumn = vColumn(name, parent=self, transformations=transformations)
         setattr(self, name, new_vColumn)
         setattr(self, name.replace('"', ""), new_vColumn)
+        new_vColumn.init = False
+        new_vColumn.init_transf = name
         self._VERTICAPY_VARIABLES_["columns"] += [name]
         self.__add_to_history__(
-            "[Eval]: A new vColumn {} was added to the vDataFrame.".format(name)
+            f"[Eval]: A new vColumn {name} was added to the vDataFrame."
         )
         return self
 
@@ -6720,9 +6714,7 @@ vColumns : vColumn
             except:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
                 if verticapy.options["print_info"]:
-                    warning_message = "The expression '{}' is incorrect.\nNothing was filtered.".format(
-                        conditions
-                    )
+                    warning_message = f"The expression '{conditions}' is incorrect.\nNothing was filtered."
                     warnings.warn(warning_message, Warning)
                 return self
             if count > 0:
@@ -6786,6 +6778,64 @@ vColumns : vColumn
         )
         self.filter("{} <= '{}'".format(ts, first_date))
         return self
+
+    # ---#
+    def flat_vmap(
+        self, vmap_col: list = [], limit: int = 100,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Flatten the selected VMap. A new vDataFrame is returned.
+    
+    \u26A0 Warning : This function might have a long runtime and can make your
+                     vDataFrame less performant. It makes many calls to the
+                     MAPLOOKUP function, which can be slow if your VMap is
+                     large.
+
+    Parameters
+    ----------
+    vmap_col: list, optional
+        List of VMap columns to flatten.
+    limit: int, optional
+        Maximum number of keys to consider for each VMap. Only the most occurent 
+        keys are used.
+
+    Returns
+    -------
+    vDataFrame
+        object with the flattened VMaps.
+        """
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="select",
+            path="vdataframe.vDataFrame",
+            json_dict={"vmap_col": vmap_col, "limit": limit,},
+        )
+        # -#
+        if not (vmap_col):
+            vmap_col = []
+            all_cols = self.get_columns()
+            for col in all_cols:
+                if self[col].isvmap():
+                    vmap_col += [col]
+        if not (vmap_col):
+            raise EmptyParameter("No VMAP was detected.")
+        if isinstance(vmap_col, str):
+            vmap_col = [vmap_col]
+        check_types([("vmap_col", vmap_col, [list]), ("limit", limit, [int])])
+        maplookup = []
+        for vmap in vmap_col:
+            keys = compute_vmap_keys(expr=self, vmap_col=vmap, limit=limit)
+            keys = [k[0] for k in keys]
+            maplookup += [
+                "MAPLOOKUP({0}, '{1}') AS {2}".format(
+                    quote_ident(vmap),
+                    k,
+                    quote_ident(vmap.replace('"', "") + "." + k.replace('"', "")),
+                )
+                for k in keys
+            ]
+        return self.select(["*"] + maplookup)
 
     # ---#
     def get_columns(self, exclude_columns: list = []):

@@ -49,8 +49,9 @@
 # Modules
 #
 # Standard Python Modules
-import shutil, re, sys, warnings, random, itertools, datetime, time, html
+import shutil, re, sys, warnings, random, itertools, datetime, time, html, os
 from collections.abc import Iterable
+from typing import Union
 
 # VerticaPy Modules
 import verticapy
@@ -94,11 +95,15 @@ def arange(start: float, stop: float, step: float):
 
 
 # ---#
-def bin_spatial_to_str(category: str, column: str = "{}"):
-    if category == "binary":
-        return "TO_HEX({})".format(column)
+def bin_spatial_to_str(
+    category: str, column: str = "{}",
+):
+    if category == "vmap":
+        return f"MAPTOSTRING({column})"
+    elif category == "binary":
+        return f"TO_HEX({column})"
     elif category == "spatial":
-        return "ST_AsText({})".format(column)
+        return f"ST_AsText({column})"
     else:
         return column
 
@@ -119,7 +124,7 @@ def check_types(types_list: list = []):
             if (elem[1] != None) and (
                 elem[1].lower() not in elem[2] and elem[1] not in elem[2]
             ):
-                warning_message = "Parameter '{}' must be in [{}], found '{}'".format(
+                warning_message = "Parameter '{0}' must be in [{1}], found '{2}'".format(
                     elem[0], "|".join(elem[2]), elem[1]
                 )
                 warnings.warn(warning_message, Warning)
@@ -189,6 +194,14 @@ def flat_dict(d: dict) -> str:
 
 
 # ---#
+def erase_space_start_end_in_list_values(L: list):
+    L_tmp = [elem for elem in L]
+    for idx in range(len(L_tmp)):
+        L_tmp[idx] = L_tmp[idx].strip()
+    return L_tmp
+
+
+# ---#
 def executeSQL(
     query: str,
     title: str = "",
@@ -235,6 +248,35 @@ def executeSQL(
 
 
 # ---#
+def extract_col_dt_from_query(query: str, field: str):
+    n, m = len(query), len(field) + 2
+    for i in range(n - m):
+        current_word = query[i : i + m]
+        if current_word.lower() == '"' + field.lower() + '"':
+            i = i + m
+            total_parenthesis = 0
+            k = i + 1
+            while ((query[i] != ",") or (total_parenthesis > 0)) and i < n - m:
+                i += 1
+                if query[i] in ("(", "[", "{"):
+                    total_parenthesis += 1
+                elif query[i] in (")", "]", "}"):
+                    total_parenthesis -= 1
+            return (current_word, query[k:i])
+    return None
+
+
+# ---#
+def extract_compression(path: str):
+    file_extension = path.split(".")[-1].lower()
+    lookup_table = {"gz": "GZIP", "bz": "BZIP", "lz": "LZO", "zs": "ZSTD"}
+    if file_extension[0:2] in lookup_table:
+        return lookup_table[file_extension[0:2]]
+    else:
+        return "UNCOMPRESSED"
+
+
+# ---#
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
 
     from verticapy.vcolumn import vColumn
@@ -268,6 +310,19 @@ def gen_name(L: list):
 
 
 # ---#
+def gen_tmp_name(schema: str = "", name: str = ""):
+    session_user = get_session()
+    L = session_user.split("_")
+    L[0] = "".join(filter(str.isalnum, L[0]))
+    L[1] = "".join(filter(str.isalnum, L[1]))
+    random_int = random.randint(0, 10e9)
+    name = '"_verticapy_tmp_{}_{}_{}_{}_"'.format(name.lower(), L[0], L[1], random_int)
+    if schema:
+        name = "{}.{}".format(quote_ident(schema), name)
+    return name
+
+
+# ---#
 def get_category_from_python_type(expr):
     try:
         category = expr.category()
@@ -280,6 +335,8 @@ def get_category_from_python_type(expr):
             category = "text"
         elif isinstance(expr, (datetime.date, datetime.datetime)):
             category = "date"
+        elif isinstance(expr, (dict, list, np.ndarray)):
+            category = "complex"
         else:
             category = ""
     return category
@@ -290,7 +347,9 @@ def get_category_from_vertica_type(ctype: str = ""):
     check_types([("ctype", ctype, [str])])
     ctype = ctype.lower()
     if ctype != "":
-        if (
+        if (ctype[0:5] == "array") or (ctype[0:3] == "row") or (ctype[0:3] == "set"):
+            return "complex"
+        elif (
             (ctype[0:4] == "date")
             or (ctype[0:4] == "time")
             or (ctype == "smalldatetime")
@@ -312,7 +371,7 @@ def get_category_from_vertica_type(ctype: str = ""):
             or (ctype[0:4] == "real")
         ):
             return "float"
-        elif ctype[0:3] == "geo" or ("long varbinary" in ctype.lower()):
+        elif ctype[0:3] == "geo":
             return "spatial"
         elif ("byte" in ctype) or (ctype == "raw") or ("binary" in ctype):
             return "binary"
@@ -322,6 +381,66 @@ def get_category_from_vertica_type(ctype: str = ""):
             return "text"
     else:
         return "undefined"
+
+
+# ---#
+def get_first_file(path: str, ext: str):
+    dirname = os.path.dirname(path)
+    files = os.listdir(dirname)
+    for f in files:
+        file_ext = f.split(".")[-1]
+        if file_ext == ext:
+            return dirname + "/" + f
+    return None
+
+
+# ---#
+def get_final_vertica_type(
+    type_name: str, display_size: int = 0, precision: int = 0, scale: int = 0
+):
+    """
+Takes as input the Vertica Python type code and returns its corresponding data type.
+    """
+    result = type_name
+    has_precision_scale = (
+        (type_name[0:4].lower() not in ("uuid", "date", "bool"))
+        and (type_name[0:5].lower() != "array")
+        and (type_name[0:3].lower() not in ("set", "row", "map", "int"))
+    )
+    if display_size and has_precision_scale:
+        result += f"({display_size})"
+    elif scale and precision and has_precision_scale:
+        result += f"({precision},{scale})"
+    return result
+
+
+# ---#
+def get_header_name_csv(path: str, sep: str):
+    f = open(path, "r")
+    file_header = f.readline().replace("\n", "").replace('"', "").split(sep)
+    f.close()
+    for idx, col in enumerate(file_header):
+        if col == "":
+            if idx == 0:
+                position = "beginning"
+            elif idx == len(file_header) - 1:
+                position = "end"
+            else:
+                position = "middle"
+            file_header[idx] = "col{}".format(idx)
+            warning_message = (
+                "An inconsistent name was found in the {0} of the "
+                "file header (isolated separator). It will be replaced "
+                "by col{1}."
+            ).format(position, idx)
+            if idx == 0:
+                warning_message += (
+                    "\nThis can happen when exporting a pandas DataFrame "
+                    "to CSV while retaining its indexes.\nTip: Use "
+                    "index=False when exporting with pandas.DataFrame.to_csv."
+                )
+            warnings.warn(warning_message, Warning)
+    return erase_space_start_end_in_list_values(file_header)
 
 
 # ---#
@@ -418,12 +537,12 @@ def get_random_function(rand_int=None):
     random_state = verticapy.options["random_state"]
     if isinstance(rand_int, int):
         if isinstance(random_state, int):
-            random_func = "FLOOR({} * SEEDED_RANDOM({}))".format(rand_int, random_state)
+            random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
         else:
-            random_func = "RANDOMINT({})".format(rand_int)
+            random_func = f"RANDOMINT({rand_int})"
     else:
         if isinstance(random_state, int):
-            random_func = "SEEDED_RANDOM({})".format(random_state)
+            random_func = f"SEEDED_RANDOM({random_state})"
         else:
             random_func = "RANDOM()"
     return random_func
@@ -444,16 +563,32 @@ def get_session(add_username: bool = True):
 
 
 # ---#
-def gen_tmp_name(schema: str = "", name: str = ""):
-    session_user = get_session()
-    L = session_user.split("_")
-    L[0] = "".join(filter(str.isalnum, L[0]))
-    L[1] = "".join(filter(str.isalnum, L[1]))
-    random_int = random.randint(0, 10e9)
-    name = '"_verticapy_tmp_{}_{}_{}_{}_"'.format(name.lower(), L[0], L[1], random_int)
-    if schema:
-        name = "{}.{}".format(quote_ident(schema), name)
-    return name
+def get_vertica_type(dtype):
+    if dtype in (str, "str", "string"):
+        dtype = "varchar"
+    elif dtype == float:
+        dtype = "float"
+    elif dtype == int:
+        dtype = "integer"
+    elif dtype == datetime.datetime:
+        dtype = "datetime"
+    elif dtype == datetime.date:
+        dtype = "date"
+    elif dtype == datetime.time:
+        dtype = "time"
+    elif dtype == datetime.timedelta:
+        dtype = "interval"
+    elif dtype == datetime.timezone:
+        dtype = "timestamptz"
+    elif dtype in (np.ndarray, np.array, list):
+        dtype = "array"
+    elif dtype == dict:
+        dtype = "row"
+    elif dtype == tuple:
+        dtype = "set"
+    elif isinstance(dtype, str):
+        dtype = dtype.lower()
+    return dtype
 
 
 # ---#
@@ -844,15 +979,17 @@ def print_table(
                                     category = (
                                         '<div style="margin-bottom: 6px;">Abc</div>'
                                     )
+                                elif category in ("complex", "vmap"):
+                                    category = '<div style="margin-bottom: 6px;">&#128736;</div>'
                                 elif category == "date":
                                     category = '<div style="margin-bottom: 6px;">&#128197;</div>'
                             else:
                                 category = '<div style="margin-bottom: 6px;"></div>'
                         if type_val != "":
                             ctype = (
-                                '<div style="color: #FE5016; margin-top: 6px; '
-                                'font-size: 0.95em;">{0}</div>'
-                            ).format(dtype[data_columns[j][0]].capitalize())
+                                '<div style="overflow-y: scroll; color: #FE5016; '
+                                f'margin-top: 6px; font-size: 0.95em;">{type_val}</div>'
+                            )
                         else:
                             ctype = '<div style="color: #FE5016; margin-top: 6px; font-size: 0.95em;"></div>'
                         if data_columns[j][0] in percent:
@@ -951,30 +1088,32 @@ def replace_vars_in_query(query: str, locals_dict: dict):
 
     variables, query_tmp = re.findall("(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
-        try:
-            var = v[1:]
-            n, splits = var.count("["), []
-            if var.count("]") == n and n > 0:
-                i, size = 0, len(var)
-                while i < size:
-                    if var[i] == "[":
-                        k = i + 1
-                        while i < size and var[i] != "]":
-                            i += 1
-                        splits += [(k, i)]
-                    i += 1
-                var = var[: splits[0][0] - 1]
-            val = locals_dict[var]
-            if splits:
-                for s in splits:
-                    val = val[int(v[s[0] + 1 : s[1] + 1])]
-            fail = False
-        except Exception as e:
-            warning_message = "Failed to replace variables in the query.\nError: {0}".format(
-                e
-            )
-            warnings.warn(warning_message, Warning)
-            fail = True
+        fail = True
+        if len(v) > 1 and not (v[1].isdigit()):
+            try:
+                var = v[1:]
+                n, splits = var.count("["), []
+                if var.count("]") == n and n > 0:
+                    i, size = 0, len(var)
+                    while i < size:
+                        if var[i] == "[":
+                            k = i + 1
+                            while i < size and var[i] != "]":
+                                i += 1
+                            splits += [(k, i)]
+                        i += 1
+                    var = var[: splits[0][0] - 1]
+                val = locals_dict[var]
+                if splits:
+                    for s in splits:
+                        val = val[int(v[s[0] + 1 : s[1] + 1])]
+                fail = False
+            except Exception as e:
+                warning_message = "Failed to replace variables in the query.\nError: {0}".format(
+                    e
+                )
+                warnings.warn(warning_message, Warning)
+                fail = True
         if not (fail):
             if isinstance(val, vDataFrame):
                 val = val.__genSQL__()
@@ -1036,46 +1175,10 @@ def schema_relation(relation):
 
 
 # ---#
-def type_code_to_dtype(
-    type_code: int, display_size: int = 0, precision: int = 0, scale: int = 0
-):
-    """
-Takes as input the Vertica Python type code and returns its corresponding data type.
-    """
-    types = {
-        5: "Boolean",
-        6: "Integer",
-        7: "Float",
-        8: "Char",
-        9: "Varchar",
-        10: "Date",
-        11: "Time",
-        12: "Datetime",
-        13: "Timestamp with Timezone",
-        14: "Interval",
-        15: "Time with Timezone",
-        16: "Numeric",
-        17: "Varbinary",
-        114: "Interval Year to Month",
-        115: "Long Varchar",
-        116: "Long Varbinary",
-        117: "Binary",
-    }
-    if type_code in types:
-        if display_size == None:
-            display_size = 0
-        if precision == None:
-            precision = 0
-        if scale == None:
-            scale = 0
-        result = types[type_code]
-        if type_code in (8, 9, 17, 115, 116, 117) and (display_size > 0):
-            result += "({})".format(display_size)
-        elif type_code == 16 and (precision > 0):
-            result += "({},{})".format(precision, scale)
-        return result
-    else:
-        return "Undefined"
+def format_schema_table(schema: str, table_name: str):
+    if not (schema):
+        schema = "public"
+    return quote_ident(schema) + "." + quote_ident(table_name)
 
 
 # ---#
@@ -1101,54 +1204,79 @@ def updated_dict(
 # ---#
 class str_sql:
     # ---#
-    def __init__(self, alias, category=""):
+    def __init__(self, alias, category="", init_transf=""):
         self.alias = alias
         self.category_ = category
+        if not (init_transf):
+            self.init_transf = alias
+        else:
+            self.init_transf = init_transf
 
     # ---#
     def __repr__(self):
-        return str(self.alias)
+        return str(self.init_transf)
 
     # ---#
     def __str__(self):
-        return str(self.alias)
+        return str(self.init_transf)
 
     # ---#
     def __abs__(self):
-        return str_sql("ABS({})".format(self.alias), self.category())
+        return str_sql("ABS({})".format(self.init_transf), self.category())
 
     # ---#
     def __add__(self, x):
+        from verticapy.vcolumn import vColumn
+
+        if (isinstance(self, vColumn) and self.isarray()) and (
+            isinstance(x, vColumn) and x.isarray()
+        ):
+            return str_sql(
+                "ARRAY_CAT({}, {})".format(self.init_transf, x.init_transf), "complex"
+            )
         val = format_magic(x)
         op = (
             "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
         )
-        return str_sql("({}) {} ({})".format(self.alias, op, val), self.category())
+        return str_sql(
+            "({}) {} ({})".format(self.init_transf, op, val), self.category()
+        )
 
     # ---#
     def __radd__(self, x):
+        from verticapy.vcolumn import vColumn
+
+        if (isinstance(self, vColumn) and self.isarray()) and (
+            isinstance(x, vColumn) and x.isarray()
+        ):
+            return str_sql(
+                "ARRAY_CAT({}, {})".format(x.init_transf, self.init_transf), "complex"
+            )
         val = format_magic(x)
         op = (
             "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
         )
-        return str_sql("({}) {} ({})".format(val, op, self.alias), self.category())
+        return str_sql(
+            "({}) {} ({})".format(val, op, self.init_transf), self.category()
+        )
 
     # ---#
     def __and__(self, x):
         val = format_magic(x)
-        return str_sql("({}) AND ({})".format(self.alias, val), self.category())
+        return str_sql("({}) AND ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rand__(self, x):
         val = format_magic(x)
-        return str_sql("({}) AND ({})".format(val, self.alias), self.category())
+        return str_sql("({}) AND ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def _between(self, x, y):
         val1 = str(format_magic(x))
         val2 = str(format_magic(y))
         return str_sql(
-            "({}) BETWEEN ({}) AND ({})".format(self.alias, val1, val2), self.category()
+            "({}) BETWEEN ({}) AND ({})".format(self.init_transf, val1, val2),
+            self.category(),
         )
 
     # ---#
@@ -1166,7 +1294,7 @@ class str_sql:
         )
         val = [str(format_magic(elem)) for elem in x]
         val = ", ".join(val)
-        return str_sql("({}) IN ({})".format(self.alias, val), self.category())
+        return str_sql("({}) IN ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def _not_in(self, *argv):
@@ -1183,15 +1311,17 @@ class str_sql:
         )
         val = [str(format_magic(elem)) for elem in x]
         val = ", ".join(val)
-        return str_sql("({}) NOT IN ({})".format(self.alias, val), self.category())
+        return str_sql(
+            "({}) NOT IN ({})".format(self.init_transf, val), self.category()
+        )
 
     # ---#
     def _as(self, x):
-        return str_sql("({}) AS {}".format(self.alias, x), self.category())
+        return str_sql("({}) AS {}".format(self.init_transf, x), self.category())
 
     # ---#
     def _distinct(self):
-        return str_sql("DISTINCT ({})".format(self.alias), self.category())
+        return str_sql("DISTINCT ({})".format(self.init_transf), self.category())
 
     # ---#
     def _over(self, by: (str, list) = [], order_by: (str, list) = []):
@@ -1206,7 +1336,7 @@ class str_sql:
         if order_by:
             order_by = "ORDER BY {}".format(order_by)
         return str_sql(
-            "{} OVER ({} {})".format(self.alias, by, order_by), self.category()
+            "{} OVER ({} {})".format(self.init_transf, by, order_by), self.category()
         )
 
     # ---#
@@ -1215,7 +1345,7 @@ class str_sql:
         val = format_magic(x)
         if val != "NULL":
             val = "({})".format(val)
-        return str_sql("({}) {} {}".format(self.alias, op, val), self.category())
+        return str_sql("({}) {} {}".format(self.init_transf, op, val), self.category())
 
     # ---#
     def __ne__(self, x):
@@ -1223,129 +1353,133 @@ class str_sql:
         val = format_magic(x)
         if val != "NULL":
             val = "({})".format(val)
-        return str_sql("({}) {} {}".format(self.alias, op, val), self.category())
+        return str_sql("({}) {} {}".format(self.init_transf, op, val), self.category())
 
     # ---#
     def __ge__(self, x):
         val = format_magic(x)
-        return str_sql("({}) >= ({})".format(self.alias, val), self.category())
+        return str_sql("({}) >= ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __gt__(self, x):
         val = format_magic(x)
-        return str_sql("({}) > ({})".format(self.alias, val), self.category())
+        return str_sql("({}) > ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __le__(self, x):
         val = format_magic(x)
-        return str_sql("({}) <= ({})".format(self.alias, val), self.category())
+        return str_sql("({}) <= ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __lt__(self, x):
         val = format_magic(x)
-        return str_sql("({}) < ({})".format(self.alias, val), self.category())
+        return str_sql("({}) < ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __mul__(self, x):
         if self.category() == "text" and isinstance(x, (int)):
-            return str_sql("REPEAT({}, {})".format(self.alias, x), self.category())
+            return str_sql(
+                "REPEAT({}, {})".format(self.init_transf, x), self.category()
+            )
         val = format_magic(x)
-        return str_sql("({}) * ({})".format(self.alias, val), self.category())
+        return str_sql("({}) * ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rmul__(self, x):
         if self.category() == "text" and isinstance(x, (int)):
-            return str_sql("REPEAT({}, {})".format(self.alias, x), self.category())
+            return str_sql(
+                "REPEAT({}, {})".format(self.init_transf, x), self.category()
+            )
         val = format_magic(x)
-        return str_sql("({}) * ({})".format(val, self.alias), self.category())
+        return str_sql("({}) * ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def __or__(self, x):
         val = format_magic(x)
-        return str_sql("({}) OR ({})".format(self.alias, val), self.category())
+        return str_sql("({}) OR ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __ror__(self, x):
         val = format_magic(x)
-        return str_sql("({}) OR ({})".format(val, self.alias), self.category())
+        return str_sql("({}) OR ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def __pos__(self):
-        return str_sql("+({})".format(self.alias), self.category())
+        return str_sql("+({})".format(self.init_transf), self.category())
 
     # ---#
     def __neg__(self):
-        return str_sql("-({})".format(self.alias), self.category())
+        return str_sql("-({})".format(self.init_transf), self.category())
 
     # ---#
     def __pow__(self, x):
         val = format_magic(x)
-        return str_sql("POWER({}, {})".format(self.alias, val), self.category())
+        return str_sql("POWER({}, {})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rpow__(self, x):
         val = format_magic(x)
-        return str_sql("POWER({}, {})".format(val, self.alias), self.category())
+        return str_sql("POWER({}, {})".format(val, self.init_transf), self.category())
 
     # ---#
     def __mod__(self, x):
         val = format_magic(x)
-        return str_sql("MOD({}, {})".format(self.alias, val), self.category())
+        return str_sql("MOD({}, {})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rmod__(self, x):
         val = format_magic(x)
-        return str_sql("MOD({}, {})".format(val, self.alias), self.category())
+        return str_sql("MOD({}, {})".format(val, self.init_transf), self.category())
 
     # ---#
     def __sub__(self, x):
         val = format_magic(x)
-        return str_sql("({}) - ({})".format(self.alias, val), self.category())
+        return str_sql("({}) - ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rsub__(self, x):
         val = format_magic(x)
-        return str_sql("({}) - ({})".format(val, self.alias), self.category())
+        return str_sql("({}) - ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def __truediv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) / ({})".format(self.alias, val), self.category())
+        return str_sql("({}) / ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rtruediv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) / ({})".format(val, self.alias), self.category())
+        return str_sql("({}) / ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def __floordiv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) // ({})".format(self.alias, val), self.category())
+        return str_sql("({}) // ({})".format(self.init_transf, val), self.category())
 
     # ---#
     def __rfloordiv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) // ({})".format(val, self.alias), self.category())
+        return str_sql("({}) // ({})".format(val, self.init_transf), self.category())
 
     # ---#
     def __ceil__(self):
-        return str_sql("CEIL({})".format(self.alias), self.category())
+        return str_sql("CEIL({})".format(self.init_transf), self.category())
 
     # ---#
     def __floor__(self):
-        return str_sql("FLOOR({})".format(self.alias), self.category())
+        return str_sql("FLOOR({})".format(self.init_transf), self.category())
 
     # ---#
     def __trunc__(self):
-        return str_sql("TRUNC({})".format(self.alias), self.category())
+        return str_sql("TRUNC({})".format(self.init_transf), self.category())
 
     # ---#
     def __invert__(self):
-        return str_sql("-({}) - 1".format(self.alias), self.category())
+        return str_sql("-({}) - 1".format(self.init_transf), self.category())
 
     # ---#
     def __round__(self, x):
-        return str_sql("ROUND({}, {})".format(self.alias, x), self.category())
+        return str_sql("ROUND({}, {})".format(self.init_transf, x), self.category())
 
     def category(self):
         return self.category_
