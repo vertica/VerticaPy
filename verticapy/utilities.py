@@ -2068,7 +2068,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             all_files = os.listdir(dirname)
             max_files=sum(1 for x in all_files if x.endswith(".json"))
         else:
-            max_files=100
+            max_files=1000
         return read_file(
         path=path,
         schema=schema,
