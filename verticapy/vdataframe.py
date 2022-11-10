@@ -11472,7 +11472,7 @@ vColumns : vColumn
     Returns
     -------
     str or list
-        JSON str or list (n_files>1) if 'path' is not defined, nothing otherwise
+        JSON str or list (n_files>1) if 'path' is not defined; otherwise, nothing
 
     See Also
     --------
@@ -11841,7 +11841,7 @@ vColumns : vColumn
     Returns
     -------
     str or list
-        JSON str or list (n_files>1) if 'path' is not defined, nothing otherwise
+        JSON str or list (n_files>1) if 'path' is not defined; otherwise, nothing
 
     See Also
     --------
