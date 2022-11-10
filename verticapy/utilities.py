@@ -1377,60 +1377,66 @@ def read_file(
     dtype: dict = {},
     unknown: str = "varchar",
     varchar_varbinary_length: int = 80,
-    max_files: int = 1,
-    max_candidates: int = 1,
-    genSQL: bool = False,
+    insert: bool = False,
     temporary_table: bool = False,
     temporary_local_table: bool = True,
     gen_tmp_table_name: bool = True,
+    ingest_local: bool = False,
+    genSQL: bool = False,
+    max_files: int = 100,
 ):
     """
 ---------------------------------------------------------------------------
 Inspects and ingests a file in CSV, Parquet, ORC, JSON, or Avro format.
 This function uses the Vertica complex data type.
-The file must be located in the server.
+For new table creation, the file must be located in the server.
 
 Parameters
 ----------
 path: str
-    Path to a file or glob. Valid paths include any path that is valid for
-    COPY and that uses a file format supported by this function. For all formats  
-    except JSON, if a glob specifies more than one file, this function reads a single, 
-    arbitrarily-chosen file. For JSON, the function might read more than one file.
+    Path to a file or glob. Valid paths include any path that is 
+    valid for COPY and that uses a file format supported by this 
+    function. For all formats except JSON, if a glob specifies 
+    more than one file, this function reads a single, arbitrarily
+    -chosen file. For JSON, the function might read more than one 
+    file.
 schema: str, optional
     Schema in which to create the table.
 table_name: str, optional
     Name of the table to create. If empty, the file name is used.
 dtype: dict, optional
-    Dictionary of customised data type. The predicted data types will be replaced by
-    the input data types. The dictionary must include the name of the column as key and
-    the new data type as value.
+    Dictionary of customised data type. The predicted data types will 
+    be replaced by the input data types. The dictionary must include 
+    the name of the column as key and the new data type as value.
 unknown: str, optional
     Type used to replace unknown data types.
 varchar_varbinary_length: int, optional
     Default length of varchar and varbinary columns.
-max_files: int, optional
-    (JSON only.) If path is a glob, specifies maximum number of files in path to inspect.
-    Use this parameter to increase the amount of data the function considers. 
-    This can be beneficial if you suspect variation among files. Files are chosen 
-    arbitrarily from the glob.
-max_candidates: int, optional
-    (JSON only.) Number of candidate table definitions to show. The function generates 
-    only one candidate per file, so if you increase max_candidates, also increase 
-    max_files.
+insert: bool, optional
+    If set to True, the data will be ingested to the input relation.
+    When you set this parameter to True, most of the parameters are 
+    ignored.
+temporary_table: bool, optional
+    If set to True, a temporary table is created.
+temporary_local_table: bool, optional
+    If set to True, a temporary local table is created. The parameter 
+    'schema' must be empty, otherwise this parameter is ignored.
+gen_tmp_table_name: bool, optional
+    Sets the name of the temporary table. This parameter is only used 
+    when the parameter 'temporary_local_table' is set to True and the 
+    parameters "table_name" and "schema" are unspecified.
+ingest_local: bool, optional
+    If set to True, the file will be ingested from the local machine. 
+    It only works for data insertion at the moment.
 genSQL: bool, optional
     If set to True, the SQL code for creating the final table is 
     generated but not executed. This is a good way to change the final
     relation types or to customize the data ingestion.
-temporary_table: bool, optional
-    If set to True, a temporary table is created.
-temporary_local_table: bool, optional
-    If set to True, a temporary local table is created. The parameter 'schema'
-    must be empty, otherwise this parameter is ignored.
-gen_tmp_table_name: bool, optional
-    Sets the name of the temporary table. This parameter is only used when the 
-    parameter 'temporary_local_table' is set to True and the parameters 
-    "table_name" and "schema" are unspecified.
+max_files: int, optional
+    (JSON only.) If path is a glob, specifies maximum number of files 
+    in path to inspect. Use this parameter to increase the amount of 
+    data the function considers. This can be beneficial if you suspect 
+    variation among files. Files are chosen arbitrarily from the glob.
 
 Returns
 -------
@@ -1449,13 +1455,14 @@ vDataFrame
             "table_name": table_name,
             "dtype": dtype,
             "max_files": max_files,
-            "max_candidates": max_candidates,
             "genSQL": genSQL,
             "unknown": unknown,
             "varchar_varbinary_length": varchar_varbinary_length,
             "temporary_table": temporary_table,
             "temporary_local_table": temporary_local_table,
             "gen_tmp_table_name": gen_tmp_table_name,
+            "ingest_local": ingest_local,
+            "insert": insert,
         },
     )
     # -#
@@ -1466,21 +1473,17 @@ vDataFrame
             ("table_name", table_name, [str]),
             ("dtype", dtype, [dict]),
             ("max_files", max_files, [int]),
-            ("max_candidates", max_candidates, [int]),
             ("genSQL", genSQL, [bool]),
             ("unknown", unknown, [str]),
             ("varchar_varbinary_length", varchar_varbinary_length, [int]),
             ("temporary_table", temporary_table, [bool]),
             ("temporary_local_table", temporary_local_table, [bool]),
             ("gen_tmp_table_name", gen_tmp_table_name, [bool]),
+            ("ingest_local", ingest_local, [bool]),
+            ("insert", insert, [bool]),
         ]
     )
-    if schema:
-        temporary_local_table = False
-    elif temporary_local_table:
-        schema = "v_temp_schema"
-    else:
-        schema = "public"
+    assert not(ingest_local) or insert, ParameterError('Ingest local to create new relations is not yet supported for \'read_file\'')
     file_format = path.split(".")[-1].lower()
     if file_format not in ("json", "parquet", "avro", "orc", "csv"):
         raise ExtensionError("The file extension is incorrect !")
@@ -1491,11 +1494,38 @@ vDataFrame
             table_name=table_name,
             dtype=dtype,
             genSQL=genSQL,
+            insert=insert,
             temporary_table=temporary_table,
             temporary_local_table=temporary_local_table,
             gen_tmp_table_name=gen_tmp_table_name,
-            ingest_local=False,
+            ingest_local=ingest_local,
         )
+    if insert:
+        if not(table_name):
+            raise ParameterError("Parameter 'table_name' must be defined when parameter 'insert' is set to True.")
+        if not(schema) and temporary_local_table:
+            schema = "v_temp_schema"
+        elif not(schema):
+            schema = "public"
+        input_relation = quote_ident(schema) + "." + quote_ident(table_name)
+        file_format = file_format.upper()
+        if file_format.lower() in ("json", "avro"):
+            parser = f" PARSER F{file_format}PARSER()"
+        else:
+            parser = f" {file_format}"
+        path = path.replace("'", "''")
+        local = "LOCAL " if ingest_local else ""
+        query = f"COPY {input_relation} FROM {local}'{path}'{parser};"
+        if genSQL:
+            return [clean_query(query)]
+        executeSQL(query, title="Inserting the data.")
+        return vDataFrame(table_name, schema=schema)
+    if schema:
+        temporary_local_table = False
+    elif temporary_local_table:
+        schema = "v_temp_schema"
+    else:
+        schema = "public"
     basename = ".".join(path.split("/")[-1].split(".")[0:-1])
     if gen_tmp_table_name and temporary_local_table and not (table_name):
         table_name = gen_tmp_name(name=basename)
@@ -1506,7 +1536,7 @@ vDataFrame
         f"format='{file_format}', table_name='y_verticapy', "
         "table_schema='x_verticapy', table_type='native', "
         "with_copy_statement=true, one_line_result=true, "
-        f"max_files={max_files}, max_candidates={max_candidates});"
+        f"max_files={max_files}, max_candidates=1);"
     )
     result = executeSQL(
         sql, title="Generating the CREATE and COPY statement.", method="fetchfirstelem"
@@ -1962,7 +1992,7 @@ new_name: dict, optional
     the following dictionary:
 	{"param.age": "age", "param.name": "name"}
 insert: bool, optional
-	If set to True, the data will be ingested to the input relation. 
+	If set to True, the data will be ingested to the input relation.
     The JSON parameters must be the same than the input relation otherwise 
     they will not be ingested.
 temporary_table: bool, optional
