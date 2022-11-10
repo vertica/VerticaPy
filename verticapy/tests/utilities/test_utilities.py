@@ -66,6 +66,8 @@ def world_vd():
 
 
 class TestUtilities:
+
+    @pytest.mark.skip(reason="this test will be valid for Vertica v12.0.2")
     def test_complex_elements(self, laliga_vd):
         vdf = laliga_vd.copy()
         vdf["away_team_managers"] = vdf["away_team"]["managers"]
@@ -581,7 +583,6 @@ class TestUtilities:
         # TODO
         # test on archives
 
-    #@pytest.mark.skip(reason="this test will be valid for Vertica v12.0.1")
     def test_read_file(self, laliga_vd):
         drop(name="v_temp_schema.laliga_test")
         path = os.path.dirname(verticapy.__file__) + "/data/laliga/*.json"
@@ -593,7 +594,6 @@ class TestUtilities:
             unknown="varchar",
             varchar_varbinary_length=200,
             max_files=20,
-            max_candidates=1,
         )
         assert laliga_vd.shape() == vdf.shape()
         assert vdf["away_score"].ctype().lower()[0:5] == "float"
@@ -609,7 +609,6 @@ class TestUtilities:
             unknown="varchar",
             varchar_varbinary_length=200,
             max_files=20,
-            max_candidates=1,
             genSQL=True,
         )
         for query in sql:
@@ -627,7 +626,6 @@ class TestUtilities:
             unknown="varchar",
             varchar_varbinary_length=200,
             max_files=20,
-            max_candidates=1,
         )
         assert laliga_vd.shape() == vdf.shape()
 
