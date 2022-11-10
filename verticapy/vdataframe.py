@@ -11700,15 +11700,15 @@ vColumns : vColumn
         )
         random_func = get_random_function(nb_split)
         nb_split = (
-            ", {} AS _verticapy_split_".format(random_func) if (nb_split > 0) else ""
+            f", {random_func} AS _verticapy_split_" if (nb_split > 0) else ""
         )
         if isinstance(db_filter, Iterable) and not (isinstance(db_filter, str)):
-            db_filter = " AND ".join(["({})".format(elem) for elem in db_filter])
-        db_filter = " WHERE {}".format(db_filter) if (db_filter) else ""
+            db_filter = " AND ".join([f"({elem})" for elem in db_filter])
+        db_filter = f" WHERE {db_filter}" if (db_filter) else ""
         if relation_type == "insert":
             query = "INSERT INTO {}{} SELECT {}{} FROM {}{}{}".format(
                 name,
-                " ({})".format(usecols) if not (nb_split) and usecols != "*" else "",
+                f" ({usecols})" if not (nb_split) and usecols != "*" else "",
                 usecols,
                 nb_split,
                 self.__genSQL__(),
@@ -11728,14 +11728,12 @@ vColumns : vColumn
             )
         executeSQL(
             query=query,
-            title="Creating a new {} to save the vDataFrame.".format(relation_type),
+            title=f"Creating a new {relation_type} to save the vDataFrame.",
         )
         if relation_type == "insert":
             executeSQL(query="COMMIT;", title="Commit.")
         self.__add_to_history__(
-            "[Save]: The vDataFrame was saved into a {} named '{}'.".format(
-                relation_type, name
-            )
+            f"[Save]: The vDataFrame was saved into a {relation_type} named '{name}'."
         )
         if inplace:
             history, saving = (
