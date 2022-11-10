@@ -1978,6 +1978,7 @@ def read_json(
     reject_on_empty_key: bool = False,
     flatten_maps: bool = True,
     flatten_arrays: bool = False,
+    use_complex_dt: bool = False,
 ):
     """
 ---------------------------------------------------------------------------
@@ -2005,8 +2006,8 @@ new_name: dict, optional
 	{"param.age": "age", "param.name": "name"}
 insert: bool, optional
 	If set to True, the data will be ingested to the input relation.
-    The JSON parameters must be the same than the input relation otherwise 
-    they will not be ingested.
+    The JSON parameters must be the same than the input relation otherwise
+    they will not be ingested. Also, table_name cannot be empty if this is true.
 temporary_table: bool, optional
     If set to True, a temporary table will be created.
 temporary_local_table: bool, optional
@@ -2073,6 +2074,9 @@ flatten_arrays: bool, optional
     When lists are flattened, key names are concatenated as for maps. 
     Lists are not flattened by default. This value affects all data in 
     the load, including nested lists.
+use_complex_dt: bool, optional
+    Boolean, whether the input data file has complex structure.
+    When this is true, most of the other parameters will be ignored.
 
 Returns
 -------
@@ -2110,6 +2114,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             "flatten_maps": flatten_maps,
             "genSQL": genSQL,
             "materialize": materialize,
+            "use_complex_dt":use_complex_dt ,
         },
     )
     # -#
@@ -2143,8 +2148,32 @@ read_csv : Ingests a CSV file into the Vertica database.
             ("flatten_maps", flatten_maps, [bool]),
             ("genSQL", genSQL, [bool]),
             ("materialize", materialize, [bool]),
+            ("use_complex_dt",use_complex_dt,[bool]),
         ]
     )
+
+    if use_complex_dt:
+        assert not(new_name), ParameterError(
+        "You cannot use the parameter ""new_name"" with ""use_complex_dt""."
+        )
+        if ("*" in path) and ingest_local:
+            dirname = os.path.dirname(path)
+            all_files = os.listdir(dirname)
+            max_files=sum(1 for x in all_files if x.endswith(".json"))
+        else:
+            max_files=1000
+        return read_file(
+        path=path,
+        schema=schema,
+        table_name=table_name,
+        insert = insert,
+        temporary_table = temporary_table ,
+        temporary_local_table=temporary_local_table,
+        gen_tmp_table_name=gen_tmp_table_name,
+        ingest_local=ingest_local,
+        genSQL=genSQL,
+        max_files= max_files,
+        )
     if schema:
         temporary_local_table = False
     elif temporary_local_table:
