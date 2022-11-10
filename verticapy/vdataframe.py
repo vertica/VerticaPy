@@ -11693,11 +11693,24 @@ vColumns : vColumn
             relation_type += " table"
         elif relation_type == "local":
             relation_type += " temporary table"
-        usecols = (
-            "*"
-            if not (usecols)
-            else ", ".join([quote_ident(column) for column in usecols])
-        )
+        isflex = self._VERTICAPY_VARIABLES_["isflex"]
+        if not(usecols):
+            usecols = self.get_columns()
+        if not(usecols) and not(isflex):
+            select = "*"
+        elif usecols and not(isflex):
+            select = ", ".join([quote_ident(column) for column in usecols])
+        else:
+            select = []
+            for column in usecols:
+                ctype, col = self[column].ctype(), quote_ident(column)
+                if ctype.startswith("vmap"):
+                    column = "MAPTOSTRING({0}) AS {0}".format(col)
+                else:
+                    column += f"::{ctype}"
+                select += [column]
+            select = ", ".join(select)
+        insert_usecols = ", ".join([quote_ident(column) for column in usecols])
         random_func = get_random_function(nb_split)
         nb_split = (
             f", {random_func} AS _verticapy_split_" if (nb_split > 0) else ""
@@ -11706,21 +11719,22 @@ vColumns : vColumn
             db_filter = " AND ".join([f"({elem})" for elem in db_filter])
         db_filter = f" WHERE {db_filter}" if (db_filter) else ""
         if relation_type == "insert":
-            query = "INSERT INTO {}{} SELECT {}{} FROM {}{}{}".format(
+            query = "INSERT INTO {0}{1}{2} SELECT {3}{4} FROM {5}{6}{7}".format(
+
                 name,
-                f" ({usecols})" if not (nb_split) and usecols != "*" else "",
-                usecols,
+                f" ({insert_usecols})" if not (nb_split) and select != "*" else "",
+                select,
                 nb_split,
                 self.__genSQL__(),
                 db_filter,
                 self.__get_last_order_by__(),
             )
         else:
-            query = "CREATE {} {}{} AS SELECT /*+LABEL('vDataframe.to_db')*/ {}{} FROM {}{}{}".format(
+            query = "CREATE {0} {1}{2} AS SELECT /*+LABEL('vDataframe.to_db')*/ {3}{4} FROM {5}{6}{7}".format(
                 relation_type.upper(),
                 name,
                 commit,
-                usecols,
+                select,
                 nb_split,
                 self.__genSQL__(),
                 db_filter,
@@ -11740,12 +11754,15 @@ vColumns : vColumn
                 self._VERTICAPY_VARIABLES_["history"],
                 self._VERTICAPY_VARIABLES_["saving"],
             )
-            catalog_vars, columns = {}, self.get_columns()
-            for column in columns:
+            catalog_vars = {}
+            for column in usecols:
                 catalog_vars[column] = self[column].catalog
-            self.__init__(name)
+            if relation_type == "local temporary table":
+                self.__init__("v_temp_schema." + name)
+            else:
+                self.__init__(name)
             self._VERTICAPY_VARIABLES_["history"] = history
-            for column in columns:
+            for column in usecols:
                 self[column].catalog = catalog_vars[column]
         return self
 
