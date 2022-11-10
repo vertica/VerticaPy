@@ -1875,6 +1875,8 @@ def read_json(
     temporary_local_table: bool = True,
     gen_tmp_table_name: bool = True,
     ingest_local: bool = True,
+    genSQL: bool = False,
+    materialize: bool = True,
     start_point: str = None,
     record_terminator: str = None,
     suppress_nonalphanumeric_key_chars: bool = False,
@@ -1883,6 +1885,7 @@ def read_json(
     reject_on_empty_key: bool = False,
     flatten_maps: bool = True,
     flatten_arrays: bool = False,
+    use_complex_dt: bool = False,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1897,66 +1900,90 @@ schema: str, optional
 table_name: str, optional
 	Final relation name.
 usecols: list, optional
-	List of the JSON parameters to ingest. The other ones will be ignored. If
-	empty all the JSON parameters will be ingested.
+	List of the JSON parameters to ingest. The other ones will be 
+    ignored. If empty all the JSON parameters will be ingested.
 new_name: dict, optional
-	Dictionary of the new columns name. If the JSON file is nested, it is advised
-	to change the final names as special characters will be included.
-	For example, {"param": {"age": 3, "name": Badr}, "date": 1993-03-11} will 
-	create 3 columns: "param.age", "param.name" and "date". You can rename these 
-	columns using the 'new_name' parameter with the following dictionary:
+	Dictionary of the new columns name. If the JSON file is nested, 
+    it is advised to change the final names as special characters 
+    will be included.
+	For example, {"param": {"age": 3, "name": Badr}, "date": 1993-03-11} 
+    will create 3 columns: "param.age", "param.name" and "date". 
+    You can rename these columns using the 'new_name' parameter with 
+    the following dictionary:
 	{"param.age": "age", "param.name": "name"}
 insert: bool, optional
-	If set to True, the data will be ingested to the input relation. The JSON
-	parameters must be the same than the input relation otherwise they will
-	not be ingested.
+	If set to True, the data will be ingested to the input relation.
+    The JSON parameters must be the same than the input relation otherwise 
+    they will not be ingested. Also, table_name cannot be empty if this is true.
 temporary_table: bool, optional
     If set to True, a temporary table will be created.
 temporary_local_table: bool, optional
-    If set to True, a temporary local table will be created. The parameter 'schema'
-    must be empty, otherwise this parameter is ignored.
+    If set to True, a temporary local table will be created. The parameter 
+    'schema' must be empty, otherwise this parameter is ignored.
 gen_tmp_table_name: bool, optional
-    Sets the name of the temporary table. This parameter is only used when the 
-    parameter 'temporary_local_table' is set to True and if the parameters 
+    Sets the name of the temporary table. This parameter is only used when 
+    the parameter 'temporary_local_table' is set to True and if the parameters 
     "table_name" and "schema" are unspecified.
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
+genSQL: bool, optional
+    If set to True, the SQL code for creating the final table is 
+    generated but not executed. This is a good way to change the final
+    relation types or to customize the data ingestion.
+materialize: bool, optional
+    If set to True, the flex table is materialized into a table.
+    Otherwise, it will remain a flex table. Flex tables simplify the
+    data ingestion but have worse performace compared to regular tables.
 start_point: str, optional
-    String, name of a key in the JSON load data at which to begin parsing. The parser 
-    ignores all data before the start_point value. The value is loaded for each object in 
-    the file. The parser processes data after the first instance, and up to the second, 
-    ignoring any remaining data.
+    String, name of a key in the JSON load data at which to begin parsing. 
+    The parser ignores all data before the start_point value. 
+    The value is loaded for each object in the file. The parser processes 
+    data after the first instance, and up to the second, ignoring any 
+    remaining data.
 record_terminator: str, optional
-    When set, any invalid JSON records are skipped and parsing continues with the next record. 
-    Records must be terminated uniformly. For example, if your input file has JSON records 
-    terminated by newline characters, set this parameter to '\n'). If any invalid 
-    JSON records exist, parsing continues after the next record_terminator.
-    Even if the data does not contain invalid records, specifying an explicit record terminator 
-    can improve load performance by allowing cooperative parse and apportioned load to operate 
-    more efficiently.
-    When you omit this parameter, parsing ends at the first invalid JSON record.
+    When set, any invalid JSON records are skipped and parsing continues 
+    with the next record. 
+    Records must be terminated uniformly. For example, if your input file 
+    has JSON records terminated by newline characters, set this parameter 
+    to '\n'). 
+    If any invalid JSON records exist, parsing continues after the next 
+    record_terminator.
+    Even if the data does not contain invalid records, specifying an 
+    explicit record terminator can improve load performance by allowing 
+    cooperative parse and apportioned load to operate more efficiently.
+    When you omit this parameter, parsing ends at the first invalid JSON 
+    record.
 suppress_nonalphanumeric_key_chars: bool, optional
-    Boolean, whether to suppress non-alphanumeric characters in JSON key values. The parser 
-    replaces these characters with an underscore (_) when this parameter is true.
+    Boolean, whether to suppress non-alphanumeric characters in JSON 
+    key values. The parser replaces these characters with an underscore 
+    (_) when this parameter is true.
 reject_on_materialized_type_error: bool, optional
-    Boolean, whether to reject a data row that contains a materialized column value that cannot 
-    be coerced into a compatible data type. If the value is false and the type cannot be coerced, 
-    the parser sets the value in that column to null.
-    If the column is a strongly-typed complex type, as opposed to a flexible complex type, then 
-    a type mismatch anywhere in the complex type causes the entire column to be treated as a 
-    mismatch. The parser does not partially load complex types.
+    Boolean, whether to reject a data row that contains a materialized 
+    column value that cannot be coerced into a compatible data type. 
+    If the value is false and the type cannot be coerced, the parser 
+    sets the value in that column to null.
+    If the column is a strongly-typed complex type, as opposed to a 
+    flexible complex type, then a type mismatch anywhere in the complex 
+    type causes the entire column to be treated as a mismatch. The parser 
+    does not partially load complex types.
 reject_on_duplicate: bool, optional
-    Boolean, whether to ignore duplicate records (false), or to reject duplicates (true). 
-    In either case, the load continues.
+    Boolean, whether to ignore duplicate records (false), or to 
+    reject duplicates (true). In either case, the load continues.
 reject_on_empty_key: bool, optional
-    Boolean, whether to reject any row containing a field key without a value.
+    Boolean, whether to reject any row containing a field key 
+    without a value.
 flatten_maps: bool, optional
-    Boolean, whether to flatten all Avro maps. Key names are concatenated with nested levels. 
-    This value is recursive and affects all data in the load.
+    Boolean, whether to flatten all Avro maps. Key names are 
+    concatenated with nested levels. This value is recursive and 
+    affects all data in the load.
 flatten_arrays: bool, optional
-    Boolean, whether to convert lists to sub-maps with integer keys. When lists are flattened, 
-    key names are concatenated as for maps. Lists are not flattened by default. This value 
-    affects all data in the load, including nested lists.
+    Boolean, whether to convert lists to sub-maps with integer keys. 
+    When lists are flattened, key names are concatenated as for maps. 
+    Lists are not flattened by default. This value affects all data in 
+    the load, including nested lists.
+use_complex_dt: bool, optional
+    Boolean, whether the input data file has complex structure.
+    When this is true, most of the other parameters will be ignored. 
 
 Returns
 -------
@@ -1968,6 +1995,8 @@ See Also
 read_csv : Ingests a CSV file into the Vertica database.
 	"""
     # Saving information to the query profile table
+    from verticapy import vDataFrame
+
     save_to_query_profile(
         name="read_json",
         path="utilities",
@@ -1990,6 +2019,9 @@ read_csv : Ingests a CSV file into the Vertica database.
             "reject_on_empty_key": reject_on_empty_key,
             "flatten_arrays": flatten_arrays,
             "flatten_maps": flatten_maps,
+            "genSQL": genSQL,
+            "materialize": materialize,
+            "use_complex_dt":use_complex_dt ,
         },
     )
     # -#
@@ -2021,8 +2053,34 @@ read_csv : Ingests a CSV file into the Vertica database.
             ("reject_on_empty_key", reject_on_empty_key, [bool]),
             ("flatten_arrays", flatten_arrays, [bool]),
             ("flatten_maps", flatten_maps, [bool]),
+            ("genSQL", genSQL, [bool]),
+            ("materialize", materialize, [bool]),
+            ("use_complex_dt",use_complex_dt,[bool]),
         ]
     )
+
+    if use_complex_dt:
+        assert not(new_name), ParameterError(
+        "You cannot use the parameter ""new_name"" with ""use_complex_dt""."
+        )
+        if ("*" in path) and ingest_local:
+            dirname = os.path.dirname(path)
+            all_files = os.listdir(dirname)
+            max_files=sum(1 for x in all_files if x.endswith(".json"))
+        else:
+            max_files=100
+        return read_file(
+        path=path,
+        schema=schema,
+        table_name=table_name,
+        insert = insert,
+        temporary_table = temporary_table ,
+        temporary_local_table=temporary_local_table,
+        gen_tmp_table_name=gen_tmp_table_name,
+        ingest_local=ingest_local,
+        genSQL=genSQL,
+        max_files= max_files,
+        )
     if schema:
         temporary_local_table = False
     elif temporary_local_table:
