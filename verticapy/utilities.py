@@ -1231,16 +1231,16 @@ escape: str, optional
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 flex_name: str, optional
-    Flex Table name.
+    Flex table name.
 genSQL: bool, optional
-    If set to True, the SQL code for creating the final table will be 
-    generated but not executed. It is a good way to change the final
-    relation types or to customize the data ingestion.
+    If set to True, the SQL code for creating the final table is 
+    generated but not executed. This is a good way to change the
+    final relation types or to customize the data ingestion.
 
 Returns
 -------
 dict
-    dictionary containing for each column its type.
+    dictionary containing each column and its type.
 
 See Also
 --------
@@ -1401,9 +1401,9 @@ path: str
     Path to a file or glob. Valid paths include any path that is 
     valid for COPY and that uses a file format supported by this 
     function. 
-    For inferring the data type, even if a glob specifies more than one 
-    file, only one file will be read. However, in the case of JSON, more 
-    than one files may be read to infer the data type.
+    When inferring the data type, only one file will be read, even 
+    if a glob specifies multiple files. However, in the case of JSON, 
+    more than one file may be read to infer the data type.
 schema: str, optional
     Schema in which to create the table.
 table_name: str, optional
@@ -1417,7 +1417,7 @@ unknown: str, optional
 varchar_varbinary_length: int, optional
     Default length of varchar and varbinary columns.
 insert: bool, optional
-    If set to True, the data will be ingested to the input relation.
+    If set to True, the data is ingested into the input relation.
     When you set this parameter to True, most of the parameters are 
     ignored.
 temporary_table: bool, optional
@@ -1430,8 +1430,8 @@ gen_tmp_table_name: bool, optional
     when the parameter 'temporary_local_table' is set to True and the 
     parameters "table_name" and "schema" are unspecified.
 ingest_local: bool, optional
-    If set to True, the file will be ingested from the local machine. 
-    It only works for data insertion at the moment.
+    If set to True, the file is ingested from the local machine. 
+    This currently only works for data insertion.
 genSQL: bool, optional
     If set to True, the SQL code for creating the final table is 
     generated but not executed. This is a good way to change the final
@@ -1694,13 +1694,13 @@ gen_tmp_table_name: bool, optional
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 genSQL: bool, optional
-    If set to True, the SQL code for creating the final table will be 
-    generated but not executed. It is a good way to change the final
+    If set to True, the SQL code for creating the final table is 
+    generated but not executed. This is a good way to change the final
     relation types or to customize the data ingestion.
 materialize: bool, optional
-    If set to True, the flex table will be materialized into a table.
-    Otherwise, it will remain a flex table. Flex tables simplifies the
-    data ingestion but are much less performant than regular table.
+    If set to True, the flex table is materialized into a table.
+    Otherwise, it will remain a flex table. Flex tables simplify the
+    data ingestion but have worse performace compared to regular tables.
 
 Returns
 -------
@@ -2018,13 +2018,13 @@ gen_tmp_table_name: bool, optional
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 genSQL: bool, optional
-    If set to True, the SQL code for creating the final table will be 
-    generated but not executed. It is a good way to change the final
+    If set to True, the SQL code for creating the final table is 
+    generated but not executed. This is a good way to change the final
     relation types or to customize the data ingestion.
 materialize: bool, optional
-    If set to True, the flex table will be materialized into a table.
-    Otherwise, it will remain a flex table. Flex tables simplifies the
-    data ingestion but are much less performant than regular table.
+    If set to True, the flex table is materialized into a table.
+    Otherwise, it will remain a flex table. Flex tables simplify the
+    data ingestion but have worse performace compared to regular tables.
 start_point: str, optional
     String, name of a key in the JSON load data at which to begin parsing. 
     The parser ignores all data before the start_point value. 
