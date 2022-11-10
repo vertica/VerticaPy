@@ -1447,6 +1447,7 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
+    version(condition=[11, 1, 1])
     from verticapy import vDataFrame
 
     # Saving information to the query profile table
@@ -3244,10 +3245,12 @@ The tablesample attributes are the same than the parameters.
             elif isinstance(val, datetime.timezone):
                 val = f"'{val}'::timestamptz"
             elif isinstance(val, (np.ndarray, list)):
+                version(condition=[10, 0, 0])
                 val = "ARRAY[{0}]".format(
                     ",".join([str(get_correct_format_and_cast(k)) for k in val])
                 )
             elif isinstance(val, dict):
+                version(condition=[11, 0, 0])
                 all_elems = [
                     "{0} AS {1}".format(get_correct_format_and_cast(val[k]), k)
                     for k in val

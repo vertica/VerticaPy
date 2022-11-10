@@ -66,7 +66,6 @@ def world_vd():
 
 
 class TestUtilities:
-    @pytest.mark.skip(reason="this test will be valid for Vertica v12.0.1")
     def test_complex_elements(self, laliga_vd):
         vdf = laliga_vd.copy()
         vdf["away_team_managers"] = vdf["away_team"]["managers"]
@@ -582,7 +581,7 @@ class TestUtilities:
         # TODO
         # test on archives
 
-    @pytest.mark.skip(reason="this test will be valid for Vertica v12.0.1")
+    #@pytest.mark.skip(reason="this test will be valid for Vertica v12.0.1")
     def test_read_file(self, laliga_vd):
         drop(name="v_temp_schema.laliga_test")
         path = os.path.dirname(verticapy.__file__) + "/data/laliga/*.json"
