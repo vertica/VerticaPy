@@ -2176,7 +2176,7 @@ read_csv : Ingests a CSV file into the Vertica database.
                 format_schema_table(schema, table_name)
             )
         )
-    elif not (genSQL) and (column_name == []) and (insert) and not (genSQL):
+    elif not (genSQL) and (column_name == []) and (insert):
         raise MissingRelation(
             "The table {} doesn't exist !".format(
                 format_schema_table(schema, table_name)
