@@ -143,7 +143,7 @@ class TestSQL:
         try:
             file = open("verticapy_test_sql.csv", "r")
             result = file.read()
-            assert result == "age,fare\n80.000,30.00000\n76.000,78.85000"
+            assert result == '"age","fare"\n80.000,30.00000\n76.000,78.85000'
         except:
             os.remove("verticapy_test_sql.csv")
             file.close()
@@ -159,7 +159,7 @@ class TestSQL:
         try:
             file = open("verticapy_test_sql.csv", "r")
             result = file.read()
-            assert result == "age,fare\n80.000,30.00000\n76.000,78.85000"
+            assert result == '"age","fare"\n80.000,30.00000\n76.000,78.85000'
         except:
             os.remove("verticapy_test_sql.csv")
             file.close()

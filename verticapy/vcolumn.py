@@ -150,6 +150,7 @@ Attributes
             if not (isinstance(index_start, int)):
                 index_start = 0
             if self.isarray():
+                version(condition=[10, 0, 0])
                 if index_start < 0:
                     index_start_str = str(index_start) + " + APPLY_COUNT_ELEMENTS({})"
                 else:
@@ -198,6 +199,7 @@ Attributes
                 return vDataFrameSQL(query)
         elif isinstance(index, int):
             if self.isarray():
+                version(condition=[9, 3, 0])
                 elem_to_select = "{0}[{1}]".format(self.alias, index)
                 new_alias = quote_ident(self.alias[1:-1] + "." + str(index))
                 query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
@@ -231,6 +233,7 @@ Attributes
                     self.init_transf, index.replace("'", "''")
                 )
             else:
+                version(condition=[10, 0, 0])
                 elem_to_select = self.alias + "." + quote_ident(index)
                 init_transf = self.init_transf + "." + quote_ident(index)
             query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
@@ -717,6 +720,7 @@ Attributes
         check_types([("dtype", dtype, [str])])
         try:
             if dtype == "array" and self.category() == "text":
+                version(condition=[10, 0, 0])
                 query = "SELECT {0} FROM {1} ORDER BY LENGTH({0}) DESC LIMIT 1".format(
                     self.alias, self.parent.__genSQL__()
                 )
@@ -779,6 +783,7 @@ Attributes
                         "MAPTOSTRING({} USING PARAMETERS canonical_json=true)",
                     )
                 else:
+                    version(condition=[10, 1, 0])
                     transformation = "TO_JSON({0})".format(self.alias), "TO_JSON({})"
                 dtype = "varchar"
             else:
