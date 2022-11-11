@@ -392,7 +392,14 @@ dict
     if confparser.has_section(section):
 
         options = confparser.items(section)
-        conn_info = {"port": 5433, "user": "dbadmin"}
+        conn_info = {
+            "port": 5433,
+            "user": "dbadmin",
+            "session_label": "verticapy-"
+            + verticapy.__version__
+            + "-"
+            + verticapy.options["identifier"],
+        }
 
         for option_name, option_val in options:
 
@@ -413,7 +420,7 @@ dict
 
             elif option_name == "backup_server_node":
                 backup_server_node = {}
-                exec(f"id_port = {option_val}", {}, backup_server_node)
+                exec(f"id_port = '{option_val}'", {}, backup_server_node)
                 conn_info["backup_server_node"] = backup_server_node["id_port"]
 
             elif option_name == "kerberosservicename":
@@ -435,7 +442,7 @@ dict
                 option_val = option_val.lower()
                 conn_info[option_name] = option_val in ("true", "t", "yes", "y")
 
-            else:
+            elif option_name != "session_label":
                 conn_info[option_name] = option_val
 
         return conn_info
@@ -460,7 +467,7 @@ conn: object
     Connection object.
     """
     try:
-        conn.cursor().execute("SELECT 1;")
+        conn.cursor().execute("SELECT /*+LABEL('connect.set_connection')*/ 1;")
         res = conn.cursor().fetchone()[0]
         assert res == 1
     except:
@@ -512,5 +519,9 @@ conn
         "password": "",
         "database": "demo",
         "backup_server_node": ["localhost"],
+        "session_label": "verticapy-"
+        + verticapy.__version__
+        + "-"
+        + verticapy.options["identifier"],
     }
     return vertica_python.connect(**conn_info)

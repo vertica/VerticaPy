@@ -83,6 +83,13 @@ p: int, optional
 	"""
 
     def __init__(self, name: str, p: int = 2):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="NearestCentroid",
+            path="learn.neighbors",
+            json_dict={"name": name, "p": p,},
+        )
+        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "NearestCentroid", name
         self.set_params({"p": p})
@@ -194,6 +201,13 @@ p: int, optional
 	"""
 
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="KNeighborsClassifier",
+            path="learn.neighbors",
+            json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
+        )
+        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsClassifier", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
@@ -347,7 +361,7 @@ p: int, optional
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
         classes = executeSQL(
-            "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(
+            "SELECT /*+LABEL('learn.neighbors.KNeighborsClassifier.fit')*/ DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(
                 self.y, self.input_relation, self.y, self.y
             ),
             method="fetchall",
@@ -989,6 +1003,23 @@ xlim: list, optional
         xlim: list = [],
         **kwargs,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="KernelDensity",
+            path="learn.neighbors",
+            json_dict={
+                "name": name,
+                "nbins": nbins,
+                "p": p,
+                "bandwidth": bandwidth,
+                "kernel": kernel,
+                "max_leaf_nodes": int(max_leaf_nodes),
+                "max_depth": int(max_depth),
+                "min_samples_leaf": int(min_samples_leaf),
+                "xlim": xlim,
+            },
+        )
+        # -#
         check_types(
             [
                 ("name", name, [str], False),
@@ -1108,7 +1139,9 @@ xlim: list, optional
                         distance = "POWER({0}, {1})".format(distance, 1.0 / p)
                         fkernel_tmp = fkernel.format(f"{distance} / {h}")
                         L += [f"SUM({fkernel_tmp}) / ({h} * {N})"]
-                    query = "SELECT {0} FROM {1}".format(", ".join(L), vdf.__genSQL__())
+                    query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ {0} FROM {1}".format(
+                        ", ".join(L), vdf.__genSQL__()
+                    )
                     result = executeSQL(
                         query, title="Computing the KDE", method="fetchrow"
                     )
@@ -1162,7 +1195,7 @@ xlim: list, optional
         )
         if self.verticapy_store:
             query = """CREATE TABLE {0}_KernelDensity_Map AS    
-                            SELECT 
+                            SELECT /*+LABEL('learn.neighbors.KernelDensity.fit')*/
                                 {1}, 0.0::float AS KDE 
                             FROM {2} 
                             LIMIT 0""".format(
@@ -1175,7 +1208,7 @@ xlim: list, optional
                 m = min(r + 100, len(y))
                 for i in range(r, m):
                     values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
-                query = "INSERT INTO {0}_KernelDensity_Map ({1}, KDE) {2}".format(
+                query = "INSERT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ INTO {0}_KernelDensity_Map ({1}, KDE) {2}".format(
                     self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
                 )
                 executeSQL(query, f"Computing the KDE [Step {idx}].")
@@ -1242,7 +1275,9 @@ xlim: list, optional
         """
         if len(self.X) == 1:
             if self.verticapy_store:
-                query = "SELECT {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map)
+                query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.plot')*/ {}, KDE FROM {} ORDER BY 1".format(
+                    self.X[0], self.map
+                )
                 result = executeSQL(query, method="fetchall", print_time_sql=False)
                 x, y = [elem[0] for elem in result], [elem[1] for elem in result]
             else:
@@ -1269,7 +1304,7 @@ xlim: list, optional
         elif len(self.X) == 2:
             n = self.parameters["nbins"]
             if self.verticapy_store:
-                query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(
+                query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.plot')*/ {}, {}, KDE FROM {} ORDER BY 1, 2".format(
                     self.X[0], self.X[1], self.map,
                 )
                 result = executeSQL(query, method="fetchall", print_time_sql=False)
@@ -1335,6 +1370,13 @@ p: int, optional
 	"""
 
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="KNeighborsRegressor",
+            path="learn.neighbors",
+            json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
+        )
+        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsRegressor", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
@@ -1578,6 +1620,13 @@ p: int, optional
 	"""
 
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="LocalOutlierFactor",
+            path="learn.neighbors",
+            json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
+        )
+        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "LocalOutlierFactor", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
@@ -1657,7 +1706,7 @@ p: int, optional
                 index = "id"
                 main_table = tmp_main_table_name
                 schema = "v_temp_schema"
-                sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
+                sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
                     main_table,
                     ", ".join(X + key_columns),
                     self.input_relation,
@@ -1683,7 +1732,7 @@ p: int, optional
                 schema,
                 main_table,
             )
-            sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(
+            sql = "SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(
                 sql, n_neighbors + 1
             )
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
@@ -1694,7 +1743,7 @@ p: int, optional
             kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.{} WHERE knn = {}) AS kdistance_table".format(
                 tmp_distance_table_name, n_neighbors + 1
             )
-            lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(
+            lrd = "SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(
                 n_neighbors, tmp_distance_table_name, kdistance
             )
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
@@ -1702,7 +1751,7 @@ p: int, optional
             )
             drop("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
             executeSQL(sql, "Computing the LOF [Step 1].")
-            sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
+            sql = "SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
                 n_neighbors,
                 tmp_distance_table_name,
                 tmp_lrd_table_name,
@@ -1713,7 +1762,7 @@ p: int, optional
             )
             drop("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
             executeSQL(sql, "Computing the LOF [Step 2].")
-            sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format(
+            sql = "SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format(
                 ", ".join(X + self.key_columns), main_table, tmp_lof_table_name, index
             )
             executeSQL(
@@ -1721,7 +1770,7 @@ p: int, optional
                 title="Computing the LOF [Step 3].",
             )
             self.n_errors_ = executeSQL(
-                "SELECT COUNT(*) FROM {}.{} z WHERE lof > 1e100 OR lof != lof".format(
+                "SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ COUNT(*) FROM {}.{} z WHERE lof > 1e100 OR lof != lof".format(
                     schema, tmp_lof_table_name
                 ),
                 method="fetchfirstelem",

@@ -39,7 +39,10 @@ class TestSQL:
         # SQL line Test -c
         result = sql('  -c "SELECT * FROM titanic;"', "")
         assert result.shape() == (1234, 14)
-        assert result._VERTICAPY_VARIABLES_["main_relation"] == "(SELECT * FROM titanic) VSQL_MAGIC"
+        assert (
+            result._VERTICAPY_VARIABLES_["main_relation"]
+            == "(SELECT * FROM titanic) VSQL_MAGIC"
+        )
 
         # SQL line Test --command
         result = sql('  --command "SELECT * FROM titanic;"', "")
@@ -140,7 +143,7 @@ class TestSQL:
         try:
             file = open("verticapy_test_sql.csv", "r")
             result = file.read()
-            assert result == "age,fare\n80.000,30.00000\n76.000,78.85000"
+            assert result == '"age","fare"\n80.000,30.00000\n76.000,78.85000'
         except:
             os.remove("verticapy_test_sql.csv")
             file.close()
@@ -156,7 +159,7 @@ class TestSQL:
         try:
             file = open("verticapy_test_sql.csv", "r")
             result = file.read()
-            assert result == "age,fare\n80.000,30.00000\n76.000,78.85000"
+            assert result == '"age","fare"\n80.000,30.00000\n76.000,78.85000'
         except:
             os.remove("verticapy_test_sql.csv")
             file.close()

@@ -105,7 +105,7 @@ Main Class for Vertica Model
                 try:
                     version(condition=[9, 0, 0])
                     res = executeSQL(
-                        "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
+                        "SELECT /*+LABEL('learn.vModel.__repr__')*/ GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
                             name
                         ),
                         title="Summarizing the model.",
@@ -113,7 +113,9 @@ Main Class for Vertica Model
                     )
                 except:
                     res = executeSQL(
-                        "SELECT SUMMARIZE_MODEL('{}')".format(name),
+                        "SELECT /*+LABEL('learn.vModel.__repr__')*/ SUMMARIZE_MODEL('{}')".format(
+                            name
+                        ),
                         title="Summarizing the model.",
                         method="fetchfirstelem",
                     )
@@ -364,7 +366,7 @@ Main Class for Vertica Model
             name = self.tree_name if self.type == "KernelDensity" else self.name
             version(condition=[9, 1, 1])
             tree_id = "" if not (tree_id) else ", tree_id={}".format(tree_id)
-            query = """SELECT 
+            query = """SELECT /*+LABEL('learn.vModel.features_importance')*/
                             predictor_name AS predictor, 
                             ROUND(100 * importance_value / SUM(importance_value) 
                                 OVER (), 2)::float AS importance, 
@@ -385,7 +387,7 @@ Main Class for Vertica Model
         ):
             relation = self.input_relation
             version(condition=[8, 1, 1])
-            query = """SELECT 
+            query = """SELECT /*+LABEL('learn.vModel.features_importance')*/
                             predictor, 
                             ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, 
                             sign 
@@ -875,7 +877,9 @@ Main Class for Vertica Model
                 **style_kwds,
             )
         elif self.type == "LocalOutlierFactor":
-            query = "SELECT COUNT(*) FROM {}".format(self.name)
+            query = "SELECT /*+LABEL('learn.vModel.plot')*/ COUNT(*) FROM {}".format(
+                self.name
+            )
             tablesample = 100 * min(
                 float(
                     max_nb_points
@@ -2877,7 +2881,7 @@ class Supervised(vModel):
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop(relation, method="view")
             executeSQL(
-                "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
+                "CREATE VIEW {0} AS SELECT /*+LABEL('learn.vModel.fit')*/ *{1} FROM {2}".format(
                     relation, id_column, self.input_relation
                 ),
                 title="Creating a temporary view to fit the model.",
@@ -2906,7 +2910,7 @@ class Supervised(vModel):
             elif parameters["mtry"] == "'max'":
                 parameters["mtry"] = len(self.X)
         fun = self.get_model_fun()[0]
-        query = "SELECT {}('{}', '{}', '{}', '{}' USING PARAMETERS "
+        query = "SELECT /*+LABEL('learn.vModel.fit')*/ {}('{}', '{}', '{}', '{}' USING PARAMETERS "
         query = query.format(fun, self.name, relation, self.y, ", ".join(self.X))
         query += ", ".join(
             ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
@@ -2942,7 +2946,7 @@ class Supervised(vModel):
         elif self.type in ("RandomForestClassifier", "NaiveBayes", "XGBoostClassifier"):
             if not (isinstance(input_relation, vDataFrame)):
                 classes = executeSQL(
-                    "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
+                    "SELECT /*+LABEL('learn.vModel.fit')*/ DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
                         self.y, input_relation, self.y
                     ),
                     method="fetchall",
@@ -4697,7 +4701,7 @@ class Unsupervised(vModel):
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop(relation, method="view")
             executeSQL(
-                "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
+                "CREATE VIEW {0} AS SELECT /*+LABEL('learn.vModel.fit')*/ *{1} FROM {2}".format(
                     relation, id_column, self.input_relation
                 ),
                 title="Creating a temporary view to fit the model.",
@@ -4714,7 +4718,7 @@ class Unsupervised(vModel):
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
         fun = self.get_model_fun()[0] if self.type != "MCA" else "PCA"
-        query = "SELECT {}('{}', '{}', '{}'".format(
+        query = "SELECT /*+LABEL('learn.vModel.fit')*/ {}('{}', '{}', '{}'".format(
             fun, self.name, relation, ", ".join(self.X)
         )
         if self.type in ("BisectingKMeans", "KMeans"):
@@ -4754,7 +4758,10 @@ class Unsupervised(vModel):
                     for j in range(len(self.parameters["init"][0])):
                         line += [str(self.parameters["init"][i][j]) + " AS " + X[j]]
                     line = ",".join(line)
-                    query0 += ["SELECT " + line]
+                    if i == 0:
+                        query0 += ["SELECT /*+LABEL('learn.vModel.fit')*/ " + line]
+                    else:
+                        query0 += ["SELECT " + line]
                 query0 = " UNION ".join(query0)
                 query0 = "CREATE TABLE {} AS {}".format(name_init, query0)
                 executeSQL(query0, print_time_sql=False)

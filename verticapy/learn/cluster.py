@@ -123,6 +123,23 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="BisectingKMeans",
+            path="learn.cluster",
+            json_dict={
+                "name": name,
+                "n_cluster": n_cluster,
+                "bisection_iterations": bisection_iterations,
+                "split_method": split_method,
+                "min_divisible_cluster_size": min_divisible_cluster_size,
+                "distance_method": distance_method,
+                "init": init,
+                "max_iter": max_iter,
+                "tol": tol,
+            },
+        )
+        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "BisectingKMeans", name
         self.set_params(
@@ -183,6 +200,13 @@ p: int, optional
 	"""
 
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="DBSCAN",
+            path="learn.cluster",
+            json_dict={"name": name, "eps": eps, "min_samples": min_samples, "p": p,},
+        )
+        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "DBSCAN", name
         self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
@@ -255,7 +279,7 @@ p: int, optional
                 drop(f"v_temp_schema.{name_main}", method="table")
                 sql = """CREATE LOCAL TEMPORARY TABLE {0} 
                          ON COMMIT PRESERVE ROWS AS 
-                         SELECT 
+                         SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
                             ROW_NUMBER() OVER() AS id, 
                             {1} 
                          FROM {2} 
@@ -268,7 +292,7 @@ p: int, optional
                 executeSQL(sql, title="Computing the DBSCAN Table [Step 0]")
             else:
                 executeSQL(
-                    "SELECT {0} FROM {1} LIMIT 10".format(
+                    "SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/ {0} FROM {1} LIMIT 10".format(
                         ", ".join(X + key_columns + [index]), self.input_relation
                     ),
                     print_time_sql=False,
@@ -302,7 +326,7 @@ p: int, optional
                 order_by = "ORDER BY node_id, nn_id"
             else:
                 order_by = ""
-            sql = """SELECT 
+            sql = """SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
                         node_id, 
                         nn_id 
                      FROM ({0}) VERTICAPY_SUBTABLE 
@@ -373,7 +397,7 @@ p: int, optional
             self.n_cluster_ = i
             executeSQL(
                 """CREATE TABLE {0} AS 
-                   SELECT 
+                   SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
                         {1}, 
                         COALESCE(cluster, -1) AS dbscan_cluster 
                    FROM v_temp_schema.{2} AS x 
@@ -388,7 +412,9 @@ p: int, optional
                 title="Computing the DBSCAN Table [Step 2]",
             )
             self.n_noise_ = executeSQL(
-                "SELECT COUNT(*) FROM {0} WHERE dbscan_cluster = -1".format(self.name),
+                "SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/ COUNT(*) FROM {0} WHERE dbscan_cluster = -1".format(
+                    self.name
+                ),
                 method="fetchfirstelem",
                 print_time_sql=False,
             )
@@ -466,6 +492,19 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="KMeans",
+            path="learn.cluster",
+            json_dict={
+                "name": name,
+                "n_cluster": n_cluster,
+                "init": init,
+                "max_iter": max_iter,
+                "tol": tol,
+            },
+        )
+        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "KMeans", name
         self.set_params(
@@ -505,7 +544,7 @@ tol: float, optional
         if len(self.X) == 2:
             from verticapy.learn.mlplot import voronoi_plot
 
-            query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
+            query = "SELECT /*+LABEL('learn.cluster.KMeans.plot_voronoi')*/ GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
                 self.name
             )
             clusters = executeSQL(query, print_time_sql=False, method="fetchall")

@@ -16,14 +16,23 @@ import pytest
 
 # Other Modules
 import pandas as pd
+import os
 
 # VerticaPy
-import vertica_python
+import vertica_python, verticapy
+from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
-from verticapy.datasets import load_cities, load_titanic, load_world, load_iris
+from verticapy.datasets import (
+    load_cities,
+    load_titanic,
+    load_world,
+    load_iris,
+    load_laliga,
+)
 from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
+from verticapy.learn.linear_model import LinearRegression
 
 set_option("print_info", False)
 
@@ -33,6 +42,13 @@ def cities_vd():
     cities = load_cities()
     yield cities
     drop(name="public.cities")
+
+
+@pytest.fixture(scope="module")
+def laliga_vd():
+    laliga = load_laliga()
+    yield laliga
+    drop(name="public.laliga")
 
 
 @pytest.fixture(scope="module")
@@ -50,6 +66,108 @@ def world_vd():
 
 
 class TestUtilities:
+    @pytest.mark.skip(reason="this test will be valid for Vertica v12.0.2")
+    def test_complex_elements(self, laliga_vd):
+        vdf = laliga_vd.copy()
+        vdf["away_team_managers"] = vdf["away_team"]["managers"]
+        vdf["home_team_managers"] = vdf["home_team"]["managers"]
+        vdf["away_team_managers"].transformations[-1] = (
+            '"away_team"."managers"',
+            "Array",
+            "complex",
+        )  # doing it manually because the vertica-python client does not support cdt yet
+        vdf["home_team_managers"].transformations[-1] = (
+            '"home_team"."managers"',
+            "Array",
+            "complex",
+        )
+        # testing isarray
+        assert vdf["away_team_managers"].isarray()
+        assert vdf["home_team_managers"].isarray()
+        # testing concatenation
+        assert (
+            vdf["away_team_managers"] + vdf["home_team_managers"]
+            == 'ARRAY_CAT("away_team_managers", "home_team_managers")'
+        )
+        vdf["all_managers"] = vdf["away_team_managers"] + vdf["home_team_managers"]
+        # testing get_item and set_item
+        vdf["id_test"] = vdf["away_team_managers"][0]["Country"]["id"]
+        assert vdf["id_test"].avg() == pytest.approx(181.429078014184)
+        assert vdf["away_team_managers"][0:1][0:1][0:1][0]["id"].avg() == pytest.approx(
+            589.698581560284
+        )
+        # testing apply_fun - count
+        vdf["all_managers"].transformations[-1] = (
+            'ARRAY_CAT("away_team_managers", "home_team_managers")',
+            "Array",
+            "complex",
+        )
+        assert vdf["all_managers"].apply_fun(func="length")
+        assert vdf["all_managers"].max() == 2.0
+        # testing apply_fun - min
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="min")
+        assert vdf2["x"].sum() == 12
+        # testing apply_fun - max
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="max")
+        assert vdf2["x"].sum() == 18
+        # testing apply_fun - avg
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="avg")
+        assert vdf2["x"].sum() == 15
+        # testing apply_fun - sum
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="sum")
+        assert vdf2["x"].sum() == 45
+        # testing apply_fun - contain
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="contain", x=1)
+        assert vdf2["x"].sum() == 1
+        # testing apply_fun - len
+        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7]]}).to_vdf()
+        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        vdf2["x"].apply_fun(func="len")
+        assert vdf2["x"].sum() == 7
+        # testing apply_fun - find
+        vdf2 = tablesample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].apply_fun(func="find", x=2)
+        assert vdf2["x"].sum() == 0
+        # testing string to array
+        vdf2 = tablesample(
+            {"x": ["[1, -2, 3]", "[2,    5,    6]", "[7,   8]"]}
+        ).to_vdf()
+        vdf2["x"].astype("array")
+        vdf2["x"].apply_fun(func="len")
+        assert vdf2["x"].sum() == 8
+        # tablesample with ROW and arrays
+        vdf2 = tablesample(
+            {
+                "x": [[1, 2, 3], [4, 5, 6], [7]],
+                "y": [{"a": 1, "b": 2}, {"a": 2, "b": 3}, {"a": 4, "b": 5}],
+            }
+        ).to_vdf()
+        assert vdf2["y"]["a"].sum() == 7
+        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        vdf2["x"].apply_fun(func="len")
+        assert vdf2["x"].sum() == 7.0
+        # Complex to JSON
+        vdf2 = tablesample(
+            {
+                "x": [[1, 2, 3], [4, 5, 6], [7]],
+                "y": [{"a": 1, "b": 2}, {"a": 2, "b": 3}, {"a": 4, "b": 5}],
+            }
+        ).to_vdf()
+        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        vdf2["x"].astype("json")
+        vdf2["y"].astype("json")
+        assert vdf2["x"].transformations[-1][0] == "TO_JSON({})"
+        assert vdf2["y"].transformations[-1][0] == "TO_JSON({})"
+        # Test get_len
+        vdf2 = tablesample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        assert vdf2["x"].get_len().sum() == 9
+
     def test_create_schema_table(self):
         drop("verticapy_test_create_schema", method="schema")
         create_schema("verticapy_test_create_schema")
@@ -177,9 +295,78 @@ class TestUtilities:
             describe_index("world_polygons", True)
         drop()
 
-    def test_readSQL(self):
-        result = readSQL('SELECT 1 AS "verticapy test *+""";')
-        assert result['verticapy test *+"'] == [1]
+    def test_flex_elements(self):
+        # Creating a Flex Table
+        current_cursor().execute(
+            "CREATE FLEX LOCAL TEMP TABLE utilities_flex_test(x int) ON COMMIT PRESERVE ROWS;"
+        )
+        path = os.path.dirname(verticapy.__file__) + "/data/laliga/*.json"
+        current_cursor().execute(
+            f"COPY utilities_flex_test FROM LOCAL '{path}' PARSER FJSONPARSER();"
+        )
+        # Testing isflextable
+        assert isflextable(table_name="utilities_flex_test", schema="v_temp_schema")
+        # Testing compute_flextable_keys
+        keys = compute_flextable_keys(
+            "v_temp_schema.utilities_flex_test",
+            usecols=["referee.country.id", "stadium.id", "metadata.data_version"],
+        )
+        assert keys == [
+            ["referee.country.id", "Integer"],
+            ["stadium.id", "Integer"],
+            ["metadata.data_version", "Date"],
+        ]
+        # Testing compute_vmap_keys
+        home_managers_keys = compute_vmap_keys(
+            expr="v_temp_schema.utilities_flex_test",
+            vmap_col="home_team.managers",
+            limit=2,
+        )
+        assert len(home_managers_keys) == 2
+        assert home_managers_keys[0][1] == home_managers_keys[1][1] == 282
+        # Testing vDataFrame from Flextable
+        vdf = vDataFrame("v_temp_schema.utilities_flex_test")
+        # Testing vDataFrame.get_len
+        vdf["away_team.managers"].get_len().avg() == pytest.approx(3.36725663716814)
+        vdf["stadium.name"].get_len().avg() == pytest.approx(14.5809523809524)
+        # Testing vDataFrame[].isvmap
+        assert vdf["away_team.managers"].isvmap()
+        # Testing astype: VMAP to str
+        vdf["away_team.managers2"] = vdf["away_team.managers"]
+        vdf["away_team.managers"].astype(str)
+        assert vdf["away_team.managers"].category() == "text"
+        assert (
+            vdf["away_team.managers"].transformations[-1][0]
+            == "MAPTOSTRING({} USING PARAMETERS canonical_json=false)::varchar"
+        )
+        vdf["away_team.managers2"].astype("json")
+        assert vdf["away_team.managers2"].category() == "text"
+        assert (
+            vdf["away_team.managers2"].transformations[-1][0]
+            == "MAPTOSTRING({} USING PARAMETERS canonical_json=true)"
+        )
+        # Testing vDataFrame.__set__ using VMAP sub category
+        vdf["home_team.managers.0.country.id"] = vdf["home_team.managers"][
+            "0.country.id"
+        ]
+        assert (
+            vdf["home_team.managers.0.country.id"].transformations[-1][0]
+            == "MAPLOOKUP(\"home_team.managers\", '0.country.id')"
+        )
+        # Materialising the flex table - TODO
+        # vdf_table = vdf.to_db(name = "utilities_table_test", relation_type = "local")
+        # read_json to get a vDataFrame with maps
+        vdf_table = read_json(path)
+        # Testing vDataFrame.flat_vmap
+        vdf_table_flat = vdf_table.flat_vmap()
+        all_flat_count = vdf_table_flat.count_percent()
+        assert len(all_flat_count["count"]) == 52
+        assert all_flat_count["count"][-10] == 105.0
+        assert all_flat_count["count"][-15] == 282.0
+        assert '"away_team.managers.0.country.name"' in all_flat_count["index"]
+        assert '"away_team.managers.0.country.id"' in all_flat_count["index"]
+        assert '"away_team.managers.0.nickname"' in all_flat_count["index"]
+        drop("v_temp_schema.utilities_flex_test")
 
     def test_get_data_types(self):
         result = get_data_types(
@@ -188,7 +375,7 @@ class TestUtilities:
         assert result == [
             ["col1", "Integer"],
             ["col2", "Varchar(3)"],
-            ["col3", "Interval"],
+            ["col3", "Interval Day to Second"],
         ]
 
     def test_insert_into(self):
@@ -291,20 +478,26 @@ class TestUtilities:
 
     def test_read_json(self):
         drop("public.titanic_verticapy_test_json", method="table")
-        path = (
-            os.path.dirname(verticapy.__file__)
-            + "/tests/utilities/titanic-passengers.json"
-        )
+        path = os.path.dirname(verticapy.__file__) + "/tests/utilities/"
         result = read_json(
-            path, table_name="titanic_verticapy_test_json", schema="public"
+            path + "titanic-passengers.json",
+            table_name="titanic_verticapy_test_json",
+            schema="public",
         )
         assert result.shape() == (891, 15)
-        drop("public.titanic_verticapy_test_json", method="table")
-        result = read_json(path, table_name="titanic_verticapy_test_json")
+        assert drop("public.titanic_verticapy_test_json", method="table")
+        result = read_json(
+            path + "titanic-passengers.json", table_name="titanic_verticapy_test_json"
+        )
         assert result.shape() == (891, 15)
-        drop("public.titanic_verticapy_test_json", method="table")
+        assert drop("v_temp_schema.titanic_verticapy_test_json", method="table")
+        result = read_json(
+            path + "json_many/*.json", table_name="titanic_verticapy_test_json",
+        )
+        assert result.shape() == (1782, 15)
+        assert drop("v_temp_schema.titanic_verticapy_test_json", method="table")
         # TODO
-        # test the param gen_tmp_table_name
+        # test on archives
 
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
@@ -351,26 +544,23 @@ class TestUtilities:
         assert result.get_columns() == ['"ucol{}"'.format(i) for i in range(14)]
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # with dtypes
-        result = read_csv(
-            path,
-            table_name="titanic_verticapy_test_csv",
-            dtype={
-                "pclass": "int",
-                "survived": "bool",
-                "name": "varchar",
-                "sex": "varchar",
-                "age": "float",
-                "sibsp": "int",
-                "parch": "int",
-                "ticket": "varchar",
-                "fare": "float",
-                "cabin": "varchar",
-                "embarked": "varchar",
-                "boat": "varchar",
-                "body": "varchar",
-                "home.dest": "varchar",
-            },
-        )
+        dtype = {
+            "pclass": "int",
+            "survived": "bool",
+            "name": "varchar",
+            "sex": "varchar",
+            "age": "float",
+            "sibsp": "int",
+            "parch": "int",
+            "ticket": "varchar",
+            "fare": "float",
+            "cabin": "varchar",
+            "embarked": "varchar",
+            "boat": "varchar",
+            "body": "varchar",
+            "home.dest": "varchar",
+        }
+        result = read_csv(path, table_name="titanic_verticapy_test_csv", dtype=dtype,)
         assert result.shape() == (1234, 14)
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # genSQL
@@ -379,8 +569,67 @@ class TestUtilities:
         )
         assert result[0][0:50] == 'CREATE TABLE "public"."titanic_verticapy_test_csv"'
         assert result[1][0:42] == 'COPY "public"."titanic_verticapy_test_csv"'
+        # Multiple files
+        path = os.path.dirname(verticapy.__file__) + "/tests/utilities/"
+        result = read_csv(
+            path + "csv_many/*.csv",
+            table_name="titanic_verticapy_test_csv",
+            dtype=dtype,
+        )
+        assert result.shape() == (1870, 14)
+        drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
+
         # TODO
-        # test the param gen_tmp_table_name
+        # test on archives
+
+    @pytest.mark.skip(
+        reason="for some reason, it can not read the file. It works when we do it locally."
+    )
+    def test_read_file(self, laliga_vd):
+        drop(name="v_temp_schema.laliga_test")
+        path = os.path.dirname(verticapy.__file__) + "/data/laliga/*.json"
+        vdf = read_file(
+            path=path,
+            schema="",
+            table_name="laliga_test",
+            dtype={"away_score": "float", "away_team_id": "float"},
+            unknown="varchar",
+            varchar_varbinary_length=200,
+            max_files=20,
+        )
+        assert laliga_vd.shape() == vdf.shape()
+        assert vdf["away_score"].ctype().lower()[0:5] == "float"
+        assert vdf["away_team"]["away_team_id"].ctype().lower()[0:5] == "float"
+        assert vdf["match_status"].ctype().lower() == "varchar(200)"
+        assert drop(name="v_temp_schema.laliga_test")
+        # with genSQL = True
+        sql = read_file(
+            path=path,
+            schema="",
+            table_name="laliga_test",
+            dtype={"away_score": "float", "away_team_id": "float"},
+            unknown="varchar",
+            varchar_varbinary_length=200,
+            max_files=20,
+            genSQL=True,
+        )
+        for query in sql:
+            current_cursor().execute(query)
+        vdf = vDataFrame("v_temp_schema.laliga_test")
+        assert laliga_vd.shape() == vdf.shape()
+        assert vdf["away_score"].ctype().lower() == "float"
+        assert vdf["away_team"]["away_team_id"].ctype().lower()[0:5] == "float"
+        assert vdf["match_status"].ctype().lower() == "varchar(200)"
+        drop(name="v_temp_schema.laliga_test", method="table")
+        # without any table name
+        vdf = read_file(
+            path=path,
+            dtype={"away_score": "float", "away_team_id": "float"},
+            unknown="varchar",
+            varchar_varbinary_length=200,
+            max_files=20,
+        )
+        assert laliga_vd.shape() == vdf.shape()
 
     def test_read_shp(self, cities_vd):
         drop(name="public.cities_test")
@@ -394,6 +643,100 @@ class TestUtilities:
         except:
             pass
         drop(name="public.cities_test")
+
+    def test_readSQL(self):
+        result = readSQL('SELECT 1 AS "verticapy test *+""";')
+        assert result['verticapy test *+"'] == [1]
+
+    def test_save_to_query_profile(self):
+        model = LinearRegression("model_test",)
+        iris = load_iris()
+        q = save_to_query_profile(
+            name="test",
+            path="test_path.test_value",
+            json_dict={
+                "X0": 1103,
+                "X1": None,
+                "X2": True,
+                "X3": False,
+                "X4": ["x0", "x1", "x2", "x3",],
+                "X5": {"Y0": 3, 1: ["y0", "y1"], None: 4,},
+                "vdf": iris,
+                "model": model,
+            },
+            query_label="verticapy_test_utilities_json",
+            return_query=True,
+            add_identifier=False,
+        )
+        assert (
+            q
+            == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
+        )
+        # with identifier
+        q2 = save_to_query_profile(
+            name="test",
+            path="test_path.test_value",
+            json_dict={
+                "X0": 1103,
+                "X1": None,
+                "X2": True,
+                "X3": False,
+                "X4": ["x0", "x1", "x2", "x3",],
+                "X5": {"Y0": 3, 1: ["y0", "y1"], None: 4,},
+                "vdf": iris,
+                "model": model,
+            },
+            query_label="verticapy_test_utilities_json",
+            return_query=True,
+            add_identifier=True,
+        )
+        assert (
+            q2
+            == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "verticapy_id": "'
+            + str(verticapy.options["identifier"])
+            + '", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
+        )
+        current_cursor().execute(
+            "SELECT MAPKEYS(MAPJSONEXTRACTOR(SUBSTRING('{0}', 53, 241))) OVER ();".format(
+                q.replace("'", "''")
+            )
+        )
+        all_keys = current_cursor().fetchall()
+        all_keys = [elem[0] for elem in all_keys]
+        assert "model" in all_keys
+        assert "vdf" in all_keys
+        assert "verticapy_fname" in all_keys
+        assert "verticapy_fpath" in all_keys
+        assert "X0" in all_keys
+        assert "X1" in all_keys
+        assert "X2" in all_keys
+        assert "X3" in all_keys
+        assert "X4" in all_keys
+        assert "X5.1" in all_keys
+        assert "X5.None" in all_keys
+        assert "X5.Y0" in all_keys
+        save_to_query_profile(
+            name="test",
+            path="test_path.test_value",
+            json_dict={
+                "X0": 1103,
+                "X1": None,
+                "X2": True,
+                "X3": False,
+                "X4": ["x0", "x1", "x2", "x3",],
+                "X5": {"Y0": 3, 1: ["y0", "y1"], None: 4,},
+                "vdf": iris,
+                "model": model,
+            },
+            query_label="verticapy_test_utilities_json",
+            return_query=False,
+            add_identifier=False,
+        )
+        current_cursor().execute(
+            "SELECT query FROM v_monitor.query_profiles WHERE identifier = 'verticapy_test_utilities_json' LIMIT 1;"
+        )
+        q3 = current_cursor().fetchone()[0]
+        assert q == q3
 
     def test_tablesample(self):
         result = tablesample(

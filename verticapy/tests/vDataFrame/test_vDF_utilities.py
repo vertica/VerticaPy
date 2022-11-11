@@ -19,7 +19,7 @@ import os, pickle
 from math import ceil, floor
 
 # Other Modules
-import pandas, geopandas
+import pandas
 
 # VerticaPy
 from verticapy import (
@@ -158,7 +158,7 @@ class TestvDFUtilities:
         try:
             file = open("verticapy_test_to_csv.csv", "r")
             result = file.read()
-            assert result == "age,fare\n80.000,30.00000\n76.000,78.85000"
+            assert result == '"age","fare"\n80.000,30.00000\n76.000,78.85000'
         except:
             os.remove("verticapy_test_to_csv.csv")
             file.close()
@@ -306,7 +306,10 @@ class TestvDFUtilities:
         assert result_tmp.shape() == (20, 2)
         os.remove("save.p")
 
+    @pytest.mark.skip(reason="Python 3.6 VE could not install proper dependencies")
     def test_vDF_to_geopandas(self, world_vd):
+        import geopandas
+
         result = world_vd.to_geopandas(geometry="geometry")
         assert isinstance(result, geopandas.GeoDataFrame)
         assert result.shape == (177, 4)

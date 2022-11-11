@@ -197,7 +197,7 @@ def animated_bar(
         " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
     )
     where += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
-    query = "SELECT * FROM (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} LIMIT {} OVER (PARTITION BY {} ORDER BY {} DESC)) x ORDER BY {} ASC, {} ASC LIMIT {}".format(
+    query = "SELECT /*+LABEL('plot.animated_bar')*/ * FROM (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} LIMIT {} OVER (PARTITION BY {} ORDER BY {} DESC)) x ORDER BY {} ASC, {} ASC LIMIT {}".format(
         order_by,
         ", ".join(columns),
         vdf.__genSQL__(),
@@ -480,7 +480,7 @@ def animated_bubble_plot(
         " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
     )
     where += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
-    query = "SELECT * FROM (SELECT {}, {}, {} FROM {} WHERE  {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL{} LIMIT {} OVER (PARTITION BY {} ORDER BY {}, {} DESC)) x ORDER BY {}, 4 DESC, 3 DESC, 2 DESC LIMIT {}"
+    query = "SELECT /*+LABEL('plot.animated_bubble_plot')*/ * FROM (SELECT {}, {}, {} FROM {} WHERE  {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL{} LIMIT {} OVER (PARTITION BY {} ORDER BY {}, {} DESC)) x ORDER BY {}, 4 DESC, 3 DESC, 2 DESC LIMIT {}"
     query = query.format(
         order_by,
         ", ".join([str(elem) for elem in columns]),
@@ -705,7 +705,7 @@ def animated_ts_plot(
         raise EmptyParameter(
             "No numerical columns found to draw the animated multi TS plot"
         )
-    query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL".format(
+    query = "SELECT /*+LABEL('plot.animated_ts_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL".format(
         order_by, ", ".join(columns), vdf.__genSQL__(), order_by
     )
     query += (
@@ -1108,7 +1108,7 @@ def boxplot(
                 enum_trans += ", {}".format(vdf.alias)
                 table = "(SELECT {} FROM {}) enum_table".format(enum_trans, table)
             if not (cat_priority):
-                query = "SELECT {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {}".format(
+                query = "SELECT /*+LABEL('plot.boxplot')*/ {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {}".format(
                     by, table, vdf.alias, by, max_cardinality
                 )
                 query_result = executeSQL(
@@ -1140,7 +1140,7 @@ def boxplot(
                     else " WHERE {} = '{}'".format(by, str(category).replace("'", "''"))
                 )
                 query += [lp + tmp_query + rp]
-            query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(
+            query = "WITH vdf_table AS (SELECT /*+LABEL('plot.boxplot')*/ * FROM {}) {}".format(
                 table, " UNION ALL ".join(query)
             )
             try:
@@ -1152,7 +1152,7 @@ def boxplot(
             except:
                 query_result = []
                 for idx, category in enumerate(cat_priority):
-                    tmp_query = "SELECT MIN({}) AS min, APPROXIMATE_PERCENTILE ({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE ({}".format(
+                    tmp_query = "SELECT /*+LABEL('plot.boxplot')*/ MIN({}) AS min, APPROXIMATE_PERCENTILE ({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE ({}".format(
                         vdf.alias, vdf.alias, vdf.alias
                     )
                     tmp_query += "USING PARAMETERS percentile = 0.5) AS Median, APPROXIMATE_PERCENTILE ({} USING PARAMETERS percentile = 0.75) AS Q3, MAX".format(
@@ -1358,7 +1358,7 @@ def bubble(
         colors = [colors]
     if not (catcol) and not (cmap_col):
         tablesample = max_nb_points / vdf.shape()[0]
-        query = "SELECT {}, {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
+        query = "SELECT /*+LABEL('plot.bubble')*/ {}, {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             columns[0],
             columns[1],
             columns[2],
@@ -1484,7 +1484,7 @@ def bubble(
             all_categories = vdf[catcol].distinct()
             groupby_cardinality = vdf[catcol].nunique(True)
             for idx, category in enumerate(all_categories):
-                query = "SELECT {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
+                query = "SELECT /*+LABEL('plot.bubble')*/  {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
                 query = query.format(
                     columns[0],
                     columns[1],
@@ -1532,7 +1532,7 @@ def bubble(
                 if len(str(item)) > 20:
                     all_categories[idx] = str(item)[0:20] + "..."
         else:
-            query = "SELECT {}, {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
+            query = "SELECT /*+LABEL('plot.bubble')*/ {}, {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
             query = query.format(
                 columns[0],
                 columns[1],
@@ -1935,7 +1935,7 @@ def compute_plot_variables(
                 table = "(SELECT {} FROM {}) enum_table".format(
                     enum_trans + other_columns, table
                 )
-            query = "(SELECT {} AS {}, {} FROM {} GROUP BY {} ORDER BY 2 DESC LIMIT {})".format(
+            query = "(SELECT /*+LABEL('plot.compute_plot_variables')*/ {} AS {}, {} FROM {} GROUP BY {} ORDER BY 2 DESC LIMIT {})".format(
                 bin_spatial_to_str(vdf.category(), vdf.alias),
                 vdf.alias,
                 aggregate,
@@ -1977,7 +1977,7 @@ def compute_plot_variables(
         if (h <= 0) and (nbins <= 0):
             h = vdf.numh()
         elif nbins > 0:
-            query = "SELECT DATEDIFF('second', MIN({}), MAX({})) FROM ".format(
+            query = "SELECT /*+LABEL('plot.compute_plot_variables')*/ DATEDIFF('second', MIN({}), MAX({})) FROM ".format(
                 vdf.alias, vdf.alias
             )
             query_result = executeSQL(
@@ -1986,7 +1986,7 @@ def compute_plot_variables(
             h = float(query_result[0]) / nbins
         min_date = vdf.min()
         converted_date = "DATEDIFF('second', '{}', {})".format(min_date, vdf.alias)
-        query = "SELECT FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1".format(
+        query = "SELECT /*+LABEL('plot.compute_plot_variables')*/ FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1".format(
             converted_date, h, h, aggregate, vdf.parent.__genSQL__(), vdf.alias
         )
         query_result = executeSQL(
@@ -2000,10 +2000,15 @@ def compute_plot_variables(
         )
         query = ""
         for idx, item in enumerate(query_result):
-            query += " UNION (SELECT TIMESTAMPADD('second' , {}, '{}'::timestamp))".format(
-                math.floor(h * idx), min_date
-            )
-        query = query[7:-1] + ")"
+            if idx == 0:
+                query += "((SELECT /*+LABEL('plot.compute_plot_variables')*/ TIMESTAMPADD('second' , {}, '{}'::timestamp))".format(
+                    math.floor(h * idx), min_date
+                )
+            else:
+                query += " UNION (SELECT TIMESTAMPADD('second' , {}, '{}'::timestamp))".format(
+                    math.floor(h * idx), min_date
+                )
+        query += ")"
         h = 0.94 * h
         query_result = executeSQL(
             query, title="Computing the datetime intervals.", method="fetchall"
@@ -2019,7 +2024,7 @@ def compute_plot_variables(
             h = float(vdf.max() - vdf.min()) / nbins
         if (vdf.ctype == "int") or (h == 0):
             h = max(1.0, h)
-        query = "SELECT FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1"
+        query = "SELECT /*+LABEL('plot.compute_plot_variables')*/ FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1"
         query = query.format(
             vdf.alias, h, h, aggregate, vdf.parent.__genSQL__(), vdf.alias
         )
@@ -2149,7 +2154,7 @@ def hexbin(
         over = "/" + str(float(count))
     else:
         over = ""
-    query = "SELECT {}, {}, {}{} FROM {} GROUP BY {}, {}".format(
+    query = "SELECT /*+LABEL('plot.hexbin')*/ {}, {}, {}{} FROM {} GROUP BY {}, {}".format(
         columns[0],
         columns[1],
         aggregate,
@@ -2554,7 +2559,7 @@ def multi_ts_plot(
     if not (columns):
         raise EmptyParameter("No numerical columns found to draw the multi TS plot")
     colors = gen_colors()
-    query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL".format(
+    query = "SELECT /*+LABEL('plot.multi_ts_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL".format(
         order_by, ", ".join(columns), vdf.__genSQL__(), order_by
     )
     query += (
@@ -2727,7 +2732,7 @@ def range_curve_vdf(
     ax=None,
     **style_kwds,
 ):
-    query = "SELECT {}, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}), APPROXIMATE_MEDIAN({}), APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
+    query = "SELECT /*+LABEL('plot.range_curve_vdf')*/ {}, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}), APPROXIMATE_MEDIAN({}), APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
         order_by,
         vdf.alias,
         q[0],
@@ -3271,7 +3276,7 @@ def pivot_table(
     cast = []
     for column in columns:
         cast += [bin_spatial_to_str(vdf[column].category(), column)]
-    query = "SELECT {} AS {}, {} AS {}, {}{} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY {}, {} ORDER BY {}, {} ASC".format(
+    query = "SELECT /*+LABEL('plot.pivot_table')*/ {} AS {}, {} AS {}, {}{} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY {}, {} ORDER BY {}, {} ASC".format(
         cast[0],
         columns[0],
         cast[1],
@@ -3393,7 +3398,7 @@ def scatter_matrix(
         )
     )
     random_func = get_random_function()
-    query = "SELECT {}, {} AS rand FROM {} WHERE __verticapy_split__ < 0.5 ORDER BY rand LIMIT 1000".format(
+    query = "SELECT /*+LABEL('plot.scatter_matrix')*/ {}, {} AS rand FROM {} WHERE __verticapy_split__ < 0.5 ORDER BY rand LIMIT 1000".format(
         ", ".join(columns), random_func, vdf.__genSQL__(True)
     )
     all_scatter_points = executeSQL(
@@ -3466,7 +3471,7 @@ def scatter2D(
         )
     if len(columns) == 2:
         tablesample = max_nb_points / vdf.shape()[0]
-        query = "SELECT {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
+        query = "SELECT /*+LABEL('plot.scatter2D')*/ {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             columns[0],
             columns[1],
             vdf.__genSQL__(True),
@@ -3518,7 +3523,7 @@ def scatter2D(
         if cat_priority:
             query_result = cat_priority
         else:
-            query = "SELECT {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {}".format(
+            query = "SELECT /*+LABEL('plot.scatter2D')*/ {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {}".format(
                 column_groupby,
                 vdf.__genSQL__(),
                 column_groupby,
@@ -3567,7 +3572,7 @@ def scatter2D(
                         column_groupby, str(category).replace("'", "''")
                     )
                 ]
-            query = "SELECT {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
+            query = "SELECT /*+LABEL('plot.scatter2D')*/ {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
             query = query.format(
                 columns[0],
                 columns[1],
@@ -3603,7 +3608,7 @@ def scatter2D(
             ]
         if with_others and idx + 1 < groupby_cardinality:
             all_categories += ["others"]
-            query = "SELECT {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND __verticapy_split__ < {} LIMIT {}"
+            query = "SELECT /*+LABEL('plot.scatter2D')*/ {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND __verticapy_split__ < {} LIMIT {}"
             query = query.format(
                 columns[0],
                 columns[1],
@@ -3682,7 +3687,7 @@ def scatter3D(
                 )
         if len(columns) == 3:
             tablesample = max_nb_points / vdf.shape()[0]
-            query = "SELECT {}, {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
+            query = "SELECT /*+LABEL('plot.scatter3D')*/ {}, {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
                 columns[0],
                 columns[1],
                 columns[2],
@@ -3726,7 +3731,7 @@ def scatter3D(
             if cat_priority:
                 query_result = cat_priority
             else:
-                query = "SELECT {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {}".format(
+                query = "SELECT /*+LABEL('plot.scatter3D')*/ {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {}".format(
                     column_groupby,
                     vdf.__genSQL__(),
                     column_groupby,
@@ -3758,7 +3763,7 @@ def scatter3D(
                             column_groupby, str(category).replace("'", "''")
                         )
                     ]
-                query = "SELECT {}, {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL limit {}"
+                query = "SELECT /*+LABEL('plot.scatter3D')*/ {}, {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL limit {}"
                 query = query.format(
                     columns[0],
                     columns[1],
@@ -3802,7 +3807,7 @@ def scatter3D(
                 ]
             if with_others and idx + 1 < groupby_cardinality:
                 all_categories += ["others"]
-                query = "SELECT {}, {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND __verticapy_split__ < {} LIMIT {}"
+                query = "SELECT /*+LABEL('plot.scatter3D')*/ {}, {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND __verticapy_split__ < {} LIMIT {}"
                 query = query.format(
                     columns[0],
                     columns[1],
@@ -3949,7 +3954,7 @@ def ts_plot(
     **style_kwds,
 ):
     if not (by):
-        query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
+        query = "SELECT /*+LABEL('plot.ts_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
             order_by, vdf.alias, vdf.parent.__genSQL__(), order_by, vdf.alias
         )
         query += (
@@ -4013,7 +4018,7 @@ def ts_plot(
         cat = vdf.parent[by].distinct()
         all_data = []
         for column in cat:
-            query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
+            query = "SELECT /*+LABEL('plot.ts_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
                 order_by, vdf.alias, vdf.parent.__genSQL__(), order_by, vdf.alias
             )
             query += (
