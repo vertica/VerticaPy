@@ -7876,7 +7876,7 @@ vColumns : vColumn
     def join(
         self,
         input_relation,
-        on: dict = {},
+        on: Union[dict, list] = {},
         on_interpolate: dict = {},
         how: str = "natural",
         expr1: list = ["*"],
@@ -7896,8 +7896,27 @@ vColumns : vColumn
     ----------
     input_relation: str/vDataFrame
         Relation to use to do the merging.
-    on: dict, optional
-        Dictionary of all different keys. The dict must be similar to the following:
+    on: dict / list, optional
+        List of 3-tuples. Each tuple must include (key1, key2, operator) where
+        key1 is the key of the vDataFrame, key2 is the key of the input relation
+        and operator can be one of the following:
+                     '=' : exact match
+                     '<' : key1  < key2
+                     '>' : key1  > key2
+                    '<=' : key1 <= key2
+                    '>=' : key1 >= key2
+                 'llike' : key1 LIKE '%' || key2 || '%'
+                 'rlike' : key2 LIKE '%' || key1 || '%'
+           'linterpolate': key1 INTERPOLATE key2
+           'rinterpolate': key2 INTERPOLATE key1
+        Some operators need 5-tuples: (key1, key2, operator, operator2, x) where
+        operator2 is one simple operator (=, >, <, <=, >=), x a float or an integer 
+        and operator is one of the following:
+                 'jaro' : JARO(key1, key2) operator2 x
+                'jarow' : JARO_WINCKLER(key1, key2) operator2 x
+                  'lev' : LEVENSHTEIN(key1, key2) operator2 x
+        Parameter 'on' can also be a dictionary of all different keys. The dict must 
+        be similar to the following:
         {"relationA_key1": "relationB_key1" ..., "relationA_keyk": "relationB_keyk"}
         where relationA is the current vDataFrame and relationB is the input relation
         or the input vDataFrame.
@@ -7957,7 +7976,8 @@ vColumns : vColumn
             expr2 = [expr2]
         check_types(
             [
-                ("on", on, [dict]),
+                ("on", on, [dict, list]),
+                ("on_interpolate", on_interpolate, [dict]),
                 (
                     "how",
                     how.lower(),
@@ -7968,74 +7988,85 @@ vColumns : vColumn
                 ("input_relation", input_relation, [vDataFrame, str]),
             ]
         )
-        how = how.lower()
-        self.are_namecols_in([elem for elem in on])
-        if isinstance(input_relation, vDataFrame):
-            input_relation.are_namecols_in([on[elem] for elem in on])
-            vdf_cols = []
-            for elem in on:
-                vdf_cols += [on[elem]]
-            input_relation.are_namecols_in(vdf_cols)
-            relation = input_relation.__genSQL__()
+        # Giving the right alias to the right relation
+        def create_final_relation(relation: str, alias: str):
             if (
                 ("SELECT" in relation.upper())
                 and ("FROM" in relation.upper())
                 and ("(" in relation)
                 and (")" in relation)
             ):
-                second_relation = "(SELECT * FROM {}) AS y".format(relation)
+                return f"(SELECT * FROM {relation}) AS {alias}"
             else:
-                second_relation = "{} AS y".format(relation)
-        elif isinstance(input_relation, str):
-            if (
-                ("SELECT" in input_relation.upper())
-                and ("FROM" in input_relation.upper())
-                and ("(" in input_relation)
-                and (")" in input_relation)
-            ):
-                second_relation = "(SELECT * FROM {}) AS y".format(input_relation)
-            else:
-                second_relation = "{} AS y".format(input_relation)
-        on_join = " AND ".join(
-            [
-                'x."'
-                + elem.replace('"', "")
-                + '" = y."'
-                + on[elem].replace('"', "")
-                + '"'
-                for elem in on
-            ]
-            + [
-                'x."'
-                + elem.replace('"', "")
-                + '" INTERPOLATE PREVIOUS VALUE y."'
-                + on_interpolate[elem].replace('"', "")
-                + '"'
-                for elem in on_interpolate
-            ]
-        )
-        on_join = " ON {}".format(on_join) if (on_join) else ""
-        relation = self.__genSQL__()
-        if (
-            ("SELECT" in relation.upper())
-            and ("FROM" in relation.upper())
-            and ("(" in relation)
-            and (")" in relation)
-        ):
-            first_relation = "(SELECT * FROM {}) AS x".format(relation)
-        else:
-            first_relation = "{} AS x".format(relation)
-        expr1, expr2 = (
-            ["x.{}".format(elem) for elem in expr1],
-            ["y.{}".format(elem) for elem in expr2],
-        )
-        expr = expr1 + expr2
+                return f"{relation} AS {alias}"
+
+        # List with the operators
+        on_list = []
+        if isinstance(on, dict):
+            on_list += [(key, on[key], "=") for key in on]
+        on_list += [(key, on[key], "linterpolate") for key in on_interpolate]
+        # Checks
+        self.are_namecols_in([elem[0] for elem in on])
+        if isinstance(input_relation, vDataFrame):
+            input_relation.are_namecols_in([elem[1] for elem in on])
+            relation = input_relation.__genSQL__()
+        # Relations
+        first_relation = create_final_relation(self.__genSQL__(), alias="x")
+        second_relation = create_final_relation(relation, alias="y")
+        # ON
+        on_join = []
+        all_operators = [
+            "=",
+            ">",
+            ">=",
+            "<",
+            "<=",
+            "llike",
+            "rlike",
+            "linterpolate",
+            "rinterpolate",
+            "jaro",
+            "jarow",
+            "lev",
+        ]
+        simple_operators = all_operators[0:5]
+        for elem in on_list:
+            key1, key2, op = quote_ident(elem[0]), quote_ident(elem[1]), elem[2]
+            check_types([("operator", op, all_operators)])
+            if op in ("=", ">", ">=", "<", "<="):
+                on_join += [f"x.{key1} {op} y.{key2}"]
+            elif op == "llike":
+                on_join += [f"x.{key1} LIKE '%' || y.{key2} || '%'"]
+            elif op == "rlike":
+                on_join += [f"y.{key2} LIKE '%' || x.{key1} || '%'"]
+            elif op == "linterpolate":
+                on_join += [f"x.{key1} INTERPOLATE PREVIOUS VALUE y.{key2}"]
+            elif op == "rinterpolate":
+                on_join += [f"y.{key2} INTERPOLATE PREVIOUS VALUE x.{key1}"]
+            elif op in ("jaro", "jarow", "lev"):
+                op2 = elem[3]
+                x = elem[4]
+                check_types(
+                    [("operator2", op2, simple_operators), ("x", x, [float, int])]
+                )
+                map_to_fun = {
+                    "jaro": "JARO_DISTANCE",
+                    "jarow": "JARO_WINKLER_DISTANCE",
+                    "lev": "EDIT_DISTANCE",
+                }
+                fun = map_to_fun(op)
+                on_join += [f"{fun}(x.{key1}, y.{key2}) {op2} {x}"]
+        # Final
+        on_join = " ON " + " AND ".join(on_join) if on_join else ""
+        expr = [f"x.{key}" for key in expr1] + [f"y.{key}" for key in expr2]
         expr = "*" if not (expr) else ", ".join(expr)
-        table = "SELECT {} FROM {} {} JOIN {} {}".format(
-            expr, first_relation, how.upper(), second_relation, on_join
+        if how:
+            how = " " + how.upper() + " "
+        table = (
+            f"SELECT {expr} FROM {first_relation}{how}JOIN {second_relation} {on_join}"
         )
         return self.__vDataFrameSQL__(
-            "({}) VERTICAPY_SUBTABLE".format(table),
+            f"({table}) VERTICAPY_SUBTABLE",
             "join",
             "[Join]: Two relations were joined together",
         )

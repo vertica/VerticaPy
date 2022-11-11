@@ -2114,7 +2114,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             "flatten_maps": flatten_maps,
             "genSQL": genSQL,
             "materialize": materialize,
-            "use_complex_dt":use_complex_dt ,
+            "use_complex_dt": use_complex_dt,
         },
     )
     # -#
@@ -2148,31 +2148,31 @@ read_csv : Ingests a CSV file into the Vertica database.
             ("flatten_maps", flatten_maps, [bool]),
             ("genSQL", genSQL, [bool]),
             ("materialize", materialize, [bool]),
-            ("use_complex_dt",use_complex_dt,[bool]),
+            ("use_complex_dt", use_complex_dt, [bool]),
         ]
     )
 
     if use_complex_dt:
-        assert not(new_name), ParameterError(
-        "You cannot use the parameter ""new_name"" with ""use_complex_dt""."
+        assert not (new_name), ParameterError(
+            "You cannot use the parameter " "new_name" " with " "use_complex_dt" "."
         )
         if ("*" in path) and ingest_local:
             dirname = os.path.dirname(path)
             all_files = os.listdir(dirname)
-            max_files=sum(1 for x in all_files if x.endswith(".json"))
+            max_files = sum(1 for x in all_files if x.endswith(".json"))
         else:
-            max_files=1000
+            max_files = 1000
         return read_file(
-        path=path,
-        schema=schema,
-        table_name=table_name,
-        insert = insert,
-        temporary_table = temporary_table ,
-        temporary_local_table=temporary_local_table,
-        gen_tmp_table_name=gen_tmp_table_name,
-        ingest_local=ingest_local,
-        genSQL=genSQL,
-        max_files= max_files,
+            path=path,
+            schema=schema,
+            table_name=table_name,
+            insert=insert,
+            temporary_table=temporary_table,
+            temporary_local_table=temporary_local_table,
+            gen_tmp_table_name=gen_tmp_table_name,
+            ingest_local=ingest_local,
+            genSQL=genSQL,
+            max_files=max_files,
         )
     if schema:
         temporary_local_table = False
