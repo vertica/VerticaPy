@@ -7897,6 +7897,7 @@ vColumns : vColumn
     input_relation: str/vDataFrame
         Relation to use to do the merging.
     on: dict / list, optional
+        If it is a list then:
         List of 3-tuples. Each tuple must include (key1, key2, operator)—where
         key1 is the key of the vDataFrame, key2 is the key of the input relation,
         and operator can be one of the following:
@@ -7915,8 +7916,10 @@ vColumns : vColumn
                  'jaro' : JARO(key1, key2) operator2 x
                 'jarow' : JARO_WINCKLER(key1, key2) operator2 x
                   'lev' : LEVENSHTEIN(key1, key2) operator2 x
-        This parameter can also be a dictionary of all different keys. The dict must 
-        be similar to the following:
+        
+        If it is a dictionary then:
+        This parameter must include all the different keys. It must be similar 
+        to the following:
         {"relationA_key1": "relationB_key1" ..., "relationA_keyk": "relationB_keyk"}
         where relationA is the current vDataFrame and relationB is the input relation
         or the input vDataFrame.
