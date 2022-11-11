@@ -8015,6 +8015,8 @@ vColumns : vColumn
         if isinstance(input_relation, vDataFrame):
             input_relation.are_namecols_in([elem[1] for elem in on_list])
             relation = input_relation.__genSQL__()
+        else:
+            relation = input_relation
         # Relations
         first_relation = create_final_relation(self.__genSQL__(), alias="x")
         second_relation = create_final_relation(relation, alias="y")
