@@ -8011,9 +8011,9 @@ vColumns : vColumn
             on_list += [elem for elem in on]
         on_list += [(key, on[key], "linterpolate") for key in on_interpolate]
         # Checks
-        self.are_namecols_in([elem[0] for elem in on])
+        self.are_namecols_in([elem[0] for elem in on_list])
         if isinstance(input_relation, vDataFrame):
-            input_relation.are_namecols_in([elem[1] for elem in on])
+            input_relation.are_namecols_in([elem[1] for elem in on_list])
             relation = input_relation.__genSQL__()
         # Relations
         first_relation = create_final_relation(self.__genSQL__(), alias="x")
