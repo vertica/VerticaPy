@@ -148,7 +148,7 @@ def jaro_distance(
 ):
     """
 ---------------------------------------------------------------------------
-Calculates and returns the Jaro distance between the two strings.
+Calculates and returns the Jaro distance between two strings.
 
 Parameters
 ----------
@@ -174,7 +174,7 @@ def jaro_winkler_distance(
 ):
     """
 ---------------------------------------------------------------------------
-Calculates and returns the Jaro Winkler distance between the two strings.
+Calculates and returns the Jaro-Winkler distance between two strings.
 
 Parameters
 ----------

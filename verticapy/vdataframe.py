@@ -7897,8 +7897,8 @@ vColumns : vColumn
     input_relation: str/vDataFrame
         Relation to use to do the merging.
     on: dict / list, optional
-        List of 3-tuples. Each tuple must include (key1, key2, operator) where
-        key1 is the key of the vDataFrame, key2 is the key of the input relation
+        List of 3-tuples. Each tuple must include (key1, key2, operator)—where
+        key1 is the key of the vDataFrame, key2 is the key of the input relation,
         and operator can be one of the following:
                      '=' : exact match
                      '<' : key1  < key2
@@ -7909,13 +7909,13 @@ vColumns : vColumn
                  'rlike' : key2 LIKE '%' || key1 || '%'
            'linterpolate': key1 INTERPOLATE key2
            'rinterpolate': key2 INTERPOLATE key1
-        Some operators need 5-tuples: (key1, key2, operator, operator2, x) where
-        operator2 is one simple operator (=, >, <, <=, >=), x a float or an integer 
+        Some operators need 5-tuples: (key1, key2, operator, operator2, x)—where
+        operator2 is a simple operator (=, >, <, <=, >=), x is a float or an integer, 
         and operator is one of the following:
                  'jaro' : JARO(key1, key2) operator2 x
                 'jarow' : JARO_WINCKLER(key1, key2) operator2 x
                   'lev' : LEVENSHTEIN(key1, key2) operator2 x
-        Parameter 'on' can also be a dictionary of all different keys. The dict must 
+        This parameter can also be a dictionary of all different keys. The dict must 
         be similar to the following:
         {"relationA_key1": "relationB_key1" ..., "relationA_keyk": "relationB_keyk"}
         where relationA is the current vDataFrame and relationB is the input relation
