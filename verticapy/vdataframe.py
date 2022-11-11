@@ -11982,7 +11982,7 @@ vColumns : vColumn
                 json_file += "{" + ", ".join(tmp_row) + "},\n"
             current_nb_rows_written += limit
             file_id += 1
-            json_file += "]"
+            json_file = json_file[0:-2] + "\n]"
             if n_files == 1 and path:
                 file = open(path, "w+")
                 file.write(json_file)
