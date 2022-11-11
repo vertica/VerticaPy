@@ -8004,6 +8004,8 @@ vColumns : vColumn
         on_list = []
         if isinstance(on, dict):
             on_list += [(key, on[key], "=") for key in on]
+        else:
+            on_list += [elem for elem in on]
         on_list += [(key, on[key], "linterpolate") for key in on_interpolate]
         # Checks
         self.are_namecols_in([elem[0] for elem in on])
@@ -8054,7 +8056,7 @@ vColumns : vColumn
                     "jarow": "JARO_WINKLER_DISTANCE",
                     "lev": "EDIT_DISTANCE",
                 }
-                fun = map_to_fun(op)
+                fun = map_to_fun[op]
                 on_join += [f"{fun}(x.{key1}, y.{key2}) {op2} {x}"]
         # Final
         on_join = " ON " + " AND ".join(on_join) if on_join else ""
