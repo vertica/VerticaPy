@@ -1492,6 +1492,9 @@ vDataFrame
         "Ingest local to create new relations is not yet supported for 'read_file'"
     )
     file_format = path.split(".")[-1].lower()
+    compression = extract_compression(path)
+    if compression != "UNCOMPRESSED":
+        raise ExtensionError(f"Compressed files are not supported for 'read_file' function.")
     if file_format not in ("json", "parquet", "avro", "orc", "csv"):
         raise ExtensionError("The file extension is incorrect !")
     if file_format == "csv":
