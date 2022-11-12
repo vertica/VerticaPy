@@ -1202,6 +1202,12 @@ def pcsv(
     na_rep: str = "",
     quotechar: str = '"',
     escape: str = "\027",
+    record_terminator: str = '\n',
+    trim: bool = True,
+    omit_empty_keys: bool = False,
+    reject_on_duplicate: bool = False,
+    reject_on_empty_key: bool = False,
+    reject_on_materialized_type_error: bool = False,
     ingest_local: bool = True,
     flex_name: str = "",
     genSQL: bool = False,
@@ -1228,6 +1234,23 @@ quotechar: str, optional
     Char which is enclosing the str values.
 escape: str, optional
     Separator between each record.
+record_terminator: str, optional
+    A single-character value used to specify the end of a record.
+trim: bool, optional
+    Boolean, specifies whether to trim white space from header names and 
+    key values.
+omit_empty_keys: bool, optional
+    Boolean, specifies how the parser handles header keys without values. 
+    If true, keys with an empty value in the header row are not loaded.
+reject_on_duplicate: bool, optional
+    Boolean, specifies whether to ignore duplicate records (False), or to 
+    reject duplicates (True). In either case, the load continues.
+reject_on_empty_key: bool, optional
+    Boolean, specifies whether to reject any row containing a key without a 
+    value.
+reject_on_materialized_type_error: bool, optional
+    Boolean, specifies whether to reject any materialized column value that the 
+    parser cannot coerce into a compatible data type.
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 flex_name: str, optional
@@ -1259,41 +1282,50 @@ read_json : Ingests a JSON file into the Vertica database.
             "na_rep": na_rep,
             "quotechar": quotechar,
             "escape": escape,
+            "record_terminator": record_terminator,
+            "trim": trim,
+            "omit_empty_keys": omit_empty_keys,
+            "reject_on_duplicate": reject_on_duplicate,
+            "reject_on_empty_key": reject_on_empty_key,
+            "reject_on_materialized_type_error": reject_on_materialized_type_error,
             "ingest_local": ingest_local,
             "flex_name": flex_name,
         },
     )
     # -#
+    if record_terminator == "\n":
+        record_terminator = "\\n"
     if not (flex_name):
         flex_name = gen_tmp_name(name="flex")[1:-1]
+    if header_names:
+        header_names = "header_names = '{0}',".format(sep.join(header_names))
+    else:
+        header_names = ""
+    ingest_local = " LOCAL" if ingest_local else ""
+    trim = str(trim).lower()
+    omit_empty_keys = str(omit_empty_keys).lower()
+    reject_on_duplicate = str(reject_on_duplicate).lower()
+    reject_on_empty_key = str(reject_on_empty_key).lower()
+    reject_on_materialized_type_error = str(reject_on_materialized_type_error).lower()
+    compression = extract_compression(path)
     query = f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;"
-    header_names = (
-        ""
-        if not (header_names)
-        else "header_names = '{0}',".format(sep.join(header_names))
-    )
-    query2 = """COPY {0} 
-       FROM{1} '{2}' {3} 
+    query2 = f"""COPY {flex_name} 
+       FROM{ingest_local} '{path}' {compression} 
        PARSER FCSVPARSER(
             type = 'traditional', 
-            delimiter = '{4}', 
-            header = {5}, {6} 
-            enclosed_by = '{7}', 
-            escape = '{8}') 
-       NULL '{9}';""".format(
-        flex_name,
-        " LOCAL" if ingest_local else "",
-        path,
-        extract_compression(path),
-        sep,
-        header,
-        header_names,
-        quotechar,
-        escape,
-        na_rep,
-    )
+            delimiter = '{sep}', 
+            header = {header}, {header_names} 
+            enclosed_by = '{quotechar}', 
+            escape = '{escape}',
+            record_terminator = '{record_terminator}',
+            trim = {trim},
+            omit_empty_keys = {omit_empty_keys},
+            reject_on_duplicate = {reject_on_duplicate},
+            reject_on_empty_key = {reject_on_empty_key},
+            reject_on_materialized_type_error = {reject_on_materialized_type_error}) 
+       NULL '{na_rep}';"""
     if genSQL:
-        return [query, query2]
+        return [clean_query(query), clean_query(query2)]
     executeSQL(
         query, title="Creating flex table to identify the data types.",
     )
@@ -1639,6 +1671,12 @@ def read_csv(
     na_rep: str = "",
     quotechar: str = '"',
     escape: str = "\027",
+    record_terminator: str = '\n',
+    trim: bool = True,
+    omit_empty_keys: bool = False,
+    reject_on_duplicate: bool = False,
+    reject_on_empty_key: bool = False,
+    reject_on_materialized_type_error: bool = False,
     parse_nrows: int = -1,
     insert: bool = False,
     temporary_table: bool = False,
@@ -1678,6 +1716,23 @@ quotechar: str, optional
 	Char which is enclosing the str values.
 escape: str, optional
 	Separator between each record.
+record_terminator: str, optional
+    A single-character value used to specify the end of a record.
+trim: bool, optional
+    Boolean, specifies whether to trim white space from header names and 
+    key values.
+omit_empty_keys: bool, optional
+    Boolean, specifies how the parser handles header keys without values. 
+    If true, keys with an empty value in the header row are not loaded.
+reject_on_duplicate: bool, optional
+    Boolean, specifies whether to ignore duplicate records (False), or to 
+    reject duplicates (True). In either case, the load continues.
+reject_on_empty_key: bool, optional
+    Boolean, specifies whether to reject any row containing a key without a 
+    value.
+reject_on_materialized_type_error: bool, optional
+    Boolean, specifies whether to reject any materialized column value that the 
+    parser cannot coerce into a compatible data type.
 parse_nrows: int, optional
 	If this parameter is greater than 0. A new file of 'parse_nrows' rows
 	will be created and ingested first to identify the data types. It will be
@@ -1733,6 +1788,12 @@ read_json : Ingests a JSON file into the Vertica database.
             "na_rep": na_rep,
             "quotechar": quotechar,
             "escape": escape,
+            "record_terminator": record_terminator,
+            "trim": trim,
+            "omit_empty_keys": omit_empty_keys,
+            "reject_on_duplicate": reject_on_duplicate,
+            "reject_on_empty_key": reject_on_empty_key,
+            "reject_on_materialized_type_error": reject_on_materialized_type_error,
             "genSQL": genSQL,
             "parse_nrows": parse_nrows,
             "insert": insert,
@@ -1740,7 +1801,6 @@ read_json : Ingests a JSON file into the Vertica database.
             "temporary_local_table": temporary_local_table,
             "gen_tmp_table_name": gen_tmp_table_name,
             "ingest_local": ingest_local,
-            "materialize": materialize,
         },
     )
     # -#
@@ -1756,7 +1816,12 @@ read_json : Ingests a JSON file into the Vertica database.
             ("dtype", dtype, [dict]),
             ("quotechar", quotechar, [str]),
             ("escape", escape, [str]),
-            ("genSQL", genSQL, [bool]),
+            ("record_terminator", record_terminator, [str]),
+            ("trim", trim, [bool]),
+            ("omit_empty_keys", omit_empty_keys, [bool]),
+            ("reject_on_duplicate", reject_on_duplicate, [bool]),
+            ("reject_on_empty_key", reject_on_empty_key, [bool]),
+            ("reject_on_materialized_type_error", reject_on_materialized_type_error, [bool]),
             ("parse_nrows", parse_nrows, [int, float]),
             ("insert", insert, [bool]),
             ("temporary_table", temporary_table, [bool]),
@@ -1831,12 +1896,16 @@ read_json : Ingests a JSON file into the Vertica database.
             input_relation = "v_temp_schema.{}".format(quote_ident(table_name))
         file_header = []
         path_first_file_in_folder = path
-        if multiple_files:
+        if multiple_files and ingest_local:
             path_first_file_in_folder = get_first_file(path, "csv")
-        if not (header_names) and not (dtype) and (compression == "UNCOMPRESSED"):
+        if not (header_names) and not (dtype) and (compression == "UNCOMPRESSED") and ingest_local:
             if not (path_first_file_in_folder):
                 raise ParameterError("No CSV file detected in the folder.")
             file_header = get_header_name_csv(path_first_file_in_folder, sep)
+        elif not (header_names) and not (dtype) and (compression != "UNCOMPRESSED"):
+            raise ParameterError("The input file is compressed and parameters 'dtypes' and 'header_names' are not defined. It is impossible to read the file's header.")
+        elif not (header_names) and not (dtype) and not(ingest_local):
+            raise ParameterError("The input file is in the Vertica server and parameters 'dtypes' and 'header_names' are not defined. It is impossible to read the file's header.")
         if (header_names == []) and (header):
             if not (dtype):
                 header_names = file_header
@@ -1861,13 +1930,19 @@ read_json : Ingests a JSON file into the Vertica database.
                 prefix = ";"
             query = f"CREATE FLEX {suffix}TABLE {final_relation}(x int){prefix}"
             query2 = pcsv(
-                path,
-                sep,
-                header,
-                header_names,
-                na_rep,
-                quotechar,
-                escape,
+                path=path,
+                sep=sep,
+                header=header,
+                header_names=header_names,
+                na_rep=na_rep,
+                quotechar=quotechar,
+                escape=escape,
+                record_terminator=record_terminator,
+                trim=trim,
+                omit_empty_keys=omit_empty_keys,
+                reject_on_duplicate=reject_on_duplicate,
+                reject_on_empty_key=reject_on_empty_key,
+                reject_on_materialized_type_error=reject_on_materialized_type_error,
                 ingest_local=ingest_local,
                 flex_name=input_relation,
                 genSQL=True,
@@ -1884,7 +1959,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 query2, title="Copying the data.",
             )
             return vDataFrame(table_name, schema=schema)
-        if (parse_nrows > 0) and not (insert) and (compression == "UNCOMPRESSED"):
+        if (parse_nrows > 0) and not (insert) and (compression == "UNCOMPRESSED") and ingest_local:
             f = open(path_first_file_in_folder, "r")
             path_test = path_first_file_in_folder.split(".")[-2] + "_verticapy_copy.csv"
             f2 = open(path_test, "w")
@@ -1930,16 +2005,13 @@ read_json : Ingests a JSON file into the Vertica database.
                     ESCAPE AS '{7}'{8};""".format(
             input_relation,
             ", ".join(['"' + column + '"' for column in header_names]),
-            "{}",
+            "{0}'{1}'".format("LOCAL " if ingest_local else "", path),
             compression,
             sep,
             na_rep,
             quotechar,
             escape,
             skip,
-        )
-        query2 = query2.format(
-            "{0}'{1}'".format("LOCAL " if ingest_local else "", path)
         )
         if genSQL:
             if insert:
