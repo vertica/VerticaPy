@@ -1202,7 +1202,7 @@ def pcsv(
     na_rep: str = "",
     quotechar: str = '"',
     escape: str = "\027",
-    record_terminator: str = '\n',
+    record_terminator: str = "\n",
     trim: bool = True,
     omit_empty_keys: bool = False,
     reject_on_duplicate: bool = False,
@@ -1671,7 +1671,7 @@ def read_csv(
     na_rep: str = "",
     quotechar: str = '"',
     escape: str = "\027",
-    record_terminator: str = '\n',
+    record_terminator: str = "\n",
     trim: bool = True,
     omit_empty_keys: bool = False,
     reject_on_duplicate: bool = False,
@@ -1821,7 +1821,11 @@ read_json : Ingests a JSON file into the Vertica database.
             ("omit_empty_keys", omit_empty_keys, [bool]),
             ("reject_on_duplicate", reject_on_duplicate, [bool]),
             ("reject_on_empty_key", reject_on_empty_key, [bool]),
-            ("reject_on_materialized_type_error", reject_on_materialized_type_error, [bool]),
+            (
+                "reject_on_materialized_type_error",
+                reject_on_materialized_type_error,
+                [bool],
+            ),
             ("parse_nrows", parse_nrows, [int, float]),
             ("insert", insert, [bool]),
             ("temporary_table", temporary_table, [bool]),
@@ -1898,14 +1902,23 @@ read_json : Ingests a JSON file into the Vertica database.
         path_first_file_in_folder = path
         if multiple_files and ingest_local:
             path_first_file_in_folder = get_first_file(path, "csv")
-        if not (header_names) and not (dtype) and (compression == "UNCOMPRESSED") and ingest_local:
+        if (
+            not (header_names)
+            and not (dtype)
+            and (compression == "UNCOMPRESSED")
+            and ingest_local
+        ):
             if not (path_first_file_in_folder):
                 raise ParameterError("No CSV file detected in the folder.")
             file_header = get_header_name_csv(path_first_file_in_folder, sep)
         elif not (header_names) and not (dtype) and (compression != "UNCOMPRESSED"):
-            raise ParameterError("The input file is compressed and parameters 'dtypes' and 'header_names' are not defined. It is impossible to read the file's header.")
-        elif not (header_names) and not (dtype) and not(ingest_local):
-            raise ParameterError("The input file is in the Vertica server and parameters 'dtypes' and 'header_names' are not defined. It is impossible to read the file's header.")
+            raise ParameterError(
+                "The input file is compressed and parameters 'dtypes' and 'header_names' are not defined. It is impossible to read the file's header."
+            )
+        elif not (header_names) and not (dtype) and not (ingest_local):
+            raise ParameterError(
+                "The input file is in the Vertica server and parameters 'dtypes' and 'header_names' are not defined. It is impossible to read the file's header."
+            )
         if (header_names == []) and (header):
             if not (dtype):
                 header_names = file_header
@@ -1959,7 +1972,12 @@ read_json : Ingests a JSON file into the Vertica database.
                 query2, title="Copying the data.",
             )
             return vDataFrame(table_name, schema=schema)
-        if (parse_nrows > 0) and not (insert) and (compression == "UNCOMPRESSED") and ingest_local:
+        if (
+            (parse_nrows > 0)
+            and not (insert)
+            and (compression == "UNCOMPRESSED")
+            and ingest_local
+        ):
             f = open(path_first_file_in_folder, "r")
             path_test = path_first_file_in_folder.split(".")[-2] + "_verticapy_copy.csv"
             f2 = open(path_test, "w")
