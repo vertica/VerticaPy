@@ -280,12 +280,13 @@ class TestvDFCombineJoinSort:
         vdf = d1.join(d2, on=[("fav_car1", "fav_car2", "rlike")], how="inner")
         assert vdf.shape() == (3, 8)
         assert vdf["age2"].sum() == 90.0
-        vdf = d1.join(d2, on=[("email1", "email2", "jaro", ">", 0.7)], how="inner")
-        assert vdf.shape() == (4, 8)
-        assert vdf["age2"].sum() == 116.0
-        vdf = d1.join(d2, on=[("email1", "email2", "jarow", ">", 0.8)], how="inner")
-        assert vdf.shape() == (4, 8)
-        assert vdf["age2"].sum() == 116.0
+        # available for vertica v12.0.2
+        #vdf = d1.join(d2, on=[("email1", "email2", "jaro", ">", 0.7)], how="inner")
+        #assert vdf.shape() == (4, 8)
+        #assert vdf["age2"].sum() == 116.0
+        #vdf = d1.join(d2, on=[("email1", "email2", "jarow", ">", 0.8)], how="inner")
+        #assert vdf.shape() == (4, 8)
+        #assert vdf["age2"].sum() == 116.0
         vdf = d1.join(d2, on=[("email1", "email2", "lev", "<", 3)], how="inner")
         assert vdf.shape() == (1, 8)
         assert vdf["age2"].sum() == 26.0
@@ -298,11 +299,12 @@ class TestvDFCombineJoinSort:
         vdf = d1.join(d2, on=[("email1", "email2", "rinterpolate")], how="left")
         assert vdf.shape() == (3, 8)
         assert vdf["age2"].sum() == 61.0
-        vdf = d1.join(
-            d2,
-            on=[("email1", "email2", "jaro", ">", 0.88), ("name1", "name2", "=")],
-            how="inner",
-        )
+        # available for vertica v12.0.2
+        #vdf = d1.join(
+        #    d2,
+        #    on=[("email1", "email2", "jaro", ">", 0.88), ("name1", "name2", "=")],
+        #    how="inner",
+        #)
         assert vdf.shape() == (2, 8)
         assert vdf["age2"].sum() == 55.0
 

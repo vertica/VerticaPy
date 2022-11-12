@@ -8055,6 +8055,10 @@ vColumns : vColumn
             elif op == "rinterpolate":
                 on_join += [f"y.{key2} INTERPOLATE PREVIOUS VALUE x.{key1}"]
             elif op in ("jaro", "jarow", "lev"):
+                if op in ("jaro", "jarow"):
+                    version(condition=[12, 0, 2])
+                else:
+                    version(condition=[10, 1, 0])
                 op2 = elem[3]
                 x = elem[4]
                 check_types(
