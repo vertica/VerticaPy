@@ -240,6 +240,20 @@ class TestStats:
         assert result["VIF"][2] == pytest.approx(1.250542149908016, 1e-2)
         assert result["VIF"][3] == pytest.approx(1.4940557668701793, 1e-2)
 
+    @pytest.mark.skip(reason="this test will be valid for Vertica v12.0.2")
+    def test_jaro_distance(self, titanic_vd):
+        assert (
+            str(st.edit_distance(titanic_vd["name"], "Laurent"))
+            == "JARO_DISTANCE(\"name\", 'Laurent')"
+        )
+
+    @pytest.mark.skip(reason="this test will be valid for Vertica v12.0.2")
+    def test_jaro_winkler_distance(self, titanic_vd):
+        assert (
+            str(st.edit_distance(titanic_vd["name"], "Laurent"))
+            == "JARO_WINKLER_DISTANCE(\"name\", 'Laurent')"
+        )
+
     def test_edit_distance(self, titanic_vd):
         assert (
             str(st.edit_distance(titanic_vd["name"], "Laurent"))

@@ -275,7 +275,7 @@ class TestvDFUtilities:
             result = file.read()
             assert (
                 result
-                == '[\n{"age": 80.000, "fare": 30.00000},\n{"age": 76.000, "fare": 78.85000},\n]'
+                == '[\n{"age": 80.000, "fare": 30.00000},\n{"age": 76.000, "fare": 78.85000}\n]'
             )
         except:
             os.remove("verticapy_test_to_json.json")

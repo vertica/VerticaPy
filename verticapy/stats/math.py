@@ -87,7 +87,7 @@ str_sql
     version(condition=[10, 1, 0])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
-    return str_sql("EDIT_DISTANCE({}, {})".format(expr1, expr2), "int")
+    return str_sql(f"EDIT_DISTANCE({expr1}, {expr2})", "int")
 
 
 levenshtein = edit_distance
@@ -110,7 +110,7 @@ str_sql
     """
     version(condition=[10, 1, 0])
     expr = format_magic(expr)
-    return str_sql("SOUNDEX({})".format(expr), "varchar")
+    return str_sql(f"SOUNDEX({expr})", "varchar")
 
 
 # ---#
@@ -138,7 +138,60 @@ str_sql
     version(condition=[10, 1, 0])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
-    return str_sql("SOUNDEX_MATCHES({}, {})".format(expr1, expr2), "int")
+    return str_sql(f"SOUNDEX_MATCHES({expr1}, {expr2})", "int")
+
+
+# Jaro & Jaro Winkler
+# ---#
+def jaro_distance(
+    expr1, expr2,
+):
+    """
+---------------------------------------------------------------------------
+Calculates and returns the Jaro distance between two strings.
+
+Parameters
+----------
+expr1: object
+    Expression.
+expr2: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    version(condition=[12, 0, 2])
+    expr1 = format_magic(expr1)
+    expr2 = format_magic(expr2)
+    return str_sql(f"JARO_DISTANCE({expr1}, {expr2})", "float")
+
+
+# ---#
+def jaro_winkler_distance(
+    expr1, expr2,
+):
+    """
+---------------------------------------------------------------------------
+Calculates and returns the Jaro-Winkler distance between two strings.
+
+Parameters
+----------
+expr1: object
+    Expression.
+expr2: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    version(condition=[12, 0, 2])
+    expr1 = format_magic(expr1)
+    expr2 = format_magic(expr2)
+    return str_sql(f"JARO_WINKLER_DISTANCE({expr1}, {expr2})", "float")
 
 
 # Regular Expressions
@@ -167,7 +220,7 @@ str_sql
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
-    return str_sql("REGEXP_COUNT({}, {}, {})".format(expr, pattern, position), "int")
+    return str_sql(f"REGEXP_COUNT({expr}, {pattern}, {position})", "int")
 
 
 # ---#
@@ -190,7 +243,7 @@ str_sql
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
-    return str_sql("REGEXP_ILIKE({}, {})".format(expr, pattern))
+    return str_sql(f"REGEXP_ILIKE({expr}, {pattern})")
 
 
 # ---#
@@ -224,9 +277,7 @@ str_sql
     expr = format_magic(expr)
     pattern = format_magic(pattern)
     return str_sql(
-        "REGEXP_INSTR({}, {}, {}, {}, {})".format(
-            expr, pattern, position, occurrence, return_position
-        )
+        f"REGEXP_INSTR({expr}, {pattern}, {position}, {occurrence}, {return_position})"
     )
 
 
@@ -250,7 +301,7 @@ str_sql
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
-    return str_sql("REGEXP_LIKE({}, {})".format(expr, pattern))
+    return str_sql(f"REGEXP_LIKE({expr}, {pattern})")
 
 
 # ---#
@@ -283,9 +334,7 @@ str_sql
     target = format_magic(target)
     replacement = format_magic(replacement)
     return str_sql(
-        "REGEXP_REPLACE({}, {}, {}, {}, {})".format(
-            expr, target, replacement, position, occurrence
-        )
+        f"REGEXP_REPLACE({expr}, {target}, {replacement}, {position}, {occurrence})"
     )
 
 
@@ -314,9 +363,7 @@ str_sql
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
-    return str_sql(
-        "REGEXP_SUBSTR({}, {}, {}, {})".format(expr, pattern, position, occurrence)
-    )
+    return str_sql(f"REGEXP_SUBSTR({expr}, {pattern}, {position}, {occurrence})")
 
 
 # String Functions
@@ -337,7 +384,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("LENGTH({})".format(expr), "int")
+    return str_sql(f"LENGTH({expr})", "int")
 
 
 # ---#
@@ -358,7 +405,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("LOWER({})".format(expr), "text")
+    return str_sql(f"LOWER({expr})", "text")
 
 
 # ---#
@@ -384,8 +431,8 @@ str_sql
     """
     expr = format_magic(expr)
     if extent:
-        position = "{}, {}".format(position, extent)
-    return str_sql("SUBSTR({}, {})".format(expr, position), "text")
+        position = f"{position}, {extent}"
+    return str_sql(f"SUBSTR({expr}, {position})", "text")
 
 
 # ---#
@@ -406,7 +453,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("UPPER({})".format(expr), "text")
+    return str_sql(f"UPPER({expr})", "text")
 
 
 # Aggregate & Analytical functions
@@ -529,7 +576,8 @@ str_sql
         param_expr = ""
     if param_expr:
         param_expr = " USING PARAMETERS " + param_expr
-    return str_sql("{}({}{})".format(func.upper(), expr, param_expr))
+    func = func.upper()
+    return str_sql(f"{func}({expr}{param_expr})")
 
 
 # ---#
@@ -549,7 +597,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("AVG({})".format(expr), "float")
+    return str_sql(f"AVG({expr})", "float")
 
 
 mean = avg
@@ -572,7 +620,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("BOOL_AND({})".format(expr), "int")
+    return str_sql(f"BOOL_AND({expr})", "int")
 
 
 # ---#
@@ -593,7 +641,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("BOOL_OR({})".format(expr), "int")
+    return str_sql(f"BOOL_OR({expr})", "int")
 
 
 # ---#
@@ -615,7 +663,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("BOOL_XOR({})".format(expr), "int")
+    return str_sql(f"BOOL_XOR({expr})", "int")
 
 
 # ---#
@@ -637,7 +685,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("CONDITIONAL_CHANGE_EVENT({})".format(expr), "int")
+    return str_sql(f"CONDITIONAL_CHANGE_EVENT({expr})", "int")
 
 
 # ---#
@@ -659,7 +707,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("CONDITIONAL_TRUE_EVENT({})".format(expr), "int")
+    return str_sql(f"CONDITIONAL_TRUE_EVENT({expr})", "int")
 
 
 # ---#
@@ -680,7 +728,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("COUNT({})".format(expr), "int")
+    return str_sql(f"COUNT({expr})", "int")
 
 
 # ---#
@@ -703,7 +751,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("LAG({}, {})".format(expr, offset))
+    return str_sql(f"LAG({expr}, {offset})")
 
 
 # ---#
@@ -726,7 +774,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("LEAD({}, {})".format(expr, offset))
+    return str_sql(f"LEAD({expr}, {offset})")
 
 
 # ---#
@@ -746,7 +794,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("MAX({})".format(expr), "float")
+    return str_sql(f"MAX({expr})", "float")
 
 
 # ---#
@@ -766,7 +814,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("APPROXIMATE_MEDIAN({})".format(expr), "float")
+    return str_sql(f"APPROXIMATE_MEDIAN({expr})", "float")
 
 
 # ---#
@@ -786,7 +834,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("MIN({})".format(expr), "float")
+    return str_sql(f"MIN({expr})", "float")
 
 
 # ---#
@@ -809,7 +857,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("NTH_VALUE({}, {})".format(expr, row_number), "int")
+    return str_sql(f"NTH_VALUE({expr}, {row_number})", "int")
 
 
 # ---#
@@ -833,9 +881,7 @@ str_sql
     """
     expr = format_magic(expr)
     return str_sql(
-        "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(
-            expr, number
-        ),
+        f"APPROXIMATE_PERCENTILE({expr} USING PARAMETERS percentile = {number})",
         "float",
     )
 
@@ -888,7 +934,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("STDDEV({})".format(expr), "float")
+    return str_sql(f"STDDEV({expr})", "float")
 
 
 stddev = std
@@ -911,7 +957,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("SUM({})".format(expr), "float")
+    return str_sql(f"SUM({expr})", "float")
 
 
 # ---#
@@ -931,7 +977,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("VARIANCE({})".format(expr), "float")
+    return str_sql(f"VARIANCE({expr})", "float")
 
 
 variance = var
@@ -955,7 +1001,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("ABS({})".format(expr), "float")
+    return str_sql(f"ABS({expr})", "float")
 
 
 # ---#
@@ -975,7 +1021,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("ACOS({})".format(expr), "float")
+    return str_sql(f"ACOS({expr})", "float")
 
 
 # ---#
@@ -995,7 +1041,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("ASIN({})".format(expr), "float")
+    return str_sql(f"ASIN({expr})", "float")
 
 
 # ---#
@@ -1015,7 +1061,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("ATAN({})".format(expr), "float")
+    return str_sql(f"ATAN({expr})", "float")
 
 
 # ---#
@@ -1037,7 +1083,7 @@ str_sql
     SQL expression.
     """
     quotient, divisor = format_magic(quotient), format_magic(divisor)
-    return str_sql("ATAN2({}, {})".format(quotient, divisor), "float")
+    return str_sql(f"ATAN2({quotient}, {divisor})", "float")
 
 
 # ---#
@@ -1100,7 +1146,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("CBRT({})".format(expr), "float")
+    return str_sql(f"CBRT({expr})", "float")
 
 
 # ---#
@@ -1120,7 +1166,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("CEIL({})".format(expr), "float")
+    return str_sql(f"CEIL({expr})", "float")
 
 
 # ---#
@@ -1146,7 +1192,7 @@ str_sql
     for arg in argv:
         expr += [format_magic(arg)]
     expr = ", ".join([str(elem) for elem in expr])
-    return str_sql("COALESCE({})".format(expr), category)
+    return str_sql(f"COALESCE({expr})", category)
 
 
 # ---#
@@ -1167,7 +1213,7 @@ Returns
 str_sql
     SQL expression.
     """
-    return str_sql("({})! / (({})! * ({} - {})!)".format(n, k, n, k), "float")
+    return str_sql(f"({n})! / (({k})! * ({n} - {k})!)", "float")
 
 
 # ---#
@@ -1187,7 +1233,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("COS({})".format(expr), "float")
+    return str_sql(f"COS({expr})", "float")
 
 
 # ---#
@@ -1207,7 +1253,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("COSH({})".format(expr), "float")
+    return str_sql(f"COSH({expr})", "float")
 
 
 # ---#
@@ -1227,7 +1273,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("COT({})".format(expr), "float")
+    return str_sql(f"COT({expr})", "float")
 
 
 # ---#
@@ -1247,7 +1293,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("DATE({})".format(expr), "date")
+    return str_sql(f"DATE({expr})", "date")
 
 
 # ---#
@@ -1267,7 +1313,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("DAY({})".format(expr), "float")
+    return str_sql(f"DAY({expr})", "float")
 
 
 # ---#
@@ -1287,7 +1333,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("DAYOFWEEK({})".format(expr), "float")
+    return str_sql(f"DAYOFWEEK({expr})", "float")
 
 
 # ---#
@@ -1307,7 +1353,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("DAYOFYEAR({})".format(expr), "float")
+    return str_sql(f"DAYOFYEAR({expr})", "float")
 
 
 # ---#
@@ -1364,7 +1410,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("DEGREES({})".format(expr), "float")
+    return str_sql(f"DEGREES({expr})", "float")
 
 
 # ---#
@@ -1394,9 +1440,7 @@ Returns
 str_sql
     SQL expression.
     """
-    return str_sql(
-        "DISTANCE({}, {}, {}, {}, {})".format(lat0, lon0, lat1, lon1, radius), "float"
-    )
+    return str_sql(f"DISTANCE({lat0}, {lon0}, {lat1}, {lon1}, {radius})", "float")
 
 
 # ---#
@@ -1416,7 +1460,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("EXP({})".format(expr), "float")
+    return str_sql(f"EXP({expr})", "float")
 
 
 # ---#
@@ -1441,7 +1485,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("DATE_PART('{}', {})".format(field, expr), "int")
+    return str_sql(f"DATE_PART('{field}', {expr})", "int")
 
 
 # ---#
@@ -1461,7 +1505,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("({})!".format(expr), "int")
+    return str_sql(f"({expr})!", "int")
 
 
 # ---#
@@ -1481,7 +1525,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("FLOOR({})".format(expr), "int")
+    return str_sql(f"FLOOR({expr})", "int")
 
 
 # ---#
@@ -1501,7 +1545,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("({} - 1)!".format(expr), "float")
+    return str_sql(f"({expr} - 1)!", "float")
 
 
 # ---#
@@ -1553,7 +1597,7 @@ str_sql
     for arg in argv:
         expr += [format_magic(arg)]
     expr = ", ".join([str(elem) for elem in expr])
-    return str_sql("HASH({})".format(expr), "float")
+    return str_sql(f"HASH({expr})", "float")
 
 
 # ---#
@@ -1574,7 +1618,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("HOUR({})".format(expr), "int")
+    return str_sql(f"HOUR({expr})", "int")
 
 
 # ---#
@@ -1594,7 +1638,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("({})::interval".format(expr), "interval")
+    return str_sql(f"({expr})::interval", "interval")
 
 
 # ---#
@@ -1614,9 +1658,7 @@ str_sql
     SQL expression.
     """
     expr, cat = format_magic(expr, True)
-    return str_sql(
-        "(({}) = ({})) AND (ABS({}) < 'inf'::float)".format(expr, expr, expr), cat
-    )
+    return str_sql(f"(({expr}) = ({expr})) AND (ABS({expr}) < 'inf'::float)", cat)
 
 
 # ---#
@@ -1636,7 +1678,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("ABS({}) = 'inf'::float".format(expr), "float")
+    return str_sql(f"ABS({expr}) = 'inf'::float", "float")
 
 
 # ---#
@@ -1656,7 +1698,7 @@ str_sql
     SQL expression.
     """
     expr, cat = format_magic(expr, True)
-    return str_sql("(({}) != ({}))".format(expr, expr), cat)
+    return str_sql(f"(({expr}) != ({expr}))", cat)
 
 
 # ---#
@@ -1676,7 +1718,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("LN(({} - 1)!)".format(expr), "float")
+    return str_sql(f"LN(({expr} - 1)!)", "float")
 
 
 # ---#
@@ -1696,7 +1738,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("LN({})".format(expr), "float")
+    return str_sql(f"LN({expr})", "float")
 
 
 # ---#
@@ -1718,7 +1760,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("LOG({}, {})".format(base, expr), "float")
+    return str_sql(f"LOG({base}, {expr})", "float")
 
 
 # ---#
@@ -1738,7 +1780,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("MINUTE({})".format(expr), "int")
+    return str_sql(f"MINUTE({expr})", "int")
 
 
 # ---#
@@ -1758,7 +1800,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("MICROSECOND({})".format(expr), "int")
+    return str_sql(f"MICROSECOND({expr})", "int")
 
 
 # ---#
@@ -1778,7 +1820,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("MONTH({})".format(expr), "int")
+    return str_sql(f"MONTH({expr})", "int")
 
 
 # ---#
@@ -1798,7 +1840,7 @@ str_sql
     SQL expression.
     """
     expr, cat = format_magic(expr, True)
-    return str_sql("NULLIFZERO({})".format(expr), cat)
+    return str_sql(f"NULLIFZERO({expr})", cat)
 
 
 # ---#
@@ -1857,7 +1899,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("QUARTER({})".format(expr), "int")
+    return str_sql(f"QUARTER({expr})", "int")
 
 
 # ---#
@@ -1877,7 +1919,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("RADIANS({})".format(expr), "float")
+    return str_sql(f"RADIANS({expr})", "float")
 
 
 # ---#
@@ -1910,7 +1952,7 @@ Returns
 str_sql
     SQL expression.
     """
-    return str_sql("RANDOMINT({})".format(n), "int")
+    return str_sql(f"RANDOMINT({n})", "int")
 
 
 # ---#
@@ -1932,7 +1974,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("ROUND({}, {})".format(expr, places), "float")
+    return str_sql(f"ROUND({expr}, {places})", "float")
 
 
 # ---#
@@ -1968,7 +2010,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("ROUND({}, '{}')".format(expr, precision), "date")
+    return str_sql(f"ROUND({expr}, '{precision}')", "date")
 
 
 # ---#
@@ -1988,7 +2030,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("SECOND({})".format(expr), "int")
+    return str_sql(f"SECOND({expr})", "int")
 
 
 # ---#
@@ -2007,7 +2049,7 @@ Returns
 str_sql
     SQL expression.
     """
-    return str_sql("SEEDED_RANDOM({})".format(random_state), "float")
+    return str_sql(f"SEEDED_RANDOM({random_state})", "float")
 
 
 # ---#
@@ -2027,7 +2069,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("SIGN({})".format(expr), "int")
+    return str_sql(f"SIGN({expr})", "int")
 
 
 # ---#
@@ -2047,7 +2089,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("SIN({})".format(expr), "float")
+    return str_sql(f"SIN({expr})", "float")
 
 
 # ---#
@@ -2067,7 +2109,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("SINH({})".format(expr), "float")
+    return str_sql(f"SINH({expr})", "float")
 
 
 # ---#
@@ -2087,7 +2129,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("SQRT({})".format(expr), "float")
+    return str_sql(f"SQRT({expr})", "float")
 
 
 # ---#
@@ -2107,7 +2149,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("TAN({})".format(expr), "float")
+    return str_sql(f"TAN({expr})", "float")
 
 
 # ---#
@@ -2127,7 +2169,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("TANH({})".format(expr), "float")
+    return str_sql(f"TANH({expr})", "float")
 
 
 # ---#
@@ -2147,7 +2189,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("({})::timestamp".format(expr), "date")
+    return str_sql(f"({expr})::timestamp", "date")
 
 
 # ---#
@@ -2169,7 +2211,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("TRUNC({}, {})".format(expr, places), "float")
+    return str_sql(f"TRUNC({expr}, {places})", "float")
 
 
 # ---#
@@ -2190,7 +2232,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("WEEK({})".format(expr), "int")
+    return str_sql(f"WEEK({expr})", "int")
 
 
 # ---#
@@ -2210,7 +2252,7 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("YEAR({})".format(expr), "int")
+    return str_sql(f"YEAR({expr})", "int")
 
 
 # ---#
@@ -2230,4 +2272,4 @@ str_sql
     SQL expression.
     """
     expr, cat = format_magic(expr, True)
-    return str_sql("ZEROIFNULL({})".format(expr), cat)
+    return str_sql(f"ZEROIFNULL({expr})", cat)

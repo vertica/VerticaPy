@@ -1492,6 +1492,11 @@ vDataFrame
         "Ingest local to create new relations is not yet supported for 'read_file'"
     )
     file_format = path.split(".")[-1].lower()
+    compression = extract_compression(path)
+    if compression != "UNCOMPRESSED":
+        raise ExtensionError(
+            f"Compressed files are not supported for 'read_file' function."
+        )
     if file_format not in ("json", "parquet", "avro", "orc", "csv"):
         raise ExtensionError("The file extension is incorrect !")
     if file_format == "csv":
@@ -1828,7 +1833,7 @@ read_json : Ingests a JSON file into the Vertica database.
         path_first_file_in_folder = path
         if multiple_files:
             path_first_file_in_folder = get_first_file(path, "csv")
-        if not (header_names) and not (dtype):
+        if not (header_names) and not (dtype) and (compression == "UNCOMPRESSED"):
             if not (path_first_file_in_folder):
                 raise ParameterError("No CSV file detected in the folder.")
             file_header = get_header_name_csv(path_first_file_in_folder, sep)
@@ -1879,7 +1884,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 query2, title="Copying the data.",
             )
             return vDataFrame(table_name, schema=schema)
-        if (parse_nrows > 0) and not (insert):
+        if (parse_nrows > 0) and not (insert) and (compression == "UNCOMPRESSED"):
             f = open(path_first_file_in_folder, "r")
             path_test = path_first_file_in_folder.split(".")[-2] + "_verticapy_copy.csv"
             f2 = open(path_test, "w")
@@ -2114,7 +2119,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             "flatten_maps": flatten_maps,
             "genSQL": genSQL,
             "materialize": materialize,
-            "use_complex_dt":use_complex_dt ,
+            "use_complex_dt": use_complex_dt,
         },
     )
     # -#
@@ -2148,31 +2153,31 @@ read_csv : Ingests a CSV file into the Vertica database.
             ("flatten_maps", flatten_maps, [bool]),
             ("genSQL", genSQL, [bool]),
             ("materialize", materialize, [bool]),
-            ("use_complex_dt",use_complex_dt,[bool]),
+            ("use_complex_dt", use_complex_dt, [bool]),
         ]
     )
 
     if use_complex_dt:
-        assert not(new_name), ParameterError(
-        "You cannot use the parameter ""new_name"" with ""use_complex_dt""."
+        assert not (new_name), ParameterError(
+            "You cannot use the parameter " "new_name" " with " "use_complex_dt" "."
         )
         if ("*" in path) and ingest_local:
             dirname = os.path.dirname(path)
             all_files = os.listdir(dirname)
-            max_files=sum(1 for x in all_files if x.endswith(".json"))
+            max_files = sum(1 for x in all_files if x.endswith(".json"))
         else:
-            max_files=1000
+            max_files = 1000
         return read_file(
-        path=path,
-        schema=schema,
-        table_name=table_name,
-        insert = insert,
-        temporary_table = temporary_table ,
-        temporary_local_table=temporary_local_table,
-        gen_tmp_table_name=gen_tmp_table_name,
-        ingest_local=ingest_local,
-        genSQL=genSQL,
-        max_files= max_files,
+            path=path,
+            schema=schema,
+            table_name=table_name,
+            insert=insert,
+            temporary_table=temporary_table,
+            temporary_local_table=temporary_local_table,
+            gen_tmp_table_name=gen_tmp_table_name,
+            ingest_local=ingest_local,
+            genSQL=genSQL,
+            max_files=max_files,
         )
     if schema:
         temporary_local_table = False
