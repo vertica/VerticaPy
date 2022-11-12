@@ -305,8 +305,8 @@ class TestvDFCombineJoinSort:
         #    on=[("email1", "email2", "jaro", ">", 0.88), ("name1", "name2", "=")],
         #    how="inner",
         #)
-        assert vdf.shape() == (2, 8)
-        assert vdf["age2"].sum() == 55.0
+        #assert vdf.shape() == (2, 8)
+        #assert vdf["age2"].sum() == 55.0
 
     def test_vDF_narrow(self, amazon_vd):
         amazon_pivot = amazon_vd.pivot(
