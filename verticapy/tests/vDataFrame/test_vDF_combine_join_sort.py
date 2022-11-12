@@ -16,7 +16,7 @@ import pytest
 
 # VerticaPy
 from vertica_python.errors import VerticaSyntaxError
-from verticapy import drop, set_option
+from verticapy import drop, set_option, tablesample
 from verticapy.datasets import load_iris, load_market, load_amazon, load_titanic
 
 set_option("print_info", False)
@@ -242,6 +242,71 @@ class TestvDFCombineJoinSort:
         )
         assert table_join.shape() == (194, 2)
         drop("v_temp_schema.not_dried")
+        # testing different operators
+        d1 = tablesample(
+            {
+                "name1": ["Badr", "Umar", "Arash"],
+                "email1": ["b.ouali@me.fr", "umar@me.com", "a.farad@me.com"],
+                "age1": [30, 28, 40],
+                "fav_car1": ["BM", "Audi", "Merc"],
+            }
+        ).to_vdf()
+        d2 = tablesample(
+            {
+                "name2": ["Badr", "Umar", "Arash"],
+                "email2": ["badr.ouali@me.fr", "umar.f@me.com", "arash.farad@me.com"],
+                "age2": [29, 26, 35],
+                "fav_car2": ["BMW", "Audi", "Mercedes"],
+            }
+        ).to_vdf()
+        vdf = d1.join(d2, on=[("name1", "name2", "=")], how="left")
+        assert vdf.shape() == (3, 8)
+        assert vdf["age1"].sum() == 98.0
+        vdf = d1.join(d2, on=[("age1", "age2", ">")], how="left")
+        assert vdf.shape() == (6, 8)
+        assert vdf["age1"].sum() == 208.0
+        vdf = d1.join(d2, on=[("age1", "age2", ">=")], how="left")
+        assert vdf.shape() == (6, 8)
+        assert vdf["age1"].sum() == 208.0
+        vdf = d1.join(d2, on=[("age1", "age2", "<")], how="left")
+        assert vdf.shape() == (4, 8)
+        assert vdf["age1"].sum() == 126.0
+        vdf = d1.join(d2, on=[("age1", "age2", "<=")], how="left")
+        assert vdf.shape() == (4, 8)
+        assert vdf["age1"].sum() == 126.0
+        vdf = d1.join(d2, on=[("fav_car1", "fav_car2", "llike")], how="inner")
+        assert vdf.shape() == (1, 8)
+        assert vdf["age1"].sum() == 28.0
+        vdf = d1.join(d2, on=[("fav_car1", "fav_car2", "rlike")], how="inner")
+        assert vdf.shape() == (3, 8)
+        assert vdf["age2"].sum() == 90.0
+        # available for vertica v12.0.2
+        #vdf = d1.join(d2, on=[("email1", "email2", "jaro", ">", 0.7)], how="inner")
+        #assert vdf.shape() == (4, 8)
+        #assert vdf["age2"].sum() == 116.0
+        #vdf = d1.join(d2, on=[("email1", "email2", "jarow", ">", 0.8)], how="inner")
+        #assert vdf.shape() == (4, 8)
+        #assert vdf["age2"].sum() == 116.0
+        vdf = d1.join(d2, on=[("email1", "email2", "lev", "<", 3)], how="inner")
+        assert vdf.shape() == (1, 8)
+        assert vdf["age2"].sum() == 26.0
+        vdf = d1.join(d2, on=[("email1", "email2", "lev", "<", 5)], how="inner")
+        assert vdf.shape() == (3, 8)
+        assert vdf["age2"].sum() == 90.0
+        vdf = d1.join(d2, on=[("email1", "email2", "linterpolate")], how="left")
+        assert vdf.shape() == (3, 8)
+        assert vdf["age2"].sum() == 61.0
+        vdf = d1.join(d2, on=[("email1", "email2", "rinterpolate")], how="left")
+        assert vdf.shape() == (3, 8)
+        assert vdf["age2"].sum() == 61.0
+        # available for vertica v12.0.2
+        #vdf = d1.join(
+        #    d2,
+        #    on=[("email1", "email2", "jaro", ">", 0.88), ("name1", "name2", "=")],
+        #    how="inner",
+        #)
+        #assert vdf.shape() == (2, 8)
+        #assert vdf["age2"].sum() == 55.0
 
     def test_vDF_narrow(self, amazon_vd):
         amazon_pivot = amazon_vd.pivot(

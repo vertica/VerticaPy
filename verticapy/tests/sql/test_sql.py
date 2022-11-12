@@ -106,7 +106,7 @@ class TestSQL:
             print(result)
             assert result == (
                 '[\n{"age": 80.000, "fare": 30.00000},'
-                '\n{"age": 76.000, "fare": 78.85000},\n]'
+                '\n{"age": 76.000, "fare": 78.85000}\n]'
             )
         except:
             os.remove("verticapy_test_sql.json")
@@ -126,7 +126,7 @@ class TestSQL:
             print(result)
             assert result == (
                 '[\n{"age": 80.000, "fare": 30.00000},'
-                '\n{"age": 76.000, "fare": 78.85000},\n]'
+                '\n{"age": 76.000, "fare": 78.85000}\n]'
             )
         except:
             os.remove("verticapy_test_sql.json")
