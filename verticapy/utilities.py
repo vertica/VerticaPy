@@ -1833,7 +1833,7 @@ read_json : Ingests a JSON file into the Vertica database.
         path_first_file_in_folder = path
         if multiple_files:
             path_first_file_in_folder = get_first_file(path, "csv")
-        if not (header_names) and not (dtype):
+        if not (header_names) and not (dtype) and (compression == "UNCOMPRESSED"):
             if not (path_first_file_in_folder):
                 raise ParameterError("No CSV file detected in the folder.")
             file_header = get_header_name_csv(path_first_file_in_folder, sep)
@@ -1884,7 +1884,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 query2, title="Copying the data.",
             )
             return vDataFrame(table_name, schema=schema)
-        if (parse_nrows > 0) and not (insert):
+        if (parse_nrows > 0) and not (insert) and (compression == "UNCOMPRESSED"):
             f = open(path_first_file_in_folder, "r")
             path_test = path_first_file_in_folder.split(".")[-2] + "_verticapy_copy.csv"
             f2 = open(path_test, "w")
