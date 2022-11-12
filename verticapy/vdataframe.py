@@ -7983,7 +7983,7 @@ vColumns : vColumn
                 ("on_interpolate", on_interpolate, [dict]),
                 (
                     "how",
-                    how.lower(),
+                    str(how).lower(),
                     ["left", "right", "cross", "full", "natural", "self", "inner", ""],
                 ),
                 ("expr1", expr1, [list]),
@@ -8004,6 +8004,10 @@ vColumns : vColumn
                 return f"{relation} AS {alias}"
 
         # List with the operators
+        if str(how).lower() == "natural" and (on or on_interpolate):
+            raise ParameterError(
+                "Natural Joins cannot be computed if any of the parameters 'on' or 'on_interpolate' are defined."
+            )
         on_list = []
         if isinstance(on, dict):
             on_list += [(key, on[key], "=") for key in on]
