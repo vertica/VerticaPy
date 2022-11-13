@@ -706,7 +706,7 @@ class TestUtilities:
         result3 = read_csv(
             path,
             table_name="titanic_verticapy_test_csv_gz",
-            ingest_local=False,
+            ingest_local=True,
             schema="public",
             header_names=result2.get_columns(),
         )
