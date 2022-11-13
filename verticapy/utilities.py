@@ -2007,7 +2007,8 @@ read_json : Ingests a JSON file into the Vertica database.
                 os.remove(path_test)
             dtype_sorted = {}
             for elem in header_names:
-                dtype_sorted[elem] = find_x_in_dict(elem, dtype)
+                key = find_val_in_dict(elem, dtype, return_key=True)
+                dtype_sorted[key] = dtype[key]
             query1 = create_table(
                 table_name,
                 dtype_sorted,
@@ -2966,7 +2967,7 @@ The tablesample attributes are the same than the parameters.
 
     # ---#
     def __getitem__(self, key):
-        return find_x_in_dict(key, self.values)
+        return find_val_in_dict(key, self.values)
 
     # ---#
     def _repr_html_(self, interactive=False):
