@@ -564,6 +564,29 @@ class TestUtilities:
         assert vdf._VERTICAPY_VARIABLES_["schema"]=='v_temp_schema'
         assert drop(vdf._VERTICAPY_VARIABLES_["schema"]+"."+vdf._VERTICAPY_VARIABLES_["input_relation"],method="table")
 
+         # Checking flextables and materialize option
+        # Not working right now
+        #path = os.path.dirname(verticapy.__file__) + "/tests/utilities/"
+        #drop("public.titanic_verticapy_test_json")
+        #result = read_json(
+        #    path+"titanic-passengers.json",
+        #    table_name="titanic_verticapy_test_json",
+        #    schema="public",
+        #    ingest_local=True,
+        #    materialize=False,
+        #    )
+        #assert isflextable(table_name="titanic_verticapy_test_json",schema="public")==True
+        #
+        # Checking materialize, storing to database, and re-conversion to a vdataframe
+        #drop("public.titanic_verticapy_test_json_2")
+        #result.to_db('"public"."titanic_verticapy_test_json_2"')
+        #result2=vDataFrame("public.titanic_verticapy_test_json_2")
+        #assert result2["fields.cabin"].dtype()==result["fields.cabin"].dtype()
+        #assert result2["fields.age"].dtype()==result["fields.age"].dtype()
+        #assert result2["datasetid"].dtype()==result["datasetid"].dtype()
+        #assert result2["fields.fare"].dtype()==result["fields.fare"].dtype()
+        #assert result2["fields.parch"].dtype()[0:3]==result["fields.fare"].dtype()[0:3]
+        #assert result2["fields.pclass"].dtype()[0:3]==result["fields.pclass"].dtype()[0:3]  
 
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
