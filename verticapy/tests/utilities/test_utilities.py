@@ -645,6 +645,23 @@ class TestUtilities:
         assert result.shape() == (1870, 14)
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
 
+        # Checking Flextable
+        drop("public.titanic_verticapy_test_csv")
+        result = read_csv(
+                    path="titanic.csv", table_name="titanic_verticapy_test_csv",materialize=False,ingest_local=True, schema="public"
+                )
+        assert isflextable(table_name="titanic_verticapy_test_csv",schema="public")==True
+
+        # Checking materialize, storing to database, and re-conversion to a vdataframe
+        drop("public.titanic_verticapy_test_csv_2")
+        result.to_db('"public"."titanic_verticapy_test_csv_2"')
+        result2=vDataFrame("public.titanic_verticapy_test_csv_2")
+        assert result2["ticket"].dtype()==result["ticket"].dtype()
+        assert result2["survived"].dtype()[0:3]==result["survived"].dtype()[0:3]
+        assert result2["sibsp"].dtype()[0:3]==result["sibsp"].dtype()[0:3]
+        assert result2["pclass"].dtype()[0:3]==result["pclass"].dtype()[0:3]
+        assert result2["home.dest"].dtype()==result["home.dest"].dtype()
+
         # TODO
         #drop("public.titanic_verticapy_test_csv_gz")
         #result = read_csv( 
