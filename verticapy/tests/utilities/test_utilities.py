@@ -557,22 +557,26 @@ class TestUtilities:
         # testing temporary table
         drop("public.laliga_verticapy_test_json", method="table")
         vdf = read_json(
-            path, temporary_table=True, ingest_local=True, use_complex_dt=False,
+            path,
+            table_name="laliga_verticapy_test_json",
+            schema="public",
+            temporary_table=True,
+            ingest_local=True,
+            use_complex_dt=False,
         )
         assert vdf._VERTICAPY_VARIABLES_["schema"] == "public"
-        assert drop(
-            "public." + vdf._VERTICAPY_VARIABLES_["input_relation"], method="table",
-        )
+        assert drop("public.laliga_verticapy_test_json", method="table",)
 
         # testing local temporary table
         vdf = read_json(
-            path, temporary_local_table=True, ingest_local=True, use_complex_dt=False,
+            path,
+            table_name="laliga_verticapy_test_json2",
+            temporary_local_table=True,
+            ingest_local=True,
+            use_complex_dt=False,
         )
         assert vdf._VERTICAPY_VARIABLES_["schema"] == "v_temp_schema"
-        assert drop(
-            "v_temp_schema." + vdf._VERTICAPY_VARIABLES_["input_relation"],
-            method="table",
-        )
+        assert drop("v_temp_schema.laliga_verticapy_test_json2", method="table",)
 
         # Checking flextables and materialize option
         path = os.path.dirname(verticapy.__file__) + "/tests/utilities/"
@@ -585,10 +589,11 @@ class TestUtilities:
             materialize=False,
         )
         assert isflextable(table_name="titanic_verticapy_test_json", schema="public")
+        assert drop("public.titanic_verticapy_test_json")
 
         # Checking materialize, storing to database, and re-conversion to a vdataframe
         drop("public.titanic_verticapy_test_json_2")
-        result.to_db('"public"."titanic_verticapy_test_json_2"')
+        result.to_db("public.titanic_verticapy_test_json_2")
         result2 = vDataFrame("public.titanic_verticapy_test_json_2")
         assert result2["fields.cabin"].dtype() == result["fields.cabin"].dtype()
         assert result2["fields.age"].dtype() == result["fields.age"].dtype()
@@ -601,6 +606,7 @@ class TestUtilities:
             result2["fields.pclass"].dtype()[0:3]
             == result["fields.pclass"].dtype()[0:3]
         )
+        assert drop("public.titanic_verticapy_test_json_2")
 
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
