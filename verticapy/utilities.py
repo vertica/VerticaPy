@@ -1931,9 +1931,11 @@ read_json : Ingests a JSON file into the Vertica database.
                 for i in range(len(file_header) - len(header_names))
             ]
         if not (materialize):
-            suffix = ""
-            final_relation = input_relation
-            prefix = " ON COMMIT PRESERVE ROWS;"
+            suffix, prefix, final_relation = (
+                "",
+                " ON COMMIT PRESERVE ROWS;",
+                input_relation,
+            )
             if temporary_local_table:
                 suffix = "LOCAL TEMP "
                 final_relation = table_name
@@ -2314,12 +2316,14 @@ read_csv : Ingests a CSV file into the Vertica database.
             input_relation = quote_ident(table_name)
         all_queries = []
         if not (materialize):
-            suffix = ""
+            suffix, prefix = "", "ON COMMIT PRESERVE ROWS;"
             if temporary_local_table:
                 suffix = "LOCAL TEMP "
             elif temporary_table:
                 suffix = "TEMP "
-            query = f"CREATE FLEX {suffix}TABLE {input_relation}(x int) ON COMMIT PRESERVE ROWS;"
+            else:
+                prefix = ";"
+            query = f"CREATE FLEX {suffix}TABLE {input_relation}(x int){prefix}"
         else:
             flex_name = gen_tmp_name(name="flex")[1:-1]
             query = f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;"
@@ -2338,7 +2342,9 @@ read_csv : Ingests a CSV file into the Vertica database.
         else:
             options += ["suppress_nonalphanumeric_key_chars=false"]
         if reject_on_materialized_type_error:
-            assert materialize, ParameterError('When using complex data types the table has to be materialized. Set materialize to True')
+            assert materialize, ParameterError(
+                "When using complex data types the table has to be materialized. Set materialize to True"
+            )
             options += ["reject_on_materialized_type_error=true"]
         else:
             options += ["reject_on_materialized_type_error=false"]
