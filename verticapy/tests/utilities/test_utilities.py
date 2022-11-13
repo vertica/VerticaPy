@@ -528,7 +528,9 @@ class TestUtilities:
             use_complex_dt=False,
         )
         for query in queries:
-            current_cursor().execute(query.replace("tmp_flex_dbadmin", "tmp_flex_test_read_json"))
+            current_cursor().execute(
+                query.replace("tmp_flex_dbadmin", "tmp_flex_test_read_json")
+            )
         vdf = vDataFrame("public.laliga_verticapy_test_json")
         assert vdf.shape() == (452, 40)
         assert vdf["away_score"].ctype().lower()[0:3] == "int"
@@ -703,13 +705,12 @@ class TestUtilities:
         # with compression
         path = os.path.dirname(verticapy.__file__) + "/tests/utilities/titanic.csv.gz"
         drop("public.titanic_verticapy_test_csv_gz")
-        columns = [col[1:-1] for col in result2.get_columns()]
         result3 = read_csv(
             path,
             table_name="titanic_verticapy_test_csv_gz",
             ingest_local=True,
             schema="public",
-            header_names=columns,
+            header_names=result2.get_columns(),
         )
         assert result3.shape() == (1234, 14)
 

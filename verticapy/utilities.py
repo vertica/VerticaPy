@@ -2007,7 +2007,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 os.remove(path_test)
             dtype_sorted = {}
             for elem in header_names:
-                dtype_sorted[elem] = dtype[elem]
+                dtype_sorted[elem] = dtype[find_x_in_dict(elem, dtype)]
             query1 = create_table(
                 table_name,
                 dtype_sorted,

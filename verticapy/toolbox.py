@@ -194,6 +194,14 @@ def flat_dict(d: dict) -> str:
 
 
 # ---#
+def find_x_in_dict(x: str, d: dict):
+    for elem in d:
+        if quote_ident(x).lower() == quote_ident(elem).lower():
+            return elem
+    raise NameError(f'Key "{x}" was not found in {d}.')
+
+
+# ---#
 def erase_space_start_end_in_list_values(L: list):
     L_tmp = [elem for elem in L]
     for idx in range(len(L_tmp)):
