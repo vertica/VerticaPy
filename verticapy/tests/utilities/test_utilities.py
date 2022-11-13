@@ -589,7 +589,7 @@ class TestUtilities:
         assert result2["datasetid"].dtype() == result["datasetid"].dtype()
         assert result2["fields.fare"].dtype() == result["fields.fare"].dtype()
         assert (
-            result2["fields.parch"].dtype()[0:3] == result["fields.fare"].dtype()[0:3]
+            result2["fields.parch"].dtype()[0:3] == result["fields.parch"].dtype()[0:3]
         )
         assert (
             result2["fields.pclass"].dtype()[0:3]
