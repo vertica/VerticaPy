@@ -606,7 +606,7 @@ class TestUtilities:
             == result["fields.pclass"].dtype()[0:3]
         )
         assert drop("public.titanic_verticapy_test_json")
-        assert drop("public.titanic_verticapy_test_json_2")
+        drop("public.titanic_verticapy_test_json_2")
 
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
