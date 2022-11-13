@@ -197,7 +197,7 @@ def flat_dict(d: dict) -> str:
 def find_x_in_dict(x: str, d: dict):
     for elem in d:
         if quote_ident(x).lower() == quote_ident(elem).lower():
-            return elem
+            return d[elem]
     raise NameError(f'Key "{x}" was not found in {d}.')
 
 
