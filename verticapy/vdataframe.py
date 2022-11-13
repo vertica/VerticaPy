@@ -11590,7 +11590,7 @@ vColumns : vColumn
         if not (order_by):
             order_by = self.__get_last_order_by__()
         if n_files > 1 and path:
-            os.makedirs(file_name)
+            os.makedirs(path)
         csv_files = []
         while current_nb_rows_written < total:
             if new_header:
@@ -11962,7 +11962,7 @@ vColumns : vColumn
         if not (order_by):
             order_by = self.__get_last_order_by__()
         if n_files > 1 and path:
-            os.makedirs(file_name)
+            os.makedirs(path)
         if not (path):
             json_files = []
         while current_nb_rows_written < total:
