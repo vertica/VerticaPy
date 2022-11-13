@@ -589,7 +589,6 @@ class TestUtilities:
             materialize=False,
         )
         assert isflextable(table_name="titanic_verticapy_test_json", schema="public")
-        assert drop("public.titanic_verticapy_test_json")
 
         # Checking materialize, storing to database, and re-conversion to a vdataframe
         drop("public.titanic_verticapy_test_json_2")
@@ -606,6 +605,7 @@ class TestUtilities:
             result2["fields.pclass"].dtype()[0:3]
             == result["fields.pclass"].dtype()[0:3]
         )
+        assert drop("public.titanic_verticapy_test_json")
         assert drop("public.titanic_verticapy_test_json_2")
 
     def test_read_csv(self):
