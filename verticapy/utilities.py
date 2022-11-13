@@ -2338,6 +2338,7 @@ read_csv : Ingests a CSV file into the Vertica database.
         else:
             options += ["suppress_nonalphanumeric_key_chars=false"]
         if reject_on_materialized_type_error:
+            assert materialize, ParameterError('When using complex data types the table has to be materialized. Set materialize to True')
             options += ["reject_on_materialized_type_error=true"]
         else:
             options += ["reject_on_materialized_type_error=false"]

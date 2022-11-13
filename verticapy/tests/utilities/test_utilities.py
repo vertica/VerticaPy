@@ -496,8 +496,97 @@ class TestUtilities:
         )
         assert result.shape() == (1782, 15)
         assert drop("v_temp_schema.titanic_verticapy_test_json", method="table")
-        # TODO
-        # test on archives
+        
+        path = os.path.dirname(verticapy.__file__) + "/data/laliga/"
+        #TO DO
+        # testing for multiple files
+        # Not working: ERROR, Message: Failed to read json source []: Read error when expanding glob: ""it works locally""
+        #drop("public.laliga_verticapy_test_json", method="table")
+        #vdf = read_json(
+        #    path + "*.json",
+        #    table_name="laliga_verticapy_test_json",
+        #    schema="public",
+        #    ingest_local=False,
+        #    use_complex_dt=True,
+        #)
+        #assert vdf.shape()==(452,14)
+
+        # Trying SQL
+        
+        drop("public.laliga_verticapy_test_json", method="table")
+        queries = read_json(
+            path + "2005.json",
+            table_name="laliga_verticapy_test_json",
+            schema="public",
+            genSQL=True,
+            ingest_local=False,
+            use_complex_dt=True,
+        )
+        for query in queries:
+            current_cursor().execute(query)
+        vdf = vDataFrame("public.laliga_verticapy_test_json")
+        assert vdf.shape()==(17,14)
+        assert vdf["away_score"].ctype().lower()[0:3] == "int"
+        assert vdf["away_team"]["away_team_id"].ctype().lower()[0:3] == "int"
+        assert vdf["match_status"].ctype().lower() == "varchar(80)"
+        assert vdf["away_team"]["away_team_gender"] == "varchar(80)"
+        assert not(isflextable(table_name="laliga_verticapy_test_json", schema="public"))
+
+        # testing insert
+        vdf=read_json(
+            path + "2005.json",
+            table_name="laliga_verticapy_test_json",
+            schema="public",
+            insert=True,
+            ingest_local=False,
+            use_complex_dt=True,
+        )
+        assert vdf.shape()==(34,14)
+
+        # testing temporary table
+        drop("public.laliga_verticapy_test_json", method="table")
+        vdf = read_json(
+            path + "2005.json",
+            temporary_table=True,
+            ingest_local=False,
+            use_complex_dt=True,
+        )
+        assert vdf._VERTICAPY_VARIABLES_["schema"]=='v_temp_schema'
+        assert drop(vdf._VERTICAPY_VARIABLES_["schema"]+"."+vdf._VERTICAPY_VARIABLES_["input_relation"],method="table")
+
+        # testing local temporary table
+        vdf = read_json(
+            path + "2005.json",
+            temporary_local_table=True,
+            ingest_local=False,
+            use_complex_dt=True,
+        )
+        assert vdf._VERTICAPY_VARIABLES_["schema"]=='v_temp_schema'
+        assert drop(vdf._VERTICAPY_VARIABLES_["schema"]+"."+vdf._VERTICAPY_VARIABLES_["input_relation"],method="table")
+
+         # Checking flextables and materialize option
+        # Not working right now
+        #path = os.path.dirname(verticapy.__file__) + "/tests/utilities/"
+        #drop("public.titanic_verticapy_test_json")
+        #result = read_json(
+        #    path+"titanic-passengers.json",
+        #    table_name="titanic_verticapy_test_json",
+        #    schema="public",
+        #    ingest_local=True,
+        #    materialize=False,
+        #    )
+        #assert isflextable(table_name="titanic_verticapy_test_json",schema="public")==True
+        #
+        # Checking materialize, storing to database, and re-conversion to a vdataframe
+        #drop("public.titanic_verticapy_test_json_2")
+        #result.to_db('"public"."titanic_verticapy_test_json_2"')
+        #result2=vDataFrame("public.titanic_verticapy_test_json_2")
+        #assert result2["fields.cabin"].dtype()==result["fields.cabin"].dtype()
+        #assert result2["fields.age"].dtype()==result["fields.age"].dtype()
+        #assert result2["datasetid"].dtype()==result["datasetid"].dtype()
+        #assert result2["fields.fare"].dtype()==result["fields.fare"].dtype()
+        #assert result2["fields.parch"].dtype()[0:3]==result["fields.fare"].dtype()[0:3]
+        #assert result2["fields.pclass"].dtype()[0:3]==result["fields.pclass"].dtype()[0:3]  
 
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
@@ -579,8 +668,29 @@ class TestUtilities:
         assert result.shape() == (1870, 14)
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
 
+        # Checking Flextable
+        drop("public.titanic_verticapy_test_csv")
+        result = read_csv(
+                    path="titanic.csv", table_name="titanic_verticapy_test_csv",materialize=False,ingest_local=True, schema="public"
+                )
+        assert isflextable(table_name="titanic_verticapy_test_csv",schema="public")==True
+
+        # Checking materialize, storing to database, and re-conversion to a vdataframe
+        drop("public.titanic_verticapy_test_csv_2")
+        result.to_db('"public"."titanic_verticapy_test_csv_2"')
+        result2=vDataFrame("public.titanic_verticapy_test_csv_2")
+        assert result2["ticket"].dtype()==result["ticket"].dtype()
+        assert result2["survived"].dtype()[0:3]==result["survived"].dtype()[0:3]
+        assert result2["sibsp"].dtype()[0:3]==result["sibsp"].dtype()[0:3]
+        assert result2["pclass"].dtype()[0:3]==result["pclass"].dtype()[0:3]
+        assert result2["home.dest"].dtype()==result["home.dest"].dtype()
+
         # TODO
-        # test on archives
+        #drop("public.titanic_verticapy_test_csv_gz")
+        #result = read_csv( 
+        #            path+"titanic.csv.gz", table_name="titanic_verticapy_test_csv_gz",ingest_local=False, schema="public"
+        #        )
+        #assert result.shape() ==     (1234, 14)
 
     @pytest.mark.skip(
         reason="for some reason, it can not read the file. It works when we do it locally."
@@ -631,6 +741,18 @@ class TestUtilities:
         )
         assert laliga_vd.shape() == vdf.shape()
 
+        # testing insert
+        path = os.path.dirname(verticapy.__file__) + "/data/laliga/"
+        vdf=read_file(
+            path + "2005.json",
+        )
+        vdf=read_file(
+            path + "2005.json",
+            table_name=vdf._VERTICAPY_VARIABLES_["input_relation"],
+            insert=True,
+        )
+        assert vdf.shape()==(34,14)
+        
     def test_read_shp(self, cities_vd):
         drop(name="public.cities_test")
         cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
