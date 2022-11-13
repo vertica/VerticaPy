@@ -674,19 +674,16 @@ class TestUtilities:
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
 
         # Checking Flextable
-        path2 = os.path.dirname(verticapy.__file__) + "/data/"
+        path = os.path.dirname(verticapy.__file__) + "/data/"
         drop("public.titanic_verticapy_test_csv")
         result = read_csv(
-            path=path2 + "titanic.csv",
+            path=path + "titanic.csv",
             table_name="titanic_verticapy_test_csv",
             materialize=False,
             ingest_local=True,
             schema="public",
         )
-        assert (
-            isflextable(table_name="titanic_verticapy_test_csv", schema="public")
-            == True
-        )
+        assert isflextable(table_name="titanic_verticapy_test_csv", schema="public")
 
         # Checking materialize, storing to database, and re-conversion to a vdataframe
         drop("public.titanic_verticapy_test_csv_2")
