@@ -1931,9 +1931,11 @@ read_json : Ingests a JSON file into the Vertica database.
                 for i in range(len(file_header) - len(header_names))
             ]
         if not (materialize):
-            suffix = ""
-            final_relation = input_relation
-            prefix = " ON COMMIT PRESERVE ROWS;"
+            suffix, prefix, final_relation = (
+                "",
+                " ON COMMIT PRESERVE ROWS;",
+                input_relation,
+            )
             if temporary_local_table:
                 suffix = "LOCAL TEMP "
                 final_relation = table_name
@@ -2005,7 +2007,8 @@ read_json : Ingests a JSON file into the Vertica database.
                 os.remove(path_test)
             dtype_sorted = {}
             for elem in header_names:
-                dtype_sorted[elem] = dtype[elem]
+                key = find_val_in_dict(elem, dtype, return_key=True)
+                dtype_sorted[key] = dtype[key]
             query1 = create_table(
                 table_name,
                 dtype_sorted,
@@ -2314,12 +2317,14 @@ read_csv : Ingests a CSV file into the Vertica database.
             input_relation = quote_ident(table_name)
         all_queries = []
         if not (materialize):
-            suffix = ""
+            suffix, prefix = "", "ON COMMIT PRESERVE ROWS;"
             if temporary_local_table:
                 suffix = "LOCAL TEMP "
             elif temporary_table:
                 suffix = "TEMP "
-            query = f"CREATE FLEX {suffix}TABLE {input_relation}(x int) ON COMMIT PRESERVE ROWS;"
+            else:
+                prefix = ";"
+            query = f"CREATE FLEX {suffix}TABLE {input_relation}(x int){prefix}"
         else:
             flex_name = gen_tmp_name(name="flex")[1:-1]
             query = f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;"
@@ -2338,7 +2343,9 @@ read_csv : Ingests a CSV file into the Vertica database.
         else:
             options += ["suppress_nonalphanumeric_key_chars=false"]
         if reject_on_materialized_type_error:
-            assert materialize, ParameterError('When using complex data types the table has to be materialized. Set materialize to True')
+            assert materialize, ParameterError(
+                "When using complex data types the table has to be materialized. Set materialize to True"
+            )
             options += ["reject_on_materialized_type_error=true"]
         else:
             options += ["reject_on_materialized_type_error=false"]
@@ -2956,17 +2963,11 @@ The tablesample attributes are the same than the parameters.
 
     # ---#
     def __iter__(self):
-        columns = self.values
-        return (elem for elem in columns)
+        return (elem for elem in self.values)
 
     # ---#
     def __getitem__(self, key):
-        all_cols = [elem for elem in self.values]
-        for elem in all_cols:
-            if quote_ident(str(elem).lower()) == quote_ident(str(key).lower()):
-                key = elem
-                break
-        return self.values[key]
+        return find_val_in_dict(key, self.values)
 
     # ---#
     def _repr_html_(self, interactive=False):

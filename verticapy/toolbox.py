@@ -181,6 +181,16 @@ def color_dict(d: dict, idx: int = 0):
 
 
 # ---#
+def find_val_in_dict(x: str, d: dict, return_key: bool = False):
+    for elem in d:
+        if quote_ident(x).lower() == quote_ident(elem).lower():
+            if return_key:
+                return elem
+            return d[elem]
+    raise NameError(f'Key "{x}" was not found in {d}.')
+
+
+# ---#
 def flat_dict(d: dict) -> str:
     # converts dictionary to string with a specific format
     res = []
