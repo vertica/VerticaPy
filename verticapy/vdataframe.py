@@ -7977,6 +7977,8 @@ vColumns : vColumn
             expr1 = [expr1]
         if isinstance(expr2, str):
             expr2 = [expr2]
+        if isinstance(on, tuple):
+            on = [on]
         check_types(
             [
                 ("on", on, [dict, list]),

@@ -592,7 +592,7 @@ name: str, optional
 Returns
 -------
 vDataFrame
-    the Cities vDataFrame.
+    the LaLiga vDataFrame.
     """
     return load_dataset(
         schema,

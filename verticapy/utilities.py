@@ -968,7 +968,7 @@ bool
 
 # ---#
 def isvmap(
-    expr: str, column: str,
+    expr, column: str,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1014,10 +1014,10 @@ bool
             return False
     except:
         return False
-    if len(result) == 0:
+    if len(result) == 0 or (result[0][0] == -1):
         return False
     else:
-        return bool(result[0][0])
+        return True
 
 
 # ---#
@@ -2062,12 +2062,6 @@ def read_json(
     usecols: list = [],
     new_name: dict = {},
     insert: bool = False,
-    temporary_table: bool = False,
-    temporary_local_table: bool = True,
-    gen_tmp_table_name: bool = True,
-    ingest_local: bool = True,
-    genSQL: bool = False,
-    materialize: bool = True,
     start_point: str = None,
     record_terminator: str = None,
     suppress_nonalphanumeric_key_chars: bool = False,
@@ -2076,6 +2070,12 @@ def read_json(
     reject_on_empty_key: bool = False,
     flatten_maps: bool = True,
     flatten_arrays: bool = False,
+    temporary_table: bool = False,
+    temporary_local_table: bool = True,
+    gen_tmp_table_name: bool = True,
+    ingest_local: bool = True,
+    genSQL: bool = False,
+    materialize: bool = True,
     use_complex_dt: bool = False,
 ):
     """
@@ -2106,25 +2106,6 @@ insert: bool, optional
 	If set to True, the data will be ingested to the input relation.
     The JSON parameters must be the same than the input relation otherwise
     they will not be ingested. Also, table_name cannot be empty if this is true.
-temporary_table: bool, optional
-    If set to True, a temporary table will be created.
-temporary_local_table: bool, optional
-    If set to True, a temporary local table will be created. The parameter 
-    'schema' must be empty, otherwise this parameter is ignored.
-gen_tmp_table_name: bool, optional
-    Sets the name of the temporary table. This parameter is only used when 
-    the parameter 'temporary_local_table' is set to True and if the parameters 
-    "table_name" and "schema" are unspecified.
-ingest_local: bool, optional
-    If set to True, the file will be ingested from the local machine.
-genSQL: bool, optional
-    If set to True, the SQL code for creating the final table is 
-    generated but not executed. This is a good way to change the final
-    relation types or to customize the data ingestion.
-materialize: bool, optional
-    If set to True, the flex table is materialized into a table.
-    Otherwise, it will remain a flex table. Flex tables simplify the
-    data ingestion but have worse performace compared to regular tables.
 start_point: str, optional
     String, name of a key in the JSON load data at which to begin parsing. 
     The parser ignores all data before the start_point value. 
@@ -2172,6 +2153,25 @@ flatten_arrays: bool, optional
     When lists are flattened, key names are concatenated as for maps. 
     Lists are not flattened by default. This value affects all data in 
     the load, including nested lists.
+temporary_table: bool, optional
+    If set to True, a temporary table will be created.
+temporary_local_table: bool, optional
+    If set to True, a temporary local table will be created. The parameter 
+    'schema' must be empty, otherwise this parameter is ignored.
+gen_tmp_table_name: bool, optional
+    Sets the name of the temporary table. This parameter is only used when 
+    the parameter 'temporary_local_table' is set to True and if the parameters 
+    "table_name" and "schema" are unspecified.
+ingest_local: bool, optional
+    If set to True, the file will be ingested from the local machine.
+genSQL: bool, optional
+    If set to True, the SQL code for creating the final table is 
+    generated but not executed. This is a good way to change the final
+    relation types or to customize the data ingestion.
+materialize: bool, optional
+    If set to True, the flex table is materialized into a table.
+    Otherwise, it will remain a flex table. Flex tables simplify the
+    data ingestion but have worse performace compared to regular tables.
 use_complex_dt: bool, optional
     Boolean, whether the input data file has complex structure.
     When this is true, most of the other parameters will be ignored.

@@ -576,9 +576,9 @@ Attributes
 			cot          : trigonometric cotangent
             dim          : dimension (only for arrays)
 			exp          : exponential function
-			floor        : value down to the next whole number
             find         : returns the ordinal position of a specified element 
                            in an array (only for arrays)
+			floor        : value down to the next whole number
             len / length : length
 			ln           : natural logarithm
 			log          : logarithm
@@ -692,7 +692,7 @@ Attributes
         return self.apply(func=expr)
 
     # ---#
-    def astype(self, dtype: str):
+    def astype(self, dtype):
         """
 	---------------------------------------------------------------------------
 	Converts the vColumn to the input type.
