@@ -54,6 +54,7 @@ from typing import Union
 
 # Other Python Modules
 from scipy.stats import chi2, norm, f
+from scipy.stats.contingency import chi2_contingency
 import numpy as np
 
 # VerticaPy Modules
@@ -1424,3 +1425,130 @@ float
         raise ParameterError(
             f"Wrong type for Parameter X_idx.\nExpected integer, found {type(X_idx)}."
         )
+
+
+# ---#
+def is_dir_path(adj_list: dict, X:str, Y:str):
+    """
+---------------------------------------------------------------------------
+Determines if there is a directed path from X -> Y given an adjacency list.
+
+Parameters
+----------
+adj_list: dict
+    Adjacency list where the values are the other keys
+X: str
+    Starting node
+Y: str
+    Ending Node
+Returns
+-------
+Boolean 
+True if there exists a path
+    """
+    if X not in adj_list.keys():
+        raise ParameterError(f"{X} not in Adjacency List")
+    if Y not in adj_list.keys():
+        raise ParameterError(f"{Y} not in Adjacency List")
+
+    visited = [X]
+    queue = [X]
+
+    while(queue):
+        m = queue.pop(0)
+        for neighbor in adj_list[m]:
+            if m not in adj_list[neighbor]: 
+                if neighbor == Y and m != X:
+                    return True
+                if neighbor not in visited:
+                    visited.append(neighbor)
+                    queue.append(neighbor)
+    return False
+
+
+# ---#
+def conditional_chi_square(vdf: vDataFrame, X: str, Y: str, Z:list = [], alpha:float = None):
+    """
+-----------------------------------------------------------------------------
+Computes the conditional correlation between X and Y given Z as the condition
+using the conditional chi square independence test. It can be used to detect
+spurious correlations.
+
+Parameters
+----------
+vdf: vDataFrame
+    Input vDataFrame.
+X: str
+    Input vColumn to Test.
+Y: str
+    Input vColumn to Test.
+Z: list
+    Conditional vColumns
+alpha: float
+    The probability the given distribution was generated randomly
+    Smaller alpha (ie close to 0) lead to denser graphs
+    Larger  alpha (ie close to 1) lead to sparser graphs
+    
+Returns
+-------
+if alpha = None: 
+    (chi2: float, p_value: float, dof: int)
+if alpha != None: 
+    (p_value > alpha) : bool
+    """
+    if (alpha != None and not (isinstance(alpha, [int, float]) and 0 <= alpha <= 1)):
+        warning_message = (
+            "alpha '{0}' must be of type float and in the range [0,1]"
+        ).format(alpha)
+        warnings.warn(warning_message, Warning)
+
+    if isinstance(Z, str):
+        Z = [Z]
+        
+    check_types(
+        [("X", X, [str]), 
+         ("Y", Y, [str]),
+         ("Z", Z, [list]), 
+         ("alpha", alpha, [int, float]), 
+         ("vdf", vdf, [vDataFrame, str]),]
+    )
+    if isinstance(vdf, str):
+        vdf = vDataFrameSQL(relation=vdf)
+
+    vdf.are_namecols_in(X) 
+    vdf.are_namecols_in(Y)   
+    vdf.are_namecols_in(Z)
+
+    relation = vdf.__genSQL__()
+    if Z == []:
+        table_sql = "SELECT {0}, {1}, count(*) as nij FROM {2} GROUP BY {0}, {1}".format(X, Y, relation)
+        contingency_table = vDataFrame(sql=table_sql)
+        crosstab_panda = contingency_table.to_pandas()
+        pivot = crosstab_panda.pivot(index=X, columns = Y).fillna(0)
+        chi, _, dof, _ = chi2_contingency(pivot)
+        pval = 1 - chi2.cdf(chi, df=dof)
+        if alpha == None:
+            return (chi, pval, dof)
+        return pval > alpha
+
+    chi = 0
+    dof = 0
+    table_sql = "SELECT {0}, {1}, {2}, count(*) as nij FROM {3} GROUP BY {0}, {1}, {2}".format(', '.join(Z), X, Y, relation)
+    contingency_table = vDataFrame(sql=table_sql)
+    crosstab_panda = contingency_table.to_pandas()
+
+    for z_state, df in crosstab_panda.groupby(Z):
+        df = df.drop(columns = Z)
+        if len(df.index) == 1:
+            continue
+        pivot = df.pivot(index=X, columns=Y).fillna(0)
+        try:
+            c, _, d, _ = chi2_contingency(pivot)
+            chi += c
+            dof += d
+        except ValueError:
+            continue
+    pval = 1 - chi2.cdf(chi, df=dof)
+    if alpha == None:
+        return (chi, pval, dof)
+    return pval > alpha 

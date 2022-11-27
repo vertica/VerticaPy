@@ -33,6 +33,10 @@ input_relation: [str, vDataframe]
 		if isinstance(vdf, str):
 			vdf = vDataFrameSQL(relation=vdf)
 
+		# self.vdf is the main vDataframe used within the class and is needed when
+		# an user wants to discretize the data using reformat instead of themselves.
+		# self.input_relation is an unmodified relation to the vDataframe and 
+		# is needed in case a user wants to start the reformat from scratch.
 		self.input_relation = vdf
 		self.vdf = vdf.copy()
 			
@@ -80,6 +84,12 @@ input_relation: [str, vDataframe]
 				("method", method, [str])
 			]
 		)
+		if (max_unique != None and max_unique > 20):
+			warning_message = (
+            	"having a max_unique '{0}' over 20 may cause performance issues"
+        	).format(max_unique)
+			warnings.warn(warning_message, Warning)
+
 		if input_columns != []:
 			temp.are_namecols_in(input_columns)
 		if exclude_columns != []:
@@ -208,40 +218,29 @@ class PC(CausalModel):
 			progress_bar = tqdm(total=max_cond_vars)
 			progress_bar.set_description("Using n conditional variables: 0")
 
+		if method not in ['stable', 'orig']:
+			raise AttributeError("Choose from valid methods")
+
 		# Discover the skeleton
 		for cond_set_size in range(max_cond_vars):
 			if method == 'stable':
 				neighbors = {x: skeleton_edges[x].copy() for x in columns}
-				deleted_edges = set()
-				for (x,y) in all_pairs:                
-					for z in itertools.chain(
-											 itertools.combinations(neighbors[x]-set([y]), cond_set_size),
-											 itertools.combinations(neighbors[y]-set([x]), cond_set_size)): # set of all conditionals
-						z = list(z)
-						if cit(self.vdf, x, y, z, alpha = significance_level):
-							deleted_edges.add((x,y))
-							skeleton_edges[x].remove(y)
-							skeleton_edges[y].remove(x)
-							sepsets[frozenset((x,y))] = z
-							break
-				all_pairs = all_pairs - deleted_edges
-		
-			elif method == 'orig':
-				deleted_edges = set()
-				for (x,y) in all_pairs:                
-					for z in itertools.chain(
-											 itertools.combinations(skeleton_edges[x]-set([y]), cond_set_size),
-											 itertools.combinations(skeleton_edges[y]-set([x]), cond_set_size)): # set of all conditionals
-						z = list(z)
-						if cit(self.vdf, x, y, z, alpha = significance_level):
-							deleted_edges.add((x,y))
-							skeleton_edges[x].remove(y)
-							skeleton_edges[y].remove(x)
-							sepsets[frozenset((x,y))] = z
-							break
-				all_pairs = all_pairs - deleted_edges
-			else:
-				raise AttributeError("Choose from valid method")
+			if method == 'orig':
+				neighbors = skeleton_edges
+			
+			deleted_edges = set()
+			for (x,y) in all_pairs:                
+				for z in itertools.chain(
+										 itertools.combinations(neighbors[x]-set([y]), cond_set_size),
+										 itertools.combinations(neighbors[y]-set([x]), cond_set_size)): # set of all conditionals
+					z = list(z)
+					if cit(self.vdf, x, y, z, alpha = significance_level):
+						deleted_edges.add((x,y))
+						skeleton_edges[x].remove(y)
+						skeleton_edges[y].remove(x)
+						sepsets[frozenset((x,y))] = z
+						break
+			all_pairs = all_pairs - deleted_edges
 			
 			if show_progress:
 				progress_bar.update(1)
@@ -288,7 +287,7 @@ class PC(CausalModel):
 		edges_to_be_oriented = True
 		while edges_to_be_oriented:
 			remaining_edges = sum([len(pdag[x]) for x in columns])
-		# 2 Orientate non-colliders X -> Z - Y into X -> X -> Y
+		# 2 Orientate non-colliders X -> Z - Y into X -> Z -> Y
 			for (x,z) in node_pairs:
 				if z in pdag[x] and x not in pdag[z]:
 					for y in pdag[z]:

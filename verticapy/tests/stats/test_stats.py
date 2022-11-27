@@ -595,3 +595,85 @@ class TestStats:
         assert str(st.tau) == "2 * PI()"
         assert str(st.inf) == "'inf'::float"
         assert str(st.nan) == "'nan'::float"
+
+    def test_is_dir_path(self):
+        adj_list = {'A': ['B'],
+                    'B': ['C'],
+                    'C': ['A']}
+
+        assert st.is_dir_path(adj_list, 'A', 'C')
+
+        adj_list = {'A': ['B'],
+                    'B': ['C', 'A'],
+                    'C': ['A']}
+
+        assert not st.is_dir_path(adj_list, 'A', 'C')
+
+        adj_list = {'A': ['B','D'],
+                    'B': ['C', 'A'],
+                    'C': ['A'],
+                    'D': ['C']}
+
+        assert st.is_dir_path(adj_list, 'A', 'C')
+
+        adj_list = {'A':[],
+                    'C':[]}
+
+        assert not st.is_dir_path(adj_list, 'A', 'C')
+
+    def test_conditional_chi_square(self, titanic_vd):
+        titanic_vd["cabin"].drop()
+        titanic_vd["embarked"].drop()
+        titanic_vd["home.dest"].drop()
+        titanic_vd["body"].drop()
+        titanic_vd["ticket"].drop()
+        titanic_vd["name"].drop()
+        titanic_vd["sex"].label_encode()
+        titanic_vd["family_size"] = titanic_vd["parch"] + titanic_vd["sibsp"] + 1
+        titanic_vd["fare"].fill_outliers(method = "winsorize", alpha = 0.03)
+        titanic_vd["age"].fillna(method = "mean", by = ["pclass", "sex"])
+        titanic_vd["boat"].fillna(method='0ifnull')
+
+        titanic_vd.dropna()
+        for col in titanic_vd._VERTICAPY_VARIABLES_['columns']:
+            if titanic_vd[col].isnum():
+                titanic_vd[col].discretize(
+                    method="same_freq",
+                    nbins=5,
+                )
+        x = "fare" 
+        y = "parch" 
+        z = []
+
+        result = st.conditional_chi_square(titanic_vd, x, y, z)
+        assert result[0] == pytest.approx(226.622285121417, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
+        assert result[2] == pytest.approx(8, 1e-2)
+
+        z = ["sibsp"]
+
+        result = st.conditional_chi_square(titanic_vd, x, y, z)
+        assert result[0] == pytest.approx(199.48275046036812, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
+        assert result[2] == pytest.approx(24, 1e-2)
+
+        z = ["sibsp", "pclass"]
+
+        result = st.conditional_chi_square(titanic_vd, x, y, z)
+        assert result[0] == pytest.approx(464.09120414289794, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
+        assert result[2] == pytest.approx(49, 1e-2)
+
+        z = ["sibsp", 'family_size']
+
+        result = st.conditional_chi_square(titanic_vd, x, y, z)
+        assert result[0] == pytest.approx(63.709589943631734, 1e-2)
+        assert result[1] == pytest.approx(1.2266844684472034e-07, 1e-8)
+        assert result[2] == pytest.approx(16, 1e-2)
+
+        z = ["sibsp", 'family_size', 'pclass']
+
+        result = st.conditional_chi_square(titanic_vd, x, y, z)
+        assert result[0] == pytest.approx(53.09882572447461, 1e-2)
+        assert result[1] == pytest.approx(0.0001331152428721838, 1e-5)
+        assert result[2] == pytest.approx(21, 1e-2)

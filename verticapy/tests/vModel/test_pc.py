@@ -37,7 +37,7 @@ def titanic_vd():
     titanic["family_size"] = titanic["parch"] + titanic["sibsp"] + 1
     titanic["fare"].fill_outliers(method = "winsorize", alpha = 0.03)
     titanic["age"].fillna(method = "mean", by = ["pclass", "sex"])
-    titanic["boat"].fillna(method='0ifnull');
+    titanic["boat"].fillna(method='0ifnull')
     yield titanic
     drop(name="public.titanic",)
 
