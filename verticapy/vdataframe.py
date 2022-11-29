@@ -122,9 +122,9 @@ sql: str, optional
     A SQL query used to create the vDataFrame. If specified, the parameter 
     'input_relation' must be empty.
 external: bool, optional
-    A boolean to indicate if it is an external table. If set to True, a
+    A boolean to indicate whether it is an external table. If set to True, a
     Connection Identifier Database must be defined.
-    Check the connect.set_external_connection function for more information.
+    See the connect.set_external_connection function for more information.
 empty: bool, optional
     If set to True, the vDataFrame will be empty. You can use this to create 
     a custom vDataFrame and bypass the initialization check.

@@ -481,8 +481,8 @@ conn: object
 def set_external_connection(cid: str, rowset: int = 500):
     """
 ---------------------------------------------------------------------------
-Sets a Connection Identifier Database. It is used to connect to an external
-source using DBLINK. You can find more information here:
+Sets a Connection Identifier Database. It connects to an external
+source using DBLINK. For more information, see:
 https://github.com/vertica/dblink
 
 Parameters
@@ -490,7 +490,7 @@ Parameters
 cid: str
     Connection Identifier Database.
 rowset: int
-    The number of rows retrieved from the remote database during each 
+    Number of rows retrieved from the remote database during each 
     SQLFetch() cycle. 
     """
     check_types([("cid", cid, [str]), ("rowset", rowset, [int])])
