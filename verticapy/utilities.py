@@ -1710,7 +1710,7 @@ table_name: str, optional
     name of the file or parent directory.
 sep: str, optional
 	Column separator. 
-    If empty then the separator is guessed. It is only possible when the files
+    If empty, the separator is guessed. This is only possible if the files
     are not compressed.
 header: bool, optional
 	If set to False, the parameter 'header_names' will be to use to name the 
@@ -2785,12 +2785,13 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         random_state       : int
             Integer used to seed the random number generation in VerticaPy.
         save_query_profile : str / list / bool
-            If set to "all" / True, all the functions call are stored in the query 
-            profile table. It will be then possible to differentiate all the VerticaPy 
-            logs from the Vertica ones.
-            Otherwise, it can be a list of the different methods to store. For
-            example: you can write ["corr", "describe"] to only store the logs
-            associated to the two method. You can also set it to False to deactivate it.
+            If set to "all" or True, all function calls are stored in the query 
+            profile table. This makes it possible to differentiate the VerticaPy 
+            logs from the Vertica logs.
+            You can also provide a list of specific methods to store. For example: 
+            if you specify ["corr", "describe"], only the logs associated with 
+            those two methods are stored. 
+            If set to False, this functiality is deactivated.
         sql_on             : bool
             If set to True, displays all the SQL queries.
         temp_schema        : str
