@@ -121,6 +121,10 @@ schema: str, optional
 sql: str, optional
     A SQL query used to create the vDataFrame. If specified, the parameter 
     'input_relation' must be empty.
+external: bool, optional
+    A boolean to indicate if it is an external table. If set to True, a
+    Connection Identifier Database must be defined.
+    Check the connect.set_external_connection function for more information.
 empty: bool, optional
     If set to True, the vDataFrame will be empty. You can use this to create 
     a custom vDataFrame and bypass the initialization check.
@@ -166,6 +170,7 @@ vColumns : vColumn
         usecols: list = [],
         schema: str = "",
         sql: str = "",
+        external: bool = False,
         empty: bool = False,
     ):
         # Saving information to the query profile table
@@ -178,6 +183,7 @@ vColumns : vColumn
                 "usecols": usecols,
                 "schema": schema,
                 "sql": sql,
+                "external": external,
                 "empty": empty,
             },
         )
@@ -213,9 +219,32 @@ vColumns : vColumn
                 ("usecols", usecols, [list]),
                 ("columns", columns, [list]),
                 ("schema", schema, [str]),
+                ("external", external, [bool]),
                 ("empty", empty, [bool]),
             ]
         )
+        if external:
+            assert verticapy.options["connection"]["dblink"], ConnectionError(
+                "No Connection Identifier Database is defined. Use the function connect.set_external_connection to set one."
+            )
+            if input_relation:
+                assert isinstance(input_relation, str), ParameterError(
+                    "Parameter 'input_relation' must be a string when using external tables."
+                )
+                if schema:
+                    relation = str(schema) + "." + str(input_relation)
+                else:
+                    relation = str(input_relation)
+                cols = ", ".join(usecols) if usecols else "*"
+                query = f"SELECT {cols} FROM {input_relation}"
+            else:
+                query = sql
+            sql = "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ()"
+            sql = sql.format(
+                verticapy.options["connection"]["dblink"].replace("'", "''"),
+                query.replace("'", "''"),
+                verticapy.options["connection"]["dblink_rowset"],
+            )
         self._VERTICAPY_VARIABLES_ = {}
         self._VERTICAPY_VARIABLES_["count"] = -1
         self._VERTICAPY_VARIABLES_["allcols_ind"] = -1

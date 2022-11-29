@@ -117,6 +117,9 @@ def sql(line, cell="", local_ns=None):
                 "-ncols",
                 "-c",
                 "--command",
+                "-ext",
+                "--external",
+                "--dblink",
             ):
 
                 if option.lower() in ("-f", "--file"):
@@ -139,6 +142,13 @@ def sql(line, cell="", local_ns=None):
                     if "-ncols" in options:
                         raise ParameterError("Duplicate option '-ncols'.")
                     options["-ncols"] = int(all_options_dict[option])
+                elif option.lower() in ("-ext", "--external", "--dblink",):
+                    if "-ext" in options:
+                        raise ParameterError("Duplicate option '-ext'.")
+                    if all_options_dict[option].lower() in ("true", "t", "1",):
+                        options["-ext"] = True
+                    else:
+                        options["-ext"] = False
 
             elif verticapy.options["print_info"]:
                 warning_message = (
@@ -163,6 +173,18 @@ def sql(line, cell="", local_ns=None):
 
         elif "-c" in options:
             queries = options["-c"]
+
+        # Looking at external sources
+        if "-ext" in options and options["-ext"]:
+            assert verticapy.options["connection"]["dblink"], ConnectionError(
+                "No Connection Identifier Database is defined. Use the function connect.set_external_connection to set one."
+            )
+            sql = "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ();"
+            queries = sql.format(
+                verticapy.options["connection"]["dblink"].replace("'", "''"),
+                queries.replace("'", "''"),
+                verticapy.options["connection"]["dblink_rowset"],
+            )
 
         # Cleaning the Query
         queries = clean_query(queries)

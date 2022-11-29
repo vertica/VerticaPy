@@ -478,6 +478,33 @@ conn: object
 
 
 # ---#
+def set_external_connection(cid: str, rowset: int = 500):
+    """
+---------------------------------------------------------------------------
+Sets a Connection Identifier Database. It is used to connect to an external
+source using DBLINK. You can find more information here:
+https://github.com/vertica/dblink
+
+Parameters
+----------
+cid: str
+    Connection Identifier Database.
+rowset: int
+    The number of rows retrieved from the remote database during each 
+    SQLFetch() cycle. 
+    """
+    check_types([("cid", cid, [str]), ("rowset", rowset, [int])])
+    if isinstance(cid, str):
+        verticapy.options["connection"]["dblink"] = cid
+    else:
+        raise ParameterError(
+            "Could not set the external connection. Found a wrong type."
+        )
+    if isinstance(rowset, int):
+        verticapy.options["connection"]["dblink_rowset"] = rowset
+
+
+# ---#
 def vertica_connection(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
