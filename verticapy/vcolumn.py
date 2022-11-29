@@ -724,29 +724,23 @@ Attributes
                 query = "SELECT {0} FROM {1} ORDER BY LENGTH({0}) DESC LIMIT 1".format(
                     self.alias, self.parent.__genSQL__()
                 )
-                elem = executeSQL(
+                array_str = executeSQL(
                     query, title="getting the biggest string", method="fetchfirstelem"
                 )
-                sep = ","
-                max_occur = elem.count(",")
-                for s in ("|", ";"):
-                    total_occurences = elem.count(s)
-                    if total_occurences > max_occur:
-                        max_occur = total_occurences
-                        sep = s
-                if elem.replace(" ", "").count(sep + sep) > 0:
+                sep = guess_sep(array_str)
+                if array_str.replace(" ", "").count(sep + sep) > 0:
                     collection_null_element = ", collection_null_element=''"
                 else:
                     collection_null_element = ""
                 if max_occur == 0:
                     sep = " "
-                elem = elem.replace(" ", "")
-                if len(elem) > 2 and (
-                    (elem[0] == "(" and elem[-1] == ")")
-                    or (elem[0] == "{" and elem[-1] == "}")
+                array_str = array_str.replace(" ", "")
+                if len(array_str) > 2 and (
+                    (array_str[0] == "(" and array_str[-1] == ")")
+                    or (array_str[0] == "{" and array_str[-1] == "}")
                 ):
-                    collection_open = ", collection_open='{0}'".format(elem[0])
-                    collection_close = ", collection_close='{0}'".format(elem[-1])
+                    collection_open = ", collection_open='{0}'".format(array_str[0])
+                    collection_close = ", collection_close='{0}'".format(array_str[-1])
                 else:
                     collection_open, collection_close = "", ""
                 transformation = (

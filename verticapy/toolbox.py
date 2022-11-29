@@ -427,7 +427,10 @@ Takes as input the Vertica Python type code and returns its corresponding data t
 # ---#
 def get_header_name_csv(path: str, sep: str):
     f = open(path, "r")
-    file_header = f.readline().replace("\n", "").replace('"', "").split(sep)
+    file_header = f.readline().replace("\n", "").replace('"', "")
+    if not(sep):
+        sep = guess_sep(file_header)
+    file_header = file_header.split(sep)
     f.close()
     for idx, col in enumerate(file_header):
         if col == "":
@@ -656,6 +659,17 @@ def get_verticapy_function(key: str, method: str = ""):
         elif key == "std":
             key = "stddev"
     return key
+
+# ---#
+def guess_sep(file_str: str):
+    sep = ","
+    max_occur = file_str.count(",")
+    for s in ("|", ";"):
+        total_occurences = file_str.count(s)
+        if total_occurences > max_occur:
+            max_occur = total_occurences
+            sep = s
+    return sep
 
 
 # ---#
