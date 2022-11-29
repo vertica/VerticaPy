@@ -2791,7 +2791,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             You can also provide a list of specific methods to store. For example: 
             if you specify ["corr", "describe"], only the logs associated with 
             those two methods are stored. 
-            If set to False, this functiality is deactivated.
+            If set to False, this functionality is deactivated.
         sql_on             : bool
             If set to True, displays all the SQL queries.
         temp_schema        : str
