@@ -46,7 +46,7 @@
 # data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.11.0"
+__version__ = "0.11.1"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = (
@@ -92,6 +92,7 @@ verticapy.options = {
     "overwrite_model": True,
     "percent_bar": None,
     "print_info": True,
+    "save_query_profile": True,
     "sql_on": False,
     "random_state": None,
     "temp_schema": "public",

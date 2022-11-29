@@ -6781,7 +6781,7 @@ vColumns : vColumn
 
     # ---#
     def flat_vmap(
-        self, vmap_col: list = [], limit: int = 100,
+        self, vmap_col: list = [], limit: int = 100, exclude_columns: list = []
     ):
         """
     ---------------------------------------------------------------------------
@@ -6799,6 +6799,8 @@ vColumns : vColumn
     limit: int, optional
         Maximum number of keys to consider for each VMap. Only the most occurent 
         keys are used.
+    exclude_columns: list, optional
+        List of VMap columns to exclude.
 
     Returns
     -------
@@ -6818,13 +6820,20 @@ vColumns : vColumn
             for col in all_cols:
                 if self[col].isvmap():
                     vmap_col += [col]
-        if not (vmap_col):
-            raise EmptyParameter("No VMAP was detected.")
         if isinstance(vmap_col, str):
             vmap_col = [vmap_col]
         check_types([("vmap_col", vmap_col, [list]), ("limit", limit, [int])])
+        exclude_columns_final, vmap_col_final = (
+            [quote_ident(col).lower() for col in exclude_columns],
+            [],
+        )
+        for col in vmap_col:
+            if quote_ident(col).lower() not in exclude_columns_final:
+                vmap_col_final += [col]
+        if not (vmap_col):
+            raise EmptyParameter("No VMAP was detected.")
         maplookup = []
-        for vmap in vmap_col:
+        for vmap in vmap_col_final:
             keys = compute_vmap_keys(expr=self, vmap_col=vmap, limit=limit)
             keys = [k[0] for k in keys]
             maplookup += [
@@ -6835,7 +6844,7 @@ vColumns : vColumn
                 )
                 for k in keys
             ]
-        return self.select(["*"] + maplookup)
+        return self.select(self.get_columns() + maplookup)
 
     # ---#
     def get_columns(self, exclude_columns: list = []):
@@ -10826,7 +10835,19 @@ vColumns : vColumn
         for i in range(len(columns)):
             column = self.format_colnames([columns[i]])
             if column:
-                columns[i] = column[0]
+                dtype = ""
+                if self._VERTICAPY_VARIABLES_["isflex"]:
+                    dtype = self[column[0]].ctype().lower()
+                    if (
+                        "array" in dtype
+                        or "map" in dtype
+                        or "row" in dtype
+                        or "set" in dtype
+                    ):
+                        dtype = ""
+                    else:
+                        dtype = f"::{dtype}"
+                columns[i] = column[0] + dtype
             else:
                 columns[i] = str(columns[i])
         table = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(

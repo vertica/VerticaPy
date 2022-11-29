@@ -1012,8 +1012,17 @@ bool
             116,
         ):  # 116 is for long varbinary and 115 is for long varchar
             return False
-    except:
-        return False
+    except Exception as e:
+        if "'utf-8' codec can't decode byte" in str(e):
+            try:
+                sql = f"SELECT MAPVERSION({column}) AS isvmap FROM {expr} WHERE {column} IS NOT NULL LIMIT 1;"
+                result = executeSQL(
+                    sql, title="Checking if the column is a vmap.", method="fetchall",
+                )
+            except:
+                return False
+        else:
+            return False
     if len(result) == 0 or (result[0][0] == -1):
         return False
     else:
@@ -1664,7 +1673,7 @@ def read_csv(
     path: str,
     schema: str = "",
     table_name: str = "",
-    sep: str = ",",
+    sep: str = "",
     header: bool = True,
     header_names: list = [],
     dtype: dict = {},
@@ -1700,7 +1709,9 @@ table_name: str, optional
 	The final relation/table name. If unspecified, the the name is set to the 
     name of the file or parent directory.
 sep: str, optional
-	Column separator.
+	Column separator. 
+    If empty, the separator is guessed. This is only possible if the files
+    are not compressed.
 header: bool, optional
 	If set to False, the parameter 'header_names' will be to use to name the 
 	different columns.
@@ -1775,6 +1786,8 @@ read_json : Ingests a JSON file into the Vertica database.
     # Saving information to the query profile table
     from verticapy import vDataFrame
 
+    if not (sep):
+        sep = ""
     save_to_query_profile(
         name="read_csv",
         path="utilities",
@@ -1930,6 +1943,14 @@ read_json : Ingests a JSON file into the Vertica database.
                 "ucol{}".format(i + len(header_names))
                 for i in range(len(file_header) - len(header_names))
             ]
+        if not (sep):
+            try:
+                f = open(path_first_file_in_folder, "r")
+                file_str = f.readline()
+                f.close()
+                sep = guess_sep(file_str)
+            except:
+                sep = ","
         if not (materialize):
             suffix, prefix, final_relation = (
                 "",
@@ -2636,6 +2657,11 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
+    if not (verticapy.options["save_query_profile"]) or (
+        isinstance(verticapy.options["save_query_profile"], list)
+        and name not in verticapy.options["save_query_profile"]
+    ):
+        return False
     try:
         check_types(
             [
@@ -2701,7 +2727,9 @@ bool
         if return_query:
             return query
         executeSQL(
-            query, title="Sending query to save the information in query profile table."
+            query,
+            title="Sending query to save the information in query profile table.",
+            print_time_sql=False,
         )
         return True
     except:
@@ -2718,52 +2746,60 @@ def set_option(option: str, value: Union[bool, int, str] = None):
     ----------
     option: str
         Option to use.
-        cache          : bool
+        cache              : bool
             If set to True, the vDataFrame will save in memory the computed
             aggregations.
-        colors         : list
+        colors             : list
             List of the colors used to draw the graphics.
-        color_style    : str
+        color_style        : str
             Style used to color the graphics, one of the following:
             "rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", 
             "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
             "summer", "tropical", "india", "default".
-        count_on       : bool
+        count_on           : bool
             If set to True, the total number of rows in vDataFrames and tablesamples is  
             computed and displayed in the footer (if footer_on is True).
-        footer_on      : bool
+        footer_on          : bool
             If set to True, vDataFrames and tablesamples show a footer that includes information 
             about the displayed rows and columns.
-        interactive    : bool
+        interactive        : bool
             If set to True, verticaPy outputs will be displayed on interactive tables. 
-        max_columns    : int
+        max_columns        : int
             Maximum number of columns to display. If the parameter is incorrect, 
             nothing is changed.
-        max_rows       : int
+        max_rows           : int
             Maximum number of rows to display. If the parameter is incorrect, 
             nothing is changed.
-        mode           : str
+        mode               : str
             How to display VerticaPy outputs.
                 full  : VerticaPy regular display mode.
                 light : Minimalist display mode.
         overwrite_model: bool
             If set to True and you try to train a model with an existing name. 
             It will be automatically overwritten.
-        percent_bar    : bool
+        percent_bar        : bool
             If set to True, it displays the percent of non-missing values.
-        print_info     : bool
+        print_info         : bool
             If set to True, information will be printed each time the vDataFrame 
             is modified.
-        random_state   : int
+        random_state       : int
             Integer used to seed the random number generation in VerticaPy.
-        sql_on         : bool
+        save_query_profile : str / list / bool
+            If set to "all" or True, all function calls are stored in the query 
+            profile table. This makes it possible to differentiate the VerticaPy 
+            logs from the Vertica logs.
+            You can also provide a list of specific methods to store. For example: 
+            if you specify ["corr", "describe"], only the logs associated with 
+            those two methods are stored. 
+            If set to False, this functionality is deactivated.
+        sql_on             : bool
             If set to True, displays all the SQL queries.
-        temp_schema    : str
+        temp_schema        : str
             Specifies the temporary schema that certain methods/functions use to 
             create intermediate objects, if needed. 
-        time_on        : bool
+        time_on            : bool
             If set to True, displays all the SQL queries elapsed time.
-        tqdm           : bool
+        tqdm               : bool
             If set to True, a loading bar is displayed when using iterative 
             functions.
     value: object, optional
@@ -2797,6 +2833,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
                     "percent_bar",
                     "print_info",
                     "random_state",
+                    "save_query_profile",
                     "sql_on",
                     "temp_schema",
                     "time_on",
@@ -2875,6 +2912,13 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         check_types([("value", value, [bool])])
         if value in (True, False, None):
             verticapy.options[option] = value
+    elif option == "save_query_profile":
+        check_types([("value", value, [bool, str, list])])
+        if value == "all":
+            value = True
+        elif not (value):
+            value = False
+        verticapy.options[option] = value
     elif option == "temp_schema":
         check_types([("value", value, [str])])
         if isinstance(value, str):
