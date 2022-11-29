@@ -1709,7 +1709,9 @@ table_name: str, optional
 	The final relation/table name. If unspecified, the the name is set to the 
     name of the file or parent directory.
 sep: str, optional
-	Column separator.
+	Column separator. 
+    If empty then the separator is guessed. It is only possible when the files
+    are not compressed.
 header: bool, optional
 	If set to False, the parameter 'header_names' will be to use to name the 
 	different columns.
@@ -1784,6 +1786,8 @@ read_json : Ingests a JSON file into the Vertica database.
     # Saving information to the query profile table
     from verticapy import vDataFrame
 
+    if not (sep):
+        sep = ""
     save_to_query_profile(
         name="read_csv",
         path="utilities",
@@ -1939,7 +1943,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 "ucol{}".format(i + len(header_names))
                 for i in range(len(file_header) - len(header_names))
             ]
-        if not(sep):
+        if not (sep):
             try:
                 f = open(path_first_file_in_folder, "r")
                 file_str = f.readline()
@@ -2653,7 +2657,10 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
-    if not(verticapy.options["save_query_profile"]) or (isinstance(verticapy.options["save_query_profile"], list) and name not in verticapy.options["save_query_profile"]):
+    if not (verticapy.options["save_query_profile"]) or (
+        isinstance(verticapy.options["save_query_profile"], list)
+        and name not in verticapy.options["save_query_profile"]
+    ):
         return False
     try:
         check_types(
@@ -2720,7 +2727,9 @@ bool
         if return_query:
             return query
         executeSQL(
-            query, title="Sending query to save the information in query profile table.", print_time_sql=False,
+            query,
+            title="Sending query to save the information in query profile table.",
+            print_time_sql=False,
         )
         return True
     except:
@@ -2906,7 +2915,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         check_types([("value", value, [bool, str, list])])
         if value == "all":
             value = True
-        elif not(value):
+        elif not (value):
             value = False
         verticapy.options[option] = value
     elif option == "temp_schema":

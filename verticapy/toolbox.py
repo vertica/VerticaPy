@@ -428,7 +428,7 @@ Takes as input the Vertica Python type code and returns its corresponding data t
 def get_header_name_csv(path: str, sep: str):
     f = open(path, "r")
     file_header = f.readline().replace("\n", "").replace('"', "")
-    if not(sep):
+    if not (sep):
         sep = guess_sep(file_header)
     file_header = file_header.split(sep)
     f.close()
@@ -659,6 +659,7 @@ def get_verticapy_function(key: str, method: str = ""):
         elif key == "std":
             key = "stddev"
     return key
+
 
 # ---#
 def guess_sep(file_str: str):

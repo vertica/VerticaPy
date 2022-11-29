@@ -6823,7 +6823,10 @@ vColumns : vColumn
         if isinstance(vmap_col, str):
             vmap_col = [vmap_col]
         check_types([("vmap_col", vmap_col, [list]), ("limit", limit, [int])])
-        exclude_columns_final, vmap_col_final = [quote_ident(col).lower() for col in exclude_columns], []
+        exclude_columns_final, vmap_col_final = (
+            [quote_ident(col).lower() for col in exclude_columns],
+            [],
+        )
         for col in vmap_col:
             if quote_ident(col).lower() not in exclude_columns_final:
                 vmap_col_final += [col]
@@ -10835,7 +10838,12 @@ vColumns : vColumn
                 dtype = ""
                 if self._VERTICAPY_VARIABLES_["isflex"]:
                     dtype = self[column[0]].ctype().lower()
-                    if "array" in dtype or "map" in dtype or "row" in dtype or "set" in dtype:
+                    if (
+                        "array" in dtype
+                        or "map" in dtype
+                        or "row" in dtype
+                        or "set" in dtype
+                    ):
                         dtype = ""
                     else:
                         dtype = f"::{dtype}"
