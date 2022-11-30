@@ -1150,12 +1150,10 @@ def replace_external_queries_in_query(query: str):
         query_dblink_template = get_dblink_fun(external_query_tmp)
         if subquery_flag:
             if " " in external_query.strip():
-                alias = f'VERTICAPY_EXTERNAL_TABLE_{idx}'
+                alias = f"VERTICAPY_EXTERNAL_TABLE_{idx}"
             else:
                 alias = '"' + external_query.strip().replace('"', '""') + '"'
-            query_dblink_template = (
-                f"({query_dblink_template}) AS {alias}"
-            )
+            query_dblink_template = f"({query_dblink_template}) AS {alias}"
         query = query.replace(f"$$${external_query}$$$", query_dblink_template)
     return query
 
