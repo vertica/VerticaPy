@@ -283,7 +283,11 @@ def sql(line, cell="", local_ns=None):
                 except Exception as e:
                     error = str(e)
 
-                if verticapy.options["print_info"] or ("Severity: ERROR, Message: User defined transform must return at least one column" in error and "DBLINK" in error):
+                if verticapy.options["print_info"] or (
+                    "Severity: ERROR, Message: User defined transform must return at least one column"
+                    in error
+                    and "DBLINK" in error
+                ):
                     print(query_type)
 
                 elif error:
@@ -292,7 +296,7 @@ def sql(line, cell="", local_ns=None):
             else:
 
                 error = ""
-                
+
                 try:
                     result = vDataFrameSQL("({}) VSQL_MAGIC".format(query))
                     result._VERTICAPY_VARIABLES_["sql_magic_result"] = True
@@ -316,9 +320,13 @@ def sql(line, cell="", local_ns=None):
                     except Exception as e:
                         error = str(e)
 
-                # If it fails because no elements were returned in the DBLINK UDx 
+                # If it fails because no elements were returned in the DBLINK UDx
                 # - we do not display the error message
-                if "Severity: ERROR, Message: User defined transform must return at least one column" in error and "DBLINK" in error:
+                if (
+                    "Severity: ERROR, Message: User defined transform must return at least one column"
+                    in error
+                    and "DBLINK" in error
+                ):
 
                     if verticapy.options["print_info"]:
                         print(query_type)
