@@ -68,7 +68,7 @@ import pandas as pd
 
 # VerticaPy Modules
 import verticapy
-from verticapy.errors import QueryError, ParameterError
+from verticapy.errors import QueryError, ParameterError, ParsingError
 from verticapy import (
     executeSQL,
     vDataFrameSQL,
@@ -182,7 +182,7 @@ def sql(line, cell="", local_ns=None):
             assert not (external_queries), ParsingError(
                 "'$$$' operator cannot be used when -ext is set to True."
             )
-            sql = get_dblink_fun(queries)
+            queries = get_dblink_fun(queries)
 
         # Cleaning the Query
         queries = clean_query(queries)
