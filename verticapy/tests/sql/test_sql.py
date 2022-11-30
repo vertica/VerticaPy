@@ -186,7 +186,7 @@ class TestSQL:
         result = replace_external_queries_in_query(query)
         assert (
             result
-            == "SELECT * FROM (SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='SELECT * FROM my_external_table', rowset=500) OVER ()) AS VERTICAPY_EXTERNAL_TABLE_0"
+            == "SELECT * FROM (SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='SELECT * FROM my_external_table', rowset=500) OVER ()) AS \"my_external_table\""
         )
 
         query = "SELECT * FROM ($$$SELECT * FROM my_external_table$$$) x"
