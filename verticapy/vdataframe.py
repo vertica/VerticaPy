@@ -246,6 +246,7 @@ vColumns : vColumn
         self._VERTICAPY_VARIABLES_["max_columns"] = -1
         self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
         self._VERTICAPY_VARIABLES_["isflex"] = False
+        self._VERTICAPY_VARIABLES_["external"] = True
 
         if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
 
@@ -1455,6 +1456,14 @@ vColumns : vColumn
         else:
             order_by = [quote_ident(elem) for elem in columns]
         return " ORDER BY {}".format(", ".join(order_by))
+
+    # ---#
+    def __isexternal__(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns true if it is an external vDataFrame.
+        """
+        return self._VERTICAPY_VARIABLES_["external"]
 
     # ---#
     def __update_catalog__(

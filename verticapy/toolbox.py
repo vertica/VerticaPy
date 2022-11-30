@@ -181,26 +181,11 @@ def color_dict(d: dict, idx: int = 0):
 
 
 # ---#
-def find_val_in_dict(x: str, d: dict, return_key: bool = False):
-    for elem in d:
-        if quote_ident(x).lower() == quote_ident(elem).lower():
-            if return_key:
-                return elem
-            return d[elem]
-    raise NameError(f'Key "{x}" was not found in {d}.')
-
-
-# ---#
-def flat_dict(d: dict) -> str:
-    # converts dictionary to string with a specific format
-    res = []
-    for elem in d:
-        q = '"' if isinstance(d[elem], str) else ""
-        res += ["{}={}{}{}".format(elem, q, d[elem], q)]
-    res = ", ".join(res)
-    if res:
-        res = ", {}".format(res)
-    return res
+def erase_label(query: str):
+    labels = re.findall("\/\*\+LABEL(.*?)\*\/", query)
+    for label in labels:
+        query = query.replace(f"/*+LABEL{label}*/", "")
+    return query
 
 
 # ---#
@@ -229,6 +214,8 @@ def executeSQL(
                 method,
                 ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"],
             ),
+            ("path", path, [str]),
+            ("print_time_sql", print_time_sql, [bool]),
         ]
     )
     from verticapy.connect import current_cursor
@@ -284,6 +271,29 @@ def extract_compression(path: str):
         return lookup_table[file_extension[0:2]]
     else:
         return "UNCOMPRESSED"
+
+
+# ---#
+def find_val_in_dict(x: str, d: dict, return_key: bool = False):
+    for elem in d:
+        if quote_ident(x).lower() == quote_ident(elem).lower():
+            if return_key:
+                return elem
+            return d[elem]
+    raise NameError(f'Key "{x}" was not found in {d}.')
+
+
+# ---#
+def flat_dict(d: dict) -> str:
+    # converts dictionary to string with a specific format
+    res = []
+    for elem in d:
+        q = '"' if isinstance(d[elem], str) else ""
+        res += ["{}={}{}{}".format(elem, q, d[elem], q)]
+    res = ", ".join(res)
+    if res:
+        res = ", {}".format(res)
+    return res
 
 
 # ---#

@@ -64,10 +64,10 @@ import numpy as np
 
 ##
 #
-#   __   __   ______     ______     __         __  __     __    __     __   __
-#  /\ \ / /  /\  ___\   /\  __ \   /\ \       /\ \/\ \   /\ "-./  \   /\ "-.\ \
-#  \ \ \'/   \ \ \____  \ \ \/\ \  \ \ \____  \ \ \_\ \  \ \ \-./\ \  \ \ \-.  \
-#   \ \__|    \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_\\"\_\
+#   __   ___  ______     ______     __         __  __     __    __     __   __
+#  /\ \ /  / /\  ___\   /\  __ \   /\ \       /\ \/\ \   /\ "-./  \   /\ "-.\ \
+#  \ \ \' /  \ \ \____  \ \ \/\ \  \ \ \____  \ \ \_\ \  \ \ \-./\ \  \ \ \-.  \
+#   \ \__/    \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_\\"\_\
 #    \/_/      \/_____/   \/_____/   \/_____/   \/_____/   \/_/  \/_/   \/_/ \/_/
 #
 #
@@ -782,8 +782,8 @@ Attributes
                 dtype = "varchar"
             else:
                 transformation = "{0}::{1}".format(self.alias, dtype), "{}::" + dtype
-            query = "SELECT /*+LABEL('vColumn.astype')*/ {} AS {} FROM {} WHERE {} IS NOT NULL LIMIT 20".format(
-                transformation[0], self.alias, self.parent.__genSQL__(), self.alias
+            query = "SELECT /*+LABEL('vColumn.astype')*/ {0} AS {1} FROM {2} WHERE {1} IS NOT NULL LIMIT 20".format(
+                transformation[0], self.alias, self.parent.__genSQL__()
             )
             executeSQL(query, title="Testing the Type casting.")
             self.transformations += [
@@ -1734,12 +1734,9 @@ Attributes
             where = "WHERE _verticapy_row_nb_ IN ({})".format(
                 ", ".join(["1"] + nth_elems + [str(count)])
             )
-            query = "SELECT /*+LABEL('vColumn.discretize')*/ {} FROM (SELECT {}, ROW_NUMBER() OVER (ORDER BY {}) AS _verticapy_row_nb_ FROM {} WHERE {} IS NOT NULL) VERTICAPY_SUBTABLE {}".format(
-                self.alias,
-                self.alias,
+            query = "SELECT /*+LABEL('vColumn.discretize')*/ {0} FROM (SELECT {0}, ROW_NUMBER() OVER (ORDER BY {0}) AS _verticapy_row_nb_ FROM {1} WHERE {0} IS NOT NULL) VERTICAPY_SUBTABLE {2}".format(
                 self.alias,
                 self.parent.__genSQL__(),
-                self.alias,
                 where,
             )
             result = executeSQL(
@@ -1828,22 +1825,17 @@ Attributes
         )
         # -#
         if "agg" not in kwargs:
-            query = "SELECT /*+LABEL('vColumn.distinct')*/ {} AS {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
+            query = "SELECT /*+LABEL('vColumn.distinct')*/ {0} AS {1} FROM {2} WHERE {1} IS NOT NULL GROUP BY {1} ORDER BY {1}".format(
                 bin_spatial_to_str(self.category(), self.alias),
                 self.alias,
                 self.parent.__genSQL__(),
-                self.alias,
-                self.alias,
-                self.alias,
             )
         else:
-            query = "SELECT /*+LABEL('vColumn.distinct')*/ {} FROM (SELECT {} AS {}, {} AS verticapy_agg FROM {} WHERE {} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
+            query = "SELECT /*+LABEL('vColumn.distinct')*/ {0} FROM (SELECT {1} AS {0}, {2} AS verticapy_agg FROM {3} WHERE {0} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
                 self.alias,
                 bin_spatial_to_str(self.category(), self.alias),
-                self.alias,
                 kwargs["agg"],
                 self.parent.__genSQL__(),
-                self.alias,
             )
         query_result = executeSQL(
             query=query,
@@ -2097,30 +2089,27 @@ Attributes
                 threshold * result["std"][0] + result["avg"][0],
             )
         else:
-            query = "SELECT /*+LABEL('vColumn.fill_outliers')*/ PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
-                alpha, self.alias, alpha, self.alias, self.parent.__genSQL__()
+            query = "SELECT /*+LABEL('vColumn.fill_outliers')*/ PERCENTILE_CONT({0}) WITHIN GROUP (ORDER BY {1}) OVER (), PERCENTILE_CONT(1 - {0}) WITHIN GROUP (ORDER BY {1}) OVER () FROM {2} LIMIT 1".format(
+                alpha, self.alias, self.parent.__genSQL__()
             )
             p_alpha, p_1_alpha = executeSQL(
                 query=query,
-                title="Computing the quantiles of {}.".format(self.alias),
+                title="Computing the quantiles of {0}.".format(self.alias),
                 method="fetchrow",
             )
         if method == "winsorize":
             self.clip(lower=p_alpha, upper=p_1_alpha)
         elif method == "null":
             self.apply(
-                func="(CASE WHEN ({} BETWEEN {} AND {}) THEN {} ELSE NULL END)".format(
-                    "{}", p_alpha, p_1_alpha, "{}"
+                func="(CASE WHEN ({0} BETWEEN {1} AND {2}) THEN {0} ELSE NULL END)".format(
+                    "{}", p_alpha, p_1_alpha
                 )
             )
         elif method == "mean":
-            query = "WITH vdf_table AS (SELECT /*+LABEL('vColumn.fill_outliers')*/ * FROM {}) (SELECT AVG({}) FROM vdf_table WHERE {} < {}) UNION ALL (SELECT AVG({}) FROM vdf_table WHERE {} > {})".format(
+            query = "WITH vdf_table AS (SELECT /*+LABEL('vColumn.fill_outliers')*/ * FROM {0}) (SELECT AVG({1}) FROM vdf_table WHERE {1} < {2}) UNION ALL (SELECT AVG({1}) FROM vdf_table WHERE {1} > {3})".format(
                 self.parent.__genSQL__(),
                 self.alias,
-                self.alias,
                 p_alpha,
-                self.alias,
-                self.alias,
                 p_1_alpha,
             )
             mean_alpha, mean_1_alpha = [
@@ -2260,8 +2249,8 @@ Attributes
                 try:
                     if fun == "MEDIAN":
                         fun = "APPROXIMATE_MEDIAN"
-                    query = "SELECT /*+LABEL('vColumn.fillna')*/ {}, {}({}) FROM {} GROUP BY {};".format(
-                        by[0], fun, self.alias, self.parent.__genSQL__(), by[0]
+                    query = "SELECT /*+LABEL('vColumn.fillna')*/ {0}, {1}({2}) FROM {3} GROUP BY {0};".format(
+                        by[0], fun, self.alias, self.parent.__genSQL__()
                     )
                     result = executeSQL(
                         query,
@@ -3215,8 +3204,8 @@ Attributes
         assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
         where = " WHERE {} IS NOT NULL ".format(self.alias) if (dropna) else " "
         result = executeSQL(
-            "SELECT /*+LABEL('vColumn.mode')*/ {} FROM (SELECT {}, COUNT(*) AS _verticapy_cnt_ FROM {}{}GROUP BY {} ORDER BY _verticapy_cnt_ DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
-                self.alias, self.alias, self.parent.__genSQL__(), where, self.alias, n
+            "SELECT /*+LABEL('vColumn.mode')*/ {0} FROM (SELECT {0}, COUNT(*) AS _verticapy_cnt_ FROM {1}{2}GROUP BY {0} ORDER BY _verticapy_cnt_ DESC LIMIT {3}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
+                self.alias, self.parent.__genSQL__(), where, n
             ),
             title="Computing the mode.",
             method="fetchall",
@@ -3286,8 +3275,8 @@ Attributes
         )
         # -#
         check_types([("n", n, [int, float])])
-        query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} DESC LIMIT {}".format(
-            self.parent.__genSQL__(), self.alias, self.alias, n
+        query = "SELECT * FROM {0} WHERE {1} IS NOT NULL ORDER BY {1} DESC LIMIT {2}".format(
+            self.parent.__genSQL__(), self.alias, n
         )
         title = "Reads {} {} largest elements.".format(self.alias, n)
         return to_tablesample(query, title=title)
@@ -3347,7 +3336,7 @@ Attributes
         nullifzero, n = 1, len(by)
         if self.isbool():
 
-            warning_message = "Normalize doesn't work on booleans".format(self.alias)
+            warning_message = "Normalize doesn't work on booleans"
             warnings.warn(warning_message, Warning)
 
         elif self.isnum():
@@ -3366,12 +3355,10 @@ Attributes
                 elif (n == 1) and (self.parent[by[0]].nunique() < 50):
                     try:
                         result = executeSQL(
-                            "SELECT /*+LABEL('vColumn.normalize')*/ {}, AVG({}), STDDEV({}) FROM {} GROUP BY {}".format(
+                            "SELECT /*+LABEL('vColumn.normalize')*/ {0}, AVG({1}), STDDEV({1}) FROM {2} GROUP BY {0}".format(
                                 by[0],
-                                self.alias,
                                 self.alias,
                                 self.parent.__genSQL__(),
-                                by[0],
                             ),
                             title="Computing the different categories to normalize.",
                             method="fetchall",
@@ -3490,12 +3477,10 @@ Attributes
                 elif n == 1:
                     try:
                         result = executeSQL(
-                            "SELECT /*+LABEL('vColumn.normalize')*/ {}, MIN({}), MAX({}) FROM {} GROUP BY {}".format(
+                            "SELECT /*+LABEL('vColumn.normalize')*/ {0}, MIN({1}), MAX({1}) FROM {2} GROUP BY {0}".format(
                                 by[0],
-                                self.alias,
                                 self.alias,
                                 self.parent.__genSQL__(),
-                                by[0],
                             ),
                             title="Computing the different categories {} to normalize.".format(
                                 by[0]
@@ -3557,22 +3542,20 @@ Attributes
                         ),
                     )
                 if return_trans:
-                    return "({} - {}) / {}({} - {})".format(
+                    return "({0} - {1}) / {2}({3} - {1})".format(
                         self.alias,
                         cmin,
                         "NULLIFZERO" if (nullifzero) else "",
                         cmax,
-                        cmin,
                     )
                 else:
                     final_transformation = [
                         (
-                            "({} - {}) / {}({} - {})".format(
+                            "({0} - {1}) / {2}({3} - {1})".format(
                                 "{}",
                                 cmin,
                                 "NULLIFZERO" if (nullifzero) else "",
                                 cmax,
-                                cmin,
                             ),
                             "float",
                             "float",
@@ -3668,8 +3651,8 @@ Attributes
         )
         # -#
         check_types([("n", n, [int, float])])
-        query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC LIMIT {}".format(
-            self.parent.__genSQL__(), self.alias, self.alias, n
+        query = "SELECT * FROM {0} WHERE {1} IS NOT NULL ORDER BY {1} ASC LIMIT {2}".format(
+            self.parent.__genSQL__(), self.alias, n
         )
         title = "Reads {} {} smallest elements.".format(n, self.alias)
         return to_tablesample(query, title=title)
@@ -3726,11 +3709,11 @@ Attributes
             )
         elif self.isdate():
             min_date = self.min()
-            table = "(SELECT DATEDIFF('second', '{}'::timestamp, {}) AS {} FROM {}) VERTICAPY_OPTIMAL_H_TABLE".format(
-                min_date, self.alias, self.alias, self.parent.__genSQL__()
+            table = "(SELECT DATEDIFF('second', '{0}'::timestamp, {1}) AS {1} FROM {2}) VERTICAPY_OPTIMAL_H_TABLE".format(
+                min_date, self.alias, self.parent.__genSQL__()
             )
-            query = "SELECT /*+LABEL('vColumn.numh')*/ COUNT({}) AS NAs, MIN({}) AS min, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.75) AS Q3, MAX({}) AS max FROM {}".format(
-                self.alias, self.alias, self.alias, self.alias, self.alias, table
+            query = "SELECT /*+LABEL('vColumn.numh')*/ COUNT({0}) AS NAs, MIN({0}) AS min, APPROXIMATE_PERCENTILE({0} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({0} USING PARAMETERS percentile = 0.75) AS Q3, MAX({0}) AS max FROM {1}".format(
+                self.alias, table
             )
             result = executeSQL(
                 query,
@@ -4725,13 +4708,12 @@ Attributes
         check_types([("k", k, [int, float]), ("dropna", dropna, [bool])])
         topk = "" if (k < 1) else "LIMIT {}".format(k)
         dropna = " WHERE {} IS NOT NULL".format(self.alias) if (dropna) else ""
-        query = "SELECT /*+LABEL('vColumn.topk')*/ {} AS {}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {} AS percent FROM {}{} GROUP BY {} ORDER BY _verticapy_cnt_ DESC {}".format(
+        query = "SELECT /*+LABEL('vColumn.topk')*/ {0} AS {1}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {2} AS percent FROM {3}{4} GROUP BY {0} ORDER BY _verticapy_cnt_ DESC {5}".format(
             bin_spatial_to_str(self.category(), self.alias),
             self.alias,
             self.parent.shape()[0],
             self.parent.__genSQL__(),
             dropna,
-            self.alias,
             topk,
         )
         result = executeSQL(
