@@ -80,6 +80,7 @@ from verticapy import (
     replace_vars_in_query,
     save_to_query_profile,
     replace_external_queries_in_query,
+    get_dblink_fun,
 )
 
 # ---#
@@ -177,6 +178,10 @@ def sql(line, cell="", local_ns=None):
 
         # Looking at external sources
         if "-ext" in options and options["-ext"]:
+            external_queries = re.findall("\$\$\$(.*?)\$\$\$", queries)
+            assert not (external_queries), ParsingError(
+                "'$$$' operator cannot be used when -ext is set to True."
+            )
             sql = get_dblink_fun(queries)
 
         # Cleaning the Query

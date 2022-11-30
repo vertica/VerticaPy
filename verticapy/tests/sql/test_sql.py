@@ -20,7 +20,13 @@ import warnings, os
 # VerticaPy
 import verticapy
 from verticapy.connect import set_external_connection
-from verticapy import drop, set_option, tablesample, replace_external_queries_in_query, get_dblink_fun
+from verticapy import (
+    drop,
+    set_option,
+    tablesample,
+    replace_external_queries_in_query,
+    get_dblink_fun,
+)
 from verticapy.datasets import load_titanic
 from verticapy.sql import sql
 
