@@ -275,13 +275,24 @@ def sql(line, cell="", local_ns=None):
                 and (query_type.lower() not in ("select", "with", "undefined"))
             ):
 
-                executeSQL(query, print_time_sql=False)
-                if verticapy.options["print_info"]:
+                error = ""
+
+                try:
+                    executeSQL(query, print_time_sql=False)
+
+                except Exception as e:
+                    error = str(e)
+
+                if verticapy.options["print_info"] or ("Severity: ERROR, Message: User defined transform must return at least one column" in error and "DBLINK" in error):
                     print(query_type)
+
+                elif error:
+                    raise QueryError(error)
 
             else:
 
                 error = ""
+                
                 try:
                     result = vDataFrameSQL("({}) VSQL_MAGIC".format(query))
                     result._VERTICAPY_VARIABLES_["sql_magic_result"] = True
@@ -292,6 +303,7 @@ def sql(line, cell="", local_ns=None):
                         result._VERTICAPY_VARIABLES_["max_columns"] = options["-ncols"]
 
                 except:
+
                     try:
                         final_result = executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
@@ -300,10 +312,18 @@ def sql(line, cell="", local_ns=None):
                             print(final_result)
                         elif verticapy.options["print_info"]:
                             print(query_type)
-                    except Exception as e:
-                        error = e
 
-                if error:
+                    except Exception as e:
+                        error = str(e)
+
+                # If it fails because no elements were returned in the DBLINK UDx 
+                # - we do not display the error message
+                if "Severity: ERROR, Message: User defined transform must return at least one column" in error and "DBLINK" in error:
+
+                    if verticapy.options["print_info"]:
+                        print(query_type)
+
+                elif error:
                     raise QueryError(error)
 
         # Displaying the information
