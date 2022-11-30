@@ -1141,16 +1141,20 @@ def replace_external_queries_in_query(query: str):
     )
     external_queries = re.findall("\$\$\$(.*?)\$\$\$", query)
     for idx, external_query in enumerate(external_queries):
-        external_query_tmp = external_query.replace("'", "''")
         if external_query.strip().lower().startswith(sql_keyword):
+            external_query_tmp = external_query
             subquery_flag = False
         else:
-            external_query_tmp = f"SELECT * FROM {external_query_tmp}"
+            external_query_tmp = f"SELECT * FROM {external_query}"
             subquery_flag = True
         query_dblink_template = get_dblink_fun(external_query_tmp)
         if subquery_flag:
+            if " " in external_query.strip():
+                alias = f'VERTICAPY_EXTERNAL_TABLE_{idx}'
+            else:
+                alias = '"' + external_query.strip().replace('"', '""') + '"'
             query_dblink_template = (
-                f"({query_dblink_template}) AS VERTICAPY_EXTERNAL_TABLE_{idx}"
+                f"({query_dblink_template}) AS {alias}"
             )
         query = query.replace(f"$$${external_query}$$$", query_dblink_template)
     return query

@@ -225,6 +225,7 @@ vColumns : vColumn
         )
 
         if external:
+            
             if input_relation:
                 assert isinstance(input_relation, str), ParameterError(
                     "Parameter 'input_relation' must be a string when using external tables."
