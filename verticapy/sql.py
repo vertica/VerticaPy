@@ -79,6 +79,7 @@ from verticapy import (
     clean_query,
     replace_vars_in_query,
     save_to_query_profile,
+    replace_external_queries_in_query,
 )
 
 # ---#
