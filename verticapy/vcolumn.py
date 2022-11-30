@@ -1735,9 +1735,7 @@ Attributes
                 ", ".join(["1"] + nth_elems + [str(count)])
             )
             query = "SELECT /*+LABEL('vColumn.discretize')*/ {0} FROM (SELECT {0}, ROW_NUMBER() OVER (ORDER BY {0}) AS _verticapy_row_nb_ FROM {1} WHERE {0} IS NOT NULL) VERTICAPY_SUBTABLE {2}".format(
-                self.alias,
-                self.parent.__genSQL__(),
-                where,
+                self.alias, self.parent.__genSQL__(), where,
             )
             result = executeSQL(
                 query=query,
@@ -2107,10 +2105,7 @@ Attributes
             )
         elif method == "mean":
             query = "WITH vdf_table AS (SELECT /*+LABEL('vColumn.fill_outliers')*/ * FROM {0}) (SELECT AVG({1}) FROM vdf_table WHERE {1} < {2}) UNION ALL (SELECT AVG({1}) FROM vdf_table WHERE {1} > {3})".format(
-                self.parent.__genSQL__(),
-                self.alias,
-                p_alpha,
-                p_1_alpha,
+                self.parent.__genSQL__(), self.alias, p_alpha, p_1_alpha,
             )
             mean_alpha, mean_1_alpha = [
                 item[0]
@@ -3356,9 +3351,7 @@ Attributes
                     try:
                         result = executeSQL(
                             "SELECT /*+LABEL('vColumn.normalize')*/ {0}, AVG({1}), STDDEV({1}) FROM {2} GROUP BY {0}".format(
-                                by[0],
-                                self.alias,
-                                self.parent.__genSQL__(),
+                                by[0], self.alias, self.parent.__genSQL__(),
                             ),
                             title="Computing the different categories to normalize.",
                             method="fetchall",
@@ -3478,9 +3471,7 @@ Attributes
                     try:
                         result = executeSQL(
                             "SELECT /*+LABEL('vColumn.normalize')*/ {0}, MIN({1}), MAX({1}) FROM {2} GROUP BY {0}".format(
-                                by[0],
-                                self.alias,
-                                self.parent.__genSQL__(),
+                                by[0], self.alias, self.parent.__genSQL__(),
                             ),
                             title="Computing the different categories {} to normalize.".format(
                                 by[0]
@@ -3543,19 +3534,13 @@ Attributes
                     )
                 if return_trans:
                     return "({0} - {1}) / {2}({3} - {1})".format(
-                        self.alias,
-                        cmin,
-                        "NULLIFZERO" if (nullifzero) else "",
-                        cmax,
+                        self.alias, cmin, "NULLIFZERO" if (nullifzero) else "", cmax,
                     )
                 else:
                     final_transformation = [
                         (
                             "({0} - {1}) / {2}({3} - {1})".format(
-                                "{}",
-                                cmin,
-                                "NULLIFZERO" if (nullifzero) else "",
-                                cmax,
+                                "{}", cmin, "NULLIFZERO" if (nullifzero) else "", cmax,
                             ),
                             "float",
                             "float",
