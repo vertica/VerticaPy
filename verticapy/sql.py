@@ -176,19 +176,12 @@ def sql(line, cell="", local_ns=None):
 
         # Looking at external sources
         if "-ext" in options and options["-ext"]:
-            assert verticapy.options["connection"]["dblink"], ConnectionError(
-                "No Connection Identifier Database is defined. Use the function connect.set_external_connection to set one."
-            )
-            sql = "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ();"
-            queries = sql.format(
-                verticapy.options["connection"]["dblink"].replace("'", "''"),
-                queries.replace("'", "''"),
-                verticapy.options["connection"]["dblink_rowset"],
-            )
+            sql = get_dblink_fun(queries)
 
         # Cleaning the Query
         queries = clean_query(queries)
         queries = replace_vars_in_query(queries, locals()["local_ns"])
+        queries = replace_external_queries_in_query(queries)
 
         n, i, all_split = len(queries), 0, []
 

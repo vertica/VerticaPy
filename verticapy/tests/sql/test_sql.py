@@ -19,7 +19,8 @@ import warnings, os
 
 # VerticaPy
 import verticapy
-from verticapy import drop, set_option, tablesample
+from verticapy.connect import set_external_connection
+from verticapy import drop, set_option, tablesample, replace_external_queries_in_query
 from verticapy.datasets import load_titanic
 from verticapy.sql import sql
 
@@ -166,6 +167,35 @@ class TestSQL:
             raise
         os.remove("verticapy_test_sql.csv")
         file.close()
+
+        # Testing the replace_external_queries_in_query function
+        set_external_connection("my_external_cid")
+
+        assert (
+            get_dblink_fun("  My TEsT QUERY  ")
+            == "SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='  My TEsT QUERY  ', rowset=500) OVER ()"
+        )
+
+        query = "SELECT * FROM $$$my_external_table$$$"
+        result = replace_external_queries_in_query(query)
+        assert (
+            result
+            == "SELECT * FROM (SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='SELECT * FROM my_external_table', rowset=500) OVER ()) AS VERTICAPY_EXTERNAL_TABLE_0"
+        )
+
+        query = "SELECT * FROM ($$$SELECT * FROM my_external_table$$$) x"
+        result = replace_external_queries_in_query(query)
+        assert (
+            result
+            == "SELECT * FROM (SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='SELECT * FROM my_external_table', rowset=500) OVER ()) x"
+        )
+
+        query = "$$$INSERT INTO films (code, title, did, date_prod, kind) VALUES (1, 2, 3, 4, 5)$$$"
+        result = replace_external_queries_in_query(query)
+        assert (
+            result
+            == "SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='INSERT INTO films (code, title, did, date_prod, kind) VALUES (1, 2, 3, 4, 5)', rowset=500) OVER ()"
+        )
 
         # Test on the variables - TEST WORKS ON JUPYTER BUT NOT IN FILES
         # result = sql("", "SELECT * FROM :titanic_vd;")

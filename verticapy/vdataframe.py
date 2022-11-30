@@ -223,10 +223,8 @@ vColumns : vColumn
                 ("empty", empty, [bool]),
             ]
         )
+
         if external:
-            assert verticapy.options["connection"]["dblink"], ConnectionError(
-                "No Connection Identifier Database is defined. Use the function connect.set_external_connection to set one."
-            )
             if input_relation:
                 assert isinstance(input_relation, str), ParameterError(
                     "Parameter 'input_relation' must be a string when using external tables."
@@ -239,12 +237,8 @@ vColumns : vColumn
                 query = f"SELECT {cols} FROM {input_relation}"
             else:
                 query = sql
-            sql = "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ()"
-            sql = sql.format(
-                verticapy.options["connection"]["dblink"].replace("'", "''"),
-                query.replace("'", "''"),
-                verticapy.options["connection"]["dblink_rowset"],
-            )
+            sql = get_dblink_fun(query)
+
         self._VERTICAPY_VARIABLES_ = {}
         self._VERTICAPY_VARIABLES_["count"] = -1
         self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
