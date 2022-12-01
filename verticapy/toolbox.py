@@ -228,7 +228,7 @@ def executeSQL(
     if sql_push_ext and is_special_symbol(symbol):
         query = erase_label(query)
         query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
-        
+
     elif is_special_symbol(symbol):
         raise ParameterError(f"Symbol '{symbol}' is not supported.")
 
@@ -612,7 +612,19 @@ def get_session(add_username: bool = True):
 
 
 def get_special_symbols():
-    return ("$", "€", "£", "%", "@", "#", "&", "§", "%", "?", "!",)
+    return (
+        "$",
+        "€",
+        "£",
+        "%",
+        "@",
+        "#",
+        "&",
+        "§",
+        "%",
+        "?",
+        "!",
+    )
 
 
 # ---#
@@ -835,7 +847,8 @@ def isnotebook():
 
 # ---#
 def is_special_symbol(s: str):
-    return (s in get_special_symbols())
+    return s in get_special_symbols()
+
 
 # ---#
 def levenshtein(s: str, t: str):

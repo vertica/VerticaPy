@@ -504,7 +504,9 @@ symbol: str, optional
         [("cid", cid, [str]), ("rowset", rowset, [int]),]
     )
     assert is_special_symbol(symbol), ParameterError(
-        "Parameter 'symbol' must be a special char. One of the following: {0}".format(", ".join(get_special_symbols()))
+        "Parameter 'symbol' must be a special char. One of the following: {0}".format(
+            ", ".join(get_special_symbols())
+        )
     )
     if isinstance(cid, str) and isinstance(rowset, int):
         verticapy.options["external_connection"][symbol] = {
