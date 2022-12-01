@@ -493,10 +493,10 @@ rowset: int, optional
     Number of rows retrieved from the remote database during each 
     SQLFetch() cycle.
 symbol: str, optional
-    Can be any special character except the SQL operators and parenthesis.
-    Symbol used to identify the connection. If the symbol is '$' for example,
-    you'll be able to call external tables having the input cid by writing
-    $$$QUERY$$$ where QUERY represents a custom query.
+    Any special character, except SQL operators and parentheses, to 
+    identify the connection. For example, if the symbol is '$', you can
+    call external tables with the input cid by writing $$$QUERY$$$,
+    where QUERY represents a custom query.
     """
     check_types(
         [("cid", cid, [str]), ("rowset", rowset, [int]),]

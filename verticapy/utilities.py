@@ -3486,9 +3486,9 @@ def to_tablesample(
     max_columns: int, optional
         Maximum number of columns to display.
     sql_push_ext: bool, optional
-        If set to True, the entire query will be pushed to the external table 
-        It can increase performance but it might increase the error rate. 
-        Indeed, some of the DB might not support the same SQL as Vertica.
+        If set to True, the entire query is pushed to the external table. 
+        This can increase performance but might increase the error rate. 
+        For instance, some DBs might not support the same SQL as Vertica.
     symbol: str, optional
         Symbol used to identify the external connection.
         See the connect.set_external_connection function for more information.

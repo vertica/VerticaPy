@@ -129,10 +129,10 @@ symbol: str, optional
     Symbol used to identify the external connection.
     See the connect.set_external_connection function for more information.
 sql_push_ext: bool, optional
-    If set to True, the external vDataFrame will try to push the entire query 
+    If set to True, the external vDataFrame attempts to push the entire query 
     to the external table (only DQL statements - SELECT; for other statements,
-    use directly SQL Magic). It can increase performance but it might increase 
-    the error rate. Indeed, some of the DB might not support the same SQL as 
+    use SQL Magic directly). This can increase performance but might increase 
+    the error rate. For instance, some DBs might not support the same SQL as 
     Vertica.
 empty: bool, optional
     If set to True, the vDataFrame will be empty. You can use this to create 
