@@ -3491,7 +3491,7 @@ def to_tablesample(
         For instance, some DBs might not support the same SQL as Vertica.
     symbol: str, optional
         One of the following:
-        "$", "€", "£", "%", "@", "#", "&", "§", "%", "?", "!"
+        "$", "€", "£", "%", "@", "&", "§", "%", "?", "!"
         Symbol used to identify the external connection.
         See the connect.set_external_connection function for more information.
 
@@ -3594,7 +3594,13 @@ vDataFrame
         ]
     )
     if isinstance(vdf, vDataFrame):
+        external = vdf._VERTICAPY_VARIABLES_["external"]
+        symbol = vdf._VERTICAPY_VARIABLES_["symbol"]
+        sql_push_ext = vdf._VERTICAPY_VARIABLES_["sql_push_ext"]
         vdf.__init__("", empty=True)
+        vdf._VERTICAPY_VARIABLES_["external"] = external
+        vdf._VERTICAPY_VARIABLES_["symbol"] = symbol
+        vdf._VERTICAPY_VARIABLES_["sql_push_ext"] = sql_push_ext
     else:
         vdf = vDataFrame("", empty=True)
     vdf._VERTICAPY_VARIABLES_["input_relation"] = name
