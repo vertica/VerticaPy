@@ -229,7 +229,7 @@ def executeSQL(
         query = erase_label(query)
         query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
 
-    elif sql_push_ext and not(is_special_symbol(symbol)):
+    elif sql_push_ext and not (is_special_symbol(symbol)):
         raise ParameterError(f"Symbol '{symbol}' is not supported.")
 
     query = replace_external_queries_in_query(query)
