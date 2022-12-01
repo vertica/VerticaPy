@@ -502,7 +502,7 @@ symbol: str, optional
         [("cid", cid, [str]), ("rowset", rowset, [int]),]
     )
     assert is_special_symbol(symbol), ParameterError(
-        "Parameter 'symbol' must be a special char. Example: $, €, | ..."
+        "Parameter 'symbol' must be a special char. Example: $, €, ..."
     )
     if isinstance(cid, str) and isinstance(rowset, int):
         verticapy.options["external_connection"][symbol] = {

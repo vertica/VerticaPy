@@ -204,6 +204,8 @@ def executeSQL(
     method: str = "cursor",
     path: str = "",
     print_time_sql: bool = True,
+    sql_push_ext: bool = False,
+    symbol: str = "$",
 ):
     check_types(
         [
@@ -216,11 +218,19 @@ def executeSQL(
             ),
             ("path", path, [str]),
             ("print_time_sql", print_time_sql, [bool]),
+            ("sql_push_ext", sql_push_ext, [bool]),
+            ("symbol", symbol, [str]),
         ]
     )
     from verticapy.connect import current_cursor
 
+    # Cleaning the query
+    if sql_push_ext and is_special_symbol(symbol):
+        query = erase_label(query)
+        query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
+    query = replace_external_queries_in_query(query)
     query = clean_query(query)
+
     cursor = current_cursor()
     if verticapy.options["sql_on"] and print_time_sql:
         print_query(query, title)

@@ -128,6 +128,12 @@ external: bool, optional
 symbol: str, optional
     Symbol used to identify the external connection.
     See the connect.set_external_connection function for more information.
+sql_push_ext: bool, optional
+    If set to True, the external vDataFrame will try to push the entire query 
+    to the external table (only DQL statements - SELECT; for other statements,
+    use directly SQL Magic). It can increase performance but it might increase 
+    the error rate. Indeed, some of the DB might not support the same SQL as 
+    Vertica.
 empty: bool, optional
     If set to True, the vDataFrame will be empty. You can use this to create 
     a custom vDataFrame and bypass the initialization check.
@@ -175,6 +181,7 @@ vColumns : vColumn
         sql: str = "",
         external: bool = False,
         symbol: str = "$",
+        sql_push_ext: bool = True,
         empty: bool = False,
     ):
         # Saving information to the query profile table
@@ -188,6 +195,8 @@ vColumns : vColumn
                 "schema": schema,
                 "sql": sql,
                 "external": external,
+                "symbol": symbol,
+                "sql_push_ext": sql_push_ext,
                 "empty": empty,
             },
         )
@@ -224,11 +233,15 @@ vColumns : vColumn
                 ("columns", columns, [list]),
                 ("schema", schema, [str]),
                 ("external", external, [bool]),
+                ("sql_push_ext", sql_push_ext, [bool]),
                 ("empty", empty, [bool]),
             ]
         )
 
         if external:
+            assert is_special_symbol(symbol), ParameterError(
+                "Parameter 'symbol' must be a special char. Example: $, €, ..."
+            )
 
             if input_relation:
                 assert isinstance(input_relation, str), ParameterError(
@@ -259,7 +272,9 @@ vColumns : vColumn
         self._VERTICAPY_VARIABLES_["max_columns"] = -1
         self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
         self._VERTICAPY_VARIABLES_["isflex"] = False
-        self._VERTICAPY_VARIABLES_["external"] = True
+        self._VERTICAPY_VARIABLES_["external"] = external
+        self._VERTICAPY_VARIABLES_["symbol"] = symbol
+        self._VERTICAPY_VARIABLES_["sql_push_ext"] = external and sql_push_ext
 
         if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
 
@@ -305,9 +320,6 @@ vColumns : vColumn
             self.__init__(input_relation=input_relation, schema=schema)
 
         elif sql:
-
-            # Finding external tables
-            sql = replace_external_queries_in_query(sql)
 
             # Cleaning the Query
             sql_tmp = clean_query(sql)
@@ -454,7 +466,11 @@ vColumns : vColumn
                 index,
             )
             return executeSQL(
-                query=query, title="Getting the vDataFrame element.", method="fetchrow"
+                query=query,
+                title="Getting the vDataFrame element.",
+                method="fetchrow",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
         elif isinstance(index, (str, str_sql)):
             is_sql = False
@@ -721,7 +737,11 @@ vColumns : vColumn
                     columns[0], columns[1], self.__genSQL__()
                 )
                 n, k, r = executeSQL(
-                    sql, title="Computing the columns cardinalities.", method="fetchrow"
+                    sql,
+                    title="Computing the columns cardinalities.",
+                    method="fetchrow",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
                 chi2 = """SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
                             SUM((nij - ni * nj / {0}) * (nij - ni * nj / {0}) 
@@ -742,6 +762,8 @@ vColumns : vColumn
                         "and {1} (Chi2 Statistic)."
                     ).format(columns[0], columns[1]),
                     method="fetchfirstelem",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
                 if min(k - 1, r - 1) == 0:
                     result = float("nan")
@@ -794,7 +816,13 @@ vColumns : vColumn
                     columns[0], columns[1]
                 )
             try:
-                result = executeSQL(query=query, title=title, method="fetchfirstelem")
+                result = executeSQL(
+                    query=query,
+                    title=title,
+                    method="fetchfirstelem",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                )
             except:
                 result = float("nan")
             self.__update_catalog__(
@@ -957,6 +985,8 @@ vColumns : vColumn
                             ),
                             title=title_query,
                             method="fetchrow",
+                            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                            symbol=self._VERTICAPY_VARIABLES_["symbol"],
                         )
                 except:
                     n = len(columns)
@@ -1178,6 +1208,8 @@ vColumns : vColumn
                         ),
                         title=f"Computing the Correlation Vector ({method})",
                         method="fetchrow",
+                        sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self._VERTICAPY_VARIABLES_["symbol"],
                     )
                 vector = [elem for elem in result]
             except:
@@ -2562,6 +2594,8 @@ vColumns : vColumn
                     ),
                     title="Computing the different aggregations.",
                     method="fetchrow",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
             result = [item for item in res]
             try:
@@ -2604,6 +2638,8 @@ vColumns : vColumn
                         query,
                         title="Computing the different aggregations using UNION ALL.",
                         method="fetchall",
+                        sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self._VERTICAPY_VARIABLES_["symbol"],
                     )
 
                 for idx, elem in enumerate(result):
@@ -2635,6 +2671,10 @@ vColumns : vColumn
                                         "Computing the different aggregations one "
                                         "vColumn at a time."
                                     ),
+                                    sql_push_ext=self._VERTICAPY_VARIABLES_[
+                                        "sql_push_ext"
+                                    ],
+                                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                                 )
                                 pre_comp_val = []
                                 break
@@ -2662,6 +2702,10 @@ vColumns : vColumn
                                         "vColumn & one agg at a time."
                                     ),
                                     method="fetchfirstelem",
+                                    sql_push_ext=self._VERTICAPY_VARIABLES_[
+                                        "sql_push_ext"
+                                    ],
+                                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                                 )
                             else:
                                 result = pre_comp
@@ -4319,6 +4363,8 @@ vColumns : vColumn
                     ),
                     title="Looking at columns with low cardinality.",
                     method="fetchfirstelem",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
             elif self[column].category() == "float":
                 is_cat = False
@@ -4563,6 +4609,8 @@ vColumns : vColumn
                     sql,
                     title="Computing the CHAID tree probability.",
                     method="fetchall",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
             else:
                 result = []
@@ -5037,7 +5085,11 @@ vColumns : vColumn
             self.__genSQL__(), column1, column2
         )
         n = executeSQL(
-            sql, title="Computing the number of elements.", method="fetchfirstelem"
+            sql,
+            title="Computing the number of elements.",
+            method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         if method in ("pearson", "biserial"):
             x = val * math.sqrt((n - 2) / (1 - val * val))
@@ -5063,6 +5115,8 @@ vColumns : vColumn
                 f"SELECT /*+LABEL('vDataframe.corr_pvalue')*/ {n_c}::float, {n_d}::float FROM {table};",
                 title="Computing nc and nd.",
                 method="fetchrow",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
             if kendall_type == "a":
                 val = (nc - nd) / (n * (n - 1) / 2)
@@ -5082,6 +5136,8 @@ vColumns : vColumn
                     ),
                     title="Computing vti.",
                     method="fetchrow",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
                 vu, v1_1, v2_1 = executeSQL(
                     """SELECT /*+LABEL('vDataframe.corr_pvalue')*/
@@ -5097,6 +5153,8 @@ vColumns : vColumn
                     ),
                     title="Computing vui.",
                     method="fetchrow",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
                 v0 = n * (n - 1) * (2 * n + 5)
                 v1 = v1_0 * v1_1 / (2 * n * (n - 1))
@@ -5115,6 +5173,8 @@ vColumns : vColumn
                         sql,
                         title="Computing the columns categories in the pivot table.",
                         method="fetchrow",
+                        sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self._VERTICAPY_VARIABLES_["symbol"],
                     )
                     m = min(k, r)
                     val = 2 * (nc - nd) / (n * n * (m - 1) / m)
@@ -5132,6 +5192,8 @@ vColumns : vColumn
                 sql,
                 title="Computing the columns categories in the pivot table.",
                 method="fetchrow",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
             x = val * val * n * min(k, r)
             pvalue = chi2.sf(x, (k - 1) * (r - 1))
@@ -6327,6 +6389,8 @@ vColumns : vColumn
             ),
             title="Computing the number of duplicates.",
             method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         if count:
             return total
@@ -6334,6 +6398,8 @@ vColumns : vColumn
             "SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {} ORDER BY occurrence DESC LIMIT {}".format(
                 ", ".join(columns), query, ", ".join(columns), limit
             ),
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         result.count = executeSQL(
             query="SELECT /*+LABEL('vDataframe.duplicated')*/ COUNT(*) FROM (SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {}) t".format(
@@ -6341,6 +6407,8 @@ vColumns : vColumn
             ),
             title="Computing the number of distinct duplicates.",
             method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         return result
 
@@ -6601,7 +6669,11 @@ vColumns : vColumn
             self.__genSQL__()
         )
         result = executeSQL(
-            query=query, title="Explaining the Current Relation", method="fetchall"
+            query=query,
+            title="Explaining the Current Relation",
+            method="fetchall",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         result = [elem[0] for elem in result]
         result = "\n".join(result)
@@ -6757,6 +6829,8 @@ vColumns : vColumn
                     ),
                     title="Computing the new number of elements.",
                     method="fetchfirstelem",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
                 count -= new_count
             except:
@@ -6822,7 +6896,11 @@ vColumns : vColumn
             ts, offset, self.__genSQL__()
         )
         first_date = executeSQL(
-            query, title="Getting the vDataFrame first values.", method="fetchfirstelem"
+            query,
+            title="Getting the vDataFrame first values.",
+            method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         self.filter("{} <= '{}'".format(ts, first_date))
         return self
@@ -7836,6 +7914,8 @@ vColumns : vColumn
             ),
             title=title,
             max_columns=self._VERTICAPY_VARIABLES_["max_columns"],
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -8221,7 +8301,11 @@ vColumns : vColumn
             ts, offset, self.__genSQL__()
         )
         last_date = executeSQL(
-            query, title="Getting the vDataFrame last values.", method="fetchfirstelem"
+            query,
+            title="Getting the vDataFrame last values.",
+            method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         self.filter("{} >= '{}'".format(ts, last_date))
         return self
@@ -10086,6 +10170,8 @@ vColumns : vColumn
                     ),
                     title="Computing the {} Matrix.".format(method.upper()),
                     method="fetchrow",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
             if n == 1:
                 return result[0]
@@ -10108,6 +10194,8 @@ vColumns : vColumn
                                 method.upper()
                             ),
                             method="fetchfirstelem",
+                            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                            symbol=self._VERTICAPY_VARIABLES_["symbol"],
                         )
                     ]
         matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
@@ -11213,6 +11301,8 @@ vColumns : vColumn
             query,
             title="Computing the total number of elements (COUNT(*))",
             method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         return (self._VERTICAPY_VARIABLES_["count"], m)
 
@@ -11688,6 +11778,8 @@ vColumns : vColumn
                 ),
                 title="Reading the data.",
                 method="fetchall",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
             for row in result:
                 tmp_row = []
@@ -12048,6 +12140,8 @@ vColumns : vColumn
                 ),
                 title="Reading the data.",
                 method="fetchall",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
             for row in result:
                 tmp_row = []
@@ -12100,7 +12194,11 @@ vColumns : vColumn
             self.__genSQL__(), self.__get_last_order_by__()
         )
         result = executeSQL(
-            query, title="Getting the vDataFrame values.", method="fetchall"
+            query,
+            title="Getting the vDataFrame values.",
+            method="fetchall",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         final_result = []
         for elem in result:
@@ -12154,7 +12252,11 @@ vColumns : vColumn
             self.__genSQL__(), self.__get_last_order_by__()
         )
         data = executeSQL(
-            query, title="Getting the vDataFrame values.", method="fetchall"
+            query,
+            title="Getting the vDataFrame values.",
+            method="fetchall",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         column_names = [column[0] for column in current_cursor().description]
         df = pd.DataFrame(data)
@@ -12304,7 +12406,12 @@ vColumns : vColumn
             self.__genSQL__(),
         )
         title = "Exporting data to Parquet format."
-        result = to_tablesample(query, title=title)
+        result = to_tablesample(
+            query,
+            title=title,
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+        )
         return result
 
     # ---#
