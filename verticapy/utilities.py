@@ -3467,7 +3467,11 @@ The tablesample attributes are the same than the parameters.
 
 # ---#
 def to_tablesample(
-    query: str, title: str = "", max_columns: int = -1,
+    query: str,
+    title: str = "",
+    max_columns: int = -1,
+    sql_push_ext: bool = False,
+    symbol: str = "$",
 ):
     """
 	---------------------------------------------------------------------------
@@ -3481,6 +3485,15 @@ def to_tablesample(
 		Query title when the query is displayed.
     max_columns: int, optional
         Maximum number of columns to display.
+    sql_push_ext: bool, optional
+        If set to True, the entire query is pushed to the external table. 
+        This can increase performance but might increase the error rate. 
+        For instance, some DBs might not support the same SQL as Vertica.
+    symbol: str, optional
+        One of the following:
+        "$", "€", "£", "%", "@", "#", "&", "§", "%", "?", "!"
+        Symbol used to identify the external connection.
+        See the connect.set_external_connection function for more information.
 
  	Returns
  	-------
@@ -3504,7 +3517,9 @@ def to_tablesample(
     if verticapy.options["sql_on"]:
         print_query(query, title)
     start_time = time.time()
-    cursor = executeSQL(query, print_time_sql=False)
+    cursor = executeSQL(
+        query, print_time_sql=False, sql_push_ext=sql_push_ext, symbol=symbol
+    )
     description, dtype = cursor.description, {}
     for elem in description:
         dtype[elem[0]] = get_final_vertica_type(

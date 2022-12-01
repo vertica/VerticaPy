@@ -80,7 +80,7 @@ from verticapy import (
     replace_vars_in_query,
     save_to_query_profile,
     replace_external_queries_in_query,
-    get_dblink_fun,
+    get_special_symbols,
 )
 
 # ---#
@@ -119,9 +119,6 @@ def sql(line, cell="", local_ns=None):
                 "-ncols",
                 "-c",
                 "--command",
-                "-ext",
-                "--external",
-                "--dblink",
             ):
 
                 if option.lower() in ("-f", "--file"):
@@ -144,13 +141,6 @@ def sql(line, cell="", local_ns=None):
                     if "-ncols" in options:
                         raise ParameterError("Duplicate option '-ncols'.")
                     options["-ncols"] = int(all_options_dict[option])
-                elif option.lower() in ("-ext", "--external", "--dblink",):
-                    if "-ext" in options:
-                        raise ParameterError("Duplicate option '-ext'.")
-                    if all_options_dict[option].lower() in ("true", "t", "1",):
-                        options["-ext"] = True
-                    else:
-                        options["-ext"] = False
 
             elif verticapy.options["print_info"]:
                 warning_message = (
@@ -176,18 +166,21 @@ def sql(line, cell="", local_ns=None):
         elif "-c" in options:
             queries = options["-c"]
 
-        # Looking at external sources
-        if "-ext" in options and options["-ext"]:
-            external_queries = re.findall("\$\$\$(.*?)\$\$\$", queries)
-            assert not (external_queries), ParsingError(
-                "'$$$' operator cannot be used when -ext is set to True."
-            )
-            queries = get_dblink_fun(queries)
-
         # Cleaning the Query
         queries = clean_query(queries)
         queries = replace_vars_in_query(queries, locals()["local_ns"])
         queries = replace_external_queries_in_query(queries)
+
+        # Looking at very specific external queries symbols
+        for s in get_special_symbols():
+
+            external_queries = re.findall(
+                f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries
+            )
+            warning_message = f"External Query detected but no corresponding Connection Identifier Database is defined (Using the symbol '{s}'). Use the function connect.set_external_connection to set one with the correct symbol."
+
+            if external_queries:
+                warnings.warn(warning_message, Warning)
 
         n, i, all_split = len(queries), 0, []
 
@@ -246,9 +239,10 @@ def sql(line, cell="", local_ns=None):
             query = queries[i]
 
             if query.split(" ")[0]:
-                query_type = query.split(" ")[0].upper()
+                query_type = query.split(" ")[0].upper().replace("(", "")
+
             else:
-                query_type = query.split(" ")[1].upper()
+                query_type = query.split(" ")[1].upper().replace("(", "")
 
             if len(query_type) > 1 and query_type[0:2] in ("/*", "--"):
                 query_type = "undefined"
@@ -283,7 +277,7 @@ def sql(line, cell="", local_ns=None):
                 except Exception as e:
                     error = str(e)
 
-                if verticapy.options["print_info"] or (
+                if verticapy.options["print_info"] and (
                     "Severity: ERROR, Message: User defined transform must return at least one column"
                     in error
                     and "DBLINK" in error
@@ -292,6 +286,9 @@ def sql(line, cell="", local_ns=None):
 
                 elif error:
                     raise QueryError(error)
+
+                elif verticapy.options["print_info"]:
+                    print(query_type)
 
             else:
 

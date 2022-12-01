@@ -223,6 +223,8 @@ Attributes
                     query=query,
                     title="Getting the vColumn element.",
                     method="fetchfirstelem",
+                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                 )
         elif isinstance(index, str):
             if self.category() == "vmap":
@@ -785,7 +787,12 @@ Attributes
             query = "SELECT /*+LABEL('vColumn.astype')*/ {0} AS {1} FROM {2} WHERE {1} IS NOT NULL LIMIT 20".format(
                 transformation[0], self.alias, self.parent.__genSQL__()
             )
-            executeSQL(query, title="Testing the Type casting.")
+            executeSQL(
+                query,
+                title="Testing the Type casting.",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            )
             self.transformations += [
                 (transformation[1], dtype, get_category_from_vertica_type(ctype=dtype),)
             ]
@@ -1486,7 +1493,12 @@ Attributes
             title = "Describes the statics of {} partitioned by {}.".format(
                 numcol, self.alias
             )
-            values = to_tablesample(query, title=title).values
+            values = to_tablesample(
+                query,
+                title=title,
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            ).values
         elif (
             ((distinct_count < max_cardinality + 1) and (method != "numerical"))
             or not (is_numeric)
@@ -1514,6 +1526,8 @@ Attributes
                 query=query,
                 title="Computing the descriptive statistics of {}.".format(self.alias),
                 method="fetchall",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             result = [distinct_count, self.count()] + [item[1] for item in query_result]
             index = ["unique", "count"] + [item[0] for item in query_result]
@@ -1689,6 +1703,8 @@ Attributes
                     query=query,
                     title="Computing the optimized histogram nbins using Random Forest.",
                     method="fetchall",
+                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                 )
                 result = [elem[0] for elem in result]
             except:
@@ -1741,6 +1757,8 @@ Attributes
                 query=query,
                 title="Computing the equal frequency histogram bins.",
                 method="fetchall",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
@@ -1839,6 +1857,8 @@ Attributes
             query=query,
             title="Computing the distinct categories of {}.".format(self.alias),
             method="fetchall",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
         )
         return [item for sublist in query_result for item in sublist]
 
@@ -1914,6 +1934,8 @@ Attributes
                     self.parent.__genSQL__(force_columns=force_columns)
                 ),
                 print_time_sql=False,
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             self.parent._VERTICAPY_VARIABLES_["columns"].remove(self.alias)
             delattr(self.parent, self.alias)
@@ -2094,6 +2116,8 @@ Attributes
                 query=query,
                 title="Computing the quantiles of {0}.".format(self.alias),
                 method="fetchrow",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
         if method == "winsorize":
             self.clip(lower=p_alpha, upper=p_1_alpha)
@@ -2115,6 +2139,8 @@ Attributes
                         self.alias
                     ),
                     method="fetchall",
+                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                 )
             ]
             if mean_alpha == None:
@@ -2251,6 +2277,8 @@ Attributes
                         query,
                         title="Computing the different aggregations.",
                         method="fetchall",
+                        sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                     )
                     for idx, elem in enumerate(result):
                         result[idx][0] = (
@@ -2271,6 +2299,8 @@ Attributes
                             new_column.format(self.alias), self.parent.__genSQL__()
                         ),
                         print_time_sql=False,
+                        sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                     )
                 except:
                     new_column = "COALESCE({}, {}({}) OVER (PARTITION BY {}))".format(
@@ -2711,6 +2741,8 @@ Attributes
                 offset,
             ),
             title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
         )
         tail.count = self.parent.shape()[0]
         tail.offset = offset
@@ -2896,7 +2928,12 @@ Attributes
             self.alias, query,
         )
         title = "Computing WOE & IV of {} (response = {}).".format(self.alias, y)
-        result = to_tablesample(query, title=title)
+        result = to_tablesample(
+            query,
+            title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
         result.values["index"] += ["total"]
         result.values["non_events"] += [sum(result["non_events"])]
         result.values["events"] += [sum(result["events"])]
@@ -3204,6 +3241,8 @@ Attributes
             ),
             title="Computing the mode.",
             method="fetchall",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
         )
         top = None if not (result) else result[0][0]
         if not (dropna):
@@ -3274,7 +3313,12 @@ Attributes
             self.parent.__genSQL__(), self.alias, n
         )
         title = "Reads {} {} largest elements.".format(self.alias, n)
-        return to_tablesample(query, title=title)
+        return to_tablesample(
+            query,
+            title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
 
     # ---#
     def normalize(
@@ -3355,6 +3399,10 @@ Attributes
                             ),
                             title="Computing the different categories to normalize.",
                             method="fetchall",
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                         )
                         for i in range(len(result)):
                             if result[i][2] == None:
@@ -3396,6 +3444,10 @@ Attributes
                                 avg, stddev, self.parent.__genSQL__()
                             ),
                             print_time_sql=False,
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                         )
                     except:
                         avg, stddev = (
@@ -3477,6 +3529,10 @@ Attributes
                                 by[0]
                             ),
                             method="fetchall",
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                         )
                         cmin = "DECODE({}, {}, NULL)".format(
                             by[0],
@@ -3513,6 +3569,10 @@ Attributes
                                 cmax, cmin, self.parent.__genSQL__()
                             ),
                             print_time_sql=False,
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                         )
                     except:
                         cmax, cmin = (
@@ -3640,7 +3700,12 @@ Attributes
             self.parent.__genSQL__(), self.alias, n
         )
         title = "Reads {} {} smallest elements.".format(n, self.alias)
-        return to_tablesample(query, title=title)
+        return to_tablesample(
+            query,
+            title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
 
     # ---#
     def numh(self, method: str = "auto"):
@@ -3704,6 +3769,8 @@ Attributes
                 query,
                 title="Different aggregations to compute the optimal h.",
                 method="fetchrow",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result
         sturges = max(
@@ -4381,6 +4448,8 @@ Attributes
             ),
             title="Computing the Store Usage of the vColumn {}.".format(self.alias),
             method="fetchfirstelem",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
         )
         self.parent.__update_catalog__(
             {"index": ["store_usage"], self.alias: [store_usage]}
@@ -4707,6 +4776,8 @@ Attributes
                 k if k > 0 else "", self.alias
             ),
             method="fetchall",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
         )
         values = {
             "index": [item[0] for item in result],

@@ -54,7 +54,7 @@ from configparser import ConfigParser
 
 # VerticaPy Modules
 import verticapy
-from verticapy.toolbox import check_types
+from verticapy.toolbox import check_types, is_special_symbol, get_special_symbols
 from verticapy.errors import *
 
 # Vertica Modules
@@ -478,7 +478,7 @@ conn: object
 
 
 # ---#
-def set_external_connection(cid: str, rowset: int = 500):
+def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$"):
     """
 ---------------------------------------------------------------------------
 Sets a Connection Identifier Database. It connects to an external
@@ -491,17 +491,32 @@ cid: str
     Connection Identifier Database.
 rowset: int, optional
     Number of rows retrieved from the remote database during each 
-    SQLFetch() cycle. 
+    SQLFetch() cycle.
+symbol: str, optional
+    One of the following:
+    "$", "€", "£", "%", "@", "#", "&", "§", "%", "?", "!"
+    A special character, to identify the connection. 
+    For example, if the symbol is '$', you can call external tables 
+    with the input cid by writing $$$QUERY$$$, where QUERY represents 
+    a custom query.
     """
-    check_types([("cid", cid, [str]), ("rowset", rowset, [int])])
-    if isinstance(cid, str):
-        verticapy.options["connection"]["dblink"] = cid
+    check_types(
+        [("cid", cid, [str]), ("rowset", rowset, [int]),]
+    )
+    assert is_special_symbol(symbol), ParameterError(
+        "Parameter 'symbol' must be a special char. One of the following: {0}".format(
+            ", ".join(get_special_symbols())
+        )
+    )
+    if isinstance(cid, str) and isinstance(rowset, int):
+        verticapy.options["external_connection"][symbol] = {
+            "cid": cid,
+            "rowset": rowset,
+        }
     else:
         raise ParameterError(
             "Could not set the external connection. Found a wrong type."
         )
-    if isinstance(rowset, int):
-        verticapy.options["connection"]["dblink_rowset"] = rowset
 
 
 # ---#

@@ -204,6 +204,8 @@ def executeSQL(
     method: str = "cursor",
     path: str = "",
     print_time_sql: bool = True,
+    sql_push_ext: bool = False,
+    symbol: str = "$",
 ):
     check_types(
         [
@@ -216,11 +218,23 @@ def executeSQL(
             ),
             ("path", path, [str]),
             ("print_time_sql", print_time_sql, [bool]),
+            ("sql_push_ext", sql_push_ext, [bool]),
+            ("symbol", symbol, [str]),
         ]
     )
     from verticapy.connect import current_cursor
 
+    # Cleaning the query
+    if sql_push_ext and is_special_symbol(symbol):
+        query = erase_label(query)
+        query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
+
+    elif sql_push_ext and not(is_special_symbol(symbol)):
+        raise ParameterError(f"Symbol '{symbol}' is not supported.")
+
+    query = replace_external_queries_in_query(query)
     query = clean_query(query)
+
     cursor = current_cursor()
     if verticapy.options["sql_on"] and print_time_sql:
         print_query(query, title)
@@ -404,14 +418,14 @@ def get_category_from_vertica_type(ctype: str = ""):
 
 
 # ---#
-def get_dblink_fun(query: str):
-    assert verticapy.options["connection"]["dblink"], ConnectionError(
-        "External Query detected but no Connection Identifier Database is defined. Use the function connect.set_external_connection to set one."
+def get_dblink_fun(query: str, symbol: str = "$"):
+    assert symbol in verticapy.options["external_connection"], ConnectionError(
+        f"External Query detected but no corresponding Connection Identifier Database is defined (Using the symbol '{symbol}'). Use the function connect.set_external_connection to set one with the correct symbol."
     )
     return "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ()".format(
-        verticapy.options["connection"]["dblink"].replace("'", "''"),
+        verticapy.options["external_connection"][symbol]["cid"].replace("'", "''"),
         query.replace("'", "''"),
-        verticapy.options["connection"]["dblink_rowset"],
+        verticapy.options["external_connection"][symbol]["rowset"],
     )
 
 
@@ -595,6 +609,22 @@ def get_session(add_username: bool = True):
             executeSQL(query, method="fetchfirstelem", print_time_sql=False), result
         )
     return result
+
+
+def get_special_symbols():
+    return (
+        "$",
+        "€",
+        "£",
+        "%",
+        "@",
+        "#",
+        "&",
+        "§",
+        "%",
+        "?",
+        "!",
+    )
 
 
 # ---#
@@ -813,6 +843,11 @@ def isnotebook():
             return False  # Other type (?)
     except NameError:
         return False  # Probably standard Python interpreter
+
+
+# ---#
+def is_special_symbol(s: str):
+    return s in get_special_symbols()
 
 
 # ---#
@@ -1139,22 +1174,25 @@ def replace_external_queries_in_query(query: str):
         "alter ",
         "update ",
     )
-    external_queries = re.findall("\$\$\$(.*?)\$\$\$", query)
-    for idx, external_query in enumerate(external_queries):
-        if external_query.strip().lower().startswith(sql_keyword):
-            external_query_tmp = external_query
-            subquery_flag = False
-        else:
-            external_query_tmp = f"SELECT * FROM {external_query}"
-            subquery_flag = True
-        query_dblink_template = get_dblink_fun(external_query_tmp)
-        if subquery_flag:
-            if " " in external_query.strip():
-                alias = f"VERTICAPY_EXTERNAL_TABLE_{idx}"
+    for s in verticapy.options["external_connection"]:
+        external_queries = re.findall(f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", query)
+        for idx, external_query in enumerate(external_queries):
+            if external_query.strip().lower().startswith(sql_keyword):
+                external_query_tmp = external_query
+                subquery_flag = False
             else:
-                alias = '"' + external_query.strip().replace('"', '""') + '"'
-            query_dblink_template = f"({query_dblink_template}) AS {alias}"
-        query = query.replace(f"$$${external_query}$$$", query_dblink_template)
+                external_query_tmp = f"SELECT * FROM {external_query}"
+                subquery_flag = True
+            query_dblink_template = get_dblink_fun(external_query_tmp, symbol=s)
+            if subquery_flag:
+                if " " in external_query.strip():
+                    alias = f"VERTICAPY_EXTERNAL_TABLE_{idx}"
+                else:
+                    alias = '"' + external_query.strip().replace('"', '""') + '"'
+                query_dblink_template = f"({query_dblink_template}) AS {alias}"
+            query = query.replace(
+                f"{s}{s}{s}{external_query}{s}{s}{s}", query_dblink_template
+            )
     return query
 
 
