@@ -3490,6 +3490,8 @@ def to_tablesample(
         This can increase performance but might increase the error rate. 
         For instance, some DBs might not support the same SQL as Vertica.
     symbol: str, optional
+        One of the following:
+        "$", "€", "£", "%", "@", "#", "&", "§", "%", "?", "!"
         Symbol used to identify the external connection.
         See the connect.set_external_connection function for more information.
 

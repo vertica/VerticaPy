@@ -126,6 +126,8 @@ external: bool, optional
     Connection Identifier Database must be defined.
     See the connect.set_external_connection function for more information.
 symbol: str, optional
+    One of the following:
+    "$", "€", "£", "%", "@", "#", "&", "§", "%", "?", "!"
     Symbol used to identify the external connection.
     See the connect.set_external_connection function for more information.
 sql_push_ext: bool, optional

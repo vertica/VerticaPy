@@ -228,6 +228,10 @@ def executeSQL(
     if sql_push_ext and is_special_symbol(symbol):
         query = erase_label(query)
         query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
+        
+    elif is_special_symbol(symbol):
+        raise ParameterError(f"Symbol '{symbol}' is not supported.")
+
     query = replace_external_queries_in_query(query)
     query = clean_query(query)
 
@@ -350,16 +354,6 @@ def gen_tmp_name(schema: str = "", name: str = ""):
     if schema:
         name = "{}.{}".format(quote_ident(schema), name)
     return name
-
-
-# ---#
-def is_special_symbol(s: str):
-    s = str(s)
-    return (
-        len(s) == 1
-        and not (re.match("^[a-zA-Z0-9]*$", s))
-        and s not in ("/", "\\", "+", "-", " ", "(", ")", "{", "}", "[", "]", "'", '"')
-    )
 
 
 # ---#
@@ -617,6 +611,10 @@ def get_session(add_username: bool = True):
     return result
 
 
+def get_special_symbols():
+    return ("$", "€", "£", "%", "@", "#", "&", "§", "%", "?", "!",)
+
+
 # ---#
 def get_vertica_type(dtype):
     if dtype in (str, "str", "string"):
@@ -834,6 +832,10 @@ def isnotebook():
     except NameError:
         return False  # Probably standard Python interpreter
 
+
+# ---#
+def is_special_symbol(s: str):
+    return (s in get_special_symbols())
 
 # ---#
 def levenshtein(s: str, t: str):

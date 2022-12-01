@@ -80,7 +80,7 @@ from verticapy import (
     replace_vars_in_query,
     save_to_query_profile,
     replace_external_queries_in_query,
-    get_dblink_fun,
+    get_special_symbols,
 )
 
 # ---#
@@ -172,7 +172,7 @@ def sql(line, cell="", local_ns=None):
         queries = replace_external_queries_in_query(queries)
 
         # Looking at very specific external queries symbols
-        for s in ["$", "€", "£"]:
+        for s in get_special_symbols():
 
             external_queries = re.findall(
                 f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries
