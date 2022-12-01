@@ -125,6 +125,9 @@ external: bool, optional
     A boolean to indicate whether it is an external table. If set to True, a
     Connection Identifier Database must be defined.
     See the connect.set_external_connection function for more information.
+symbol: str, optional
+    Symbol used to identify the external connection.
+    See the connect.set_external_connection function for more information.
 empty: bool, optional
     If set to True, the vDataFrame will be empty. You can use this to create 
     a custom vDataFrame and bypass the initialization check.
@@ -171,6 +174,7 @@ vColumns : vColumn
         schema: str = "",
         sql: str = "",
         external: bool = False,
+        symbol: str = "$",
         empty: bool = False,
     ):
         # Saving information to the query profile table
@@ -236,9 +240,17 @@ vColumns : vColumn
                     relation = str(input_relation)
                 cols = ", ".join(usecols) if usecols else "*"
                 query = f"SELECT {cols} FROM {input_relation}"
+
             else:
                 query = sql
-            sql = get_dblink_fun(query)
+
+            if symbol in verticapy.options["external_connection"]:
+                sql = symbol * 3 + query + symbol * 3
+
+            else:
+                raise ConnectionError(
+                    f"No corresponding Connection Identifier Database is defined (Using the symbol '{symbol}'). Use the function connect.set_external_connection to set one with the correct symbol."
+                )
 
         self._VERTICAPY_VARIABLES_ = {}
         self._VERTICAPY_VARIABLES_["count"] = -1
@@ -293,6 +305,9 @@ vColumns : vColumn
             self.__init__(input_relation=input_relation, schema=schema)
 
         elif sql:
+
+            # Finding external tables
+            sql = replace_external_queries_in_query(sql)
 
             # Cleaning the Query
             sql_tmp = clean_query(sql)
