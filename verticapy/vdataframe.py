@@ -223,10 +223,9 @@ vColumns : vColumn
                 ("empty", empty, [bool]),
             ]
         )
+
         if external:
-            assert verticapy.options["connection"]["dblink"], ConnectionError(
-                "No Connection Identifier Database is defined. Use the function connect.set_external_connection to set one."
-            )
+
             if input_relation:
                 assert isinstance(input_relation, str), ParameterError(
                     "Parameter 'input_relation' must be a string when using external tables."
@@ -239,12 +238,8 @@ vColumns : vColumn
                 query = f"SELECT {cols} FROM {input_relation}"
             else:
                 query = sql
-            sql = "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ()"
-            sql = sql.format(
-                verticapy.options["connection"]["dblink"].replace("'", "''"),
-                query.replace("'", "''"),
-                verticapy.options["connection"]["dblink_rowset"],
-            )
+            sql = get_dblink_fun(query)
+
         self._VERTICAPY_VARIABLES_ = {}
         self._VERTICAPY_VARIABLES_["count"] = -1
         self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
@@ -252,6 +247,7 @@ vColumns : vColumn
         self._VERTICAPY_VARIABLES_["max_columns"] = -1
         self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
         self._VERTICAPY_VARIABLES_["isflex"] = False
+        self._VERTICAPY_VARIABLES_["external"] = True
 
         if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
 
@@ -1461,6 +1457,14 @@ vColumns : vColumn
         else:
             order_by = [quote_ident(elem) for elem in columns]
         return " ORDER BY {}".format(", ".join(order_by))
+
+    # ---#
+    def __isexternal__(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns true if it is an external vDataFrame.
+        """
+        return self._VERTICAPY_VARIABLES_["external"]
 
     # ---#
     def __update_catalog__(

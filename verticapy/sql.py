@@ -68,7 +68,7 @@ import pandas as pd
 
 # VerticaPy Modules
 import verticapy
-from verticapy.errors import QueryError, ParameterError
+from verticapy.errors import QueryError, ParameterError, ParsingError
 from verticapy import (
     executeSQL,
     vDataFrameSQL,
@@ -79,6 +79,8 @@ from verticapy import (
     clean_query,
     replace_vars_in_query,
     save_to_query_profile,
+    replace_external_queries_in_query,
+    get_dblink_fun,
 )
 
 # ---#
@@ -176,19 +178,16 @@ def sql(line, cell="", local_ns=None):
 
         # Looking at external sources
         if "-ext" in options and options["-ext"]:
-            assert verticapy.options["connection"]["dblink"], ConnectionError(
-                "No Connection Identifier Database is defined. Use the function connect.set_external_connection to set one."
+            external_queries = re.findall("\$\$\$(.*?)\$\$\$", queries)
+            assert not (external_queries), ParsingError(
+                "'$$$' operator cannot be used when -ext is set to True."
             )
-            sql = "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ();"
-            queries = sql.format(
-                verticapy.options["connection"]["dblink"].replace("'", "''"),
-                queries.replace("'", "''"),
-                verticapy.options["connection"]["dblink_rowset"],
-            )
+            queries = get_dblink_fun(queries)
 
         # Cleaning the Query
         queries = clean_query(queries)
         queries = replace_vars_in_query(queries, locals()["local_ns"])
+        queries = replace_external_queries_in_query(queries)
 
         n, i, all_split = len(queries), 0, []
 
@@ -276,13 +275,28 @@ def sql(line, cell="", local_ns=None):
                 and (query_type.lower() not in ("select", "with", "undefined"))
             ):
 
-                executeSQL(query, print_time_sql=False)
-                if verticapy.options["print_info"]:
+                error = ""
+
+                try:
+                    executeSQL(query, print_time_sql=False)
+
+                except Exception as e:
+                    error = str(e)
+
+                if verticapy.options["print_info"] or (
+                    "Severity: ERROR, Message: User defined transform must return at least one column"
+                    in error
+                    and "DBLINK" in error
+                ):
                     print(query_type)
+
+                elif error:
+                    raise QueryError(error)
 
             else:
 
                 error = ""
+
                 try:
                     result = vDataFrameSQL("({}) VSQL_MAGIC".format(query))
                     result._VERTICAPY_VARIABLES_["sql_magic_result"] = True
@@ -293,6 +307,7 @@ def sql(line, cell="", local_ns=None):
                         result._VERTICAPY_VARIABLES_["max_columns"] = options["-ncols"]
 
                 except:
+
                     try:
                         final_result = executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
@@ -301,10 +316,22 @@ def sql(line, cell="", local_ns=None):
                             print(final_result)
                         elif verticapy.options["print_info"]:
                             print(query_type)
-                    except Exception as e:
-                        error = e
 
-                if error:
+                    except Exception as e:
+                        error = str(e)
+
+                # If it fails because no elements were returned in the DBLINK UDx
+                # - we do not display the error message
+                if (
+                    "Severity: ERROR, Message: User defined transform must return at least one column"
+                    in error
+                    and "DBLINK" in error
+                ):
+
+                    if verticapy.options["print_info"]:
+                        print(query_type)
+
+                elif error:
                     raise QueryError(error)
 
         # Displaying the information

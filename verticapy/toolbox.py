@@ -181,26 +181,11 @@ def color_dict(d: dict, idx: int = 0):
 
 
 # ---#
-def find_val_in_dict(x: str, d: dict, return_key: bool = False):
-    for elem in d:
-        if quote_ident(x).lower() == quote_ident(elem).lower():
-            if return_key:
-                return elem
-            return d[elem]
-    raise NameError(f'Key "{x}" was not found in {d}.')
-
-
-# ---#
-def flat_dict(d: dict) -> str:
-    # converts dictionary to string with a specific format
-    res = []
-    for elem in d:
-        q = '"' if isinstance(d[elem], str) else ""
-        res += ["{}={}{}{}".format(elem, q, d[elem], q)]
-    res = ", ".join(res)
-    if res:
-        res = ", {}".format(res)
-    return res
+def erase_label(query: str):
+    labels = re.findall("\/\*\+LABEL(.*?)\*\/", query)
+    for label in labels:
+        query = query.replace(f"/*+LABEL{label}*/", "")
+    return query
 
 
 # ---#
@@ -229,6 +214,8 @@ def executeSQL(
                 method,
                 ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"],
             ),
+            ("path", path, [str]),
+            ("print_time_sql", print_time_sql, [bool]),
         ]
     )
     from verticapy.connect import current_cursor
@@ -284,6 +271,29 @@ def extract_compression(path: str):
         return lookup_table[file_extension[0:2]]
     else:
         return "UNCOMPRESSED"
+
+
+# ---#
+def find_val_in_dict(x: str, d: dict, return_key: bool = False):
+    for elem in d:
+        if quote_ident(x).lower() == quote_ident(elem).lower():
+            if return_key:
+                return elem
+            return d[elem]
+    raise NameError(f'Key "{x}" was not found in {d}.')
+
+
+# ---#
+def flat_dict(d: dict) -> str:
+    # converts dictionary to string with a specific format
+    res = []
+    for elem in d:
+        q = '"' if isinstance(d[elem], str) else ""
+        res += ["{}={}{}{}".format(elem, q, d[elem], q)]
+    res = ", ".join(res)
+    if res:
+        res = ", {}".format(res)
+    return res
 
 
 # ---#
@@ -391,6 +401,18 @@ def get_category_from_vertica_type(ctype: str = ""):
             return "text"
     else:
         return "undefined"
+
+
+# ---#
+def get_dblink_fun(query: str):
+    assert verticapy.options["connection"]["dblink"], ConnectionError(
+        "External Query detected but no Connection Identifier Database is defined. Use the function connect.set_external_connection to set one."
+    )
+    return "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ()".format(
+        verticapy.options["connection"]["dblink"].replace("'", "''"),
+        query.replace("'", "''"),
+        verticapy.options["connection"]["dblink_rowset"],
+    )
 
 
 # ---#
@@ -1104,6 +1126,36 @@ def quote_ident(column: str):
     if len(tmp_column) >= 2 and (tmp_column[0] == tmp_column[-1] == '"'):
         tmp_column = tmp_column[1:-1]
     return '"{}"'.format(str(tmp_column).replace('"', '""'))
+
+
+# ---#
+def replace_external_queries_in_query(query: str):
+    sql_keyword = (
+        "select ",
+        "create ",
+        "insert ",
+        "drop ",
+        "backup ",
+        "alter ",
+        "update ",
+    )
+    external_queries = re.findall("\$\$\$(.*?)\$\$\$", query)
+    for idx, external_query in enumerate(external_queries):
+        if external_query.strip().lower().startswith(sql_keyword):
+            external_query_tmp = external_query
+            subquery_flag = False
+        else:
+            external_query_tmp = f"SELECT * FROM {external_query}"
+            subquery_flag = True
+        query_dblink_template = get_dblink_fun(external_query_tmp)
+        if subquery_flag:
+            if " " in external_query.strip():
+                alias = f"VERTICAPY_EXTERNAL_TABLE_{idx}"
+            else:
+                alias = '"' + external_query.strip().replace('"', '""') + '"'
+            query_dblink_template = f"({query_dblink_template}) AS {alias}"
+        query = query.replace(f"$$${external_query}$$$", query_dblink_template)
+    return query
 
 
 # ---#

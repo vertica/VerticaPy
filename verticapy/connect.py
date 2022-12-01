@@ -489,7 +489,7 @@ Parameters
 ----------
 cid: str
     Connection Identifier Database.
-rowset: int
+rowset: int, optional
     Number of rows retrieved from the remote database during each 
     SQLFetch() cycle. 
     """
