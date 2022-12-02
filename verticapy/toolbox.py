@@ -1188,11 +1188,12 @@ def replace_external_queries_in_query(query: str):
                 alias = f"VERTICAPY_EXTERNAL_TABLE_{nb_external_queries}"
             else:
                 alias = '"' + external_query.strip().replace('"', '""') + '"'
-            if nb_external_queries > 1:
-                temp_table_name = gen_tmp_name(name=alias)
+            if nb_external_queries >= 1:
+                temp_table_name = '"' + gen_tmp_name(name=alias).replace('"', '') + '"'
                 create_statement = f"CREATE LOCAL TEMPORARY TABLE {temp_table_name} ON COMMIT PRESERVE ROWS AS {query_dblink_template}"
                 executeSQL(
-                    create_statement, title=f"Creating a temporary local table to store the {nb_external_queries} external table.",
+                    create_statement,
+                    title=f"Creating a temporary local table to store the {nb_external_queries} external table.",
                 )
                 query_dblink_template = f"v_temp_schema.{temp_table_name} AS {alias}"
             else:
