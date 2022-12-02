@@ -2591,11 +2591,14 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     )
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
-    count = executeSQL(
-        f"SELECT /*+LABEL('utilities.readSQL')*/ COUNT(*) FROM ({query}) VERTICAPY_SUBTABLE",
-        method="fetchfirstelem",
-        print_time_sql=False,
-    )
+    if verticapy.options["count_on"]:
+        count = executeSQL(
+            f"SELECT /*+LABEL('utilities.readSQL')*/ COUNT(*) FROM ({query}) VERTICAPY_SUBTABLE",
+            method="fetchfirstelem",
+            print_time_sql=False,
+        )
+    else:
+        count = -1
     sql_on_init = verticapy.options["sql_on"]
     time_on_init = verticapy.options["time_on"]
     try:

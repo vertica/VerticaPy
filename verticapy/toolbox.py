@@ -1173,9 +1173,10 @@ def replace_external_queries_in_query(query: str):
         "alter ",
         "update ",
     )
+    nb_external_queries = 0
     for s in verticapy.options["external_connection"]:
         external_queries = re.findall(f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", query)
-        for idx, external_query in enumerate(external_queries):
+        for external_query in external_queries:
             if external_query.strip().lower().startswith(sql_keyword):
                 external_query_tmp = external_query
                 subquery_flag = False
@@ -1183,15 +1184,25 @@ def replace_external_queries_in_query(query: str):
                 external_query_tmp = f"SELECT * FROM {external_query}"
                 subquery_flag = True
             query_dblink_template = get_dblink_fun(external_query_tmp, symbol=s)
-            if subquery_flag:
-                if " " in external_query.strip():
-                    alias = f"VERTICAPY_EXTERNAL_TABLE_{idx}"
-                else:
-                    alias = '"' + external_query.strip().replace('"', '""') + '"'
-                query_dblink_template = f"({query_dblink_template}) AS {alias}"
+            if " " in external_query.strip():
+                alias = f"VERTICAPY_EXTERNAL_TABLE_{nb_external_queries}"
+            else:
+                alias = '"' + external_query.strip().replace('"', '""') + '"'
+            if nb_external_queries >= 1:
+                temp_table_name = '"' + gen_tmp_name(name=alias).replace('"', '') + '"'
+                create_statement = f"CREATE LOCAL TEMPORARY TABLE {temp_table_name} ON COMMIT PRESERVE ROWS AS {query_dblink_template}"
+                executeSQL(
+                    create_statement,
+                    title=f"Creating a temporary local table to store the {nb_external_queries} external table.",
+                )
+                query_dblink_template = f"v_temp_schema.{temp_table_name} AS {alias}"
+            else:
+                if subquery_flag:
+                    query_dblink_template = f"({query_dblink_template}) AS {alias}"
             query = query.replace(
                 f"{s}{s}{s}{external_query}{s}{s}{s}", query_dblink_template
             )
+            nb_external_queries += 1
     return query
 
 
