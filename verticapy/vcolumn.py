@@ -59,12 +59,15 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
 
+# Other modules
+import numpy as np
+
 ##
 #
-#   __   __   ______     ______     __         __  __     __    __     __   __
-#  /\ \ / /  /\  ___\   /\  __ \   /\ \       /\ \/\ \   /\ "-./  \   /\ "-.\ \
-#  \ \ \'/   \ \ \____  \ \ \/\ \  \ \ \____  \ \ \_\ \  \ \ \-./\ \  \ \ \-.  \
-#   \ \__|    \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_\\"\_\
+#   __   ___  ______     ______     __         __  __     __    __     __   __
+#  /\ \ /  / /\  ___\   /\  __ \   /\ \       /\ \/\ \   /\ "-./  \   /\ "-.\ \
+#  \ \ \' /  \ \ \____  \ \ \/\ \  \ \ \____  \ \ \_\ \  \ \ \-./\ \  \ \ \-.  \
+#   \ \__/    \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_\\"\_\
 #    \/_/      \/_____/   \/_____/   \/_____/   \/_____/   \/_/  \/_/   \/_/ \/_/
 #
 #
@@ -131,6 +134,10 @@ Attributes
         }
         for elem in catalog:
             self.catalog[elem] = catalog[elem]
+        self.init_transf = self.transformations[0][0]
+        if self.init_transf == "___VERTICAPY_UNDEFINED___":
+            self.init_transf = self.alias
+        self.init = True
 
     # ---#
     def __getitem__(self, index):
@@ -142,41 +149,101 @@ Attributes
             index_start = index.start
             if not (isinstance(index_start, int)):
                 index_start = 0
-            if index_start < 0:
-                index_start += self.parent.shape()[0]
-            if isinstance(index_stop, int):
-                if index_stop < 0:
-                    index_stop += self.parent.shape()[0]
-                limit = index_stop - index_start
-                if limit <= 0:
-                    limit = 0
-                limit = " LIMIT {}".format(limit)
+            if self.isarray():
+                version(condition=[10, 0, 0])
+                if index_start < 0:
+                    index_start_str = str(index_start) + " + APPLY_COUNT_ELEMENTS({})"
+                else:
+                    index_start_str = str(index_start)
+                if isinstance(index_stop, int):
+                    if index_stop < 0:
+                        index_stop_str = str(index_stop) + " + APPLY_COUNT_ELEMENTS({})"
+                    else:
+                        index_stop_str = str(index_stop)
+                else:
+                    index_stop_str = "1 + APPLY_COUNT_ELEMENTS({})"
+                elem_to_select = "{0}[{1}:{2}]".format(
+                    self.alias, index_start_str, index_stop_str
+                ).replace("{}", self.alias)
+                new_alias = quote_ident(
+                    self.alias[1:-1] + "." + str(index_start) + ":" + str(index_stop)
+                )
+                query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
+                    elem_to_select, new_alias, self.parent.__genSQL__(),
+                )
+                vcol = vDataFrameSQL(query)[new_alias]
+                vcol.transformations[-1] = (new_alias, self.ctype(), self.category())
+                vcol.init_transf = "{0}[{1}:{2}]".format(
+                    self.init_transf, index_start_str, index_stop_str
+                ).replace("{}", self.init_transf)
+                return vcol
             else:
-                limit = ""
-            query = "(SELECT {} FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                self.alias,
-                self.parent.__genSQL__(),
-                self.parent.__get_last_order_by__(),
-                index_start,
-                limit,
-            )
-            return vDataFrameSQL(query)
+                if index_start < 0:
+                    index_start += self.parent.shape()[0]
+                if isinstance(index_stop, int):
+                    if index_stop < 0:
+                        index_stop += self.parent.shape()[0]
+                    limit = index_stop - index_start
+                    if limit <= 0:
+                        limit = 0
+                    limit = f" LIMIT {limit}"
+                else:
+                    limit = ""
+                query = "(SELECT {0} FROM {1}{2} OFFSET {3}{4}) VERTICAPY_SUBTABLE".format(
+                    self.alias,
+                    self.parent.__genSQL__(),
+                    self.parent.__get_last_order_by__(),
+                    index_start,
+                    limit,
+                )
+                return vDataFrameSQL(query)
         elif isinstance(index, int):
-            cast = "::float" if self.category() == "float" else ""
-            if index < 0:
-                index += self.parent.shape()[0]
-            query = "SELECT /*+LABEL('vColumn.__getitem__')*/ {}{} FROM {}{} OFFSET {} LIMIT 1".format(
-                self.alias,
-                cast,
-                self.parent.__genSQL__(),
-                self.parent.__get_last_order_by__(),
-                index,
+            if self.isarray():
+                version(condition=[9, 3, 0])
+                elem_to_select = "{0}[{1}]".format(self.alias, index)
+                new_alias = quote_ident(self.alias[1:-1] + "." + str(index))
+                query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
+                    elem_to_select, new_alias, self.parent.__genSQL__(),
+                )
+                vcol = vDataFrameSQL(query)[new_alias]
+                vcol.init_transf = "{0}[{1}]".format(self.init_transf, index)
+                return vcol
+            else:
+                cast = "::float" if self.category() == "float" else ""
+                if index < 0:
+                    index += self.parent.shape()[0]
+                query = "SELECT /*+LABEL('vColumn.__getitem__')*/ {}{} FROM {}{} OFFSET {} LIMIT 1".format(
+                    self.alias,
+                    cast,
+                    self.parent.__genSQL__(),
+                    self.parent.__get_last_order_by__(),
+                    index,
+                )
+                return executeSQL(
+                    query=query,
+                    title="Getting the vColumn element.",
+                    method="fetchfirstelem",
+                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                )
+        elif isinstance(index, str):
+            if self.category() == "vmap":
+                elem_to_select = "MAPLOOKUP({0}, '{1}')".format(
+                    self.alias, index.replace("'", "''")
+                )
+                init_transf = "MAPLOOKUP({0}, '{1}')".format(
+                    self.init_transf, index.replace("'", "''")
+                )
+            else:
+                version(condition=[10, 0, 0])
+                elem_to_select = self.alias + "." + quote_ident(index)
+                init_transf = self.init_transf + "." + quote_ident(index)
+            query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
+                elem_to_select, quote_ident(index), self.parent.__genSQL__(),
             )
-            return executeSQL(
-                query=query,
-                title="Getting the vColumn element.",
-                method="fetchfirstelem",
-            )
+            vcol = vDataFrameSQL(query)[index]
+            vcol.init_transf = init_transf
+            return vcol
         else:
             return getattr(self, index)
 
@@ -497,30 +564,40 @@ Attributes
  	----------
  	func: str
  		Function to use to transform the vColumn.
-			abs     : absolute value
-			acos    : trigonometric inverse cosine
-			asin    : trigonometric inverse sine
-			atan    : trigonometric inverse tangent
-			cbrt    : cube root
-			ceil    : value up to the next whole number
-			cos     : trigonometric cosine
-			cosh    : hyperbolic cosine
-			cot     : trigonometric cotangent
-			exp     : exponential function
-			floor   : value down to the next whole number
-			ln      : natural logarithm
-			log     : logarithm
-			log10   : base 10 logarithm
-			mod     : remainder of a division operation
-			pow     : number raised to the power of another number
-			round   : rounds a value to a specified number of decimal places
-			sign    : arithmetic sign
-			sin     : trigonometric sine
-			sinh    : hyperbolic sine
-			sqrt    : arithmetic square root
-			tan     : trigonometric tangent
-			tanh    : hyperbolic tangent
-	x: int/float, optional
+			abs          : absolute value
+			acos         : trigonometric inverse cosine
+			asin         : trigonometric inverse sine
+			atan         : trigonometric inverse tangent
+            avg / mean   : average
+			cbrt         : cube root
+			ceil         : value up to the next whole number
+            contain      : checks if 'x' is in the collection
+            count        : number of non-null elements
+			cos          : trigonometric cosine
+			cosh         : hyperbolic cosine
+			cot          : trigonometric cotangent
+            dim          : dimension (only for arrays)
+			exp          : exponential function
+            find         : returns the ordinal position of a specified element 
+                           in an array (only for arrays)
+			floor        : value down to the next whole number
+            len / length : length
+			ln           : natural logarithm
+			log          : logarithm
+			log10        : base 10 logarithm
+            max          : maximum
+            min          : minimum
+			mod          : remainder of a division operation
+			pow          : number raised to the power of another number
+			round        : rounds a value to a specified number of decimal places
+			sign         : arithmetic sign
+			sin          : trigonometric sine
+			sinh         : hyperbolic sine
+			sqrt         : arithmetic square root
+            sum          : sum
+			tan          : trigonometric tangent
+			tanh         : hyperbolic tangent
+	x: int / float / str, optional
 		If the function has two arguments (example, power or mod), 'x' represents 
 		the second argument.
 
@@ -537,6 +614,12 @@ Attributes
         save_to_query_profile(
             name="apply_fun", path="vcolumn.vColumn", json_dict={"func": func, "x": x,},
         )
+        if isinstance(func, str):
+            func = func.lower()
+        if func == "mean":
+            func = "avg"
+        elif func == "length":
+            func = "len"
         # -#
         check_types(
             [
@@ -548,46 +631,78 @@ Attributes
                         "acos",
                         "asin",
                         "atan",
+                        "avg",
                         "cbrt",
                         "ceil",
+                        "contain",
+                        "count",
                         "cos",
                         "cosh",
                         "cot",
+                        "dim",
                         "exp",
+                        "find",
                         "floor",
+                        "len",
                         "ln",
                         "log",
                         "log10",
+                        "max",
                         "mod",
+                        "min",
                         "pow",
                         "round",
                         "sign",
                         "sin",
                         "sinh",
+                        "sum",
                         "sqrt",
                         "tan",
                         "tanh",
                     ],
                 ),
-                ("x", x, [int, float]),
+                ("x", x, [int, float, str]),
             ]
         )
-        if func not in ("log", "mod", "pow", "round"):
+        cat = self.category()
+        if func == "len":
+            if cat == "vmap":
+                func = "MAPSIZE"
+            elif cat == "complex":
+                func = "APPLY_COUNT_ELEMENTS"
+            else:
+                func = "LENTGH"
+        elif func in ("max", "min", "sum", "avg", "count"):
+            func = "APPLY_" + func
+        elif func == "dim":
+            func = "ARRAY_DIMS"
+        if func not in ("log", "mod", "pow", "round", "contain", "find"):
             expr = "{}({})".format(func.upper(), "{}")
-        else:
+        elif func in ("log", "mod", "pow", "round"):
             expr = "{}({}, {})".format(func.upper(), "{}", x)
+        elif func in ("contain", "find"):
+            if func == "contain":
+                if cat == "vmap":
+                    f = "MAPCONTAINSVALUE"
+                else:
+                    f = "CONTAINS"
+            elif func == "find":
+                f = "ARRAY_FIND"
+            if isinstance(x, (str,)):
+                x = "'" + str(x).replace("'", "''") + "'"
+            expr = "{}({}, {})".format(f, "{}", x)
         return self.apply(func=expr)
 
     # ---#
-    def astype(self, dtype: str):
+    def astype(self, dtype):
         """
 	---------------------------------------------------------------------------
 	Converts the vColumn to the input type.
 
 	Parameters
  	----------
- 	dtype: str
- 		New type.
+ 	dtype: str or Python data type
+ 		New type. To convert to a JSON string, set this parameter to 'json'.
 
  	Returns
  	-------
@@ -602,19 +717,84 @@ Attributes
         save_to_query_profile(
             name="astype", path="vcolumn.vColumn", json_dict={"dtype": dtype,},
         )
+        dtype = get_vertica_type(dtype)
         # -#
         check_types([("dtype", dtype, [str])])
         try:
-            query = "SELECT /*+LABEL('vColumn.astype')*/ {}::{} AS {} FROM {} WHERE {} IS NOT NULL LIMIT 20".format(
-                self.alias, dtype, self.alias, self.parent.__genSQL__(), self.alias
-            )
-            executeSQL(query, title="Testing the Type casting.")
-            self.transformations += [
-                (
-                    "{}::{}".format("{}", dtype),
-                    dtype,
-                    get_category_from_vertica_type(ctype=dtype),
+            if dtype == "array" and self.category() == "text":
+                version(condition=[10, 0, 0])
+                query = "SELECT {0} FROM {1} ORDER BY LENGTH({0}) DESC LIMIT 1".format(
+                    self.alias, self.parent.__genSQL__()
                 )
+                array_str = executeSQL(
+                    query, title="getting the biggest string", method="fetchfirstelem"
+                )
+                sep = guess_sep(array_str)
+                if array_str.replace(" ", "").count(sep + sep) > 0:
+                    collection_null_element = ", collection_null_element=''"
+                else:
+                    collection_null_element = ""
+                if max_occur == 0:
+                    sep = " "
+                array_str = array_str.replace(" ", "")
+                if len(array_str) > 2 and (
+                    (array_str[0] == "(" and array_str[-1] == ")")
+                    or (array_str[0] == "{" and array_str[-1] == "}")
+                ):
+                    collection_open = ", collection_open='{0}'".format(array_str[0])
+                    collection_close = ", collection_close='{0}'".format(array_str[-1])
+                else:
+                    collection_open, collection_close = "", ""
+                transformation = (
+                    "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
+                        self.alias,
+                        sep,
+                        collection_open,
+                        collection_close,
+                        collection_null_element,
+                    ),
+                    "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
+                        "{}",
+                        sep,
+                        collection_open,
+                        collection_close,
+                        collection_null_element,
+                    ),
+                )
+            elif (
+                dtype[0:7] == "varchar" or dtype[0:4] == "char"
+            ) and self.category() == "vmap":
+                transformation = (
+                    "MAPTOSTRING({0} USING PARAMETERS canonical_json=false)::{1}".format(
+                        self.alias, dtype
+                    ),
+                    "MAPTOSTRING({} USING PARAMETERS canonical_json=false)::" + dtype,
+                )
+            elif dtype == "json":
+                if self.category() == "vmap":
+                    transformation = (
+                        "MAPTOSTRING({0} USING PARAMETERS canonical_json=true)".format(
+                            self.alias
+                        ),
+                        "MAPTOSTRING({} USING PARAMETERS canonical_json=true)",
+                    )
+                else:
+                    version(condition=[10, 1, 0])
+                    transformation = "TO_JSON({0})".format(self.alias), "TO_JSON({})"
+                dtype = "varchar"
+            else:
+                transformation = "{0}::{1}".format(self.alias, dtype), "{}::" + dtype
+            query = "SELECT /*+LABEL('vColumn.astype')*/ {0} AS {1} FROM {2} WHERE {1} IS NOT NULL LIMIT 20".format(
+                transformation[0], self.alias, self.parent.__genSQL__()
+            )
+            executeSQL(
+                query,
+                title="Testing the Type casting.",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            )
+            self.transformations += [
+                (transformation[1], dtype, get_category_from_vertica_type(ctype=dtype),)
             ]
             self.parent.__add_to_history__(
                 "[AsType]: The vColumn {} was converted to {}.".format(
@@ -624,7 +804,7 @@ Attributes
             return self.parent
         except Exception as e:
             raise ConversionError(
-                "{}\nThe vColumn {} can not be converted to {}".format(
+                "{0}\nThe vColumn {1} can not be converted to {2}".format(
                     e, self.alias, dtype
                 )
             )
@@ -1313,7 +1493,12 @@ Attributes
             title = "Describes the statics of {} partitioned by {}.".format(
                 numcol, self.alias
             )
-            values = to_tablesample(query, title=title).values
+            values = to_tablesample(
+                query,
+                title=title,
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            ).values
         elif (
             ((distinct_count < max_cardinality + 1) and (method != "numerical"))
             or not (is_numeric)
@@ -1341,6 +1526,8 @@ Attributes
                 query=query,
                 title="Computing the descriptive statistics of {}.".format(self.alias),
                 method="fetchall",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             result = [distinct_count, self.count()] + [item[1] for item in query_result]
             index = ["unique", "count"] + [item[0] for item in query_result]
@@ -1516,6 +1703,8 @@ Attributes
                     query=query,
                     title="Computing the optimized histogram nbins using Random Forest.",
                     method="fetchall",
+                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                 )
                 result = [elem[0] for elem in result]
             except:
@@ -1561,18 +1750,15 @@ Attributes
             where = "WHERE _verticapy_row_nb_ IN ({})".format(
                 ", ".join(["1"] + nth_elems + [str(count)])
             )
-            query = "SELECT /*+LABEL('vColumn.discretize')*/ {} FROM (SELECT {}, ROW_NUMBER() OVER (ORDER BY {}) AS _verticapy_row_nb_ FROM {} WHERE {} IS NOT NULL) VERTICAPY_SUBTABLE {}".format(
-                self.alias,
-                self.alias,
-                self.alias,
-                self.parent.__genSQL__(),
-                self.alias,
-                where,
+            query = "SELECT /*+LABEL('vColumn.discretize')*/ {0} FROM (SELECT {0}, ROW_NUMBER() OVER (ORDER BY {0}) AS _verticapy_row_nb_ FROM {1} WHERE {0} IS NOT NULL) VERTICAPY_SUBTABLE {2}".format(
+                self.alias, self.parent.__genSQL__(), where,
             )
             result = executeSQL(
                 query=query,
                 title="Computing the equal frequency histogram bins.",
                 method="fetchall",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
@@ -1655,27 +1841,24 @@ Attributes
         )
         # -#
         if "agg" not in kwargs:
-            query = "SELECT /*+LABEL('vColumn.distinct')*/ {} AS {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
+            query = "SELECT /*+LABEL('vColumn.distinct')*/ {0} AS {1} FROM {2} WHERE {1} IS NOT NULL GROUP BY {1} ORDER BY {1}".format(
                 bin_spatial_to_str(self.category(), self.alias),
                 self.alias,
                 self.parent.__genSQL__(),
-                self.alias,
-                self.alias,
-                self.alias,
             )
         else:
-            query = "SELECT /*+LABEL('vColumn.distinct')*/ {} FROM (SELECT {} AS {}, {} AS verticapy_agg FROM {} WHERE {} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
+            query = "SELECT /*+LABEL('vColumn.distinct')*/ {0} FROM (SELECT {1} AS {0}, {2} AS verticapy_agg FROM {3} WHERE {0} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
                 self.alias,
                 bin_spatial_to_str(self.category(), self.alias),
-                self.alias,
                 kwargs["agg"],
                 self.parent.__genSQL__(),
-                self.alias,
             )
         query_result = executeSQL(
             query=query,
             title="Computing the distinct categories of {}.".format(self.alias),
             method="fetchall",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
         )
         return [item for sublist in query_result for item in sublist]
 
@@ -1751,6 +1934,8 @@ Attributes
                     self.parent.__genSQL__(force_columns=force_columns)
                 ),
                 print_time_sql=False,
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             self.parent._VERTICAPY_VARIABLES_["columns"].remove(self.alias)
             delattr(self.parent, self.alias)
@@ -1924,31 +2109,27 @@ Attributes
                 threshold * result["std"][0] + result["avg"][0],
             )
         else:
-            query = "SELECT /*+LABEL('vColumn.fill_outliers')*/ PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
-                alpha, self.alias, alpha, self.alias, self.parent.__genSQL__()
+            query = "SELECT /*+LABEL('vColumn.fill_outliers')*/ PERCENTILE_CONT({0}) WITHIN GROUP (ORDER BY {1}) OVER (), PERCENTILE_CONT(1 - {0}) WITHIN GROUP (ORDER BY {1}) OVER () FROM {2} LIMIT 1".format(
+                alpha, self.alias, self.parent.__genSQL__()
             )
             p_alpha, p_1_alpha = executeSQL(
                 query=query,
-                title="Computing the quantiles of {}.".format(self.alias),
+                title="Computing the quantiles of {0}.".format(self.alias),
                 method="fetchrow",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
         if method == "winsorize":
             self.clip(lower=p_alpha, upper=p_1_alpha)
         elif method == "null":
             self.apply(
-                func="(CASE WHEN ({} BETWEEN {} AND {}) THEN {} ELSE NULL END)".format(
-                    "{}", p_alpha, p_1_alpha, "{}"
+                func="(CASE WHEN ({0} BETWEEN {1} AND {2}) THEN {0} ELSE NULL END)".format(
+                    "{}", p_alpha, p_1_alpha
                 )
             )
         elif method == "mean":
-            query = "WITH vdf_table AS (SELECT /*+LABEL('vColumn.fill_outliers')*/ * FROM {}) (SELECT AVG({}) FROM vdf_table WHERE {} < {}) UNION ALL (SELECT AVG({}) FROM vdf_table WHERE {} > {})".format(
-                self.parent.__genSQL__(),
-                self.alias,
-                self.alias,
-                p_alpha,
-                self.alias,
-                self.alias,
-                p_1_alpha,
+            query = "WITH vdf_table AS (SELECT /*+LABEL('vColumn.fill_outliers')*/ * FROM {0}) (SELECT AVG({1}) FROM vdf_table WHERE {1} < {2}) UNION ALL (SELECT AVG({1}) FROM vdf_table WHERE {1} > {3})".format(
+                self.parent.__genSQL__(), self.alias, p_alpha, p_1_alpha,
             )
             mean_alpha, mean_1_alpha = [
                 item[0]
@@ -1958,6 +2139,8 @@ Attributes
                         self.alias
                     ),
                     method="fetchall",
+                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                 )
             ]
             if mean_alpha == None:
@@ -2087,13 +2270,15 @@ Attributes
                 try:
                     if fun == "MEDIAN":
                         fun = "APPROXIMATE_MEDIAN"
-                    query = "SELECT /*+LABEL('vColumn.fillna')*/ {}, {}({}) FROM {} GROUP BY {};".format(
-                        by[0], fun, self.alias, self.parent.__genSQL__(), by[0]
+                    query = "SELECT /*+LABEL('vColumn.fillna')*/ {0}, {1}({2}) FROM {3} GROUP BY {0};".format(
+                        by[0], fun, self.alias, self.parent.__genSQL__()
                     )
                     result = executeSQL(
                         query,
                         title="Computing the different aggregations.",
                         method="fetchall",
+                        sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                     )
                     for idx, elem in enumerate(result):
                         result[idx][0] = (
@@ -2114,6 +2299,8 @@ Attributes
                             new_column.format(self.alias), self.parent.__genSQL__()
                         ),
                         print_time_sql=False,
+                        sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                     )
                 except:
                     new_column = "COALESCE({}, {}({}) OVER (PARTITION BY {}))".format(
@@ -2370,6 +2557,35 @@ Attributes
         return self.parent
 
     one_hot_encode = get_dummies
+
+    # ---#
+    def get_len(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns a new vColumn that represents the length of each element.
+
+    Returns
+    -------
+    vColumn
+        vColumn that includes the length of each element.
+        """
+        cat = self.category()
+        if cat == "vmap":
+            fun = "MAPSIZE"
+        elif cat == "complex":
+            fun = "APPLY_COUNT_ELEMENTS"
+        else:
+            fun = "LENGTH"
+        elem_to_select = "{0}({1})".format(fun, self.alias,)
+        init_transf = "{0}({1})".format(fun, self.init_transf,)
+        new_alias = quote_ident(self.alias[1:-1] + ".length")
+        query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
+            elem_to_select, new_alias, self.parent.__genSQL__(),
+        )
+        vcol = vDataFrameSQL(query)[new_alias]
+        vcol.init_transf = init_transf
+        return vcol
+
     # ---#
     def head(self, limit: int = 5):
         """
@@ -2525,12 +2741,27 @@ Attributes
                 offset,
             ),
             title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
         )
         tail.count = self.parent.shape()[0]
         tail.offset = offset
         tail.dtype[self.alias] = self.ctype()
         tail.name = self.alias
         return tail
+
+    # ---#
+    def isarray(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns True if the vColumn is an array, False otherwise.
+
+    Returns
+    -------
+    bool
+        True if the vColumn is an array.
+        """
+        return self.ctype()[0:5].lower() == "array"
 
     # ---#
     def isbool(self):
@@ -2548,7 +2779,7 @@ Attributes
     vDataFrame[].isdate : Returns True if the vColumn category is date.
     vDataFrame[].isnum  : Returns True if the vColumn is numerical.
         """
-        return self.ctype().lower() in ("bool", "boolean")
+        return self.ctype()[0:4] == "bool"
 
     # ---#
     def isdate(self):
@@ -2621,6 +2852,21 @@ Attributes
         return self.category() in ("float", "int")
 
     # ---#
+    def isvmap(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns True if the vColumn category is VMap, False otherwise.
+
+    Returns
+    -------
+    bool
+        True if the vColumn category is VMap.
+        """
+        return self.category() == "vmap" or isvmap(
+            column=self.alias, expr=self.parent.__genSQL__()
+        )
+
+    # ---#
     def iv_woe(self, y: str, nbins: int = 10):
         """
     ---------------------------------------------------------------------------
@@ -2682,7 +2928,12 @@ Attributes
             self.alias, query,
         )
         title = "Computing WOE & IV of {} (response = {}).".format(self.alias, y)
-        result = to_tablesample(query, title=title)
+        result = to_tablesample(
+            query,
+            title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
         result.values["index"] += ["total"]
         result.values["non_events"] += [sum(result["non_events"])]
         result.values["events"] += [sum(result["events"])]
@@ -2985,11 +3236,13 @@ Attributes
         assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
         where = " WHERE {} IS NOT NULL ".format(self.alias) if (dropna) else " "
         result = executeSQL(
-            "SELECT /*+LABEL('vColumn.mode')*/ {} FROM (SELECT {}, COUNT(*) AS _verticapy_cnt_ FROM {}{}GROUP BY {} ORDER BY _verticapy_cnt_ DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
-                self.alias, self.alias, self.parent.__genSQL__(), where, self.alias, n
+            "SELECT /*+LABEL('vColumn.mode')*/ {0} FROM (SELECT {0}, COUNT(*) AS _verticapy_cnt_ FROM {1}{2}GROUP BY {0} ORDER BY _verticapy_cnt_ DESC LIMIT {3}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
+                self.alias, self.parent.__genSQL__(), where, n
             ),
             title="Computing the mode.",
             method="fetchall",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
         )
         top = None if not (result) else result[0][0]
         if not (dropna):
@@ -3056,11 +3309,16 @@ Attributes
         )
         # -#
         check_types([("n", n, [int, float])])
-        query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} DESC LIMIT {}".format(
-            self.parent.__genSQL__(), self.alias, self.alias, n
+        query = "SELECT * FROM {0} WHERE {1} IS NOT NULL ORDER BY {1} DESC LIMIT {2}".format(
+            self.parent.__genSQL__(), self.alias, n
         )
         title = "Reads {} {} largest elements.".format(self.alias, n)
-        return to_tablesample(query, title=title)
+        return to_tablesample(
+            query,
+            title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
 
     # ---#
     def normalize(
@@ -3117,7 +3375,7 @@ Attributes
         nullifzero, n = 1, len(by)
         if self.isbool():
 
-            warning_message = "Normalize doesn't work on booleans".format(self.alias)
+            warning_message = "Normalize doesn't work on booleans"
             warnings.warn(warning_message, Warning)
 
         elif self.isnum():
@@ -3136,15 +3394,15 @@ Attributes
                 elif (n == 1) and (self.parent[by[0]].nunique() < 50):
                     try:
                         result = executeSQL(
-                            "SELECT /*+LABEL('vColumn.normalize')*/ {}, AVG({}), STDDEV({}) FROM {} GROUP BY {}".format(
-                                by[0],
-                                self.alias,
-                                self.alias,
-                                self.parent.__genSQL__(),
-                                by[0],
+                            "SELECT /*+LABEL('vColumn.normalize')*/ {0}, AVG({1}), STDDEV({1}) FROM {2} GROUP BY {0}".format(
+                                by[0], self.alias, self.parent.__genSQL__(),
                             ),
                             title="Computing the different categories to normalize.",
                             method="fetchall",
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                         )
                         for i in range(len(result)):
                             if result[i][2] == None:
@@ -3186,6 +3444,10 @@ Attributes
                                 avg, stddev, self.parent.__genSQL__()
                             ),
                             print_time_sql=False,
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                         )
                     except:
                         avg, stddev = (
@@ -3260,17 +3522,17 @@ Attributes
                 elif n == 1:
                     try:
                         result = executeSQL(
-                            "SELECT /*+LABEL('vColumn.normalize')*/ {}, MIN({}), MAX({}) FROM {} GROUP BY {}".format(
-                                by[0],
-                                self.alias,
-                                self.alias,
-                                self.parent.__genSQL__(),
-                                by[0],
+                            "SELECT /*+LABEL('vColumn.normalize')*/ {0}, MIN({1}), MAX({1}) FROM {2} GROUP BY {0}".format(
+                                by[0], self.alias, self.parent.__genSQL__(),
                             ),
                             title="Computing the different categories {} to normalize.".format(
                                 by[0]
                             ),
                             method="fetchall",
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                         )
                         cmin = "DECODE({}, {}, NULL)".format(
                             by[0],
@@ -3307,6 +3569,10 @@ Attributes
                                 cmax, cmin, self.parent.__genSQL__()
                             ),
                             print_time_sql=False,
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                         )
                     except:
                         cmax, cmin = (
@@ -3327,22 +3593,14 @@ Attributes
                         ),
                     )
                 if return_trans:
-                    return "({} - {}) / {}({} - {})".format(
-                        self.alias,
-                        cmin,
-                        "NULLIFZERO" if (nullifzero) else "",
-                        cmax,
-                        cmin,
+                    return "({0} - {1}) / {2}({3} - {1})".format(
+                        self.alias, cmin, "NULLIFZERO" if (nullifzero) else "", cmax,
                     )
                 else:
                     final_transformation = [
                         (
-                            "({} - {}) / {}({} - {})".format(
-                                "{}",
-                                cmin,
-                                "NULLIFZERO" if (nullifzero) else "",
-                                cmax,
-                                cmin,
+                            "({0} - {1}) / {2}({3} - {1})".format(
+                                "{}", cmin, "NULLIFZERO" if (nullifzero) else "", cmax,
                             ),
                             "float",
                             "float",
@@ -3438,11 +3696,16 @@ Attributes
         )
         # -#
         check_types([("n", n, [int, float])])
-        query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC LIMIT {}".format(
-            self.parent.__genSQL__(), self.alias, self.alias, n
+        query = "SELECT * FROM {0} WHERE {1} IS NOT NULL ORDER BY {1} ASC LIMIT {2}".format(
+            self.parent.__genSQL__(), self.alias, n
         )
         title = "Reads {} {} smallest elements.".format(n, self.alias)
-        return to_tablesample(query, title=title)
+        return to_tablesample(
+            query,
+            title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
 
     # ---#
     def numh(self, method: str = "auto"):
@@ -3496,16 +3759,18 @@ Attributes
             )
         elif self.isdate():
             min_date = self.min()
-            table = "(SELECT DATEDIFF('second', '{}'::timestamp, {}) AS {} FROM {}) VERTICAPY_OPTIMAL_H_TABLE".format(
-                min_date, self.alias, self.alias, self.parent.__genSQL__()
+            table = "(SELECT DATEDIFF('second', '{0}'::timestamp, {1}) AS {1} FROM {2}) VERTICAPY_OPTIMAL_H_TABLE".format(
+                min_date, self.alias, self.parent.__genSQL__()
             )
-            query = "SELECT /*+LABEL('vColumn.numh')*/ COUNT({}) AS NAs, MIN({}) AS min, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.75) AS Q3, MAX({}) AS max FROM {}".format(
-                self.alias, self.alias, self.alias, self.alias, self.alias, table
+            query = "SELECT /*+LABEL('vColumn.numh')*/ COUNT({0}) AS NAs, MIN({0}) AS min, APPROXIMATE_PERCENTILE({0} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({0} USING PARAMETERS percentile = 0.75) AS Q3, MAX({0}) AS max FROM {1}".format(
+                self.alias, table
             )
             result = executeSQL(
                 query,
                 title="Different aggregations to compute the optimal h.",
                 method="fetchrow",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result
         sturges = max(
@@ -4183,6 +4448,8 @@ Attributes
             ),
             title="Computing the Store Usage of the vColumn {}.".format(self.alias),
             method="fetchfirstelem",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
         )
         self.parent.__update_catalog__(
             {"index": ["store_usage"], self.alias: [store_usage]}
@@ -4495,13 +4762,12 @@ Attributes
         check_types([("k", k, [int, float]), ("dropna", dropna, [bool])])
         topk = "" if (k < 1) else "LIMIT {}".format(k)
         dropna = " WHERE {} IS NOT NULL".format(self.alias) if (dropna) else ""
-        query = "SELECT /*+LABEL('vColumn.topk')*/ {} AS {}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {} AS percent FROM {}{} GROUP BY {} ORDER BY _verticapy_cnt_ DESC {}".format(
+        query = "SELECT /*+LABEL('vColumn.topk')*/ {0} AS {1}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {2} AS percent FROM {3}{4} GROUP BY {0} ORDER BY _verticapy_cnt_ DESC {5}".format(
             bin_spatial_to_str(self.category(), self.alias),
             self.alias,
             self.parent.shape()[0],
             self.parent.__genSQL__(),
             dropna,
-            self.alias,
             topk,
         )
         result = executeSQL(
@@ -4510,6 +4776,8 @@ Attributes
                 k if k > 0 else "", self.alias
             ),
             method="fetchall",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
         )
         values = {
             "index": [item[0] for item in result],

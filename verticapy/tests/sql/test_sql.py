@@ -19,7 +19,14 @@ import warnings, os
 
 # VerticaPy
 import verticapy
-from verticapy import drop, set_option, tablesample
+from verticapy.connect import set_external_connection
+from verticapy import (
+    drop,
+    set_option,
+    tablesample,
+    replace_external_queries_in_query,
+    get_dblink_fun,
+)
 from verticapy.datasets import load_titanic
 from verticapy.sql import sql
 
@@ -106,7 +113,7 @@ class TestSQL:
             print(result)
             assert result == (
                 '[\n{"age": 80.000, "fare": 30.00000},'
-                '\n{"age": 76.000, "fare": 78.85000},\n]'
+                '\n{"age": 76.000, "fare": 78.85000}\n]'
             )
         except:
             os.remove("verticapy_test_sql.json")
@@ -126,7 +133,7 @@ class TestSQL:
             print(result)
             assert result == (
                 '[\n{"age": 80.000, "fare": 30.00000},'
-                '\n{"age": 76.000, "fare": 78.85000},\n]'
+                '\n{"age": 76.000, "fare": 78.85000}\n]'
             )
         except:
             os.remove("verticapy_test_sql.json")
@@ -143,7 +150,7 @@ class TestSQL:
         try:
             file = open("verticapy_test_sql.csv", "r")
             result = file.read()
-            assert result == "age,fare\n80.000,30.00000\n76.000,78.85000"
+            assert result == '"age","fare"\n80.000,30.00000\n76.000,78.85000'
         except:
             os.remove("verticapy_test_sql.csv")
             file.close()
@@ -159,13 +166,42 @@ class TestSQL:
         try:
             file = open("verticapy_test_sql.csv", "r")
             result = file.read()
-            assert result == "age,fare\n80.000,30.00000\n76.000,78.85000"
+            assert result == '"age","fare"\n80.000,30.00000\n76.000,78.85000'
         except:
             os.remove("verticapy_test_sql.csv")
             file.close()
             raise
         os.remove("verticapy_test_sql.csv")
         file.close()
+
+        # Testing the replace_external_queries_in_query function
+        set_external_connection("my_external_cid")
+
+        assert (
+            get_dblink_fun("  My TEsT QUERY  ")
+            == "SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='  My TEsT QUERY  ', rowset=500) OVER ()"
+        )
+
+        query = "SELECT * FROM $$$my_external_table$$$"
+        result = replace_external_queries_in_query(query)
+        assert (
+            result
+            == "SELECT * FROM (SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='SELECT * FROM my_external_table', rowset=500) OVER ()) AS \"my_external_table\""
+        )
+
+        query = "SELECT * FROM ($$$SELECT * FROM my_external_table$$$) x"
+        result = replace_external_queries_in_query(query)
+        assert (
+            result
+            == "SELECT * FROM (SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='SELECT * FROM my_external_table', rowset=500) OVER ()) x"
+        )
+
+        query = "$$$INSERT INTO films (code, title, did, date_prod, kind) VALUES (1, 2, 3, 4, 5)$$$"
+        result = replace_external_queries_in_query(query)
+        assert (
+            result
+            == "SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='INSERT INTO films (code, title, did, date_prod, kind) VALUES (1, 2, 3, 4, 5)', rowset=500) OVER ()"
+        )
 
         # Test on the variables - TEST WORKS ON JUPYTER BUT NOT IN FILES
         # result = sql("", "SELECT * FROM :titanic_vd;")

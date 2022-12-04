@@ -68,7 +68,7 @@ import pandas as pd
 
 # VerticaPy Modules
 import verticapy
-from verticapy.errors import QueryError, ParameterError
+from verticapy.errors import QueryError, ParameterError, ParsingError
 from verticapy import (
     executeSQL,
     vDataFrameSQL,
@@ -79,6 +79,8 @@ from verticapy import (
     clean_query,
     replace_vars_in_query,
     save_to_query_profile,
+    replace_external_queries_in_query,
+    get_special_symbols,
 )
 
 # ---#
@@ -167,6 +169,18 @@ def sql(line, cell="", local_ns=None):
         # Cleaning the Query
         queries = clean_query(queries)
         queries = replace_vars_in_query(queries, locals()["local_ns"])
+        queries = replace_external_queries_in_query(queries)
+
+        # Looking at very specific external queries symbols
+        for s in get_special_symbols():
+
+            external_queries = re.findall(
+                f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries
+            )
+            warning_message = f"External Query detected but no corresponding Connection Identifier Database is defined (Using the symbol '{s}'). Use the function connect.set_external_connection to set one with the correct symbol."
+
+            if external_queries:
+                warnings.warn(warning_message, Warning)
 
         n, i, all_split = len(queries), 0, []
 
@@ -225,9 +239,10 @@ def sql(line, cell="", local_ns=None):
             query = queries[i]
 
             if query.split(" ")[0]:
-                query_type = query.split(" ")[0].upper()
+                query_type = query.split(" ")[0].upper().replace("(", "")
+
             else:
-                query_type = query.split(" ")[1].upper()
+                query_type = query.split(" ")[1].upper().replace("(", "")
 
             if len(query_type) > 1 and query_type[0:2] in ("/*", "--"):
                 query_type = "undefined"
@@ -254,13 +269,31 @@ def sql(line, cell="", local_ns=None):
                 and (query_type.lower() not in ("select", "with", "undefined"))
             ):
 
-                executeSQL(query, print_time_sql=False)
-                if verticapy.options["print_info"]:
+                error = ""
+
+                try:
+                    executeSQL(query, print_time_sql=False)
+
+                except Exception as e:
+                    error = str(e)
+
+                if verticapy.options["print_info"] and (
+                    "Severity: ERROR, Message: User defined transform must return at least one column"
+                    in error
+                    and "DBLINK" in error
+                ):
+                    print(query_type)
+
+                elif error:
+                    raise QueryError(error)
+
+                elif verticapy.options["print_info"]:
                     print(query_type)
 
             else:
 
                 error = ""
+
                 try:
                     result = vDataFrameSQL("({}) VSQL_MAGIC".format(query))
                     result._VERTICAPY_VARIABLES_["sql_magic_result"] = True
@@ -271,6 +304,7 @@ def sql(line, cell="", local_ns=None):
                         result._VERTICAPY_VARIABLES_["max_columns"] = options["-ncols"]
 
                 except:
+
                     try:
                         final_result = executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
@@ -279,10 +313,22 @@ def sql(line, cell="", local_ns=None):
                             print(final_result)
                         elif verticapy.options["print_info"]:
                             print(query_type)
-                    except Exception as e:
-                        error = e
 
-                if error:
+                    except Exception as e:
+                        error = str(e)
+
+                # If it fails because no elements were returned in the DBLINK UDx
+                # - we do not display the error message
+                if (
+                    "Severity: ERROR, Message: User defined transform must return at least one column"
+                    in error
+                    and "DBLINK" in error
+                ):
+
+                    if verticapy.options["print_info"]:
+                        print(query_type)
+
+                elif error:
                     raise QueryError(error)
 
         # Displaying the information

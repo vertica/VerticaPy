@@ -28,6 +28,8 @@ from verticapy import (
     drop,
     set_option,
     read_shp,
+    read_csv,
+    read_json,
 )
 from verticapy.connect import current_cursor
 import verticapy.stats as st
@@ -158,14 +160,32 @@ class TestvDFUtilities:
         try:
             file = open("verticapy_test_to_csv.csv", "r")
             result = file.read()
-            assert result == "age,fare\n80.000,30.00000\n76.000,78.85000"
+            assert result == '"age","fare"\n80.000,30.00000\n76.000,78.85000'
         except:
             os.remove("verticapy_test_to_csv.csv")
             file.close()
             raise
         os.remove("verticapy_test_to_csv.csv")
         file.close()
-        # TODO - test with multiple CSV files.
+        # multiple files
+        try:
+            titanic_vd.to_csv(
+                "titanic_verticapy_test_to_csv",
+                n_files=3,
+                order_by=["name", "age", "fare"],
+            )
+            titanic_test = read_csv("titanic_verticapy_test_to_csv/*.csv")
+            assert titanic_test.shape() == (1234, 14)
+        except:
+            os.remove("titanic_verticapy_test_to_csv/1.csv")
+            os.remove("titanic_verticapy_test_to_csv/2.csv")
+            os.remove("titanic_verticapy_test_to_csv/3.csv")
+            os.rmdir("titanic_verticapy_test_to_csv")
+            raise
+        os.remove("titanic_verticapy_test_to_csv/1.csv")
+        os.remove("titanic_verticapy_test_to_csv/2.csv")
+        os.remove("titanic_verticapy_test_to_csv/3.csv")
+        os.rmdir("titanic_verticapy_test_to_csv")
 
     def test_vDF_to_parquet(self, titanic_vd):
         session_id = get_session()
@@ -275,7 +295,7 @@ class TestvDFUtilities:
             result = file.read()
             assert (
                 result
-                == '[\n{"age": 80.000, "fare": 30.00000},\n{"age": 76.000, "fare": 78.85000},\n]'
+                == '[\n{"age": 80.000, "fare": 30.00000},\n{"age": 76.000, "fare": 78.85000}\n]'
             )
         except:
             os.remove("verticapy_test_to_json.json")
@@ -283,7 +303,25 @@ class TestvDFUtilities:
             raise
         os.remove("verticapy_test_to_json.json")
         file.close()
-        # TODO - test with multiple JSON files.
+        # multiple files
+        try:
+            titanic_vd.to_json(
+                "titanic_verticapy_test_to_json",
+                n_files=3,
+                order_by=["name", "age", "fare"],
+            )
+            titanic_test = read_json("titanic_verticapy_test_to_json/*.json")
+            assert titanic_test.shape() == (1234, 14)
+        except:
+            os.remove("titanic_verticapy_test_to_json/1.json")
+            os.remove("titanic_verticapy_test_to_json/2.json")
+            os.remove("titanic_verticapy_test_to_json/3.json")
+            os.rmdir("titanic_verticapy_test_to_json")
+            raise
+        os.remove("titanic_verticapy_test_to_json/1.json")
+        os.remove("titanic_verticapy_test_to_json/2.json")
+        os.remove("titanic_verticapy_test_to_json/3.json")
+        os.rmdir("titanic_verticapy_test_to_json")
 
     def test_vDF_to_list(self, titanic_vd):
         result = titanic_vd.select(["age", "survived"])[:20].to_list()

@@ -121,6 +121,21 @@ schema: str, optional
 sql: str, optional
     A SQL query used to create the vDataFrame. If specified, the parameter 
     'input_relation' must be empty.
+external: bool, optional
+    A boolean to indicate whether it is an external table. If set to True, a
+    Connection Identifier Database must be defined.
+    See the connect.set_external_connection function for more information.
+symbol: str, optional
+    One of the following:
+    "$", "€", "£", "%", "@", "&", "§", "%", "?", "!"
+    Symbol used to identify the external connection.
+    See the connect.set_external_connection function for more information.
+sql_push_ext: bool, optional
+    If set to True, the external vDataFrame attempts to push the entire query 
+    to the external table (only DQL statements - SELECT; for other statements,
+    use SQL Magic directly). This can increase performance but might increase 
+    the error rate. For instance, some DBs might not support the same SQL as 
+    Vertica.
 empty: bool, optional
     If set to True, the vDataFrame will be empty. You can use this to create 
     a custom vDataFrame and bypass the initialization check.
@@ -166,6 +181,9 @@ vColumns : vColumn
         usecols: list = [],
         schema: str = "",
         sql: str = "",
+        external: bool = False,
+        symbol: str = "$",
+        sql_push_ext: bool = True,
         empty: bool = False,
     ):
         # Saving information to the query profile table
@@ -178,6 +196,9 @@ vColumns : vColumn
                 "usecols": usecols,
                 "schema": schema,
                 "sql": sql,
+                "external": external,
+                "symbol": symbol,
+                "sql_push_ext": sql_push_ext,
                 "empty": empty,
             },
         )
@@ -213,15 +234,49 @@ vColumns : vColumn
                 ("usecols", usecols, [list]),
                 ("columns", columns, [list]),
                 ("schema", schema, [str]),
+                ("external", external, [bool]),
+                ("sql_push_ext", sql_push_ext, [bool]),
                 ("empty", empty, [bool]),
             ]
         )
+
+        if external:
+            assert is_special_symbol(symbol), ParameterError(
+                "Parameter 'symbol' must be a special char. Example: $, €, ..."
+            )
+
+            if input_relation:
+                assert isinstance(input_relation, str), ParameterError(
+                    "Parameter 'input_relation' must be a string when using external tables."
+                )
+                if schema:
+                    relation = str(schema) + "." + str(input_relation)
+                else:
+                    relation = str(input_relation)
+                cols = ", ".join(usecols) if usecols else "*"
+                query = f"SELECT {cols} FROM {input_relation}"
+
+            else:
+                query = sql
+
+            if symbol in verticapy.options["external_connection"]:
+                sql = symbol * 3 + query + symbol * 3
+
+            else:
+                raise ConnectionError(
+                    f"No corresponding Connection Identifier Database is defined (Using the symbol '{symbol}'). Use the function connect.set_external_connection to set one with the correct symbol."
+                )
+
         self._VERTICAPY_VARIABLES_ = {}
         self._VERTICAPY_VARIABLES_["count"] = -1
         self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
         self._VERTICAPY_VARIABLES_["max_rows"] = -1
         self._VERTICAPY_VARIABLES_["max_columns"] = -1
         self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
+        self._VERTICAPY_VARIABLES_["isflex"] = False
+        self._VERTICAPY_VARIABLES_["external"] = external
+        self._VERTICAPY_VARIABLES_["symbol"] = symbol
+        self._VERTICAPY_VARIABLES_["sql_push_ext"] = external and sql_push_ext
 
         if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
 
@@ -288,39 +343,18 @@ vColumns : vColumn
             self._VERTICAPY_VARIABLES_["input_relation"] = input_relation.replace(
                 '"', ""
             )
-            where = (
-                " AND LOWER(column_name) IN ({})".format(
-                    ", ".join(
-                        [
-                            "'{}'".format(elem.lower().replace("'", "''"))
-                            for elem in usecols
-                        ]
-                    )
+            table_name = self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''")
+            schema = self._VERTICAPY_VARIABLES_["schema"].replace("'", "''")
+            isflex = isflextable(table_name=table_name, schema=schema)
+            self._VERTICAPY_VARIABLES_["isflex"] = isflex
+            if isflex:
+                columns_dtype = compute_flextable_keys(
+                    flex_name='"{}".{}'.format(schema, table_name), usecols=usecols
                 )
-                if (usecols)
-                else ""
-            )
-            query = (
-                "SELECT /*+LABEL('vDataframe.__init__')*/ column_name, data_type FROM ((SELECT column_name, "
-                "data_type, ordinal_position FROM columns WHERE table_name "
-                "= '{0}' AND table_schema = '{1}'{2})"
-            ).format(
-                self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
-                self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
-                where,
-            )
-            query += (
-                " UNION (SELECT column_name, data_type, ordinal_position "
-                "FROM view_columns WHERE table_name = '{0}' AND table_schema "
-                "= '{1}'{2})) x ORDER BY ordinal_position"
-            ).format(
-                self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
-                self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
-                where,
-            )
-            columns_dtype = executeSQL(
-                query, title="Getting the data types.", method="fetchall"
-            )
+            else:
+                columns_dtype = get_data_types(
+                    table_name=table_name, schema=schema, usecols=usecols
+                )
             columns_dtype = [(str(item[0]), str(item[1])) for item in columns_dtype]
             columns = [
                 '"{}"'.format(elem[0].replace('"', "_")) for elem in columns_dtype
@@ -341,25 +375,34 @@ vColumns : vColumn
                         "its alias was changed using underscores '_' to {1}."
                     ).format(column, column.replace('"', "_"))
                     warnings.warn(warning_message, Warning)
+                category = get_category_from_vertica_type(dtype)
+                if (dtype.lower()[0:12] in ("long varbina", "long varchar")) and (
+                    isflex
+                    or isvmap(
+                        expr=format_schema_table(schema, table_name), column=column,
+                    )
+                ):
+                    category = "vmap"
+                    dtype = (
+                        "VMAP(" + "(".join(dtype.split("(")[1:])
+                        if "(" in dtype
+                        else "VMAP"
+                    )
+                column_name = '"' + column.replace('"', "_") + '"'
                 new_vColumn = vColumn(
-                    '"{}"'.format(column.replace('"', "_")),
+                    column_name,
                     parent=self,
-                    transformations=[
-                        (
-                            '"{}"'.format(column.replace('"', '""')),
-                            dtype,
-                            get_category_from_vertica_type(dtype),
-                        )
-                    ],
+                    transformations=[(quote_ident(column), dtype, category,)],
                 )
-                setattr(self, '"{}"'.format(column.replace('"', "_")), new_vColumn)
-                setattr(self, column.replace('"', "_"), new_vColumn)
+                setattr(self, column_name, new_vColumn)
+                setattr(self, column_name[1:-1], new_vColumn)
+                new_vColumn.init = False
             self._VERTICAPY_VARIABLES_["exclude_columns"] = []
             self._VERTICAPY_VARIABLES_["where"] = []
             self._VERTICAPY_VARIABLES_["order_by"] = {}
             self._VERTICAPY_VARIABLES_["history"] = []
             self._VERTICAPY_VARIABLES_["saving"] = []
-            self._VERTICAPY_VARIABLES_["main_relation"] = '"{}"."{}"'.format(
+            self._VERTICAPY_VARIABLES_["main_relation"] = format_schema_table(
                 self._VERTICAPY_VARIABLES_["schema"],
                 self._VERTICAPY_VARIABLES_["input_relation"],
             )
@@ -425,7 +468,11 @@ vColumns : vColumn
                 index,
             )
             return executeSQL(
-                query=query, title="Getting the vDataFrame element.", method="fetchrow"
+                query=query,
+                title="Getting the vDataFrame element.",
+                method="fetchrow",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
         elif isinstance(index, (str, str_sql)):
             is_sql = False
@@ -511,6 +558,11 @@ vColumns : vColumn
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
+        elif isinstance(val, vColumn) and not (val.init):
+            final_trans, n = val.init_transf, len(val.transformations)
+            for i in range(1, n):
+                final_trans = val.transformations[i][0].replace("{}", final_trans)
+            self.eval(name=attr, expr=final_trans)
         else:
             self.__dict__[attr] = val
 
@@ -687,7 +739,11 @@ vColumns : vColumn
                     columns[0], columns[1], self.__genSQL__()
                 )
                 n, k, r = executeSQL(
-                    sql, title="Computing the columns cardinalities.", method="fetchrow"
+                    sql,
+                    title="Computing the columns cardinalities.",
+                    method="fetchrow",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
                 chi2 = """SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
                             SUM((nij - ni * nj / {0}) * (nij - ni * nj / {0}) 
@@ -708,6 +764,8 @@ vColumns : vColumn
                         "and {1} (Chi2 Statistic)."
                     ).format(columns[0], columns[1]),
                     method="fetchfirstelem",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
                 if min(k - 1, r - 1) == 0:
                     result = float("nan")
@@ -760,7 +818,13 @@ vColumns : vColumn
                     columns[0], columns[1]
                 )
             try:
-                result = executeSQL(query=query, title=title, method="fetchfirstelem")
+                result = executeSQL(
+                    query=query,
+                    title=title,
+                    method="fetchfirstelem",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                )
             except:
                 result = float("nan")
             self.__update_catalog__(
@@ -923,6 +987,8 @@ vColumns : vColumn
                             ),
                             title=title_query,
                             method="fetchrow",
+                            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                            symbol=self._VERTICAPY_VARIABLES_["symbol"],
                         )
                 except:
                     n = len(columns)
@@ -1144,6 +1210,8 @@ vColumns : vColumn
                         ),
                         title=f"Computing the Correlation Vector ({method})",
                         method="fetchrow",
+                        sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self._VERTICAPY_VARIABLES_["symbol"],
                     )
                 vector = [elem for elem in result]
             except:
@@ -1354,9 +1422,7 @@ vColumns : vColumn
                 table,
             )
         main_relation = self._VERTICAPY_VARIABLES_["main_relation"]
-        all_main_relation = "(SELECT * FROM {}) VERTICAPY_SUBTABLE".format(
-            main_relation
-        )
+        all_main_relation = f"(SELECT * FROM {main_relation}) VERTICAPY_SUBTABLE"
         table = table.replace(all_main_relation, main_relation)
         return table
 
@@ -1440,6 +1506,14 @@ vColumns : vColumn
         else:
             order_by = [quote_ident(elem) for elem in columns]
         return " ORDER BY {}".format(", ".join(order_by))
+
+    # ---#
+    def __isexternal__(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns true if it is an external vDataFrame.
+        """
+        return self._VERTICAPY_VARIABLES_["external"]
 
     # ---#
     def __update_catalog__(
@@ -2522,6 +2596,8 @@ vColumns : vColumn
                     ),
                     title="Computing the different aggregations.",
                     method="fetchrow",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
             result = [item for item in res]
             try:
@@ -2564,6 +2640,8 @@ vColumns : vColumn
                         query,
                         title="Computing the different aggregations using UNION ALL.",
                         method="fetchall",
+                        sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self._VERTICAPY_VARIABLES_["symbol"],
                     )
 
                 for idx, elem in enumerate(result):
@@ -2595,6 +2673,10 @@ vColumns : vColumn
                                         "Computing the different aggregations one "
                                         "vColumn at a time."
                                     ),
+                                    sql_push_ext=self._VERTICAPY_VARIABLES_[
+                                        "sql_push_ext"
+                                    ],
+                                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                                 )
                                 pre_comp_val = []
                                 break
@@ -2622,6 +2704,10 @@ vColumns : vColumn
                                         "vColumn & one agg at a time."
                                     ),
                                     method="fetchfirstelem",
+                                    sql_push_ext=self._VERTICAPY_VARIABLES_[
+                                        "sql_push_ext"
+                                    ],
+                                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                                 )
                             else:
                                 result = pre_comp
@@ -4279,6 +4365,8 @@ vColumns : vColumn
                     ),
                     title="Looking at columns with low cardinality.",
                     method="fetchfirstelem",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
             elif self[column].category() == "float":
                 is_cat = False
@@ -4523,6 +4611,8 @@ vColumns : vColumn
                     sql,
                     title="Computing the CHAID tree probability.",
                     method="fetchall",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
             else:
                 result = []
@@ -4997,7 +5087,11 @@ vColumns : vColumn
             self.__genSQL__(), column1, column2
         )
         n = executeSQL(
-            sql, title="Computing the number of elements.", method="fetchfirstelem"
+            sql,
+            title="Computing the number of elements.",
+            method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         if method in ("pearson", "biserial"):
             x = val * math.sqrt((n - 2) / (1 - val * val))
@@ -5023,6 +5117,8 @@ vColumns : vColumn
                 f"SELECT /*+LABEL('vDataframe.corr_pvalue')*/ {n_c}::float, {n_d}::float FROM {table};",
                 title="Computing nc and nd.",
                 method="fetchrow",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
             if kendall_type == "a":
                 val = (nc - nd) / (n * (n - 1) / 2)
@@ -5042,6 +5138,8 @@ vColumns : vColumn
                     ),
                     title="Computing vti.",
                     method="fetchrow",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
                 vu, v1_1, v2_1 = executeSQL(
                     """SELECT /*+LABEL('vDataframe.corr_pvalue')*/
@@ -5057,6 +5155,8 @@ vColumns : vColumn
                     ),
                     title="Computing vui.",
                     method="fetchrow",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
                 v0 = n * (n - 1) * (2 * n + 5)
                 v1 = v1_0 * v1_1 / (2 * n * (n - 1))
@@ -5075,6 +5175,8 @@ vColumns : vColumn
                         sql,
                         title="Computing the columns categories in the pivot table.",
                         method="fetchrow",
+                        sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self._VERTICAPY_VARIABLES_["symbol"],
                     )
                     m = min(k, r)
                     val = 2 * (nc - nd) / (n * n * (m - 1) / m)
@@ -5092,6 +5194,8 @@ vColumns : vColumn
                 sql,
                 title="Computing the columns categories in the pivot table.",
                 method="fetchrow",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
             x = val * val * n * min(k, r)
             pvalue = chi2.sf(x, (k - 1) * (r - 1))
@@ -6287,6 +6391,8 @@ vColumns : vColumn
             ),
             title="Computing the number of duplicates.",
             method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         if count:
             return total
@@ -6294,6 +6400,8 @@ vColumns : vColumn
             "SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {} ORDER BY occurrence DESC LIMIT {}".format(
                 ", ".join(columns), query, ", ".join(columns), limit
             ),
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         result.count = executeSQL(
             query="SELECT /*+LABEL('vDataframe.duplicated')*/ COUNT(*) FROM (SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {}) t".format(
@@ -6301,6 +6409,8 @@ vColumns : vColumn
             ),
             title="Computing the number of distinct duplicates.",
             method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         return result
 
@@ -6362,24 +6472,24 @@ vColumns : vColumn
             self.is_colname_in(name)
         ), f"A vColumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue."
         try:
-            ctype = get_data_types(
-                "SELECT {} AS {} FROM {} LIMIT 0".format(expr, name, self.__genSQL__()),
-                name.replace('"', "").replace("'", "''"),
+            query = "SELECT {0} AS {1} FROM {2} LIMIT 0".format(
+                expr, name, self.__genSQL__()
             )
+            ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
         except:
-            try:
-                ctype = get_data_types(
-                    "SELECT {} AS {} FROM {} LIMIT 0".format(
-                        expr, name, self.__genSQL__()
-                    ),
-                    name.replace('"', "").replace("'", "''"),
-                )
-            except:
-                raise QueryError(
-                    f"The expression '{expr}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work."
-                )
-        ctype = ctype if (ctype) else "undefined"
-        category = get_category_from_vertica_type(ctype=ctype)
+            raise QueryError(
+                f"The expression '{expr}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work."
+            )
+        if not (ctype):
+            ctype = "undefined"
+        elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
+            self._VERTICAPY_VARIABLES_["isflex"]
+            or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
+        ):
+            category = "vmap"
+            ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
+        else:
+            category = get_category_from_vertica_type(ctype=ctype)
         all_cols, max_floor = self.get_columns(), 0
         for column in all_cols:
             if (quote_ident(column) in expr) or (
@@ -6397,9 +6507,11 @@ vColumns : vColumn
         new_vColumn = vColumn(name, parent=self, transformations=transformations)
         setattr(self, name, new_vColumn)
         setattr(self, name.replace('"', ""), new_vColumn)
+        new_vColumn.init = False
+        new_vColumn.init_transf = name
         self._VERTICAPY_VARIABLES_["columns"] += [name]
         self.__add_to_history__(
-            "[Eval]: A new vColumn {} was added to the vDataFrame.".format(name)
+            f"[Eval]: A new vColumn {name} was added to the vDataFrame."
         )
         return self
 
@@ -6559,7 +6671,11 @@ vColumns : vColumn
             self.__genSQL__()
         )
         result = executeSQL(
-            query=query, title="Explaining the Current Relation", method="fetchall"
+            query=query,
+            title="Explaining the Current Relation",
+            method="fetchall",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         result = [elem[0] for elem in result]
         result = "\n".join(result)
@@ -6715,14 +6831,14 @@ vColumns : vColumn
                     ),
                     title="Computing the new number of elements.",
                     method="fetchfirstelem",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
                 count -= new_count
             except:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
                 if verticapy.options["print_info"]:
-                    warning_message = "The expression '{}' is incorrect.\nNothing was filtered.".format(
-                        conditions
-                    )
+                    warning_message = f"The expression '{conditions}' is incorrect.\nNothing was filtered."
                     warnings.warn(warning_message, Warning)
                 return self
             if count > 0:
@@ -6782,10 +6898,81 @@ vColumns : vColumn
             ts, offset, self.__genSQL__()
         )
         first_date = executeSQL(
-            query, title="Getting the vDataFrame first values.", method="fetchfirstelem"
+            query,
+            title="Getting the vDataFrame first values.",
+            method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         self.filter("{} <= '{}'".format(ts, first_date))
         return self
+
+    # ---#
+    def flat_vmap(
+        self, vmap_col: list = [], limit: int = 100, exclude_columns: list = []
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Flatten the selected VMap. A new vDataFrame is returned.
+    
+    \u26A0 Warning : This function might have a long runtime and can make your
+                     vDataFrame less performant. It makes many calls to the
+                     MAPLOOKUP function, which can be slow if your VMap is
+                     large.
+
+    Parameters
+    ----------
+    vmap_col: list, optional
+        List of VMap columns to flatten.
+    limit: int, optional
+        Maximum number of keys to consider for each VMap. Only the most occurent 
+        keys are used.
+    exclude_columns: list, optional
+        List of VMap columns to exclude.
+
+    Returns
+    -------
+    vDataFrame
+        object with the flattened VMaps.
+        """
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="select",
+            path="vdataframe.vDataFrame",
+            json_dict={"vmap_col": vmap_col, "limit": limit,},
+        )
+        # -#
+        if not (vmap_col):
+            vmap_col = []
+            all_cols = self.get_columns()
+            for col in all_cols:
+                if self[col].isvmap():
+                    vmap_col += [col]
+        if isinstance(vmap_col, str):
+            vmap_col = [vmap_col]
+        check_types([("vmap_col", vmap_col, [list]), ("limit", limit, [int])])
+        exclude_columns_final, vmap_col_final = (
+            [quote_ident(col).lower() for col in exclude_columns],
+            [],
+        )
+        for col in vmap_col:
+            if quote_ident(col).lower() not in exclude_columns_final:
+                vmap_col_final += [col]
+        if not (vmap_col):
+            raise EmptyParameter("No VMAP was detected.")
+        maplookup = []
+        for vmap in vmap_col_final:
+            keys = compute_vmap_keys(expr=self, vmap_col=vmap, limit=limit)
+            keys = [k[0] for k in keys]
+            maplookup += [
+                "MAPLOOKUP({0}, '{1}') AS {2}".format(
+                    quote_ident(vmap),
+                    k,
+                    quote_ident(vmap.replace('"', "") + "." + k.replace('"', "")),
+                )
+                for k in keys
+            ]
+        return self.select(self.get_columns() + maplookup)
 
     # ---#
     def get_columns(self, exclude_columns: list = []):
@@ -7729,6 +7916,8 @@ vColumns : vColumn
             ),
             title=title,
             max_columns=self._VERTICAPY_VARIABLES_["max_columns"],
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -7826,7 +8015,7 @@ vColumns : vColumn
     def join(
         self,
         input_relation,
-        on: dict = {},
+        on: Union[dict, list] = {},
         on_interpolate: dict = {},
         how: str = "natural",
         expr1: list = ["*"],
@@ -7846,8 +8035,30 @@ vColumns : vColumn
     ----------
     input_relation: str/vDataFrame
         Relation to use to do the merging.
-    on: dict, optional
-        Dictionary of all different keys. The dict must be similar to the following:
+    on: dict / list, optional
+        If it is a list then:
+        List of 3-tuples. Each tuple must include (key1, key2, operator)—where
+        key1 is the key of the vDataFrame, key2 is the key of the input relation,
+        and operator can be one of the following:
+                     '=' : exact match
+                     '<' : key1  < key2
+                     '>' : key1  > key2
+                    '<=' : key1 <= key2
+                    '>=' : key1 >= key2
+                 'llike' : key1 LIKE '%' || key2 || '%'
+                 'rlike' : key2 LIKE '%' || key1 || '%'
+           'linterpolate': key1 INTERPOLATE key2
+           'rinterpolate': key2 INTERPOLATE key1
+        Some operators need 5-tuples: (key1, key2, operator, operator2, x)—where
+        operator2 is a simple operator (=, >, <, <=, >=), x is a float or an integer, 
+        and operator is one of the following:
+                 'jaro' : JARO(key1, key2) operator2 x
+                'jarow' : JARO_WINCKLER(key1, key2) operator2 x
+                  'lev' : LEVENSHTEIN(key1, key2) operator2 x
+        
+        If it is a dictionary then:
+        This parameter must include all the different keys. It must be similar 
+        to the following:
         {"relationA_key1": "relationB_key1" ..., "relationA_keyk": "relationB_keyk"}
         where relationA is the current vDataFrame and relationB is the input relation
         or the input vDataFrame.
@@ -7905,12 +8116,15 @@ vColumns : vColumn
             expr1 = [expr1]
         if isinstance(expr2, str):
             expr2 = [expr2]
+        if isinstance(on, tuple):
+            on = [on]
         check_types(
             [
-                ("on", on, [dict]),
+                ("on", on, [dict, list]),
+                ("on_interpolate", on_interpolate, [dict]),
                 (
                     "how",
-                    how.lower(),
+                    str(how).lower(),
                     ["left", "right", "cross", "full", "natural", "self", "inner", ""],
                 ),
                 ("expr1", expr1, [list]),
@@ -7918,74 +8132,97 @@ vColumns : vColumn
                 ("input_relation", input_relation, [vDataFrame, str]),
             ]
         )
-        how = how.lower()
-        self.are_namecols_in([elem for elem in on])
-        if isinstance(input_relation, vDataFrame):
-            input_relation.are_namecols_in([on[elem] for elem in on])
-            vdf_cols = []
-            for elem in on:
-                vdf_cols += [on[elem]]
-            input_relation.are_namecols_in(vdf_cols)
-            relation = input_relation.__genSQL__()
+        # Giving the right alias to the right relation
+        def create_final_relation(relation: str, alias: str):
             if (
                 ("SELECT" in relation.upper())
                 and ("FROM" in relation.upper())
                 and ("(" in relation)
                 and (")" in relation)
             ):
-                second_relation = "(SELECT * FROM {}) AS y".format(relation)
+                return f"(SELECT * FROM {relation}) AS {alias}"
             else:
-                second_relation = "{} AS y".format(relation)
-        elif isinstance(input_relation, str):
-            if (
-                ("SELECT" in input_relation.upper())
-                and ("FROM" in input_relation.upper())
-                and ("(" in input_relation)
-                and (")" in input_relation)
-            ):
-                second_relation = "(SELECT * FROM {}) AS y".format(input_relation)
-            else:
-                second_relation = "{} AS y".format(input_relation)
-        on_join = " AND ".join(
-            [
-                'x."'
-                + elem.replace('"', "")
-                + '" = y."'
-                + on[elem].replace('"', "")
-                + '"'
-                for elem in on
-            ]
-            + [
-                'x."'
-                + elem.replace('"', "")
-                + '" INTERPOLATE PREVIOUS VALUE y."'
-                + on_interpolate[elem].replace('"', "")
-                + '"'
-                for elem in on_interpolate
-            ]
-        )
-        on_join = " ON {}".format(on_join) if (on_join) else ""
-        relation = self.__genSQL__()
-        if (
-            ("SELECT" in relation.upper())
-            and ("FROM" in relation.upper())
-            and ("(" in relation)
-            and (")" in relation)
-        ):
-            first_relation = "(SELECT * FROM {}) AS x".format(relation)
+                return f"{relation} AS {alias}"
+
+        # List with the operators
+        if str(how).lower() == "natural" and (on or on_interpolate):
+            raise ParameterError(
+                "Natural Joins cannot be computed if any of the parameters 'on' or 'on_interpolate' are defined."
+            )
+        on_list = []
+        if isinstance(on, dict):
+            on_list += [(key, on[key], "=") for key in on]
         else:
-            first_relation = "{} AS x".format(relation)
-        expr1, expr2 = (
-            ["x.{}".format(elem) for elem in expr1],
-            ["y.{}".format(elem) for elem in expr2],
-        )
-        expr = expr1 + expr2
+            on_list += [elem for elem in on]
+        on_list += [(key, on[key], "linterpolate") for key in on_interpolate]
+        # Checks
+        self.are_namecols_in([elem[0] for elem in on_list])
+        if isinstance(input_relation, vDataFrame):
+            input_relation.are_namecols_in([elem[1] for elem in on_list])
+            relation = input_relation.__genSQL__()
+        else:
+            relation = input_relation
+        # Relations
+        first_relation = create_final_relation(self.__genSQL__(), alias="x")
+        second_relation = create_final_relation(relation, alias="y")
+        # ON
+        on_join = []
+        all_operators = [
+            "=",
+            ">",
+            ">=",
+            "<",
+            "<=",
+            "llike",
+            "rlike",
+            "linterpolate",
+            "rinterpolate",
+            "jaro",
+            "jarow",
+            "lev",
+        ]
+        simple_operators = all_operators[0:5]
+        for elem in on_list:
+            key1, key2, op = quote_ident(elem[0]), quote_ident(elem[1]), elem[2]
+            check_types([("operator", op, all_operators)])
+            if op in ("=", ">", ">=", "<", "<="):
+                on_join += [f"x.{key1} {op} y.{key2}"]
+            elif op == "llike":
+                on_join += [f"x.{key1} LIKE '%' || y.{key2} || '%'"]
+            elif op == "rlike":
+                on_join += [f"y.{key2} LIKE '%' || x.{key1} || '%'"]
+            elif op == "linterpolate":
+                on_join += [f"x.{key1} INTERPOLATE PREVIOUS VALUE y.{key2}"]
+            elif op == "rinterpolate":
+                on_join += [f"y.{key2} INTERPOLATE PREVIOUS VALUE x.{key1}"]
+            elif op in ("jaro", "jarow", "lev"):
+                if op in ("jaro", "jarow"):
+                    version(condition=[12, 0, 2])
+                else:
+                    version(condition=[10, 1, 0])
+                op2 = elem[3]
+                x = elem[4]
+                check_types(
+                    [("operator2", op2, simple_operators), ("x", x, [float, int])]
+                )
+                map_to_fun = {
+                    "jaro": "JARO_DISTANCE",
+                    "jarow": "JARO_WINKLER_DISTANCE",
+                    "lev": "EDIT_DISTANCE",
+                }
+                fun = map_to_fun[op]
+                on_join += [f"{fun}(x.{key1}, y.{key2}) {op2} {x}"]
+        # Final
+        on_join = " ON " + " AND ".join(on_join) if on_join else ""
+        expr = [f"x.{key}" for key in expr1] + [f"y.{key}" for key in expr2]
         expr = "*" if not (expr) else ", ".join(expr)
-        table = "SELECT {} FROM {} {} JOIN {} {}".format(
-            expr, first_relation, how.upper(), second_relation, on_join
+        if how:
+            how = " " + how.upper() + " "
+        table = (
+            f"SELECT {expr} FROM {first_relation}{how}JOIN {second_relation} {on_join}"
         )
         return self.__vDataFrameSQL__(
-            "({}) VERTICAPY_SUBTABLE".format(table),
+            f"({table}) VERTICAPY_SUBTABLE",
             "join",
             "[Join]: Two relations were joined together",
         )
@@ -8066,7 +8303,11 @@ vColumns : vColumn
             ts, offset, self.__genSQL__()
         )
         last_date = executeSQL(
-            query, title="Getting the vDataFrame last values.", method="fetchfirstelem"
+            query,
+            title="Getting the vDataFrame last values.",
+            method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         self.filter("{} >= '{}'".format(ts, last_date))
         return self
@@ -9931,6 +10172,8 @@ vColumns : vColumn
                     ),
                     title="Computing the {} Matrix.".format(method.upper()),
                     method="fetchrow",
+                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
             if n == 1:
                 return result[0]
@@ -9953,6 +10196,8 @@ vColumns : vColumn
                                 method.upper()
                             ),
                             method="fetchfirstelem",
+                            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                            symbol=self._VERTICAPY_VARIABLES_["symbol"],
                         )
                     ]
         matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
@@ -10728,7 +10973,19 @@ vColumns : vColumn
         for i in range(len(columns)):
             column = self.format_colnames([columns[i]])
             if column:
-                columns[i] = column[0]
+                dtype = ""
+                if self._VERTICAPY_VARIABLES_["isflex"]:
+                    dtype = self[column[0]].ctype().lower()
+                    if (
+                        "array" in dtype
+                        or "map" in dtype
+                        or "row" in dtype
+                        or "set" in dtype
+                    ):
+                        dtype = ""
+                    else:
+                        dtype = f"::{dtype}"
+                columns[i] = column[0] + dtype
             else:
                 columns[i] = str(columns[i])
         table = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
@@ -11046,6 +11303,8 @@ vColumns : vColumn
             query,
             title="Computing the total number of elements (COUNT(*))",
             method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         return (self._VERTICAPY_VARIABLES_["count"], m)
 
@@ -11375,7 +11634,7 @@ vColumns : vColumn
     # ---#
     def to_csv(
         self,
-        path: str,
+        path: str = "",
         sep: str = ",",
         na_rep: str = "",
         quotechar: str = '"',
@@ -11392,7 +11651,7 @@ vColumns : vColumn
 
     Parameters
     ----------
-    path: str
+    path: str, optional
         File/Folder system path. Be careful: if a CSV file with the same name 
         exists, it will over-write it.
     sep: str, optional
@@ -11421,8 +11680,8 @@ vColumns : vColumn
 
     Returns
     -------
-    vDataFrame
-        self
+    str or list
+        JSON str or list (n_files>1) if 'path' is not defined; otherwise, nothing
 
     See Also
     --------
@@ -11477,6 +11736,13 @@ vColumns : vColumn
             if not (usecols)
             else [quote_ident(column) for column in usecols]
         )
+        for col in columns:
+            if self[col].category() in ("vmap", "complex"):
+                raise FunctionError(
+                    f"Impossible to export virtual column {col} as it includes complex "
+                    "data types or vmaps. Use 'astype' method to cast them before using "
+                    "this function."
+                )
         assert not (new_header) or len(new_header) == len(columns), ParsingError(
             "The header has an incorrect number of columns"
         )
@@ -11486,17 +11752,24 @@ vColumns : vColumn
         order_by = self.__get_sort_syntax__(order_by)
         if not (order_by):
             order_by = self.__get_last_order_by__()
-        if n_files > 1:
-            os.makedirs(file_name)
+        if n_files > 1 and path:
+            os.makedirs(path)
+        csv_files = []
         while current_nb_rows_written < total:
-            if n_files == 1:
-                file = open(path, "w+")
-            else:
-                file = open("{0}/{1}.csv".format(path, file_id), "w+")
             if new_header:
-                file.write(sep.join(new_header))
+                csv_file = sep.join(
+                    [
+                        quotechar + column.replace('"', "") + quotechar
+                        for column in new_header
+                    ]
+                )
             elif header:
-                file.write(sep.join([column.replace('"', "") for column in columns]))
+                csv_file = sep.join(
+                    [
+                        quotechar + column.replace('"', "") + quotechar
+                        for column in columns
+                    ]
+                )
             result = executeSQL(
                 "SELECT /*+LABEL('vDataframe.to_csv')*/ {} FROM {}{} LIMIT {} OFFSET {}".format(
                     ", ".join(columns),
@@ -11507,6 +11780,8 @@ vColumns : vColumn
                 ),
                 title="Reading the data.",
                 method="fetchall",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
             for row in result:
                 tmp_row = []
@@ -11517,11 +11792,24 @@ vColumns : vColumn
                         tmp_row += [na_rep]
                     else:
                         tmp_row += [str(item)]
-                file.write("\n" + sep.join(tmp_row))
+                csv_file += "\n" + sep.join(tmp_row)
             current_nb_rows_written += limit
             file_id += 1
-            file.close()
-        return self
+            if n_files == 1 and path:
+                file = open(path, "w+")
+                file.write(csv_file)
+                file.close()
+            elif path:
+                file = open("{0}/{1}.csv".format(path, file_id), "w+")
+                file.write(csv_file)
+                file.close()
+            else:
+                csv_files += [csv_file]
+        if not (path):
+            if n_files == 1:
+                return csv_files[0]
+            else:
+                return csv_files
 
     # ---#
     def to_db(
@@ -11616,34 +11904,45 @@ vColumns : vColumn
             relation_type += " table"
         elif relation_type == "local":
             relation_type += " temporary table"
-        usecols = (
-            "*"
-            if not (usecols)
-            else ", ".join([quote_ident(column) for column in usecols])
-        )
+        isflex = self._VERTICAPY_VARIABLES_["isflex"]
+        if not (usecols):
+            usecols = self.get_columns()
+        if not (usecols) and not (isflex):
+            select = "*"
+        elif usecols and not (isflex):
+            select = ", ".join([quote_ident(column) for column in usecols])
+        else:
+            select = []
+            for column in usecols:
+                ctype, col = self[column].ctype(), quote_ident(column)
+                if ctype.startswith("vmap"):
+                    column = "MAPTOSTRING({0}) AS {0}".format(col)
+                else:
+                    column += f"::{ctype}"
+                select += [column]
+            select = ", ".join(select)
+        insert_usecols = ", ".join([quote_ident(column) for column in usecols])
         random_func = get_random_function(nb_split)
-        nb_split = (
-            ", {} AS _verticapy_split_".format(random_func) if (nb_split > 0) else ""
-        )
+        nb_split = f", {random_func} AS _verticapy_split_" if (nb_split > 0) else ""
         if isinstance(db_filter, Iterable) and not (isinstance(db_filter, str)):
-            db_filter = " AND ".join(["({})".format(elem) for elem in db_filter])
-        db_filter = " WHERE {}".format(db_filter) if (db_filter) else ""
+            db_filter = " AND ".join([f"({elem})" for elem in db_filter])
+        db_filter = f" WHERE {db_filter}" if (db_filter) else ""
         if relation_type == "insert":
-            query = "INSERT INTO {}{} SELECT {}{} FROM {}{}{}".format(
+            query = "INSERT INTO {0}{1} SELECT {2}{3} FROM {4}{5}{6}".format(
                 name,
-                " ({})".format(usecols) if not (nb_split) and usecols != "*" else "",
-                usecols,
+                f" ({insert_usecols})" if not (nb_split) and select != "*" else "",
+                select,
                 nb_split,
                 self.__genSQL__(),
                 db_filter,
                 self.__get_last_order_by__(),
             )
         else:
-            query = "CREATE {} {}{} AS SELECT /*+LABEL('vDataframe.to_db')*/ {}{} FROM {}{}{}".format(
+            query = "CREATE {0} {1}{2} AS SELECT /*+LABEL('vDataframe.to_db')*/ {3}{4} FROM {5}{6}{7}".format(
                 relation_type.upper(),
                 name,
                 commit,
-                usecols,
+                select,
                 nb_split,
                 self.__genSQL__(),
                 db_filter,
@@ -11651,26 +11950,27 @@ vColumns : vColumn
             )
         executeSQL(
             query=query,
-            title="Creating a new {} to save the vDataFrame.".format(relation_type),
+            title=f"Creating a new {relation_type} to save the vDataFrame.",
         )
         if relation_type == "insert":
             executeSQL(query="COMMIT;", title="Commit.")
         self.__add_to_history__(
-            "[Save]: The vDataFrame was saved into a {} named '{}'.".format(
-                relation_type, name
-            )
+            f"[Save]: The vDataFrame was saved into a {relation_type} named '{name}'."
         )
         if inplace:
             history, saving = (
                 self._VERTICAPY_VARIABLES_["history"],
                 self._VERTICAPY_VARIABLES_["saving"],
             )
-            catalog_vars, columns = {}, self.get_columns()
-            for column in columns:
+            catalog_vars = {}
+            for column in usecols:
                 catalog_vars[column] = self[column].catalog
-            self.__init__(name)
+            if relation_type == "local temporary table":
+                self.__init__("v_temp_schema." + name)
+            else:
+                self.__init__(name)
             self._VERTICAPY_VARIABLES_["history"] = history
-            for column in columns:
+            for column in usecols:
                 self[column].catalog = catalog_vars[column]
         return self
 
@@ -11733,7 +12033,7 @@ vColumns : vColumn
     # ---#
     def to_json(
         self,
-        path: str,
+        path: str = "",
         usecols: list = [],
         order_by: Union[list, dict] = [],
         n_files: int = 1,
@@ -11745,7 +12045,7 @@ vColumns : vColumn
 
     Parameters
     ----------
-    path: str
+    path: str, optional
         File/Folder system path. Be careful: if a JSON file with the same name 
         exists, it will over-write it.
     usecols: list, optional
@@ -11763,8 +12063,8 @@ vColumns : vColumn
 
     Returns
     -------
-    vDataFrame
-        self
+    str or list
+        JSON str or list (n_files>1) if 'path' is not defined; otherwise, nothing
 
     See Also
     --------
@@ -11809,23 +12109,32 @@ vColumns : vColumn
             if not (usecols)
             else [quote_ident(column) for column in usecols]
         )
+        transformations, is_complex_vmap = [], []
+        for col in columns:
+            if self[col].category() == "complex":
+                transformations += ["TO_JSON({0}) AS {0}".format(col)]
+                is_complex_vmap += [True]
+            elif self[col].category() == "vmap":
+                transformations += ["MAPTOSTRING({0}) AS {0}".format(col)]
+                is_complex_vmap += [True]
+            else:
+                transformations += [col]
+                is_complex_vmap += [False]
         total = self.shape()[0]
         current_nb_rows_written, file_id = 0, 0
         limit = int(total / n_files) + 1
         order_by = self.__get_sort_syntax__(order_by)
         if not (order_by):
             order_by = self.__get_last_order_by__()
-        if n_files > 1:
-            os.makedirs(file_name)
+        if n_files > 1 and path:
+            os.makedirs(path)
+        if not (path):
+            json_files = []
         while current_nb_rows_written < total:
-            if n_files == 1:
-                file = open(path, "w+")
-            else:
-                file = open("{0}/{1}.json".format(path, file_id), "w+")
-            file.write("[\n")
+            json_file = "[\n"
             result = executeSQL(
                 "SELECT /*+LABEL('vDataframe.to_json')*/ {} FROM {}{} LIMIT {} OFFSET {}".format(
-                    ", ".join(columns),
+                    ", ".join(transformations),
                     self.__genSQL__(),
                     order_by,
                     limit,
@@ -11833,20 +12142,37 @@ vColumns : vColumn
                 ),
                 title="Reading the data.",
                 method="fetchall",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
             for row in result:
                 tmp_row = []
                 for i, item in enumerate(row):
-                    if isinstance(item, (float, int, decimal.Decimal)):
+                    if isinstance(item, (float, int, decimal.Decimal)) or (
+                        isinstance(item, (str,)) and is_complex_vmap[i]
+                    ):
                         tmp_row += ["{}: {}".format(quote_ident(columns[i]), item)]
                     elif item != None:
                         tmp_row += ['{}: "{}"'.format(quote_ident(columns[i]), item)]
-                file.write("{" + ", ".join(tmp_row) + "},\n")
+                json_file += "{" + ", ".join(tmp_row) + "},\n"
             current_nb_rows_written += limit
             file_id += 1
-            file.write("]")
-            file.close()
-        return self
+            json_file = json_file[0:-2] + "\n]"
+            if n_files == 1 and path:
+                file = open(path, "w+")
+                file.write(json_file)
+                file.close()
+            elif path:
+                file = open("{0}/{1}.json".format(path, file_id), "w+")
+                file.write(json_file)
+                file.close()
+            else:
+                json_files += [json_file]
+        if not (path):
+            if n_files == 1:
+                return json_files[0]
+            else:
+                return json_files
 
     # ---#
     def to_list(self):
@@ -11870,7 +12196,11 @@ vColumns : vColumn
             self.__genSQL__(), self.__get_last_order_by__()
         )
         result = executeSQL(
-            query, title="Getting the vDataFrame values.", method="fetchall"
+            query,
+            title="Getting the vDataFrame values.",
+            method="fetchall",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         final_result = []
         for elem in result:
@@ -11924,7 +12254,11 @@ vColumns : vColumn
             self.__genSQL__(), self.__get_last_order_by__()
         )
         data = executeSQL(
-            query, title="Getting the vDataFrame values.", method="fetchall"
+            query,
+            title="Getting the vDataFrame values.",
+            method="fetchall",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         column_names = [column[0] for column in current_cursor().description]
         df = pd.DataFrame(data)
@@ -12074,7 +12408,12 @@ vColumns : vColumn
             self.__genSQL__(),
         )
         title = "Exporting data to Parquet format."
-        result = to_tablesample(query, title=title)
+        result = to_tablesample(
+            query,
+            title=title,
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+        )
         return result
 
     # ---#
