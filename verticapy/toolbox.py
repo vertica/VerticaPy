@@ -1611,6 +1611,7 @@ class str_sql:
     def category(self):
         return self.category_
 
+
 #
 #
 # Tools to merge similar names/categories together.
@@ -1642,6 +1643,7 @@ name
             break
     return name_tmp
 
+
 # ---#
 def erase_suffix_in_name(name: str, suffix: list = []):
     """
@@ -1669,6 +1671,7 @@ name
             break
     return name_tmp
 
+
 # ---#
 def erase_word_in_name(name: str, word: list = []):
     """
@@ -1694,13 +1697,14 @@ name
             break
     return name
 
+
 # ---#
 def erase_in_name(
-    name: str, 
-    suffix: list = [], 
+    name: str,
+    suffix: list = [],
     prefix: list = [],
     word: list = [],
-    order: list = ["p", "s", "w"]
+    order: list = ["p", "s", "w"],
 ):
     """
 -------------------------------------------------------------------------------
@@ -1731,19 +1735,24 @@ name
     The name without the prefixes, suffixes and input words.
     """
     name_tmp = name
-    f = {"p": (erase_prefix_in_name, prefix), "s": (erase_suffix_in_name, suffix), "w": (erase_word_in_name, word)}
+    f = {
+        "p": (erase_prefix_in_name, prefix),
+        "s": (erase_suffix_in_name, suffix),
+        "w": (erase_word_in_name, word),
+    }
     for x in order:
         name_tmp = f[x][0](name_tmp, f[x][1])
     return name_tmp
 
+
 # ---#
 def is_similar_name(
-    name1: str, 
-    name2: str, 
-    skip_suffix: list = [], 
+    name1: str,
+    name2: str,
+    skip_suffix: list = [],
     skip_prefix: list = [],
     skip_word: list = [],
-    order: list = ["p", "s", "w"]
+    order: list = ["p", "s", "w"],
 ):
     """
 -------------------------------------------------------------------------------
@@ -1776,18 +1785,23 @@ Returns
 bool
     True if the two names are similar, false otherwise.
     """
-    n1 = erase_in_name(name=name1, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order)
-    n2 = erase_in_name(name=name2, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order)
+    n1 = erase_in_name(
+        name=name1, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order
+    )
+    n2 = erase_in_name(
+        name=name2, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order
+    )
     return n1 == n2
+
 
 # ---#
 def belong_to_group(
-    name: str, 
-    group: list, 
-    skip_suffix: list = [], 
+    name: str,
+    group: list,
+    skip_suffix: list = [],
     skip_prefix: list = [],
     skip_word: list = [],
-    order: list = ["p", "s", "w"]
+    order: list = ["p", "s", "w"],
 ):
     """
 -------------------------------------------------------------------------------
@@ -1821,23 +1835,24 @@ bool
     """
     for name2 in group:
         if is_similar_name(
-            name1=name, 
-            name2=name2, 
-            skip_suffix=skip_suffix, 
+            name1=name,
+            name2=name2,
+            skip_suffix=skip_suffix,
             skip_prefix=skip_prefix,
-            skip_word=skip_word, 
-            order=order
+            skip_word=skip_word,
+            order=order,
         ):
             return True
     return False
 
+
 # ---#
 def group_similar_names(
-    colnames: list, 
-    skip_suffix: list = [], 
+    colnames: list,
+    skip_suffix: list = [],
     skip_prefix: list = [],
     skip_word: list = [],
-    order: list = ["p", "s", "w"]
+    order: list = ["p", "s", "w"],
 ):
     """
 -------------------------------------------------------------------------------
@@ -1869,17 +1884,18 @@ dict
     result = {}
     for col in colnames:
         groupname = erase_in_name(
-            name=col, 
-            suffix=skip_suffix, 
+            name=col,
+            suffix=skip_suffix,
             prefix=skip_prefix,
             word=skip_word,
-            order=order
+            order=order,
         )
         if groupname not in result:
             result[groupname] = [col]
         else:
             result[groupname] += [col]
     return result
+
 
 # ---#
 def gen_coalesce(group_dict: dict):
