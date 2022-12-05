@@ -1761,9 +1761,9 @@ and returns it.
 
 Parameters
 ---------- 
-name1: str, optional
+name1: str
     First name to compare.
-name2: str, optional
+name2: str
     Second name to compare.
 skip_suffix: list, optional
     List of suffixes to exclude.
@@ -1810,9 +1810,9 @@ and looks if it belongs to a specific group.
 
 Parameters
 ---------- 
-name: str, optional
+name: str
     Input Name.
-group: list, optional
+group: list
     List of names.
 skip_suffix: list, optional
     List of suffixes to exclude.
@@ -1860,7 +1860,7 @@ Creates similar group using the input column names.
 
 Parameters
 ---------- 
-colnames: list, optional
+colnames: list
     List of input names.
 skip_suffix: list, optional
     List of suffixes to exclude.
@@ -1905,7 +1905,7 @@ Generates the SQL statement to merge the groups together.
 
 Parameters
 ---------- 
-group_dict: dict, optional
+group_dict: dict
     Dictionary including the different groups.
 
 Returns
