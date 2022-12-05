@@ -2,6 +2,8 @@
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/logo.png' width="180px">
 </p>
 
+:star: 2022-12-01: VerticaPy secures 100 stars.
+
 :loudspeaker: 2020-06-27: Vertica-ML-Python has been renamed to VerticaPy.
 
 :warning: VerticaPy 0.9.0 includes several significant changes and is therefore not backward compatible with older versions. For details, see the <a href='https://www.vertica.com/python/documentation_last/whats-new.php'>changelog</a>.
