@@ -1435,7 +1435,7 @@ def read_avro(
 ):
     """
 ---------------------------------------------------------------------------
-Ingests a AVRO file using flex tables.
+Ingests an AVRO file using flex tables.
 
 Parameters
 ----------
@@ -1459,7 +1459,7 @@ new_name: dict, optional
     {"param.age": "age", "param.name": "name"}
 insert: bool, optional
     If set to True, the data will be ingested to the input relation.
-    The AVRO parameters must be the same than the input relation otherwise
+    The AVRO parameters must be the same as the input relation otherwise
     they will not be ingested. Also, table_name cannot be empty if this is true.
 reject_on_materialized_type_error: bool, optional
     Boolean, whether to reject a data row that contains a materialized 
@@ -2007,6 +2007,7 @@ max_files: int, optional
     in path to inspect. Use this parameter to increase the amount of 
     data the function considers. This can be beneficial if you suspect 
     variation among files. Files are chosen arbitrarily from the glob.
+    The default value is set to 100.
 
 Returns
 -------
@@ -2244,7 +2245,7 @@ new_name: dict, optional
 	{"param.age": "age", "param.name": "name"}
 insert: bool, optional
 	If set to True, the data will be ingested to the input relation.
-    The JSON parameters must be the same than the input relation otherwise
+    The JSON parameters must be the same as the input relation otherwise
     they will not be ingested. Also, table_name cannot be empty if this is true.
 start_point: str, optional
     String, name of a key in the JSON load data at which to begin parsing. 
