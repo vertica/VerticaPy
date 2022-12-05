@@ -379,7 +379,7 @@ def get_category_from_python_type(expr):
 # ---#
 def get_category_from_vertica_type(ctype: str = ""):
     check_types([("ctype", ctype, [str])])
-    ctype = ctype.lower()
+    ctype = ctype.lower().strip()
     if ctype != "":
         if (ctype[0:5] == "array") or (ctype[0:3] == "row") or (ctype[0:3] == "set"):
             return "complex"
@@ -411,6 +411,8 @@ def get_category_from_vertica_type(ctype: str = ""):
             return "binary"
         elif "uuid" in ctype:
             return "uuid"
+        elif ctype.startswith("vmap"):
+            return "vmap"
         else:
             return "text"
     else:
@@ -651,7 +653,7 @@ def get_vertica_type(dtype):
     elif dtype == tuple:
         dtype = "set"
     elif isinstance(dtype, str):
-        dtype = dtype.lower()
+        dtype = dtype.lower().strip()
     return dtype
 
 
@@ -1189,7 +1191,7 @@ def replace_external_queries_in_query(query: str):
             else:
                 alias = '"' + external_query.strip().replace('"', '""') + '"'
             if nb_external_queries >= 1:
-                temp_table_name = '"' + gen_tmp_name(name=alias).replace('"', '') + '"'
+                temp_table_name = '"' + gen_tmp_name(name=alias).replace('"', "") + '"'
                 create_statement = f"CREATE LOCAL TEMPORARY TABLE {temp_table_name} ON COMMIT PRESERVE ROWS AS {query_dblink_template}"
                 executeSQL(
                     create_statement,

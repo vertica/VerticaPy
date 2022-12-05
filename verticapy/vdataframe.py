@@ -349,7 +349,7 @@ vColumns : vColumn
             self._VERTICAPY_VARIABLES_["isflex"] = isflex
             if isflex:
                 columns_dtype = compute_flextable_keys(
-                    flex_name='"{}".{}'.format(schema, table_name), usecols=usecols
+                    flex_name=f'"{schema}".{table_name}', usecols=usecols
                 )
             else:
                 columns_dtype = get_data_types(

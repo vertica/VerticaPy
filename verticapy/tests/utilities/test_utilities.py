@@ -358,7 +358,9 @@ class TestUtilities:
         # read_json to get a vDataFrame with maps
         vdf_table = read_json(path)
         # Testing vDataFrame.flat_vmap
-        vdf_table_flat = vdf_table.flat_vmap()
+        vdf_table_flat = vdf_table.flat_vmap(
+            exclude_columns=["away_score", "home_score"]
+        )
         all_flat_count = vdf_table_flat.count_percent()
         assert len(all_flat_count["count"]) == 52
         assert all_flat_count["count"][-10] == 105.0
@@ -721,6 +723,18 @@ class TestUtilities:
             header_names=[col[1:-1] for col in result2.get_columns()],
         )
         assert result3.shape() == (1234, 14)
+
+        # auto identification of the separator
+        path = os.path.dirname(verticapy.__file__) + "/tests/utilities/"
+        for i in range(1, 4):
+            drop(f"public.csv_test{i}")
+            result3 = read_csv(
+                path + f"csv_test{i}.csv", table_name=f"csv_test{i}", schema="public",
+            )
+            assert result3.shape() == (4, 4)
+            assert result3.get_columns() == ['"a"', '"b"', '"c"', '"d"']
+            assert result3["a"].avg() == 1.0
+            drop(f"public.csv_test{i}")
 
     @pytest.mark.skip(reason="can not read files locally.")
     def test_read_file(self, laliga_vd):
