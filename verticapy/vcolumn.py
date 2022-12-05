@@ -702,12 +702,12 @@ Attributes
 	Parameters
  	----------
  	dtype: str or Python data type
- 		New type. To convert to a JSON string, set this parameter to 'json'.
-        You can convert to array by setting this parameter to 'array'.
-        You can also convert to a VMAP by setting this parameter to 'vmap'.
-        If it is a delimited string, you can add the header_names as follows:
-        For example, your header_names is age, name, date, use 
-        dtype = 'vmap(age,name,date)' for a correct convertion.
+ 		New type. One of the following values:
+        'json': Converts to a JSON string.
+        'array': Converts to an array.
+        'vmap': Converts to a VMap. If converting a delimited string, you can 
+        add the header_names as follows: dtype = 'vmap(age,name,date)', where 
+        the header_names are age, name, and date.
 
  	Returns
  	-------
