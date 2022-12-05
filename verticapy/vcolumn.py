@@ -702,7 +702,12 @@ Attributes
 	Parameters
  	----------
  	dtype: str or Python data type
- 		New type. To convert to a JSON string, set this parameter to 'json'.
+ 		New type. One of the following values:
+        'json': Converts to a JSON string.
+        'array': Converts to an array.
+        'vmap': Converts to a VMap. If converting a delimited string, you can 
+        add the header_names as follows: dtype = 'vmap(age,name,date)', where 
+        the header_names are age, name, and date.
 
  	Returns
  	-------
@@ -721,46 +726,75 @@ Attributes
         # -#
         check_types([("dtype", dtype, [str])])
         try:
-            if dtype == "array" and self.category() == "text":
-                version(condition=[10, 0, 0])
+            if (
+                dtype == "array" or str(dtype).startswith("vmap")
+            ) and self.category() == "text":
+                if dtype == "array":
+                    version(condition=[10, 0, 0])
                 query = "SELECT {0} FROM {1} ORDER BY LENGTH({0}) DESC LIMIT 1".format(
                     self.alias, self.parent.__genSQL__()
                 )
-                array_str = executeSQL(
+                biggest_str = executeSQL(
                     query, title="getting the biggest string", method="fetchfirstelem"
                 )
-                sep = guess_sep(array_str)
-                if array_str.replace(" ", "").count(sep + sep) > 0:
-                    collection_null_element = ", collection_null_element=''"
-                else:
-                    collection_null_element = ""
-                if max_occur == 0:
-                    sep = " "
-                array_str = array_str.replace(" ", "")
-                if len(array_str) > 2 and (
-                    (array_str[0] == "(" and array_str[-1] == ")")
-                    or (array_str[0] == "{" and array_str[-1] == "}")
-                ):
-                    collection_open = ", collection_open='{0}'".format(array_str[0])
-                    collection_close = ", collection_close='{0}'".format(array_str[-1])
-                else:
-                    collection_open, collection_close = "", ""
-                transformation = (
-                    "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
-                        self.alias,
-                        sep,
-                        collection_open,
-                        collection_close,
-                        collection_null_element,
-                    ),
-                    "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
-                        "{}",
-                        sep,
-                        collection_open,
-                        collection_close,
-                        collection_null_element,
-                    ),
-                )
+                biggest_str = biggest_str.strip()
+                sep = guess_sep(biggest_str)
+                if str(dtype).startswith("vmap"):
+                    if len(biggest_str) > 2 and (
+                        (biggest_str[0] == "{" and biggest_str[-1] == "}")
+                    ):
+                        transformation = (
+                            "MAPJSONEXTRACTOR({0} USING PARAMETERS flatten_maps=false)".format(
+                                self.alias,
+                            ),
+                            "MAPJSONEXTRACTOR({} USING PARAMETERS flatten_maps=false)",
+                        )
+                    else:
+                        header_names = ""
+                        if len(dtype) > 4 and dtype[:5] == "vmap(" and dtype[-1] == ")":
+                            header_names = ", header_names='{0}'".format(dtype[5:-1])
+                        transformation = (
+                            "MAPDELIMITEDEXTRACTOR({0} USING PARAMETERS delimiter='{1}'{2})".format(
+                                self.alias, sep, header_names,
+                            ),
+                            "MAPDELIMITEDEXTRACTOR({0} USING PARAMETERS delimiter='{1}'{2})".format(
+                                "{}", sep, header_names,
+                            ),
+                        )
+                    dtype = "vmap"
+                elif dtype == "array":
+                    if biggest_str.replace(" ", "").count(sep + sep) > 0:
+                        collection_null_element = ", collection_null_element=''"
+                    else:
+                        collection_null_element = ""
+                    if len(biggest_str) > 2 and (
+                        (biggest_str[0] == "(" and biggest_str[-1] == ")")
+                        or (biggest_str[0] == "{" and biggest_str[-1] == "}")
+                    ):
+                        collection_open = ", collection_open='{0}'".format(
+                            biggest_str[0]
+                        )
+                        collection_close = ", collection_close='{0}'".format(
+                            biggest_str[-1]
+                        )
+                    else:
+                        collection_open, collection_close = "", ""
+                    transformation = (
+                        "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
+                            self.alias,
+                            sep,
+                            collection_open,
+                            collection_close,
+                            collection_null_element,
+                        ),
+                        "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
+                            "{}",
+                            sep,
+                            collection_open,
+                            collection_close,
+                            collection_null_element,
+                        ),
+                    )
             elif (
                 dtype[0:7] == "varchar" or dtype[0:4] == "char"
             ) and self.category() == "vmap":
