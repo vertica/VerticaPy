@@ -8490,19 +8490,19 @@ vColumns : vColumn
     def merge_similar_names(self, skip_word: list):
         """
     ---------------------------------------------------------------------------
-    Merges columns having similar names by excluding the input words.
-    It generates a COALESCE statement to merge the different columns into
-    a single column having the name without the input words.
-    Becareful as the order of the variables in the COALESCE statement is
-    based on the order of the 'get_columns' method.
+    Merges columns with similar names. The function generates a COALESCE 
+    statement that merges the columns into a single column that excludes 
+    the input words. Note that the order of the variables in the COALESCE 
+    statement is based on the order of the 'get_columns' method.
     
     Parameters
     ---------- 
     skip_word: list, optional
-        List of words to exclude from the name. For example, if two columns
-        are named respectively age.information.phone and 'age.phone' AND skip_word
-        is set to ['.information'] then the two columns will be merged together.
-        The two columns will be merged using a COALESCE statement:
+        List of words to exclude from the provided column names. 
+        For example, if two columns are named 'age.information.phone' 
+        and 'age.phone' AND skip_word is set to ['.information'], then 
+        the two columns will be merged together with the following 
+        COALESCE statement:
         COALESCE("age.phone", "age.information.phone") AS "age.phone"
 
     Returns
