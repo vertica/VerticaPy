@@ -238,6 +238,20 @@ class TestvDFPreprocessing:
 
         assert titanic_copy["embarked"].distinct() == [0, 1, 2, 3]
 
+    def test_vDF_merge_similar_names(self):
+        x = tablesample(
+            {
+                "age": [50, None, None, None],
+                "information.age": [None, None, 30, None],
+                "dict.age": [None, 80, None, None],
+                "age.people": [None, None, None, 10],
+                "num": [1, 2, 3, 4],
+            }
+        ).to_vdf()
+        result = x.merge_similar_names(skip_word=["information.", "dict.", ".people"])
+        assert result["age"].avg() == 42.5
+        assert result.shape() == (4, 2)
+
     def test_vDF_mean_encode(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
         titanic_copy["embarked"].mean_encode(response="survived")

@@ -1915,11 +1915,12 @@ str
     """
     result = []
     for g in group_dict:
-        L = [f'"{elem}"' for elem in group_dict[g]]
+        L = [quote_ident(elem) for elem in group_dict[g]]
+        g_ident = quote_ident(g)
         if len(L) == 1:
-            sql_tmp = group_dict[g][0]
-            result += [f'"{sql_tmp}" AS "{g}"']
+            sql_tmp = quote_ident(group_dict[g][0])
+            result += [f"{sql_tmp} AS {g_ident}"]
         else:
             sql_tmp = ", ".join(L)
-            result += [f'COALESCE({sql_tmp}) AS "{g}"']
+            result += [f"COALESCE({sql_tmp}) AS {g_ident}"]
     return ",\n".join(result)
