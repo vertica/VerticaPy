@@ -8487,6 +8487,57 @@ vColumns : vColumn
         return tablesample(values=values)
 
     # ---#
+    def merge_similar_names(self, skip_word: list):
+        """
+    ---------------------------------------------------------------------------
+    Merges columns having similar names by excluding the input words.
+    It generates a COALESCE statement to merge the different columns into
+    a single column having the name without the input words.
+    Becareful as the order of the variables in the COALESCE statement is
+    based on the order of the 'get_columns' method.
+    
+    Parameters
+    ---------- 
+    skip_word: list, optional
+        List of words to exclude from the name. For example, if two columns
+        are named respectively age.information.phone and 'age.phone' AND skip_word
+        is set to ['.information'] then the two columns will be merged together.
+        The two columns will be merged using a COALESCE statement:
+        COALESCE("age.phone", "age.information.phone") AS "age.phone"
+
+    Returns
+    -------
+    vDataFrame
+        An object containing the merged element.
+        """
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="merge_similar_names",
+            path="vdataframe.vDataFrame",
+            json_dict={"skip_word": skip_word},
+        )
+        # -#
+        if isinstance(skip_word, str):
+            skip_word = [skip_word]
+        check_types(
+            [("skip_word", skip_word, [list]),]
+        )
+        columns = self.get_columns()
+        group_dict = group_similar_names(columns, skip_word=skip_word)
+        sql = (
+            "(SELECT "
+            + gen_coalesce(group_dict)
+            + " FROM "
+            + self.__genSQL__()
+            + ") VERTICAPY_SUBTABLE"
+        )
+        return self.__vDataFrameSQL__(
+            sql,
+            "merge_similar_names",
+            "[merge_similar_names]: The columns were merged.",
+        )
+
+    # ---#
     def min(
         self, columns: list = [], **agg_kwds,
     ):
