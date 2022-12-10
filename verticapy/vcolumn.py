@@ -366,10 +366,6 @@ Attributes
 	--------
 	vDataFrame.eval : Evaluates a customized expression.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="add_copy", path="vcolumn.vColumn", json_dict={"name": name,},
-        )
         # -#
         check_types([("name", name, [str])])
         name = quote_ident(name.replace('"', "_"))
@@ -1869,11 +1865,6 @@ Attributes
 	--------
 	vDataFrame.topk : Returns the vColumn most occurent elements.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="distinct", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         if "agg" not in kwargs:
             query = "SELECT /*+LABEL('vColumn.distinct')*/ {0} AS {1} FROM {2} WHERE {1} IS NOT NULL GROUP BY {1} ORDER BY {1}".format(
                 bin_spatial_to_str(self.category(), self.alias),
@@ -2641,11 +2632,6 @@ Attributes
 	--------
 	vDataFrame[].tail : Returns the a part of the vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="head", path="vcolumn.vColumn", json_dict={"limit": limit,},
-        )
-        # -#
         return self.iloc(limit=limit)
 
     # ---#
@@ -2754,12 +2740,6 @@ Attributes
     vDataFrame[].head : Returns the head of the vColumn.
     vDataFrame[].tail : Returns the tail of the vColumn.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="iloc",
-            path="vcolumn.vColumn",
-            json_dict={"limit": limit, "offset": offset,},
-        )
         # -#
         check_types([("limit", limit, [int, float]), ("offset", offset, [int, float])])
         if offset < 0:
@@ -3760,10 +3740,6 @@ Attributes
  	float
  		optimal bar width.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="numh", path="vcolumn.vColumn", json_dict={"method": method,},
-        )
         # -#
         check_types(
             [("method", method, ["sturges", "freedman_diaconis", "fd", "auto"])]
@@ -4758,11 +4734,6 @@ Attributes
 	--------
 	vDataFrame[].head : Returns the head of the vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="tail", path="vcolumn.vColumn", json_dict={"limit": limit,},
-        )
-        # -#
         return self.iloc(limit=limit, offset=-1)
 
     # ---#
