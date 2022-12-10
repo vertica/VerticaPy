@@ -195,12 +195,6 @@ Returns
 bool
     True if the schema was successfully created, False otherwise.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="create_schema",
-        path="utilities",
-        json_dict={"schema": schema, "raise_error": raise_error,},
-    )
     # -#
     check_types(
         [("schema", schema, [str]), ("raise_error", raise_error, [bool]),]
@@ -254,20 +248,6 @@ Returns
 bool
     True if the table was successfully created, False otherwise.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="create_table",
-        path="utilities",
-        json_dict={
-            "table_name": table_name,
-            "schema": schema,
-            "dtype": dtype,
-            "genSQL": genSQL,
-            "temporary_table": temporary_table,
-            "temporary_local_table": temporary_local_table,
-            "raise_error": raise_error,
-        },
-    )
     # -#
     check_types(
         [
@@ -316,10 +296,6 @@ def create_verticapy_schema():
 ---------------------------------------------------------------------------
 Creates a schema named 'verticapy' used to store VerticaPy extended models.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="create_verticapy_schema", path="utilities", json_dict={},
-    )
     sql = "CREATE SCHEMA IF NOT EXISTS verticapy;"
     executeSQL(sql, title="Creating VerticaPy schema.")
     sql = """CREATE TABLE IF NOT EXISTS verticapy.models (model_name VARCHAR(128), 
@@ -365,12 +341,6 @@ Returns
 bool
     True if the relation was dropped, False otherwise.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="drop",
-        path="utilities",
-        json_dict={"name": name, "method": method, "raise_error": raise_error,},
-    )
     # -#
     if "relation_type" in kwds and method == "auto":
         method = kwds["relation_type"]
@@ -594,18 +564,6 @@ Returns
 list of tuples
     The list of the different columns and their respective type.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="get_data_types",
-        path="utilities",
-        json_dict={
-            "expr": expr,
-            "column": column,
-            "table_name": table_name,
-            "schema": schema,
-            "usecols": usecols,
-        },
-    )
     # -#
     check_types(
         [
@@ -987,10 +945,6 @@ Returns
 bool
     True if the column is a VMap.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="isvmap", path="utilities", json_dict={"expr": expr, "column": column,},
-    )
     # -#
     from verticapy import vDataFrame
     from verticapy.connect import current_cursor
@@ -1279,29 +1233,6 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="pcsv",
-        path="utilities",
-        json_dict={
-            "path": path,
-            "sep": sep,
-            "header": header,
-            "header_names": header_names,
-            "na_rep": na_rep,
-            "quotechar": quotechar,
-            "escape": escape,
-            "record_terminator": record_terminator,
-            "trim": trim,
-            "omit_empty_keys": omit_empty_keys,
-            "reject_on_duplicate": reject_on_duplicate,
-            "reject_on_empty_key": reject_on_empty_key,
-            "reject_on_materialized_type_error": reject_on_materialized_type_error,
-            "ingest_local": ingest_local,
-            "flex_name": flex_name,
-        },
-    )
-    # -#
     if record_terminator == "\n":
         record_terminator = "\\n"
     if not (flex_name):
@@ -1388,13 +1319,6 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="pjson",
-        path="utilities",
-        json_dict={"path": path, "ingest_local": ingest_local,},
-    )
-    # -#
     flex_name = gen_tmp_name(name="flex")[1:-1]
     executeSQL(
         f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;",
@@ -2940,12 +2864,6 @@ def set_option(option: str, value: Union[bool, int, str] = None):
     value: object, optional
         New value of option.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="set_option",
-        path="utilities",
-        json_dict={"option": option, "value": value,},
-    )
     # -#
     if isinstance(option, str):
         option = option.lower()
@@ -3639,12 +3557,6 @@ def to_tablesample(
 	--------
 	tablesample : Object in memory created for rendering purposes.
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="to_tablesample",
-        path="utilities",
-        json_dict={"query": query, "title": title, "max_columns": max_columns,},
-    )
     # -#
     check_types(
         [("query", query, [str]), ("max_columns", max_columns, [int]),]
@@ -3797,10 +3709,6 @@ list
     List containing the version information.
     [MAJOR, MINOR, PATCH, POST]
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="version", path="utilities", json_dict={"condition": condition,},
-    )
     # -#
     check_types([("condition", condition, [list])])
     if condition:
