@@ -195,12 +195,6 @@ Returns
 bool
     True if the schema was successfully created, False otherwise.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="create_schema",
-        path="utilities",
-        json_dict={"schema": schema, "raise_error": raise_error,},
-    )
     # -#
     check_types(
         [("schema", schema, [str]), ("raise_error", raise_error, [bool]),]
@@ -254,20 +248,6 @@ Returns
 bool
     True if the table was successfully created, False otherwise.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="create_table",
-        path="utilities",
-        json_dict={
-            "table_name": table_name,
-            "schema": schema,
-            "dtype": dtype,
-            "genSQL": genSQL,
-            "temporary_table": temporary_table,
-            "temporary_local_table": temporary_local_table,
-            "raise_error": raise_error,
-        },
-    )
     # -#
     check_types(
         [
@@ -316,10 +296,6 @@ def create_verticapy_schema():
 ---------------------------------------------------------------------------
 Creates a schema named 'verticapy' used to store VerticaPy extended models.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="create_verticapy_schema", path="utilities", json_dict={},
-    )
     sql = "CREATE SCHEMA IF NOT EXISTS verticapy;"
     executeSQL(sql, title="Creating VerticaPy schema.")
     sql = """CREATE TABLE IF NOT EXISTS verticapy.models (model_name VARCHAR(128), 
@@ -365,12 +341,6 @@ Returns
 bool
     True if the relation was dropped, False otherwise.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="drop",
-        path="utilities",
-        json_dict={"name": name, "method": method, "raise_error": raise_error,},
-    )
     # -#
     if "relation_type" in kwds and method == "auto":
         method = kwds["relation_type"]
@@ -594,18 +564,6 @@ Returns
 list of tuples
     The list of the different columns and their respective type.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="get_data_types",
-        path="utilities",
-        json_dict={
-            "expr": expr,
-            "column": column,
-            "table_name": table_name,
-            "schema": schema,
-            "usecols": usecols,
-        },
-    )
     # -#
     check_types(
         [
@@ -987,10 +945,6 @@ Returns
 bool
     True if the column is a VMap.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="isvmap", path="utilities", json_dict={"expr": expr, "column": column,},
-    )
     # -#
     from verticapy import vDataFrame
     from verticapy.connect import current_cursor
@@ -1279,29 +1233,6 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="pcsv",
-        path="utilities",
-        json_dict={
-            "path": path,
-            "sep": sep,
-            "header": header,
-            "header_names": header_names,
-            "na_rep": na_rep,
-            "quotechar": quotechar,
-            "escape": escape,
-            "record_terminator": record_terminator,
-            "trim": trim,
-            "omit_empty_keys": omit_empty_keys,
-            "reject_on_duplicate": reject_on_duplicate,
-            "reject_on_empty_key": reject_on_empty_key,
-            "reject_on_materialized_type_error": reject_on_materialized_type_error,
-            "ingest_local": ingest_local,
-            "flex_name": flex_name,
-        },
-    )
-    # -#
     if record_terminator == "\n":
         record_terminator = "\\n"
     if not (flex_name):
@@ -1388,13 +1319,6 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="pjson",
-        path="utilities",
-        json_dict={"path": path, "ingest_local": ingest_local,},
-    )
-    # -#
     flex_name = gen_tmp_name(name="flex")[1:-1]
     executeSQL(
         f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;",
@@ -1415,257 +1339,121 @@ read_json : Ingests a JSON file into the Vertica database.
 
 
 # ---#
-def read_file(
+def read_avro(
     path: str,
     schema: str = "",
     table_name: str = "",
-    dtype: dict = {},
-    unknown: str = "varchar",
-    varchar_varbinary_length: int = 80,
+    usecols: list = [],
+    new_name: dict = {},
     insert: bool = False,
+    reject_on_materialized_type_error: bool = False,
+    flatten_maps: bool = True,
+    flatten_arrays: bool = False,
     temporary_table: bool = False,
     temporary_local_table: bool = True,
     gen_tmp_table_name: bool = True,
-    ingest_local: bool = False,
+    ingest_local: bool = True,
     genSQL: bool = False,
-    max_files: int = 100,
+    materialize: bool = True,
+    use_complex_dt: bool = False,
 ):
     """
 ---------------------------------------------------------------------------
-Inspects and ingests a file in CSV, Parquet, ORC, JSON, or Avro format.
-This function uses the Vertica complex data type.
-For new table creation, the file must be located in the server.
+Ingests an AVRO file using flex tables.
 
 Parameters
 ----------
 path: str
-    Path to a file or glob. Valid paths include any path that is 
-    valid for COPY and that uses a file format supported by this 
-    function. 
-    When inferring the data type, only one file will be read, even 
-    if a glob specifies multiple files. However, in the case of JSON, 
-    more than one file may be read to infer the data type.
+    Absolute path where the AVRO file is located.
 schema: str, optional
-    Schema in which to create the table.
+    Schema where the AVRO file will be ingested.
 table_name: str, optional
-    Name of the table to create. If empty, the file name is used.
-dtype: dict, optional
-    Dictionary of customised data type. The predicted data types will 
-    be replaced by the input data types. The dictionary must include 
-    the name of the column as key and the new data type as value.
-unknown: str, optional
-    Type used to replace unknown data types.
-varchar_varbinary_length: int, optional
-    Default length of varchar and varbinary columns.
+    Final relation name.
+usecols: list, optional
+    List of the AVRO parameters to ingest. The other ones will be 
+    ignored. If empty all the AVRO parameters will be ingested.
+new_name: dict, optional
+    Dictionary of the new columns name. If the AVRO file is nested, 
+    it is advised to change the final names as special characters 
+    will be included.
+    For example, {"param": {"age": 3, "name": Badr}, "date": 1993-03-11} 
+    will create 3 columns: "param.age", "param.name" and "date". 
+    You can rename these columns using the 'new_name' parameter with 
+    the following dictionary:
+    {"param.age": "age", "param.name": "name"}
 insert: bool, optional
-    If set to True, the data is ingested into the input relation.
-    When you set this parameter to True, most of the parameters are 
-    ignored.
+    If set to True, the data will be ingested to the input relation.
+    The AVRO parameters must be the same as the input relation otherwise
+    they will not be ingested. Also, table_name cannot be empty if this is true.
+reject_on_materialized_type_error: bool, optional
+    Boolean, whether to reject a data row that contains a materialized 
+    column value that cannot be coerced into a compatible data type. 
+    If the value is false and the type cannot be coerced, the parser 
+    sets the value in that column to null.
+    If the column is a strongly-typed complex type, as opposed to a 
+    flexible complex type, then a type mismatch anywhere in the complex 
+    type causes the entire column to be treated as a mismatch. The parser 
+    does not partially load complex types.
+flatten_maps: bool, optional
+    Boolean, whether to flatten all AVRO maps. Key names are 
+    concatenated with nested levels. This value is recursive and 
+    affects all data in the load.
+flatten_arrays: bool, optional
+    Boolean, whether to convert lists to sub-maps with integer keys. 
+    When lists are flattened, key names are concatenated as for maps. 
+    Lists are not flattened by default. This value affects all data in 
+    the load, including nested lists.
 temporary_table: bool, optional
-    If set to True, a temporary table is created.
+    If set to True, a temporary table will be created.
 temporary_local_table: bool, optional
-    If set to True, a temporary local table is created. The parameter 
+    If set to True, a temporary local table will be created. The parameter 
     'schema' must be empty, otherwise this parameter is ignored.
 gen_tmp_table_name: bool, optional
-    Sets the name of the temporary table. This parameter is only used 
-    when the parameter 'temporary_local_table' is set to True and the 
-    parameters "table_name" and "schema" are unspecified.
+    Sets the name of the temporary table. This parameter is only used when 
+    the parameter 'temporary_local_table' is set to True and if the parameters 
+    "table_name" and "schema" are unspecified.
 ingest_local: bool, optional
-    If set to True, the file is ingested from the local machine. 
-    This currently only works for data insertion.
+    If set to True, the file will be ingested from the local machine.
 genSQL: bool, optional
     If set to True, the SQL code for creating the final table is 
     generated but not executed. This is a good way to change the final
     relation types or to customize the data ingestion.
-max_files: int, optional
-    (JSON only.) If path is a glob, specifies maximum number of files 
-    in path to inspect. Use this parameter to increase the amount of 
-    data the function considers. This can be beneficial if you suspect 
-    variation among files. Files are chosen arbitrarily from the glob.
+materialize: bool, optional
+    If set to True, the flex table is materialized into a table.
+    Otherwise, it will remain a flex table. Flex tables simplify the
+    data ingestion but have worse performace compared to regular tables.
+use_complex_dt: bool, optional
+    Boolean, whether the input data file has complex structure.
+    When this is true, most of the other parameters will be ignored.
 
 Returns
 -------
 vDataFrame
     The vDataFrame of the relation.
-    """
-    version(condition=[11, 1, 1])
-    from verticapy import vDataFrame
 
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="read_file",
-        path="utilities",
-        json_dict={
-            "path": path,
-            "schema": schema,
-            "table_name": table_name,
-            "dtype": dtype,
-            "max_files": max_files,
-            "genSQL": genSQL,
-            "unknown": unknown,
-            "varchar_varbinary_length": varchar_varbinary_length,
-            "temporary_table": temporary_table,
-            "temporary_local_table": temporary_local_table,
-            "gen_tmp_table_name": gen_tmp_table_name,
-            "ingest_local": ingest_local,
-            "insert": insert,
-        },
+See Also
+--------
+read_json : Ingests a JSON file into the Vertica database.
+    """
+    return read_json(
+        path=path,
+        schema=schema,
+        table_name=table_name,
+        usecols=usecols,
+        new_name=new_name,
+        insert=insert,
+        reject_on_materialized_type_error=reject_on_materialized_type_error,
+        flatten_maps=flatten_maps,
+        flatten_arrays=flatten_arrays,
+        temporary_table=temporary_table,
+        temporary_local_table=temporary_local_table,
+        gen_tmp_table_name=gen_tmp_table_name,
+        ingest_local=ingest_local,
+        genSQL=genSQL,
+        materialize=materialize,
+        use_complex_dt=use_complex_dt,
+        is_avro=True,
     )
-    # -#
-    check_types(
-        [
-            ("path", path, [str]),
-            ("schema", schema, [str]),
-            ("table_name", table_name, [str]),
-            ("dtype", dtype, [dict]),
-            ("max_files", max_files, [int]),
-            ("genSQL", genSQL, [bool]),
-            ("unknown", unknown, [str]),
-            ("varchar_varbinary_length", varchar_varbinary_length, [int]),
-            ("temporary_table", temporary_table, [bool]),
-            ("temporary_local_table", temporary_local_table, [bool]),
-            ("gen_tmp_table_name", gen_tmp_table_name, [bool]),
-            ("ingest_local", ingest_local, [bool]),
-            ("insert", insert, [bool]),
-        ]
-    )
-    assert not (ingest_local) or insert, ParameterError(
-        "Ingest local to create new relations is not yet supported for 'read_file'"
-    )
-    file_format = path.split(".")[-1].lower()
-    compression = extract_compression(path)
-    if compression != "UNCOMPRESSED":
-        raise ExtensionError(
-            f"Compressed files are not supported for 'read_file' function."
-        )
-    if file_format not in ("json", "parquet", "avro", "orc", "csv"):
-        raise ExtensionError("The file extension is incorrect !")
-    if file_format == "csv":
-        return read_csv(
-            path=path,
-            schema=schema,
-            table_name=table_name,
-            dtype=dtype,
-            genSQL=genSQL,
-            insert=insert,
-            temporary_table=temporary_table,
-            temporary_local_table=temporary_local_table,
-            gen_tmp_table_name=gen_tmp_table_name,
-            ingest_local=ingest_local,
-        )
-    if insert:
-        if not (table_name):
-            raise ParameterError(
-                "Parameter 'table_name' must be defined when parameter 'insert' is set to True."
-            )
-        if not (schema) and temporary_local_table:
-            schema = "v_temp_schema"
-        elif not (schema):
-            schema = "public"
-        input_relation = quote_ident(schema) + "." + quote_ident(table_name)
-        file_format = file_format.upper()
-        if file_format.lower() in ("json", "avro"):
-            parser = f" PARSER F{file_format}PARSER()"
-        else:
-            parser = f" {file_format}"
-        path = path.replace("'", "''")
-        local = "LOCAL " if ingest_local else ""
-        query = f"COPY {input_relation} FROM {local}'{path}'{parser};"
-        if genSQL:
-            return [clean_query(query)]
-        executeSQL(query, title="Inserting the data.")
-        return vDataFrame(table_name, schema=schema)
-    if schema:
-        temporary_local_table = False
-    elif temporary_local_table:
-        schema = "v_temp_schema"
-    else:
-        schema = "public"
-    basename = ".".join(path.split("/")[-1].split(".")[0:-1])
-    if gen_tmp_table_name and temporary_local_table and not (table_name):
-        table_name = gen_tmp_name(name=basename)
-    if not (table_name):
-        table_name = basename
-    sql = (
-        f"SELECT INFER_TABLE_DDL ('{path}' USING PARAMETERS "
-        f"format='{file_format}', table_name='y_verticapy', "
-        "table_schema='x_verticapy', table_type='native', "
-        "with_copy_statement=true, one_line_result=true, "
-        f"max_files={max_files}, max_candidates=1);"
-    )
-    result = executeSQL(
-        sql, title="Generating the CREATE and COPY statement.", method="fetchfirstelem"
-    )
-    result = result.replace("UNKNOWN", unknown)
-    result = "create" + "create".join(result.split("create")[1:])
-    if temporary_local_table:
-        create_statement = "CREATE LOCAL TEMPORARY TABLE {0}".format(
-            quote_ident(table_name)
-        )
-    else:
-        if not (schema):
-            schema = "public"
-        if temporary_table:
-            create_statement = "CREATE TEMPORARY TABLE {0}".format(
-                format_schema_table(schema, table_name)
-            )
-        else:
-            create_statement = "CREATE TABLE {0}".format(
-                format_schema_table(schema, table_name)
-            )
-    result = result.replace(
-        'create table "x_verticapy"."y_verticapy"', create_statement
-    )
-    if ";\n copy" in result:
-        result = result.split(";\n copy")
-        if temporary_local_table:
-            result[0] += " ON COMMIT PRESERVE ROWS;"
-        else:
-            result[0] += ";"
-        result[1] = "copy" + result[1].replace(
-            '"x_verticapy"."y_verticapy"', format_schema_table(schema, table_name),
-        )
-    else:
-        if temporary_local_table:
-            end = result.split(")")[-1]
-            result = result.split(")")[0:-1] + ") ON COMMIT PRESERVE ROWS" + end
-        result = [result]
-    if varchar_varbinary_length != 80:
-        result[0] = (
-            result[0]
-            .replace(" varchar", f" varchar({varchar_varbinary_length})")
-            .replace(" varbinary", f" varbinary({varchar_varbinary_length})")
-        )
-    for col in dtype:
-        extract_col_dt = extract_col_dt_from_query(result[0], col)
-        if extract_col_dt is None:
-            warning_message = f"The column '{col}' was not found.\nIt will be skipped."
-            warnings.warn(warning_message, Warning)
-        else:
-            column, ctype = extract_col_dt
-            result[0] = result[0].replace(
-                column + " " + ctype, column + " " + dtype[col]
-            )
-    if genSQL:
-        for idx in range(len(result)):
-            result[idx] = clean_query(result[idx])
-        return result
-    if len(result) == 1:
-        executeSQL(
-            result, title="Creating the table and ingesting the data.",
-        )
-    else:
-        executeSQL(
-            result[0], title="Creating the table.",
-        )
-        try:
-            executeSQL(
-                result[1], title="Ingesting the data.",
-            )
-        except:
-            drop(f'"{schema}"."{table_name}"', method="table")
-            raise
-    return vDataFrame(input_relation=table_name, schema=schema)
 
 
 # ---#
@@ -2076,6 +1864,261 @@ read_json : Ingests a JSON file into the Vertica database.
 
 
 # ---#
+def read_file(
+    path: str,
+    schema: str = "",
+    table_name: str = "",
+    dtype: dict = {},
+    unknown: str = "varchar",
+    varchar_varbinary_length: int = 80,
+    insert: bool = False,
+    temporary_table: bool = False,
+    temporary_local_table: bool = True,
+    gen_tmp_table_name: bool = True,
+    ingest_local: bool = False,
+    genSQL: bool = False,
+    max_files: int = 100,
+):
+    """
+---------------------------------------------------------------------------
+Inspects and ingests a file in CSV, Parquet, ORC, JSON, or Avro format.
+This function uses the Vertica complex data type.
+For new table creation, the file must be located in the server.
+
+Parameters
+----------
+path: str
+    Path to a file or glob. Valid paths include any path that is 
+    valid for COPY and that uses a file format supported by this 
+    function. 
+    When inferring the data type, only one file will be read, even 
+    if a glob specifies multiple files. However, in the case of JSON, 
+    more than one file may be read to infer the data type.
+schema: str, optional
+    Schema in which to create the table.
+table_name: str, optional
+    Name of the table to create. If empty, the file name is used.
+dtype: dict, optional
+    Dictionary of customised data type. The predicted data types will 
+    be replaced by the input data types. The dictionary must include 
+    the name of the column as key and the new data type as value.
+unknown: str, optional
+    Type used to replace unknown data types.
+varchar_varbinary_length: int, optional
+    Default length of varchar and varbinary columns.
+insert: bool, optional
+    If set to True, the data is ingested into the input relation.
+    When you set this parameter to True, most of the parameters are 
+    ignored.
+temporary_table: bool, optional
+    If set to True, a temporary table is created.
+temporary_local_table: bool, optional
+    If set to True, a temporary local table is created. The parameter 
+    'schema' must be empty, otherwise this parameter is ignored.
+gen_tmp_table_name: bool, optional
+    Sets the name of the temporary table. This parameter is only used 
+    when the parameter 'temporary_local_table' is set to True and the 
+    parameters "table_name" and "schema" are unspecified.
+ingest_local: bool, optional
+    If set to True, the file is ingested from the local machine. 
+    This currently only works for data insertion.
+genSQL: bool, optional
+    If set to True, the SQL code for creating the final table is 
+    generated but not executed. This is a good way to change the final
+    relation types or to customize the data ingestion.
+max_files: int, optional
+    (JSON only.) If path is a glob, specifies maximum number of files 
+    in path to inspect. Use this parameter to increase the amount of 
+    data the function considers. This can be beneficial if you suspect 
+    variation among files. Files are chosen arbitrarily from the glob.
+    The default value is 100.
+
+Returns
+-------
+vDataFrame
+    The vDataFrame of the relation.
+    """
+    version(condition=[11, 1, 1])
+    from verticapy import vDataFrame
+
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="read_file",
+        path="utilities",
+        json_dict={
+            "path": path,
+            "schema": schema,
+            "table_name": table_name,
+            "dtype": dtype,
+            "max_files": max_files,
+            "genSQL": genSQL,
+            "unknown": unknown,
+            "varchar_varbinary_length": varchar_varbinary_length,
+            "temporary_table": temporary_table,
+            "temporary_local_table": temporary_local_table,
+            "gen_tmp_table_name": gen_tmp_table_name,
+            "ingest_local": ingest_local,
+            "insert": insert,
+        },
+    )
+    # -#
+    check_types(
+        [
+            ("path", path, [str]),
+            ("schema", schema, [str]),
+            ("table_name", table_name, [str]),
+            ("dtype", dtype, [dict]),
+            ("max_files", max_files, [int]),
+            ("genSQL", genSQL, [bool]),
+            ("unknown", unknown, [str]),
+            ("varchar_varbinary_length", varchar_varbinary_length, [int]),
+            ("temporary_table", temporary_table, [bool]),
+            ("temporary_local_table", temporary_local_table, [bool]),
+            ("gen_tmp_table_name", gen_tmp_table_name, [bool]),
+            ("ingest_local", ingest_local, [bool]),
+            ("insert", insert, [bool]),
+        ]
+    )
+    assert not (ingest_local) or insert, ParameterError(
+        "Ingest local to create new relations is not yet supported for 'read_file'"
+    )
+    file_format = path.split(".")[-1].lower()
+    compression = extract_compression(path)
+    if compression != "UNCOMPRESSED":
+        raise ExtensionError(
+            f"Compressed files are not supported for 'read_file' function."
+        )
+    if file_format not in ("json", "parquet", "avro", "orc", "csv"):
+        raise ExtensionError("The file extension is incorrect !")
+    if file_format == "csv":
+        return read_csv(
+            path=path,
+            schema=schema,
+            table_name=table_name,
+            dtype=dtype,
+            genSQL=genSQL,
+            insert=insert,
+            temporary_table=temporary_table,
+            temporary_local_table=temporary_local_table,
+            gen_tmp_table_name=gen_tmp_table_name,
+            ingest_local=ingest_local,
+        )
+    if insert:
+        if not (table_name):
+            raise ParameterError(
+                "Parameter 'table_name' must be defined when parameter 'insert' is set to True."
+            )
+        if not (schema) and temporary_local_table:
+            schema = "v_temp_schema"
+        elif not (schema):
+            schema = "public"
+        input_relation = quote_ident(schema) + "." + quote_ident(table_name)
+        file_format = file_format.upper()
+        if file_format.lower() in ("json", "avro"):
+            parser = f" PARSER F{file_format}PARSER()"
+        else:
+            parser = f" {file_format}"
+        path = path.replace("'", "''")
+        local = "LOCAL " if ingest_local else ""
+        query = f"COPY {input_relation} FROM {local}'{path}'{parser};"
+        if genSQL:
+            return [clean_query(query)]
+        executeSQL(query, title="Inserting the data.")
+        return vDataFrame(table_name, schema=schema)
+    if schema:
+        temporary_local_table = False
+    elif temporary_local_table:
+        schema = "v_temp_schema"
+    else:
+        schema = "public"
+    basename = ".".join(path.split("/")[-1].split(".")[0:-1])
+    if gen_tmp_table_name and temporary_local_table and not (table_name):
+        table_name = gen_tmp_name(name=basename)
+    if not (table_name):
+        table_name = basename
+    sql = (
+        f"SELECT INFER_TABLE_DDL ('{path}' USING PARAMETERS "
+        f"format='{file_format}', table_name='y_verticapy', "
+        "table_schema='x_verticapy', table_type='native', "
+        "with_copy_statement=true, one_line_result=true, "
+        f"max_files={max_files}, max_candidates=1);"
+    )
+    result = executeSQL(
+        sql, title="Generating the CREATE and COPY statement.", method="fetchfirstelem"
+    )
+    result = result.replace("UNKNOWN", unknown)
+    result = "create" + "create".join(result.split("create")[1:])
+    if temporary_local_table:
+        create_statement = "CREATE LOCAL TEMPORARY TABLE {0}".format(
+            quote_ident(table_name)
+        )
+    else:
+        if not (schema):
+            schema = "public"
+        if temporary_table:
+            create_statement = "CREATE TEMPORARY TABLE {0}".format(
+                format_schema_table(schema, table_name)
+            )
+        else:
+            create_statement = "CREATE TABLE {0}".format(
+                format_schema_table(schema, table_name)
+            )
+    result = result.replace(
+        'create table "x_verticapy"."y_verticapy"', create_statement
+    )
+    if ";\n copy" in result:
+        result = result.split(";\n copy")
+        if temporary_local_table:
+            result[0] += " ON COMMIT PRESERVE ROWS;"
+        else:
+            result[0] += ";"
+        result[1] = "copy" + result[1].replace(
+            '"x_verticapy"."y_verticapy"', format_schema_table(schema, table_name),
+        )
+    else:
+        if temporary_local_table:
+            end = result.split(")")[-1]
+            result = result.split(")")[0:-1] + ") ON COMMIT PRESERVE ROWS" + end
+        result = [result]
+    if varchar_varbinary_length != 80:
+        result[0] = (
+            result[0]
+            .replace(" varchar", f" varchar({varchar_varbinary_length})")
+            .replace(" varbinary", f" varbinary({varchar_varbinary_length})")
+        )
+    for col in dtype:
+        extract_col_dt = extract_col_dt_from_query(result[0], col)
+        if extract_col_dt is None:
+            warning_message = f"The column '{col}' was not found.\nIt will be skipped."
+            warnings.warn(warning_message, Warning)
+        else:
+            column, ctype = extract_col_dt
+            result[0] = result[0].replace(
+                column + " " + ctype, column + " " + dtype[col]
+            )
+    if genSQL:
+        for idx in range(len(result)):
+            result[idx] = clean_query(result[idx])
+        return result
+    if len(result) == 1:
+        executeSQL(
+            result, title="Creating the table and ingesting the data.",
+        )
+    else:
+        executeSQL(
+            result[0], title="Creating the table.",
+        )
+        try:
+            executeSQL(
+                result[1], title="Ingesting the data.",
+            )
+        except:
+            drop(f'"{schema}"."{table_name}"', method="table")
+            raise
+    return vDataFrame(input_relation=table_name, schema=schema)
+
+
+# ---#
 def read_json(
     path: str,
     schema: str = "",
@@ -2098,6 +2141,7 @@ def read_json(
     genSQL: bool = False,
     materialize: bool = True,
     use_complex_dt: bool = False,
+    is_avro: bool = False,
 ):
     """
 ---------------------------------------------------------------------------
@@ -2125,7 +2169,7 @@ new_name: dict, optional
 	{"param.age": "age", "param.name": "name"}
 insert: bool, optional
 	If set to True, the data will be ingested to the input relation.
-    The JSON parameters must be the same than the input relation otherwise
+    The JSON parameters must be the same as the input relation otherwise
     they will not be ingested. Also, table_name cannot be empty if this is true.
 start_point: str, optional
     String, name of a key in the JSON load data at which to begin parsing. 
@@ -2166,9 +2210,8 @@ reject_on_empty_key: bool, optional
     Boolean, whether to reject any row containing a field key 
     without a value.
 flatten_maps: bool, optional
-    Boolean, whether to flatten all Avro maps. Key names are 
-    concatenated with nested levels. This value is recursive and 
-    affects all data in the load.
+    Boolean, whether to flatten sub-maps within the JSON data, separating map levels 
+    with a period (.). This value affects all data in the load, including nested maps.
 flatten_arrays: bool, optional
     Boolean, whether to convert lists to sub-maps with integer keys. 
     When lists are flattened, key names are concatenated as for maps. 
@@ -2275,7 +2318,9 @@ read_csv : Ingests a CSV file into the Vertica database.
         assert not (new_name), ParameterError(
             "You cannot use the parameter " "new_name" " with " "use_complex_dt" "."
         )
-        if ("*" in path) and ingest_local:
+        if is_avro:
+            max_files = 1
+        elif ("*" in path) and ingest_local:
             dirname = os.path.dirname(path)
             all_files = os.listdir(dirname)
             max_files = sum(1 for x in all_files if x.endswith(".json"))
@@ -2304,30 +2349,39 @@ read_csv : Ingests a CSV file into the Vertica database.
     )
     file_extension = path.split(".")[-1].lower()
     compression = extract_compression(path)
-    if file_extension not in ("json",) and (compression == "UNCOMPRESSED"):
+    if (
+        (file_extension not in ("json",) and not (is_avro))
+        or (file_extension not in ("avro",) and (is_avro))
+    ) and (compression == "UNCOMPRESSED"):
         raise ExtensionError("The file extension is incorrect !")
     basename = ".".join(path.split("/")[-1].split(".")[0:-1])
     if gen_tmp_table_name and temporary_local_table and not (table_name):
         table_name = gen_tmp_name(name=basename)
     if not (table_name):
         table_name = basename
+    if is_avro:
+        label = "read_avro"
+        parser = "FAVROPARSER"
+    else:
+        label = "read_json"
+        parser = "FJSONPARSER"
     if not (genSQL):
         query = (
-            "SELECT /*+LABEL('utilities.read_json')*/ column_name, data_type FROM columns WHERE table_name = '{0}' "
-            "AND table_schema = '{1}' ORDER BY ordinal_position"
-        ).format(table_name.replace("'", "''"), schema.replace("'", "''"))
+            "SELECT /*+LABEL('utilities.{0}')*/ column_name, data_type FROM columns WHERE table_name = '{1}' "
+            "AND table_schema = '{2}' ORDER BY ordinal_position"
+        ).format(label, table_name.replace("'", "''"), schema.replace("'", "''"))
         column_name = executeSQL(
             query, title="Looking if the relation exists.", method="fetchall"
         )
     if not (genSQL) and (column_name != []) and not (insert):
         raise NameError(
-            "The table {} already exists !".format(
+            "The table {0} already exists !".format(
                 format_schema_table(schema, table_name)
             )
         )
     elif not (genSQL) and (column_name == []) and (insert):
         raise MissingRelation(
-            "The table {} doesn't exist !".format(
+            "The table {0} doesn't exist !".format(
                 format_schema_table(schema, table_name)
             )
         )
@@ -2352,14 +2406,14 @@ read_csv : Ingests a CSV file into the Vertica database.
         if not (insert):
             all_queries += [clean_query(query)]
         options = []
-        if start_point:
+        if start_point and not (is_avro):
             options += [f"start_point='{start_point}'"]
-        if record_terminator:
+        if record_terminator and not (is_avro):
             prefix = ""
             if "\\" in record_terminator.__repr__():
                 prefix = "E"
             options += [f"record_terminator={prefix}'{record_terminator}'"]
-        if suppress_nonalphanumeric_key_chars:
+        if suppress_nonalphanumeric_key_chars and not (is_avro):
             options += ["suppress_nonalphanumeric_key_chars=true"]
         else:
             options += ["suppress_nonalphanumeric_key_chars=false"]
@@ -2370,11 +2424,11 @@ read_csv : Ingests a CSV file into the Vertica database.
             options += ["reject_on_materialized_type_error=true"]
         else:
             options += ["reject_on_materialized_type_error=false"]
-        if reject_on_duplicate:
+        if reject_on_duplicate and not (is_avro):
             options += ["reject_on_duplicate=true"]
         else:
             options += ["reject_on_duplicate=false"]
-        if reject_on_empty_key:
+        if reject_on_empty_key and not (is_avro):
             options += ["reject_on_empty_key=true"]
         else:
             options += ["reject_on_empty_key=false"]
@@ -2386,11 +2440,12 @@ read_csv : Ingests a CSV file into the Vertica database.
             options += ["flatten_maps=true"]
         else:
             options += ["flatten_maps=false"]
-        query2 = "COPY {0} FROM{1} '{2}' {3} PARSER FJSONPARSER({4});".format(
+        query2 = "COPY {0} FROM{1} '{2}' {3} PARSER {4}({5});".format(
             flex_name if (materialize) else input_relation,
             " LOCAL" if ingest_local else "",
             path.replace("'", "''"),
             compression,
+            parser,
             ", ".join(options),
         )
         all_queries = all_queries + [clean_query(query2)]
@@ -2412,8 +2467,8 @@ read_csv : Ingests a CSV file into the Vertica database.
         for column_dtype in result:
             try:
                 executeSQL(
-                    "SELECT /*+LABEL('utilities.read_json')*/ \"{0}\"::{1} FROM {2} LIMIT 1000".format(
-                        column_dtype[0], column_dtype[1], flex_name
+                    "SELECT /*+LABEL('utilities.{0}')*/ \"{1}\"::{2} FROM {3} LIMIT 1000".format(
+                        label, column_dtype[0], column_dtype[1], flex_name
                     ),
                     print_time_sql=False,
                 )
@@ -2440,10 +2495,11 @@ read_csv : Ingests a CSV file into the Vertica database.
                 suffix = "TEMPORARY "
             else:
                 suffix = ""
-            query3 = "CREATE {0}TABLE {1}{2} AS SELECT /*+LABEL('utilities.read_json')*/ {3} FROM {4}".format(
+            query3 = "CREATE {0}TABLE {1}{2} AS SELECT /*+LABEL('utilities.{3}')*/ {4} FROM {5}".format(
                 suffix,
                 input_relation,
                 " ON COMMIT PRESERVE ROWS" if suffix else "",
+                label,
                 ", ".join(cols),
                 flex_name,
             )
@@ -2480,8 +2536,8 @@ read_csv : Ingests a CSV file into the Vertica database.
                         )
                     ]
                 )
-            query = "INSERT /*+LABEL('utilities.read_json')*/ INTO {0} SELECT {1} FROM {2}".format(
-                input_relation, ", ".join(final_transformation), flex_name
+            query = "INSERT /*+LABEL('utilities.{0}')*/ INTO {1} SELECT {2} FROM {3}".format(
+                label, input_relation, ", ".join(final_transformation), flex_name
             )
             if genSQL:
                 return [clean_query(query)]
@@ -2808,12 +2864,6 @@ def set_option(option: str, value: Union[bool, int, str] = None):
     value: object, optional
         New value of option.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="set_option",
-        path="utilities",
-        json_dict={"option": option, "value": value,},
-    )
     # -#
     if isinstance(option, str):
         option = option.lower()
@@ -2972,7 +3022,7 @@ max_columns: int, optional
 
 Attributes
 ----------
-The tablesample attributes are the same than the parameters.
+The tablesample attributes are the same as the parameters.
 	"""
 
     #
@@ -3507,12 +3557,6 @@ def to_tablesample(
 	--------
 	tablesample : Object in memory created for rendering purposes.
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="to_tablesample",
-        path="utilities",
-        json_dict={"query": query, "title": title, "max_columns": max_columns,},
-    )
     # -#
     check_types(
         [("query", query, [str]), ("max_columns", max_columns, [int]),]
@@ -3665,10 +3709,6 @@ list
     List containing the version information.
     [MAJOR, MINOR, PATCH, POST]
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="version", path="utilities", json_dict={"condition": condition,},
-    )
     # -#
     check_types([("condition", condition, [list])])
     if condition:

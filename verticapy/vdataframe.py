@@ -70,7 +70,7 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
 
-##
+###
 #                                           _____
 #   _______    ______ ____________    ____  \    \
 #   \      |  |      |\           \   \   \ /____/|
@@ -127,7 +127,7 @@ external: bool, optional
     See the connect.set_external_connection function for more information.
 symbol: str, optional
     One of the following:
-    "$", "€", "£", "%", "@", "&", "§", "%", "?", "!"
+    "$", "€", "£", "%", "@", "&", "§", "?", "!"
     Symbol used to identify the external connection.
     See the connect.set_external_connection function for more information.
 sql_push_ext: bool, optional
@@ -151,8 +151,10 @@ _VERTICAPY_VARIABLES_: dict
                                 (catalog).
         exclude_columns, list : vColumns to exclude from the final 
                                 relation.
+        external, bool        : True if it is an External vDataFrame.
         history, list         : vDataFrame history (user modifications).
         input_relation, str   : Name of the vDataFrame.
+        isflex, bool          : True if it is a Flex vDataFrame.
         main_relation, str    : Relation to use to build the vDataFrame 
                                 (first floor).
         order_by, dict        : Dictionary of all rules to sort the 
@@ -186,22 +188,6 @@ vColumns : vColumn
         sql_push_ext: bool = True,
         empty: bool = False,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="__init__",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "input_relation": input_relation,
-                "columns": columns,
-                "usecols": usecols,
-                "schema": schema,
-                "sql": sql,
-                "external": external,
-                "symbol": symbol,
-                "sql_push_ext": sql_push_ext,
-                "empty": empty,
-            },
-        )
         # Initialization
         if not (isinstance(input_relation, (pd.DataFrame, np.ndarray))):
             assert input_relation or sql or empty, ParameterError(
@@ -349,7 +335,7 @@ vColumns : vColumn
             self._VERTICAPY_VARIABLES_["isflex"] = isflex
             if isflex:
                 columns_dtype = compute_flextable_keys(
-                    flex_name='"{}".{}'.format(schema, table_name), usecols=usecols
+                    flex_name=f'"{schema}".{table_name}', usecols=usecols
                 )
             else:
                 columns_dtype = get_data_types(
@@ -4348,12 +4334,6 @@ vColumns : vColumn
     vDataFrame.numcol      : Returns a list of names of the numerical vColumns in the 
                              vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="catcol",
-            path="vdataframe.vDataFrame",
-            json_dict={"max_cardinality": max_cardinality,},
-        )
         # -#
         check_types([("max_cardinality", max_cardinality, [int, float])])
         columns = []
@@ -4745,11 +4725,6 @@ vColumns : vColumn
     vDataFrame
         The copy of the vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="copy", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         copy_vDataFrame = vDataFrame("", empty=True)
         copy_vDataFrame._VERTICAPY_VARIABLES_[
             "input_relation"
@@ -5578,13 +5553,6 @@ vColumns : vColumn
     str
         The formatted current vDataFrame relation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="current_relation",
-            path="vdataframe.vDataFrame",
-            json_dict={"reindent": reindent,},
-        )
-        # -#
         if reindent:
             return indentSQL(self.__genSQL__())
         else:
@@ -5607,11 +5575,6 @@ vColumns : vColumn
     vDataFrame.numcol : Returns a list of names of the numerical vColumns in the 
                         vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="datecol", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         columns = []
         cols = self.get_columns()
         for column in cols:
@@ -5630,11 +5593,6 @@ vColumns : vColumn
     vDataFrame
         self
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="del_catalog", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         self.__update_catalog__(erase=True)
         return self
 
@@ -6425,11 +6383,6 @@ vColumns : vColumn
     bool
         True if the vDataFrame has no vColumns.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="empty", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         return not (self.get_columns())
 
     # ---#
@@ -6996,12 +6949,6 @@ vColumns : vColumn
     vDataFrame.datecol : Returns all vDataFrame vColumns of type date.
     vDataFrame.numcol  : Returns all numerical vDataFrame vColumns.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="get_columns",
-            path="vdataframe.vDataFrame",
-            json_dict={"exclude_columns": exclude_columns,},
-        )
         # -#
         if isinstance(exclude_columns, str):
             exclude_columns = [columns]
@@ -7531,11 +7478,6 @@ vColumns : vColumn
     --------
     vDataFrame.tail : Returns the vDataFrame tail.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="head", path="vdataframe.vDataFrame", json_dict={"limit": limit,},
-        )
-        # -#
         return self.iloc(limit=limit, offset=0)
 
     # ---#
@@ -7875,12 +7817,6 @@ vColumns : vColumn
     vDataFrame.head : Returns the vDataFrame head.
     vDataFrame.tail : Returns the vDataFrame tail.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="iloc",
-            path="vdataframe.vDataFrame",
-            json_dict={"limit": limit, "offset": offset, "columns": columns,},
-        )
         # -#
         if isinstance(columns, str):
             columns = [columns]
@@ -7953,11 +7889,6 @@ vColumns : vColumn
     str
         information on the vDataFrame modifications
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="info", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         if len(self._VERTICAPY_VARIABLES_["history"]) == 0:
             result = "The vDataFrame was never modified."
         elif len(self._VERTICAPY_VARIABLES_["history"]) == 1:
@@ -8487,6 +8418,57 @@ vColumns : vColumn
         return tablesample(values=values)
 
     # ---#
+    def merge_similar_names(self, skip_word: list):
+        """
+    ---------------------------------------------------------------------------
+    Merges columns with similar names. The function generates a COALESCE 
+    statement that merges the columns into a single column that excludes 
+    the input words. Note that the order of the variables in the COALESCE 
+    statement is based on the order of the 'get_columns' method.
+    
+    Parameters
+    ---------- 
+    skip_word: list, optional
+        List of words to exclude from the provided column names. 
+        For example, if two columns are named 'age.information.phone' 
+        and 'age.phone' AND skip_word is set to ['.information'], then 
+        the two columns will be merged together with the following 
+        COALESCE statement:
+        COALESCE("age.phone", "age.information.phone") AS "age.phone"
+
+    Returns
+    -------
+    vDataFrame
+        An object containing the merged element.
+        """
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="merge_similar_names",
+            path="vdataframe.vDataFrame",
+            json_dict={"skip_word": skip_word},
+        )
+        # -#
+        if isinstance(skip_word, str):
+            skip_word = [skip_word]
+        check_types(
+            [("skip_word", skip_word, [list]),]
+        )
+        columns = self.get_columns()
+        group_dict = group_similar_names(columns, skip_word=skip_word)
+        sql = (
+            "(SELECT "
+            + gen_coalesce(group_dict)
+            + " FROM "
+            + self.__genSQL__()
+            + ") VERTICAPY_SUBTABLE"
+        )
+        return self.__vDataFrameSQL__(
+            sql,
+            "merge_similar_names",
+            "[merge_similar_names]: The columns were merged.",
+        )
+
+    # ---#
     def min(
         self, columns: list = [], **agg_kwds,
     ):
@@ -8695,13 +8677,6 @@ vColumns : vColumn
     vDataFrame.catcol      : Returns the categorical type vColumns in the vDataFrame.
     vDataFrame.get_columns : Returns the vColumns of the vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="numcol",
-            path="vdataframe.vDataFrame",
-            json_dict={"exclude_columns": exclude_columns,},
-        )
-        # -#
         columns, cols = [], self.get_columns(exclude_columns=exclude_columns)
         for column in cols:
             if self[column].isnum():
@@ -11287,11 +11262,6 @@ vColumns : vColumn
     tuple
         (number of lines, number of columns)
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="shape", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         m = len(self.get_columns())
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -11624,11 +11594,6 @@ vColumns : vColumn
     --------
     vDataFrame.head : Returns the vDataFrame head.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="tail", path="vdataframe.vDataFrame", json_dict={"limit": limit,},
-        )
-        # -#
         return self.iloc(limit=limit, offset=-1)
 
     # ---#
@@ -12651,11 +12616,6 @@ vColumns : vColumn
         List containing the version information.
         [MAJOR, MINOR, PATCH, POST]
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="version", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         from verticapy.utilities import version as vertica_version
 
         return vertica_version()

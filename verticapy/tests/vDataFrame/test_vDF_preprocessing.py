@@ -238,6 +238,20 @@ class TestvDFPreprocessing:
 
         assert titanic_copy["embarked"].distinct() == [0, 1, 2, 3]
 
+    def test_vDF_merge_similar_names(self):
+        x = tablesample(
+            {
+                "age": [50, None, None, None],
+                "information.age": [None, None, 30, None],
+                "dict.age": [None, 80, None, None],
+                "age.people": [None, None, None, 10],
+                "num": [1, 2, 3, 4],
+            }
+        ).to_vdf()
+        result = x.merge_similar_names(skip_word=["information.", "dict.", ".people"])
+        assert result["age"].avg() == 42.5
+        assert result.shape() == (4, 2)
+
     def test_vDF_mean_encode(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
         titanic_copy["embarked"].mean_encode(response="survived")
@@ -431,6 +445,55 @@ class TestvDFPreprocessing:
 
         titanic_copy["age"].astype("float")
         assert titanic_copy["age"].dtype() == "float"
+
+        # STR to VMAP
+        # tests on JSONs vdf
+        vdf = tablesample(
+            {
+                "str_test": [
+                    '{"name": "Badr", "information": {"age": 29, "numero": [0, 6, 3]}}'
+                ]
+            }
+        ).to_vdf()
+        vdf["str_test"].astype("vmap")
+        assert int(vdf["str_test"]["information"]["age"][0]) == 29
+        # tests on CSVs strings
+        vdf = tablesample({"str_test": ["a,b,c,d"]}).to_vdf()
+        vdf["str_test"].astype("vmap(val1,val2,val3,val4)")
+        assert vdf["str_test"]["val2"][0] == "b"
+
+        # STR to ARRAY
+        vdf = tablesample({"str_test": ["a,b,c,d"]}).to_vdf()
+        vdf["str_test"].astype("array")
+        assert vdf["str_test"][1][0] == "b"
+
+        # VMAP to STR
+        vdf = tablesample(
+            {
+                "str_test": [
+                    '{"name": "Badr", "information": {"age": 29, "numero": [0, 6, 3]}}'
+                ]
+            }
+        ).to_vdf()
+        vdf["str_test"].astype("vmap")
+        vdf["str_test"].astype(str)
+        assert (
+            vdf["str_test"][0]
+            == '{\n\t"information": {\n\t\t"age": "29",\n\t\t"numero": {\n\t\t\t"0": "0",\n\t\t\t"1": "6",\n\t\t\t"2": "3"\n\t\t}\n\t},\n\t"name": "Badr"\n}'
+        )
+        vdf = tablesample(
+            {
+                "str_test": [
+                    '{"name": "Badr", "information": {"age": 29, "numero": [0, 6, 3]}}'
+                ]
+            }
+        ).to_vdf()
+        vdf["str_test"].astype("vmap")
+        vdf["str_test"].astype("json")
+        assert (
+            vdf["str_test"][0]
+            == '{\n\t"information": {\n\t\t"age": "29",\n\t\t"numero": {\n\t\t\t"0": "0",\n\t\t\t"1": "6",\n\t\t\t"2": "3"\n\t\t}\n\t},\n\t"name": "Badr"\n}'
+        )
 
     def test_vDF_bool_to_int(self, titanic_vd):
         titanic_copy = titanic_vd.copy()

@@ -494,7 +494,7 @@ rowset: int, optional
     SQLFetch() cycle.
 symbol: str, optional
     One of the following:
-    "$", "€", "£", "%", "@", "&", "§", "%", "?", "!"
+    "$", "€", "£", "%", "@", "&", "§", "?", "!"
     A special character, to identify the connection. 
     For example, if the symbol is '$', you can call external tables 
     with the input cid by writing $$$QUERY$$$, where QUERY represents 
