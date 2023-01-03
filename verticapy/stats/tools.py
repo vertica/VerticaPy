@@ -1431,20 +1431,20 @@ float
 def is_dir_path(adj_list: dict, X:str, Y:str):
     """
 ---------------------------------------------------------------------------
-Determines if there is a directed path from X -> Y given an adjacency list.
+Determines if there is a directed path from X to Y in a given adjacency list.
 
 Parameters
 ----------
 adj_list: dict
     Adjacency list where the values are the other keys
 X: str
-    Starting node
+    Starting node.
 Y: str
-    Ending Node
+    Ending node.
 Returns
 -------
 Boolean 
-True if there exists a path
+True if there is a path from X to Y, false otherwise.
     """
     if X not in adj_list.keys():
         raise ParameterError(f"{X} not in Adjacency List")
@@ -1471,23 +1471,23 @@ def conditional_chi_square(vdf: vDataFrame, X: str, Y: str, Z:list = [], alpha:f
     """
 -----------------------------------------------------------------------------
 Computes the conditional correlation between X and Y given Z as the condition
-using the conditional chi square independence test. It can be used to detect
-spurious correlations.
+using the conditional Chi-square independence test. This can be used to detect
+can be used to detect spurious correlations.
 
 Parameters
 ----------
 vdf: vDataFrame
     Input vDataFrame.
 X: str
-    Input vColumn to Test.
+    Input vColumn to test.
 Y: str
-    Input vColumn to Test.
+    Input vColumn to test.
 Z: list
-    Conditional vColumns
+    Conditional vColumns.
 alpha: float
-    The probability the given distribution was generated randomly
-    Smaller alpha (ie close to 0) lead to denser graphs
-    Larger  alpha (ie close to 1) lead to sparser graphs
+    The probability that the given distribution was generated randomly.
+    Smaller values (i.e. close to 0) produces denser graphs, while larger values
+    (i.e. close to 1) produces sparser graphs.
     
 Returns
 -------
