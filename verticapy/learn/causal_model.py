@@ -18,12 +18,12 @@ from verticapy import plot
 class CausalModel:
 	"""
 -------------------------------------------------
-Main Class for Causal Models.
+Main class for causal models.
 
 Parameters
 ----------
 input_relation: [str, vDataframe]
-	Name of original relation
+	Name of the input relation.
 	"""	
  
 	# ---#
@@ -52,16 +52,16 @@ input_relation: [str, vDataframe]
 					   method:str = ""): 
 		"""
 		-----------------------------------------------------------
-		Reformats the input vDataframe to optimize Causal Discovery.
+		Reformats the input vDataframe to optimize causal discovery.
 		
 		Parameters
 		----------
 		input_columns: list, optional
-			Columns relevant to the Causal Network
+			Columns relevant to the causal network.
 		exclude_columns: list, optional
-			Columns not relevant to the Causal Network
+			Columns not relevant to the causal network.
 		max_unique: int, optional
-			The maximum number of unqiue elements in any column.
+			The maximum number of unique elements in any column.
 		method: str, optional
 			If max_unique is specified, the method is used to 
 			discretize the numeric elements in the columns.
@@ -184,26 +184,26 @@ class PC(CausalModel):
 	Parameters
 	----------
 	method: str, optional
-		stable: Produces the same result despite the ordering of variables.
-		orig: Follows the original pc algorithm.
+		stable: The ordering of the variables does not affect the result.
+		orig: Uses the original PC algorithm.
 
 	max_cond_vars: int, optional
-		non-zero value that determines how many conditional variables are used, representing
-		the expected number of parents any node has. The higher the number the longer the test
-		will take to run, but the more precise the result will be.
+		Non-zero value that determines how many conditional variables are used, representing
+		the expected number of parents any given node. A greater the value gives more precise
+        results, but longer test runtimes.
 
 	significance_level: float, optional
 		p-value that determines independence.
 
 	show_progress: bool, optional
-		The value to control if the progress bar is displayed.
+		Whether to show a progress bar.
 
 	Returns
 	--------
 	skeleton_edges: dict
-		undirected edges in an adjacency dictionary
+		Undirected edges in an adjacency dictionary.
 	sepsets: dict
-		maps frozenset edge pairs to there corresponding seperation set
+		Maps frozenset edge pairs to their corresponding seperation set.
 		"""
 
 		columns = [col[1:-1] for col in self.vdf._VERTICAPY_VARIABLES_['columns']]
@@ -257,12 +257,12 @@ class PC(CausalModel):
 	# ---#
 	def build_pdag(self):
 		"""
-		Builds the partially directed acyclic graph
+		Builds the partially directed acyclic graph.
 
 		Returns
 		-------
 		pdag: dict
-			directed egdes in an adjacency dictionary
+			Directed edges in an adjacency dictionary.
 		"""
 		skeleton_edges = self.skeleton
 		sepsets = self.sepsets   
@@ -313,29 +313,29 @@ class PC(CausalModel):
 	def fit(self, method='stable', max_cond_vars=5, significance_level = 0.01, show_progress=True):
 		"""
 	----------------------------------------------------------------------------------------
-	Generate the skeleton and pdag for the causal network.
+	Generates the skeleton and partially directed acyclic graph (PDAG) for the causal network.
 	
 	Parameters
 	----------
 	method: str, optional
-		stable: Produces the same result despite the ordering of variables.
-		orig: Follows the original pc algorithm.
+		stable: The ordering of the variables does not affect the result.
+		orig: Uses the original PC algorithm.
 
 	max_cond_vars: int, optional
-		non-zero value that determines how many conditional variables are used, representing
-		the expected number of parents any node has. The higher the number the longer the test
-		will take to run, but the more precise the result will be.
+		Non-zero value that determines how many conditional variables are used, representing
+		the expected number of parents any given node. A greater the value gives more precise
+        results, but longer test runtimes.
 
 	significance_level: float, optional
 		p-value that determines independence.
 
 	show_progress: bool, optional
-		The value to control if the progress bar is displayed.
+		Whether to show a progress bar.
 
 	Returns
 	-------
 	pdag: dict
-		directed egdes in an adjacency dictionary
+		Directed egdes in an adjacency dictionary.
 
 		"""
 		self.build_skeleton(method, max_cond_vars, significance_level, show_progress)
