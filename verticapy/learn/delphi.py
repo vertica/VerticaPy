@@ -472,10 +472,10 @@ tol: float, optional
     previous iteration.
 use_kprototype: bool, optional
     If set to True, the function uses the KPrototypes algorithm instead of
-    KMeans. This one can handle categorical features.
+    KMeans. KPrototypes can handle categorical features.
 gamma: float, optional
-    [Only if use_kprototype is set to True] Weighing factor for categorical columns. 
-    It can determine relative importance of numerical and categorical attributes.
+    [Only if use_kprototype is set to True] Weighting factor for categorical columns. 
+    It determines the relative importance of numerical and categorical attributes.
 preprocess_data: bool, optional
     If True, the data will be preprocessed.
 preprocess_dict: dict, optional

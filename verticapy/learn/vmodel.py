@@ -2465,7 +2465,7 @@ Main Class for Vertica Model
         return the model probabilities.
     return_distance_clusters: bool, optional
         If set to True and the model type is KMeans / KPrototypes or 
-        NearestCentroid, the function will return the model clusters 
+        NearestCentroid, the function returns the model clusters 
         distances.
     return_str: bool, optional
         If set to True, the function str will be returned.

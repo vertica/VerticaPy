@@ -418,11 +418,11 @@ steps: list
         Function Name.
     return_proba: bool, optional
         If set to True and the model is a classifier, the function 
-        will return the model probabilities.
+        returns the model probabilities.
     return_distance_clusters: bool, optional
         If set to True and the model type is KPrototypes / KMeans 
-        or NearestCentroids, the function will return the model 
-        clusters distances.
+        or NearestCentroids, the function returns the model clusters 
+        distances.
     return_str: bool, optional
         If set to True, the function str will be returned.
 

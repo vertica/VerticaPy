@@ -366,11 +366,11 @@ n_cluster: tuple/list, optional
 	Tuple representing the number of clusters to start and end with.
     This can also be customized list with various k values to test.
 init: str/list, optional
-	The method to use to find the initial cluster centers.
+	The method used to find the initial cluster centers.
 		kmeanspp : Use the k-means++ method to initialize the centers.
                    [Only available when use_kprototype is set to False]
         random   : Randomly subsamples the data to find initial centers.
-    Default value is 'kmeanspp' if use_kprototype = False else 'random'.
+    Default value is 'kmeanspp' if use_kprototype is False; otherwise, 'random'.
 max_iter: int, optional
 	The maximum number of iterations for the algorithm.
 tol: float, optional
@@ -378,11 +378,11 @@ tol: float, optional
 	converged after no center has moved more than a distance of 'tol' from the 
 	previous iteration.
 use_kprototype: bool, optional
-    If set to True, the function uses the KPrototypes algorithm instead of
-    KMeans. This one can handle categorical features.
+    If set to True, the function uses the k-prototypes algorithm instead of
+    k-means. k-prototypes can handle categorical features.
 gamma: float, optional
-    [Only if use_kprototype is set to True] Weighing factor for categorical columns. 
-    It can determine relative importance of numerical and categorical attributes.
+    [Only if use_kprototype is set to True] Weighting factor for categorical columns. 
+    It determines the relative importance of numerical and categorical attributes.
 elbow_score_stop: float, optional
 	Stops searching for parameters when the specified elbow score is reached.
 
@@ -811,11 +811,11 @@ n_cluster: tuple/list, optional
     Tuple representing the number of cluster to start with and to end with.
     It can also be customized list with the different K to test.
 init: str/list, optional
-    The method to use to find the initial cluster centers.
+    The method used to find the initial cluster centers.
         kmeanspp : Use the k-means++ method to initialize the centers.
                    [Only available when use_kprototype is set to False]
         random   : Randomly subsamples the data to find initial centers.
-    Default value is 'kmeanspp' if use_kprototype = False else 'random'.
+    Default value is 'kmeanspp' if use_kprototype is False; otherwise, 'random'.
 max_iter: int, optional
     The maximum number of iterations for the algorithm.
 tol: float, optional
@@ -823,11 +823,11 @@ tol: float, optional
     converged after no center has moved more than a distance of 'tol' from the 
     previous iteration.
 use_kprototype: bool, optional
-    If set to True, the function uses the KPrototypes algorithm instead of
-    KMeans. This one can handle categorical features.
+    If set to True, the function uses the k-prototypes algorithm instead of
+    k-means. k-prototypes can handle categorical features.
 gamma: float, optional
-    [Only if use_kprototype is set to True] Weighing factor for categorical columns. 
-    It can determine relative importance of numerical and categorical attributes.
+    [Only if use_kprototype is set to True] Weighting factor for categorical columns. 
+    It determines the relative importance of numerical and categorical attributes.
 ax: Matplotlib axes object, optional
     The axes to plot on.
 **style_kwds

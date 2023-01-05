@@ -474,7 +474,7 @@ n_cluster: int, optional
 init: str/list, optional
 	The method to use to find the initial cluster centers.
 		kmeanspp : Uses the KMeans++ method to initialize the centers.
-		random   : The initial centers are picked up randomly.
+		random   : The centers are initialized randomly.
 	It can be also a list with the initial cluster centers to use.
 max_iter: int, optional
 	The maximum number of iterations the algorithm performs.
@@ -565,29 +565,29 @@ tol: float, optional
 class KPrototypes(Clustering):
     """
 ---------------------------------------------------------------------------
-Creates a KPrototypes object using the Vertica k-prototepes algorithm on 
-the data. It combines the k-means and k-modes algorithm to be able to
-handle numerical and categorical data.
+Creates a KPrototypes object by using the Vertica k-prototypes algorithm on 
+the data. The algorithm combines the k-means and k-modes algorithms in order
+to handle both numerical and categorical data.
 
 Parameters
 ----------
 name: str
-    Name of the the model. The model will be stored in the database.
+    Name of the the model. The model is stored in the database.
 n_cluster: int, optional
-    Number of clusters
+    Number of clusters.
 init: str/list, optional
-    The method to use to find the initial cluster centers.
-        random   : The initial centers are picked up randomly.
-    It can be also a list with the initial cluster centers to use.
+    The method used to find the initial cluster centers.
+        random   : The centers are initialized randomly.
+    You can also provide a list of initial cluster centers.
 max_iter: int, optional
     The maximum number of iterations the algorithm performs.
 tol: float, optional
     Determines whether the algorithm has converged. The algorithm is considered 
-    converged after no center has moved more than a distance of 'tol' from the 
+    converged when no center moves more than a distance of 'tol' from the 
     previous iteration.
 gamma: float, optional
-    Weighing factor for categorical columns. It can determine relative importance 
-    of numerical and categorical attributes.
+    Weighting factor for categorical columns. It determines the relative 
+    importance of numerical and categorical attributes.
     """
 
     def __init__(
