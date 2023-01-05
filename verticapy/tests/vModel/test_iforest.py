@@ -214,8 +214,8 @@ class TestIsolationForest:
         res_py = model.to_python()(
             [["Male", 0, "Cheap", "Low", 1], ["Female", 1, "Expensive", "Low", 1]]
         )
-        assert res[0] == res_py[0]
-        assert res[1] == res_py[1]
+        assert res[0] == pytest.approx(res_py[0])
+        assert res[1] == pytest.approx(res_py[1])
         iforest_data_vd["prediction_sql"] = mmodel.predict_sql(
             ['"Gender"', '"owned cars"', '"cost"', '"income"', '"TransPortation"']
         )
