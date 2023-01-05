@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -260,7 +260,7 @@ Main Class for Vertica Model
             return vDataFrameSQL(self.input_relation).contour(
                 self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
             )
-        elif self.type in ("KMeans", "BisectingKMeans", "IsolationForest",):
+        elif self.type in ("KMeans", "BisectingKMeans", "KPrototypes", "IsolationForest",):
             cbar_title = "cluster"
             if self.type == "IsolationForest":
                 cbar_title = "anomaly_score"
@@ -651,6 +651,9 @@ Main Class for Vertica Model
         elif self.type == "KMeans":
             return ("KMEANS", "APPLY_KMEANS", "")
 
+        elif self.type == "KPrototypes":
+            return ("KPROTOTYPES", "APPLY_KPROTOTYPES", "")
+
         elif self.type == "BisectingKMeans":
             return ("BISECTING_KMEANS", "APPLY_BISECTING_KMEANS", "")
 
@@ -850,11 +853,11 @@ Main Class for Vertica Model
                     ax=ax,
                     **style_kwds,
                 )
-        elif self.type in ("KMeans", "BisectingKMeans", "DBSCAN", "IsolationForest",):
-            if self.type in ("KMeans", "BisectingKMeans",):
+        elif self.type in ("KMeans", "BisectingKMeans", "KPrototypes", "DBSCAN", "IsolationForest",):
+            if self.type in ("KMeans", "BisectingKMeans", "KPrototypes",):
                 vdf = vDataFrameSQL(self.input_relation)
-                self.predict(vdf, name="kmeans_cluster")
-                catcol = "kmeans_cluster"
+                catcol = "{0}_cluster".format(self.type.lower())
+                self.predict(vdf, name=catcol)
             elif self.type == "DBSCAN":
                 vdf = vDataFrameSQL(self.name)
                 catcol = "dbscan_cluster"
@@ -1617,7 +1620,7 @@ Main Class for Vertica Model
                 model_parameters["nbtype"] = default_parameters["nbtype"]
             else:
                 model_parameters["nbtype"] = self.parameters["nbtype"]
-        elif self.type in ("KMeans", "BisectingKMeans"):
+        elif self.type in ("KMeans", "BisectingKMeans", "KPrototypes",):
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float])])
                 assert 0 <= parameters["max_iter"], ParameterError(
@@ -1655,31 +1658,57 @@ Main Class for Vertica Model
                 check_types([("init", parameters["init"], [str, list])])
                 if isinstance(parameters["init"], str):
                     if self.type == "BisectingKMeans":
-                        assert str(parameters["init"]).lower() in [
-                            "random",
-                            "kmeanspp",
-                            "pseudo",
-                        ], ParameterError(
-                            "Incorrect parameter 'init'.\nThe initialization "
-                            "method of the clusters must be in (random | "
-                            "kmeanspp | pseudo) or a list of the initial "
-                            "clusters position, found '{}'.".format(parameters["init"])
-                        )
+                        init_methods = ["random", "kmeanspp", "pseudo",]
+                    elif self.type == "KMeans":
+                        init_methods = ["random", "kmeanspp",]
                     else:
-                        assert str(parameters["init"]).lower() in [
-                            "random",
-                            "kmeanspp",
-                        ], ParameterError(
-                            "Incorrect parameter 'init'.\nThe initialization"
-                            " method of the clusters must be in (random | "
-                            "kmeanspp) or a list of the initial clusters "
-                            "position, found '{}'.".format(parameters["init"])
-                        )
+                        init_methods = ["random",]
+                    assert str(parameters["init"]).lower() in init_methods, ParameterError(
+                        ("Incorrect parameter 'init'.\nThe initialization method of the clusters must "
+                        "be in ({0}) or a list of the initial clusters position, found '{1}'.").format(" | ".join(init_methods), parameters["init"])
+                    )
                 model_parameters["init"] = parameters["init"]
             elif "init" not in self.parameters:
                 model_parameters["init"] = default_parameters["init"]
             else:
                 model_parameters["init"] = self.parameters["init"]
+
+            # KPrototypes Specific Parameters
+            if "gamma" in parameters:
+                check_types(
+                    [
+                        (
+                            "gamma",
+                            parameters["gamma"],
+                            [int, float],
+                            False,
+                        )
+                    ]
+                )
+                assert (
+                    0 <= parameters["gamma"] <= 10000
+                ), ParameterError(
+                    "Incorrect parameter 'gamma'."
+                    "\nThe Weighing factor for categorical columns "
+                    "must be between 0 and 1e4, inclusive."
+                )
+                model_parameters["gamma"] = parameters[
+                    "gamma"
+                ]
+            elif (
+                self.type == "KPrototypes"
+                and "gamma" not in self.parameters
+            ):
+                model_parameters["gamma"] = default_parameters[
+                    "gamma"
+                ]
+            elif self.type == "KPrototypes":
+                model_parameters["gamma"] = self.parameters[
+                    "gamma"
+                ]
+
+
+            # Bisecting KMeans Specific Parameters
             if "bisection_iterations" in parameters:
                 check_types(
                     [
@@ -1781,6 +1810,7 @@ Main Class for Vertica Model
                 ]
             elif self.type == "BisectingKMeans":
                 model_parameters["distance_method"] = self.parameters["distance_method"]
+
         elif self.type in ("LinearSVC", "LinearSVR"):
             if "tol" in parameters:
                 check_types([("tol", parameters["tol"], [int, float])])
@@ -2241,8 +2271,10 @@ Main Class for Vertica Model
                 ],
                 "p": 2,
             }
-        elif self.type == "KMeans":
+        elif self.type in ("KMeans",):
             attributes = {"clusters": self.cluster_centers_.to_numpy(), "p": 2}
+        elif self.type in ("KPrototypes",):
+            attributes = {"clusters": self.cluster_centers_.to_numpy(), "p": 2, "gamma": self.parameters["gamma"]}
         elif self.type == "NearestCentroid":
             attributes = {
                 "clusters": self.centroids_.to_numpy()[:, 0:-1],
@@ -2432,8 +2464,9 @@ Main Class for Vertica Model
         If set to True and the model is a classifier, the function will 
         return the model probabilities.
     return_distance_clusters: bool, optional
-        If set to True and the model type is KMeans or NearestCentroid, the 
-        function will return the model clusters distances.
+        If set to True and the model type is KMeans / KPrototypes or 
+        NearestCentroid, the function will return the model clusters 
+        distances.
     return_str: bool, optional
         If set to True, the function str will be returned.
 
@@ -2502,7 +2535,9 @@ Main Class for Vertica Model
             )
             func += "\treturn np.apply_along_axis(predict_tree_final, 1, X)\n"
             return func
-        elif self.type in ("NearestCentroid", "KMeans"):
+        elif self.type in ("KPrototypes",):
+            pass # TODO
+        elif self.type in ("NearestCentroid", "KMeans",):
             centroids = (
                 self.centroids_.to_list()
                 if self.type == "NearestCentroid"
@@ -4706,7 +4741,9 @@ class Unsupervised(vModel):
                 ),
                 title="Creating a temporary view to fit the model.",
             )
-            if not (X):
+            if not(X) and (self.type == "KPrototypes"):
+                X = input_relation.get_columns()
+            elif not (X):
                 X = input_relation.numcol()
         else:
             self.input_relation = input_relation
@@ -4721,26 +4758,26 @@ class Unsupervised(vModel):
         query = "SELECT /*+LABEL('learn.vModel.fit')*/ {}('{}', '{}', '{}'".format(
             fun, self.name, relation, ", ".join(self.X)
         )
-        if self.type in ("BisectingKMeans", "KMeans"):
-            query += ", {}".format(parameters["n_cluster"])
+        if self.type in ("BisectingKMeans", "KMeans", "KPrototypes",):
+            query += ", {0}".format(parameters["n_cluster"])
         elif self.type == "Normalizer":
-            query += ", {}".format(parameters["method"])
+            query += ", {0}".format(parameters["method"])
             del parameters["method"]
         if self.type not in ("Normalizer", "MCA"):
             query += " USING PARAMETERS "
         if (
             "init_method" in parameters
             and not (isinstance(parameters["init_method"], str))
-            and self.type in ("KMeans", "BisectingKMeans")
+            and self.type in ("KMeans", "BisectingKMeans", "KPrototypes",)
         ):
             name_init = gen_tmp_name(
-                schema=schema_relation(self.name)[0], name="kmeans_init"
+                schema=schema_relation(self.name)[0], name="{0}_init".format(self.type.lower())
             )
             del parameters["init_method"]
             drop(name_init, method="table")
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
                 raise ParameterError(
-                    "'init' must be a list of 'n_cluster' = {} points".format(
+                    "'init' must be a list of 'n_cluster' = {0} points".format(
                         self.parameters["n_cluster"]
                     )
                 )
@@ -4748,7 +4785,7 @@ class Unsupervised(vModel):
                 for item in self.parameters["init"]:
                     if len(X) != len(item):
                         raise ParameterError(
-                            "Each points of 'init' must be of size len(X) = {}".format(
+                            "Each points of 'init' must be of size len(X) = {0}".format(
                                 len(self.X)
                             )
                         )
@@ -4795,48 +4832,48 @@ class Unsupervised(vModel):
             if (
                 "init_method" in parameters
                 and not (isinstance(parameters["init_method"], str))
-                and self.type in ("KMeans", "BisectingKMeans")
+                and self.type in ("KMeans", "BisectingKMeans", "KPrototypes",)
             ):
-                drop("{}".format(name_init), method="table")
+                drop(name_init, method="table")
             raise
-        if self.type == "KMeans":
+        if self.type in ("KMeans", "BisectingKMeans", "KPrototypes",):
             if (
                 "init_method" in parameters
                 and not (isinstance(parameters["init_method"], str))
-                and self.type in ("KMeans", "BisectingKMeans")
             ):
-                drop("{}".format(name_init), method="table")
-            self.cluster_centers_ = self.get_attr("centers")
-            result = self.get_attr("metrics").values["metrics"][0]
-            values = {
-                "index": [
-                    "Between-Cluster Sum of Squares",
-                    "Total Sum of Squares",
-                    "Total Within-Cluster Sum of Squares",
-                    "Between-Cluster SS / Total SS",
-                    "converged",
+                drop(name_init, method="table")
+            if self.type in ("KMeans", "KPrototypes",):
+                self.cluster_centers_ = self.get_attr("centers")
+                result = self.get_attr("metrics").values["metrics"][0]
+                values = {
+                    "index": [
+                        "Between-Cluster Sum of Squares",
+                        "Total Sum of Squares",
+                        "Total Within-Cluster Sum of Squares",
+                        "Between-Cluster SS / Total SS",
+                        "converged",
+                    ]
+                }
+                values["value"] = [
+                    float(
+                        result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
+                    ),
+                    float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
+                    float(
+                        result.split("Total Within-Cluster Sum of Squares: ")[1].split(
+                            "\n"
+                        )[0]
+                    ),
+                    float(
+                        result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
+                    )
+                    / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
+                    result.split("Converged: ")[1].split("\n")[0] == "True",
                 ]
-            }
-            values["value"] = [
-                float(
-                    result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
-                ),
-                float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-                float(
-                    result.split("Total Within-Cluster Sum of Squares: ")[1].split(
-                        "\n"
-                    )[0]
-                ),
-                float(
-                    result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
-                )
-                / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-                result.split("Converged: ")[1].split("\n")[0] == "True",
-            ]
-            self.metrics_ = tablesample(values)
-        elif self.type == "BisectingKMeans":
-            self.metrics_ = self.get_attr("Metrics")
-            self.cluster_centers_ = self.get_attr("BKTree")
+                self.metrics_ = tablesample(values)
+            elif self.type == "BisectingKMeans":
+                self.metrics_ = self.get_attr("Metrics")
+                self.cluster_centers_ = self.get_attr("BKTree")
         elif self.type in ("PCA", "MCA"):
             self.components_ = self.get_attr("principal_components")
             if self.type == "MCA":

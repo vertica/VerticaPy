@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -474,7 +474,7 @@ n_cluster: int, optional
 init: str/list, optional
 	The method to use to find the initial cluster centers.
 		kmeanspp : Uses the KMeans++ method to initialize the centers.
-		random   : The initial centers.
+		random   : The initial centers are picked up randomly.
 	It can be also a list with the initial cluster centers to use.
 max_iter: int, optional
 	The maximum number of iterations the algorithm performs.
@@ -559,3 +559,69 @@ tol: float, optional
             )
         else:
             raise Exception("Voronoi Plots are only available in 2D")
+
+
+# ---#
+class KPrototypes(Clustering):
+    """
+---------------------------------------------------------------------------
+Creates a KPrototypes object using the Vertica k-prototepes algorithm on 
+the data. It combines the k-means and k-modes algorithm to be able to
+handle numerical and categorical data.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model will be stored in the database.
+n_cluster: int, optional
+    Number of clusters
+init: str/list, optional
+    The method to use to find the initial cluster centers.
+        random   : The initial centers are picked up randomly.
+    It can be also a list with the initial cluster centers to use.
+max_iter: int, optional
+    The maximum number of iterations the algorithm performs.
+tol: float, optional
+    Determines whether the algorithm has converged. The algorithm is considered 
+    converged after no center has moved more than a distance of 'tol' from the 
+    previous iteration.
+gamma: float, optional
+    Weighing factor for categorical columns. It can determine relative importance 
+    of numerical and categorical attributes.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        n_cluster: int = 8,
+        init: str = "random",
+        max_iter: int = 300,
+        tol: float = 1e-4,
+        gamma: float = 1.0,
+    ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="KPrototypes",
+            path="learn.cluster",
+            json_dict={
+                "name": name,
+                "n_cluster": n_cluster,
+                "init": init,
+                "max_iter": max_iter,
+                "tol": tol,
+                "gamma": gamma,
+            },
+        )
+        # -#
+        check_types([("name", name, [str])])
+        self.type, self.name = "KPrototypes", name
+        self.set_params(
+            {
+                "n_cluster": n_cluster,
+                "init": init.lower() if isinstance(init, str) else init,
+                "max_iter": max_iter,
+                "tol": tol,
+                "gamma": gamma,
+            }
+        )
+        version(condition=[12, 0, 3])

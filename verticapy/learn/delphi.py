@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -461,6 +461,7 @@ n_cluster: int, optional
 init: str/list, optional
     The method for finding the initial cluster centers.
         kmeanspp : Uses the k-means++ method to initialize the centers.
+                   [Only available when use_kprototype is set to False]
         random   : Randomly subsamples the data to find initial centers.
     Alternatively, you can specify a list with the initial custer centers.
 max_iter: int, optional
@@ -469,6 +470,12 @@ tol: float, optional
     Determines whether the algorithm has converged. The algorithm is considered 
     converged after no center has moved more than a distance of 'tol' from the 
     previous iteration.
+use_kprototype: bool, optional
+    If set to True, the function uses the KPrototypes algorithm instead of
+    KMeans. This one can handle categorical features.
+gamma: float, optional
+    [Only if use_kprototype is set to True] Weighing factor for categorical columns. 
+    It can determine relative importance of numerical and categorical attributes.
 preprocess_data: bool, optional
     If True, the data will be preprocessed.
 preprocess_dict: dict, optional
@@ -493,6 +500,8 @@ model_: object
         init: str = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
+        use_kprototype: bool = False,
+        gamma: float = 1.0,
         preprocess_data: bool = True,
         preprocess_dict: dict = {
             "identify_ts": False,
@@ -512,6 +521,8 @@ model_: object
                 "init": init,
                 "max_iter": max_iter,
                 "tol": tol,
+                "use_kprototype": use_kprototype,
+                "gamma": gamma,
                 "print_info": print_info,
                 "preprocess_data": preprocess_data,
                 "preprocess_dict": preprocess_dict,
@@ -525,6 +536,8 @@ model_: object
                 ("init", init, [str, list]),
                 ("max_iter", max_iter, [int]),
                 ("tol", tol, [float]),
+                ("use_kprototype", use_kprototype, [bool]),
+                ("gamma", gamma, [float]),
                 ("preprocess_data", preprocess_data, [bool]),
                 ("preprocess_dict", preprocess_dict, [dict]),
                 ("print_info", print_info, [bool]),
@@ -536,6 +549,8 @@ model_: object
             "init": init,
             "max_iter": max_iter,
             "tol": tol,
+            "use_kprototype": use_kprototype,
+            "gamma": gamma,
             "print_info": print_info,
             "preprocess_data": preprocess_data,
             "preprocess_dict": preprocess_dict,
@@ -584,6 +599,8 @@ model_: object
                 init=self.parameters["init"],
                 max_iter=self.parameters["max_iter"],
                 tol=self.parameters["tol"],
+                use_kprototype=self.parameters["use_kprototype"],
+                gamma=self.parameters["gamma"],
                 elbow_score_stop=0.9,
                 tqdm=self.parameters["print_info"],
             )
@@ -596,13 +613,23 @@ model_: object
         else:
             loop = range(1)
         for i in loop:
-            self.model_ = KMeans(
-                self.name,
-                n_cluster=self.parameters["n_cluster"],
-                init=self.parameters["init"],
-                max_iter=self.parameters["max_iter"],
-                tol=self.parameters["tol"],
-            )
+            if self.parameters["use_kprototype"]:
+                self.model_ = KPrototypes(
+                    self.name,
+                    n_cluster=self.parameters["n_cluster"],
+                    init=self.parameters["init"],
+                    max_iter=self.parameters["max_iter"],
+                    tol=self.parameters["tol"],
+                    gamma=self.parameters["gamma"],
+                )
+            else:
+                self.model_ = KMeans(
+                    self.name,
+                    n_cluster=self.parameters["n_cluster"],
+                    init=self.parameters["init"],
+                    max_iter=self.parameters["max_iter"],
+                    tol=self.parameters["tol"],
+                )
             self.model_.fit(input_relation, X=X)
         return self.model_
 
