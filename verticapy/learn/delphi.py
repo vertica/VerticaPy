@@ -471,8 +471,8 @@ tol: float, optional
     converged after no center has moved more than a distance of 'tol' from the 
     previous iteration.
 use_kprototype: bool, optional
-    If set to True, the function uses the KPrototypes algorithm instead of
-    KMeans. KPrototypes can handle categorical features.
+    If set to True, the function uses the k-prototypes algorithm instead of
+    k-means. k-prototypes can handle categorical features.
 gamma: float, optional
     [Only if use_kprototype is set to True] Weighting factor for categorical columns. 
     It determines the relative importance of numerical and categorical attributes.
