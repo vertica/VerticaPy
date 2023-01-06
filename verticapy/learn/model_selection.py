@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -343,15 +343,17 @@ def best_k(
     input_relation: Union[str, vDataFrame],
     X: list = [],
     n_cluster: Union[tuple, list] = (1, 100),
-    init: Union[str, list] = "kmeanspp",
+    init: Union[str, list] = None,
     max_iter: int = 50,
     tol: float = 1e-4,
+    use_kprototype: bool = False,
+    gamma: float = 1.0,
     elbow_score_stop: float = 0.8,
     **kwargs,
 ):
     """
 ---------------------------------------------------------------------------
-Finds the k-means k based on a score.
+Finds the k-means / k-prototypes k based on a score.
 
 Parameters
 ----------
@@ -364,23 +366,30 @@ n_cluster: tuple/list, optional
 	Tuple representing the number of clusters to start and end with.
     This can also be customized list with various k values to test.
 init: str/list, optional
-	The method to use to find the initial cluster centers.
+	The method used to find the initial cluster centers.
 		kmeanspp : Use the k-means++ method to initialize the centers.
+                   [Only available when use_kprototype is set to False]
         random   : Randomly subsamples the data to find initial centers.
-	It can be also a list with the initial cluster centers to use.
+    Default value is 'kmeanspp' if use_kprototype is False; otherwise, 'random'.
 max_iter: int, optional
 	The maximum number of iterations for the algorithm.
 tol: float, optional
 	Determines whether the algorithm has converged. The algorithm is considered 
 	converged after no center has moved more than a distance of 'tol' from the 
 	previous iteration.
+use_kprototype: bool, optional
+    If set to True, the function uses the k-prototypes algorithm instead of
+    k-means. k-prototypes can handle categorical features.
+gamma: float, optional
+    [Only if use_kprototype is set to True] Weighting factor for categorical columns. 
+    It determines the relative importance of numerical and categorical attributes.
 elbow_score_stop: float, optional
 	Stops searching for parameters when the specified elbow score is reached.
 
 Returns
 -------
 int
-	the KMeans K
+	the k-means / k-prototypes k
 	"""
     # Saving information to the query profile table
     save_to_query_profile(
@@ -393,12 +402,18 @@ int
             "init": init,
             "max_iter": max_iter,
             "tol": tol,
+            "use_kprototype": use_kprototype,
+            "gamma": gamma,
             "elbow_score_stop": elbow_score_stop,
         },
     )
     # -#
     if isinstance(X, str):
         X = [X]
+    if not(init) and (use_kprototype):
+        init = "random"
+    elif not(init):
+        init = "kmeanspp"
     check_types(
         [
             ("X", X, [list]),
@@ -407,11 +422,13 @@ int
             ("init", init, ["kmeanspp", "random"]),
             ("max_iter", max_iter, [int, float]),
             ("tol", tol, [int, float]),
+            ("use_kprototype", use_kprototype, [bool]),
+            ("gamma", gamma, [int, float]),
             ("elbow_score_stop", elbow_score_stop, [int, float]),
         ]
     )
 
-    from verticapy.learn.cluster import KMeans
+    from verticapy.learn.cluster import KMeans, KPrototypes
 
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
@@ -432,17 +449,20 @@ int
         loop = L
     for i in loop:
         model_name = gen_tmp_name(schema=schema, name="kmeans")
-        drop(model_name, method="model")
-        model = KMeans(model_name, i, init, max_iter, tol)
+        if use_kprototype:
+            if init == "kmeanspp":
+                init = "random"
+            model = KPrototypes(model_name, i, init, max_iter, tol, gamma)
+        else:
+            model = KMeans(model_name, i, init, max_iter, tol)
         model.fit(input_relation, X)
         score = model.metrics_.values["value"][3]
         if score > elbow_score_stop:
             return i
         score_prev = score
+        model.drop()
     print(
-        "\u26A0 The K was not found. The last K (= {}) is returned with an elbow score of {}".format(
-            i, score
-        )
+        f"\u26A0 The K was not found. The last K (= {i}) is returned with an elbow score of {score}"
     )
     return i
 
@@ -768,9 +788,11 @@ def elbow(
     input_relation: Union[str, vDataFrame],
     X: list = [],
     n_cluster: Union[tuple, list] = (1, 15),
-    init: Union[str, list] = "kmeanspp",
+    init: Union[str, list] = None,
     max_iter: int = 50,
     tol: float = 1e-4,
+    use_kprototype: bool = False,
+    gamma: float = 1.0,
     ax=None,
     **style_kwds,
 ):
@@ -789,16 +811,23 @@ n_cluster: tuple/list, optional
     Tuple representing the number of cluster to start with and to end with.
     It can also be customized list with the different K to test.
 init: str/list, optional
-    The method to use to find the initial cluster centers.
+    The method used to find the initial cluster centers.
         kmeanspp : Use the k-means++ method to initialize the centers.
+                   [Only available when use_kprototype is set to False]
         random   : Randomly subsamples the data to find initial centers.
-    Alternatively, you can specify a list with the initial custer centers.
+    Default value is 'kmeanspp' if use_kprototype is False; otherwise, 'random'.
 max_iter: int, optional
     The maximum number of iterations for the algorithm.
 tol: float, optional
     Determines whether the algorithm has converged. The algorithm is considered 
     converged after no center has moved more than a distance of 'tol' from the 
     previous iteration.
+use_kprototype: bool, optional
+    If set to True, the function uses the k-prototypes algorithm instead of
+    k-means. k-prototypes can handle categorical features.
+gamma: float, optional
+    [Only if use_kprototype is set to True] Weighting factor for categorical columns. 
+    It determines the relative importance of numerical and categorical attributes.
 ax: Matplotlib axes object, optional
     The axes to plot on.
 **style_kwds
@@ -822,6 +851,8 @@ tablesample
                 "init": init,
                 "max_iter": max_iter,
                 "tol": tol,
+                "use_kprototype": use_kprototype,
+                "gamma": gamma,
             },
             **style_kwds,
         },
@@ -829,6 +860,10 @@ tablesample
     # -#
     if isinstance(X, str):
         X = [X]
+    if not(init) and (use_kprototype):
+        init = "random"
+    elif not(init):
+        init = "kmeanspp"
     check_types(
         [
             ("X", X, [list]),
@@ -837,9 +872,12 @@ tablesample
             ("init", init, ["kmeanspp", "random"]),
             ("max_iter", max_iter, [int, float]),
             ("tol", tol, [int, float]),
+            ("use_kprototype", use_kprototype, [bool]),
+            ("gamma", gamma, [int, float]),
         ]
     )
-    version(condition=[8, 0, 0])
+    from verticapy.learn.cluster import KMeans, KPrototypes
+
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
     else:
@@ -859,10 +897,12 @@ tablesample
     else:
         loop = L
     for i in loop:
-        drop(model_name, method="model")
-        from verticapy.learn.cluster import KMeans
-
-        model = KMeans(model_name, i, init, max_iter, tol)
+        if use_kprototype:
+            if init == "kmeanspp":
+                init = "random"
+            model = KPrototypes(model_name, i, init, max_iter, tol, gamma)
+        else:
+            model = KMeans(model_name, i, init, max_iter, tol)
         model.fit(input_relation, X)
         all_within_cluster_SS += [float(model.metrics_.values["value"][3])]
         model.drop()
@@ -1068,7 +1108,7 @@ tablesample
         },
     )
     # -#
-    from verticapy.learn.cluster import KMeans, BisectingKMeans, DBSCAN
+    from verticapy.learn.cluster import KMeans, KPrototypes, BisectingKMeans, DBSCAN
     from verticapy.learn.decomposition import PCA, SVD
     from verticapy.learn.ensemble import (
         RandomForestRegressor,
@@ -1495,6 +1535,56 @@ tablesample
                 "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins},
                 "n_cluster": {"type": int, "range": [1, 10000], "nbins": nbins},
                 "init": {"type": str, "values": ["kmeanspp", "random"]},
+            }
+    elif isinstance(estimator, KPrototypes):
+        if optimized_grid == 0:
+            params_grid = {
+                "n_cluster": list(range(2, 100, math.ceil(100 / nbins))),
+                "init": ["random"],
+                "max_iter": [100, 500, 1000],
+                "tol": [1e-4, 1e-6, 1e-8],
+                "gamma": [0.1, 1.0, 10.0],
+            }
+        elif optimized_grid == 1:
+            params_grid = {
+                "n_cluster": [
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    15,
+                    20,
+                    50,
+                    100,
+                    200,
+                    300,
+                    1000,
+                ],
+                "init": ["random"],
+                "max_iter": [1000],
+                "tol": [1e-8],
+                "gamma": [1.0],
+            }
+        elif optimized_grid == 2:
+            params_grid = {
+                "n_cluster": [2, 3, 4, 5, 10, 20, 100],
+                "init": ["random"],
+                "max_iter": [1000],
+                "tol": [1e-8],
+                "gamma": [1.0],
+            }
+        elif optimized_grid == -666:
+            return {
+                "tol": {"type": float, "range": [1e-2, 1e-8], "nbins": nbins},
+                "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins},
+                "n_cluster": {"type": int, "range": [1, 10000], "nbins": nbins},
+                "gamma": {"type": float, "range": [1e-2, 100], "nbins": nbins},
+                "init": {"type": str, "values": ["random"]},
             }
     elif isinstance(estimator, BisectingKMeans):
         if optimized_grid == 0:

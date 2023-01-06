@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -46,7 +46,7 @@
 # data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.12.0"
+__version__ = "0.13.0"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = (

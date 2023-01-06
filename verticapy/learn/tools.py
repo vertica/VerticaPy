@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -323,15 +323,14 @@ model
         model_type = does_model_exist(
             name=name, raise_error=False, return_model_type=True
         )
-        if model_type.lower() == "kmeans":
+        if model_type.lower() in ("kmeans", "kprototypes",):
             info = executeSQL(
-                "SELECT /*+LABEL('learn.tools.load_model')*/ GET_MODEL_SUMMARY (USING PARAMETERS model_name = '"
-                + name
-                + "')",
+                f"SELECT /*+LABEL('learn.tools.load_model')*/ GET_MODEL_SUMMARY (USING PARAMETERS model_name = '{name}')",
                 method="fetchfirstelem",
                 print_time_sql=False,
             ).replace("\n", " ")
-            info = "kmeans(" + info.split("kmeans(")[1]
+            mtype = model_type.lower() + "("
+            info = mtype + info.split(mtype)[1]
         elif model_type.lower() == "normalize_fit":
             from verticapy.learn.preprocessing import Normalizer
 
@@ -547,16 +546,26 @@ model
                 class_weights,
                 int(parameters_dict["max_iterations"]),
             )
-        elif model_type == "kmeans":
-            from verticapy.learn.cluster import KMeans
+        elif model_type in ("kmeans", "kprototypes"):
+            from verticapy.learn.cluster import KMeans, KPrototypes
 
-            model = KMeans(
-                name,
-                int(info.split(",")[-1]),
-                parameters_dict["init_method"],
-                int(parameters_dict["max_iterations"]),
-                float(parameters_dict["epsilon"]),
-            )
+            if model_type == "kmeans":
+                model = KMeans(
+                    name,
+                    int(info.split(",")[-1]),
+                    parameters_dict["init_method"],
+                    int(parameters_dict["max_iterations"]),
+                    float(parameters_dict["epsilon"]),
+                )
+            else:
+                model = KPrototypes(
+                    name,
+                    int(info.split(",")[-1]),
+                    parameters_dict["init_method"],
+                    int(parameters_dict["max_iterations"]),
+                    float(parameters_dict["epsilon"]),
+                    float(parameters_dict["gamma"]),
+                )
             model.cluster_centers_ = model.get_attr("centers")
             result = model.get_attr("metrics").values["metrics"][0]
             values = {
@@ -636,6 +645,7 @@ model
         model.test_relation = test_relation if (test_relation) else model.input_relation
         if model_type not in (
             "kmeans",
+            "kprototypes",
             "pca",
             "svd",
             "one_hot_encoder_fit",
@@ -710,7 +720,7 @@ def get_model_category(model_type: str):
         "XGBoostRegressor",
     ]:
         return ("regressor", "")
-    elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans"]:
+    elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans", "KPrototypes"]:
         return ("unsupervised", "clustering")
     elif model_type in ["PCA", "SVD", "MCA"]:
         return ("unsupervised", "decomposition")
@@ -858,7 +868,9 @@ def get_model_init_params(model_type: str):
         }
     elif model_type == "KMeans":
         return {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 1e-4}
-    elif model_type in ("BisectingKMeans"):
+    elif model_type == "KPrototypes":
+        return {"n_cluster": 8, "init": "random", "max_iter": 300, "tol": 1e-4, "gamma": 1.0}
+    elif model_type == "BisectingKMeans":
         return {
             "n_cluster": 8,
             "bisection_iterations": 1,

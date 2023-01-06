@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -417,11 +417,12 @@ steps: list
     name: str, optional
         Function Name.
     return_proba: bool, optional
-        If set to True and the model is a classifier, the function will return 
-        the model probabilities.
+        If set to True and the model is a classifier, the function 
+        returns the model probabilities.
     return_distance_clusters: bool, optional
-        If set to True and the model type is KMeans or NearestCentroids, the 
-        function will return the model clusters distances.
+        If set to True and the model type is KPrototypes / KMeans 
+        or NearestCentroids, the function returns the model clusters 
+        distances.
     return_str: bool, optional
         If set to True, the function str will be returned.
 

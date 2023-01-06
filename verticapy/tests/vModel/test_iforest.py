@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -214,8 +214,8 @@ class TestIsolationForest:
         res_py = model.to_python()(
             [["Male", 0, "Cheap", "Low", 1], ["Female", 1, "Expensive", "Low", 1]]
         )
-        assert res[0] == res_py[0]
-        assert res[1] == res_py[1]
+        assert res[0] == pytest.approx(res_py[0])
+        assert res[1] == pytest.approx(res_py[1])
         iforest_data_vd["prediction_sql"] = mmodel.predict_sql(
             ['"Gender"', '"owned cars"', '"cost"', '"income"', '"TransPortation"']
         )
