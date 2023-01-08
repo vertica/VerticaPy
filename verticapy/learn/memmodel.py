@@ -1514,6 +1514,7 @@ def sql_from_clusters(
             ("return_distance_clusters", return_distance_clusters, [bool]),
             ("return_proba", return_proba, [bool]),
             ("classes", classes, [list, np.ndarray]),
+            ("p", p, [int, float]),
         ]
     )
     for c in clusters:
@@ -1527,7 +1528,7 @@ def sql_from_clusters(
     for i in range(len(classes)):
         val = classes[i]
         if isinstance(val, str):
-            val = "'{}'".format(classes[i])
+            val = "'{0}'".format(classes[i])
         elif val == None:
             val = "NULL"
         classes_tmp += [val]
@@ -1535,36 +1536,246 @@ def sql_from_clusters(
     for c in clusters:
         list_tmp = []
         for idx, col in enumerate(X):
-            list_tmp += ["POWER({} - {}, {})".format((X[idx]), c[idx], p)]
-        clusters_distance += ["POWER(" + " + ".join(list_tmp) + ", 1 / {})".format(p)]
+            list_tmp += ["POWER({0} - {1}, {2})".format((X[idx]), c[idx], p)]
+        clusters_distance += ["POWER(" + " + ".join(list_tmp) + f", 1 / {p})"]
+
     if return_distance_clusters:
         return clusters_distance
+
     if return_proba:
-        sum_distance = " + ".join(["1 / ({})".format(d) for d in clusters_distance])
+        sum_distance = " + ".join([f"1 / ({d})" for d in clusters_distance])
         proba = [
-            "(CASE WHEN {} = 0 THEN 1.0 ELSE 1 / ({}) / ({}) END)".format(
+            "(CASE WHEN {0} = 0 THEN 1.0 ELSE 1 / ({1}) / ({2}) END)".format(
                 clusters_distance[i], clusters_distance[i], sum_distance
             )
             for i in range(len(clusters_distance))
         ]
         return proba
+
     sql = []
     k = len(clusters_distance)
     for i in range(k):
         list_tmp = []
         for j in range(i):
-            list_tmp += ["{} <= {}".format(clusters_distance[i], clusters_distance[j])]
+            list_tmp += [
+                "{0} <= {1}".format(clusters_distance[i], clusters_distance[j])
+            ]
         sql += [" AND ".join(list_tmp)]
     sql = sql[1:]
     sql.reverse()
-    sql_final = "CASE WHEN {} THEN NULL".format(
-        " OR ".join(["{} IS NULL".format(elem) for elem in X])
+    sql_final = "CASE WHEN {0} THEN NULL".format(
+        " OR ".join([f"{elem} IS NULL" for elem in X])
     )
     for i in range(k - 1):
-        sql_final += " WHEN {} THEN {}".format(
+        sql_final += " WHEN {0} THEN {1}".format(
             sql[i], k - i - 1 if not classes else classes_tmp[k - i - 1]
         )
-    sql_final += " ELSE {} END".format(0 if not classes else classes_tmp[0])
+    sql_final += " ELSE {0} END".format(0 if not classes else classes_tmp[0])
+
+    return sql_final
+
+
+# ---#
+def predict_from_clusters_kprotypes(
+    X: Union[list, np.ndarray],
+    clusters: Union[list, np.ndarray],
+    return_distance_clusters: bool = False,
+    return_proba: bool = False,
+    p: int = 2,
+    gamma: float = 1.0,
+) -> np.ndarray:
+    """
+    ---------------------------------------------------------------------------
+    Predicts using a k-prototypes model and the input attributes.
+
+    Parameters
+    ----------
+    X: list / numpy.array
+        The data on which to make the prediction.
+    clusters: list / numpy.array
+        List of the model's cluster centers.
+    return_distance_clusters: bool, optional
+        If set to True, the dissimilarity function output to the clusters 
+        is returned.
+    return_proba: bool, optional
+        If set to True, the probability to belong to the clusters is returned.
+    p: int, optional
+        The p corresponding to the one of the p-distances.
+    gamma: float, optional
+        Weighing factor for categorical columns. It can determine relative 
+        importance of numerical and categorical attributes.
+
+    Returns
+    -------
+    numpy.array
+        Predicted values
+    """
+    check_types(
+        [
+            ("X", X, [list, np.ndarray]),
+            ("clusters", clusters, [list, np.ndarray]),
+            ("return_distance_clusters", return_distance_clusters, [bool]),
+            ("return_proba", return_proba, [bool]),
+            ("p", p, [int]),
+            ("gamma", gamma, [float]),
+        ]
+    )
+
+    assert not (return_distance_clusters) or not (return_proba), ParameterError(
+        "Parameters 'return_distance_clusters' and 'return_proba' cannot both be set to True."
+    )
+
+    centroids = np.array(clusters)
+
+    def compute_distance_row(X):
+        result = []
+        for centroid in centroids:
+            distance_num, distance_cat = 0, 0
+            for idx in range(len(X)):
+                val, centroid_val = X[idx], centroid[idx]
+                try:
+                    val = float(val)
+                    centroid_val = float(centroid_val)
+                except:
+                    pass
+                if isinstance(centroid_val, str) or centroid_val == None:
+                    distance_cat += abs(int(val == centroid_val) - 1)
+                else:
+                    distance_num += (val - centroid_val) ** p
+            distance_final = distance_num + gamma * distance_cat
+            result += [distance_final]
+        return result
+
+    result = np.apply_along_axis(compute_distance_row, 1, X)
+
+    if return_proba:
+        result = 1 / (result + 1e-99) / np.sum(1 / (result + 1e-99), axis=1)[:, None]
+    elif not (return_distance_clusters):
+        result = np.argmin(result, axis=1)
+
+    return result
+
+
+# ---#
+def sql_from_clusters_kprotypes(
+    X: list,
+    clusters: list,
+    return_distance_clusters: bool = False,
+    return_proba: bool = False,
+    p: int = 2,
+    gamma: float = 1.0,
+    is_categorical: list = [],
+) -> Union[list, str]:
+    """
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy a k-means or nearest centroids model 
+    using its attributes.
+
+    Parameters
+    ----------
+    X: list
+        The names or values of the input predictors.
+    clusters: list
+        List of the model's cluster centers.
+    return_distance_clusters: bool, optional
+        If set to True, the distance to the clusters is returned.
+    return_proba: bool, optional
+        If set to True, the probability to belong to the clusters is returned.
+    p: int, optional
+        The p corresponding to the one of the p-distances.
+    gamma: float, optional
+        Weighing factor for categorical columns. It can determine relative 
+        importance of numerical and categorical attributes.
+    is_categorical: list, optional
+        List of booleans to indicates if X[idx] is a categorical variable
+        or not. If empty all the variables are considered as categorical.
+
+    Returns
+    -------
+    str / list
+        SQL code
+    """
+    check_types(
+        [
+            ("X", X, [list, np.ndarray]),
+            ("clusters", clusters, [list, np.ndarray]),
+            ("return_distance_clusters", return_distance_clusters, [bool]),
+            ("return_proba", return_proba, [bool]),
+            ("p", p, [int]),
+            ("gamma", gamma, [float]),
+            ("is_categorical", is_categorical, [list, np.ndarray]),
+        ]
+    )
+
+    assert not (return_distance_clusters) or not (return_proba), ParameterError(
+        "Parameters 'return_distance_clusters' and 'return_proba' cannot both be set to True."
+    )
+
+    if not (is_categorical):
+        is_categorical = [True for i in range(len(X))]
+
+    for c in clusters:
+        assert len(X) == len(c) == len(is_categorical), ParameterError(
+            "The length of parameter 'X' must be the same as the length of each cluster AND the categorical vector."
+        )
+
+    clusters_distance = []
+    for c in clusters:
+        clusters_distance_num, clusters_distance_cat = [], []
+        for idx, col in enumerate(X):
+            if is_categorical[idx]:
+                clusters_distance_cat += [
+                    "ABS(({0} = '{1}')::int - 1)".format(
+                        (X[idx]), str(c[idx]).replace("'", "''")
+                    )
+                ]
+            else:
+                clusters_distance_num += [
+                    "POWER({0} - {1}, {2})".format((X[idx]), c[idx], p)
+                ]
+        final_cluster_distance = ""
+        if clusters_distance_num:
+            final_cluster_distance += (
+                "POWER(" + " + ".join(clusters_distance_num) + f", 1 / {p})"
+            )
+        if clusters_distance_cat:
+            if clusters_distance_num:
+                final_cluster_distance += " + "
+            final_cluster_distance += (
+                f"{gamma} * (" + " + ".join(clusters_distance_cat) + ")"
+            )
+        clusters_distance += [final_cluster_distance]
+
+    if return_distance_clusters:
+        return clusters_distance
+
+    if return_proba:
+        sum_distance = " + ".join([f"1 / ({d})" for d in clusters_distance])
+        proba = [
+            "(CASE WHEN {0} = 0 THEN 1.0 ELSE 1 / ({1}) / ({2}) END)".format(
+                clusters_distance[i], clusters_distance[i], sum_distance
+            )
+            for i in range(len(clusters_distance))
+        ]
+        return proba
+
+    sql = []
+    k = len(clusters_distance)
+    for i in range(k):
+        list_tmp = []
+        for j in range(i):
+            list_tmp += [
+                "{0} <= {1}".format(clusters_distance[i], clusters_distance[j])
+            ]
+        sql += [" AND ".join(list_tmp)]
+    sql = sql[1:]
+    sql.reverse()
+    sql_final = "CASE WHEN {0} THEN NULL".format(
+        " OR ".join([f"{elem} IS NULL" for elem in X])
+    )
+    for i in range(k - 1):
+        sql_final += " WHEN {0} THEN {1}".format(sql[i], k - i - 1)
+    sql_final += " ELSE 0 END"
     return sql_final
 
 
@@ -1938,10 +2149,11 @@ Parameters
 ----------
 model_type: str
     The model type, one of the following: 
-    'BinaryTreeClassifier', 'BinaryTreeRegressor', 'BisectingKMeans',  'KMeans', 
-    'LinearSVC', 'LinearSVR', 'LinearRegression', 'LogisticRegression', 'NaiveBayes', 
-    'NearestCentroid', 'Normalizer', 'OneHotEncoder', 'PCA', 'RandomForestClassifier', 
-    'RandomForestRegressor', 'SVD', 'XGBoostClassifier', 'XGBoostRegressor'.
+    'BinaryTreeClassifier', 'BinaryTreeRegressor', 'BisectingKMeans',  
+    'KMeans', 'KPrototypes', 'LinearSVC', 'LinearSVR', 'LinearRegression', 
+    'LogisticRegression', 'NaiveBayes', 'NearestCentroid', 'Normalizer', 
+    'OneHotEncoder', 'PCA', 'RandomForestClassifier', 'RandomForestRegressor', 
+    'SVD', 'XGBoostClassifier', 'XGBoostRegressor'.
 attributes: dict
     Dictionary which includes all the model's attributes.
         For BisectingKMeans: 
@@ -1965,6 +2177,11 @@ attributes: dict
                             "classes": The classes for the CHAID model.}
         For KMeans:        {"clusters": List of the model's cluster centers.
                             "p": The p corresponding to the one of the p-distances.}
+        For KPrototypes:   {"clusters": List of the model's cluster centers.
+                            "p": The p corresponding to the one of the p-distances.
+                            "gamma": Weighing factor for categorical columns.
+                            "is_categorical": List of booleans to indicates if X[idx] is a categorical 
+                                              variable or not.}
         For LinearSVC, LinearSVR, LinearSVC, LinearRegression, LogisticRegression: 
                            {"coefficients": List of the model's coefficients.
                             "intercept": Intercept or constant value.}¨
@@ -2064,6 +2281,7 @@ attributes: dict
                         "CHAID",
                         "BisectingKMeans",
                         "KMeans",
+                        "KPrototypes",
                         "NaiveBayes",
                         "XGBoostClassifier",
                         "XGBoostRegressor",
@@ -2362,7 +2580,7 @@ attributes: dict
                 attributes_["cluster_score"] = []
             else:
                 attributes_["cluster_score"] = np.copy(attributes["cluster_score"])
-        elif model_type in ("KMeans", "NearestCentroid"):
+        elif model_type in ("KMeans", "NearestCentroid", "KPrototypes"):
             if "clusters" not in attributes:
                 raise ParameterError(
                     "{}'s attributes must include a list with all the 'clusters' centers.".format(
@@ -2383,13 +2601,25 @@ attributes: dict
             represent = "<{}>\n\nclusters =\n{}\n\np = {}".format(
                 model_type, attributes_["clusters"], attributes_["p"]
             )
+            if model_type == "KPrototypes":
+                if "gamma" not in attributes:
+                    attributes_["gamma"] = 1.0
+                else:
+                    attributes_["gamma"] = attributes["gamma"]
+                if "is_categorical" not in attributes:
+                    attributes_["is_categorical"] = []
+                else:
+                    attributes_["is_categorical"] = attributes["is_categorical"]
+                represent += "\n\ngamma = {0}\n\nis_categorical = {1}".format(
+                    attributes_["gamma"], attributes_["is_categorical"]
+                )
             if model_type == "NearestCentroid":
                 if "classes" not in attributes:
                     attributes_["classes"] = None
                 else:
                     attributes_["classes"] = [c for c in attributes["classes"]]
                 check_types([("classes", attributes_["classes"], [list])])
-                represent += "\n\nclasses = {}".format(attributes_["classes"])
+                represent += "\n\nclasses = {0}".format(attributes_["classes"])
         elif model_type == "PCA":
             if "principal_components" not in attributes or "mean" not in attributes:
                 raise ParameterError(
@@ -2602,6 +2832,13 @@ attributes: dict
             return predict_from_clusters(
                 X, self.attributes_["clusters"], p=self.attributes_["p"]
             )
+        elif self.model_type_ == "KPrototypes":
+            return predict_from_clusters_kprotypes(
+                X,
+                self.attributes_["clusters"],
+                p=self.attributes_["p"],
+                gamma=self.attributes_["gamma"],
+            )
         elif self.model_type_ == "NearestCentroid":
             return predict_from_clusters(
                 X,
@@ -2705,6 +2942,14 @@ attributes: dict
         elif self.model_type_ == "KMeans":
             result = sql_from_clusters(
                 X, self.attributes_["clusters"], p=self.attributes_["p"]
+            )
+        elif self.model_type_ == "KPrototypes":
+            result = sql_from_clusters_kprotypes(
+                X,
+                self.attributes_["clusters"],
+                p=self.attributes_["p"],
+                gamma=self.attributes_["gamma"],
+                is_categorical=self.attributes_["is_categorical"],
             )
         elif self.model_type_ == "NearestCentroid":
             result = sql_from_clusters(
@@ -2860,6 +3105,14 @@ attributes: dict
                 p=self.attributes_["p"],
                 return_proba=True,
             )
+        elif self.model_type_ == "KPrototypes":
+            return predict_from_clusters_kprotypes(
+                X,
+                self.attributes_["clusters"],
+                p=self.attributes_["p"],
+                gamma=self.attributes_["gamma"],
+                return_proba=True,
+            )
         elif self.model_type_ == "NearestCentroid":
             return predict_from_clusters(
                 X,
@@ -2949,6 +3202,15 @@ attributes: dict
                 X,
                 self.attributes_["clusters"],
                 p=self.attributes_["p"],
+                return_proba=True,
+            )
+        elif self.model_type_ == "KPrototypes":
+            result = sql_from_clusters_kprotypes(
+                X,
+                self.attributes_["clusters"],
+                p=self.attributes_["p"],
+                gamma=self.attributes_["gamma"],
+                is_categorical=self.attributes_["is_categorical"],
                 return_proba=True,
             )
         elif self.model_type_ == "NearestCentroid":
@@ -3206,25 +3468,32 @@ attributes: dict
     numpy.array
         Transformed data
         """
-        if self.model_type_ in ("Normalizer"):
+        if self.model_type_ == "Normalizer":
             return transform_from_normalizer(
                 X, self.attributes_["values"], self.attributes_["method"]
             )
-        elif self.model_type_ in ("PCA"):
+        elif self.model_type_ == "PCA":
             return transform_from_pca(
                 X, self.attributes_["principal_components"], self.attributes_["mean"]
             )
-        elif self.model_type_ in ("SVD"):
+        elif self.model_type_ == "SVD":
             return transform_from_svd(
                 X, self.attributes_["vectors"], self.attributes_["values"]
             )
-        elif self.model_type_ in ("OneHotEncoder"):
+        elif self.model_type_ == "OneHotEncoder":
             return transform_from_one_hot_encoder(
                 X, self.attributes_["categories"], self.attributes_["drop_first"]
             )
-        elif self.model_type_ in ("KMeans", "NearestCentroid", "BisectingKMeans"):
+        elif self.model_type_ in ("KMeans", "NearestCentroid", "BisectingKMeans",):
             return predict_from_clusters(
                 X, self.attributes_["clusters"], return_distance_clusters=True
+            )
+        elif self.model_type_ == "KPrototypes":
+            return predict_from_clusters_kprotypes(
+                X,
+                self.attributes_["clusters"],
+                return_distance_clusters=True,
+                gamma=self.attributes_["gamma"],
             )
         else:
             raise FunctionError(
@@ -3271,6 +3540,14 @@ attributes: dict
         elif self.model_type_ in ("KMeans", "NearestCentroid", "BisectingKMeans"):
             result = sql_from_clusters(
                 X, self.attributes_["clusters"], return_distance_clusters=True
+            )
+        elif self.model_type_ == "KPrototypes":
+            result = sql_from_clusters_kprotypes(
+                X,
+                self.attributes_["clusters"],
+                return_distance_clusters=True,
+                gamma=self.attributes_["gamma"],
+                is_categorical=self.attributes_["is_categorical"],
             )
         else:
             raise FunctionError(

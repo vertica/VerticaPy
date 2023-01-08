@@ -260,7 +260,12 @@ Main Class for Vertica Model
             return vDataFrameSQL(self.input_relation).contour(
                 self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
             )
-        elif self.type in ("KMeans", "BisectingKMeans", "KPrototypes", "IsolationForest",):
+        elif self.type in (
+            "KMeans",
+            "BisectingKMeans",
+            "KPrototypes",
+            "IsolationForest",
+        ):
             cbar_title = "cluster"
             if self.type == "IsolationForest":
                 cbar_title = "anomaly_score"
@@ -853,7 +858,13 @@ Main Class for Vertica Model
                     ax=ax,
                     **style_kwds,
                 )
-        elif self.type in ("KMeans", "BisectingKMeans", "KPrototypes", "DBSCAN", "IsolationForest",):
+        elif self.type in (
+            "KMeans",
+            "BisectingKMeans",
+            "KPrototypes",
+            "DBSCAN",
+            "IsolationForest",
+        ):
             if self.type in ("KMeans", "BisectingKMeans", "KPrototypes",):
                 vdf = vDataFrameSQL(self.input_relation)
                 catcol = "{0}_cluster".format(self.type.lower())
@@ -1658,14 +1669,27 @@ Main Class for Vertica Model
                 check_types([("init", parameters["init"], [str, list])])
                 if isinstance(parameters["init"], str):
                     if self.type == "BisectingKMeans":
-                        init_methods = ["random", "kmeanspp", "pseudo",]
+                        init_methods = [
+                            "random",
+                            "kmeanspp",
+                            "pseudo",
+                        ]
                     elif self.type == "KMeans":
-                        init_methods = ["random", "kmeanspp",]
+                        init_methods = [
+                            "random",
+                            "kmeanspp",
+                        ]
                     else:
-                        init_methods = ["random",]
-                    assert str(parameters["init"]).lower() in init_methods, ParameterError(
-                        ("Incorrect parameter 'init'.\nThe initialization method of the clusters must "
-                        "be in ({0}) or a list of the initial clusters position, found '{1}'.").format(" | ".join(init_methods), parameters["init"])
+                        init_methods = [
+                            "random",
+                        ]
+                    assert (
+                        str(parameters["init"]).lower() in init_methods
+                    ), ParameterError(
+                        (
+                            "Incorrect parameter 'init'.\nThe initialization method of the clusters must "
+                            "be in ({0}) or a list of the initial clusters position, found '{1}'."
+                        ).format(" | ".join(init_methods), parameters["init"])
                     )
                 model_parameters["init"] = parameters["init"]
             elif "init" not in self.parameters:
@@ -1675,38 +1699,17 @@ Main Class for Vertica Model
 
             # KPrototypes Specific Parameters
             if "gamma" in parameters:
-                check_types(
-                    [
-                        (
-                            "gamma",
-                            parameters["gamma"],
-                            [int, float],
-                            False,
-                        )
-                    ]
-                )
-                assert (
-                    0 <= parameters["gamma"] <= 10000
-                ), ParameterError(
+                check_types([("gamma", parameters["gamma"], [int, float], False,)])
+                assert 0 <= parameters["gamma"] <= 10000, ParameterError(
                     "Incorrect parameter 'gamma'."
                     "\nThe Weighing factor for categorical columns "
                     "must be between 0 and 1e4, inclusive."
                 )
-                model_parameters["gamma"] = parameters[
-                    "gamma"
-                ]
-            elif (
-                self.type == "KPrototypes"
-                and "gamma" not in self.parameters
-            ):
-                model_parameters["gamma"] = default_parameters[
-                    "gamma"
-                ]
+                model_parameters["gamma"] = parameters["gamma"]
+            elif self.type == "KPrototypes" and "gamma" not in self.parameters:
+                model_parameters["gamma"] = default_parameters["gamma"]
             elif self.type == "KPrototypes":
-                model_parameters["gamma"] = self.parameters[
-                    "gamma"
-                ]
-
+                model_parameters["gamma"] = self.parameters["gamma"]
 
             # Bisecting KMeans Specific Parameters
             if "bisection_iterations" in parameters:
@@ -2271,10 +2274,20 @@ Main Class for Vertica Model
                 ],
                 "p": 2,
             }
-        elif self.type in ("KMeans",):
+        elif self.type in ("KMeans", "KPrototypes"):
             attributes = {"clusters": self.cluster_centers_.to_numpy(), "p": 2}
+            if self.type == "KPrototypes":
+                attributes["gamma"] = self.parameters["gamma"]
+                attributes["is_categorical"] = [
+                    ("char" in self.cluster_centers_.dtype[key].lower())
+                    for key in self.cluster_centers_.dtype
+                ]
         elif self.type in ("KPrototypes",):
-            attributes = {"clusters": self.cluster_centers_.to_numpy(), "p": 2, "gamma": self.parameters["gamma"]}
+            attributes = {
+                "clusters": self.cluster_centers_.to_numpy(),
+                "p": 2,
+                "gamma": self.parameters["gamma"],
+            }
         elif self.type == "NearestCentroid":
             attributes = {
                 "clusters": self.centroids_.to_numpy()[:, 0:-1],
@@ -2461,12 +2474,12 @@ Main Class for Vertica Model
     name: str, optional
         Function Name.
     return_proba: bool, optional
-        If set to True and the model is a classifier, the function will 
-        return the model probabilities.
+        If set to True and the model is a classifier, the function
+        returns the model probabilities.
     return_distance_clusters: bool, optional
-        If set to True and the model type is KMeans / KPrototypes or 
-        NearestCentroid, the function returns the model clusters 
-        distances.
+        If set to True and the model type is KMeans or NearestCentroid, 
+        the function returns the model clusters distances. If the model
+        is KPrototypes, it returns the dissimilarity function.
     return_str: bool, optional
         If set to True, the function str will be returned.
 
@@ -2536,7 +2549,38 @@ Main Class for Vertica Model
             func += "\treturn np.apply_along_axis(predict_tree_final, 1, X)\n"
             return func
         elif self.type in ("KPrototypes",):
-            pass # TODO
+            centroids = self.cluster_centers_.to_list()
+            func += "centroids = np.array({})\n\n".format(centroids)
+            func += "\tdef compute_distance_row(X):\n"
+            func += "\t\tresult = []\n"
+            func += "\t\tfor centroid in centroids:\n"
+            func += "\t\t\tdistance_num, distance_cat = 0, 0\n"
+            func += "\t\t\tfor idx in range(len(X)):\n"
+            func += "\t\t\t\tval, centroid_val = X[idx], centroid[idx]\n"
+            func += "\t\t\t\ttry:\n"
+            func += "\t\t\t\t\tval = float(val)\n"
+            func += "\t\t\t\t\tcentroid_val = float(centroid_val)\n"
+            func += "\t\t\t\texcept:\n"
+            func += "\t\t\t\t\tpass\n"
+            func += (
+                "\t\t\t\tif isinstance(centroid_val, str) or centroid_val == None:\n"
+            )
+            func += "\t\t\t\t\tdistance_cat += abs(int(val == centroid_val) - 1)\n"
+            func += "\t\t\t\telse:\n"
+            func += "\t\t\t\t\tdistance_num += (val - centroid_val) ** 2\n"
+            func += "\t\t\tdistance_final = distance_num + {0} * distance_cat\n".format(
+                self.parameters["gamma"]
+            )
+            func += "\t\t\tresult += [distance_final]\n"
+            func += "\t\treturn result\n\n"
+            func += "\tresult = np.apply_along_axis(compute_distance_row, 1, X)\n\n"
+            if return_proba:
+                func += "\treturn 1 / (result + 1e-99) / np.sum(1 / (result + 1e-99), axis=1)[:, None]\n"
+            elif not (return_distance_clusters):
+                func += "\treturn np.argmin(result, axis=1)\n"
+            else:
+                func += "\treturn result\n"
+            return func
         elif self.type in ("NearestCentroid", "KMeans",):
             centroids = (
                 self.centroids_.to_list()
@@ -2551,8 +2595,7 @@ Main Class for Vertica Model
                 func += "\tclasses = np.array({})\n".format(self.classes_)
             func += "\tresult = []\n"
             func += "\tfor centroid in centroids:\n"
-            func += "\t\tresult += [np.sum((np.array(centroid) - X) ** {}, axis=1) ** (1 / {})]\n".format(
-                self.parameters["p"] if self.type == "NearestCentroid" else 2,
+            func += "\t\tresult += [np.sum((np.array(centroid) - X) ** {0}, axis=1) ** (1 / {0})]\n".format(
                 self.parameters["p"] if self.type == "NearestCentroid" else 2,
             )
             func += "\tresult = np.column_stack(result)\n"
@@ -4741,7 +4784,7 @@ class Unsupervised(vModel):
                 ),
                 title="Creating a temporary view to fit the model.",
             )
-            if not(X) and (self.type == "KPrototypes"):
+            if not (X) and (self.type == "KPrototypes"):
                 X = input_relation.get_columns()
             elif not (X):
                 X = input_relation.numcol()
@@ -4771,7 +4814,8 @@ class Unsupervised(vModel):
             and self.type in ("KMeans", "BisectingKMeans", "KPrototypes",)
         ):
             name_init = gen_tmp_name(
-                schema=schema_relation(self.name)[0], name="{0}_init".format(self.type.lower())
+                schema=schema_relation(self.name)[0],
+                name="{0}_init".format(self.type.lower()),
             )
             del parameters["init_method"]
             drop(name_init, method="table")
@@ -4837,9 +4881,8 @@ class Unsupervised(vModel):
                 drop(name_init, method="table")
             raise
         if self.type in ("KMeans", "BisectingKMeans", "KPrototypes",):
-            if (
-                "init_method" in parameters
-                and not (isinstance(parameters["init_method"], str))
+            if "init_method" in parameters and not (
+                isinstance(parameters["init_method"], str)
             ):
                 drop(name_init, method="table")
             if self.type in ("KMeans", "KPrototypes",):
@@ -4856,7 +4899,9 @@ class Unsupervised(vModel):
                 }
                 values["value"] = [
                     float(
-                        result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
+                        result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[
+                            0
+                        ]
                     ),
                     float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
                     float(
@@ -4865,7 +4910,9 @@ class Unsupervised(vModel):
                         )[0]
                     ),
                     float(
-                        result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
+                        result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[
+                            0
+                        ]
                     )
                     / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
                     result.split("Converged: ")[1].split("\n")[0] == "True",
