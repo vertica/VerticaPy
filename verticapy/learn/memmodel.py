@@ -1598,11 +1598,12 @@ def predict_from_clusters_kprotypes(
         If set to True, the dissimilarity function output to the clusters 
         is returned.
     return_proba: bool, optional
-        If set to True, the probability to belong to the clusters is returned.
+        If set to True, the probability of belonging to the clusters is 
+        returned.
     p: int, optional
-        The p corresponding to the one of the p-distances.
+        The p corresponding to one of the p-distances.
     gamma: float, optional
-        Weighing factor for categorical columns. It can determine relative 
+        Weighting factor for categorical columns. This determines relative 
         importance of numerical and categorical attributes.
 
     Returns
@@ -1668,8 +1669,8 @@ def sql_from_clusters_kprotypes(
 ) -> Union[list, str]:
     """
     ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy a k-means or nearest centroids model 
-    using its attributes.
+    Returns the SQL code needed to deploy a k-prototypes or nearest centroids 
+    model using its attributes.
 
     Parameters
     ----------
@@ -1680,15 +1681,17 @@ def sql_from_clusters_kprotypes(
     return_distance_clusters: bool, optional
         If set to True, the distance to the clusters is returned.
     return_proba: bool, optional
-        If set to True, the probability to belong to the clusters is returned.
+        If set to True, the probability of belonging to the clusters is 
+        returned.
     p: int, optional
-        The p corresponding to the one of the p-distances.
+        The p corresponding to one of the p-distances.
     gamma: float, optional
-        Weighing factor for categorical columns. It can determine relative 
+        Weighting factor for categorical columns. This determines relative 
         importance of numerical and categorical attributes.
     is_categorical: list, optional
-        List of booleans to indicates if X[idx] is a categorical variable
-        or not. If empty all the variables are considered as categorical.
+        List of booleans to indicate whether X[idx] is a categorical variable,
+        where True indicates categorical and False numerical. If empty, all
+        the variables are considered categorical.
 
     Returns
     -------
@@ -2178,9 +2181,9 @@ attributes: dict
         For KMeans:        {"clusters": List of the model's cluster centers.
                             "p": The p corresponding to the one of the p-distances.}
         For KPrototypes:   {"clusters": List of the model's cluster centers.
-                            "p": The p corresponding to the one of the p-distances.
-                            "gamma": Weighing factor for categorical columns.
-                            "is_categorical": List of booleans to indicates if X[idx] is a categorical 
+                            "p": The p corresponding to one of the p-distances.
+                            "gamma": Weighting factor for categorical columns.
+                            "is_categorical": List of booleans to indicate whether X[idx] is a categorical 
                                               variable or not.}
         For LinearSVC, LinearSVR, LinearSVC, LinearRegression, LogisticRegression: 
                            {"coefficients": List of the model's coefficients.

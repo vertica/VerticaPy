@@ -2479,7 +2479,7 @@ Main Class for Vertica Model
     return_distance_clusters: bool, optional
         If set to True and the model type is KMeans or NearestCentroid, 
         the function returns the model clusters distances. If the model
-        is KPrototypes, it returns the dissimilarity function.
+        is KPrototypes, the function returns the dissimilarity function.
     return_str: bool, optional
         If set to True, the function str will be returned.
 
