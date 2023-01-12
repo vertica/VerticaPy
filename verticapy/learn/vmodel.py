@@ -866,6 +866,16 @@ Main Class for Vertica Model
             "IsolationForest",
         ):
             if self.type in ("KMeans", "BisectingKMeans", "KPrototypes",):
+                if self.type == "KPrototypes":
+                    if any(
+                        [
+                            ("char" in self.cluster_centers_.dtype[key].lower())
+                            for key in self.cluster_centers_.dtype
+                        ]
+                    ):
+                        raise TypeError(
+                            "KPrototypes' plots with categorical inputs is not yet supported."
+                        )
                 vdf = vDataFrameSQL(self.input_relation)
                 catcol = "{0}_cluster".format(self.type.lower())
                 self.predict(vdf, name=catcol)

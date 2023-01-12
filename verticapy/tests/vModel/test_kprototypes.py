@@ -226,4 +226,4 @@ class TestKPrototypes:
         )
         model.predict(vdf, name="prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
-        assert score == pytest.approx(0.993333333333333) # can we do better?
+        assert score == pytest.approx(0.993333333333333)  # can we do better?
