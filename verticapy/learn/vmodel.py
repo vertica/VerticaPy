@@ -2282,12 +2282,6 @@ Main Class for Vertica Model
                     ("char" in self.cluster_centers_.dtype[key].lower())
                     for key in self.cluster_centers_.dtype
                 ]
-        elif self.type in ("KPrototypes",):
-            attributes = {
-                "clusters": self.cluster_centers_.to_numpy(),
-                "p": 2,
-                "gamma": self.parameters["gamma"],
-            }
         elif self.type == "NearestCentroid":
             attributes = {
                 "clusters": self.centroids_.to_numpy()[:, 0:-1],
@@ -4837,32 +4831,35 @@ class Unsupervised(vModel):
                 for i in range(len(self.parameters["init"])):
                     line = []
                     for j in range(len(self.parameters["init"][0])):
-                        line += [str(self.parameters["init"][i][j]) + " AS " + X[j]]
+                        val = self.parameters["init"][i][j]
+                        if isinstance(val, str):
+                            val = "'" + val.replace("'", "''") + "'"
+                        line += [str(val) + " AS " + X[j]]
                     line = ",".join(line)
                     if i == 0:
                         query0 += ["SELECT /*+LABEL('learn.vModel.fit')*/ " + line]
                     else:
                         query0 += ["SELECT " + line]
                 query0 = " UNION ".join(query0)
-                query0 = "CREATE TABLE {} AS {}".format(name_init, query0)
+                query0 = f"CREATE TABLE {name_init} AS {query0}"
                 executeSQL(query0, print_time_sql=False)
-                query += "initial_centers_table = '{}', ".format(name_init)
+                query += f"initial_centers_table = '{name_init}', "
         elif "init_method" in parameters:
             del parameters["init_method"]
-            query += "init_method = '{}', ".format(self.parameters["init"])
+            query += "init_method = '{0}', ".format(self.parameters["init"])
         query += ", ".join(
-            ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
+            ["{0} = {1}".format(elem, parameters[elem]) for elem in parameters]
         )
         if self.type == "BisectingKMeans" and isinstance(
             verticapy.options["random_state"], int
         ):
-            query += ", kmeans_seed={}, id_column='{}'".format(
+            query += ", kmeans_seed={0}, id_column='{1}'".format(
                 verticapy.options["random_state"], id_column_name
             )
         elif self.type == "IsolationForest" and isinstance(
             verticapy.options["random_state"], int
         ):
-            query += ", seed={}, id_column='{}'".format(
+            query += ", seed={0}, id_column='{1}'".format(
                 verticapy.options["random_state"], id_column_name
             )
         query += ")"

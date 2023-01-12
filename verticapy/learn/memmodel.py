@@ -2311,9 +2311,7 @@ attributes: dict
                 or "classes" not in attributes
             ):
                 raise ParameterError(
-                    "{}'s attributes must include at least the following lists: attributes, prior, classes.".format(
-                        model_type
-                    )
+                    f"{model_type}'s attributes must include at least the following lists: attributes, prior, classes."
                 )
             check_types(
                 [
@@ -2338,11 +2336,11 @@ attributes: dict
                     "All the elements of the 'attributes' key must be dictionaries including a 'type' key with a value in (categorical, bernoulli, multinomial, gaussian)."
                 )
                 attributes_["attributes"] += [att.copy()]
-            represent = "<{}>\n\nclasses = {}".format(
+            represent = "<{0}>\n\nclasses = {1}".format(
                 model_type, attributes_["classes"]
             )
-            represent += "\n\nprior = {}".format(attributes_["prior"])
-            represent += "\n\nattributes =\n{}".format(attributes_["attributes"])
+            represent += "\n\nprior = {0}".format(attributes_["prior"])
+            represent += "\n\nattributes =\n{0}".format(attributes_["attributes"])
         elif model_type in (
             "RandomForestRegressor",
             "XGBoostRegressor",
@@ -2352,45 +2350,39 @@ attributes: dict
         ):
             if "trees" not in attributes:
                 raise ParameterError(
-                    "{}'s attributes must include a list of memModels representing each tree.".format(
-                        model_type
-                    )
+                    f"{model_type}'s attributes must include a list of memModels representing each tree."
                 )
             attributes_["trees"] = []
             for tree in attributes["trees"]:
                 assert isinstance(tree, memModel), ParameterError(
-                    "Each tree of the model must be a memModel, found '{}'.".format(
-                        type(tree)
-                    )
+                    f"Each tree of the model must be a memModel, found '{tree}'."
                 )
                 if model_type in ("RandomForestClassifier", "XGBoostClassifier"):
                     assert tree.model_type_ == "BinaryTreeClassifier", ParameterError(
-                        "Each tree of the model must be a BinaryTreeClassifier, found '{}'.".format(
+                        "Each tree of the model must be a BinaryTreeClassifier, found '{0}'.".format(
                             tree.model_type_
                         )
                     )
                 elif model_type == "IsolationForest":
                     assert tree.model_type_ == "BinaryTreeAnomaly", ParameterError(
-                        "Each tree of the model must be a BinaryTreeAnomaly, found '{}'.".format(
+                        "Each tree of the model must be a BinaryTreeAnomaly, found '{0}'.".format(
                             tree.model_type_
                         )
                     )
                 else:
                     assert tree.model_type_ == "BinaryTreeRegressor", ParameterError(
-                        "Each tree of the model must be a BinaryTreeRegressor, found '{}'.".format(
+                        "Each tree of the model must be a BinaryTreeRegressor, found '{0}'.".format(
                             tree.model_type_
                         )
                     )
                 attributes_["trees"] += [tree]
-            represent = "<{}>\n\nntrees = {}".format(
+            represent = "<{0}>\n\nntrees = {1}".format(
                 model_type, len(attributes_["trees"])
             )
             if model_type == "XGBoostRegressor":
                 if "learning_rate" not in attributes or "mean" not in attributes:
                     raise ParameterError(
-                        "{}'s attributes must include the response average and the learning rate.".format(
-                            model_type
-                        )
+                        f"{model_type}'s attributes must include the response average and the learning rate."
                     )
                 attributes_["mean"] = attributes["mean"]
                 check_types([("mean", attributes_["mean"], [int, float])])
@@ -2398,9 +2390,7 @@ attributes: dict
             if model_type == "XGBoostClassifier":
                 if "learning_rate" not in attributes or "logodds" not in attributes:
                     raise ParameterError(
-                        "{}'s attributes must include the response classes logodds and the learning rate.".format(
-                            model_type
-                        )
+                        f"{model_type}'s attributes must include the response classes logodds and the learning rate."
                     )
                 attributes_["logodds"] = np.copy(attributes["logodds"])
                 check_types([("logodds", attributes_["logodds"], [list])])
@@ -2410,7 +2400,7 @@ attributes: dict
                 check_types(
                     [("learning_rate", attributes_["learning_rate"], [int, float])]
                 )
-                represent += "\n\nlearning_rate = {}".format(
+                represent += "\n\nlearning_rate = {0}".format(
                     attributes_["learning_rate"]
                 )
         elif model_type in (
@@ -2426,9 +2416,7 @@ attributes: dict
                 or "value" not in attributes
             ):
                 raise ParameterError(
-                    "{}'s attributes must include at least the following lists: children_left, children_right, feature, threshold, value.".format(
-                        model_type
-                    )
+                    f"{model_type}'s attributes must include at least the following lists: children_left, children_right, feature, threshold, value."
                 )
             for elem in (
                 "children_left",
@@ -2450,7 +2438,7 @@ attributes: dict
                     ("value", attributes_["value"], [list]),
                 ]
             )
-            represent = "<{}>\n\nchildren_left = {}\n\nchildren_right = {}\n\nfeature = {}\n\nthreshold = {}\n\nvalue =\n{}".format(
+            represent = "<{0}>\n\nchildren_left = {1}\n\nchildren_right = {2}\n\nfeature = {3}\n\nthreshold = {4}\n\nvalue =\n{5}".format(
                 model_type,
                 attributes_["children_left"],
                 attributes_["children_right"],
@@ -2464,7 +2452,7 @@ attributes: dict
                 else:
                     attributes_["classes"] = np.copy(attributes["classes"])
                 check_types([("classes", attributes_["classes"], [list])])
-                represent += "\n\nclasses = {}".format(attributes_["classes"])
+                represent += "\n\nclasses = {0}".format(attributes_["classes"])
             if model_type == "BinaryTreeAnomaly":
                 if "psy" not in attributes:
                     raise ParameterError(
@@ -2473,23 +2461,21 @@ attributes: dict
                 else:
                     attributes_["psy"] = attributes["psy"]
                 check_types([("psy", attributes_["psy"], [int])])
-                represent += "\n\npsy = {}".format(attributes_["psy"])
+                represent += "\n\npsy = {0}".format(attributes_["psy"])
         elif model_type == "CHAID":
             if "tree" not in attributes:
                 raise ParameterError(
-                    "{}'s attributes must include at least the CHAID tree.".format(
-                        model_type
-                    )
+                    f"{model_type}'s attributes must include at least the CHAID tree."
                 )
             check_types([("tree", attributes["tree"], [dict])])
             attributes_["tree"] = attributes["tree"]
-            represent = "<{}>\n\ntree = {}".format(model_type, attributes_["tree"])
+            represent = "<{0}>\n\ntree = {1}".format(model_type, attributes_["tree"])
             if "classes" not in attributes:
                 attributes_["classes"] = []
             else:
                 attributes_["classes"] = np.copy(attributes["classes"])
             check_types([("classes", attributes_["classes"], [list])])
-            represent += "\n\nclasses = {}".format(attributes_["classes"])
+            represent += "\n\nclasses = {0}".format(attributes_["classes"])
         elif model_type == "OneHotEncoder":
             if "categories" not in attributes:
                 raise ParameterError(
@@ -2515,7 +2501,7 @@ attributes: dict
                     ),
                 ]
             )
-            represent = "<{}>\n\ncategories = {}\n\ndrop_first = {}\n\ncolumn_naming = '{}'".format(
+            represent = "<{0}>\n\ncategories = {1}\n\ndrop_first = {2}\n\ncolumn_naming = '{3}'".format(
                 model_type,
                 attributes_["categories"],
                 attributes_["drop_first"],
@@ -2529,9 +2515,7 @@ attributes: dict
         ):
             if "coefficients" not in attributes or "intercept" not in attributes:
                 raise ParameterError(
-                    "{}'s attributes must include a list with the 'coefficients' and the 'intercept' value.".format(
-                        model_type
-                    )
+                    f"{model_type}'s attributes must include a list with the 'coefficients' and the 'intercept' value."
                 )
             attributes_["coefficients"] = np.copy(attributes["coefficients"])
             attributes_["intercept"] = attributes["intercept"]
@@ -2541,7 +2525,7 @@ attributes: dict
                     ("intercept", attributes_["intercept"], [int, float]),
                 ]
             )
-            represent = "<{}>\n\ncoefficients = {}\n\nintercept = {}".format(
+            represent = "<{0}>\n\ncoefficients = {1}\n\nintercept = {2}".format(
                 model_type, attributes_["coefficients"], attributes_["intercept"]
             )
         elif model_type == "BisectingKMeans":
@@ -2568,7 +2552,7 @@ attributes: dict
                     ("p", attributes_["p"], [int]),
                 ]
             )
-            represent = "<{}>\n\nclusters =\n{}\n\nleft_child = {}\n\nright_child = {}\n\np = {}".format(
+            represent = "<{0}>\n\nclusters =\n{1}\n\nleft_child = {2}\n\nright_child = {3}\n\np = {4}".format(
                 model_type,
                 attributes_["clusters"],
                 attributes_["left_child"],
@@ -2586,9 +2570,7 @@ attributes: dict
         elif model_type in ("KMeans", "NearestCentroid", "KPrototypes"):
             if "clusters" not in attributes:
                 raise ParameterError(
-                    "{}'s attributes must include a list with all the 'clusters' centers.".format(
-                        model_type
-                    )
+                    f"{model_type}'s attributes must include a list with all the 'clusters' centers."
                 )
             attributes_["clusters"] = np.copy(attributes["clusters"])
             if "p" not in attributes:
@@ -2601,7 +2583,7 @@ attributes: dict
                     ("p", attributes_["p"], [int]),
                 ]
             )
-            represent = "<{}>\n\nclusters =\n{}\n\np = {}".format(
+            represent = "<{0}>\n\nclusters =\n{1}\n\np = {2}".format(
                 model_type, attributes_["clusters"], attributes_["p"]
             )
             if model_type == "KPrototypes":
@@ -2642,7 +2624,7 @@ attributes: dict
                     ("mean", attributes_["mean"], [list]),
                 ]
             )
-            represent = "<{}>\n\nprincipal_components = \n{}\n\nmean = {}".format(
+            represent = "<{0}>\n\nprincipal_components = \n{1}\n\nmean = {2}".format(
                 model_type, attributes_["principal_components"], attributes_["mean"]
             )
         elif model_type == "SVD":
@@ -2658,7 +2640,7 @@ attributes: dict
                     ("values", attributes_["values"], [list]),
                 ]
             )
-            represent = "<{}>\n\nvectors = \n{}\n\nvalues = {}".format(
+            represent = "<{0}>\n\nvectors = \n{1}\n\nvalues = {2}".format(
                 model_type, attributes_["vectors"], attributes_["values"]
             )
         elif model_type == "Normalizer":
@@ -2678,13 +2660,11 @@ attributes: dict
                     ),
                 ]
             )
-            represent = "<{}>\n\nvalues =\n{}\n\nmethod = '{}'".format(
+            represent = "<{0}>\n\nvalues =\n{1}\n\nmethod = '{2}'".format(
                 model_type, attributes_["values"], attributes_["method"]
             )
         else:
-            raise ParameterError(
-                "Model type '{}' is not yet available.".format(model_type)
-            )
+            raise ParameterError(f"Model type '{model_type}' is not yet available.")
         self.attributes_ = attributes_
         self.model_type_ = model_type
         self.represent_ = represent
