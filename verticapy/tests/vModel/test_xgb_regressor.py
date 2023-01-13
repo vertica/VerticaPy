@@ -163,14 +163,27 @@ class TestXGBR:
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
         assert score == pytest.approx(1.0)
 
-    @pytest.mark.skip(reason="not yet available")
+    @pytest.mark.skip(reason="needs Vertica 12.0.3")
     def test_features_importance(self, model):
         fim = model.features_importance()
 
         assert fim["index"] == ["cost", "owned cars", "gender", "income"]
-        assert fim["importance"] == [88.41, 7.25, 4.35, 0.0]
-        assert fim["sign"] == [1, 1, 1, 0]
+        assert fim["importance"] == [91.85, 7.18, 0.97, 0.0]
+        assert fim["sign"] == [1, 1, -1, 0]
         plt.close("all")
+
+    @pytest.mark.skip(reason="needs Vertica 12.0.3")
+    def test_get_score(self, model):
+        fim = model.get_score()
+
+        assert fim["predictor_name"] == ["gender", "owned cars", "cost", "income"]
+        assert fim["frequency"] == [0.25, 0.25, 0.5, 0.0]
+        assert fim["total_gain"] == [
+            pytest.approx(-0.00510863674902467),
+            pytest.approx(0.037784719385885),
+            pytest.approx(0.96732391736314),
+            pytest.approx(0.0),
+        ]
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
