@@ -3201,14 +3201,14 @@ class Tree:
     ):
         """
         ---------------------------------------------------------------------------
-        Returns the input tree different features importance metrics.
+        Returns the feature importance metrics for the input tree.
 
         Parameters
         ----------
         tree_id: int, optional
             Unique tree identifier, an integer in the range [0, n_estimators - 1].
-            If tree_id is undefined then all the trees are used to compute the 
-            metrics.
+            If tree_id is undefined, all the trees in the model are used to compute 
+            the metrics.
 
         Returns
         -------
