@@ -869,7 +869,13 @@ def get_model_init_params(model_type: str):
     elif model_type == "KMeans":
         return {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 1e-4}
     elif model_type == "KPrototypes":
-        return {"n_cluster": 8, "init": "random", "max_iter": 300, "tol": 1e-4, "gamma": 1.0}
+        return {
+            "n_cluster": 8,
+            "init": "random",
+            "max_iter": 300,
+            "tol": 1e-4,
+            "gamma": 1.0,
+        }
     elif model_type == "BisectingKMeans":
         return {
             "n_cluster": 8,

@@ -410,9 +410,9 @@ int
     # -#
     if isinstance(X, str):
         X = [X]
-    if not(init) and (use_kprototype):
+    if not (init) and (use_kprototype):
         init = "random"
-    elif not(init):
+    elif not (init):
         init = "kmeanspp"
     check_types(
         [
@@ -860,9 +860,9 @@ tablesample
     # -#
     if isinstance(X, str):
         X = [X]
-    if not(init) and (use_kprototype):
+    if not (init) and (use_kprototype):
         init = "random"
-    elif not(init):
+    elif not (init):
         init = "kmeanspp"
     check_types(
         [
