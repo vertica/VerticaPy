@@ -131,6 +131,17 @@ class TestRFR:
         assert fim["sign"] == [1, 1, 1, 0]
         plt.close("all")
 
+    def test_get_score(self, model):
+        fim = model.get_score()
+
+        assert fim["predictor_name"] == ["gender", "owned cars", "cost", "income"]
+        assert fim["importance_value"] == [
+            pytest.approx(0.0434782608695652),
+            pytest.approx(0.072463768115942),
+            pytest.approx(0.884057971014493),
+            pytest.approx(0.0),
+        ]
+
     def test_get_attr(self, model):
         m_att = model.get_attr()
 

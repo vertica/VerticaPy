@@ -167,6 +167,17 @@ class TestRFC:
         assert f_imp["sign"] == [1, 1, 1, 0]
         plt.close("all")
 
+    def test_get_score(self, model):
+        fim = model.get_score()
+
+        assert fim["predictor_name"] == ["gender", "owned cars", "cost", "income"]
+        assert fim["importance_value"] == [
+            pytest.approx(0.0909090909090909),
+            pytest.approx(0.151515151515152),
+            pytest.approx(0.757575757575758),
+            pytest.approx(0.0),
+        ]
+
     def test_lift_chart(self, model):
         lift_ch = model.lift_chart(pos_label="Bus", nbins=1000)
 

@@ -182,14 +182,27 @@ class TestXGBC:
         )
         assert current_cursor().fetchone() is None
 
-    @pytest.mark.skip(reason="not yet available.")
+    @pytest.mark.skip(reason="needs Vertica 12.0.3")
     def test_features_importance(self, model):
-        f_imp = model.features_importance()
+        fimp = model.features_importance()
 
-        assert f_imp["index"] == ["cost", "owned cars", "gender", "income"]
-        assert f_imp["importance"] == [75.76, 15.15, 9.09, 0.0]
-        assert f_imp["sign"] == [1, 1, 1, 0]
+        assert fimp["index"] == ["cost", "owned cars", "gender", "income"]
+        assert fimp["importance"] == [85.53, 9.61, 4.86, 0.0]
+        assert fimp["sign"] == [1, 1, -1, 0]
         plt.close("all")
+
+    @pytest.mark.skip(reason="needs Vertica 12.0.3")
+    def test_get_score(self, model):
+        fim = model.get_score()
+
+        assert fim["predictor_name"] == ["gender", "owned cars", "cost", "income"]
+        assert fim["frequency"] == [0.25, 0.25, 0.5, 0.0]
+        assert fim["total_gain"] == [
+            pytest.approx(-0.0276367140130583),
+            pytest.approx(0.0546732664706745),
+            pytest.approx(0.972963447542384),
+            pytest.approx(0.0),
+        ]
 
     def test_lift_chart(self, model):
         lift_ch = model.lift_chart(pos_label="Bus", nbins=1000)

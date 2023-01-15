@@ -366,23 +366,30 @@ Main Class for Vertica Model
             "RandomForestClassifier",
             "RandomForestRegressor",
             "KernelDensity",
+            "XGBoostClassifier",
+            "XGBoostRegressor",
         ):
             check_types([("tree_id", tree_id, [int])])
             name = self.tree_name if self.type == "KernelDensity" else self.name
-            version(condition=[9, 1, 1])
-            tree_id = "" if not (tree_id) else ", tree_id={}".format(tree_id)
-            query = """SELECT /*+LABEL('learn.vModel.features_importance')*/
+            if self.type in ("XGBoostClassifier", "XGBoostRegressor",):
+                version(condition=[12, 0, 3])
+                fname = "XGB_PREDICTOR_IMPORTANCE"
+                var = "avg_gain"
+            else:
+                version(condition=[9, 1, 1])
+                fname = "RF_PREDICTOR_IMPORTANCE"
+                var = "importance_value"
+            tree_id = "" if tree_id is None else f", tree_id={tree_id}"
+            query = f"""SELECT /*+LABEL('learn.vModel.features_importance')*/
                             predictor_name AS predictor, 
-                            ROUND(100 * importance_value / SUM(importance_value) 
+                            ROUND(100 * ABS({var}) / SUM(ABS({var}))
                                 OVER (), 2)::float AS importance, 
-                            SIGN(importance_value)::int AS sign 
+                            SIGN({var})::int AS sign 
                         FROM 
-                            (SELECT RF_PREDICTOR_IMPORTANCE ( 
-                                    USING PARAMETERS model_name = '{0}'{1})) 
+                            (SELECT {fname} ( 
+                                    USING PARAMETERS model_name = '{name}'{tree_id})) 
                                     VERTICAPY_SUBTABLE 
-                        ORDER BY 2 DESC;""".format(
-                name, tree_id
-            )
+                        ORDER BY 2 DESC;"""
             print_legend = False
         elif self.type in (
             "LinearRegression",
@@ -414,7 +421,9 @@ Main Class for Vertica Model
             print_legend = True
         else:
             raise FunctionError(
-                "Method 'features_importance' for '{}' doesn't exist.".format(self.type)
+                "Method 'features_importance' for '{0}' doesn't exist.".format(
+                    self.type
+                )
             )
         result = executeSQL(
             query, title="Computing Features Importance.", method="fetchall"
@@ -3185,6 +3194,40 @@ class Tree:
             leaf_style=leaf_style,
             pic_path=pic_path,
         )
+
+    # ---#
+    def get_score(
+        self, tree_id: int = None,
+    ):
+        """
+        ---------------------------------------------------------------------------
+        Returns the feature importance metrics for the input tree.
+
+        Parameters
+        ----------
+        tree_id: int, optional
+            Unique tree identifier, an integer in the range [0, n_estimators - 1].
+            If tree_id is undefined, all the trees in the model are used to compute 
+            the metrics.
+
+        Returns
+        -------
+        tablesample
+            An object containing the result. For more information, see
+            utilities.tablesample.
+        """
+        check_types([("tree_id", tree_id, [int, float])])
+        name = self.tree_name if self.type == "KernelDensity" else self.name
+        if self.type in ("XGBoostClassifier", "XGBoostRegressor",):
+            version(condition=[12, 0, 3])
+            fname = "XGB_PREDICTOR_IMPORTANCE"
+        else:
+            version(condition=[9, 1, 1])
+            fname = "RF_PREDICTOR_IMPORTANCE"
+        tree_id = "" if tree_id is None else f", tree_id={tree_id}"
+        query = f"SELECT {fname} (USING PARAMETERS model_name = '{name}'{tree_id})"
+        result = to_tablesample(query=query, title="Reading Tree.")
+        return result
 
 
 # ---#
