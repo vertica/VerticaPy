@@ -219,7 +219,7 @@ max_text_size: int, optional
 
 
     # ---#
-    def combute_vocabulary(self):
+    def compute_vocabulary(self):
         """
     ---------------------------------------------------------------------------
     Computes the CountVectorizer Vocabulary. It will affect the result to the
@@ -324,7 +324,7 @@ max_text_size: int, optional
         )
         executeSQL(sql, "Computing the CountVectorizer [Step 2].")
         self.compute_stop_words()
-        self.combute_vocabulary()
+        self.compute_vocabulary()
         self.countvectorizer_table = tmp_name
         model_save = {
             "type": "CountVectorizer",
