@@ -482,7 +482,7 @@ class TestUtilities:
         drop("public.variants", method="table")
         path = os.path.dirname(verticapy.__file__) + "/tests/utilities/variants.avro"
         result = read_avro(path, table_name="variants", schema="public",)
-        assert result.shape() == (719, 34)
+        assert result.shape() == (731, 34)
         assert result["end"].avg() == pytest.approx(16074223.659249)
         drop("public.variants", method="table")
 

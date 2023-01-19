@@ -258,7 +258,7 @@ model
                 model_save["max_text_size"],
             )
             model.stop_words_ = model.compute_stop_words()
-            model.vocabulary_ = model.combute_vocabulary()
+            model.vocabulary_ = model.compute_vocabulary()
         elif model_save["type"] == "SARIMAX":
             from verticapy.learn.tsa import SARIMAX
 
