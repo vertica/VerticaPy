@@ -190,6 +190,45 @@ max_text_size: int, optional
         )
 
     # ---#
+    def compute_stop_words(self):
+        """
+    ---------------------------------------------------------------------------
+    Computes the CountVectorizer Stop Words. It will affect the result to the
+    stop_words_ attribute.
+        """
+        stop_words = """SELECT /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/
+                            token 
+                        FROM 
+                            (SELECT 
+                                token, 
+                                cnt / SUM(cnt) OVER () AS df, 
+                                rnk 
+                            FROM 
+                                (SELECT 
+                                    token, 
+                                    COUNT(*) AS cnt, 
+                                    RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
+                                 FROM {0} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
+                                 WHERE not(df BETWEEN {1} AND {2})""".format(
+            self.name, self.parameters["min_df"], self.parameters["max_df"]
+        )
+        if self.parameters["max_features"] > 0:
+            stop_words += " OR (rnk > {})".format(self.parameters["max_features"])
+        res = executeSQL(stop_words, print_time_sql=False, method="fetchall")
+        self.stop_words_ = [item[0] for item in res]
+
+
+    # ---#
+    def compute_vocabulary(self):
+        """
+    ---------------------------------------------------------------------------
+    Computes the CountVectorizer Vocabulary. It will affect the result to the
+    vocabulary_ attribute.
+        """
+        res = executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
+        self.vocabulary_ = [item[0] for item in res]
+
+    # ---#
     def deploySQL(self):
         """
     ---------------------------------------------------------------------------
@@ -275,7 +314,7 @@ max_text_size: int, optional
             else "LOWER({})".format(" || ".join(self.X))
         )
         if self.parameters["ignore_special"]:
-            text = "REGEXP_REPLACE({}, '[^a-zA-Z0-9\\s]+', '')".format(text)
+            text = f"REGEXP_REPLACE({text}, '[^a-zA-Z0-9\\s]+', '')"
         sql = "INSERT /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/ INTO {}(text) SELECT {} FROM {}".format(
             tmp_name, text, self.input_relation
         )
@@ -284,28 +323,8 @@ max_text_size: int, optional
             self.name, tmp_name
         )
         executeSQL(sql, "Computing the CountVectorizer [Step 2].")
-        stop_words = """SELECT /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/
-                            token 
-                        FROM 
-                            (SELECT 
-                                token, 
-                                cnt / SUM(cnt) OVER () AS df, 
-                                rnk 
-                            FROM 
-                                (SELECT 
-                                    token, 
-                                    COUNT(*) AS cnt, 
-                                    RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
-                                 FROM {0} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
-                                 WHERE not(df BETWEEN {1} AND {2})""".format(
-            self.name, self.parameters["min_df"], self.parameters["max_df"]
-        )
-        if self.parameters["max_features"] > 0:
-            stop_words += " OR (rnk > {})".format(self.parameters["max_features"])
-        res = executeSQL(stop_words, print_time_sql=False, method="fetchall")
-        self.stop_words_ = [item[0] for item in res]
-        res = executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
-        self.vocabulary_ = [item[0] for item in res]
+        self.compute_stop_words()
+        self.compute_vocabulary()
         self.countvectorizer_table = tmp_name
         model_save = {
             "type": "CountVectorizer",
@@ -318,8 +337,6 @@ max_text_size: int, optional
             "max_features": self.parameters["max_features"],
             "ignore_special": self.parameters["ignore_special"],
             "max_text_size": self.parameters["max_text_size"],
-            "vocabulary": self.vocabulary_,
-            "stop_words": self.stop_words_,
         }
         insert_verticapy_schema(
             model_name=self.name, model_type="CountVectorizer", model_save=model_save,

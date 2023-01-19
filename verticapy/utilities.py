@@ -452,13 +452,14 @@ bool
                 drop(name, method="table")
             elif model_type == "CountVectorizer":
                 drop(name, method="text")
-                query = (
-                    "SELECT /*+LABEL('utilities.drop')*/ value FROM verticapy.attr WHERE LOWER(model_name) = '{0}' "
-                    "AND attr_name = 'countvectorizer_table'"
-                ).format(quote_ident(name).lower())
-                res = executeSQL(query, print_time_sql=False, method="fetchrow")
-                if res and res[0]:
-                    drop(res[0], method="table")
+                if is_in_verticapy_schema:
+                    query = (
+                        "SELECT /*+LABEL('utilities.drop')*/ value FROM verticapy.attr WHERE LOWER(model_name) = '{0}' "
+                        "AND attr_name = 'countvectorizer_table'"
+                    ).format(quote_ident(name).lower())
+                    res = executeSQL(query, print_time_sql=False, method="fetchrow")
+                    if res and res[0]:
+                        drop(res[0], method="table")
             elif model_type == "KernelDensity":
                 drop(name.replace('"', "") + "_KernelDensity_Map", method="table")
                 drop(
