@@ -155,6 +155,7 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         and 1000, inclusive.
     """
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self,
@@ -166,7 +167,6 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        vertica_version([8, 1, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
@@ -218,6 +218,7 @@ class DecisionTreeRegressor(Regressor, Tree):
         and 1000, inclusive.
     """
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self,
@@ -229,7 +230,6 @@ class DecisionTreeRegressor(Regressor, Tree):
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        vertica_version([9, 0, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
@@ -259,9 +259,9 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
             Name of the the model. The model will be stored in the DB.
     """
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str):
-        vertica_version([8, 1, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
@@ -291,9 +291,9 @@ class DummyTreeRegressor(Regressor, Tree):
             Name of the the model. The model will be stored in the DB.
     """
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str):
-        vertica_version([9, 0, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(

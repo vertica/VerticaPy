@@ -986,6 +986,7 @@ tablesample
 
 
 # ---#
+@check_minimum_version
 @save_verticapy_logs
 def confusion_matrix(
     y_true: str,
@@ -1018,7 +1019,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    vertica_version([8, 0, 0])
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -1292,6 +1292,7 @@ float
 
 
 # ---#
+@check_minimum_version
 @save_verticapy_logs
 def multilabel_confusion_matrix(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], labels: list,
@@ -1319,7 +1320,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    vertica_version([8, 0, 0])
     check_types(
         [
             ("y_true", y_true, [str]),

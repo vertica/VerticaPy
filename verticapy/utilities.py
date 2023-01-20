@@ -50,7 +50,8 @@
 #
 # Standard Python Modules
 import os, math, shutil, re, time, decimal, warnings, datetime, inspect
-from typing import Union
+from functools import wraps
+from typing import Union, get_type_hints
 
 # VerticaPy Modules
 import vertica_python
@@ -78,10 +79,11 @@ save_verticapy_logs decorator. It simplifies the code and automatically
 identifies which function to save to the QUERY PROFILES table.
     """
 
+    @wraps(func)
     def func_prec_save_logs(*args, **kwargs):
 
-        name = func.__code__.co_name
-        path = os.path.basename(inspect.getfile(func))[:-3]
+        name = func.__name__
+        path = func.__module__.replace("verticapy.", "")
         json_dict = {}
         var_names = func.__code__.co_varnames
         if len(args) == len(var_names):
@@ -96,15 +98,78 @@ identifies which function to save to the QUERY PROFILES table.
                     else:
                         json_dict[var_names[idx]] = arg
                 else:
-                    path = str(type(arg))[8:-2]
-                    if "verticapy." in path:
-                        path = path.replace("verticapy.", "")
+                    path += "." + type(arg).__name__
         json_dict = {**json_dict, **kwargs}
         save_to_query_profile(name=name, path=path, json_dict=json_dict)
 
         return func(*args, **kwargs)
 
     return func_prec_save_logs
+
+
+# ---#
+def check_minimum_version(func):
+    """
+---------------------------------------------------------------------------
+check_minimum_version decorator. It simplifies the code by checking if the
+feature is available in the user's version.
+    """
+
+    @wraps(func)
+    def func_prec_check_minimum_version(*args, **kwargs):
+
+        fun_name, object_name, condition = func.__name__, "", []
+        if len(args) > 0:
+            object_name = type(args[0]).__name__
+        all_features_min_versions = {
+            "Balance": [8, 1, 1],
+            "BisectingKMeans": [9, 3, 1],
+            "confusion_matrix": [8, 0, 0],
+            "DecisionTreeClassifier": [8, 1, 1],
+            "DecisionTreeRegressor": [9, 0, 1],
+            "DummyTreeClassifier": [8, 1, 1],
+            "DummyTreeRegressor": [9, 0, 1],
+            "edit_distance": [10, 1, 0],
+            "ElasticNet": [8, 0, 0],
+            "gen_dataset": [9, 3, 0],
+            "IsolationForest": [12, 0, 0],
+            "jaro_distance": [12, 0, 2],
+            "jaro_winkler_distance": [12, 0, 2],
+            "Lasso": [8, 0, 0],
+            "lift_chart": [8, 0, 0],
+            "LinearRegression": [8, 0, 0],
+            "LinearSVC": [8, 1, 0],
+            "LinearSVR": [8, 1, 1],
+            "LogisticRegression": [8, 0, 0],
+            "KMeans": [8, 0, 0],
+            "KPrototypes": [12, 0, 3],
+            "MCA": [9, 1, 0],
+            "multilabel_confusion_matrix": [8, 0, 0],
+            "NaiveBayes": [8, 0, 0],
+            "Normalizer": [8, 1, 0],
+            "OneHotEncoder": [9, 0, 0],
+            "PCA": [9, 1, 0],
+            "prc_curve": [9, 1, 0],
+            "RandomForestClassifier": [8, 1, 1],
+            "RandomForestRegressor": [9, 0, 1],
+            "read_file": [11, 1, 1],
+            "Ridge": [8, 0, 0],
+            "roc_curve": [8, 0, 0],
+            "soundex": [10, 1, 0],
+            "soundex_matches": [10, 1, 0],
+            "SVD": [9, 1, 0],
+            "XGBoostClassifier": [10, 1, 0],
+            "XGBoostRegressor": [10, 1, 0],
+        }
+        if fun_name == "__init__":
+            condition = all_features_min_versions[object_name]
+        else:
+            condition = all_features_min_versions[fun_name]
+        vertica_version(condition)
+
+        return func(*args, **kwargs)
+
+    return func_prec_check_minimum_version
 
 
 #
@@ -1835,6 +1900,7 @@ read_json : Ingests a JSON file into the Vertica database.
 
 
 # ---#
+@check_minimum_version
 @save_verticapy_logs
 def read_file(
     path: str,
@@ -1910,8 +1976,6 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
-    vertica_version([11, 1, 1])
-
     from verticapy import vDataFrame
 
     check_types(

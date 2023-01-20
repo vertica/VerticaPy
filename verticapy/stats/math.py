@@ -65,6 +65,7 @@ nan = str_sql("'nan'::float")
 
 # Soundex
 # ---#
+@check_minimum_version
 def edit_distance(
     expr1, expr2,
 ):
@@ -84,7 +85,6 @@ Returns
 str_sql
     SQL expression.
     """
-    vertica_version([10, 1, 0])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
     return str_sql(f"EDIT_DISTANCE({expr1}, {expr2})", "int")
@@ -93,6 +93,7 @@ str_sql
 levenshtein = edit_distance
 
 # ---#
+@check_minimum_version
 def soundex(expr):
     """
 ---------------------------------------------------------------------------
@@ -108,12 +109,12 @@ Returns
 str_sql
     SQL expression.
     """
-    vertica_version([10, 1, 0])
     expr = format_magic(expr)
     return str_sql(f"SOUNDEX({expr})", "varchar")
 
 
 # ---#
+@check_minimum_version
 def soundex_matches(
     expr1, expr2,
 ):
@@ -135,7 +136,6 @@ Returns
 str_sql
     SQL expression.
     """
-    vertica_version([10, 1, 0])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
     return str_sql(f"SOUNDEX_MATCHES({expr1}, {expr2})", "int")
@@ -143,6 +143,7 @@ str_sql
 
 # Jaro & Jaro Winkler
 # ---#
+@check_minimum_version
 def jaro_distance(
     expr1, expr2,
 ):
@@ -162,13 +163,13 @@ Returns
 str_sql
     SQL expression.
     """
-    vertica_version([12, 0, 2])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
     return str_sql(f"JARO_DISTANCE({expr1}, {expr2})", "float")
 
 
 # ---#
+@check_minimum_version
 def jaro_winkler_distance(
     expr1, expr2,
 ):
@@ -188,7 +189,6 @@ Returns
 str_sql
     SQL expression.
     """
-    vertica_version([12, 0, 2])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
     return str_sql(f"JARO_WINKLER_DISTANCE({expr1}, {expr2})", "float")

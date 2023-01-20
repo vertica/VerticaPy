@@ -59,6 +59,7 @@ from verticapy import vDataFrame
 from verticapy.learn.vmodel import *
 
 # ---#
+@check_minimum_version
 @save_verticapy_logs
 def Balance(
     name: str, input_relation: str, y: str, method: str = "hybrid", ratio: float = 0.5,
@@ -93,7 +94,6 @@ Returns
 vDataFrame
 	vDataFrame of the created view
 	"""
-    vertica_version([8, 1, 1])
     check_types(
         [
             ("name", name, [str]),
@@ -104,9 +104,7 @@ vDataFrame
         ]
     )
     method = method.lower()
-    sql = "SELECT /*+LABEL('learn.preprocessing.Balance')*/ BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
-        name, input_relation, y, method, ratio
-    )
+    sql = f"SELECT /*+LABEL('learn.preprocessing.Balance')*/ BALANCE('{name}', '{input_relation}', '{y}', '{method}_sampling' USING PARAMETERS sampling_ratio = {ratio})"
     executeSQL(sql, "Computing the Balanced Relation.")
     return vDataFrame(name)
 
@@ -352,9 +350,9 @@ method: str, optional
 		(x - min) / (max - min)
 	"""
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str, method: str = "zscore"):
-        vertica_version([8, 1, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "Normalizer", name
         self.set_params({"method": method})
@@ -419,6 +417,7 @@ null_column_name: str, optional
     ignore_null is set to false and column_naming is set to values or values_relaxed.
 	"""
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self,
@@ -430,7 +429,6 @@ null_column_name: str, optional
         column_naming: str = "indices",
         null_column_name: str = "null",
     ):
-        vertica_version([9, 0, 0])
         check_types(
             [
                 ("name", name, [str]),

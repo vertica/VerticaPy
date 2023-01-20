@@ -111,6 +111,7 @@ tol: float, optional
     'tol' from the previous iteration.
     """
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self,
@@ -124,7 +125,6 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        vertica_version([9, 3, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "BisectingKMeans", name
         self.set_params(
@@ -462,6 +462,7 @@ tol: float, optional
 	previous iteration.
 	"""
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self,
@@ -471,7 +472,6 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        vertica_version([8, 0, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "KMeans", name
         self.set_params(
@@ -556,6 +556,7 @@ gamma: float, optional
     importance of numerical and categorical attributes.
     """
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self,
@@ -566,7 +567,6 @@ gamma: float, optional
         tol: float = 1e-4,
         gamma: float = 1.0,
     ):
-        vertica_version([12, 0, 3])
         check_types([("name", name, [str])])
         self.type, self.name = "KPrototypes", name
         self.set_params(

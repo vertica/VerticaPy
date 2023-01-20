@@ -60,6 +60,7 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 
 # ---#
+@check_minimum_version
 @save_verticapy_logs
 def gen_dataset(features_ranges: dict, nrows: int = 1000):
     """
@@ -93,7 +94,6 @@ Returns
 vDataFrame
     Generated dataset.
     """
-    vertica_version([9, 3, 0])
 
     check_types([("features_ranges", features_ranges, [dict]), ("nrows", nrows, [int])])
 
