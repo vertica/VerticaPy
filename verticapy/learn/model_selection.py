@@ -70,6 +70,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 # ---#
+@save_verticapy_logs
 def bayesian_search_cv(
     estimator,
     input_relation: Union[str, vDataFrame],
@@ -170,30 +171,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="bayesian_search_cv",
-        path="learn.model_selection",
-        json_dict={
-            "estimator": estimator,
-            "input_relation": input_relation,
-            "X": X,
-            "y": y,
-            "metric": metric,
-            "cv": cv,
-            "pos_label": pos_label,
-            "cutoff": cutoff,
-            "param_grid": param_grid,
-            "random_nbins": random_nbins,
-            "bayesian_nbins": bayesian_nbins,
-            "random_grid": random_grid,
-            "lmax": lmax,
-            "nrows": nrows,
-            "k_tops": k_tops,
-            "RFmodel_params": RFmodel_params,
-        },
-    )
-    # -#
     if print_info:
         print(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
         print(
@@ -242,7 +219,7 @@ tablesample
             elif elem == "max":
                 result["max_features"][idx] = int(len(X))
     result = tablesample(result).to_sql()
-    schema = verticapy.options["temp_schema"]
+    schema = verticapy.OPTIONS["temp_schema"]
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
     drop(relation, method="table")
@@ -251,7 +228,7 @@ tablesample
         print(
             f"\033[1m\033[4mStep 2 - Fitting the RF model with the hyperparameters data\033[0m\033[0m\n"
         )
-    if verticapy.options["tqdm"] and print_info:
+    if verticapy.OPTIONS["tqdm"] and print_info:
         from tqdm.auto import tqdm
 
         loop = tqdm(range(1))
@@ -339,6 +316,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def best_k(
     input_relation: Union[str, vDataFrame],
     X: list = [],
@@ -391,23 +369,6 @@ Returns
 int
 	the k-means / k-prototypes k
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="best_k",
-        path="learn.model_selection",
-        json_dict={
-            "input_relation": input_relation,
-            "X": X,
-            "n_cluster": n_cluster,
-            "init": init,
-            "max_iter": max_iter,
-            "tol": tol,
-            "use_kprototype": use_kprototype,
-            "gamma": gamma,
-            "elbow_score_stop": elbow_score_stop,
-        },
-    )
-    # -#
     if isinstance(X, str):
         X = [X]
     if not (init) and (use_kprototype):
@@ -437,9 +398,9 @@ int
         L.sort()
     schema, relation = schema_relation(input_relation)
     if not (schema):
-        schema = verticapy.options["temp_schema"]
+        schema = verticapy.OPTIONS["temp_schema"]
     schema = quote_ident(schema)
-    if verticapy.options["tqdm"] and (
+    if verticapy.OPTIONS["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         from tqdm.auto import tqdm
@@ -468,6 +429,7 @@ int
 
 
 # ---#
+@save_verticapy_logs
 def cross_validate(
     estimator,
     input_relation: Union[str, vDataFrame],
@@ -542,24 +504,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="cross_validate",
-        path="learn.model_selection",
-        json_dict={
-            "estimator": estimator,
-            "input_relation": input_relation,
-            "X": X,
-            "y": y,
-            "metric": metric,
-            "cv": cv,
-            "pos_label": pos_label,
-            "cutoff": cutoff,
-            "show_time": show_time,
-            "training_score": training_score,
-        },
-    )
-    # -#
     if isinstance(X, str):
         X = [X]
     check_types(
@@ -617,7 +561,7 @@ tablesample
     if training_score:
         result_train = {"index": final_metrics}
     total_time = []
-    if verticapy.options["tqdm"] and (
+    if verticapy.OPTIONS["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         from tqdm.auto import tqdm
@@ -630,7 +574,7 @@ tablesample
             estimator.drop()
         except:
             pass
-        random_state = verticapy.options["random_state"]
+        random_state = verticapy.OPTIONS["random_state"]
         random_state = (
             random.randint(-10e6, 10e6) if not (random_state) else random_state + i
         )
@@ -784,6 +728,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def elbow(
     input_relation: Union[str, vDataFrame],
     X: list = [],
@@ -839,25 +784,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="elbow",
-        path="learn.model_selection",
-        json_dict={
-            **{
-                "input_relation": input_relation,
-                "X": X,
-                "n_cluster": n_cluster,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-                "use_kprototype": use_kprototype,
-                "gamma": gamma,
-            },
-            **style_kwds,
-        },
-    )
-    # -#
     if isinstance(X, str):
         X = [X]
     if not (init) and (use_kprototype):
@@ -890,7 +816,7 @@ tablesample
     else:
         L = n_cluster
         L.sort()
-    if verticapy.options["tqdm"]:
+    if verticapy.OPTIONS["tqdm"]:
         from tqdm.auto import tqdm
 
         loop = tqdm(L)
@@ -927,6 +853,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def enet_search_cv(
     input_relation: Union[str, vDataFrame],
     X: list,
@@ -995,21 +922,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="enet_search_cv",
-        path="learn.model_selection",
-        json_dict={
-            "input_relation": input_relation,
-            "X": X,
-            "y": y,
-            "metric": metric,
-            "cv": cv,
-            "estimator_type": estimator_type,
-            "cutoff": cutoff,
-        },
-    )
-    # -#
     check_types([("estimator_type", estimator_type, ["logit", "enet", "auto"])])
     param_grid = parameter_grid(
         {
@@ -1037,11 +949,11 @@ tablesample
             estimator_type = "enet"
     if estimator_type == "logit":
         estimator = LogisticRegression(
-            gen_tmp_name(schema=verticapy.options["temp_schema"], name="logit")
+            gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="logit")
         )
     else:
         estimator = ElasticNet(
-            gen_tmp_name(schema=verticapy.options["temp_schema"], name="enet")
+            gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="enet")
         )
     result = bayesian_search_cv(
         estimator,
@@ -1062,6 +974,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def gen_params_grid(
     estimator,
     nbins: int = 10,
@@ -1095,19 +1008,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="gen_params_grid",
-        path="learn.model_selection",
-        json_dict={
-            "estimator": estimator,
-            "nbins": nbins,
-            "max_nfeatures": max_nfeatures,
-            "lmax": lmax,
-            "optimized_grid": optimized_grid,
-        },
-    )
-    # -#
     from verticapy.learn.cluster import KMeans, KPrototypes, BisectingKMeans, DBSCAN
     from verticapy.learn.decomposition import PCA, SVD
     from verticapy.learn.ensemble import (
@@ -1681,6 +1581,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def grid_search_cv(
     estimator,
     param_grid: Union[dict, list],
@@ -1759,24 +1660,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="grid_search_cv",
-        path="learn.model_selection",
-        json_dict={
-            "estimator": estimator,
-            "input_relation": input_relation,
-            "X": X,
-            "y": y,
-            "metric": metric,
-            "cv": cv,
-            "pos_label": pos_label,
-            "cutoff": cutoff,
-            "training_score": training_score,
-            "skip_error": skip_error,
-        },
-    )
-    # -#
     if isinstance(X, str):
         X = [X]
     check_types(
@@ -1814,7 +1697,7 @@ tablesample
     if all_configuration == []:
         all_configuration = [{}]
     if (
-        verticapy.options["tqdm"]
+        verticapy.OPTIONS["tqdm"]
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
@@ -1930,6 +1813,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def learning_curve(
     estimator,
     input_relation: Union[str, vDataFrame],
@@ -2014,28 +1898,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="learning_curve",
-        path="learn.model_selection",
-        json_dict={
-            **{
-                "estimator": estimator,
-                "input_relation": input_relation,
-                "X": X,
-                "y": y,
-                "sizes": sizes,
-                "method": method,
-                "metric": metric,
-                "cv": cv,
-                "pos_label": pos_label,
-                "cutoff": cutoff,
-                "std_coeff": std_coeff,
-            },
-            **style_kwds,
-        },
-    )
-    # -#
     check_types([("method", method, ["efficiency", "performance", "scalability"])])
     from verticapy.plot import range_curve
 
@@ -2049,7 +1911,7 @@ tablesample
         input_relation = vDataFrameSQL(input_relation)
     lc_result_final = []
     sizes = sorted(set(sizes))
-    if verticapy.options["tqdm"]:
+    if verticapy.OPTIONS["tqdm"]:
         from tqdm.auto import tqdm
 
         loop = tqdm(sizes)
@@ -2171,6 +2033,8 @@ tablesample
 
 
 # ---#
+@check_minimum_version
+@save_verticapy_logs
 def lift_chart(
     y_true: str,
     y_score: str,
@@ -2211,22 +2075,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="lift_chart",
-        path="learn.model_selection",
-        json_dict={
-            **{
-                "y_true": y_true,
-                "y_score": y_score,
-                "input_relation": input_relation,
-                "pos_label": pos_label,
-                "nbins": nbins,
-            },
-            **style_kwds,
-        },
-    )
-    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -2235,7 +2083,6 @@ tablesample
             ("nbins", nbins, [int, float]),
         ]
     )
-    version(condition=[8, 0, 0])
     query = "SELECT /*+LABEL('learn.model_selection.lift_chart')*/ LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(
         nbins,
@@ -2301,6 +2148,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def parameter_grid(param_grid: dict):
     """
 ---------------------------------------------------------------------------
@@ -2316,13 +2164,6 @@ Returns
 list of dict
     List of the different combinations.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="parameter_grid",
-        path="learn.model_selection",
-        json_dict={"param_grid": param_grid,},
-    )
-    # -#
     check_types([("param_grid", param_grid, [dict])])
     return [
         dict(zip(param_grid.keys(), values)) for values in product(*param_grid.values())
@@ -2330,6 +2171,7 @@ list of dict
 
 
 # ---#
+@save_verticapy_logs
 def plot_acf_pacf(
     vdf: vDataFrame,
     column: str,
@@ -2367,16 +2209,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="plot_acf_pacf",
-        path="learn.model_selection",
-        json_dict={
-            **{"vdf": vdf, "column": column, "ts": ts, "by": by, "p": p,},
-            **style_kwds,
-        },
-    )
-    # -#
     if isinstance(by, str):
         by = [by]
     check_types(
@@ -2448,6 +2280,8 @@ tablesample
 
 
 # ---#
+@check_minimum_version
+@save_verticapy_logs
 def prc_curve(
     y_true: str,
     y_score: str,
@@ -2492,23 +2326,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="prc_curve",
-        path="learn.model_selection",
-        json_dict={
-            **{
-                "y_true": y_true,
-                "y_score": y_score,
-                "input_relation": input_relation,
-                "pos_label": pos_label,
-                "nbins": nbins,
-                "auc_prc": auc_prc,
-            },
-            **style_kwds,
-        },
-    )
-    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -2520,7 +2337,6 @@ tablesample
     )
     if nbins < 0:
         nbins = 999999
-    version(condition=[9, 1, 0])
     query = "SELECT /*+LABEL('learn.model_selection.prc_curve')*/ PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(
         nbins,
@@ -2586,6 +2402,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def randomized_features_search_cv(
     estimator,
     input_relation: Union[str, vDataFrame],
@@ -2665,25 +2482,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="randomized_features_search_cv",
-        path="learn.model_selection",
-        json_dict={
-            "estimator": estimator,
-            "input_relation": input_relation,
-            "X": X,
-            "y": y,
-            "metric": metric,
-            "cv": cv,
-            "pos_label": pos_label,
-            "cutoff": cutoff,
-            "training_score": training_score,
-            "comb_limit": comb_limit,
-            "skip_error": skip_error,
-        },
-    )
-    # -#
     if isinstance(X, str):
         X = [X]
     check_types(
@@ -2710,7 +2508,7 @@ tablesample
             if config not in all_configuration:
                 all_configuration += [config]
     if (
-        verticapy.options["tqdm"]
+        verticapy.OPTIONS["tqdm"]
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
@@ -2828,6 +2626,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def randomized_search_cv(
     estimator,
     input_relation: Union[str, vDataFrame],
@@ -2907,25 +2706,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="randomized_search_cv",
-        path="learn.model_selection",
-        json_dict={
-            "estimator": estimator,
-            "input_relation": input_relation,
-            "X": X,
-            "y": y,
-            "metric": metric,
-            "cv": cv,
-            "pos_label": pos_label,
-            "cutoff": cutoff,
-            "nbins": nbins,
-            "lmax": lmax,
-            "optimized_grid": optimized_grid,
-        },
-    )
-    # -#
     param_grid = gen_params_grid(estimator, nbins, len(X), lmax, optimized_grid)
     return grid_search_cv(
         estimator,
@@ -2944,6 +2724,8 @@ tablesample
 
 
 # ---#
+@check_minimum_version
+@save_verticapy_logs
 def roc_curve(
     y_true: str,
     y_score: str,
@@ -2996,25 +2778,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="roc_curve",
-        path="learn.model_selection",
-        json_dict={
-            **{
-                "y_true": y_true,
-                "y_score": y_score,
-                "input_relation": input_relation,
-                "pos_label": pos_label,
-                "auc_roc": auc_roc,
-                "nbins": nbins,
-                "best_threshold": best_threshold,
-                "cutoff_curve": cutoff_curve,
-            },
-            **style_kwds,
-        },
-    )
-    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -3028,7 +2791,6 @@ tablesample
     )
     if nbins < 0:
         nbins = 999999
-    version(condition=[8, 0, 0])
     query = "SELECT /*+LABEL('learn.model_selection.roc_curve')*/ decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
     query = query.format(
         nbins,
@@ -3140,6 +2902,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def stepwise(
     estimator,
     input_relation: Union[str, vDataFrame],
@@ -3205,28 +2968,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="stepwise",
-        path="learn.model_selection",
-        json_dict={
-            **{
-                "estimator": estimator,
-                "input_relation": input_relation,
-                "X": X,
-                "y": y,
-                "criterion": criterion,
-                "direction": direction,
-                "max_steps": max_steps,
-                "criterion_threshold": criterion_threshold,
-                "drop_final_estimator": drop_final_estimator,
-                "x_order": x_order,
-                "show": show,
-            },
-            **style_kwds,
-        },
-    )
-    # -#
     from verticapy.learn.metrics import aic_bic
 
     if isinstance(X, str):
@@ -3243,7 +2984,7 @@ tablesample
             ("x_order", x_order, ["pearson", "spearman", "random", "none"]),
         ]
     )
-    if not (verticapy.options["overwrite_model"]):
+    if not (verticapy.OPTIONS["overwrite_model"]):
         does_model_exist(name=estimator.name, raise_error=True)
     result, current_step = [], 0
     table = (
@@ -3274,7 +3015,7 @@ tablesample
             X.reverse()
     if print_info:
         print("\033[1m\033[4mStarting Stepwise\033[0m\033[0m")
-    if verticapy.options["tqdm"] and print_info:
+    if verticapy.OPTIONS["tqdm"] and print_info:
         from tqdm.auto import tqdm
 
         loop = tqdm(range(len(X)))
@@ -3391,6 +3132,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def validation_curve(
     estimator,
     param_name: str,
@@ -3471,28 +3213,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="validation_curve",
-        path="learn.model_selection",
-        json_dict={
-            **{
-                "estimator": estimator,
-                "param_name": param_name,
-                "param_range": param_range,
-                "input_relation": input_relation,
-                "X": X,
-                "y": y,
-                "metric": metric,
-                "cv": cv,
-                "pos_label": pos_label,
-                "cutoff": cutoff,
-                "std_coeff": std_coeff,
-            },
-            **style_kwds,
-        },
-    )
-    # -#
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
         param_range = [param_range]
     from verticapy.plot import range_curve

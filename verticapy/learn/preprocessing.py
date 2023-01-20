@@ -59,6 +59,8 @@ from verticapy import vDataFrame
 from verticapy.learn.vmodel import *
 
 # ---#
+@check_minimum_version
+@save_verticapy_logs
 def Balance(
     name: str, input_relation: str, y: str, method: str = "hybrid", ratio: float = 0.5,
 ):
@@ -92,19 +94,6 @@ Returns
 vDataFrame
 	vDataFrame of the created view
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="Balance",
-        path="learn.preprocessing",
-        json_dict={
-            "name": name,
-            "input_relation": input_relation,
-            "y": y,
-            "method": method,
-            "ratio": ratio,
-        },
-    )
-    # -#
     check_types(
         [
             ("name", name, [str]),
@@ -114,11 +103,8 @@ vDataFrame
             ("ratio", ratio, [float]),
         ]
     )
-    version(condition=[8, 1, 1])
     method = method.lower()
-    sql = "SELECT /*+LABEL('learn.preprocessing.Balance')*/ BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
-        name, input_relation, y, method, ratio
-    )
+    sql = f"SELECT /*+LABEL('learn.preprocessing.Balance')*/ BALANCE('{name}', '{input_relation}', '{y}', '{method}_sampling' USING PARAMETERS sampling_ratio = {ratio})"
     executeSQL(sql, "Computing the Balanced Relation.")
     return vDataFrame(name)
 
@@ -151,6 +137,7 @@ max_text_size: int, optional
 	columns during the fitting.
 	"""
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -161,21 +148,6 @@ max_text_size: int, optional
         ignore_special: bool = True,
         max_text_size: int = 2000,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="CountVectorizer",
-            path="learn.preprocessing",
-            json_dict={
-                "name": name,
-                "lowercase": lowercase,
-                "max_df": max_df,
-                "min_df": min_df,
-                "max_features": max_features,
-                "ignore_special": ignore_special,
-                "max_text_size": max_text_size,
-            },
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "CountVectorizer", name
         self.set_params(
@@ -216,7 +188,6 @@ max_text_size: int, optional
             stop_words += " OR (rnk > {})".format(self.parameters["max_features"])
         res = executeSQL(stop_words, print_time_sql=False, method="fetchall")
         self.stop_words_ = [item[0] for item in res]
-
 
     # ---#
     def compute_vocabulary(self):
@@ -281,7 +252,7 @@ max_text_size: int, optional
         check_types(
             [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
         )
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -379,18 +350,12 @@ method: str, optional
 		(x - min) / (max - min)
 	"""
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(self, name: str, method: str = "zscore"):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="Normalizer",
-            path="learn.preprocessing",
-            json_dict={"name": name, "method": method,},
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "Normalizer", name
         self.set_params({"method": method})
-        version(condition=[8, 1, 0])
 
 
 # ---#
@@ -452,6 +417,8 @@ null_column_name: str, optional
     ignore_null is set to false and column_naming is set to values or values_relaxed.
 	"""
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -462,21 +429,6 @@ null_column_name: str, optional
         column_naming: str = "indices",
         null_column_name: str = "null",
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="OneHotEncoder",
-            path="learn.preprocessing",
-            json_dict={
-                "name": name,
-                "extra_levels": extra_levels,
-                "drop_first": drop_first,
-                "ignore_null": ignore_null,
-                "separator": separator,
-                "column_naming": column_naming,
-                "null_column_name": null_column_name,
-            },
-        )
-        # -#
         check_types(
             [
                 ("name", name, [str]),
@@ -503,4 +455,3 @@ null_column_name: str, optional
                 "null_column_name": null_column_name,
             }
         )
-        version(condition=[9, 0, 0])

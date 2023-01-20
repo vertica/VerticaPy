@@ -164,6 +164,7 @@ final_relation_: vDataFrame
     """
 
     # ---#
+    @save_verticapy_logs
     def __init__(
         self,
         name: str = "",
@@ -181,28 +182,6 @@ final_relation_: vDataFrame
         identify_ts: bool = True,
         save: bool = True,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="AutoDataPrep",
-            path="learn.delphi",
-            json_dict={
-                "name": name,
-                "cat_method": cat_method,
-                "num_method": num_method,
-                "nbins": nbins,
-                "outliers_threshold": outliers_threshold,
-                "na_method": na_method,
-                "cat_topk": cat_topk,
-                "rule": rule,
-                "normalize": normalize,
-                "normalize_min_cat": normalize_min_cat,
-                "apply_pca": apply_pca,
-                "id_method": id_method,
-                "identify_ts": identify_ts,
-                "save": save,
-            },
-        )
-        # -#
         check_types(
             [
                 ("name", name, [str]),
@@ -224,7 +203,7 @@ final_relation_: vDataFrame
         self.type, self.name = "AutoDataPrep", name
         if not (self.name):
             self.name = gen_tmp_name(
-                schema=verticapy.options["temp_schema"], name="autodataprep"
+                schema=verticapy.OPTIONS["temp_schema"], name="autodataprep"
             )
         self.parameters = {
             "cat_method": cat_method,
@@ -271,12 +250,12 @@ final_relation_: vDataFrame
     object
         the cleaned relation
         """
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
-        current_print_info = verticapy.options["print_info"]
-        verticapy.options["print_info"] = False
+        current_print_info = verticapy.OPTIONS["print_info"]
+        verticapy.OPTIONS["print_info"] = False
         assert not (by) or (ts), ParameterError(
             "Parameter 'by' must be empty if 'ts' is not defined."
         )
@@ -442,7 +421,7 @@ final_relation_: vDataFrame
         if self.parameters["save"]:
             vdf.to_db(name=self.name, relation_type="table", inplace=True)
         self.final_relation_ = vdf
-        verticapy.options["print_info"] = current_print_info
+        verticapy.OPTIONS["print_info"] = current_print_info
         return self.final_relation_
 
 
@@ -493,6 +472,7 @@ model_: object
     """
 
     # ---#
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -511,24 +491,6 @@ model_: object
         },
         print_info: bool = True,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="AutoClustering",
-            path="learn.delphi",
-            json_dict={
-                "name": name,
-                "n_cluster": n_cluster,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-                "use_kprototype": use_kprototype,
-                "gamma": gamma,
-                "print_info": print_info,
-                "preprocess_data": preprocess_data,
-                "preprocess_dict": preprocess_dict,
-            },
-        )
-        # -#
         check_types(
             [
                 ("name", name, [str]),
@@ -574,7 +536,7 @@ model_: object
     object
         clustering model
         """
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -606,7 +568,7 @@ model_: object
             )
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mBuilding the Final Model\033[0m\033[0m\n")
-        if verticapy.options["tqdm"] and self.parameters["print_info"]:
+        if verticapy.OPTIONS["tqdm"] and self.parameters["print_info"]:
             from tqdm.auto import tqdm
 
             loop = tqdm(range(1))
@@ -732,6 +694,7 @@ model_grid_ : tablesample
     """
 
     # ---#
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -753,32 +716,6 @@ model_grid_ : tablesample
         preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="AutoML",
-            path="learn.delphi",
-            json_dict={
-                "name": name,
-                "estimator": estimator,
-                "estimator_type": estimator_type,
-                "metric": metric,
-                "cv": cv,
-                "pos_label": pos_label,
-                "cutoff": cutoff,
-                "nbins": nbins,
-                "lmax": lmax,
-                "optimized_grid": optimized_grid,
-                "print_info": print_info,
-                "stepwise": stepwise,
-                "stepwise_criterion": stepwise_criterion,
-                "stepwise_direction": stepwise_direction,
-                "stepwise_max_steps": stepwise_max_steps,
-                "stepwise_x_order": stepwise_x_order,
-                "preprocess_data": preprocess_data,
-                "preprocess_dict": preprocess_dict,
-            },
-        )
-        # -#
         check_types(
             [
                 ("name", name, [str]),
@@ -846,7 +783,7 @@ model_grid_ : tablesample
     object
         model grid
         """
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -862,7 +799,7 @@ model_grid_ : tablesample
             else:
                 X = input_relation.get_columns(exclude_columns=exclude_columns)
         if isinstance(self.parameters["estimator"], str):
-            v = version()
+            v = vertica_version()
             self.parameters["estimator"] = self.parameters["estimator"].lower()
             check_types(
                 [("estimator", self.parameters["estimator"], ["native", "all", "fast"])]
@@ -1027,7 +964,7 @@ model_grid_ : tablesample
             self.preprocess_ = None
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoML\033[0m\033[0m\n")
-        if verticapy.options["tqdm"] and self.parameters["print_info"]:
+        if verticapy.OPTIONS["tqdm"] and self.parameters["print_info"]:
             from tqdm.auto import tqdm
 
             loop = tqdm(self.parameters["estimator"])

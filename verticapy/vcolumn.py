@@ -150,7 +150,7 @@ Attributes
             if not (isinstance(index_start, int)):
                 index_start = 0
             if self.isarray():
-                version(condition=[10, 0, 0])
+                vertica_version(condition=[10, 0, 0])
                 if index_start < 0:
                     index_start_str = str(index_start) + " + APPLY_COUNT_ELEMENTS({})"
                 else:
@@ -199,7 +199,7 @@ Attributes
                 return vDataFrameSQL(query)
         elif isinstance(index, int):
             if self.isarray():
-                version(condition=[9, 3, 0])
+                vertica_version(condition=[9, 3, 0])
                 elem_to_select = "{0}[{1}]".format(self.alias, index)
                 new_alias = quote_ident(self.alias[1:-1] + "." + str(index))
                 query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
@@ -235,7 +235,7 @@ Attributes
                     self.init_transf, index.replace("'", "''")
                 )
             else:
-                version(condition=[10, 0, 0])
+                vertica_version(condition=[10, 0, 0])
                 elem_to_select = self.alias + "." + quote_ident(index)
                 init_transf = self.init_transf + "." + quote_ident(index)
             query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
@@ -257,11 +257,11 @@ Attributes
 
     # ---#
     def __repr__(self):
-        return self.head(limit=verticapy.options["max_rows"]).__repr__()
+        return self.head(limit=verticapy.OPTIONS["max_rows"]).__repr__()
 
     # ---#
     def _repr_html_(self):
-        return self.head(limit=verticapy.options["max_rows"])._repr_html_()
+        return self.head(limit=verticapy.OPTIONS["max_rows"])._repr_html_()
 
     # ---#
     def __setattr__(self, attr, val):
@@ -271,6 +271,7 @@ Attributes
     # Methods
     #
     # ---#
+    @save_verticapy_logs
     def aad(self):
         """
     ---------------------------------------------------------------------------
@@ -285,14 +286,10 @@ Attributes
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="aad", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["aad"]).values[self.alias][0]
 
     # ---#
+    @save_verticapy_logs
     def abs(self):
         """
 	---------------------------------------------------------------------------
@@ -307,14 +304,10 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="abs", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.apply(func="ABS({})")
 
     # ---#
+    @save_verticapy_logs
     def add(self, x: float):
         """
 	---------------------------------------------------------------------------
@@ -335,11 +328,6 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="add", path="vcolumn.vColumn", json_dict={"x": x,},
-        )
-        # -#
         check_types([("x", x, [int, float])])
         if self.isdate():
             return self.apply(func="TIMESTAMPADD(SECOND, {}, {})".format(x, "{}"))
@@ -392,6 +380,7 @@ Attributes
         return self.parent
 
     # ---#
+    @save_verticapy_logs
     def aggregate(self, func: list):
         """
 	---------------------------------------------------------------------------
@@ -441,15 +430,11 @@ Attributes
  	vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
  		analytical function on a specific vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="aggregate", path="vcolumn.vColumn", json_dict={"func": func,},
-        )
-        # -#
         return self.parent.aggregate(func=func, columns=[self.alias]).transpose()
 
     agg = aggregate
     # ---#
+    @save_verticapy_logs
     def apply(self, func: str, copy_name: str = ""):
         """
 	---------------------------------------------------------------------------
@@ -475,13 +460,6 @@ Attributes
 	vDataFrame.applymap : Applies a function to all the vColumns.
 	vDataFrame.eval     : Evaluates a customized expression.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="apply",
-            path="vcolumn.vColumn",
-            json_dict={"func": func, "copy_name": copy_name,},
-        )
-        # -#
         if isinstance(func, str_sql):
             func = str(func)
         check_types([("func", func, [str]), ("copy_name", copy_name, [str])])
@@ -551,6 +529,7 @@ Attributes
             )
 
     # ---#
+    @save_verticapy_logs
     def apply_fun(self, func: str, x: float = 2):
         """
 	---------------------------------------------------------------------------
@@ -606,10 +585,6 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="apply_fun", path="vcolumn.vColumn", json_dict={"func": func, "x": x,},
-        )
         if isinstance(func, str):
             func = func.lower()
         if func == "mean":
@@ -690,6 +665,7 @@ Attributes
         return self.apply(func=expr)
 
     # ---#
+    @save_verticapy_logs
     def astype(self, dtype):
         """
 	---------------------------------------------------------------------------
@@ -714,19 +690,14 @@ Attributes
 	--------
 	vDataFrame.astype : Converts the vColumns to the input type.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="astype", path="vcolumn.vColumn", json_dict={"dtype": dtype,},
-        )
         dtype = get_vertica_type(dtype)
-        # -#
         check_types([("dtype", dtype, [str])])
         try:
             if (
                 dtype == "array" or str(dtype).startswith("vmap")
             ) and self.category() == "text":
                 if dtype == "array":
-                    version(condition=[10, 0, 0])
+                    vertica_version(condition=[10, 0, 0])
                 query = "SELECT {0} FROM {1} ORDER BY LENGTH({0}) DESC LIMIT 1".format(
                     self.alias, self.parent.__genSQL__()
                 )
@@ -809,7 +780,7 @@ Attributes
                         "MAPTOSTRING({} USING PARAMETERS canonical_json=true)",
                     )
                 else:
-                    version(condition=[10, 1, 0])
+                    vertica_version(condition=[10, 1, 0])
                     transformation = "TO_JSON({0})".format(self.alias), "TO_JSON({})"
                 dtype = "varchar"
             else:
@@ -840,6 +811,7 @@ Attributes
             )
 
     # ---#
+    @save_verticapy_logs
     def avg(self):
         """
 	---------------------------------------------------------------------------
@@ -854,15 +826,11 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="avg", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["avg"]).values[self.alias][0]
 
     mean = avg
     # ---#
+    @save_verticapy_logs
     def bar(
         self,
         method: str = "density",
@@ -912,22 +880,6 @@ Attributes
  	--------
  	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="bar",
-            path="vcolumn.vColumn",
-            json_dict={
-                **{
-                    "method": method,
-                    "of": of,
-                    "max_cardinality": max_cardinality,
-                    "nbins": nbins,
-                    "h": h,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         check_types(
             [
                 ("method", method, [str]),
@@ -945,6 +897,7 @@ Attributes
         return bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     # ---#
+    @save_verticapy_logs
     def boxplot(
         self,
         by: str = "",
@@ -986,21 +939,6 @@ Attributes
  	--------
  	vDataFrame.boxplot : Draws the Box Plot of the input vColumns. 
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="boxplot",
-            path="vcolumn.vColumn",
-            json_dict={
-                **{
-                    "by": by,
-                    "h": h,
-                    "max_cardinality": max_cardinality,
-                    "cat_priority": cat_priority,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
         check_types(
@@ -1037,6 +975,7 @@ Attributes
         return self.transformations[-1][2]
 
     # ---#
+    @save_verticapy_logs
     def clip(self, lower=None, upper=None):
         """
 	---------------------------------------------------------------------------
@@ -1060,13 +999,6 @@ Attributes
  	--------
  	vDataFrame[].fill_outliers : Fills the vColumn outliers using the input method.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="clip",
-            path="vcolumn.vColumn",
-            json_dict={"lower": lower, "upper": upper,},
-        )
-        # -#
         check_types([("lower", lower, [float, int]), ("upper", upper, [float, int])])
         assert (lower != None) or (upper != None), ParameterError(
             "At least 'lower' or 'upper' must have a numerical value"
@@ -1086,6 +1018,7 @@ Attributes
         return self.parent
 
     # ---#
+    @save_verticapy_logs
     def count(self):
         """
 	---------------------------------------------------------------------------
@@ -1100,14 +1033,10 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="count", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["count"]).values[self.alias][0]
 
     # ---#
+    @save_verticapy_logs
     def cut(
         self,
         breaks: list,
@@ -1140,18 +1069,6 @@ Attributes
     --------
     vDataFrame[].apply : Applies a function to the input vColumn.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="cut",
-            path="vcolumn.vColumn",
-            json_dict={
-                "breaks": breaks,
-                "labels": labels,
-                "include_lowest": include_lowest,
-                "right": right,
-            },
-        )
-        # -#
         check_types(
             [
                 ("breaks", breaks, [list]),
@@ -1205,6 +1122,7 @@ Attributes
 
     dtype = ctype
     # ---#
+    @save_verticapy_logs
     def date_part(self, field: str):
         """
 	---------------------------------------------------------------------------
@@ -1228,14 +1146,10 @@ Attributes
 	--------
 	vDataFrame[].slice : Slices the vColumn using a time series rule.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="date_part", path="vcolumn.vColumn", json_dict={"field": field,},
-        )
-        # -#
         return self.apply(func="DATE_PART('{}', {})".format(field, "{}"))
 
     # ---#
+    @save_verticapy_logs
     def decode(self, *argv):
         """
 	---------------------------------------------------------------------------
@@ -1262,16 +1176,12 @@ Attributes
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="decode", path="vcolumn.vColumn", json_dict={"argv": argv},
-        )
-        # -#
         import verticapy.stats as st
 
         return self.apply(func=st.decode(str_sql("{}"), *argv))
 
     # ---#
+    @save_verticapy_logs
     def density(
         self,
         by: str = "",
@@ -1318,16 +1228,6 @@ Attributes
 	--------
 	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="density",
-            path="vcolumn.vColumn",
-            json_dict={
-                **{"by": by, "kernel": kernel, "bandwidth": bandwidth, "nbins": nbins,},
-                **style_kwds,
-            },
-        )
-        # -#
         check_types(
             [
                 ("by", by, [str]),
@@ -1383,7 +1283,7 @@ Attributes
         kernel = kernel.lower()
         from verticapy.learn.neighbors import KernelDensity
 
-        schema = verticapy.options["temp_schema"]
+        schema = verticapy.OPTIONS["temp_schema"]
         if not (schema):
             schema = "public"
         name = gen_tmp_name(schema=schema, name="kde")
@@ -1410,6 +1310,7 @@ Attributes
             raise
 
     # ---#
+    @save_verticapy_logs
     def describe(
         self, method: str = "auto", max_cardinality: int = 6, numcol: str = ""
     ):
@@ -1444,17 +1345,6 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="describe",
-            path="vcolumn.vColumn",
-            json_dict={
-                "method": method,
-                "max_cardinality": max_cardinality,
-                "numcol": numcol,
-            },
-        )
-        # -#
         check_types(
             [
                 ("method", method, ["auto", "numerical", "categorical", "cat_stats"]),
@@ -1597,6 +1487,7 @@ Attributes
         return tablesample(values)
 
     # ---#
+    @save_verticapy_logs
     def discretize(
         self,
         method: str = "auto",
@@ -1658,21 +1549,6 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="discretize",
-            path="vcolumn.vColumn",
-            json_dict={
-                "RFmodel_params": RFmodel_params,
-                "return_enum_trans": return_enum_trans,
-                "h": h,
-                "response": response,
-                "nbins": nbins,
-                "method": method,
-                "return_enum_trans": return_enum_trans,
-            },
-        )
-        # -#
         check_types(
             [
                 ("RFmodel_params", RFmodel_params, [dict]),
@@ -1690,7 +1566,7 @@ Attributes
         )
         method = method.lower()
         if self.isnum() and method == "smart":
-            schema = verticapy.options["temp_schema"]
+            schema = verticapy.OPTIONS["temp_schema"]
             if not (schema):
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
@@ -1888,6 +1764,7 @@ Attributes
         return [item for sublist in query_result for item in sublist]
 
     # ---#
+    @save_verticapy_logs
     def div(self, x: float):
         """
 	---------------------------------------------------------------------------
@@ -1907,16 +1784,12 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="div", path="vcolumn.vColumn", json_dict={"x": x,},
-        )
-        # -#
         check_types([("x", x, [int, float])])
         assert x != 0, ValueError("Division by 0 is forbidden !")
         return self.apply(func="{} / ({})".format("{}", x))
 
     # ---#
+    @save_verticapy_logs
     def drop(self, add_history: bool = True):
         """
 	---------------------------------------------------------------------------
@@ -1940,13 +1813,6 @@ Attributes
 	--------
 	vDataFrame.drop: Drops the input vColumns from the vDataFrame.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="drop",
-            path="vcolumn.vColumn",
-            json_dict={"add_history": add_history,},
-        )
-        # -#
         check_types([("add_history", add_history, [bool])])
         try:
             parent = self.parent
@@ -1973,6 +1839,7 @@ Attributes
         return parent
 
     # ---#
+    @save_verticapy_logs
     def drop_outliers(
         self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05
     ):
@@ -2003,17 +1870,6 @@ Attributes
 	vDataFrame.outliers      : Adds a new vColumn labeled with 0 and 1 
 		(1 meaning global outlier).
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="drop_outliers",
-            path="vcolumn.vColumn",
-            json_dict={
-                "threshold": threshold,
-                "use_threshold": use_threshold,
-                "alpha": alpha,
-            },
-        )
-        # -#
         check_types(
             [
                 ("alpha", alpha, [int, float]),
@@ -2040,6 +1896,7 @@ Attributes
         return self.parent
 
     # ---#
+    @save_verticapy_logs
     def dropna(self):
         """
 	---------------------------------------------------------------------------
@@ -2054,15 +1911,11 @@ Attributes
 	--------
 	vDataFrame.filter: Filters the data using the input expression.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="dropna", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         self.parent.filter("{} IS NOT NULL".format(self.alias))
         return self.parent
 
     # ---#
+    @save_verticapy_logs
     def fill_outliers(
         self,
         method: str = "winsorize",
@@ -2105,18 +1958,6 @@ Attributes
 	vDataFrame.outliers      : Adds a new vColumn labeled with 0 and 1 
 		(1 meaning global outlier).
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="fill_outliers",
-            path="vcolumn.vColumn",
-            json_dict={
-                "method": method,
-                "alpha": alpha,
-                "use_threshold": use_threshold,
-                "threshold": threshold,
-            },
-        )
-        # -#
         if isinstance(method, str):
             method = method.lower()
         check_types(
@@ -2180,6 +2021,7 @@ Attributes
         return self.parent
 
     # ---#
+    @save_verticapy_logs
     def fillna(
         self,
         val=None,
@@ -2221,19 +2063,6 @@ Attributes
 	--------
 	vDataFrame[].dropna : Drops the vColumn missing values.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="fillna",
-            path="vcolumn.vColumn",
-            json_dict={
-                "val": val,
-                "method": method,
-                "expr": expr,
-                "by": by,
-                "order_by": order_by,
-            },
-        )
-        # -#
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):
@@ -2391,7 +2220,7 @@ Attributes
                 pass
             total = int(total)
             conj = "s were " if total > 1 else " was "
-            if verticapy.options["print_info"]:
+            if verticapy.OPTIONS["print_info"]:
                 print("{} element{}filled.".format(total, conj))
             self.parent.__add_to_history__(
                 "[Fillna]: {} {} missing value{} filled.".format(
@@ -2399,7 +2228,7 @@ Attributes
                 )
             )
         else:
-            if verticapy.options["print_info"]:
+            if verticapy.OPTIONS["print_info"]:
                 print("Nothing was filled.")
             self.transformations = [elem for elem in copy_trans]
             for elem in sauv:
@@ -2407,6 +2236,7 @@ Attributes
         return self.parent
 
     # ---#
+    @save_verticapy_logs
     def geo_plot(self, *args, **kwargs):
         """
     ---------------------------------------------------------------------------
@@ -2425,11 +2255,6 @@ Attributes
     ax
         Matplotlib axes object
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="geo_plot", path="vcolumn.vColumn", json_dict=kwargs,
-        )
-        # -#
         columns = [self.alias]
         check = True
         if len(args) > 0:
@@ -2458,6 +2283,7 @@ Attributes
         return self.parent[columns].to_geopandas(self.alias).plot(*args, **kwargs)
 
     # ---#
+    @save_verticapy_logs
     def get_dummies(
         self,
         prefix: str = "",
@@ -2492,18 +2318,6 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="one_hot_encode",
-            path="vcolumn.vColumn",
-            json_dict={
-                "prefix": prefix,
-                "prefix_sep": prefix_sep,
-                "drop_first": drop_first,
-                "use_numbers_as_suffix": use_numbers_as_suffix,
-            },
-        )
-        # -#
         check_types(
             [
                 ("prefix", prefix, [str]),
@@ -2635,6 +2449,7 @@ Attributes
         return self.iloc(limit=limit)
 
     # ---#
+    @save_verticapy_logs
     def hist(
         self,
         method: str = "density",
@@ -2684,22 +2499,6 @@ Attributes
  	--------
  	vDataFrame[].bar : Draws the Bar Chart of vColumn based on an aggregation.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="hist",
-            path="vcolumn.vColumn",
-            json_dict={
-                **{
-                    "method": method,
-                    "of": of,
-                    "max_cardinality": max_cardinality,
-                    "h": h,
-                    "nbins": nbins,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         check_types(
             [
                 ("method", method, [str]),
@@ -2814,6 +2613,7 @@ Attributes
         return self.category() == "date"
 
     # ---#
+    @save_verticapy_logs
     def isin(self, val: list, *args):
         """
 	---------------------------------------------------------------------------
@@ -2835,11 +2635,6 @@ Attributes
  	--------
  	vDataFrame.isin : Looks if some specific records are in the vDataFrame.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="isin", path="vcolumn.vColumn", json_dict={"val": val,},
-        )
-        # -#
         if isinstance(val, str) or not (isinstance(val, Iterable)):
             val = [val]
         val += list(args)
@@ -2881,6 +2676,7 @@ Attributes
         )
 
     # ---#
+    @save_verticapy_logs
     def iv_woe(self, y: str, nbins: int = 10):
         """
     ---------------------------------------------------------------------------
@@ -2905,11 +2701,6 @@ Attributes
     --------
     vDataFrame.iv_woe : Computes the Information Value (IV) Table.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="iv_woe", path="vcolumn.vColumn", json_dict={"y": y, "nbins": nbins,},
-        )
-        # -#
         check_types([("y", y, [str]), ("nbins", nbins, [int])])
         self.parent.are_namecols_in(y)
         y = self.parent.format_colnames(y)
@@ -2958,6 +2749,7 @@ Attributes
         return result
 
     # ---#
+    @save_verticapy_logs
     def kurtosis(self):
         """
 	---------------------------------------------------------------------------
@@ -2972,15 +2764,11 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="kurtosis", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["kurtosis"]).values[self.alias][0]
 
     kurt = kurtosis
     # ---#
+    @save_verticapy_logs
     def label_encode(self):
         """
 	---------------------------------------------------------------------------
@@ -2999,11 +2787,6 @@ Attributes
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="label_encode", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         if self.category() in ["date", "float"]:
             warning_message = (
                 "label_encode is only available for categorical variables."
@@ -3031,6 +2814,7 @@ Attributes
         return self.parent
 
     # ---#
+    @save_verticapy_logs
     def mad(self):
         """
 	---------------------------------------------------------------------------
@@ -3045,14 +2829,10 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="mad", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["mad"]).values[self.alias][0]
 
     # ---#
+    @save_verticapy_logs
     def max(self):
         """
 	---------------------------------------------------------------------------
@@ -3067,14 +2847,10 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="max", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["max"]).values[self.alias][0]
 
     # ---#
+    @save_verticapy_logs
     def mean_encode(self, response: str):
         """
 	---------------------------------------------------------------------------
@@ -3098,13 +2874,6 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="mean_encode",
-            path="vcolumn.vColumn",
-            json_dict={"response": response,},
-        )
-        # -#
         check_types([("response", response, [str])])
         self.parent.are_namecols_in(response)
         response = self.parent.format_colnames(response)
@@ -3125,11 +2894,12 @@ Attributes
                 self.alias, response
             )
         )
-        if verticapy.options["print_info"]:
+        if verticapy.OPTIONS["print_info"]:
             print("The mean encoding was successfully done.")
         return self.parent
 
     # ---#
+    @save_verticapy_logs
     def median(
         self, approx: bool = True,
     ):
@@ -3152,14 +2922,10 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="median", path="vcolumn.vColumn", json_dict={"approx": approx,},
-        )
-        # -#
         return self.quantile(0.5, approx=approx)
 
     # ---#
+    @save_verticapy_logs
     def memory_usage(self):
         """
 	---------------------------------------------------------------------------
@@ -3174,11 +2940,6 @@ Attributes
 	--------
 	vDataFrame.memory_usage : Returns the vDataFrame memory usage.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="memory_usage", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         import sys
 
         total = (
@@ -3192,6 +2953,7 @@ Attributes
         return total
 
     # ---#
+    @save_verticapy_logs
     def min(self):
         """
 	---------------------------------------------------------------------------
@@ -3206,14 +2968,10 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="min", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["min"]).values[self.alias][0]
 
     # ---#
+    @save_verticapy_logs
     def mode(self, dropna: bool = False, n: int = 1):
         """
 	---------------------------------------------------------------------------
@@ -3236,11 +2994,6 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="mode", path="vcolumn.vColumn", json_dict={"dropna": dropna, "n": n,},
-        )
-        # -#
         check_types([("dropna", dropna, [bool]), ("n", n, [int, float])])
         if n == 1:
             pre_comp = self.parent.__get_catalog_value__(self.alias, "top")
@@ -3269,6 +3022,7 @@ Attributes
         return top
 
     # ---#
+    @save_verticapy_logs
     def mul(self, x: float):
         """
 	---------------------------------------------------------------------------
@@ -3288,15 +3042,11 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="mul", path="vcolumn.vColumn", json_dict={"x": x,},
-        )
-        # -#
         check_types([("x", x, [int, float])])
         return self.apply(func="{} * ({})".format("{}", x))
 
     # ---#
+    @save_verticapy_logs
     def nlargest(self, n: int = 10):
         """
 	---------------------------------------------------------------------------
@@ -3317,11 +3067,6 @@ Attributes
 	--------
 	vDataFrame[].nsmallest : Returns the n smallest elements in the vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="nlargest", path="vcolumn.vColumn", json_dict={"n": n,},
-        )
-        # -#
         check_types([("n", n, [int, float])])
         query = "SELECT * FROM {0} WHERE {1} IS NOT NULL ORDER BY {1} DESC LIMIT {2}".format(
             self.parent.__genSQL__(), self.alias, n
@@ -3335,6 +3080,7 @@ Attributes
         )
 
     # ---#
+    @save_verticapy_logs
     def normalize(
         self, method: str = "zscore", by: list = [], return_trans: bool = False
     ):
@@ -3367,13 +3113,6 @@ Attributes
 	--------
 	vDataFrame.outliers : Computes the vDataFrame Global Outliers.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="normalize",
-            path="vcolumn.vColumn",
-            json_dict={"method": method, "by": by, "return_trans": return_trans,},
-        )
-        # -#
         if isinstance(by, str):
             by = [by]
         check_types(
@@ -3684,6 +3423,7 @@ Attributes
         return self.parent
 
     # ---#
+    @save_verticapy_logs
     def nsmallest(self, n: int = 10):
         """
 	---------------------------------------------------------------------------
@@ -3704,11 +3444,6 @@ Attributes
 	--------
 	vDataFrame[].nlargest : Returns the n largest vColumn elements.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="nsmallest", path="vcolumn.vColumn", json_dict={"n": n,},
-        )
-        # -#
         check_types([("n", n, [int, float])])
         query = "SELECT * FROM {0} WHERE {1} IS NOT NULL ORDER BY {1} ASC LIMIT {2}".format(
             self.parent.__genSQL__(), self.alias, n
@@ -3800,6 +3535,7 @@ Attributes
         return best_h
 
     # ---#
+    @save_verticapy_logs
     def nunique(self, approx: bool = True):
         """
 	---------------------------------------------------------------------------
@@ -3821,11 +3557,6 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="nunique", path="vcolumn.vColumn", json_dict={"approx": approx,},
-        )
-        # -#
         check_types([("approx", approx, [bool])])
         if approx:
             return self.aggregate(func=["approx_unique"]).values[self.alias][0]
@@ -3833,6 +3564,7 @@ Attributes
             return self.aggregate(func=["unique"]).values[self.alias][0]
 
     # ---#
+    @save_verticapy_logs
     def pie(
         self,
         method: str = "density",
@@ -3886,22 +3618,6 @@ Attributes
  	--------
  	vDataFrame.donut : Draws the donut chart of the vColumn based on an aggregation.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="pie",
-            path="vcolumn.vColumn",
-            json_dict={
-                **{
-                    "method": method,
-                    "of": of,
-                    "max_cardinality": max_cardinality,
-                    "h": h,
-                    "pie_type": pie_type,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(pie_type, str):
             pie_type = pie_type.lower()
         check_types(
@@ -3925,6 +3641,7 @@ Attributes
         )
 
     # ---#
+    @save_verticapy_logs
     def plot(
         self,
         ts: str,
@@ -3971,23 +3688,6 @@ Attributes
 	--------
 	vDataFrame.plot : Draws the time series.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="plot",
-            path="vcolumn.vColumn",
-            json_dict={
-                **{
-                    "ts": ts,
-                    "by": by,
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "area": area,
-                    "step": step,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         check_types(
             [
                 ("ts", ts, [str]),
@@ -4010,6 +3710,7 @@ Attributes
         )
 
     # ---#
+    @save_verticapy_logs
     def product(self):
         """
 	---------------------------------------------------------------------------
@@ -4024,16 +3725,12 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="product", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(func=["prod"]).values[self.alias][0]
 
     prod = product
 
     # ---#
+    @save_verticapy_logs
     def quantile(self, x: float, approx: bool = True):
         """
 	---------------------------------------------------------------------------
@@ -4057,13 +3754,6 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="quantile",
-            path="vcolumn.vColumn",
-            json_dict={"x": x, "approx": approx,},
-        )
-        # -#
         check_types([("x", x, [int, float], ("approx", approx, [bool]))])
         prefix = "approx_" if approx else ""
         return self.aggregate(func=[prefix + "{}%".format(x * 100)]).values[self.alias][
@@ -4071,6 +3761,7 @@ Attributes
         ]
 
     # ---#
+    @save_verticapy_logs
     def range_plot(
         self,
         ts: str,
@@ -4115,22 +3806,6 @@ Attributes
     --------
     vDataFrame.plot : Draws the time series.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="range_plot",
-            path="vcolumn.vColumn",
-            json_dict={
-                **{
-                    "ts": ts,
-                    "q": q,
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "plot_median": plot_median,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         check_types(
             [
                 ("ts", ts, [str]),
@@ -4195,6 +3870,7 @@ Attributes
         return parent
 
     # ---#
+    @save_verticapy_logs
     def round(self, n: int):
         """
 	---------------------------------------------------------------------------
@@ -4214,15 +3890,11 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="round", path="vcolumn.vColumn", json_dict={"n": n,},
-        )
-        # -#
         check_types([("n", n, [int, float])])
         return self.apply(func="ROUND({}, {})".format("{}", n))
 
     # ---#
+    @save_verticapy_logs
     def sem(self):
         """
 	---------------------------------------------------------------------------
@@ -4237,14 +3909,10 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="sem", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["sem"]).values[self.alias][0]
 
     # ---#
+    @save_verticapy_logs
     def skewness(self):
         """
 	---------------------------------------------------------------------------
@@ -4259,15 +3927,11 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="skewness", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["skewness"]).values[self.alias][0]
 
     skew = skewness
     # ---#
+    @save_verticapy_logs
     def slice(self, length: int, unit: str = "second", start: bool = True):
         """
 	---------------------------------------------------------------------------
@@ -4292,13 +3956,6 @@ Attributes
 	--------
 	vDataFrame[].date_part : Extracts a specific TS field from the vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="slice",
-            path="vcolumn.vColumn",
-            json_dict={"length": length, "unit": unit, "start": start,},
-        )
-        # -#
         check_types(
             [
                 ("length", length, [int, float]),
@@ -4314,6 +3971,7 @@ Attributes
         )
 
     # ---#
+    @save_verticapy_logs
     def spider(
         self,
         by: str = "",
@@ -4365,22 +4023,6 @@ Attributes
     --------
     vDataFrame.bar : Draws the Bar Chart of the input vColumns based on an aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="spider",
-            path="vcolumn.vColumn",
-            json_dict={
-                **{
-                    "by": by,
-                    "method": method,
-                    "of": of,
-                    "max_cardinality": max_cardinality,
-                    "h": h,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         check_types(
             [
                 ("by", by, [str]),
@@ -4406,6 +4048,7 @@ Attributes
         )
 
     # ---#
+    @save_verticapy_logs
     def std(self):
         """
 	---------------------------------------------------------------------------
@@ -4420,15 +4063,11 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="std", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["stddev"]).values[self.alias][0]
 
     stddev = std
     # ---#
+    @save_verticapy_logs
     def store_usage(self):
         """
 	---------------------------------------------------------------------------
@@ -4443,11 +4082,6 @@ Attributes
 	--------
 	vDataFrame.expected_store_usage : Returns the vDataFrame expected store usage.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="store_usage", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         pre_comp = self.parent.__get_catalog_value__(self.alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return pre_comp
@@ -4467,6 +4101,7 @@ Attributes
         return store_usage
 
     # ---#
+    @save_verticapy_logs
     def str_contains(self, pat: str):
         """
 	---------------------------------------------------------------------------
@@ -4493,17 +4128,13 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice   : Slices the vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="str_contains", path="vcolumn.vColumn", json_dict={"pat": pat,},
-        )
-        # -#
         check_types([("pat", pat, [str])])
         return self.apply(
             func="REGEXP_COUNT({}, '{}') > 0".format("{}", pat.replace("'", "''"))
         )
 
     # ---#
+    @save_verticapy_logs
     def str_count(self, pat: str):
         """
 	---------------------------------------------------------------------------
@@ -4530,17 +4161,13 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="str_count", path="vcolumn.vColumn", json_dict={"pat": pat,},
-        )
-        # -#
         check_types([("pat", pat, [str])])
         return self.apply(
             func="REGEXP_COUNT({}, '{}')".format("{}", pat.replace("'", "''"))
         )
 
     # ---#
+    @save_verticapy_logs
     def str_extract(self, pat: str):
         """
 	---------------------------------------------------------------------------
@@ -4567,17 +4194,13 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="str_extract", path="vcolumn.vColumn", json_dict={"pat": pat,},
-        )
-        # -#
         check_types([("pat", pat, [str])])
         return self.apply(
             func="REGEXP_SUBSTR({}, '{}')".format("{}", pat.replace("'", "''"))
         )
 
     # ---#
+    @save_verticapy_logs
     def str_replace(self, to_replace: str, value: str = ""):
         """
 	---------------------------------------------------------------------------
@@ -4606,13 +4229,6 @@ Attributes
 		vColumn.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="str_replace",
-            path="vcolumn.vColumn",
-            json_dict={"to_replace": to_replace, "value": value,},
-        )
-        # -#
         check_types([("to_replace", to_replace, [str]), ("value", value, [str])])
         return self.apply(
             func="REGEXP_REPLACE({}, '{}', '{}')".format(
@@ -4621,6 +4237,7 @@ Attributes
         )
 
     # ---#
+    @save_verticapy_logs
     def str_slice(self, start: int, step: int):
         """
 	---------------------------------------------------------------------------
@@ -4649,17 +4266,11 @@ Attributes
 	vDataFrame[].str_replace  : Replaces the regular expression matches in each of the 
 		vColumn records by an input value.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="str_slice",
-            path="vcolumn.vColumn",
-            json_dict={"start": start, "step": step,},
-        )
-        # -#
         check_types([("start", start, [int, float]), ("step", step, [int, float])])
         return self.apply(func="SUBSTR({}, {}, {})".format("{}", start, step))
 
     # ---#
+    @save_verticapy_logs
     def sub(self, x: float):
         """
 	---------------------------------------------------------------------------
@@ -4680,11 +4291,6 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="sub", path="vcolumn.vColumn", json_dict={"x": x,},
-        )
-        # -#
         check_types([("x", x, [int, float])])
         if self.isdate():
             return self.apply(func="TIMESTAMPADD(SECOND, -({}), {})".format(x, "{}"))
@@ -4692,6 +4298,7 @@ Attributes
             return self.apply(func="{} - ({})".format("{}", x))
 
     # ---#
+    @save_verticapy_logs
     def sum(self):
         """
 	---------------------------------------------------------------------------
@@ -4706,11 +4313,6 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="sum", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["sum"]).values[self.alias][0]
 
     # ---#
@@ -4737,6 +4339,7 @@ Attributes
         return self.iloc(limit=limit, offset=-1)
 
     # ---#
+    @save_verticapy_logs
     def topk(self, k: int = -1, dropna: bool = True):
         """
 	---------------------------------------------------------------------------
@@ -4759,11 +4362,6 @@ Attributes
 	--------
 	vDataFrame[].describe : Computes the vColumn descriptive statistics.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="topk", path="vcolumn.vColumn", json_dict={"k": k, "dropna": dropna,},
-        )
-        # -#
         check_types([("k", k, [int, float]), ("dropna", dropna, [bool])])
         topk = "" if (k < 1) else "LIMIT {}".format(k)
         dropna = " WHERE {} IS NOT NULL".format(self.alias) if (dropna) else ""
@@ -4792,6 +4390,7 @@ Attributes
         return tablesample(values)
 
     # ---#
+    @save_verticapy_logs
     def value_counts(self, k: int = 30):
         """
 	---------------------------------------------------------------------------
@@ -4813,14 +4412,10 @@ Attributes
 	--------
 	vDataFrame[].describe : Computes the vColumn descriptive statistics.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="value_counts", path="vcolumn.vColumn", json_dict={"k": k,},
-        )
-        # -#
         return self.describe(method="categorical", max_cardinality=k)
 
     # ---#
+    @save_verticapy_logs
     def var(self):
         """
 	---------------------------------------------------------------------------
@@ -4835,11 +4430,6 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="var", path="vcolumn.vColumn", json_dict={},
-        )
-        # -#
         return self.aggregate(["variance"]).values[self.alias][0]
 
     variance = var

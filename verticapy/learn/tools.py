@@ -125,6 +125,7 @@ int
 
 
 # ---#
+@save_verticapy_logs
 def load_model(name: str, input_relation: str = "", test_relation: str = ""):
     """
 ---------------------------------------------------------------------------
@@ -147,17 +148,6 @@ Returns
 model
     The model.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="load_model",
-        path="learn.tools",
-        json_dict={
-            "name": name,
-            "input_relation": input_relation,
-            "test_relation": test_relation,
-        },
-    )
-    # -#
     check_types(
         [
             ("name", name, [str]),
@@ -684,7 +674,7 @@ model
         ):
             model.coef_ = model.get_attr("details")
         if model_type in ("xgb_classifier", "xgb_regressor"):
-            v = version()
+            v = vertica_version()
             v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
             if v:
                 model.set_params(

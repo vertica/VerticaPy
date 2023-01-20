@@ -50,7 +50,7 @@
 #
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
-from verticapy.utilities import save_to_query_profile
+from verticapy.utilities import save_verticapy_logs
 
 # ---#
 class LinearSVC(BinaryClassifier):
@@ -93,6 +93,8 @@ max_iter: int, optional
 	The maximum number of iterations that the algorithm performs.
 	"""
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -104,23 +106,6 @@ max_iter: int, optional
         class_weight: list = [1, 1],
         max_iter: int = 100,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="LinearSVC",
-            path="learn.svm",
-            json_dict={
-                "name": name,
-                "tol": tol,
-                "C": C,
-                "fit_intercept": fit_intercept,
-                "intercept_scaling": intercept_scaling,
-                "intercept_mode": intercept_mode,
-                "class_weight": class_weight,
-                "max_iter": max_iter,
-            },
-        )
-        # -#
-        version(condition=[8, 1, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "LinearSVC", name
         self.set_params(
@@ -194,6 +179,8 @@ test_relation: str
 	attribute of the object.
 	"""
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -205,23 +192,6 @@ test_relation: str
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="LinearSVR",
-            path="learn.svm",
-            json_dict={
-                "name": name,
-                "tol": tol,
-                "C": C,
-                "fit_intercept": fit_intercept,
-                "intercept_scaling": intercept_scaling,
-                "intercept_mode": intercept_mode,
-                "acceptable_error_margin": acceptable_error_margin,
-                "max_iter": max_iter,
-            },
-        )
-        # -#
-        version(condition=[8, 1, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "LinearSVR", name
         self.set_params(

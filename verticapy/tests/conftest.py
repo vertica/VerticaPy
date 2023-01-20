@@ -52,7 +52,7 @@ def get_version():
         "vp_test_config",
         os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
     )
-    result = verticapy.version()
+    result = verticapy.vertica_version()
     base_class.tearDown()
     try:
         delete_conn_file()

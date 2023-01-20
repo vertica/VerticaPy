@@ -50,7 +50,7 @@
 #
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
-from verticapy.utilities import save_to_query_profile
+from verticapy.utilities import save_verticapy_logs
 
 # ---#
 class NaiveBayes(MulticlassClassifier):
@@ -84,16 +84,9 @@ nbtype: str, optional
      - gaussian    : Casts the variables to float.
 	"""
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(self, name: str, alpha: float = 1.0, nbtype: str = "auto"):
-
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="NaiveBayes",
-            path="learn.naive_bayes",
-            json_dict={"name": name, "alpha": alpha, "nbtype": nbtype,},
-        )
-        # -#
-
         nbtype_vals = ["auto", "bernoulli", "categorical", "multinomial", "gaussian"]
         check_types(
             [
@@ -104,7 +97,6 @@ nbtype: str, optional
         )
         self.type, self.name = "NaiveBayes", name
         self.set_params({"alpha": alpha, "nbtype": nbtype})
-        version(condition=[8, 0, 0])
 
     # ---#
     def get_var_info(self):

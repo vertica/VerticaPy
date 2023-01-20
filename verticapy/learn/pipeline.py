@@ -72,16 +72,8 @@ steps: list
     in the order in which they are chained, with the last object an estimator.
 	"""
 
+    @save_verticapy_logs
     def __init__(self, steps: list):
-        # Saving information to the query profile table
-        try:
-            model_steps = [item[1].type for item in steps]
-        except:
-            model_steps = []
-        save_to_query_profile(
-            name="Pipeline", path="learn.pipeline", json_dict={"steps": model_steps,},
-        )
-        # -#
         check_types([("steps", steps, [list])])
         self.type = "Pipeline"
         self.steps = []
@@ -166,7 +158,7 @@ steps: list
             vdf = vDataFrameSQL(relation=input_relation)
         else:
             vdf = input_relation
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)

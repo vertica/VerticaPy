@@ -861,7 +861,7 @@ class TestUtilities:
         assert (
             q2
             == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "verticapy_id": "'
-            + str(verticapy.options["identifier"])
+            + str(verticapy.OPTIONS["identifier"])
             + '", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
         )
         current_cursor().execute(
@@ -944,11 +944,11 @@ class TestUtilities:
     def test_set_option(self):
         pass
 
-    def test_version(self):
-        result = version()
-        assert result[0] < 20
+    def test_vertica_version(self):
+        result = vertica_version()
+        assert result[0] < 99
         try:
-            version([99, 1, 1])
+            vertica_version([99, 1, 1])
             fail = False
         except:
             fail = True

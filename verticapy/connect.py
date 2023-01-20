@@ -124,10 +124,10 @@ def close_connection():
 ---------------------------------------------------------------------------
 Closes the connection to the database.
     """
-    if verticapy.options["connection"]["conn"] and not (
-        verticapy.options["connection"]["conn"].closed()
+    if verticapy.OPTIONS["connection"]["conn"] and not (
+        verticapy.OPTIONS["connection"]["conn"].closed()
     ):
-        verticapy.options["connection"]["conn"].close()
+        verticapy.OPTIONS["connection"]["conn"].close()
 
 
 # ---#
@@ -144,15 +144,15 @@ dsn: str, optional
     Path to the file containing the credentials. If empty, the 
     Connection File will be used.
     """
-    prev_conn = verticapy.options["connection"]["conn"]
+    prev_conn = verticapy.OPTIONS["connection"]["conn"]
     if not (dsn):
         dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
     try:
-        verticapy.options["connection"]["conn"] = vertica_connection(section, dsn)
-        verticapy.options["connection"]["dsn"] = dsn
-        verticapy.options["connection"]["section"] = section
+        verticapy.OPTIONS["connection"]["conn"] = vertica_connection(section, dsn)
+        verticapy.OPTIONS["connection"]["dsn"] = dsn
+        verticapy.OPTIONS["connection"]["section"] = section
     except Exception as e:
         if "The DSN Section" in str(e):
             raise ConnectionError(
@@ -182,18 +182,18 @@ VerticaLab Environment.
 
     # Look if the connection does not exist or is closed
     if (
-        not (verticapy.options["connection"]["conn"])
-        or verticapy.options["connection"]["conn"].closed()
+        not (verticapy.OPTIONS["connection"]["conn"])
+        or verticapy.OPTIONS["connection"]["conn"].closed()
     ):
 
         # Connection using the existing credentials
         if (
-            verticapy.options["connection"]["section"]
-            and verticapy.options["connection"]["dsn"]
+            verticapy.OPTIONS["connection"]["section"]
+            and verticapy.OPTIONS["connection"]["dsn"]
         ):
             connect(
-                verticapy.options["connection"]["section"],
-                verticapy.options["connection"]["dsn"],
+                verticapy.OPTIONS["connection"]["section"],
+                verticapy.OPTIONS["connection"]["dsn"],
             )
 
         else:
@@ -207,12 +207,12 @@ VerticaLab Environment.
                 try:
                     # Connection to the VerticaLab environment
                     conn = verticalab_connection()
-                    verticapy.options["connection"]["conn"] = conn
+                    verticapy.OPTIONS["connection"]["conn"] = conn
 
                 except:
                     raise (e)
 
-    return verticapy.options["connection"]["conn"]
+    return verticapy.OPTIONS["connection"]["conn"]
 
 
 # ---#
@@ -398,7 +398,7 @@ dict
             "session_label": "verticapy-"
             + verticapy.__version__
             + "-"
-            + verticapy.options["identifier"],
+            + verticapy.OPTIONS["identifier"],
         }
 
         for option_name, option_val in options:
@@ -472,9 +472,9 @@ conn: object
         assert res == 1
     except:
         ParameterError("The input connector is not working properly.")
-    verticapy.options["connection"]["conn"] = conn
-    verticapy.options["connection"]["dsn"] = None
-    verticapy.options["connection"]["section"] = None
+    verticapy.OPTIONS["connection"]["conn"] = conn
+    verticapy.OPTIONS["connection"]["dsn"] = None
+    verticapy.OPTIONS["connection"]["section"] = None
 
 
 # ---#
@@ -509,7 +509,7 @@ symbol: str, optional
         )
     )
     if isinstance(cid, str) and isinstance(rowset, int):
-        verticapy.options["external_connection"][symbol] = {
+        verticapy.OPTIONS["external_connection"][symbol] = {
             "cid": cid,
             "rowset": rowset,
         }
@@ -564,6 +564,6 @@ conn
         "session_label": "verticapy-"
         + verticapy.__version__
         + "-"
-        + verticapy.options["identifier"],
+        + verticapy.OPTIONS["identifier"],
     }
     return vertica_python.connect(**conn_info)

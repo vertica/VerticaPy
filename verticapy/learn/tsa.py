@@ -55,7 +55,7 @@ from typing import Union
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
-from verticapy import vDataFrame, save_to_query_profile
+from verticapy import vDataFrame, save_verticapy_logs
 from verticapy.plot import gen_colors
 from verticapy.learn.tools import *
 
@@ -104,6 +104,7 @@ papprox_ma: int, optional
     the p of the AR(p) used to approximate the MA coefficients.
     """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -120,27 +121,7 @@ papprox_ma: int, optional
         max_pik: int = 100,
         papprox_ma: int = 200,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="SARIMAX",
-            path="learn.tsa",
-            json_dict={
-                "name": name,
-                "p": p,
-                "d": d,
-                "q": q,
-                "P": P,
-                "D": D,
-                "Q": Q,
-                "s": s,
-                "tol": tol,
-                "max_iter": max_iter,
-                "solver": solver,
-                "max_pik": max_pik,
-                "papprox_ma": papprox_ma,
-            },
-        )
-        # -#
+        vertica_version([8, 0, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "SARIMAX", name
         self.set_params(
@@ -175,7 +156,6 @@ papprox_ma: int, optional
             ), ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
-        version(condition=[8, 0, 0])
 
     # ---#
     def deploySQL(self):
@@ -367,7 +347,7 @@ papprox_ma: int, optional
             ]
         )
         # Initialization
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -828,8 +808,8 @@ papprox_ma: int, optional
             vdf=vdf, y=y, ts=ts, X=X, nlead=0, name="_verticapy_prediction_"
         )
         error_eps = 1.96 * math.sqrt(self.score(method="mse"))
-        print_info = verticapy.options["print_info"]
-        verticapy.options["print_info"] = False
+        print_info = verticapy.OPTIONS["print_info"]
+        verticapy.OPTIONS["print_info"] = False
         try:
             result = (
                 result.select([ts, y, "_verticapy_prediction_"])
@@ -839,9 +819,9 @@ papprox_ma: int, optional
                 .values
             )
         except:
-            verticapy.options["print_info"] = print_info
+            verticapy.OPTIONS["print_info"] = print_info
             raise
-        verticapy.options["print_info"] = print_info
+        verticapy.OPTIONS["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1156,6 +1136,7 @@ solver: str, optional
         BFGS   : Broyden Fletcher Goldfarb Shanno
     """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -1164,26 +1145,13 @@ solver: str, optional
         max_iter: int = 1000,
         solver: str = "Newton",
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="VAR",
-            path="learn.tsa",
-            json_dict={
-                "name": name,
-                "p": p,
-                "tol": tol,
-                "max_iter": max_iter,
-                "solver": solver,
-            },
-        )
-        # -#
+        vertica_version([8, 0, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "VAR", name
         assert p > 0, ParameterError(
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
         self.set_params({"p": p, "tol": tol, "max_iter": max_iter, "solver": solver})
-        version(condition=[8, 0, 0])
 
     # ---#
     def deploySQL(self):
@@ -1321,7 +1289,7 @@ solver: str, optional
             ]
         )
         # Initialization
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -1553,8 +1521,8 @@ solver: str, optional
         )
         y, prediction = X[X_idx], "_verticapy_prediction_{}_".format(X_idx)
         error_eps = 1.96 * math.sqrt(self.score(method="mse").values["mse"][X_idx])
-        print_info = verticapy.options["print_info"]
-        verticapy.options["print_info"] = False
+        print_info = verticapy.OPTIONS["print_info"]
+        verticapy.OPTIONS["print_info"] = False
         try:
             result = (
                 result_all.select([ts, y, prediction])
@@ -1564,9 +1532,9 @@ solver: str, optional
                 .values
             )
         except:
-            verticapy.options["print_info"] = print_info
+            verticapy.OPTIONS["print_info"] = print_info
             raise
-        verticapy.options["print_info"] = print_info
+        verticapy.OPTIONS["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1583,16 +1551,16 @@ solver: str, optional
             ],
         )
         if dynamic:
-            print_info = verticapy.options["print_info"]
-            verticapy.options["print_info"] = False
+            print_info = verticapy.OPTIONS["print_info"]
+            verticapy.OPTIONS["print_info"] = False
             try:
                 result = (
                     result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
                 )
             except:
-                verticapy.options["print_info"] = print_info
+                verticapy.OPTIONS["print_info"] = print_info
                 raise
-            verticapy.options["print_info"] = print_info
+            verticapy.OPTIONS["print_info"] = print_info
             columns = [elem for elem in result]
             if isinstance(result[columns[0]][0], str):
                 result[columns[0]] = [parse(elem) for elem in result[columns[0]]]

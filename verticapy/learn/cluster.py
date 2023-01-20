@@ -111,6 +111,8 @@ tol: float, optional
     'tol' from the previous iteration.
     """
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -123,23 +125,6 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="BisectingKMeans",
-            path="learn.cluster",
-            json_dict={
-                "name": name,
-                "n_cluster": n_cluster,
-                "bisection_iterations": bisection_iterations,
-                "split_method": split_method,
-                "min_divisible_cluster_size": min_divisible_cluster_size,
-                "distance_method": distance_method,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-            },
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "BisectingKMeans", name
         self.set_params(
@@ -154,7 +139,6 @@ tol: float, optional
                 "tol": tol,
             }
         )
-        version(condition=[9, 3, 1])
 
     # ---#
     def get_tree(self):
@@ -199,14 +183,8 @@ p: int, optional
 	The p of the p-distance (distance metric used during the model computation).
 	"""
 
+    @save_verticapy_logs
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="DBSCAN",
-            path="learn.cluster",
-            json_dict={"name": name, "eps": eps, "min_samples": min_samples, "p": p,},
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "DBSCAN", name
         self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
@@ -253,7 +231,7 @@ p: int, optional
                 ("index", index, [str]),
             ]
         )
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -322,7 +300,7 @@ p: int, optional
                      FROM ({1}) distance_table""".format(
                 self.parameters["eps"], sql
             )
-            if isinstance(verticapy.options["random_state"], int):
+            if isinstance(verticapy.OPTIONS["random_state"], int):
                 order_by = "ORDER BY node_id, nn_id"
             else:
                 order_by = ""
@@ -484,6 +462,8 @@ tol: float, optional
 	previous iteration.
 	"""
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -492,19 +472,6 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="KMeans",
-            path="learn.cluster",
-            json_dict={
-                "name": name,
-                "n_cluster": n_cluster,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-            },
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "KMeans", name
         self.set_params(
@@ -515,7 +482,6 @@ tol: float, optional
                 "tol": tol,
             }
         )
-        version(condition=[8, 0, 0])
 
     # ---#
     def plot_voronoi(
@@ -590,6 +556,8 @@ gamma: float, optional
     importance of numerical and categorical attributes.
     """
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -599,20 +567,6 @@ gamma: float, optional
         tol: float = 1e-4,
         gamma: float = 1.0,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="KPrototypes",
-            path="learn.cluster",
-            json_dict={
-                "name": name,
-                "n_cluster": n_cluster,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-                "gamma": gamma,
-            },
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "KPrototypes", name
         self.set_params(
@@ -624,4 +578,3 @@ gamma: float, optional
                 "gamma": gamma,
             }
         )
-        version(condition=[12, 0, 3])

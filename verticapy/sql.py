@@ -78,24 +78,19 @@ from verticapy import (
     tablesample,
     clean_query,
     replace_vars_in_query,
-    save_to_query_profile,
+    save_verticapy_logs,
     replace_external_queries_in_query,
     get_special_symbols,
 )
 
 # ---#
+@save_verticapy_logs
 @needs_local_scope
 def sql(line, cell="", local_ns=None):
 
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="sql_magic", path="sql", json_dict={"line": line, "cell": cell,},
-    )
-    # -#
-
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.
-    sql_on, time_on = verticapy.options["sql_on"], verticapy.options["time_on"]
+    sql_on, time_on = verticapy.OPTIONS["sql_on"], verticapy.OPTIONS["time_on"]
     set_option("sql_on", False)
     set_option("time_on", False)
 
@@ -142,7 +137,7 @@ def sql(line, cell="", local_ns=None):
                         raise ParameterError("Duplicate option '-ncols'.")
                     options["-ncols"] = int(all_options_dict[option])
 
-            elif verticapy.options["print_info"]:
+            elif verticapy.OPTIONS["print_info"]:
                 warning_message = (
                     f"\u26A0 Warning : The option '{option}' doesn't "
                     "exist, it was skipped."
@@ -277,7 +272,7 @@ def sql(line, cell="", local_ns=None):
                 except Exception as e:
                     error = str(e)
 
-                if verticapy.options["print_info"] and (
+                if verticapy.OPTIONS["print_info"] and (
                     "Severity: ERROR, Message: User defined transform must return at least one column"
                     in error
                     and "DBLINK" in error
@@ -287,7 +282,7 @@ def sql(line, cell="", local_ns=None):
                 elif error:
                     raise QueryError(error)
 
-                elif verticapy.options["print_info"]:
+                elif verticapy.OPTIONS["print_info"]:
                     print(query_type)
 
             else:
@@ -309,9 +304,9 @@ def sql(line, cell="", local_ns=None):
                         final_result = executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
                         )
-                        if final_result and verticapy.options["print_info"]:
+                        if final_result and verticapy.OPTIONS["print_info"]:
                             print(final_result)
-                        elif verticapy.options["print_info"]:
+                        elif verticapy.OPTIONS["print_info"]:
                             print(query_type)
 
                     except Exception as e:
@@ -325,7 +320,7 @@ def sql(line, cell="", local_ns=None):
                     and "DBLINK" in error
                 ):
 
-                    if verticapy.options["print_info"]:
+                    if verticapy.OPTIONS["print_info"]:
                         print(query_type)
 
                 elif error:
@@ -335,7 +330,7 @@ def sql(line, cell="", local_ns=None):
 
         elapsed_time = round(time.time() - start_time, 3)
 
-        if verticapy.options["print_info"]:
+        if verticapy.OPTIONS["print_info"]:
             display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
 
         # Exporting the result
