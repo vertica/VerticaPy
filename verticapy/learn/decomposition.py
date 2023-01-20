@@ -68,12 +68,8 @@ name: str
     Name of the the model. The model will be stored in the database.
     """
 
+    @save_verticapy_logs
     def __init__(self, name: str):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="MCA", path="learn.decomposition", json_dict={"name": name,},
-        )
-        # -#
         version(condition=[9, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "MCA", name
@@ -274,6 +270,7 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -281,18 +278,6 @@ method: str, optional
         scale: bool = False,
         method: str = "lapack",
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="PCA",
-            path="learn.decomposition",
-            json_dict={
-                "name": name,
-                "n_components": n_components,
-                "scale": scale,
-                "method": method,
-            },
-        )
-        # -#
         version(condition=[9, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "PCA", name
@@ -323,14 +308,8 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
+    @save_verticapy_logs
     def __init__(self, name: str, n_components: int = 0, method: str = "lapack"):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="SVD",
-            path="learn.decomposition",
-            json_dict={"name": name, "n_components": n_components, "method": method,},
-        )
-        # -#
         version(condition=[9, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "SVD", name

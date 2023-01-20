@@ -111,6 +111,7 @@ tol: float, optional
     'tol' from the previous iteration.
     """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -123,23 +124,6 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="BisectingKMeans",
-            path="learn.cluster",
-            json_dict={
-                "name": name,
-                "n_cluster": n_cluster,
-                "bisection_iterations": bisection_iterations,
-                "split_method": split_method,
-                "min_divisible_cluster_size": min_divisible_cluster_size,
-                "distance_method": distance_method,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-            },
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "BisectingKMeans", name
         self.set_params(
@@ -199,14 +183,8 @@ p: int, optional
 	The p of the p-distance (distance metric used during the model computation).
 	"""
 
+    @save_verticapy_logs
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="DBSCAN",
-            path="learn.cluster",
-            json_dict={"name": name, "eps": eps, "min_samples": min_samples, "p": p,},
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "DBSCAN", name
         self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
@@ -484,6 +462,7 @@ tol: float, optional
 	previous iteration.
 	"""
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -492,19 +471,6 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="KMeans",
-            path="learn.cluster",
-            json_dict={
-                "name": name,
-                "n_cluster": n_cluster,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-            },
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "KMeans", name
         self.set_params(
@@ -590,6 +556,7 @@ gamma: float, optional
     importance of numerical and categorical attributes.
     """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -599,20 +566,6 @@ gamma: float, optional
         tol: float = 1e-4,
         gamma: float = 1.0,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="KPrototypes",
-            path="learn.cluster",
-            json_dict={
-                "name": name,
-                "n_cluster": n_cluster,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-                "gamma": gamma,
-            },
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "KPrototypes", name
         self.set_params(

@@ -1757,6 +1757,7 @@ vColumns : vColumn
     # Methods
     #
     # ---#
+    @save_verticapy_logs
     def aad(
         self, columns: list = [], **agg_kwds,
     ):
@@ -1782,16 +1783,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="aad",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["aad"], columns=columns, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def abs(self, columns: list = []):
         """
     ---------------------------------------------------------------------------
@@ -1813,11 +1808,6 @@ vColumns : vColumn
     vDataFrame.apply    : Applies functions to the input vColumns.
     vDataFrame.applymap : Applies a function to all vColumns.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="abs", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types([("columns", columns, [list])])
@@ -1830,6 +1820,7 @@ vColumns : vColumn
         return self.apply(func)
 
     # ---#
+    @save_verticapy_logs
     def acf(
         self,
         column: str,
@@ -1917,28 +1908,6 @@ vColumns : vColumn
     vDataFrame.pacf        : Computes the partial autocorrelations of the 
                              input vColumn.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="acf",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "column": column,
-                    "ts": ts,
-                    "by": by,
-                    "p": p,
-                    "unit": unit,
-                    "method": method,
-                    "acf_type": acf_type,
-                    "confidence": confidence,
-                    "alpha": alpha,
-                    "round_nb": round_nb,
-                    "show": show,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(method, str):
             method = method.lower()
         if isinstance(by, str):
@@ -2045,6 +2014,7 @@ vColumns : vColumn
             return result
 
     # ---#
+    @save_verticapy_logs
     def add_duplicates(self, weight: Union[int, str], use_gcd: bool = True):
         """
     ---------------------------------------------------------------------------
@@ -2063,13 +2033,6 @@ vColumns : vColumn
     vDataFrame
         the output vDataFrame
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="add_duplicates",
-            path="vdataframe.vDataFrame",
-            json_dict={"weight": weight, "use_gcd": use_gcd,},
-        )
-        # -#
         check_types([("weight", weight, [str, int]), ("use_gcd", use_gcd, [bool])])
         if isinstance(weight, str):
             self.are_namecols_in(weight)
@@ -2109,6 +2072,7 @@ vColumns : vColumn
         return vdf
 
     # ---#
+    @save_verticapy_logs
     def aggregate(
         self, func: list, columns: list = [], ncols_block: int = 20, processes: int = 1,
     ):
@@ -2178,18 +2142,6 @@ vColumns : vColumn
     vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
         analytical function on a specific vColumn.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="aggregate",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "func": func,
-                "columns": columns,
-                "ncols_block": ncols_block,
-                "processes": processes,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         if isinstance(func, str):
@@ -2712,6 +2664,7 @@ vColumns : vColumn
 
     agg = aggregate
     # ---#
+    @save_verticapy_logs
     def all(
         self, columns: list, **agg_kwds,
     ):
@@ -2737,16 +2690,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="all",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["bool_and"], columns=columns, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def analytic(
         self,
         func: str,
@@ -2838,22 +2785,6 @@ vColumns : vColumn
     vDataFrame.eval    : Evaluates a customized expression.
     vDataFrame.rolling : Computes a customized moving window.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="analytic",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "func": func,
-                "columns": columns,
-                "by": by,
-                "order_by": order_by,
-                "name": name,
-                "offset": offset,
-                "x_smoothing": x_smoothing,
-                "add_count": add_count,
-            },
-        )
-        # -#
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):
@@ -3192,6 +3123,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def animated(
         self,
         ts: str,
@@ -3284,34 +3216,6 @@ vColumns : vColumn
     animation
         Matplotlib animation object
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="animated",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "columns": columns,
-                    "ts": ts,
-                    "by": by,
-                    "kind": kind,
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "limit_over": limit_over,
-                    "limit_labels": limit_labels,
-                    "limit": limit,
-                    "fixed_xy_lim": fixed_xy_lim,
-                    "date_in_title": date_in_title,
-                    "date_style_dict": date_style_dict,
-                    "interval": interval,
-                    "repeat": repeat,
-                    "return_html": return_html,
-                    "ts_steps": ts_steps,
-                    "bubble_img": bubble_img,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         if isinstance(kind, str):
@@ -3469,6 +3373,7 @@ vColumns : vColumn
             )
 
     # ---#
+    @save_verticapy_logs
     def any(
         self, columns: list, **agg_kwds,
     ):
@@ -3493,16 +3398,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="any",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["bool_or"], columns=columns, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def append(
         self, input_relation, expr1: list = [], expr2: list = [], union_all: bool = True
     ):
@@ -3540,18 +3439,6 @@ vColumns : vColumn
     vDataFrame.join    : Joins the vDataFrame with another relation.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="append",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "input_relation": input_relation,
-                "expr1": expr1,
-                "expr2": expr2,
-                "union_all": union_all,
-            },
-        )
-        # -#
         if isinstance(expr1, str):
             expr1 = [expr1]
         if isinstance(expr2, str):
@@ -3582,6 +3469,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def apply(self, func: dict):
         """
     ---------------------------------------------------------------------------
@@ -3606,11 +3494,6 @@ vColumns : vColumn
     vDataFrame.applymap : Applies a function to all vColumns.
     vDataFrame.eval     : Evaluates a customized expression.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="apply", path="vdataframe.vDataFrame", json_dict={"func": func,},
-        )
-        # -#
         check_types([("func", func, [dict])])
         self.are_namecols_in([elem for elem in func])
         for column in func:
@@ -3618,6 +3501,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def applymap(self, func: str, numeric_only: bool = True):
         """
     ---------------------------------------------------------------------------
@@ -3641,13 +3525,6 @@ vColumns : vColumn
     --------
     vDataFrame.apply : Applies functions to the input vColumns.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="applymap",
-            path="vdataframe.vDataFrame",
-            json_dict={"func": func, "numeric_only": numeric_only,},
-        )
-        # -#
         check_types([("func", func, [str]), ("numeric_only", numeric_only, [bool])])
         function = {}
         columns = self.numcol() if numeric_only else self.get_columns()
@@ -3658,6 +3535,7 @@ vColumns : vColumn
         return self.apply(function)
 
     # ---#
+    @save_verticapy_logs
     def interpolate(
         self,
         ts: str,
@@ -3699,13 +3577,6 @@ vColumns : vColumn
     vDataFrame[].fillna  : Fills the vColumn missing values.
     vDataFrame[].slice   : Slices the vColumn.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="interpolate",
-            path="vdataframe.vDataFrame",
-            json_dict={"ts": ts, "rule": rule, "method": method, "by": by,},
-        )
-        # -#
         if isinstance(by, str):
             by = [by]
         check_types(
@@ -3761,6 +3632,7 @@ vColumns : vColumn
 
     asfreq = interpolate
     # ---#
+    @save_verticapy_logs
     def astype(self, dtype: dict):
         """
     ---------------------------------------------------------------------------
@@ -3778,11 +3650,6 @@ vColumns : vColumn
     vDataFrame
         self
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="astype", path="vdataframe.vDataFrame", json_dict={"dtype": dtype,},
-        )
-        # -#
         check_types([("dtype", dtype, [dict])])
         self.are_namecols_in([elem for elem in dtype])
         for column in dtype:
@@ -3790,6 +3657,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def at_time(self, ts: str, time: Union[str, datetime.timedelta]):
         """
     ---------------------------------------------------------------------------
@@ -3816,19 +3684,13 @@ vColumns : vColumn
     vDataFrame.filter       : Filters the data using the input expression.
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="at_time",
-            path="vdataframe.vDataFrame",
-            json_dict={"ts": ts, "time": time,},
-        )
-        # -#
         check_types([("ts", ts, [str]), ("time", time, [str, datetime.timedelta])])
         self.are_namecols_in(ts)
         self.filter("{}::time = '{}'".format(quote_ident(ts), time))
         return self
 
     # ---#
+    @save_verticapy_logs
     def avg(
         self, columns: list = [], **agg_kwds,
     ):
@@ -3854,17 +3716,11 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="avg",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["avg"], columns=columns, **agg_kwds,)
 
     mean = avg
     # ---#
+    @save_verticapy_logs
     def bar(
         self,
         columns: list,
@@ -3927,23 +3783,6 @@ vColumns : vColumn
      vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
      vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="bar",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "columns": columns,
-                    "method": method,
-                    "of": of,
-                    "h": h,
-                    "max_cardinality": max_cardinality,
-                    "hist_type": hist_type,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(method, str):
             method = method.lower()
         if isinstance(hist_type, str):
@@ -4005,6 +3844,7 @@ vColumns : vColumn
             )
 
     # ---#
+    @save_verticapy_logs
     def balance(
         self, column: str, method: str = "hybrid", x: float = 0.5, order_by: list = []
     ):
@@ -4035,18 +3875,6 @@ vColumns : vColumn
     vDataFrame
         balanced vDataFrame
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="balance",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "column": column,
-                "method": method,
-                "x": x,
-                "order_by": order_by,
-            },
-        )
-        # -#
         if isinstance(method, str):
             method = method.lower()
         check_types(
@@ -4082,6 +3910,7 @@ vColumns : vColumn
         return vdf
 
     # ---#
+    @save_verticapy_logs
     def between_time(
         self,
         ts: str,
@@ -4116,13 +3945,6 @@ vColumns : vColumn
     vDataFrame.filter  : Filters the data using the input expression.
     vDataFrame.last    : Filters the data by only keeping the last records.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="between_time",
-            path="vdataframe.vDataFrame",
-            json_dict={"ts": ts, "start_time": start_time, "end_time": end_time,},
-        )
-        # -#
         check_types(
             [
                 ("ts", ts, [str]),
@@ -4139,6 +3961,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def bool_to_int(self):
         """
     ---------------------------------------------------------------------------
@@ -4153,11 +3976,6 @@ vColumns : vColumn
     --------
     vDataFrame.astype : Converts the vColumns to the input types.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="bool_to_int", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         columns = self.get_columns()
         for column in columns:
             if self[column].isbool():
@@ -4165,6 +3983,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def boxplot(self, columns: list = [], ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
@@ -4192,13 +4011,6 @@ vColumns : vColumn
     vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="boxplot",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **style_kwds},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types([("columns", columns, [list])])
@@ -4209,6 +4021,7 @@ vColumns : vColumn
         return boxplot2D(self, columns, ax=ax, **style_kwds)
 
     # ---#
+    @save_verticapy_logs
     def bubble(
         self,
         columns: list,
@@ -4256,24 +4069,6 @@ vColumns : vColumn
     --------
     vDataFrame.scatter : Draws the scatter plot of the input vColumns.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="bubble",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "columns": columns,
-                    "size_bubble_col": size_bubble_col,
-                    "catcol": catcol,
-                    "cmap_col": cmap_col,
-                    "max_nb_points": max_nb_points,
-                    "bbox": bbox,
-                    "img": img,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -4357,6 +4152,7 @@ vColumns : vColumn
         return columns
 
     # ---#
+    @save_verticapy_logs
     def cdt(
         self,
         columns: list = [],
@@ -4395,19 +4191,6 @@ vColumns : vColumn
     vDataFrame
         the CDT relation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="cdt",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "columns": columns,
-                "max_cardinality": max_cardinality,
-                "nbins": nbins,
-                "tcdt": tcdt,
-                "drop_transf_cols": drop_transf_cols,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -4453,6 +4236,7 @@ vColumns : vColumn
         return vdf
 
     # ---#
+    @save_verticapy_logs
     def chaid(
         self,
         response: str,
@@ -4499,18 +4283,6 @@ vColumns : vColumn
         An independent model containing the result. For more information, see
         learn.memmodel.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="chaid",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "columns": columns,
-                "nbins": nbins,
-                "method": method,
-                "RFmodel_params": RFmodel_params,
-            },
-        )
-        # -#
         if "process" not in kwds or kwds["process"]:
             if isinstance(columns, str):
                 columns = [columns]
@@ -4653,6 +4425,7 @@ vColumns : vColumn
             return tree, idx
 
     # ---#
+    @save_verticapy_logs
     def chaid_columns(self, columns: list = [], max_cardinality: int = 16):
         """
     ---------------------------------------------------------------------------
@@ -4672,13 +4445,6 @@ vColumns : vColumn
     list
         columns picked by the CHAID algorithm
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="chaid_columns",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "max_cardinality": max_cardinality,},
-        )
-        # -#
         columns_tmp = columns.copy()
         if not (columns_tmp):
             columns_tmp = self.get_columns()
@@ -4767,6 +4533,7 @@ vColumns : vColumn
         return copy_vDataFrame
 
     # ---#
+    @save_verticapy_logs
     def case_when(self, name: str, *argv):
         """
     ---------------------------------------------------------------------------
@@ -4792,17 +4559,13 @@ vColumns : vColumn
     vDataFrame[].decode : Encodes the vColumn using a User Defined Encoding.
     vDataFrame.eval : Evaluates a customized expression.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="case_when", path="vdataframe.vDataFrame", json_dict={"name": name,},
-        )
-        # -#
         check_types([("name", name, [str])])
         import verticapy.stats as st
 
         return self.eval(name=name, expr=st.case_when(*argv))
 
     # ---#
+    @save_verticapy_logs
     def contour(self, columns: list, func, nbins: int = 100, ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
@@ -4833,16 +4596,6 @@ vColumns : vColumn
      vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
      vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="contour",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{"columns": columns, "func": func, "nbins": nbins,},
-                **style_kwds,
-            },
-        )
-        # -#
         check_types(
             [("columns", columns, [list]), ("nbins", nbins, [int]),]
         )
@@ -4854,6 +4607,7 @@ vColumns : vColumn
         return contour_plot(self, columns, func, nbins, ax=ax, **style_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def corr(
         self,
         columns: list = [],
@@ -4911,22 +4665,6 @@ vColumns : vColumn
     vDataFrame.pacf : Computes the partial autocorrelations of the input vColumn.
     vDataFrame.regr : Computes the regression matrix of the vDataFrame. 
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="corr",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "columns": columns,
-                    "method": method,
-                    "round_nb": round_nb,
-                    "focus": focus,
-                    "show": show,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(method, str):
             method = method.lower()
         if isinstance(columns, str):
@@ -4976,6 +4714,7 @@ vColumns : vColumn
             )
 
     # ---#
+    @save_verticapy_logs
     def corr_pvalue(self, column1: str, column2: str, method: str = "pearson"):
         """
     ---------------------------------------------------------------------------
@@ -5012,13 +4751,6 @@ vColumns : vColumn
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="corr_pvalue",
-            path="vdataframe.vDataFrame",
-            json_dict={"column1": column1, "column2": column2, "method": method,},
-        )
-        # -#
         if isinstance(method, str):
             method = method.lower()
         check_types(
@@ -5177,6 +4909,7 @@ vColumns : vColumn
         return (val, pvalue)
 
     # ---#
+    @save_verticapy_logs
     def count(
         self, columns: list = [], **agg_kwds,
     ):
@@ -5202,16 +4935,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="count",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["count"], columns=columns, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def count_percent(
         self,
         columns: list = [],
@@ -5246,13 +4973,6 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="count_percent",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "sort_result": sort_result, "desc": desc,},
-        )
-        # -#
         check_types(
             [("desc", desc, [bool]), ("sort_result", sort_result, [bool]),]
         )
@@ -5262,6 +4982,7 @@ vColumns : vColumn
         return result
 
     # ---#
+    @save_verticapy_logs
     def cov(
         self,
         columns: list = [],
@@ -5301,16 +5022,6 @@ vColumns : vColumn
     vDataFrame.pacf : Computes the partial autocorrelations of the input vColumn.
     vDataFrame.regr : Computes the regression matrix of the vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="cov",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{"columns": columns, "focus": focus, "show": show,},
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -5334,6 +5045,7 @@ vColumns : vColumn
             )
 
     # ---#
+    @save_verticapy_logs
     def cummax(
         self,
         column: str,
@@ -5368,13 +5080,6 @@ vColumns : vColumn
     --------
     vDataFrame.rolling : Computes a customized moving window.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="cummax",
-            path="vdataframe.vDataFrame",
-            json_dict={"column": column, "by": by, "order_by": order_by, "name": name,},
-        )
-        # -#
         return self.rolling(
             func="max",
             columns=column,
@@ -5385,6 +5090,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def cummin(
         self,
         column: str,
@@ -5419,13 +5125,6 @@ vColumns : vColumn
     --------
     vDataFrame.rolling : Computes a customized moving window.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="cummin",
-            path="vdataframe.vDataFrame",
-            json_dict={"column": column, "by": by, "order_by": order_by, "name": name,},
-        )
-        # -#
         return self.rolling(
             func="min",
             columns=column,
@@ -5436,6 +5135,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def cumprod(
         self,
         column: str,
@@ -5470,13 +5170,6 @@ vColumns : vColumn
     --------
     vDataFrame.rolling : Computes a customized moving window.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="cumprod",
-            path="vdataframe.vDataFrame",
-            json_dict={"column": column, "by": by, "order_by": order_by, "name": name,},
-        )
-        # -#
         return self.rolling(
             func="prod",
             columns=column,
@@ -5487,6 +5180,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def cumsum(
         self,
         column: str,
@@ -5521,13 +5215,6 @@ vColumns : vColumn
     --------
     vDataFrame.rolling : Computes a customized moving window.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="cumsum",
-            path="vdataframe.vDataFrame",
-            json_dict={"column": column, "by": by, "order_by": order_by, "name": name,},
-        )
-        # -#
         return self.rolling(
             func="sum",
             columns=column,
@@ -5597,6 +5284,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def density(
         self,
         columns: list = [],
@@ -5644,22 +5332,6 @@ vColumns : vColumn
     --------
     vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="density",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "columns": columns,
-                    "bandwidth": bandwidth,
-                    "kernel": kernel,
-                    "nbins": nbins,
-                    "xlim": xlim,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -5709,6 +5381,7 @@ vColumns : vColumn
         return ax
 
     # ---#
+    @save_verticapy_logs
     def describe(
         self,
         method: str = "auto",
@@ -5766,19 +5439,6 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="describe",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "method": method,
-                "columns": columns,
-                "unique": unique,
-                "ncols_block": ncols_block,
-                "processes": processes,
-            },
-        )
-        # -#
         if isinstance(method, str):
             method = method.lower()
         if isinstance(columns, str):
@@ -6142,6 +5802,7 @@ vColumns : vColumn
         return result
 
     # ---#
+    @save_verticapy_logs
     def drop(self, columns: list = []):
         """
     ---------------------------------------------------------------------------
@@ -6160,11 +5821,6 @@ vColumns : vColumn
     vDataFrame
         self
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="drop", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types([("columns", columns, [list])])
@@ -6175,6 +5831,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def drop_duplicates(self, columns: list = []):
         """
     ---------------------------------------------------------------------------
@@ -6196,13 +5853,6 @@ vColumns : vColumn
     vDataFrame
         self
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="drop_duplicates",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types([("columns", columns, [list])])
@@ -6228,6 +5878,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def dropna(self, columns: list = []):
         """
     ---------------------------------------------------------------------------
@@ -6247,13 +5898,6 @@ vColumns : vColumn
     --------
     vDataFrame.filter: Filters the data using the input expression.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="dropna",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types([("columns", columns, [list])])
@@ -6275,6 +5919,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def dtypes(self):
         """
     ---------------------------------------------------------------------------
@@ -6286,11 +5931,6 @@ vColumns : vColumn
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="dtypes", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         values = {"index": [], "dtype": []}
         for column in self.get_columns():
             values["index"] += [column]
@@ -6298,6 +5938,7 @@ vColumns : vColumn
         return tablesample(values)
 
     # ---#
+    @save_verticapy_logs
     def duplicated(self, columns: list = [], count: bool = False, limit: int = 30):
         """
     ---------------------------------------------------------------------------
@@ -6322,13 +5963,6 @@ vColumns : vColumn
     --------
     vDataFrame.drop_duplicates : Filters the duplicated values.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="duplicated",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "count": count, "limit": limit,},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -6386,6 +6020,7 @@ vColumns : vColumn
         return not (self.get_columns())
 
     # ---#
+    @save_verticapy_logs
     def eval(self, name: str, expr: str):
         """
     ---------------------------------------------------------------------------
@@ -6410,13 +6045,6 @@ vColumns : vColumn
     vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
         analytical function on a specific vColumn.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="eval",
-            path="vdataframe.vDataFrame",
-            json_dict={"name": name, "expr": expr,},
-        )
-        # -#
         if isinstance(expr, str_sql):
             expr = str(expr)
         check_types([("name", name, [str]), ("expr", expr, [str])])
@@ -6469,6 +6097,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def expected_store_usage(self, unit: str = "b"):
         """
     ---------------------------------------------------------------------------
@@ -6493,13 +6122,6 @@ vColumns : vColumn
     --------
     vDataFrame.memory_usage : Returns the vDataFrame memory usage.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="expected_store_usage",
-            path="vdataframe.vDataFrame",
-            json_dict={"unit": unit,},
-        )
-        # -#
         check_types([("unit", unit, [str])])
         if unit.lower() == "kb":
             div_unit = 1024
@@ -6597,6 +6219,7 @@ vColumns : vColumn
         return tablesample(values=values).transpose()
 
     # ---#
+    @save_verticapy_logs
     def explain(self, digraph: bool = False):
         """
     ---------------------------------------------------------------------------
@@ -6613,13 +6236,6 @@ vColumns : vColumn
     str
         explain plan
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="explain",
-            path="vdataframe.vDataFrame",
-            json_dict={"digraph": digraph,},
-        )
-        # -#
         query = "EXPLAIN SELECT /*+LABEL('vDataframe.explain')*/ * FROM {}".format(
             self.__genSQL__()
         )
@@ -6641,6 +6257,7 @@ vColumns : vColumn
         return result
 
     # ---#
+    @save_verticapy_logs
     def fillna(self, val: dict = {}, method: dict = {}, numeric_only: bool = False):
         """
     ---------------------------------------------------------------------------
@@ -6677,13 +6294,6 @@ vColumns : vColumn
     vDataFrame[].fillna : Fills the vColumn missing values. This method is more 
         complete than the vDataFrame.fillna method by allowing more parameters.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="fillna",
-            path="vdataframe.vDataFrame",
-            json_dict={"val": val, "method": method, "numeric_only": numeric_only,},
-        )
-        # -#
         check_types(
             [
                 ("val", val, [dict]),
@@ -6715,6 +6325,7 @@ vColumns : vColumn
             raise
 
     # ---#
+    @save_verticapy_logs
     def filter(self, conditions: Union[list, str] = [], *args, **kwds):
         """
     ---------------------------------------------------------------------------
@@ -6741,13 +6352,6 @@ vColumns : vColumn
     vDataFrame.search       : Searches the elements which matches with the input 
         conditions.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="filter",
-            path="vdataframe.vDataFrame",
-            json_dict={"conditions": conditions,},
-        )
-        # -#
         check_types([("conditions", conditions, [list, str])])
         count = self.shape()[0]
         conj = "s were " if count > 1 else " was "
@@ -6812,6 +6416,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def first(self, ts: str, offset: str):
         """
     ---------------------------------------------------------------------------
@@ -6838,13 +6443,6 @@ vColumns : vColumn
     vDataFrame.filter       : Filters the data using the input expression.
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="first",
-            path="vdataframe.vDataFrame",
-            json_dict={"ts": ts, "offset": offset,},
-        )
-        # -#
         check_types([("ts", ts, [str]), ("offset", offset, [str])])
         ts = self.format_colnames(ts)
         query = "SELECT /*+LABEL('vDataframe.first')*/ (MIN({}) + '{}'::interval)::varchar FROM {}".format(
@@ -6861,6 +6459,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def flat_vmap(
         self, vmap_col: list = [], limit: int = 100, exclude_columns: list = []
     ):
@@ -6888,13 +6487,6 @@ vColumns : vColumn
     vDataFrame
         object with the flattened VMaps.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="select",
-            path="vdataframe.vDataFrame",
-            json_dict={"vmap_col": vmap_col, "limit": limit,},
-        )
-        # -#
         if not (vmap_col):
             vmap_col = []
             all_cols = self.get_columns()
@@ -6966,7 +6558,8 @@ vColumns : vColumn
         return result
 
     # ---#
-    def get_dummies(
+    @save_verticapy_logs
+    def one_hot_encode(
         self,
         columns: list = [],
         max_cardinality: int = 12,
@@ -7008,19 +6601,6 @@ vColumns : vColumn
     vDataFrame[].label_encode : Encodes the vColumn using the Label Encoding.
     vDataFrame[].mean_encode  : Encodes the vColumn using the Mean Encoding of a response.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="one_hot_encode",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "columns": columns,
-                "max_cardinality": max_cardinality,
-                "prefix_sep": prefix_sep,
-                "drop_first": drop_first,
-                "use_numbers_as_suffix": use_numbers_as_suffix,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -7047,8 +6627,9 @@ vColumns : vColumn
                 warnings.warn(warning_message, Warning)
         return self
 
-    one_hot_encode = get_dummies
+    get_dummies = one_hot_encode
     # ---#
+    @save_verticapy_logs
     def groupby(
         self,
         columns: Union[list, str],
@@ -7095,18 +6676,6 @@ vColumns : vColumn
     vDataFrame.join     : Joins the vDataFrame with another relation.
     vDataFrame.sort     : Sorts the vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="groupby",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "columns": columns,
-                "expr": expr,
-                "rollup": rollup,
-                "having": having,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         if isinstance(expr, str):
@@ -7198,6 +6767,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def hchart(
         self,
         x: Union[str, list] = None,
@@ -7344,29 +6914,6 @@ vColumns : vColumn
     Highchart
         Chart Object
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="hchart",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "x": x,
-                "y": y,
-                "z": z,
-                "c": c,
-                "aggregate": aggregate,
-                "kind": kind,
-                "width": width,
-                "height": height,
-                "options": options,
-                "h": h,
-                "max_cardinality": max_cardinality,
-                "limit": limit,
-                "drilldown": drilldown,
-                "stock": stock,
-                "alpha": alpha,
-            },
-        )
-        # -#
         check_types([("kind", kind, [str])])
         kind = kind.lower()
         check_types(
@@ -7481,6 +7028,7 @@ vColumns : vColumn
         return self.iloc(limit=limit, offset=0)
 
     # ---#
+    @save_verticapy_logs
     def heatmap(
         self,
         columns: list,
@@ -7527,16 +7075,6 @@ vColumns : vColumn
     --------
     vDataFrame.pivot_table  : Draws the pivot table of vColumns based on an aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="heatmap",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{"columns": columns, "method": method, "of": of, "h": h,},
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -7578,6 +7116,7 @@ vColumns : vColumn
         return ax
 
     # ---#
+    @save_verticapy_logs
     def hexbin(
         self,
         columns: list,
@@ -7625,22 +7164,6 @@ vColumns : vColumn
     --------
     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="hexbin",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "columns": columns,
-                    "method": method,
-                    "of": of,
-                    "bbox": bbox,
-                    "img": img,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(method, str):
             method = method.lower()
         if isinstance(columns, str):
@@ -7665,6 +7188,7 @@ vColumns : vColumn
         return hexbin(self, columns, method, of, bbox, img, ax=ax, **style_kwds)
 
     # ---#
+    @save_verticapy_logs
     def hist(
         self,
         columns: list,
@@ -7724,23 +7248,6 @@ vColumns : vColumn
     vDataFrame.boxplot     : Draws the Box Plot of the input vColumns.
     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="hist",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "columns": columns,
-                    "method": method,
-                    "of": of,
-                    "max_cardinality": max_cardinality,
-                    "h": h,
-                    "hist_type": hist_type,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -7901,6 +7408,7 @@ vColumns : vColumn
         return result
 
     # ---#
+    @save_verticapy_logs
     def isin(self, val: dict):
         """
     ---------------------------------------------------------------------------
@@ -7920,11 +7428,6 @@ vColumns : vColumn
     vDataFrame
         The vDataFrame of the search.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="isin", path="vdataframe.vDataFrame", json_dict={"val": val,},
-        )
-        # -#
         check_types([("val", val, [dict])])
         self.are_namecols_in([elem for elem in val])
         n = len(val[list(val.keys())[0]])
@@ -7943,6 +7446,7 @@ vColumns : vColumn
         return self.search(" OR ".join(result))
 
     # ---#
+    @save_verticapy_logs
     def join(
         self,
         input_relation,
@@ -8029,20 +7533,6 @@ vColumns : vColumn
     vDataFrame.groupby : Aggregates the vDataFrame.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="join",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "input_relation": input_relation,
-                "on": on,
-                "on_interpolate": on_interpolate,
-                "how": how,
-                "expr1": expr1,
-                "expr2": expr2,
-            },
-        )
-        # -#
         if isinstance(expr1, str):
             expr1 = [expr1]
         if isinstance(expr2, str):
@@ -8159,6 +7649,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def kurtosis(
         self, columns: list = [], **agg_kwds,
     ):
@@ -8184,17 +7675,11 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="kurtosis",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["kurtosis"], columns=columns, **agg_kwds,)
 
     kurt = kurtosis
     # ---#
+    @save_verticapy_logs
     def last(self, ts: str, offset: str):
         """
     ---------------------------------------------------------------------------
@@ -8221,13 +7706,6 @@ vColumns : vColumn
     vDataFrame.first        : Filters the data by only keeping the first records.
     vDataFrame.filter       : Filters the data using the input expression.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="last",
-            path="vdataframe.vDataFrame",
-            json_dict={"ts": ts, "offset": offset,},
-        )
-        # -#
         check_types([("ts", ts, [str]), ("offset", offset, [str])])
         ts = self.format_colnames(ts)
         query = "SELECT /*+LABEL('vDataframe.last')*/ (MAX({}) - '{}'::interval)::varchar FROM {}".format(
@@ -8244,6 +7722,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def load(self, offset: int = -1):
         """
     ---------------------------------------------------------------------------
@@ -8263,17 +7742,13 @@ vColumns : vColumn
     --------
     vDataFrame.save : Saves the current vDataFrame structure.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="load", path="vdataframe.vDataFrame", json_dict={"offset": offset,},
-        )
-        # -#
         check_types([("offset", offset, [int, float])])
         save = self._VERTICAPY_VARIABLES_["saving"][offset]
         vdf = pickle.loads(save)
         return vdf
 
     # ---#
+    @save_verticapy_logs
     def mad(
         self, columns: list = [], **agg_kwds,
     ):
@@ -8299,16 +7774,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="mad",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["mad"], columns=columns, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def max(
         self, columns: list = [], **agg_kwds,
     ):
@@ -8334,16 +7803,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="max",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["max"], columns=columns, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def median(
         self, columns: list = [], approx: bool = True, **agg_kwds,
     ):
@@ -8372,16 +7835,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="median",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "approx": approx,},
-        )
-        # -#
         return self.quantile(0.5, columns=columns, approx=approx, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def memory_usage(self):
         """
     ---------------------------------------------------------------------------
@@ -8397,11 +7854,6 @@ vColumns : vColumn
     --------
     vDataFrame.expected_store_usage : Returns the expected store usage.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="memory_usage", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         import sys
 
         total = sum(
@@ -8418,6 +7870,7 @@ vColumns : vColumn
         return tablesample(values=values)
 
     # ---#
+    @save_verticapy_logs
     def merge_similar_names(self, skip_word: list):
         """
     ---------------------------------------------------------------------------
@@ -8441,13 +7894,6 @@ vColumns : vColumn
     vDataFrame
         An object containing the merged element.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="merge_similar_names",
-            path="vdataframe.vDataFrame",
-            json_dict={"skip_word": skip_word},
-        )
-        # -#
         if isinstance(skip_word, str):
             skip_word = [skip_word]
         check_types(
@@ -8469,6 +7915,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def min(
         self, columns: list = [], **agg_kwds,
     ):
@@ -8494,16 +7941,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="min",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["min"], columns=columns, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def narrow(
         self,
         index: Union[str, list],
@@ -8537,18 +7978,6 @@ vColumns : vColumn
     --------
     vDataFrame.pivot : Returns the pivot table of the vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="narrow",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "index": index,
-                "columns": columns,
-                "col_name": col_name,
-                "val_name": val_name,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types([("index", index, [str, list]), ("columns", columns, [list])])
@@ -8594,6 +8023,7 @@ vColumns : vColumn
 
     melt = narrow
     # ---#
+    @save_verticapy_logs
     def normalize(self, columns: list = [], method: str = "zscore"):
         """
     ---------------------------------------------------------------------------
@@ -8624,13 +8054,6 @@ vColumns : vColumn
     vDataFrame[].normalize : Normalizes the vColumn. This method is more complete 
         than the vDataFrame.normalize method by allowing more parameters.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="normalize",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "method": method,},
-        )
-        # -#
         if isinstance(method, str):
             method = method.lower()
         if isinstance(columns, str):
@@ -8684,6 +8107,7 @@ vColumns : vColumn
         return columns
 
     # ---#
+    @save_verticapy_logs
     def nunique(
         self, columns: list = [], approx: bool = True, **agg_kwds,
     ):
@@ -8712,17 +8136,11 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="nunique",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "approx": approx,},
-        )
-        # -#
         func = ["approx_unique"] if approx else ["unique"]
         return self.aggregate(func=func, columns=columns, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def outliers(
         self,
         columns: list = [],
@@ -8757,18 +8175,6 @@ vColumns : vColumn
     --------
     vDataFrame.normalize : Normalizes the input vColumns.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="outliers",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "columns": columns,
-                "name": name,
-                "threshold": threshold,
-                "robust": robust,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -8809,6 +8215,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def outliers_plot(
         self,
         columns: list,
@@ -8851,24 +8258,6 @@ vColumns : vColumn
     ax: Matplotlib axes object, optional
         The axes to plot on.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="outliers_plot",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "columns": columns,
-                    "threshold": threshold,
-                    "color": color,
-                    "outliers_color": outliers_color,
-                    "inliers_color": inliers_color,
-                    "inliers_border_color": inliers_border_color,
-                    "max_nb_points": max_nb_points,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -8901,6 +8290,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def pacf(
         self,
         column: str,
@@ -8961,25 +8351,6 @@ vColumns : vColumn
     vDataFrame.corr   : Computes the correlation matrix of a vDataFrame.
     vDataFrame.cov    : Computes the covariance matrix of the vDataFrame.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="pacf",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "column": column,
-                    "ts": ts,
-                    "by": by,
-                    "p": p,
-                    "unit": unit,
-                    "confidence": confidence,
-                    "alpha": alpha,
-                    "show": show,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(by, str):
             by = [by]
         check_types(
@@ -9109,6 +8480,7 @@ vColumns : vColumn
             return result
 
     # ---#
+    @save_verticapy_logs
     def pie(
         self,
         columns: list,
@@ -9146,16 +8518,6 @@ vColumns : vColumn
     --------
     vDataFrame[].pie : Draws the Pie Chart of the vColumn based on an aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="pie",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{"columns": columns, "max_cardinality": max_cardinality, "h": h,},
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -9171,6 +8533,7 @@ vColumns : vColumn
         return nested_pie(self, columns, max_cardinality, h, ax=None, **style_kwds)
 
     # ---#
+    @save_verticapy_logs
     def pivot(
         self, index: str, columns: str, values: str, aggr: str = "sum", prefix: str = ""
     ):
@@ -9205,19 +8568,6 @@ vColumns : vColumn
     vDataFrame.pivot_table : Draws the pivot table of one or two columns based on an 
         aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="pivot",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "index": index,
-                "columns": columns,
-                "values": values,
-                "aggr": aggr,
-                "prefix": prefix,
-            },
-        )
-        # -#
         check_types(
             [
                 ("index", index, [str]),
@@ -9268,6 +8618,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def pivot_table_chi2(
         self,
         response: str,
@@ -9311,19 +8662,6 @@ vColumns : vColumn
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="pivot_table_chi2",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "response": response,
-                "columns": columns,
-                "nbins": nbins,
-                "method": method,
-                "RFmodel_params": RFmodel_params,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -9401,6 +8739,7 @@ vColumns : vColumn
         return tablesample(result)
 
     # ---#
+    @save_verticapy_logs
     def pivot_table(
         self,
         columns: list,
@@ -9463,25 +8802,6 @@ vColumns : vColumn
     vDataFrame.hexbin : Draws the Hexbin Plot of 2 vColumns based on an aggregation.
     vDataFrame.pivot  : Returns the Pivot of the vDataFrame using the input aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="pivot_table",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "columns": columns,
-                    "method": method,
-                    "of": of,
-                    "max_cardinality": max_cardinality,
-                    "h": h,
-                    "show": show,
-                    "with_numbers": with_numbers,
-                    "fill_none": fill_none,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -9519,6 +8839,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def plot(
         self,
         ts: str,
@@ -9563,22 +8884,6 @@ vColumns : vColumn
     --------
     vDataFrame[].plot : Draws the Time Series of one vColumn.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="plot",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "ts": ts,
-                    "columns": columns,
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "step": step,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -9608,6 +8913,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def polynomial_comb(self, columns: list = [], r: int = 2):
         """
     ---------------------------------------------------------------------------
@@ -9627,13 +8933,6 @@ vColumns : vColumn
     vDataFrame
         the Polynomial object.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="polynomial_comb",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "r": r,},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types([("columns", columns, [list]), ("r", r, [int])])
@@ -9650,6 +8949,7 @@ vColumns : vColumn
         return vdf
 
     # ---#
+    @save_verticapy_logs
     def product(
         self, columns: list = [], **agg_kwds,
     ):
@@ -9674,18 +8974,12 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="product",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["prod"], columns=columns, **agg_kwds,)
 
     prod = product
 
     # ---#
+    @save_verticapy_logs
     def quantile(
         self, q: list, columns: list = [], approx: bool = True, **agg_kwds,
     ):
@@ -9717,13 +9011,6 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="quantile",
-            path="vdataframe.vDataFrame",
-            json_dict={"q": q, "columns": columns, "approx": approx,},
-        )
-        # -#
         if isinstance(q, (int, float)):
             q = [q]
         check_types([("q", q, [list]), ("approx", approx, [bool])])
@@ -9738,6 +9025,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def recommend(
         self,
         unique_id: str,
@@ -9791,21 +9079,6 @@ vColumns : vColumn
     vDataFrame
         The vDataFrame of the recommendation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="recommend",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "unique_id": unique_id,
-                "item_id": item_id,
-                "method": method,
-                "rating": rating,
-                "ts": ts,
-                "start_date": start_date,
-                "end_date": end_date,
-            },
-        )
-        # -#
         if isinstance(method, str):
             method = method.lower()
         check_types(
@@ -9888,6 +9161,7 @@ vColumns : vColumn
         return vdf
 
     # ---#
+    @save_verticapy_logs
     def regexp(
         self,
         column: str,
@@ -9948,22 +9222,6 @@ vColumns : vColumn
     --------
     vDataFrame.eval : Evaluates a customized expression.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="regexp",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "column": column,
-                "pattern": pattern,
-                "method": method,
-                "position": position,
-                "occurrence": occurrence,
-                "replacement": replacement,
-                "return_position": return_position,
-                "name": name,
-            },
-        )
-        # -#
         check_types(
             [
                 ("column", column, [str]),
@@ -10006,6 +9264,7 @@ vColumns : vColumn
         return self.eval(name=name, expr=expr)
 
     # ---#
+    @save_verticapy_logs
     def regr(
         self,
         columns: list = [],
@@ -10060,16 +9319,6 @@ vColumns : vColumn
     vDataFrame.corr  : Computes the Correlation Matrix of the vDataFrame.
     vDataFrame.pacf  : Computes the partial autocorrelations of the input vColumn.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="regr",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{"columns": columns, "method": method, "show": show,},
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -10221,6 +9470,7 @@ vColumns : vColumn
         return tablesample(values=values).decimal_to_float()
 
     # ---#
+    @save_verticapy_logs
     def rolling(
         self,
         func: str,
@@ -10292,20 +9542,6 @@ vColumns : vColumn
     vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
         analytical function on a specific vColumn.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="rolling",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "func": func,
-                "window": window,
-                "columns": columns,
-                "by": by,
-                "order_by": order_by,
-                "name": name,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         if isinstance(by, str):
@@ -10486,6 +9722,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def sample(
         self, n: int = None, x: float = None, method: str = "random", by: list = []
     ):
@@ -10516,13 +9753,6 @@ vColumns : vColumn
     vDataFrame
         sample vDataFrame
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="sample",
-            path="vdataframe.vDataFrame",
-            json_dict={"n": n, "x": x, "method": method, "by": by,},
-        )
-        # -#
         if x == 1:
             return self.copy()
         assert n != None or x != None, ParameterError(
@@ -10594,6 +9824,7 @@ vColumns : vColumn
         return vdf
 
     # ---#
+    @save_verticapy_logs
     def save(self):
         """
     ---------------------------------------------------------------------------
@@ -10609,16 +9840,12 @@ vColumns : vColumn
     --------
     vDataFrame.load : Loads a saving.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="save", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         vdf = self.copy()
         self._VERTICAPY_VARIABLES_["saving"] += [pickle.dumps(vdf)]
         return self
 
     # ---#
+    @save_verticapy_logs
     def scatter(
         self,
         columns: list,
@@ -10680,26 +9907,6 @@ vColumns : vColumn
     vDataFrame.bubble      : Draws the bubble plot of the input vColumns.
     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="scatter",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "columns": columns,
-                    "catcol": catcol,
-                    "max_cardinality": max_cardinality,
-                    "cat_priority": cat_priority,
-                    "with_others": with_others,
-                    "max_nb_points": max_nb_points,
-                    "dimensions": dimensions,
-                    "bbox": bbox,
-                    "img": img,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if len(columns) > 3 and dimensions == None:
             dimensions = (1, 2)
         else:
@@ -10802,6 +10009,7 @@ vColumns : vColumn
             )
 
     # ---#
+    @save_verticapy_logs
     def scatter_matrix(self, columns: list = [], **style_kwds):
         """
     ---------------------------------------------------------------------------
@@ -10824,13 +10032,6 @@ vColumns : vColumn
     --------
     vDataFrame.scatter : Draws the scatter plot of the input vColumns.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="scatter_matrix",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **style_kwds},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types([("columns", columns, [list])])
@@ -10841,6 +10042,7 @@ vColumns : vColumn
         return scatter_matrix(self, columns, **style_kwds)
 
     # ---#
+    @save_verticapy_logs
     def search(
         self,
         conditions: Union[str, list] = "",
@@ -10877,18 +10079,6 @@ vColumns : vColumn
     vDataFrame.filter : Filters the vDataFrame using the input expressions.
     vDataFrame.select : Returns a copy of the vDataFrame with only the selected vColumns.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="search",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "conditions": conditions,
-                "usecols": usecols,
-                "expr": expr,
-                "order_by": order_by,
-            },
-        )
-        # -#
         if isinstance(order_by, str):
             order_by = [order_by]
         if isinstance(usecols, str):
@@ -10916,6 +10106,7 @@ vColumns : vColumn
         return result.sort(order_by)
 
     # ---#
+    @save_verticapy_logs
     def select(self, columns: list):
         """
     ---------------------------------------------------------------------------
@@ -10935,13 +10126,6 @@ vColumns : vColumn
     --------
     vDataFrame.search : Searches the elements which matches with the input conditions.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="select",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types([("columns", columns, [list])])
@@ -10971,6 +10155,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def sem(
         self, columns: list = [], **agg_kwds,
     ):
@@ -10996,16 +10181,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="sem",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["sem"], columns=columns, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def sessionize(
         self,
         ts: str,
@@ -11043,18 +10222,6 @@ vColumns : vColumn
     vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
         analytical function on a specific vColumn.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="sessionize",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "ts": ts,
-                "by": by,
-                "session_threshold": session_threshold,
-                "name": name,
-            },
-        )
-        # -#
         if isinstance(by, str):
             by = [by]
         check_types(
@@ -11075,6 +10242,7 @@ vColumns : vColumn
         return self.eval(name=name, expr=expr)
 
     # ---#
+    @save_verticapy_logs
     def score(self, y_true: str, y_score: str, method: str, nbins: int = 30):
         """
     ---------------------------------------------------------------------------
@@ -11127,18 +10295,6 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="score",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "y_true": y_true,
-                "y_score": y_score,
-                "method": method,
-                "nbins": nbins,
-            },
-        )
-        # -#
         check_types(
             [
                 ("y_true", y_true, [str]),
@@ -11279,6 +10435,7 @@ vColumns : vColumn
         return (self._VERTICAPY_VARIABLES_["count"], m)
 
     # ---#
+    @save_verticapy_logs
     def skewness(
         self, columns: list = [], **agg_kwds,
     ):
@@ -11304,17 +10461,11 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="skewness",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["skewness"], columns=columns, **agg_kwds,)
 
     skew = skewness
     # ---#
+    @save_verticapy_logs
     def sort(self, columns: Union[dict, list]):
         """
     ---------------------------------------------------------------------------
@@ -11338,11 +10489,6 @@ vColumns : vColumn
     vDataFrame.groupby : Aggregates the vDataFrame.
     vDataFrame.join    : Joins the vDataFrame with another relation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="sort", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types([("columns", columns, [dict, list])])
@@ -11357,6 +10503,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def stacked_area(
         self,
         ts: str,
@@ -11397,22 +10544,6 @@ vColumns : vColumn
     ax
         Matplotlib axes object
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="stacked_area",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                **{
-                    "ts": ts,
-                    "columns": columns,
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "fully": fully,
-                },
-                **style_kwds,
-            },
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(
@@ -11448,6 +10579,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def std(
         self, columns: list = [], **agg_kwds,
     ):
@@ -11473,17 +10605,11 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="std",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["stddev"], columns=columns, **agg_kwds,)
 
     stddev = std
     # ---#
+    @save_verticapy_logs
     def sum(
         self, columns: list = [], **agg_kwds,
     ):
@@ -11509,16 +10635,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="sum",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["sum"], columns=columns, **agg_kwds,)
 
     # ---#
+    @save_verticapy_logs
     def swap(self, column1: Union[int, str], column2: Union[int, str]):
         """
     ---------------------------------------------------------------------------
@@ -11536,13 +10656,6 @@ vColumns : vColumn
     vDataFrame
         self
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="swap",
-            path="vdataframe.vDataFrame",
-            json_dict={"column1": column1, "column2": column2,},
-        )
-        # -#
         check_types(
             [("column1", column1, [str, int]), ("column2", column2, [str, int])]
         )
@@ -11597,6 +10710,7 @@ vColumns : vColumn
         return self.iloc(limit=limit, offset=-1)
 
     # ---#
+    @save_verticapy_logs
     def to_csv(
         self,
         path: str = "",
@@ -11653,23 +10767,6 @@ vColumns : vColumn
     vDataFrame.to_db   : Saves the vDataFrame current relation to the Vertica database.
     vDataFrame.to_json : Creates a JSON file of the current vDataFrame relation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="to_csv",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "path": path,
-                "sep": sep,
-                "na_rep": na_rep,
-                "quotechar": quotechar,
-                "usecols": usecols,
-                "header": header,
-                "new_header": new_header,
-                "order_by": order_by,
-                "n_files": n_files,
-            },
-        )
-        # -#
         if isinstance(order_by, str):
             order_by = [order_by]
         if isinstance(usecols, str):
@@ -11777,6 +10874,7 @@ vColumns : vColumn
                 return csv_files
 
     # ---#
+    @save_verticapy_logs
     def to_db(
         self,
         name: str,
@@ -11827,20 +10925,6 @@ vColumns : vColumn
     --------
     vDataFrame.to_csv : Creates a csv file of the current vDataFrame relation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="to_db",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "name": name,
-                "usecols": usecols,
-                "relation_type": relation_type,
-                "inplace": inplace,
-                "db_filter": db_filter,
-                "nb_split": nb_split,
-            },
-        )
-        # -#
         if isinstance(usecols, str):
             usecols = [usecols]
         check_types(
@@ -11940,6 +11024,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def to_geopandas(self, geometry: str):
         """
     ---------------------------------------------------------------------------
@@ -11958,13 +11043,6 @@ vColumns : vColumn
     geopandas.GeoDataFrame
         The geopandas.GeoDataFrame of the current vDataFrame relation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="to_geopandas",
-            path="vdataframe.vDataFrame",
-            json_dict={"geometry": geometry,},
-        )
-        # -#
         try:
             from geopandas import GeoDataFrame
             from shapely import wkt
@@ -11996,6 +11074,7 @@ vColumns : vColumn
         return df
 
     # ---#
+    @save_verticapy_logs
     def to_json(
         self,
         path: str = "",
@@ -12036,18 +11115,6 @@ vColumns : vColumn
     vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
     vDataFrame.to_db  : Saves the vDataFrame current relation to the Vertica database.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="to_json",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "path": path,
-                "usecols": usecols,
-                "order_by": order_by,
-                "n_files": n_files,
-            },
-        )
-        # -#
         if isinstance(order_by, str):
             order_by = [order_by]
         if isinstance(usecols, str):
@@ -12140,6 +11207,7 @@ vColumns : vColumn
                 return json_files
 
     # ---#
+    @save_verticapy_logs
     def to_list(self):
         """
     ---------------------------------------------------------------------------
@@ -12152,11 +11220,6 @@ vColumns : vColumn
     List
         The list of the current vDataFrame relation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="to_list", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         query = "SELECT /*+LABEL('vDataframe.to_list')*/ * FROM {}{}".format(
             self.__genSQL__(), self.__get_last_order_by__()
         )
@@ -12178,6 +11241,7 @@ vColumns : vColumn
         return final_result
 
     # ---#
+    @save_verticapy_logs
     def to_numpy(self):
         """
     ---------------------------------------------------------------------------
@@ -12190,14 +11254,10 @@ vColumns : vColumn
     numpy.array
         The numpy array of the current vDataFrame relation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="to_numpy", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
         return np.array(self.to_list())
 
     # ---#
+    @save_verticapy_logs
     def to_pandas(self):
         """
     ---------------------------------------------------------------------------
@@ -12210,12 +11270,7 @@ vColumns : vColumn
     pandas.DataFrame
         The pandas.DataFrame of the current vDataFrame relation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="to_pandas", path="vdataframe.vDataFrame", json_dict={},
-        )
-        # -#
-        query = "SELECT /*+LABEL('vDataframe.to_pandas')*/ * FROM {}{}".format(
+        query = "SELECT /*+LABEL('vDataframe.to_pandas')*/ * FROM {0}{1}".format(
             self.__genSQL__(), self.__get_last_order_by__()
         )
         data = executeSQL(
@@ -12231,6 +11286,7 @@ vColumns : vColumn
         return df
 
     # ---#
+    @save_verticapy_logs
     def to_parquet(
         self,
         directory: str,
@@ -12314,23 +11370,6 @@ vColumns : vColumn
     vDataFrame.to_db  : Saves the current relation's vDataFrame to the Vertica database.
     vDataFrame.to_json: Creates a JSON file of the current vDataFrame relation.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="to_parquet",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "directory": directory,
-                "compression": compression,
-                "rowGroupSizeMB": rowGroupSizeMB,
-                "fileSizeMB": fileSizeMB,
-                "fileMode": fileMode,
-                "dirMode": dirMode,
-                "int96AsTimestamp": int96AsTimestamp,
-                "by": by,
-                "order_by": order_by,
-            },
-        )
-        # -#
         if isinstance(order_by, str):
             order_by = [order_by]
         if isinstance(by, str):
@@ -12359,8 +11398,8 @@ vColumns : vColumn
             "Parameter 'fileSizeMB' must be greater than 0."
         )
         by = self.format_colnames(by)
-        partition = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
-        query = "EXPORT TO PARQUET(directory = '{}', compression = '{}', rowGroupSizeMB = {}, fileSizeMB = {}, fileMode = '{}', dirMode = '{}', int96AsTimestamp = {}) OVER({}{}) AS SELECT * FROM {};".format(
+        partition = "PARTITION BY {0}".format(", ".join(by)) if (by) else ""
+        query = "EXPORT TO PARQUET(directory = '{0}', compression = '{1}', rowGroupSizeMB = {2}, fileSizeMB = {3}, fileMode = '{4}', dirMode = '{5}', int96AsTimestamp = {6}) OVER({7}{8}) AS SELECT * FROM {9};".format(
             directory,
             compression,
             rowGroupSizeMB,
@@ -12382,6 +11421,7 @@ vColumns : vColumn
         return result
 
     # ---#
+    @save_verticapy_logs
     def to_pickle(self, name: str):
         """
     ---------------------------------------------------------------------------
@@ -12398,15 +11438,11 @@ vColumns : vColumn
     vDataFrame
         self
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="to_pickle", path="vdataframe.vDataFrame", json_dict={"name": name,},
-        )
-        # -#
         pickle.dump(self, open(name, "wb"))
         return self
 
     # ---#
+    @save_verticapy_logs
     def to_shp(
         self,
         name: str,
@@ -12441,19 +11477,6 @@ vColumns : vColumn
     vDataFrame
         self
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="to_shp",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "name": name,
-                "path": path,
-                "usecols": usecols,
-                "overwrite": overwrite,
-                "shape": shape,
-            },
-        )
-        # -#
         if isinstance(usecols, str):
             usecols = [usecols]
         check_types(
@@ -12489,6 +11512,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @save_verticapy_logs
     def train_test_split(
         self,
         test_size: float = 0.33,
@@ -12520,17 +11544,6 @@ vColumns : vColumn
     tuple
         (train vDataFrame, test vDataFrame)
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="train_test_split",
-            path="vdataframe.vDataFrame",
-            json_dict={
-                "test_size": test_size,
-                "order_by": order_by,
-                "random_state": random_state,
-            },
-        )
-        # -#
         if isinstance(order_by, str):
             order_by = [order_by]
         check_types(
@@ -12569,6 +11582,7 @@ vColumns : vColumn
         )
 
     # ---#
+    @save_verticapy_logs
     def var(
         self, columns: list = [], **agg_kwds,
     ):
@@ -12594,13 +11608,6 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="var",
-            path="vdataframe.vDataFrame",
-            json_dict={**{"columns": columns,}, **agg_kwds},
-        )
-        # -#
         return self.aggregate(func=["variance"], columns=columns, **agg_kwds,)
 
     variance = var
@@ -12621,6 +11628,7 @@ vColumns : vColumn
         return vertica_version()
 
     # ---#
+    @save_verticapy_logs
     def iv_woe(
         self, y: str, columns: list = [], nbins: int = 10, show: bool = True, ax=None
     ):
@@ -12655,13 +11663,6 @@ vColumns : vColumn
     vDataFrame[].iv_woe : Computes the Information Value (IV) / 
         Weight Of Evidence (WOE) Table.
         """
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="iv_woe",
-            path="vdataframe.vDataFrame",
-            json_dict={"y": y, "columns": columns, "nbins": nbins, "show": show,},
-        )
-        # -#
         if isinstance(columns, str):
             columns = [columns]
         check_types(

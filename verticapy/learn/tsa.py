@@ -55,7 +55,7 @@ from typing import Union
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
-from verticapy import vDataFrame, save_to_query_profile
+from verticapy import vDataFrame, save_verticapy_logs
 from verticapy.plot import gen_colors
 from verticapy.learn.tools import *
 
@@ -104,6 +104,7 @@ papprox_ma: int, optional
     the p of the AR(p) used to approximate the MA coefficients.
     """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -120,27 +121,6 @@ papprox_ma: int, optional
         max_pik: int = 100,
         papprox_ma: int = 200,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="SARIMAX",
-            path="learn.tsa",
-            json_dict={
-                "name": name,
-                "p": p,
-                "d": d,
-                "q": q,
-                "P": P,
-                "D": D,
-                "Q": Q,
-                "s": s,
-                "tol": tol,
-                "max_iter": max_iter,
-                "solver": solver,
-                "max_pik": max_pik,
-                "papprox_ma": papprox_ma,
-            },
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "SARIMAX", name
         self.set_params(
@@ -1156,6 +1136,7 @@ solver: str, optional
         BFGS   : Broyden Fletcher Goldfarb Shanno
     """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -1164,19 +1145,6 @@ solver: str, optional
         max_iter: int = 1000,
         solver: str = "Newton",
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="VAR",
-            path="learn.tsa",
-            json_dict={
-                "name": name,
-                "p": p,
-                "tol": tol,
-                "max_iter": max_iter,
-                "solver": solver,
-            },
-        )
-        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "VAR", name
         assert p > 0, ParameterError(

@@ -60,6 +60,7 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 
 # ---#
+@save_verticapy_logs
 def gen_dataset(features_ranges: dict, nrows: int = 1000):
     """
 ---------------------------------------------------------------------------
@@ -92,13 +93,6 @@ Returns
 vDataFrame
     Generated dataset.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="gen_dataset",
-        path="datasets",
-        json_dict={"features_ranges": features_ranges, "nrows": nrows,},
-    )
-    # -#
 
     version(condition=[9, 3, 0])
     check_types([("features_ranges", features_ranges, [dict]), ("nrows", nrows, [int])])
@@ -169,6 +163,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def gen_meshgrid(features_ranges: dict):
     """
 ---------------------------------------------------------------------------
@@ -202,13 +197,6 @@ Returns
 vDataFrame
     generated dataset.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="gen_meshgrid",
-        path="datasets",
-        json_dict={"features_ranges": features_ranges,},
-    )
-    # -#
 
     check_types([("features_ranges", features_ranges, [dict])])
 
@@ -299,13 +287,6 @@ def load_dataset(
     """
     General Function to ingest a dataset
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="load_" + dataset_name,
-        path="datasets",
-        json_dict={"schema": schema, "name": name,},
-    )
-    # -#
 
     check_types([("schema", schema, [str]), ("name", name, [str])])
 
@@ -365,6 +346,7 @@ def load_dataset(
 #
 #
 # ---#
+@save_verticapy_logs
 def load_airline_passengers(schema: str = "public", name: str = "airline_passengers"):
     """
 ---------------------------------------------------------------------------
@@ -395,6 +377,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_amazon(schema: str = "public", name: str = "amazon"):
     """
 ---------------------------------------------------------------------------
@@ -425,6 +408,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_cities(schema: str = "public", name: str = "cities"):
     """
 ---------------------------------------------------------------------------
@@ -455,6 +439,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_commodities(schema: str = "public", name: str = "commodities"):
     """
 ---------------------------------------------------------------------------
@@ -493,6 +478,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_gapminder(schema: str = "public", name: str = "gapminder"):
     """
 ---------------------------------------------------------------------------
@@ -530,6 +516,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_iris(schema: str = "public", name: str = "iris"):
     """
 ---------------------------------------------------------------------------
@@ -574,6 +561,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_laliga(schema: str = "public", name: str = "laliga"):
     """
 ---------------------------------------------------------------------------
@@ -618,6 +606,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_market(schema: str = "public", name: str = "market"):
     """
 ---------------------------------------------------------------------------
@@ -647,6 +636,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_pop_growth(schema: str = "public", name: str = "pop_growth"):
     """
 ---------------------------------------------------------------------------
@@ -685,6 +675,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_smart_meters(schema: str = "public", name: str = "smart_meters"):
     """
 ---------------------------------------------------------------------------
@@ -715,6 +706,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_titanic(schema: str = "public", name: str = "titanic"):
     """
 ---------------------------------------------------------------------------
@@ -760,6 +752,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_winequality(schema: str = "public", name: str = "winequality"):
     """
 ---------------------------------------------------------------------------
@@ -805,6 +798,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_world(schema: str = "public", name: str = "world"):
     """
 ---------------------------------------------------------------------------

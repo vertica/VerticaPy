@@ -59,6 +59,7 @@ from verticapy.toolbox import *
 
 #
 # ---#
+@save_verticapy_logs
 def import_lib_udf(udf_list: list, library_name: str, include_dependencies: list = []):
     """
 ---------------------------------------------------------------------------
@@ -84,17 +85,6 @@ include_dependencies: list, optional
 	Library files dependencies. The function will copy paste the different files
 	in the UDF definition.
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="import_lib_udf",
-        path="udf",
-        json_dict={
-            "udf_list": udf_list,
-            "library_name": library_name,
-            "include_dependencies": include_dependencies,
-        },
-    )
-    # -#
     directory = os.path.dirname(verticapy.__file__)
     session_name = get_session()
     file_name = f"{library_name}_{session_name}.py"
@@ -119,6 +109,7 @@ include_dependencies: list, optional
 
 
 # ---#
+@save_verticapy_logs
 def create_lib_udf(
     udf_list: list,
     library_name: str,
@@ -160,19 +151,6 @@ Returns
 udx_str, sql
     UDF py file, str needed to install the library.
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="create_lib_udf",
-        path="udf",
-        json_dict={
-            "udf_list": udf_list,
-            "library_name": library_name,
-            "include_dependencies": include_dependencies,
-            "file_path": file_path,
-            "create_file": create_file,
-        },
-    )
-    # -#
     if isinstance(include_dependencies, (str)):
         include_dependencies = [include_dependencies]
     if not (isinstance(include_dependencies, (list))):

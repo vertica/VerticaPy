@@ -60,6 +60,7 @@ from verticapy.datasets import gen_meshgrid
 from verticapy import vDataFrame
 
 # ---#
+@save_verticapy_logs
 def create_index(
     vdf: vDataFrame,
     gid: str,
@@ -107,21 +108,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="create_index",
-        path="geo",
-        json_dict={
-            "vdf": vdf,
-            "gid": gid,
-            "g": g,
-            "index": index,
-            "overwrite": overwrite,
-            "max_mem_mb": max_mem_mb,
-            "skip_nonindexable_polygons": skip_nonindexable_polygons,
-        },
-    )
-    # -#
     check_types(
         [
             ("vdf", vdf, [vDataFrame]),
@@ -158,6 +144,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def coordinate_converter(
     vdf: vDataFrame,
     x: str,
@@ -192,20 +179,6 @@ Returns
 vDataFrame
     result of the transformation.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="coordinate_converter",
-        path="geo",
-        json_dict={
-            "vdf": vdf,
-            "x": x,
-            "y": y,
-            "x0": x0,
-            "earth_radius": earth_radius,
-            "reverse": reverse,
-        },
-    )
-    # -#
     check_types(
         [
             ("vdf", vdf, [vDataFrame]),
@@ -236,6 +209,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def describe_index(name: str = "", list_polygons: bool = False):
     """
 ---------------------------------------------------------------------------
@@ -257,13 +231,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="describe_index",
-        path="geo",
-        json_dict={"name": name, "list_polygons": list_polygons,},
-    )
-    # -#
     check_types([("name", name, [str]), ("list_polygons", list_polygons, [bool])])
 
     if not (name):
@@ -283,6 +250,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def intersect(
     vdf: vDataFrame, index: str, gid: str, g: str = "", x: str = "", y: str = ""
 ):
@@ -312,13 +280,6 @@ Returns
 vDataFrame
     object containing the result of the intersection.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="intersect",
-        path="geo",
-        json_dict={"vdf": vdf, "index": index, "gid": gid, "g": g, "x": x, "y": y,},
-    )
-    # -#
     check_types(
         [
             ("vdf", vdf, [vDataFrame]),
@@ -361,6 +322,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def rename_index(source: str, dest: str, overwrite: bool = False):
     """
 ---------------------------------------------------------------------------
@@ -381,13 +343,6 @@ Returns
 bool
     True if the index was renamed, False otherwise.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="rename_index",
-        path="geo",
-        json_dict={"source": source, "dest": dest, "overwrite": overwrite,},
-    )
-    # -#
     check_types(
         [
             ("source", source, [str]),
@@ -414,6 +369,7 @@ bool
 
 
 # ---#
+@save_verticapy_logs
 def split_polygon_n(p: str, nbins: int = 100):
     """
 ---------------------------------------------------------------------------
@@ -436,11 +392,6 @@ Returns
 vDataFrame
     output vDataFrame that includes the new polygons.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="split_polygon_n", path="geo", json_dict={"p": p, "nbins": nbins,},
-    )
-    # -#
     check_types([("p", p, [str]), ("nbins", nbins, [int])])
 
     sql = """SELECT /*+LABEL(split_polygon_n)*/

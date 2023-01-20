@@ -442,6 +442,7 @@ col_sample_by_tree: float, optional
     which are chosen at random, used when building each tree.
     """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -451,20 +452,6 @@ col_sample_by_tree: float, optional
         sample: float = 0.632,
         col_sample_by_tree: float = 1.0,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="IsolationForest",
-            path="learn.ensemble",
-            json_dict={
-                "name": name,
-                "n_estimators": n_estimators,
-                "max_depth": max_depth,
-                "nbins": nbins,
-                "sample": sample,
-                "col_sample_by_tree": col_sample_by_tree,
-            },
-        )
-        # -#
         version(condition=[12, 0, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "IsolationForest", name
@@ -677,35 +664,36 @@ training-time and outputting a class with the mode.
 Parameters
 ----------
 name: str
-  Name of the the model. The model will be stored in the DB.
+    Name of the the model. The model will be stored in the DB.
 n_estimators: int, optional
-  The number of trees in the forest, an integer between 1 and 1000, inclusive.
+    The number of trees in the forest, an integer between 1 and 1000, inclusive.
 max_features: int/str, optional
-  The number of randomly chosen features from which to pick the best feature 
-  to split on a given tree node. It can be an integer or one of the two following
-  methods.
-    auto : square root of the total number of predictors.
-    max  : number of predictors.
+    The number of randomly chosen features from which to pick the best feature 
+    to split on a given tree node. It can be an integer or one of the two following
+    methods.
+        auto : square root of the total number of predictors.
+        max  : number of predictors.
 max_leaf_nodes: int, optional
-  The maximum number of leaf nodes a tree in the forest can have, an integer 
-  between 1 and 1e9, inclusive.
+    The maximum number of leaf nodes a tree in the forest can have, an integer 
+    between 1 and 1e9, inclusive.
 sample: float, optional
-  The portion of the input data set that is randomly picked for training each tree, 
-  a float between 0.0 and 1.0, inclusive. 
+    The portion of the input data set that is randomly picked for training each tree, 
+    a float between 0.0 and 1.0, inclusive. 
 max_depth: int, optional
-  The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
+    The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
 min_samples_leaf: int, optional
-  The minimum number of samples each branch must have after splitting a node, an 
-  integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
-  is discarded. 
+    The minimum number of samples each branch must have after splitting a node, an 
+    integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
+    is discarded. 
 min_info_gain: float, optional
-  The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
-  A split with information gain less than this threshold is discarded.
+    The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
+    A split with information gain less than this threshold is discarded.
 nbins: int, optional 
-  The number of bins to use for continuous features, an integer between 2 and 1000, 
-  inclusive.
-  """
+    The number of bins to use for continuous features, an integer between 2 and 1000, 
+    inclusive.
+    """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -718,23 +706,6 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="RandomForestClassifier",
-            path="learn.ensemble",
-            json_dict={
-                "name": name,
-                "n_estimators": n_estimators,
-                "max_features": max_features,
-                "max_leaf_nodes": max_leaf_nodes,
-                "sample": sample,
-                "max_depth": max_depth,
-                "min_samples_leaf": min_samples_leaf,
-                "min_info_gain": min_info_gain,
-                "nbins": nbins,
-            },
-        )
-        # -#
         version(condition=[8, 1, 1])
         check_types([("name", name, [str], False)])
         self.type, self.name = "RandomForestClassifier", name
@@ -764,35 +735,36 @@ and outputting a class with the mode.
 Parameters
 ----------
 name: str
-  Name of the the model. The model will be stored in the DB.
+    Name of the the model. The model will be stored in the DB.
 n_estimators: int, optional
-  The number of trees in the forest, an integer between 1 and 1000, inclusive.
+    The number of trees in the forest, an integer between 1 and 1000, inclusive.
 max_features: int/str, optional
-  The number of randomly chosen features from which to pick the best feature 
-  to split on a given tree node. It can be an integer or one of the two following
-  methods.
-    auto : square root of the total number of predictors.
-    max  : number of predictors.
+    The number of randomly chosen features from which to pick the best feature 
+    to split on a given tree node. It can be an integer or one of the two following
+    methods.
+        auto : square root of the total number of predictors.
+        max  : number of predictors.
 max_leaf_nodes: int, optional
-  The maximum number of leaf nodes a tree in the forest can have, an integer 
-  between 1 and 1e9, inclusive.
+    The maximum number of leaf nodes a tree in the forest can have, an integer 
+    between 1 and 1e9, inclusive.
 sample: float, optional
-  The portion of the input data set that is randomly picked for training each tree, 
-  a float between 0.0 and 1.0, inclusive. 
+    The portion of the input data set that is randomly picked for training each tree, 
+    a float between 0.0 and 1.0, inclusive. 
 max_depth: int, optional
-  The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
+    The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
 min_samples_leaf: int, optional
-  The minimum number of samples each branch must have after splitting a node, an 
-  integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
-  is discarded. 
+    The minimum number of samples each branch must have after splitting a node, an 
+    integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
+    is discarded. 
 min_info_gain: float, optional
-  The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
-  A split with information gain less than this threshold is discarded.
+    The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
+    A split with information gain less than this threshold is discarded.
 nbins: int, optional 
-  The number of bins to use for continuous features, an integer between 2 and 1000, 
-  inclusive.
-  """
+    The number of bins to use for continuous features, an integer between 2 and 1000, 
+    inclusive.
+    """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -805,23 +777,6 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="RandomForestRegressor",
-            path="learn.ensemble",
-            json_dict={
-                "name": name,
-                "n_estimators": n_estimators,
-                "max_features": max_features,
-                "max_leaf_nodes": max_leaf_nodes,
-                "sample": sample,
-                "max_depth": max_depth,
-                "min_samples_leaf": min_samples_leaf,
-                "min_info_gain": min_info_gain,
-                "nbins": nbins,
-            },
-        )
-        # -#
         version(condition=[9, 0, 1])
         check_types([("name", name, [str], False)])
         self.type, self.name = "RandomForestRegressor", name
@@ -887,6 +842,7 @@ col_sample_by_node: float, optional
     chosen at random, to use when evaluating each split.
     """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -902,26 +858,6 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="XGBoostClassifier",
-            path="learn.ensemble",
-            json_dict={
-                "name": name,
-                "max_ntree": max_ntree,
-                "max_depth": max_depth,
-                "nbins": nbins,
-                "split_proposal_method": split_proposal_method,
-                "tol": tol,
-                "learning_rate": learning_rate,
-                "min_split_loss": min_split_loss,
-                "weight_reg": weight_reg,
-                "sample": sample,
-                "col_sample_by_tree": col_sample_by_tree,
-                "col_sample_by_node": col_sample_by_node,
-            },
-        )
-        # -#
         version(condition=[10, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "XGBoostClassifier", name
@@ -992,6 +928,7 @@ col_sample_by_node: float, optional
     chosen at random, to use when evaluating each split.
     """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -1007,26 +944,6 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="XGBoostRegressor",
-            path="learn.ensemble",
-            json_dict={
-                "name": name,
-                "max_ntree": max_ntree,
-                "max_depth": max_depth,
-                "nbins": nbins,
-                "split_proposal_method": split_proposal_method,
-                "tol": tol,
-                "learning_rate": learning_rate,
-                "min_split_loss": min_split_loss,
-                "weight_reg": weight_reg,
-                "sample": sample,
-                "col_sample_by_tree": col_sample_by_tree,
-                "col_sample_by_node": col_sample_by_node,
-            },
-        )
-        # -#
         version(condition=[10, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "XGBoostRegressor", name

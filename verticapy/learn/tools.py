@@ -125,6 +125,7 @@ int
 
 
 # ---#
+@save_verticapy_logs
 def load_model(name: str, input_relation: str = "", test_relation: str = ""):
     """
 ---------------------------------------------------------------------------
@@ -147,17 +148,6 @@ Returns
 model
     The model.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="load_model",
-        path="learn.tools",
-        json_dict={
-            "name": name,
-            "input_relation": input_relation,
-            "test_relation": test_relation,
-        },
-    )
-    # -#
     check_types(
         [
             ("name", name, [str]),

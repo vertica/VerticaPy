@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import os, math, shutil, re, time, decimal, warnings, datetime
+import os, math, shutil, re, time, decimal, warnings, datetime, inspect
 from typing import Union
 
 # VerticaPy Modules
@@ -68,7 +68,42 @@ except:
     pass
 
 #
+# Decorators
+#
 # ---#
+def save_verticapy_logs(func):
+    """
+---------------------------------------------------------------------------
+save_verticapy_logs decorator. It is used to simplify the code and
+to easily pick up which function to save to the QUERY PROFILES table.
+    """
+
+    def func_prec_save_logs(*args, **kwargs):
+
+        name = func.__code__.co_name
+        path = os.path.basename(inspect.getfile(func))[:-3]
+        json_dict = {}
+        var_names = func.__code__.co_varnames
+        for idx, arg in enumerate(args):
+            if var_names[idx] != "self":
+                json_dict[var_names[idx]] = arg
+            else:
+                path = str(type(arg))[8:-2]
+                if "verticapy." in path:
+                    path = path.replace("verticapy.", "")
+        json_dict = {**json_dict, **kwargs}
+        save_to_query_profile(name=name, path=path, json_dict=json_dict)
+
+        return func(*args, **kwargs)
+
+    return func_prec_save_logs
+
+
+#
+# Utilities Functions
+#
+# ---#
+@save_verticapy_logs
 def compute_flextable_keys(flex_name: str, usecols: list = []):
     """
 ---------------------------------------------------------------------------
@@ -86,13 +121,6 @@ Returns
 List of tuples
     List of virtual column names and their respective data types.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="compute_flex_table_keys",
-        path="utilities",
-        json_dict={"flex_name": flex_name, "usecols": usecols},
-    )
-    # -#
     check_types(
         [("flex_name", flex_name, [str]), ("usecols", usecols, [list]),]
     )
@@ -118,6 +146,7 @@ List of tuples
 
 
 # ---#
+@save_verticapy_logs
 def compute_vmap_keys(
     expr, vmap_col: str, limit: int = 100,
 ):
@@ -143,13 +172,6 @@ List of tuples
     """
     from verticapy import vDataFrame
 
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="compute_vmap_keys",
-        path="utilities",
-        json_dict={"expr": expr, "vmap_col": vmap_col, "limit": limit,},
-    )
-    # -#
     check_types(
         [
             ("expr", expr, [str, vDataFrame]),
@@ -673,16 +695,13 @@ list of tuples
 
 
 # ---#
+@save_verticapy_logs
 def help_start():
     """
 ---------------------------------------------------------------------------
 VERTICAPY Interactive Help (FAQ).
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="help_start", path="utilities", json_dict={},
-    )
-    # -#
+
     try:
         from IPython.core.display import HTML, display, Markdown
     except:
@@ -757,6 +776,7 @@ def init_interactive_mode(all_interactive=False):
 
 
 # ---#
+@save_verticapy_logs
 def insert_into(
     table_name: str,
     data: list,
@@ -796,19 +816,6 @@ See Also
 --------
 pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="insert_into",
-        path="utilities",
-        json_dict={
-            "table_name": table_name,
-            "schema": schema,
-            "column_names": column_names,
-            "copy": copy,
-            "genSQL": genSQL,
-        },
-    )
-    # -#
     check_types(
         [
             ("table_name", table_name, [str]),
@@ -985,6 +992,7 @@ bool
 
 
 # ---#
+@save_verticapy_logs
 def pandas_to_vertica(
     df,
     name: str = "",
@@ -1041,20 +1049,6 @@ See Also
 read_csv  : Ingests a  CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="pandas_to_vertica",
-        path="utilities",
-        json_dict={
-            "name": name,
-            "schema": schema,
-            "parse_nrows": parse_nrows,
-            "dtype": dtype,
-            "temp_path": temp_path,
-            "insert": insert,
-        },
-    )
-    # -#
     check_types(
         [
             ("name", name, [str]),
@@ -1572,40 +1566,8 @@ See Also
 --------
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    # Saving information to the query profile table
     from verticapy import vDataFrame
 
-    if not (sep):
-        sep = ""
-    save_to_query_profile(
-        name="read_csv",
-        path="utilities",
-        json_dict={
-            "path": path,
-            "schema": schema,
-            "table_name": table_name,
-            "sep": sep,
-            "header": header,
-            "header_names": header_names,
-            "na_rep": na_rep,
-            "quotechar": quotechar,
-            "escape": escape,
-            "record_terminator": record_terminator,
-            "trim": trim,
-            "omit_empty_keys": omit_empty_keys,
-            "reject_on_duplicate": reject_on_duplicate,
-            "reject_on_empty_key": reject_on_empty_key,
-            "reject_on_materialized_type_error": reject_on_materialized_type_error,
-            "genSQL": genSQL,
-            "parse_nrows": parse_nrows,
-            "insert": insert,
-            "temporary_table": temporary_table,
-            "temporary_local_table": temporary_local_table,
-            "gen_tmp_table_name": gen_tmp_table_name,
-            "ingest_local": ingest_local,
-        },
-    )
-    # -#
     check_types(
         [
             ("path", path, [str]),
@@ -1865,6 +1827,7 @@ read_json : Ingests a JSON file into the Vertica database.
 
 
 # ---#
+@save_verticapy_logs
 def read_file(
     path: str,
     schema: str = "",
@@ -1942,27 +1905,6 @@ vDataFrame
     version(condition=[11, 1, 1])
     from verticapy import vDataFrame
 
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="read_file",
-        path="utilities",
-        json_dict={
-            "path": path,
-            "schema": schema,
-            "table_name": table_name,
-            "dtype": dtype,
-            "max_files": max_files,
-            "genSQL": genSQL,
-            "unknown": unknown,
-            "varchar_varbinary_length": varchar_varbinary_length,
-            "temporary_table": temporary_table,
-            "temporary_local_table": temporary_local_table,
-            "gen_tmp_table_name": gen_tmp_table_name,
-            "ingest_local": ingest_local,
-            "insert": insert,
-        },
-    )
-    # -#
     check_types(
         [
             ("path", path, [str]),
@@ -2120,6 +2062,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def read_json(
     path: str,
     schema: str = "",
@@ -2250,37 +2193,8 @@ See Also
 --------
 read_csv : Ingests a CSV file into the Vertica database.
 	"""
-    # Saving information to the query profile table
     from verticapy import vDataFrame
 
-    save_to_query_profile(
-        name="read_json",
-        path="utilities",
-        json_dict={
-            "path": path,
-            "schema": schema,
-            "table_name": table_name,
-            "usecols": usecols,
-            "new_name": new_name,
-            "insert": insert,
-            "temporary_table": temporary_table,
-            "temporary_local_table": temporary_local_table,
-            "gen_tmp_table_name": gen_tmp_table_name,
-            "ingest_local": ingest_local,
-            "start_point": start_point,
-            "record_terminator": record_terminator,
-            "suppress_nonalphanumeric_key_chars": suppress_nonalphanumeric_key_chars,
-            "reject_on_materialized_type_error": reject_on_materialized_type_error,
-            "reject_on_duplicate": reject_on_duplicate,
-            "reject_on_empty_key": reject_on_empty_key,
-            "flatten_arrays": flatten_arrays,
-            "flatten_maps": flatten_maps,
-            "genSQL": genSQL,
-            "materialize": materialize,
-            "use_complex_dt": use_complex_dt,
-        },
-    )
-    # -#
     check_types(
         [
             ("path", path, [str]),
@@ -2550,6 +2464,7 @@ read_csv : Ingests a CSV file into the Vertica database.
 
 
 # ---#
+@save_verticapy_logs
 def read_shp(
     path: str, schema: str = "public", table_name: str = "",
 ):
@@ -2572,13 +2487,6 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="read_shp",
-        path="utilities",
-        json_dict={"path": path, "schema": schema, "table_name": table_name,},
-    )
-    # -#
     check_types(
         [
             ("path", path, [str]),
@@ -2613,6 +2521,7 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def readSQL(query: str, time_on: bool = False, limit: int = 100):
     """
     ---------------------------------------------------------------------------
@@ -2632,13 +2541,6 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     tablesample
         Result of the query.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="readSQL",
-        path="utilities",
-        json_dict={"query": query, "time_on": time_on, "limit": limit,},
-    )
-    # -#
     check_types(
         [
             ("query", query, [str]),

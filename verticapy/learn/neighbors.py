@@ -82,14 +82,8 @@ p: int, optional
 	to compute the model).
 	"""
 
+    @save_verticapy_logs
     def __init__(self, name: str, p: int = 2):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="NearestCentroid",
-            path="learn.neighbors",
-            json_dict={"name": name, "p": p,},
-        )
-        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "NearestCentroid", name
         self.set_params({"p": p})
@@ -200,14 +194,8 @@ p: int, optional
 	to compute the model).
 	"""
 
+    @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="KNeighborsClassifier",
-            path="learn.neighbors",
-            json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
-        )
-        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsClassifier", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
@@ -990,6 +978,7 @@ xlim: list, optional
     List of tuples use to compute the kernel window.
     """
 
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -1003,23 +992,6 @@ xlim: list, optional
         xlim: list = [],
         **kwargs,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="KernelDensity",
-            path="learn.neighbors",
-            json_dict={
-                "name": name,
-                "nbins": nbins,
-                "p": p,
-                "bandwidth": bandwidth,
-                "kernel": kernel,
-                "max_leaf_nodes": int(max_leaf_nodes),
-                "max_depth": int(max_depth),
-                "min_samples_leaf": int(min_samples_leaf),
-                "xlim": xlim,
-            },
-        )
-        # -#
         check_types(
             [
                 ("name", name, [str], False),
@@ -1369,14 +1341,8 @@ p: int, optional
 	the model computation).
 	"""
 
+    @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="KNeighborsRegressor",
-            path="learn.neighbors",
-            json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
-        )
-        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsRegressor", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
@@ -1619,14 +1585,8 @@ p: int, optional
 	The p of the p-distances (distance metric used during the model computation).
 	"""
 
+    @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="LocalOutlierFactor",
-            path="learn.neighbors",
-            json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
-        )
-        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "LocalOutlierFactor", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
