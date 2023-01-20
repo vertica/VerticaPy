@@ -84,7 +84,7 @@ to easily pick up which function to save to the QUERY PROFILES table.
         path = os.path.basename(inspect.getfile(func))[:-3]
         json_dict = {}
         var_names = func.__code__.co_varnames
-        if len(arg) == len(var_names):
+        if len(args) == len(var_names):
             for idx, arg in enumerate(args):
                 if var_names[idx] != "self":
                     if (
