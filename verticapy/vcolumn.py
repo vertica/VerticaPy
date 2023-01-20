@@ -257,11 +257,11 @@ Attributes
 
     # ---#
     def __repr__(self):
-        return self.head(limit=verticapy.options["max_rows"]).__repr__()
+        return self.head(limit=verticapy.OPTIONS["max_rows"]).__repr__()
 
     # ---#
     def _repr_html_(self):
-        return self.head(limit=verticapy.options["max_rows"])._repr_html_()
+        return self.head(limit=verticapy.OPTIONS["max_rows"])._repr_html_()
 
     # ---#
     def __setattr__(self, attr, val):
@@ -1283,7 +1283,7 @@ Attributes
         kernel = kernel.lower()
         from verticapy.learn.neighbors import KernelDensity
 
-        schema = verticapy.options["temp_schema"]
+        schema = verticapy.OPTIONS["temp_schema"]
         if not (schema):
             schema = "public"
         name = gen_tmp_name(schema=schema, name="kde")
@@ -1566,7 +1566,7 @@ Attributes
         )
         method = method.lower()
         if self.isnum() and method == "smart":
-            schema = verticapy.options["temp_schema"]
+            schema = verticapy.OPTIONS["temp_schema"]
             if not (schema):
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
@@ -2220,7 +2220,7 @@ Attributes
                 pass
             total = int(total)
             conj = "s were " if total > 1 else " was "
-            if verticapy.options["print_info"]:
+            if verticapy.OPTIONS["print_info"]:
                 print("{} element{}filled.".format(total, conj))
             self.parent.__add_to_history__(
                 "[Fillna]: {} {} missing value{} filled.".format(
@@ -2228,7 +2228,7 @@ Attributes
                 )
             )
         else:
-            if verticapy.options["print_info"]:
+            if verticapy.OPTIONS["print_info"]:
                 print("Nothing was filled.")
             self.transformations = [elem for elem in copy_trans]
             for elem in sauv:
@@ -2894,7 +2894,7 @@ Attributes
                 self.alias, response
             )
         )
-        if verticapy.options["print_info"]:
+        if verticapy.OPTIONS["print_info"]:
             print("The mean encoding was successfully done.")
         return self.parent
 

@@ -231,7 +231,7 @@ p: int, optional
                 ("index", index, [str]),
             ]
         )
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -300,7 +300,7 @@ p: int, optional
                      FROM ({1}) distance_table""".format(
                 self.parameters["eps"], sql
             )
-            if isinstance(verticapy.options["random_state"], int):
+            if isinstance(verticapy.OPTIONS["random_state"], int):
                 order_by = "ORDER BY node_id, nn_id"
             else:
                 order_by = ""

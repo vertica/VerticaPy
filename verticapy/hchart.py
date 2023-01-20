@@ -111,7 +111,7 @@ def hchart(line, cell="", local_ns=None):
                     raise ParameterError("Duplicate option '-k'.")
                 options["-k"] = all_options_dict[option]
 
-        elif verticapy.options["print_info"]:
+        elif verticapy.OPTIONS["print_info"]:
             warning_message = (
                 f"\u26A0 Warning : The option '{option}' doesn't " "exist - skipping."
             )

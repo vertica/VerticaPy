@@ -252,7 +252,7 @@ max_text_size: int, optional
         check_types(
             [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
         )
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)

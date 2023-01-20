@@ -203,7 +203,7 @@ final_relation_: vDataFrame
         self.type, self.name = "AutoDataPrep", name
         if not (self.name):
             self.name = gen_tmp_name(
-                schema=verticapy.options["temp_schema"], name="autodataprep"
+                schema=verticapy.OPTIONS["temp_schema"], name="autodataprep"
             )
         self.parameters = {
             "cat_method": cat_method,
@@ -250,12 +250,12 @@ final_relation_: vDataFrame
     object
         the cleaned relation
         """
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
-        current_print_info = verticapy.options["print_info"]
-        verticapy.options["print_info"] = False
+        current_print_info = verticapy.OPTIONS["print_info"]
+        verticapy.OPTIONS["print_info"] = False
         assert not (by) or (ts), ParameterError(
             "Parameter 'by' must be empty if 'ts' is not defined."
         )
@@ -421,7 +421,7 @@ final_relation_: vDataFrame
         if self.parameters["save"]:
             vdf.to_db(name=self.name, relation_type="table", inplace=True)
         self.final_relation_ = vdf
-        verticapy.options["print_info"] = current_print_info
+        verticapy.OPTIONS["print_info"] = current_print_info
         return self.final_relation_
 
 
@@ -536,7 +536,7 @@ model_: object
     object
         clustering model
         """
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -568,7 +568,7 @@ model_: object
             )
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mBuilding the Final Model\033[0m\033[0m\n")
-        if verticapy.options["tqdm"] and self.parameters["print_info"]:
+        if verticapy.OPTIONS["tqdm"] and self.parameters["print_info"]:
             from tqdm.auto import tqdm
 
             loop = tqdm(range(1))
@@ -783,7 +783,7 @@ model_grid_ : tablesample
     object
         model grid
         """
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -964,7 +964,7 @@ model_grid_ : tablesample
             self.preprocess_ = None
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoML\033[0m\033[0m\n")
-        if verticapy.options["tqdm"] and self.parameters["print_info"]:
+        if verticapy.OPTIONS["tqdm"] and self.parameters["print_info"]:
             from tqdm.auto import tqdm
 
             loop = tqdm(self.parameters["estimator"])

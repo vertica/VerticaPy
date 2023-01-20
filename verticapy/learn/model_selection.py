@@ -219,7 +219,7 @@ tablesample
             elif elem == "max":
                 result["max_features"][idx] = int(len(X))
     result = tablesample(result).to_sql()
-    schema = verticapy.options["temp_schema"]
+    schema = verticapy.OPTIONS["temp_schema"]
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
     drop(relation, method="table")
@@ -228,7 +228,7 @@ tablesample
         print(
             f"\033[1m\033[4mStep 2 - Fitting the RF model with the hyperparameters data\033[0m\033[0m\n"
         )
-    if verticapy.options["tqdm"] and print_info:
+    if verticapy.OPTIONS["tqdm"] and print_info:
         from tqdm.auto import tqdm
 
         loop = tqdm(range(1))
@@ -398,9 +398,9 @@ int
         L.sort()
     schema, relation = schema_relation(input_relation)
     if not (schema):
-        schema = verticapy.options["temp_schema"]
+        schema = verticapy.OPTIONS["temp_schema"]
     schema = quote_ident(schema)
-    if verticapy.options["tqdm"] and (
+    if verticapy.OPTIONS["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         from tqdm.auto import tqdm
@@ -561,7 +561,7 @@ tablesample
     if training_score:
         result_train = {"index": final_metrics}
     total_time = []
-    if verticapy.options["tqdm"] and (
+    if verticapy.OPTIONS["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         from tqdm.auto import tqdm
@@ -574,7 +574,7 @@ tablesample
             estimator.drop()
         except:
             pass
-        random_state = verticapy.options["random_state"]
+        random_state = verticapy.OPTIONS["random_state"]
         random_state = (
             random.randint(-10e6, 10e6) if not (random_state) else random_state + i
         )
@@ -816,7 +816,7 @@ tablesample
     else:
         L = n_cluster
         L.sort()
-    if verticapy.options["tqdm"]:
+    if verticapy.OPTIONS["tqdm"]:
         from tqdm.auto import tqdm
 
         loop = tqdm(L)
@@ -949,11 +949,11 @@ tablesample
             estimator_type = "enet"
     if estimator_type == "logit":
         estimator = LogisticRegression(
-            gen_tmp_name(schema=verticapy.options["temp_schema"], name="logit")
+            gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="logit")
         )
     else:
         estimator = ElasticNet(
-            gen_tmp_name(schema=verticapy.options["temp_schema"], name="enet")
+            gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="enet")
         )
     result = bayesian_search_cv(
         estimator,
@@ -1697,7 +1697,7 @@ tablesample
     if all_configuration == []:
         all_configuration = [{}]
     if (
-        verticapy.options["tqdm"]
+        verticapy.OPTIONS["tqdm"]
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
@@ -1911,7 +1911,7 @@ tablesample
         input_relation = vDataFrameSQL(input_relation)
     lc_result_final = []
     sizes = sorted(set(sizes))
-    if verticapy.options["tqdm"]:
+    if verticapy.OPTIONS["tqdm"]:
         from tqdm.auto import tqdm
 
         loop = tqdm(sizes)
@@ -2508,7 +2508,7 @@ tablesample
             if config not in all_configuration:
                 all_configuration += [config]
     if (
-        verticapy.options["tqdm"]
+        verticapy.OPTIONS["tqdm"]
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
@@ -2984,7 +2984,7 @@ tablesample
             ("x_order", x_order, ["pearson", "spearman", "random", "none"]),
         ]
     )
-    if not (verticapy.options["overwrite_model"]):
+    if not (verticapy.OPTIONS["overwrite_model"]):
         does_model_exist(name=estimator.name, raise_error=True)
     result, current_step = [], 0
     table = (
@@ -3015,7 +3015,7 @@ tablesample
             X.reverse()
     if print_info:
         print("\033[1m\033[4mStarting Stepwise\033[0m\033[0m")
-    if verticapy.options["tqdm"] and print_info:
+    if verticapy.OPTIONS["tqdm"] and print_info:
         from tqdm.auto import tqdm
 
         loop = tqdm(range(len(X)))

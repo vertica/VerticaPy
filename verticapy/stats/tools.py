@@ -231,9 +231,9 @@ tablesample
     ts = vdf.format_colnames(ts)
     column = vdf.format_colnames(column)
     by = vdf.format_colnames(by)
-    name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
     relation_name = gen_tmp_name(
-        schema=verticapy.options["temp_schema"], name="linear_reg_view"
+        schema=verticapy.OPTIONS["temp_schema"], name="linear_reg_view"
     )
     drop(name, method="model")
     drop(relation_name, method="view")
@@ -369,11 +369,11 @@ model
     model_tmp = type(model)(name)
     model_tmp.set_params(param)
     X, y = model.X, model.y
-    print_info = verticapy.options["print_info"]
-    verticapy.options["print_info"] = False
+    print_info = verticapy.OPTIONS["print_info"]
+    verticapy.OPTIONS["print_info"] = False
     if prais_winsten:
         vdf_tmp = vdf_tmp[X + [y, ts]].dropna()
-    verticapy.options["print_info"] = print_info
+    verticapy.OPTIONS["print_info"] = print_info
     prediction_name = gen_tmp_name(name="prediction")[1:-1]
     eps_name = gen_tmp_name(name="eps")[1:-1]
     model.predict(vdf_tmp, X=X, name=prediction_name)
@@ -486,7 +486,7 @@ tablesample
 
     from verticapy.learn.linear_model import LinearRegression
 
-    name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         model.fit(vdf, X, eps)
@@ -575,7 +575,7 @@ tablesample
     vdf_lags = vDataFrameSQL(query)
     from verticapy.learn.linear_model import LinearRegression
 
-    name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
@@ -641,7 +641,7 @@ tablesample
 
     from verticapy.learn.linear_model import LinearRegression
 
-    name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     vdf_copy = vdf.copy()
     vdf_copy["v_eps2"] = vdf_copy[eps] ** 2
@@ -743,7 +743,7 @@ tablesample
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
     from verticapy.learn.linear_model import LinearRegression
 
-    name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
@@ -811,7 +811,7 @@ tablesample
 
     from verticapy.learn.linear_model import LinearRegression
 
-    name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         model.fit(vdf_white, variables_names, "v_eps2")
@@ -1263,7 +1263,7 @@ vDataFrame
         for i in range(1, polynomial_order + 1):
             vdf_poly[f"t_{i}"] = f"POWER(ROW_NUMBER() OVER ({by}ORDER BY {ts}), {i})"
             X += [f"t_{i}"]
-        name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
 
         from verticapy.learn.linear_model import LinearRegression
 
@@ -1308,7 +1308,7 @@ vDataFrame
             "t_sin"
         ] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
         X = ["t_cos", "t_sin"]
-        name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
 
         from verticapy.learn.linear_model import LinearRegression
 
@@ -1415,7 +1415,7 @@ float
 
         from verticapy.learn.linear_model import LinearRegression
 
-        name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
         model = LinearRegression(name)
         try:
             model.fit(vdf, X_r, y_r)

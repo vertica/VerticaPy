@@ -236,7 +236,7 @@ def executeSQL(
     query = clean_query(query)
 
     cursor = current_cursor()
-    if verticapy.options["sql_on"] and print_time_sql:
+    if verticapy.OPTIONS["sql_on"] and print_time_sql:
         print_query(query, title)
     start_time = time.time()
     if data:
@@ -247,7 +247,7 @@ def executeSQL(
     else:
         cursor.execute(query)
     elapsed_time = time.time() - start_time
-    if verticapy.options["time_on"] and print_time_sql:
+    if verticapy.OPTIONS["time_on"] and print_time_sql:
         print_time(elapsed_time)
     if method == "fetchrow":
         return cursor.fetchone()
@@ -421,13 +421,13 @@ def get_category_from_vertica_type(ctype: str = ""):
 
 # ---#
 def get_dblink_fun(query: str, symbol: str = "$"):
-    assert symbol in verticapy.options["external_connection"], ConnectionError(
+    assert symbol in verticapy.OPTIONS["external_connection"], ConnectionError(
         f"External Query detected but no corresponding Connection Identifier Database is defined (Using the symbol '{symbol}'). Use the function connect.set_external_connection to set one with the correct symbol."
     )
     return "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ()".format(
-        verticapy.options["external_connection"][symbol]["cid"].replace("'", "''"),
+        verticapy.OPTIONS["external_connection"][symbol]["cid"].replace("'", "''"),
         query.replace("'", "''"),
-        verticapy.options["external_connection"][symbol]["rowset"],
+        verticapy.OPTIONS["external_connection"][symbol]["rowset"],
     )
 
 
@@ -585,7 +585,7 @@ def get_magic_options(line: str):
 
 # ---#
 def get_random_function(rand_int=None):
-    random_state = verticapy.options["random_state"]
+    random_state = verticapy.OPTIONS["random_state"]
     if isinstance(rand_int, int):
         if isinstance(random_state, int):
             random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
@@ -993,7 +993,7 @@ def print_table(
                     color = "#999999"
                 else:
                     if isinstance(val, bool) and (
-                        verticapy.options["mode"] in ("full", None)
+                        verticapy.OPTIONS["mode"] in ("full", None)
                     ):
                         val = (
                             "<center>&#9989;</center>"
@@ -1005,7 +1005,7 @@ def print_table(
                 if (
                     (j == 0)
                     or (i == 0)
-                    or (verticapy.options["mode"] not in ("full", None))
+                    or (verticapy.OPTIONS["mode"] not in ("full", None))
                 ):
                     html_table += " #FFFFFF; "
                 elif val == "[null]":
@@ -1013,7 +1013,7 @@ def print_table(
                 else:
                     html_table += " #FAFAFA; "
                 html_table += "color: {}; white-space:nowrap; ".format(color)
-                if verticapy.options["mode"] in ("full", None):
+                if verticapy.OPTIONS["mode"] in ("full", None):
                     if (j == 0) or (i == 0):
                         html_table += "border: 1px solid #AAAAAA; "
                     else:
@@ -1039,7 +1039,7 @@ def print_table(
                     if j != 0:
                         type_val, category, missing_values = "", "", ""
                         if data_columns[j][0] in dtype and (
-                            verticapy.options["mode"] in ("full", None)
+                            verticapy.OPTIONS["mode"] in ("full", None)
                         ):
                             if dtype[data_columns[j][0]] != "undefined":
                                 type_val = dtype[data_columns[j][0]].capitalize()
@@ -1095,7 +1095,7 @@ def print_table(
                     else:
                         ctype, missing_values, category = "", "", ""
                     if (i == 0) and (j == 0):
-                        if dtype and (verticapy.options["mode"] in ("full", None)):
+                        if dtype and (verticapy.OPTIONS["mode"] in ("full", None)):
                             val = verticapy.gen_verticapy_logo_html(size="45px")
                         else:
                             val = ""
@@ -1109,7 +1109,7 @@ def print_table(
                     )
                 elif cell_width[j] > 240:
                     background = "#EEEEEE" if val == "[null]" else "#FAFAFA"
-                    if verticapy.options["mode"] not in ("full", None):
+                    if verticapy.OPTIONS["mode"] not in ("full", None):
                         background = "#FFFFFF"
                     html_table += (
                         '><input style="background-color: {0}; border: none; '
@@ -1176,7 +1176,7 @@ def replace_external_queries_in_query(query: str):
         "update ",
     )
     nb_external_queries = 0
-    for s in verticapy.options["external_connection"]:
+    for s in verticapy.OPTIONS["external_connection"]:
         external_queries = re.findall(f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", query)
         for external_query in external_queries:
             if external_query.strip().lower().startswith(sql_keyword):
@@ -1277,7 +1277,7 @@ def schema_relation(relation):
     from verticapy import vDataFrame
 
     if isinstance(relation, vDataFrame):
-        schema, relation = verticapy.options["temp_schema"], ""
+        schema, relation = verticapy.OPTIONS["temp_schema"], ""
     else:
         quote_nb = relation.count('"')
         if quote_nb not in (0, 2, 4):

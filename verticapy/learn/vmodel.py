@@ -2926,7 +2926,7 @@ class Supervised(vModel):
                 ("test_relation", test_relation, [str, vDataFrame]),
             ]
         )
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -2958,7 +2958,7 @@ class Supervised(vModel):
             "RandomForestRegressor",
             "XGBoostClassifier",
             "XGBoostRegressor",
-        ) and isinstance(verticapy.options["random_state"], int):
+        ) and isinstance(verticapy.OPTIONS["random_state"], int):
             id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
                 ", ".join(X), id_column_name
             )
@@ -3013,9 +3013,9 @@ class Supervised(vModel):
             "RandomForestRegressor",
             "XGBoostClassifier",
             "XGBoostRegressor",
-        ) and isinstance(verticapy.options["random_state"], int):
+        ) and isinstance(verticapy.OPTIONS["random_state"], int):
             query += ", seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], id_column_name
+                verticapy.OPTIONS["random_state"], id_column_name
             )
         query += ")"
         try:
@@ -4791,13 +4791,13 @@ class Unsupervised(vModel):
         check_types(
             [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
         )
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
         if self.type in ("BisectingKMeans", "IsolationForest") and isinstance(
-            verticapy.options["random_state"], int
+            verticapy.OPTIONS["random_state"], int
         ):
             id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
                 ", ".join([quote_ident(column) for column in X]), id_column_name
@@ -4904,16 +4904,16 @@ class Unsupervised(vModel):
             ["{0} = {1}".format(elem, parameters[elem]) for elem in parameters]
         )
         if self.type == "BisectingKMeans" and isinstance(
-            verticapy.options["random_state"], int
+            verticapy.OPTIONS["random_state"], int
         ):
             query += ", kmeans_seed={0}, id_column='{1}'".format(
-                verticapy.options["random_state"], id_column_name
+                verticapy.OPTIONS["random_state"], id_column_name
             )
         elif self.type == "IsolationForest" and isinstance(
-            verticapy.options["random_state"], int
+            verticapy.OPTIONS["random_state"], int
         ):
             query += ", seed={0}, id_column='{1}'".format(
-                verticapy.options["random_state"], id_column_name
+                verticapy.OPTIONS["random_state"], id_column_name
             )
         query += ")"
         try:

@@ -2063,40 +2063,40 @@ def gen_cmap(color: str = "", reverse: bool = False):
 
 # ---#
 def gen_colors():
-    if not (verticapy.options["colors"]) or not (
-        isinstance(verticapy.options["colors"], list)
+    if not (verticapy.OPTIONS["colors"]) or not (
+        isinstance(verticapy.OPTIONS["colors"], list)
     ):
-        if verticapy.options["color_style"] == "sunset":
+        if verticapy.OPTIONS["color_style"] == "sunset":
             colors = ["#36688D", "#F3CD05", "#F49F05", "#F18904", "#BDA589"]
-        elif verticapy.options["color_style"] == "rgb":
+        elif verticapy.OPTIONS["color_style"] == "rgb":
             colors = ["red", "green", "blue", "orange", "yellow", "gray"]
-        elif verticapy.options["color_style"] == "retro":
+        elif verticapy.OPTIONS["color_style"] == "retro":
             colors = ["#A7414A", "#282726", "#6A8A82", "#A37C27", "#563838"]
-        elif verticapy.options["color_style"] == "shimbg":
+        elif verticapy.OPTIONS["color_style"] == "shimbg":
             colors = ["#0444BF", "#0584F2", "#0AAFF1", "#EDF259", "#A79674"]
-        elif verticapy.options["color_style"] == "swamp":
+        elif verticapy.OPTIONS["color_style"] == "swamp":
             colors = ["#6465A5", "#6975A6", "#F3E96B", "#F28A30", "#F05837"]
-        elif verticapy.options["color_style"] == "med":
+        elif verticapy.OPTIONS["color_style"] == "med":
             colors = ["#ABA6BF", "#595775", "#583E2E", "#F1E0D6", "#BF9887"]
-        elif verticapy.options["color_style"] == "orchid":
+        elif verticapy.OPTIONS["color_style"] == "orchid":
             colors = ["#192E5B", "#1D65A6", "#72A2C0", "#00743F", "#F2A104"]
-        elif verticapy.options["color_style"] == "magenta":
+        elif verticapy.OPTIONS["color_style"] == "magenta":
             colors = ["#DAA2DA", "#DBB4DA", "#DE8CF0", "#BED905", "#93A806"]
-        elif verticapy.options["color_style"] == "orange":
+        elif verticapy.OPTIONS["color_style"] == "orange":
             colors = ["#A3586D", "#5C4A72", "#F3B05A", "#F4874B", "#F46A4E"]
-        elif verticapy.options["color_style"] == "vintage":
+        elif verticapy.OPTIONS["color_style"] == "vintage":
             colors = ["#80ADD7", "#0ABDA0", "#EBF2EA", "#D4DCA9", "#BF9D7A"]
-        elif verticapy.options["color_style"] == "vivid":
+        elif verticapy.OPTIONS["color_style"] == "vivid":
             colors = ["#C0334D", "#D6618F", "#F3D4A0", "#F1931B", "#8F715B"]
-        elif verticapy.options["color_style"] == "berries":
+        elif verticapy.OPTIONS["color_style"] == "berries":
             colors = ["#BB1924", "#EE6C81", "#F092A5", "#777CA8", "#AFBADC"]
-        elif verticapy.options["color_style"] == "refreshing":
+        elif verticapy.OPTIONS["color_style"] == "refreshing":
             colors = ["#003D73", "#0878A4", "#1ECFD6", "#EDD170", "#C05640"]
-        elif verticapy.options["color_style"] == "summer":
+        elif verticapy.OPTIONS["color_style"] == "summer":
             colors = ["#728CA3", "#73C0F4", "#E6EFF3", "#F3E4C6", "#8F4F06"]
-        elif verticapy.options["color_style"] == "tropical":
+        elif verticapy.OPTIONS["color_style"] == "tropical":
             colors = ["#7B8937", "#6B7436", "#F4D9C1", "#D72F01", "#F09E8C"]
-        elif verticapy.options["color_style"] == "india":
+        elif verticapy.OPTIONS["color_style"] == "india":
             colors = ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625"]
         else:
             colors = ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"]
@@ -2107,7 +2107,7 @@ def gen_colors():
                 colors += [c]
         return colors
     else:
-        return verticapy.options["colors"]
+        return verticapy.OPTIONS["colors"]
 
 
 # ---#

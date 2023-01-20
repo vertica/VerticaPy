@@ -347,7 +347,7 @@ papprox_ma: int, optional
             ]
         )
         # Initialization
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -808,8 +808,8 @@ papprox_ma: int, optional
             vdf=vdf, y=y, ts=ts, X=X, nlead=0, name="_verticapy_prediction_"
         )
         error_eps = 1.96 * math.sqrt(self.score(method="mse"))
-        print_info = verticapy.options["print_info"]
-        verticapy.options["print_info"] = False
+        print_info = verticapy.OPTIONS["print_info"]
+        verticapy.OPTIONS["print_info"] = False
         try:
             result = (
                 result.select([ts, y, "_verticapy_prediction_"])
@@ -819,9 +819,9 @@ papprox_ma: int, optional
                 .values
             )
         except:
-            verticapy.options["print_info"] = print_info
+            verticapy.OPTIONS["print_info"] = print_info
             raise
-        verticapy.options["print_info"] = print_info
+        verticapy.OPTIONS["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1289,7 +1289,7 @@ solver: str, optional
             ]
         )
         # Initialization
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -1521,8 +1521,8 @@ solver: str, optional
         )
         y, prediction = X[X_idx], "_verticapy_prediction_{}_".format(X_idx)
         error_eps = 1.96 * math.sqrt(self.score(method="mse").values["mse"][X_idx])
-        print_info = verticapy.options["print_info"]
-        verticapy.options["print_info"] = False
+        print_info = verticapy.OPTIONS["print_info"]
+        verticapy.OPTIONS["print_info"] = False
         try:
             result = (
                 result_all.select([ts, y, prediction])
@@ -1532,9 +1532,9 @@ solver: str, optional
                 .values
             )
         except:
-            verticapy.options["print_info"] = print_info
+            verticapy.OPTIONS["print_info"] = print_info
             raise
-        verticapy.options["print_info"] = print_info
+        verticapy.OPTIONS["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1551,16 +1551,16 @@ solver: str, optional
             ],
         )
         if dynamic:
-            print_info = verticapy.options["print_info"]
-            verticapy.options["print_info"] = False
+            print_info = verticapy.OPTIONS["print_info"]
+            verticapy.OPTIONS["print_info"] = False
             try:
                 result = (
                     result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
                 )
             except:
-                verticapy.options["print_info"] = print_info
+                verticapy.OPTIONS["print_info"] = print_info
                 raise
-            verticapy.options["print_info"] = print_info
+            verticapy.OPTIONS["print_info"] = print_info
             columns = [elem for elem in result]
             if isinstance(result[columns[0]][0], str):
                 result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
