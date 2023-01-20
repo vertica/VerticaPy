@@ -986,6 +986,7 @@ tablesample
 
 
 # ---#
+@check_minimum_version([8, 0, 0])
 @save_verticapy_logs
 def confusion_matrix(
     y_true: str,
@@ -1025,7 +1026,6 @@ tablesample
             ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
-    version(condition=[8, 0, 0])
     relation = (
         input_relation
         if isinstance(input_relation, str)
@@ -1292,6 +1292,7 @@ float
 
 
 # ---#
+@check_minimum_version([8, 0, 0])
 @save_verticapy_logs
 def multilabel_confusion_matrix(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], labels: list,
@@ -1327,7 +1328,6 @@ tablesample
             ("labels", labels, [list]),
         ]
     )
-    version(condition=[8, 0, 0])
     num_classes = str(len(labels))
     query = """SELECT 
                   CONFUSION_MATRIX(obs, response 

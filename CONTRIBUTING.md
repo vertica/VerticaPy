@@ -420,18 +420,14 @@ executeSQL("SELECT * FROM {0} LIMIT 2".format(titanic.__genSQL__()), method="fet
   135,
   'Montreal, PQ / Chesterville, ON']]
 ```
-The save_to_query_profile() method saves information about a specified VerticaPy method to the QUERY_PROFILES table in the Vertica database. You can use this to collect usage statistics on methods and their parameters.
-
-The save_to_query_profile() function uses three main parameters:
- - name: The name of the method.
- - path: The location of the method. For example, the method corr() of the vDataFrame is located in vdataframe.vDataFrame.
- - json_dict: A dictionary of the parameters to store.
+The @save_verticapy_logs decorator saves information about a specified VerticaPy method to the QUERY_PROFILES table in the Vertica database. You can use this to collect usage statistics on methods and their parameters.
 
 For example, to create a method to compute the correlations between two vDataFrame columns:
 ```python
 # Example correlation method for a vDataFrame
 
-# Add type hints
+# Add type hints + @save_verticapy_logs decorator
+@save_verticapy_logs
 def pearson(self, column1: str, column2: str):
     # Describe the function
     """
@@ -454,11 +450,6 @@ def pearson(self, column1: str, column2: str):
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
-    # Save the call in the query profile table
-    save_to_query_profile(name="pearson", # name of the function - pearson
-                          path="vdataframe.vDataFrame", # function location
-                          json_dict={"column1": column1, # function parameters
-                                     "column2": column2,},)
     # Check data types
     check_types([("column1", column1, [str]),
                  ("column2", column2, [str]),])
@@ -481,7 +472,8 @@ Same can be done with vColumn methods.
 ```python
 # Example Method for a vColumn
 
-# Add types hints
+# Add types hints + @save_verticapy_logs decorator
+@save_verticapy_logs
 def pearson(self, column: str,):
     # Describe the function
     """
@@ -503,10 +495,6 @@ def pearson(self, column: str,):
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
-    # Save the call in the query profile table
-    save_to_query_profile(name="pearson", 
-                          path="vcolumn.vColumn", 
-                          json_dict={"column": column,},)
     # Check data types
     check_types([("column", column, [str]),])
     # Check if the column belongs to the vDataFrame 
@@ -531,7 +519,8 @@ Functions will work exactly the same.
 ```python
 # Example function
 
-# Add type hints
+# Add type hints + @save_verticapy_logs decorator
+@save_verticapy_logs
 def pearson(vdf: vDataFrame, column1: str, column2: str):
     # Describe the function
     """
@@ -556,12 +545,6 @@ def pearson(vdf: vDataFrame, column1: str, column2: str):
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
-    # Save the call in the query profile table
-    save_to_query_profile(name="pearson", 
-                          path="vdataframe", 
-                          json_dict={"vdf": vdf,
-                                     "column1": column1,
-                                     "column2": column2,},)
     # Check data types
     check_types([("vdf", vdf, [vDataFrame]),
                  ("column1", column1, [str]),

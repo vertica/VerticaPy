@@ -91,6 +91,7 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
+    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -102,10 +103,9 @@ fit_intercept: bool, optional
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
-        version(condition=[8, 0, 0])
         check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LinearRegression", name
-        if version()[0] < 12 and not (fit_intercept):
+        if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
                 "versions greater or equal to 12."
@@ -155,6 +155,7 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
+    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -165,10 +166,9 @@ fit_intercept: bool, optional
         solver: str = "CGD",
         fit_intercept: bool = True,
     ):
-        version(condition=[8, 0, 0])
         check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LinearRegression", name
-        if version()[0] < 12 and not (fit_intercept):
+        if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
                 "versions greater or equal to 12."
@@ -216,6 +216,7 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
+    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -225,7 +226,6 @@ fit_intercept: bool, optional
         solver: str = "Newton",
         fit_intercept: bool = True,
     ):
-        version(condition=[8, 0, 0])
         check_types(
             [
                 ("name", name, [str]),
@@ -234,7 +234,7 @@ fit_intercept: bool, optional
             ]
         )
         self.type, self.name = "LinearRegression", name
-        if version()[0] < 12 and not (fit_intercept):
+        if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
                 "versions greater or equal to 12."
@@ -292,6 +292,7 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
+    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -304,10 +305,9 @@ fit_intercept: bool, optional
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
-        version(condition=[8, 0, 0])
         check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LogisticRegression", name
-        if version()[0] < 12 and not (fit_intercept):
+        if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
                 "versions greater or equal to 12."
@@ -366,6 +366,7 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
+    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -376,7 +377,6 @@ fit_intercept: bool, optional
         solver: str = "Newton",
         fit_intercept: bool = True,
     ):
-        version(condition=[8, 0, 0])
         check_types(
             [
                 ("name", name, [str]),
@@ -385,7 +385,7 @@ fit_intercept: bool, optional
             ]
         )
         self.type, self.name = "LinearRegression", name
-        if version()[0] < 12 and not (fit_intercept):
+        if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
                 "versions greater or equal to 12."

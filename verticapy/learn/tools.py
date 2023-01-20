@@ -674,7 +674,7 @@ model
         ):
             model.coef_ = model.get_attr("details")
         if model_type in ("xgb_classifier", "xgb_regressor"):
-            v = version()
+            v = vertica_version()
             v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
             if v:
                 model.set_params(

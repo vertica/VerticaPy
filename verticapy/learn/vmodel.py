@@ -103,7 +103,7 @@ Main Class for Vertica Model
             ):
                 name = self.tree_name if self.type == "KernelDensity" else self.name
                 try:
-                    version(condition=[9, 0, 0])
+                    vertica_version(condition=[9, 0, 0])
                     res = executeSQL(
                         "SELECT /*+LABEL('learn.vModel.__repr__')*/ GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
                             name
@@ -372,11 +372,11 @@ Main Class for Vertica Model
             check_types([("tree_id", tree_id, [int])])
             name = self.tree_name if self.type == "KernelDensity" else self.name
             if self.type in ("XGBoostClassifier", "XGBoostRegressor",):
-                version(condition=[12, 0, 3])
+                vertica_version(condition=[12, 0, 3])
                 fname = "XGB_PREDICTOR_IMPORTANCE"
                 var = "avg_gain"
             else:
-                version(condition=[9, 1, 1])
+                vertica_version(condition=[9, 1, 1])
                 fname = "RF_PREDICTOR_IMPORTANCE"
                 var = "importance_value"
             tree_id = "" if tree_id is None else f", tree_id={tree_id}"
@@ -398,7 +398,7 @@ Main Class for Vertica Model
             "LinearSVR",
         ):
             relation = self.input_relation
-            version(condition=[8, 1, 1])
+            vertica_version(condition=[8, 1, 1])
             query = """SELECT /*+LABEL('learn.vModel.features_importance')*/
                             predictor, 
                             ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, 
@@ -474,7 +474,7 @@ Main Class for Vertica Model
             "CountVectorizer",
         ):
             name = self.tree_name if self.type == "KernelDensity" else self.name
-            version(condition=[8, 1, 1])
+            vertica_version(condition=[8, 1, 1])
             result = to_tablesample(
                 query=(
                     "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS "
@@ -953,7 +953,7 @@ Main Class for Vertica Model
         if self.type in ("LinearRegression", "LogisticRegression", "SARIMAX", "VAR"):
             if "fit_intercept" in parameters:
                 check_types([("fit_intercept", parameters["fit_intercept"], [bool])])
-                if version()[0] >= 12:
+                if vertica_version()[0] >= 12:
                     model_parameters["fit_intercept"] = parameters["fit_intercept"]
             if "solver" in parameters:
                 check_types([("solver", parameters["solver"], [str])])
@@ -1541,7 +1541,7 @@ Main Class for Vertica Model
                 model_parameters["sample"] = default_parameters["sample"]
             else:
                 model_parameters["sample"] = self.parameters["sample"]
-            v = version()
+            v = vertica_version()
             v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
             if v:
                 if "col_sample_by_tree" in parameters:
@@ -3109,6 +3109,7 @@ class Tree:
         )
 
     # ---#
+    @check_minimum_version([9, 1, 1])
     def get_tree(self, tree_id: int = 0):
         """
 	---------------------------------------------------------------------------
@@ -3126,7 +3127,6 @@ class Tree:
 		utilities.tablesample.
 		"""
         check_types([("tree_id", tree_id, [int, float])])
-        version(condition=[9, 1, 1])
         name = self.tree_name if self.type == "KernelDensity" else self.name
         query = """SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS 
                                         model_name = '{0}', 
@@ -3219,10 +3219,10 @@ class Tree:
         check_types([("tree_id", tree_id, [int, float])])
         name = self.tree_name if self.type == "KernelDensity" else self.name
         if self.type in ("XGBoostClassifier", "XGBoostRegressor",):
-            version(condition=[12, 0, 3])
+            vertica_version(condition=[12, 0, 3])
             fname = "XGB_PREDICTOR_IMPORTANCE"
         else:
-            version(condition=[9, 1, 1])
+            vertica_version(condition=[9, 1, 1])
             fname = "RF_PREDICTOR_IMPORTANCE"
         tree_id = "" if tree_id is None else f", tree_id={tree_id}"
         query = f"SELECT {fname} (USING PARAMETERS model_name = '{name}'{tree_id})"

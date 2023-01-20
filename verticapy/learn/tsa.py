@@ -104,6 +104,7 @@ papprox_ma: int, optional
     the p of the AR(p) used to approximate the MA coefficients.
     """
 
+    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -155,7 +156,6 @@ papprox_ma: int, optional
             ), ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
-        version(condition=[8, 0, 0])
 
     # ---#
     def deploySQL(self):
@@ -1136,6 +1136,7 @@ solver: str, optional
         BFGS   : Broyden Fletcher Goldfarb Shanno
     """
 
+    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -1151,7 +1152,6 @@ solver: str, optional
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
         self.set_params({"p": p, "tol": tol, "max_iter": max_iter, "solver": solver})
-        version(condition=[8, 0, 0])
 
     # ---#
     def deploySQL(self):

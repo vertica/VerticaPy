@@ -59,6 +59,7 @@ from verticapy import vDataFrame
 from verticapy.learn.vmodel import *
 
 # ---#
+@check_minimum_version([8, 1, 1])
 @save_verticapy_logs
 def Balance(
     name: str, input_relation: str, y: str, method: str = "hybrid", ratio: float = 0.5,
@@ -102,7 +103,6 @@ vDataFrame
             ("ratio", ratio, [float]),
         ]
     )
-    version(condition=[8, 1, 1])
     method = method.lower()
     sql = "SELECT /*+LABEL('learn.preprocessing.Balance')*/ BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
         name, input_relation, y, method, ratio
@@ -352,12 +352,12 @@ method: str, optional
 		(x - min) / (max - min)
 	"""
 
+    @check_minimum_version([8, 1, 0])
     @save_verticapy_logs
     def __init__(self, name: str, method: str = "zscore"):
         check_types([("name", name, [str])])
         self.type, self.name = "Normalizer", name
         self.set_params({"method": method})
-        version(condition=[8, 1, 0])
 
 
 # ---#
@@ -419,6 +419,8 @@ null_column_name: str, optional
     ignore_null is set to false and column_naming is set to values or values_relaxed.
 	"""
 
+    @check_minimum_version([9, 0, 0])
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -429,21 +431,6 @@ null_column_name: str, optional
         column_naming: str = "indices",
         null_column_name: str = "null",
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="OneHotEncoder",
-            path="learn.preprocessing",
-            json_dict={
-                "name": name,
-                "extra_levels": extra_levels,
-                "drop_first": drop_first,
-                "ignore_null": ignore_null,
-                "separator": separator,
-                "column_naming": column_naming,
-                "null_column_name": null_column_name,
-            },
-        )
-        # -#
         check_types(
             [
                 ("name", name, [str]),
@@ -470,4 +457,3 @@ null_column_name: str, optional
                 "null_column_name": null_column_name,
             }
         )
-        version(condition=[9, 0, 0])

@@ -84,19 +84,43 @@ to easily pick up which function to save to the QUERY PROFILES table.
         path = os.path.basename(inspect.getfile(func))[:-3]
         json_dict = {}
         var_names = func.__code__.co_varnames
-        for idx, arg in enumerate(args):
-            if var_names[idx] != "self":
-                json_dict[var_names[idx]] = arg
-            else:
-                path = str(type(arg))[8:-2]
-                if "verticapy." in path:
-                    path = path.replace("verticapy.", "")
+        if len(arg) == len(var_names):
+            for idx, arg in enumerate(args):
+                if var_names[idx] != "self":
+                    if (
+                        var_names[idx] == "steps"
+                        and path == "pipeline"
+                        and isinstance(arg, list)
+                    ):
+                        json_dict[var_names[idx]] = [item[1].type for item in arg]
+                    else:
+                        json_dict[var_names[idx]] = arg
+                else:
+                    path = str(type(arg))[8:-2]
+                    if "verticapy." in path:
+                        path = path.replace("verticapy.", "")
         json_dict = {**json_dict, **kwargs}
         save_to_query_profile(name=name, path=path, json_dict=json_dict)
 
         return func(*args, **kwargs)
 
     return func_prec_save_logs
+
+
+# ---#
+def check_minimum_version(condition: list = []):
+    """
+---------------------------------------------------------------------------
+check_minimum_version decorator. It is used to simplify the code and
+to easily check if the feature used is available in the current
+Vertica version.
+    """
+
+    def func_prec_check_version(func):
+        vertica_version(condition)
+        return func
+
+    return func_prec_check_version
 
 
 #
@@ -1827,6 +1851,7 @@ read_json : Ingests a JSON file into the Vertica database.
 
 
 # ---#
+@check_minimum_version([11, 1, 1])
 @save_verticapy_logs
 def read_file(
     path: str,
@@ -1902,7 +1927,6 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
-    version(condition=[11, 1, 1])
     from verticapy import vDataFrame
 
     check_types(
@@ -3371,12 +3395,12 @@ The tablesample attributes are the same as the parameters.
             elif isinstance(val, datetime.timezone):
                 val = f"'{val}'::timestamptz"
             elif isinstance(val, (np.ndarray, list)):
-                version(condition=[10, 0, 0])
+                vertica_version(condition=[10, 0, 0])
                 val = "ARRAY[{0}]".format(
                     ",".join([str(get_correct_format_and_cast(k)) for k in val])
                 )
             elif isinstance(val, dict):
-                version(condition=[11, 0, 0])
+                vertica_version(condition=[11, 0, 0])
                 all_elems = [
                     "{0} AS {1}".format(get_correct_format_and_cast(val[k]), k)
                     for k in val
@@ -3595,7 +3619,7 @@ vDataFrame
 
 vdf_from_relation = vDataFrameSQL
 # ---#
-def version(condition: list = []):
+def vertica_version(condition: list = []):
     """
 ---------------------------------------------------------------------------
 Returns the Vertica Version.
@@ -3617,18 +3641,18 @@ list
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
     if not (verticapy.options["vertica_version"]):
-        version = executeSQL(
+        current_version = executeSQL(
             "SELECT /*+LABEL('utilities.version')*/ version();",
             title="Getting the version.",
             method="fetchfirstelem",
         ).split("Vertica Analytic Database v")[1]
-        version = version.split(".")
+        current_version = current_version.split(".")
         result = []
         try:
-            result += [int(version[0])]
-            result += [int(version[1])]
-            result += [int(version[2].split("-")[0])]
-            result += [int(version[2].split("-")[1])]
+            result += [int(current_version[0])]
+            result += [int(current_version[1])]
+            result += [int(current_version[2].split("-")[0])]
+            result += [int(current_version[2].split("-")[1])]
         except:
             pass
         verticapy.options["vertica_version"] = result
@@ -3656,7 +3680,11 @@ list
                     "Please upgrade your Vertica version to at least {1} to "
                     "get this functionality."
                 ).format(
-                    version[0] + "." + version[1] + "." + version[2].split("-")[0],
+                    str(result[0])
+                    + "."
+                    + str(result[1])
+                    + "."
+                    + str(result[2]).split("-")[0],
                     ".".join([str(elem) for elem in condition[:3]]),
                 )
             )

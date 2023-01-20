@@ -2033,6 +2033,7 @@ tablesample
 
 
 # ---#
+@check_minimum_version([8, 0, 0])
 @save_verticapy_logs
 def lift_chart(
     y_true: str,
@@ -2082,7 +2083,6 @@ tablesample
             ("nbins", nbins, [int, float]),
         ]
     )
-    version(condition=[8, 0, 0])
     query = "SELECT /*+LABEL('learn.model_selection.lift_chart')*/ LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(
         nbins,
@@ -2280,6 +2280,7 @@ tablesample
 
 
 # ---#
+@check_minimum_version([9, 1, 0])
 @save_verticapy_logs
 def prc_curve(
     y_true: str,
@@ -2336,7 +2337,6 @@ tablesample
     )
     if nbins < 0:
         nbins = 999999
-    version(condition=[9, 1, 0])
     query = "SELECT /*+LABEL('learn.model_selection.prc_curve')*/ PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(
         nbins,
@@ -2724,6 +2724,7 @@ tablesample
 
 
 # ---#
+@check_minimum_version([8, 0, 0])
 @save_verticapy_logs
 def roc_curve(
     y_true: str,
@@ -2790,7 +2791,6 @@ tablesample
     )
     if nbins < 0:
         nbins = 999999
-    version(condition=[8, 0, 0])
     query = "SELECT /*+LABEL('learn.model_selection.roc_curve')*/ decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
     query = query.format(
         nbins,

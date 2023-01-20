@@ -84,6 +84,7 @@ nbtype: str, optional
      - gaussian    : Casts the variables to float.
 	"""
 
+    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(self, name: str, alpha: float = 1.0, nbtype: str = "auto"):
         nbtype_vals = ["auto", "bernoulli", "categorical", "multinomial", "gaussian"]
@@ -96,7 +97,6 @@ nbtype: str, optional
         )
         self.type, self.name = "NaiveBayes", name
         self.set_params({"alpha": alpha, "nbtype": nbtype})
-        version(condition=[8, 0, 0])
 
     # ---#
     def get_var_info(self):

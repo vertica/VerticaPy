@@ -442,6 +442,7 @@ col_sample_by_tree: float, optional
     which are chosen at random, used when building each tree.
     """
 
+    @check_minimum_version([12, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -452,7 +453,6 @@ col_sample_by_tree: float, optional
         sample: float = 0.632,
         col_sample_by_tree: float = 1.0,
     ):
-        version(condition=[12, 0, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "IsolationForest", name
         params = {
@@ -693,6 +693,7 @@ nbins: int, optional
     inclusive.
     """
 
+    @check_minimum_version([8, 1, 1])
     @save_verticapy_logs
     def __init__(
         self,
@@ -706,7 +707,6 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        version(condition=[8, 1, 1])
         check_types([("name", name, [str], False)])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
@@ -764,6 +764,7 @@ nbins: int, optional
     inclusive.
     """
 
+    @check_minimum_version([9, 0, 1])
     @save_verticapy_logs
     def __init__(
         self,
@@ -777,7 +778,6 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        version(condition=[9, 0, 1])
         check_types([("name", name, [str], False)])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
@@ -842,6 +842,7 @@ col_sample_by_node: float, optional
     chosen at random, to use when evaluating each split.
     """
 
+    @check_minimum_version([10, 1, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -858,7 +859,6 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        version(condition=[10, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "XGBoostClassifier", name
         params = {
@@ -928,6 +928,7 @@ col_sample_by_node: float, optional
     chosen at random, to use when evaluating each split.
     """
 
+    @check_minimum_version([10, 1, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -944,7 +945,6 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        version(condition=[10, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "XGBoostRegressor", name
         params = {
@@ -958,7 +958,7 @@ col_sample_by_node: float, optional
             "weight_reg": weight_reg,
             "sample": sample,
         }
-        v = version()
+        v = vertica_version()
         v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
         if v:
             params["col_sample_by_tree"] = col_sample_by_tree

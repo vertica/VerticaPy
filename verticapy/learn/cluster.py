@@ -111,6 +111,7 @@ tol: float, optional
     'tol' from the previous iteration.
     """
 
+    @check_minimum_version([9, 3, 1])
     @save_verticapy_logs
     def __init__(
         self,
@@ -138,7 +139,6 @@ tol: float, optional
                 "tol": tol,
             }
         )
-        version(condition=[9, 3, 1])
 
     # ---#
     def get_tree(self):
@@ -462,6 +462,7 @@ tol: float, optional
 	previous iteration.
 	"""
 
+    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -481,7 +482,6 @@ tol: float, optional
                 "tol": tol,
             }
         )
-        version(condition=[8, 0, 0])
 
     # ---#
     def plot_voronoi(
@@ -556,6 +556,7 @@ gamma: float, optional
     importance of numerical and categorical attributes.
     """
 
+    @check_minimum_version([12, 0, 3])
     @save_verticapy_logs
     def __init__(
         self,
@@ -577,4 +578,3 @@ gamma: float, optional
                 "gamma": gamma,
             }
         )
-        version(condition=[12, 0, 3])

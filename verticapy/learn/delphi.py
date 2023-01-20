@@ -799,7 +799,7 @@ model_grid_ : tablesample
             else:
                 X = input_relation.get_columns(exclude_columns=exclude_columns)
         if isinstance(self.parameters["estimator"], str):
-            v = version()
+            v = vertica_version()
             self.parameters["estimator"] = self.parameters["estimator"].lower()
             check_types(
                 [("estimator", self.parameters["estimator"], ["native", "all", "fast"])]

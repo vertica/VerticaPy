@@ -93,6 +93,7 @@ max_iter: int, optional
 	The maximum number of iterations that the algorithm performs.
 	"""
 
+    @check_minimum_version([8, 1, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -105,7 +106,6 @@ max_iter: int, optional
         class_weight: list = [1, 1],
         max_iter: int = 100,
     ):
-        version(condition=[8, 1, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "LinearSVC", name
         self.set_params(
@@ -179,6 +179,7 @@ test_relation: str
 	attribute of the object.
 	"""
 
+    @check_minimum_version([8, 1, 1])
     @save_verticapy_logs
     def __init__(
         self,
@@ -191,7 +192,6 @@ test_relation: str
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
-        version(condition=[8, 1, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "LinearSVR", name
         self.set_params(

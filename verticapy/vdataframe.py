@@ -849,7 +849,7 @@ vColumns : vColumn
                         self.__genSQL__(),
                     )
                 )
-                version(condition=[9, 2, 1])
+                vertica_version(condition=[9, 2, 1])
                 result = executeSQL(
                     query="SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ CORR_MATRIX({0}) OVER () FROM {1}".format(
                         ", ".join(columns), table
@@ -5514,7 +5514,7 @@ vColumns : vColumn
                     result.append(L[i])
                 return result
             try:
-                version(condition=[9, 0, 0])
+                vertica_version(condition=[9, 0, 0])
                 idx = [
                     "index",
                     "count",
@@ -7618,9 +7618,9 @@ vColumns : vColumn
                 on_join += [f"y.{key2} INTERPOLATE PREVIOUS VALUE x.{key1}"]
             elif op in ("jaro", "jarow", "lev"):
                 if op in ("jaro", "jarow"):
-                    version(condition=[12, 0, 2])
+                    vertica_version(condition=[12, 0, 2])
                 else:
-                    version(condition=[10, 1, 0])
+                    vertica_version(condition=[10, 1, 0])
                 op2 = elem[3]
                 x = elem[4]
                 check_types(
@@ -11612,7 +11612,7 @@ vColumns : vColumn
 
     variance = var
     # ---#
-    def version(self):
+    def vertica_version(self):
         """
     ---------------------------------------------------------------------------
     Returns the version of Vertica.
@@ -11623,9 +11623,9 @@ vColumns : vColumn
         List containing the version information.
         [MAJOR, MINOR, PATCH, POST]
         """
-        from verticapy.utilities import version as vertica_version
+        from verticapy.utilities import vertica_version as version
 
-        return vertica_version()
+        return version()
 
     # ---#
     @save_verticapy_logs
