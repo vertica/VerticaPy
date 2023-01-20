@@ -944,11 +944,11 @@ class TestUtilities:
     def test_set_option(self):
         pass
 
-    def test_version(self):
-        result = version()
-        assert result[0] < 20
+    def test_vertica_version(self):
+        result = vertica_version()
+        assert result[0] < 99
         try:
-            version([99, 1, 1])
+            vertica_version([99, 1, 1])
             fail = False
         except:
             fail = True

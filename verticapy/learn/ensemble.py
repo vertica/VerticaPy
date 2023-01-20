@@ -200,7 +200,7 @@ class XGBoost_utils:
                     for i in range(n):
                         for c in model.classes_:
                             trees += [xgboost_tree_dict(model, i, str(c))]
-                    v = version()
+                    v = vertica_version()
                     v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
                     if not (v):
                         for i in range(len(model.classes_)):
@@ -226,7 +226,7 @@ class XGBoost_utils:
                 }
 
             def xgboost_learner(model):
-                v = version()
+                v = vertica_version()
                 v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
                 if v:
                     col_sample_by_tree = model.parameters["col_sample_by_tree"]
@@ -380,7 +380,7 @@ class XGBoost_utils:
         condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + [
             "{} IS NOT NULL".format(self.y)
         ]
-        v = version()
+        v = vertica_version()
         v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
         if self.type == "XGBoostRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
@@ -872,7 +872,7 @@ col_sample_by_node: float, optional
             "weight_reg": weight_reg,
             "sample": sample,
         }
-        v = version()
+        v = vertica_version()
         v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
         if v:
             params["col_sample_by_tree"] = col_sample_by_tree
