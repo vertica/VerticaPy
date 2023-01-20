@@ -270,7 +270,6 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
-    @check_minimum_version([9, 1, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -279,6 +278,7 @@ method: str, optional
         scale: bool = False,
         method: str = "lapack",
     ):
+        vertica_version([9, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "PCA", name
         self.set_params(
@@ -308,9 +308,9 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
-    @check_minimum_version([9, 1, 0])
     @save_verticapy_logs
     def __init__(self, name: str, n_components: int = 0, method: str = "lapack"):
+        vertica_version([9, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "SVD", name
         self.set_params({"n_components": n_components, "method": method.lower()})

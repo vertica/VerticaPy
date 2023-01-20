@@ -3109,7 +3109,6 @@ class Tree:
         )
 
     # ---#
-    @check_minimum_version([9, 1, 1])
     def get_tree(self, tree_id: int = 0):
         """
 	---------------------------------------------------------------------------
@@ -3126,6 +3125,7 @@ class Tree:
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
+        vertica_version([9, 1, 1])
         check_types([("tree_id", tree_id, [int, float])])
         name = self.tree_name if self.type == "KernelDensity" else self.name
         query = """SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS 

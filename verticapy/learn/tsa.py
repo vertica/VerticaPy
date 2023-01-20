@@ -104,7 +104,6 @@ papprox_ma: int, optional
     the p of the AR(p) used to approximate the MA coefficients.
     """
 
-    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -122,6 +121,7 @@ papprox_ma: int, optional
         max_pik: int = 100,
         papprox_ma: int = 200,
     ):
+        vertica_version([8, 0, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "SARIMAX", name
         self.set_params(
@@ -1136,7 +1136,6 @@ solver: str, optional
         BFGS   : Broyden Fletcher Goldfarb Shanno
     """
 
-    @check_minimum_version([8, 0, 0])
     @save_verticapy_logs
     def __init__(
         self,
@@ -1146,6 +1145,7 @@ solver: str, optional
         max_iter: int = 1000,
         solver: str = "Newton",
     ):
+        vertica_version([8, 0, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "VAR", name
         assert p > 0, ParameterError(

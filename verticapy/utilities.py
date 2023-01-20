@@ -107,22 +107,6 @@ to easily pick up which function to save to the QUERY PROFILES table.
     return func_prec_save_logs
 
 
-# ---#
-def check_minimum_version(condition: list = []):
-    """
----------------------------------------------------------------------------
-check_minimum_version decorator. It is used to simplify the code and
-to easily check if the feature used is available in the current
-Vertica version.
-    """
-
-    def func_prec_check_version(func):
-        vertica_version(condition)
-        return func
-
-    return func_prec_check_version
-
-
 #
 # Utilities Functions
 #
@@ -1851,7 +1835,6 @@ read_json : Ingests a JSON file into the Vertica database.
 
 
 # ---#
-@check_minimum_version([11, 1, 1])
 @save_verticapy_logs
 def read_file(
     path: str,
@@ -1927,6 +1910,8 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
+    vertica_version([11, 1, 1])
+
     from verticapy import vDataFrame
 
     check_types(

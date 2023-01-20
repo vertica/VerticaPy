@@ -2033,7 +2033,6 @@ tablesample
 
 
 # ---#
-@check_minimum_version([8, 0, 0])
 @save_verticapy_logs
 def lift_chart(
     y_true: str,
@@ -2075,6 +2074,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    vertica_version([8, 0, 0])
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -2280,7 +2280,6 @@ tablesample
 
 
 # ---#
-@check_minimum_version([9, 1, 0])
 @save_verticapy_logs
 def prc_curve(
     y_true: str,
@@ -2326,6 +2325,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    vertica_version([9, 1, 0])
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -2724,7 +2724,6 @@ tablesample
 
 
 # ---#
-@check_minimum_version([8, 0, 0])
 @save_verticapy_logs
 def roc_curve(
     y_true: str,
@@ -2778,6 +2777,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    vertica_version([8, 0, 0])
     check_types(
         [
             ("y_true", y_true, [str]),
