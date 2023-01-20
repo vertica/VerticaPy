@@ -74,8 +74,8 @@ except:
 def save_verticapy_logs(func):
     """
 ---------------------------------------------------------------------------
-save_verticapy_logs decorator. It is used to simplify the code and
-to easily pick up which function to save to the QUERY PROFILES table.
+save_verticapy_logs decorator. It simplifies the code and automatically
+identifies which function to save to the QUERY PROFILES table.
     """
 
     def func_prec_save_logs(*args, **kwargs):
