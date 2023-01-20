@@ -11623,9 +11623,9 @@ vColumns : vColumn
         List containing the version information.
         [MAJOR, MINOR, PATCH, POST]
         """
-        from verticapy.utilities import vertica_version as version
+        from verticapy.utilities import vertica_version as vversion
 
-        return version()
+        return vversion()
 
     # ---#
     @save_verticapy_logs

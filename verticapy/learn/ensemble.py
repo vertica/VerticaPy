@@ -375,7 +375,7 @@ class XGBoost_utils:
         list
             XGB Priors.
         """
-        from verticapy.utilities import version
+        from verticapy.utilities import vertica_version
 
         condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + [
             "{} IS NOT NULL".format(self.y)
