@@ -99,8 +99,8 @@ identifies which function to save to the QUERY PROFILES table.
 def check_dtypes(func):
     """
 ---------------------------------------------------------------------------
-check_minimum_version decorator. It simplifies the code by checking if the
-feature is available in the user's version.
+check_dtypes decorator. It simplifies the code by checking whether the
+parameters passed to the function are of an expected data type.
     """
 
     @wraps(func)
