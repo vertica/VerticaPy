@@ -954,7 +954,8 @@ Main Class for Vertica Model
 		"""
         all_init_params = list(typing.get_type_hints(self.__init__).keys())
         new_parameters = deepcopy(self.parameters)
-        for p in new_parameters:
+        new_parameters_keys = list(new_parameters.keys())
+        for p in new_parameters_keys:
             if p not in all_init_params:
                 del new_parameters[p]
         for p in parameters:

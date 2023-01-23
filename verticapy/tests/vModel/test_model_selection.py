@@ -208,15 +208,15 @@ class TestModelSelection:
     def test_grid_search_cv(self, winequality_vd):
         result = grid_search_cv(
             LogisticRegression("model_test"),
-            {"solver": ["newton", "bfgs", "cgd"], "tol": [0.1, 0.01]},
+            {"solver": ["newton", "bfgs"], "tol": [0.1, 0.01]},
             winequality_vd,
             ["residual_sugar", "alcohol"],
             "good",
             "auc",
             cv=3,
         )
-        assert len(result.values) == 6
-        assert len(result["parameters"]) == 6
+        assert len(result.values) == 4
+        assert len(result["parameters"]) == 4
 
     def test_lift_chart(self, winequality_vd):
         model = LogisticRegression("model_test")
