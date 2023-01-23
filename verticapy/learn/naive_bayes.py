@@ -99,6 +99,8 @@ nbtype: str, optional
             ["auto", "bernoulli", "categorical", "multinomial", "gaussian"],
         )
         self.type, self.name = "NaiveBayes", name
+        self.VERTICA_FIT_FUNCTION_SQL = "NAIVE_BAYES"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_NAIVE_BAYES"
         self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
 
     # ---#

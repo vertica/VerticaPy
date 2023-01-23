@@ -143,6 +143,8 @@ tol: float, optional
             )
             init = init.lower()
         self.type, self.name = "BisectingKMeans", name
+        self.VERTICA_FIT_FUNCTION_SQL = "BISECTING_KMEANS"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_BISECTING_KMEANS"
         self.parameters = {
             "n_cluster": n_cluster,
             "bisection_iterations": bisection_iterations,
@@ -484,6 +486,8 @@ tol: float, optional
             raise_error_if_not_in("init", init.lower(), ["kmeanspp", "random"])
             init = init.lower()
         self.type, self.name = "KMeans", name
+        self.VERTICA_FIT_FUNCTION_SQL = "KMEANS"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KMEANS"
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,
@@ -580,6 +584,8 @@ gamma: float, optional
             raise_error_if_not_in("init", init.lower(), ["random"])
             init = init.lower()
         self.type, self.name = "KPrototypes", name
+        self.VERTICA_FIT_FUNCTION_SQL = "KPROTOTYPES"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KPROTOTYPES"
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,

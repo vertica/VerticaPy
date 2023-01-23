@@ -111,6 +111,8 @@ fit_intercept: bool, optional
     ):
         raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs", "cgd"])
         self.type, self.name = "LinearRegression", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -173,6 +175,8 @@ fit_intercept: bool, optional
     ):
         raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs", "cgd"])
         self.type, self.name = "LinearRegression", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -229,6 +233,8 @@ fit_intercept: bool, optional
     ):
         raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
         self.type, self.name = "LinearRegression", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -301,6 +307,8 @@ fit_intercept: bool, optional
         )
         raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs", "cgd"])
         self.type, self.name = "LogisticRegression", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LOGISTIC_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LOGISTIC_REG"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -371,6 +379,8 @@ fit_intercept: bool, optional
     ):
         raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
         self.type, self.name = "LinearRegression", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "

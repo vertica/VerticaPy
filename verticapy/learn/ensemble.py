@@ -458,6 +458,8 @@ col_sample_by_tree: float, optional
         col_sample_by_tree: float = 1.0,
     ):
         self.type, self.name = "IsolationForest", name
+        self.VERTICA_FIT_FUNCTION_SQL = "IFOREST"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_IFOREST"
         self.parameters = {
             "n_estimators": n_estimators,
             "max_depth": max_depth,
@@ -549,6 +551,7 @@ col_sample_by_tree: float, optional
         """
         if isinstance(X, str):
             X = [X]
+        X = self.X if not (X) else [quote_ident(elem) for elem in X]
         if contamination and not (return_score):
             assert 0 < contamination < 1, ParameterError(
                 "Incorrect parameter 'contamination'.\nThe parameter "
@@ -559,17 +562,13 @@ col_sample_by_tree: float, optional
                 "Incorrect parameter 'cutoff'.\nThe parameter "
                 "'cutoff' must be between 0.0 and 1.0, exclusive."
             )
-        X = [quote_ident(elem) for elem in X]
         if return_score:
             other_parameters = ""
         elif contamination:
             other_parameters = f", contamination = {contamination}"
         else:
             other_parameters = f", threshold = {cutoff}"
-        fun = self.get_model_fun()[1]
-        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'{})".format(
-            fun, ", ".join(self.X if not (X) else X), self.name, other_parameters,
-        )
+        sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', match_by_pos = 'true'{other_parameters})"
         if return_score:
             sql = f"({sql}).anomaly_score"
         else:
@@ -695,6 +694,8 @@ nbins: int, optional
             raise_error_if_not_in("max_features", max_features, ["auto", "max"])
             max_features = max_features.lower()
         self.type, self.name = "RandomForestClassifier", name
+        self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
         self.parameters = {
             "n_estimators": n_estimators,
             "max_features": max_features,
@@ -767,6 +768,8 @@ nbins: int, optional
             raise_error_if_not_in("max_features", max_features.lower(), ["auto", "max"])
             max_features = max_features.lower()
         self.type, self.name = "RandomForestRegressor", name
+        self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
         self.parameters = {
             "n_estimators": n_estimators,
             "max_features": max_features,
@@ -851,6 +854,8 @@ col_sample_by_node: float, optional
             ["local", "global"],
         )
         self.type, self.name = "XGBoostClassifier", name
+        self.VERTICA_FIT_FUNCTION_SQL = "XGB_CLASSIFIER"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_CLASSIFIER"
         params = {
             "max_ntree": max_ntree,
             "max_depth": max_depth,
@@ -942,6 +947,8 @@ col_sample_by_node: float, optional
             ["local", "global"],
         )
         self.type, self.name = "XGBoostRegressor", name
+        self.VERTICA_FIT_FUNCTION_SQL = "XGB_REGRESSOR"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_REGRESSOR"
         params = {
             "max_ntree": max_ntree,
             "max_depth": max_depth,

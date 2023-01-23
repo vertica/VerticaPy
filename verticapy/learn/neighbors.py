@@ -955,6 +955,8 @@ xlim: list, optional
             ["gaussian", "logistic", "sigmoid", "silverman"],
         )
         self.type, self.name = "KernelDensity", name
+        self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
         self.parameters = {
             "nbins": nbins,
             "p": p,

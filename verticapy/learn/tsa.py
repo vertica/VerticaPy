@@ -138,6 +138,8 @@ papprox_ma: int, optional
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
         self.type, self.name = "SARIMAX", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
         self.parameters = {
             "p": p,
             "d": d,

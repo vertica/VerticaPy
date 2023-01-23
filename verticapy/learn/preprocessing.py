@@ -351,6 +351,9 @@ method: str, optional
             "method", str(method).lower(), ["zscore", "robust_zscore", "minmax"]
         )
         self.type, self.name = "Normalizer", name
+        self.VERTICA_FIT_FUNCTION_SQL = "NORMALIZE_FIT"
+        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_NORMALIZE"
+        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "REVERSE_NORMALIZE"
         self.parameters = {"method": str(method).lower()}
 
 
@@ -432,6 +435,9 @@ null_column_name: str, optional
             ["indices", "values", "values_relaxed"],
         )
         self.type, self.name = "OneHotEncoder", name
+        self.VERTICA_FIT_FUNCTION_SQL = "ONE_HOT_ENCODER_FIT"
+        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_ONE_HOT_ENCODER"
+        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = ""
         self.parameters = {
             "extra_levels": extra_levels,
             "drop_first": drop_first,

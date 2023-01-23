@@ -1035,6 +1035,8 @@ model_grid_ : tablesample
         else:
             best_model.fit(input_relation, X, y)
         self.best_model_ = best_model
+        self.VERTICA_FIT_FUNCTION_SQL = best_model.VERTICA_FIT_FUNCTION_SQL
+        self.VERTICA_PREDICT_FUNCTION_SQL = best_model.VERTICA_PREDICT_FUNCTION_SQL
         self.model_grid_ = result
         self.parameters["reverse"] = not (reverse)
         if self.preprocess_ != None:

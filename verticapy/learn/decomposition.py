@@ -78,6 +78,9 @@ name: str
     @save_verticapy_logs
     def __init__(self, name: str):
         self.type, self.name = "MCA", name
+        self.VERTICA_FIT_FUNCTION_SQL = "PCA"
+        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
+        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
         self.parameters = {}
 
     # ---#
@@ -283,6 +286,9 @@ method: str, optional
     ):
         raise_error_if_not_in("method", str(method).lower(), ["lapack"])
         self.type, self.name = "PCA", name
+        self.VERTICA_FIT_FUNCTION_SQL = "PCA"
+        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
+        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
         self.parameters = {
             "n_components": n_components,
             "scale": scale,
@@ -318,4 +324,7 @@ method: str, optional
     def __init__(self, name: str, n_components: int = 0, method: str = "lapack"):
         raise_error_if_not_in("method", str(method).lower(), ["lapack"])
         self.type, self.name = "SVD", name
+        self.VERTICA_FIT_FUNCTION_SQL = "SVD"
+        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_SVD"
+        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_SVD"
         self.parameters = {"n_components": n_components, "method": str(method).lower()}

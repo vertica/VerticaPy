@@ -300,8 +300,7 @@ Main Class for Vertica Model
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
             name = self.tree_name if self.type == "KernelDensity" else self.name
             X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
-            fun = self.get_model_fun()[1]
-            sql = f"{fun}({', '.join(X)} USING PARAMETERS model_name = '{name}', match_by_pos = 'true')"
+            sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{name}', match_by_pos = 'true')"
             return sql
         else:
             raise FunctionError(f"Method 'deploySQL' for '{self.type}' doesn't exist.")
@@ -606,74 +605,6 @@ Main Class for Vertica Model
             raise FunctionError(
                 "Method 'get_attr' for '{0}' doesn't exist.".format(self.type)
             )
-
-    # ---#
-    def get_model_fun(self):
-        """
-	---------------------------------------------------------------------------
-	Returns the Vertica functions associated with the model.
-
-	Returns
-	-------
-	tuple
-		(FIT, PREDICT, INVERSE)
-		"""
-        if self.type == "AutoML":
-            return self.best_model_.get_model_fun()
-
-        if self.type in ("LinearRegression", "SARIMAX"):
-            return ("LINEAR_REG", "PREDICT_LINEAR_REG", "")
-
-        elif self.type == "LogisticRegression":
-            return ("LOGISTIC_REG", "PREDICT_LOGISTIC_REG", "")
-
-        elif self.type == "LinearSVC":
-            return ("SVM_CLASSIFIER", "PREDICT_SVM_CLASSIFIER", "")
-
-        elif self.type == "LinearSVR":
-            return ("SVM_REGRESSOR", "PREDICT_SVM_REGRESSOR", "")
-
-        elif self.type == "IsolationForest":
-            return ("IFOREST", "APPLY_IFOREST", "")
-
-        elif self.type in ("RandomForestRegressor", "KernelDensity"):
-            return ("RF_REGRESSOR", "PREDICT_RF_REGRESSOR", "")
-
-        elif self.type == "RandomForestClassifier":
-            return ("RF_CLASSIFIER", "PREDICT_RF_CLASSIFIER", "")
-
-        elif self.type == "XGBoostRegressor":
-            return ("XGB_REGRESSOR", "PREDICT_XGB_REGRESSOR", "")
-
-        elif self.type == "XGBoostClassifier":
-            return ("XGB_CLASSIFIER", "PREDICT_XGB_CLASSIFIER", "")
-
-        elif self.type == "NaiveBayes":
-            return ("NAIVE_BAYES", "PREDICT_NAIVE_BAYES", "")
-
-        elif self.type == "KMeans":
-            return ("KMEANS", "APPLY_KMEANS", "")
-
-        elif self.type == "KPrototypes":
-            return ("KPROTOTYPES", "APPLY_KPROTOTYPES", "")
-
-        elif self.type == "BisectingKMeans":
-            return ("BISECTING_KMEANS", "APPLY_BISECTING_KMEANS", "")
-
-        elif self.type in ("PCA", "MCA"):
-            return ("PCA", "APPLY_PCA", "APPLY_INVERSE_PCA")
-
-        elif self.type == "SVD":
-            return ("SVD", "APPLY_SVD", "APPLY_INVERSE_SVD")
-
-        elif self.type == "Normalizer":
-            return ("NORMALIZE_FIT", "APPLY_NORMALIZE", "REVERSE_NORMALIZE")
-
-        elif self.type == "OneHotEncoder":
-            return ("ONE_HOT_ENCODER_FIT", "APPLY_ONE_HOT_ENCODER", "")
-
-        else:
-            return ("", "", "")
 
     # ---#
     def get_params(self):
@@ -1695,14 +1626,14 @@ class Supervised(vModel):
                 parameters["mtry"] = int(len(self.X) / 3 + 1)
             elif parameters["mtry"] == "'max'":
                 parameters["mtry"] = len(self.X)
-        fun = self.get_model_fun()[0]
+        fun = self.VERTICA_FIT_FUNCTION_SQL
         query = "SELECT /*+LABEL('learn.vModel.fit')*/ {}('{}', '{}', '{}', '{}' USING PARAMETERS "
         query = query.format(fun, self.name, relation, self.y, ", ".join(self.X))
         query += ", ".join(
             ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
         )
         if alpha != None:
-            query += ", alpha = {}".format(alpha)
+            query += f", alpha = {alpha}"
         if self.type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
@@ -2018,14 +1949,11 @@ class BinaryClassifier(Classifier):
 		"""
         if isinstance(X, str):
             X = [X]
-        X = [quote_ident(elem) for elem in X]
-        fun = self.get_model_fun()[1]
-        sql = "{0}({1} USING PARAMETERS model_name = '{2}', type = 'probability', match_by_pos = 'true')"
+        X = self.X if not (X) else [quote_ident(elem) for elem in X]
+        sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', type = 'probability', match_by_pos = 'true')"
         if cutoff <= 1 and cutoff >= 0:
-            sql = "(CASE WHEN {0} >= {1} THEN 1 WHEN {0} IS NULL THEN NULL ELSE 0 END)".format(
-                sql, cutoff
-            )
-        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
+            sql = f"(CASE WHEN {sql} >= {cutoff} THEN 1 WHEN {sql} IS NULL THEN NULL ELSE 0 END)"
+        return sql.format(fun, ', '.join(X), self.name)
 
     # ---#
     def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds):
@@ -2552,7 +2480,7 @@ class MulticlassClassifier(Classifier):
         if isinstance(X, str):
             X = [X]
         X = [quote_ident(elem) for elem in X]
-        fun = self.get_model_fun()[1]
+        fun = self.VERTICA_PREDICT_FUNCTION_SQL
         if allSQL:
             if self.type == "NearestCentroid":
                 sql = self.to_memmodel().predict_proba_sql(self.X if not (X) else X)
@@ -3488,7 +3416,7 @@ class Unsupervised(vModel):
         parameters = self.get_vertica_param_dict()
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
-        fun = self.get_model_fun()[0] if self.type != "MCA" else "PCA"
+        fun = self.VERTICA_FIT_FUNCTION_SQL if self.type != "MCA" else "PCA"
         query = "SELECT /*+LABEL('learn.vModel.fit')*/ {}('{}', '{}', '{}'".format(
             fun, self.name, relation, ", ".join(self.X)
         )
@@ -3712,7 +3640,7 @@ class Preprocessing(Unsupervised):
         if isinstance(X, str):
             X = [X]
         X = [quote_ident(elem) for elem in X]
-        fun = self.get_model_fun()[1]
+        fun = self.VERTICA_TRANSFORM_FUNCTION_SQL
         sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
         if key_columns:
             sql += ", key_columns = '{}'".format(
@@ -3786,7 +3714,7 @@ class Preprocessing(Unsupervised):
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
         X = [quote_ident(elem) for elem in X]
-        fun = self.get_model_fun()[2]
+        fun = self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL
         sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
         if key_columns:
             sql += ", key_columns = '{}'".format(
@@ -3999,7 +3927,7 @@ class Decomposition(Preprocessing):
         if isinstance(X, str):
             X = [X]
         X = [quote_ident(elem) for elem in X]
-        fun = self.get_model_fun()[1]
+        fun = self.VERTICA_TRANSFORM_FUNCTION_SQL
         sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
         if key_columns:
             sql += ", key_columns = '{}'".format(
@@ -4087,11 +4015,11 @@ class Decomposition(Preprocessing):
         Matplotlib axes object
         """
         if self.type == "SVD":
-            x = self.singular_values_["vector{}".format(dimensions[0])]
-            y = self.singular_values_["vector{}".format(dimensions[1])]
+            x = self.singular_values_[f"vector{dimensions[0]}"]
+            y = self.singular_values_[f"vector{dimensions[1]}"]
         else:
-            x = self.components_["PC{}".format(dimensions[0])]
-            y = self.components_["PC{}".format(dimensions[1])]
+            x = self.components_[f"PC{dimensions[0]}"]
+            y = self.components_[f"PC{dimensions[1]}"]
         explained_variance = self.explained_variance_["explained_variance"]
         return plot_pca_circle(
             x,
@@ -4198,7 +4126,6 @@ class Decomposition(Preprocessing):
         raise_error_if_not_in("method", str(method).lower(), ["avg", "median"])
         if isinstance(X, str):
             X = [X]
-        fun = self.get_model_fun()
         if not (X):
             X = self.X
         if not (input_relation):
@@ -4212,8 +4139,8 @@ class Decomposition(Preprocessing):
                 n_components = len(X)
         else:
             n_components = len(X)
-        col_init_1 = ["{} AS col_init{}".format(X[idx], idx) for idx in range(len(X))]
-        col_init_2 = ["col_init{}".format(idx) for idx in range(len(X))]
+        col_init_1 = [f"{X[idx]} AS col_init{idx}" for idx in range(len(X))]
+        col_init_2 = [f"col_init{idx}" for idx in range(len(X))]
         cols = ["col{}".format(idx + 1) for idx in range(n_components)]
         query = """SELECT 
                         {0}({1} USING PARAMETERS 
@@ -4221,11 +4148,9 @@ class Decomposition(Preprocessing):
                             key_columns = '{1}', 
                             num_components = {3}) OVER () 
                     FROM {4}""".format(
-            fun[1], ", ".join(self.X), self.name, n_components, input_relation,
+            self.VERTICA_TRANSFORM_FUNCTION_SQL, ", ".join(self.X), self.name, n_components, input_relation,
         )
-        query = "SELECT {0} FROM ({1}) VERTICAPY_SUBTABLE".format(
-            ", ".join(col_init_1 + cols), query
-        )
+        query = f"SELECT {', '.join(col_init_1 + cols)} FROM ({query}) VERTICAPY_SUBTABLE"
         query = """SELECT 
                         {0}({1} USING PARAMETERS 
                             model_name = '{2}', 
@@ -4233,27 +4158,15 @@ class Decomposition(Preprocessing):
                             exclude_columns = '{3}', 
                             num_components = {4}) OVER () 
                    FROM ({5}) y""".format(
-            fun[2],
+            self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL,
             ", ".join(col_init_2 + cols),
             self.name,
             ", ".join(col_init_2),
             n_components,
             query,
         )
-        query = "SELECT 'Score' AS 'index', {} FROM ({}) z".format(
-            ", ".join(
-                [
-                    (
-                        "{0}(POWER(ABS(POWER({1}, {2}) - "
-                        "POWER({3}, {2})), {4})) AS {1}"
-                    ).format(
-                        method, X[idx], p, "col_init{}".format(idx), float(1 / p),
-                    )
-                    for idx in range(len(X))
-                ]
-            ),
-            query,
-        )
+        p_distances = [f"{method}(POWER(ABS(POWER({X[idx]}, {p}) - POWER(col_init{idx}, {p})), {1 / p})) AS {X[idx]}" for idx in range(len(X))]
+        query = f"SELECT 'Score' AS 'index', {', '.join(p_distances)} FROM ({query}) z"
         return to_tablesample(query, title="Getting Model Score.").transpose()
 
     # ---#
