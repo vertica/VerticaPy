@@ -299,7 +299,7 @@ Main Class for Vertica Model
             return self.best_model_.deploySQL(X)
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
             name = self.tree_name if self.type == "KernelDensity" else self.name
-            X = [quote_ident(predictor) for predictor in X] if not (X) else self.X
+            X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
             fun = self.get_model_fun()[1]
             sql = f"{fun}({', '.join(X)} USING PARAMETERS model_name = '{name}', match_by_pos = 'true')"
             return sql
@@ -686,14 +686,13 @@ Main Class for Vertica Model
 	dict
 		model parameters
 		"""
-        #all_init_params = list(typing.get_type_hints(self.__init__).keys())
-        #parameters = copy.deepcopy(self.parameters)
-        #parameters_keys = list(parameters.keys())
-        #for p in parameters_keys:
-        #    if p not in all_init_params:
-        #        del parameters[p]
-        #return parameters
-        return self.parameters
+        all_init_params = list(typing.get_type_hints(self.__init__).keys())
+        parameters = copy.deepcopy(self.parameters)
+        parameters_keys = list(parameters.keys())
+        for p in parameters_keys:
+            if p not in all_init_params:
+                del parameters[p]
+        return parameters
 
     # ---#
     def get_vertica_param_dict(self):
