@@ -205,6 +205,8 @@ p: int, optional
     @save_verticapy_logs
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
         self.type, self.name = "DBSCAN", name
+        self.VERTICA_FIT_FUNCTION_SQL = ""
+        self.VERTICA_PREDICT_FUNCTION_SQL = ""
         self.MODEL_TYPE = "UNSUPERVISED"
         self.MODEL_SUBTYPE = "CLUSTERING"
         self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}

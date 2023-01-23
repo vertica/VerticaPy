@@ -91,6 +91,8 @@ p: int, optional
     @save_verticapy_logs
     def __init__(self, name: str, p: int = 2):
         self.type, self.name = "NearestCentroid", name
+        self.VERTICA_FIT_FUNCTION_SQL = ""
+        self.VERTICA_PREDICT_FUNCTION_SQL = ""
         self.MODEL_TYPE = "SUPERVISED"
         self.MODEL_SUBTYPE = "CLASSIFIER"
         self.parameters = {"p": p}
@@ -193,6 +195,8 @@ p: int, optional
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
         self.type, self.name = "KNeighborsClassifier", name
+        self.VERTICA_FIT_FUNCTION_SQL = ""
+        self.VERTICA_PREDICT_FUNCTION_SQL = ""
         self.MODEL_TYPE = "SUPERVISED"
         self.MODEL_SUBTYPE = "CLASSIFIER"
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
@@ -1299,6 +1303,8 @@ p: int, optional
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
         self.type, self.name = "KNeighborsRegressor", name
+        self.VERTICA_FIT_FUNCTION_SQL = ""
+        self.VERTICA_PREDICT_FUNCTION_SQL = ""
         self.MODEL_TYPE = "SUPERVISED"
         self.MODEL_SUBTYPE = "REGRESSOR"
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
@@ -1529,6 +1535,8 @@ p: int, optional
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
         self.type, self.name = "LocalOutlierFactor", name
+        self.VERTICA_FIT_FUNCTION_SQL = ""
+        self.VERTICA_PREDICT_FUNCTION_SQL = ""
         self.MODEL_TYPE = "UNSUPERVISED"
         self.MODEL_SUBTYPE = "ANOMALY_DETECTION"
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
