@@ -1953,7 +1953,7 @@ class BinaryClassifier(Classifier):
         sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', type = 'probability', match_by_pos = 'true')"
         if cutoff <= 1 and cutoff >= 0:
             sql = f"(CASE WHEN {sql} >= {cutoff} THEN 1 WHEN {sql} IS NULL THEN NULL ELSE 0 END)"
-        return sql.format(fun, ', '.join(X), self.name)
+        return sql.format(fun, ", ".join(X), self.name)
 
     # ---#
     def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds):
@@ -4148,9 +4148,15 @@ class Decomposition(Preprocessing):
                             key_columns = '{1}', 
                             num_components = {3}) OVER () 
                     FROM {4}""".format(
-            self.VERTICA_TRANSFORM_FUNCTION_SQL, ", ".join(self.X), self.name, n_components, input_relation,
+            self.VERTICA_TRANSFORM_FUNCTION_SQL,
+            ", ".join(self.X),
+            self.name,
+            n_components,
+            input_relation,
         )
-        query = f"SELECT {', '.join(col_init_1 + cols)} FROM ({query}) VERTICAPY_SUBTABLE"
+        query = (
+            f"SELECT {', '.join(col_init_1 + cols)} FROM ({query}) VERTICAPY_SUBTABLE"
+        )
         query = """SELECT 
                         {0}({1} USING PARAMETERS 
                             model_name = '{2}', 
@@ -4165,7 +4171,10 @@ class Decomposition(Preprocessing):
             n_components,
             query,
         )
-        p_distances = [f"{method}(POWER(ABS(POWER({X[idx]}, {p}) - POWER(col_init{idx}, {p})), {1 / p})) AS {X[idx]}" for idx in range(len(X))]
+        p_distances = [
+            f"{method}(POWER(ABS(POWER({X[idx]}, {p}) - POWER(col_init{idx}, {p})), {1 / p})) AS {X[idx]}"
+            for idx in range(len(X))
+        ]
         query = f"SELECT 'Score' AS 'index', {', '.join(p_distances)} FROM ({query}) z"
         return to_tablesample(query, title="Getting Model Score.").transpose()
 
