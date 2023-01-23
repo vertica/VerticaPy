@@ -686,13 +686,14 @@ Main Class for Vertica Model
 	dict
 		model parameters
 		"""
-        all_init_params = list(typing.get_type_hints(self.__init__).keys())
-        parameters = copy.deepcopy(self.parameters)
-        parameters_keys = list(parameters.keys())
-        for p in parameters_keys:
-            if p not in all_init_params:
-                del parameters[p]
-        return parameters
+        #all_init_params = list(typing.get_type_hints(self.__init__).keys())
+        #parameters = copy.deepcopy(self.parameters)
+        #parameters_keys = list(parameters.keys())
+        #for p in parameters_keys:
+        #    if p not in all_init_params:
+        #        del parameters[p]
+        #return parameters
+        return self.parameters
 
     # ---#
     def get_vertica_param_dict(self):
