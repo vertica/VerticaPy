@@ -111,17 +111,20 @@ feature is available in the user's version.
 
         python_version = [int(i) for i in sys.version.split(" ")[0].split(".")]
 
-        # get_type_hints is only available for Python version greater than 3.6
-        try:
-            hints = typing.get_type_hints(func)
-        except:
-            hints = func.__annotations__
+        hints = typing.get_type_hints(func)
         all_args = {**kwargs}
         # TO DO -> Testing arg types
         # for idx, var in enumerate(args):
         #    all_args[list(hints.keys())[idx]] = var
         for var_name in hints:
-            dt = typing.get_args(hints[var_name])
+            # get_args is only available for Python version greater than 3.7
+            if python_version[0] > 3 or (python_version[0] == 3 and python_version[1] > 7):
+                dt = typing.get_args(hints[var_name])
+            else:
+                try:
+                    dt = hints[var_name].__args__
+                except:
+                    dt = ()
             if not dt:
                 dt = hints[var_name]
                 dt_str_list = str(dt)
