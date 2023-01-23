@@ -117,6 +117,7 @@ class QueryError(Exception):
 class VersionError(Exception):
     pass
 
+
 # ---#
 def raise_error_if_not_in(variable_name, variable, options):
     # Raises an error if the input variable does not belong to the input list.

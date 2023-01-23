@@ -64,7 +64,11 @@ import numpy as np
 
 # VerticaPy Modules
 import verticapy
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.connect import current_cursor
 from verticapy.vcolumn import vColumn
 from verticapy.utilities import *
@@ -181,7 +185,9 @@ vColumns : vColumn
     @save_verticapy_logs
     def __init__(
         self,
-        input_relation: Union[str, pd.DataFrame, np.ndarray, list, tablesample, dict] = "",
+        input_relation: Union[
+            str, pd.DataFrame, np.ndarray, list, tablesample, dict
+        ] = "",
         columns: Union[str, list] = [],
         usecols: Union[str, list] = [],
         schema: str = "",
@@ -1890,7 +1896,11 @@ vColumns : vColumn
                              input vColumn.
         """
         raise_error_if_not_in("acf_type", acf_type, ["line", "heatmap", "bar"])
-        raise_error_if_not_in("method", method, ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer",],)
+        raise_error_if_not_in(
+            "method",
+            method,
+            ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer",],
+        )
         if isinstance(by, str):
             by = [by]
         self.are_namecols_in([column, ts] + by)
@@ -2030,7 +2040,11 @@ vColumns : vColumn
     @check_dtypes
     @save_verticapy_logs
     def aggregate(
-        self, func: Union[str, list], columns: Union[str, list] = [], ncols_block: int = 20, processes: int = 1,
+        self,
+        func: Union[str, list],
+        columns: Union[str, list] = [],
+        ncols_block: int = 20,
+        processes: int = 1,
     ):
         """
     ---------------------------------------------------------------------------
@@ -3311,7 +3325,11 @@ vColumns : vColumn
     @check_dtypes
     @save_verticapy_logs
     def append(
-        self, input_relation: Union[str, str_sql], expr1: Union[str, list] = [], expr2: Union[str, list] = [], union_all: bool = True
+        self,
+        input_relation: Union[str, str_sql],
+        expr1: Union[str, list] = [],
+        expr2: Union[str, list] = [],
+        union_all: bool = True,
     ):
         """
     ---------------------------------------------------------------------------
@@ -3675,7 +3693,19 @@ vColumns : vColumn
      vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
      vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
-        raise_error_if_not_in("hist_type", hist_type, ["auto", "fully_stacked", "stacked", "fully", "fully stacked", "pyramid", "density",])
+        raise_error_if_not_in(
+            "hist_type",
+            hist_type,
+            [
+                "auto",
+                "fully_stacked",
+                "stacked",
+                "fully",
+                "fully stacked",
+                "pyramid",
+                "density",
+            ],
+        )
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [1, 2])
@@ -3714,7 +3744,11 @@ vColumns : vColumn
     @check_dtypes
     @save_verticapy_logs
     def balance(
-        self, column: str, method: str = "hybrid", x: float = 0.5, order_by: Union[str, list] = []
+        self,
+        column: str,
+        method: str = "hybrid",
+        x: float = 0.5,
+        order_by: Union[str, list] = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -4494,12 +4528,16 @@ vColumns : vColumn
     vDataFrame.pacf : Computes the partial autocorrelations of the input vColumn.
     vDataFrame.regr : Computes the regression matrix of the vDataFrame. 
         """
-        raise_error_if_not_in("method", method, ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer",])
+        raise_error_if_not_in(
+            "method",
+            method,
+            ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer",],
+        )
         if isinstance(columns, str):
             columns = [columns]
         self.are_namecols_in(columns)
         columns = self.format_colnames(columns)
-        if not(focus):
+        if not (focus):
             return self.__aggregate_matrix__(
                 method=method,
                 columns=columns,
@@ -4560,7 +4598,21 @@ vColumns : vColumn
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
-        raise_error_if_not_in("method", method, ["pearson", "kendall", "kendalla", "kendallb", "kendallc", "spearman", "spearmand", "biserial", "cramer",],)
+        raise_error_if_not_in(
+            "method",
+            method,
+            [
+                "pearson",
+                "kendall",
+                "kendalla",
+                "kendallb",
+                "kendallc",
+                "spearman",
+                "spearmand",
+                "biserial",
+                "cramer",
+            ],
+        )
 
         from scipy.stats import t, norm, chi2
         from numpy import log
@@ -5111,7 +5163,9 @@ vColumns : vColumn
     --------
     vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
         """
-        raise_error_if_not_in("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"])
+        raise_error_if_not_in(
+            "kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]
+        )
         if isinstance(columns, str):
             columns = [columns]
         self.are_namecols_in(columns)
@@ -5212,7 +5266,19 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        raise_error_if_not_in("method", method, ["numerical", "categorical", "statistics", "length", "range", "all", "auto",])
+        raise_error_if_not_in(
+            "method",
+            method,
+            [
+                "numerical",
+                "categorical",
+                "statistics",
+                "length",
+                "range",
+                "all",
+                "auto",
+            ],
+        )
         if isinstance(columns, str):
             columns = [columns]
         if method == "auto":
@@ -5691,7 +5757,9 @@ vColumns : vColumn
     # ---#
     @check_dtypes
     @save_verticapy_logs
-    def duplicated(self, columns: Union[str, list] = [], count: bool = False, limit: int = 30):
+    def duplicated(
+        self, columns: Union[str, list] = [], count: bool = False, limit: int = 30
+    ):
         """
     ---------------------------------------------------------------------------
     Returns the duplicated values.
@@ -6196,7 +6264,10 @@ vColumns : vColumn
     # ---#
     @save_verticapy_logs
     def flat_vmap(
-        self, vmap_col: Union[str, list] = [], limit: int = 100, exclude_columns: list = []
+        self,
+        vmap_col: Union[str, list] = [],
+        limit: int = 100,
+        exclude_columns: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -6633,7 +6704,39 @@ vColumns : vColumn
     Highchart
         Chart Object
         """
-        raise_error_if_not_in("kind", kind.lower(), ["area", "area_range", "area_ts", "bar", "boxplot", "bubble", "candlestick", "donut", "donut3d", "heatmap", "hist", "line", "negative_bar", "pie", "pie_half", "pie3d", "scatter", "spider", "spline", "stacked_bar", "stacked_hist", "pearson", "kendall", "cramer", "biserial", "spearman", "spearmand",],)
+        raise_error_if_not_in(
+            "kind",
+            kind.lower(),
+            [
+                "area",
+                "area_range",
+                "area_ts",
+                "bar",
+                "boxplot",
+                "bubble",
+                "candlestick",
+                "donut",
+                "donut3d",
+                "heatmap",
+                "hist",
+                "line",
+                "negative_bar",
+                "pie",
+                "pie_half",
+                "pie3d",
+                "scatter",
+                "spider",
+                "spline",
+                "stacked_bar",
+                "stacked_hist",
+                "pearson",
+                "kendall",
+                "cramer",
+                "biserial",
+                "spearman",
+                "spearmand",
+            ],
+        )
         from verticapy.highchart import hchart_from_vdf
 
         try:
@@ -6829,7 +6932,9 @@ vColumns : vColumn
     --------
     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
-        raise_error_if_not_in("method", method, ["density", "count", "avg", "min", "max", "sum"])
+        raise_error_if_not_in(
+            "method", method, ["density", "count", "avg", "min", "max", "sum"]
+        )
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [2])
@@ -7173,7 +7278,11 @@ vColumns : vColumn
     vDataFrame.groupby : Aggregates the vDataFrame.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        raise_error_if_not_in("how", str(how).lower(), ["left", "right", "cross", "full", "natural", "self", "inner", ""])
+        raise_error_if_not_in(
+            "how",
+            str(how).lower(),
+            ["left", "right", "cross", "full", "natural", "self", "inner", ""],
+        )
         if isinstance(expr1, str):
             expr1 = [expr1]
         if isinstance(expr2, str):
@@ -8519,7 +8628,11 @@ vColumns : vColumn
     @check_dtypes
     @save_verticapy_logs
     def quantile(
-        self, q: Union[int, float, list], columns: list = [], approx: bool = True, **agg_kwds,
+        self,
+        q: Union[int, float, list],
+        columns: list = [],
+        approx: bool = True,
+        **agg_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -8741,7 +8854,20 @@ vColumns : vColumn
     --------
     vDataFrame.eval : Evaluates a customized expression.
         """
-        raise_error_if_not_in("method", method, ["count", "ilike", "instr", "like", "not_ilike", "not_like", "replace", "substr",])
+        raise_error_if_not_in(
+            "method",
+            method,
+            [
+                "count",
+                "ilike",
+                "instr",
+                "like",
+                "not_ilike",
+                "not_like",
+                "replace",
+                "substr",
+            ],
+        )
         self.are_namecols_in(column)
         column = self.format_colnames(column)
         expr = "REGEXP_{}({}, '{}'".format(
@@ -8816,7 +8942,23 @@ vColumns : vColumn
     vDataFrame.corr  : Computes the Correlation Matrix of the vDataFrame.
     vDataFrame.pacf  : Computes the partial autocorrelations of the input vColumn.
         """
-        raise_error_if_not_in("method", method, ["avgx", "avgy", "count", "intercept", "r2", "slope", "sxx", "sxy", "syy", "beta", "alpha",],)
+        raise_error_if_not_in(
+            "method",
+            method,
+            [
+                "avgx",
+                "avgy",
+                "count",
+                "intercept",
+                "r2",
+                "slope",
+                "sxx",
+                "sxy",
+                "syy",
+                "beta",
+                "alpha",
+            ],
+        )
         if isinstance(columns, str):
             columns = [columns]
         if method == "beta":
@@ -9191,7 +9333,11 @@ vColumns : vColumn
     @check_dtypes
     @save_verticapy_logs
     def sample(
-        self, n: int = None, x: float = None, method: str = "random", by: Union[str, list] = []
+        self,
+        n: int = None,
+        x: float = None,
+        method: str = "random",
+        by: Union[str, list] = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -10319,7 +10465,11 @@ vColumns : vColumn
     --------
     vDataFrame.to_csv : Creates a csv file of the current vDataFrame relation.
         """
-        raise_error_if_not_in("relation_type", relation_type, ["view", "temporary", "table", "local", "insert"],)
+        raise_error_if_not_in(
+            "relation_type",
+            relation_type,
+            ["view", "temporary", "table", "local", "insert"],
+        )
         if isinstance(usecols, str):
             usecols = [usecols]
         relation_type = relation_type.lower()
@@ -10745,7 +10895,11 @@ vColumns : vColumn
     vDataFrame.to_db  : Saves the current relation's vDataFrame to the Vertica database.
     vDataFrame.to_json: Creates a JSON file of the current vDataFrame relation.
         """
-        raise_error_if_not_in("compression", compression, ["snappy", "gzip", "brotli", "zstd", "uncompressed"])
+        raise_error_if_not_in(
+            "compression",
+            compression,
+            ["snappy", "gzip", "brotli", "zstd", "uncompressed"],
+        )
         if isinstance(order_by, str):
             order_by = [order_by]
         if isinstance(by, str):
@@ -10837,7 +10991,18 @@ vColumns : vColumn
     vDataFrame
         self
         """
-        raise_error_if_not_in("shape", shape, ["Point", "Polygon", "Linestring", "Multipoint", "Multipolygon", "Multilinestring",])
+        raise_error_if_not_in(
+            "shape",
+            shape,
+            [
+                "Point",
+                "Polygon",
+                "Linestring",
+                "Multipoint",
+                "Multipolygon",
+                "Multilinestring",
+            ],
+        )
         if isinstance(usecols, str):
             usecols = [usecols]
         query = f"SELECT /*+LABEL('vDataframe.to_shp')*/ STV_SetExportShapefileDirectory(USING PARAMETERS path = '{path}');"
@@ -10966,7 +11131,12 @@ vColumns : vColumn
     @check_dtypes
     @save_verticapy_logs
     def iv_woe(
-        self, y: str, columns: Union[str, list] = [], nbins: int = 10, show: bool = True, ax=None
+        self,
+        y: str,
+        columns: Union[str, list] = [],
+        nbins: int = 10,
+        show: bool = True,
+        ax=None,
     ):
         """
     ---------------------------------------------------------------------------

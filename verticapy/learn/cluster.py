@@ -53,7 +53,11 @@ import os
 
 # VerticaPy Modules
 import vertica_python, verticapy
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
@@ -127,10 +131,16 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        raise_error_if_not_in("split_method", str(split_method).lower(), ["size", "sum_squares"])
-        raise_error_if_not_in("distance_method", str(distance_method).lower(), ["euclidean"])
+        raise_error_if_not_in(
+            "split_method", str(split_method).lower(), ["size", "sum_squares"]
+        )
+        raise_error_if_not_in(
+            "distance_method", str(distance_method).lower(), ["euclidean"]
+        )
         if isinstance(init, str):
-            raise_error_if_not_in("init", init.lower(), ["kmeanspp", "pseudo", "random"])
+            raise_error_if_not_in(
+                "init", init.lower(), ["kmeanspp", "pseudo", "random"]
+            )
             init = init.lower()
         self.type, self.name = "BisectingKMeans", name
         self.parameters = {

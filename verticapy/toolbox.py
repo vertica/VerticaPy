@@ -55,7 +55,11 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.errors import *
 
 # Other Modules
@@ -159,7 +163,9 @@ def executeSQL(
     sql_push_ext: bool = False,
     symbol: str = "$",
 ):
-    raise_error_if_not_in("method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"])
+    raise_error_if_not_in(
+        "method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"]
+    )
 
     from verticapy.connect import current_cursor
 

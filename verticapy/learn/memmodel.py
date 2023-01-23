@@ -54,7 +54,11 @@ from collections.abc import Iterable
 from typing import Union
 
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.utilities import save_verticapy_logs
@@ -369,6 +373,7 @@ def sql_from_chaid_tree(
         return [predict_tree(X, tree, classes, i) for i in range(n)]
     else:
         return predict_tree(X, tree, classes)
+
 
 @check_dtypes
 def chaid_to_graphviz(
@@ -755,6 +760,7 @@ def sql_from_binary_tree(
             children_left, children_right, feature, threshold, value, 0, X
         )
 
+
 @check_dtypes
 def binary_tree_to_graphviz(
     children_left: Union[list, np.ndarray],
@@ -981,7 +987,11 @@ def predict_from_coef(
     numpy.array
         Predicted values
     """
-    raise_error_if_not_in("method", method, ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"])
+    raise_error_if_not_in(
+        "method",
+        method,
+        ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],
+    )
     result = intercept + np.sum(np.array(coefficients) * np.array(X), axis=1)
     if method in ("LogisticRegression", "LinearSVC"):
         result = 1 / (1 + np.exp(-(result)))
@@ -996,7 +1006,10 @@ def predict_from_coef(
 # ---#
 @check_dtypes
 def sql_from_coef(
-    X: Union[list, np.ndarray], coefficients: Union[list, np.ndarray], intercept: float, method: str = "LinearRegression"
+    X: Union[list, np.ndarray],
+    coefficients: Union[list, np.ndarray],
+    intercept: float,
+    method: str = "LinearRegression",
 ) -> str:
     """
     ---------------------------------------------------------------------------
@@ -1019,7 +1032,11 @@ def sql_from_coef(
     str
         SQL code
     """
-    raise_error_if_not_in("method", method, ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"])
+    raise_error_if_not_in(
+        "method",
+        method,
+        ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],
+    )
     assert len(X) == len(coefficients), ParameterError(
         "The length of parameter 'X' must be equal to the number of coefficients."
     )
@@ -1030,6 +1047,7 @@ def sql_from_coef(
     if method in ("LogisticRegression", "LinearSVC"):
         return f"1 / (1 + EXP(- ({sql})))"
     return sql
+
 
 @check_dtypes
 def bisecting_kmeans_to_graphviz(
@@ -1639,7 +1657,11 @@ def transform_from_pca(
 
 # ---#
 @check_dtypes
-def sql_from_pca(X: Union[list, np.ndarray], principal_components: Union[list, np.ndarray], mean: Union[list, np.ndarray]) -> list:
+def sql_from_pca(
+    X: Union[list, np.ndarray],
+    principal_components: Union[list, np.ndarray],
+    mean: Union[list, np.ndarray],
+) -> list:
     """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy a PCA model using its attributes.
@@ -1676,7 +1698,11 @@ def sql_from_pca(X: Union[list, np.ndarray], principal_components: Union[list, n
 
 # ---#
 @check_dtypes
-def transform_from_svd(X: Union[list, np.ndarray], vectors: Union[list, np.ndarray], values: Union[list, np.ndarray]) -> np.ndarray:
+def transform_from_svd(
+    X: Union[list, np.ndarray],
+    vectors: Union[list, np.ndarray],
+    values: Union[list, np.ndarray],
+) -> np.ndarray:
     """
     ---------------------------------------------------------------------------
     Transforms the data with an SVD model using the input attributes.
@@ -1704,7 +1730,11 @@ def transform_from_svd(X: Union[list, np.ndarray], vectors: Union[list, np.ndarr
 
 # ---#
 @check_dtypes
-def sql_from_svd(X: Union[list, np.ndarray], vectors: Union[list, np.ndarray], values: Union[list, np.ndarray]) -> list:
+def sql_from_svd(
+    X: Union[list, np.ndarray],
+    vectors: Union[list, np.ndarray],
+    values: Union[list, np.ndarray],
+) -> list:
     """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy a SVD model using its attributes.
@@ -1775,7 +1805,9 @@ def transform_from_normalizer(
 
 # ---#
 @check_dtypes
-def sql_from_normalizer(X: Union[list, np.ndarray], values: Union[list, np.ndarray], method: str = "zscore") -> list:
+def sql_from_normalizer(
+    X: Union[list, np.ndarray], values: Union[list, np.ndarray], method: str = "zscore"
+) -> list:
     """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy a normalizer model using its attributes.
@@ -1817,7 +1849,9 @@ def sql_from_normalizer(X: Union[list, np.ndarray], values: Union[list, np.ndarr
 # ---#
 @check_dtypes
 def transform_from_one_hot_encoder(
-    X: Union[list, np.ndarray], categories: Union[list, np.ndarray], drop_first: bool = False
+    X: Union[list, np.ndarray],
+    categories: Union[list, np.ndarray],
+    drop_first: bool = False,
 ) -> np.ndarray:
     """
     ---------------------------------------------------------------------------
@@ -1855,7 +1889,10 @@ def transform_from_one_hot_encoder(
 # ---#
 @check_dtypes
 def sql_from_one_hot_encoder(
-    X: Union[list, np.ndarray], categories: Union[list, np.ndarray], drop_first: bool = False, column_naming: str = None
+    X: Union[list, np.ndarray],
+    categories: Union[list, np.ndarray],
+    drop_first: bool = False,
+    column_naming: str = None,
 ) -> list:
     """
     ---------------------------------------------------------------------------
@@ -1885,7 +1922,9 @@ def sql_from_one_hot_encoder(
         SQL code
     """
     if column_naming:
-        raise_error_if_not_in("column_naming", column_naming, ["indices", "values", "values_relaxed"])
+        raise_error_if_not_in(
+            "column_naming", column_naming, ["indices", "values", "values_relaxed"]
+        )
     assert len(X) == len(categories), ParameterError(
         "The length of parameter 'X' must be equal to the length of the list 'values'."
     )
@@ -2038,7 +2077,34 @@ attributes: dict
     @check_dtypes
     @save_verticapy_logs
     def __init__(self, model_type: str, attributes: dict):
-        raise_error_if_not_in("model_type", model_type, ["OneHotEncoder", "Normalizer", "SVD", "PCA", "CHAID", "BisectingKMeans", "KMeans", "KPrototypes", "NaiveBayes", "XGBoostClassifier", "XGBoostRegressor", "RandomForestClassifier", "BinaryTreeClassifier", "BinaryTreeRegressor", "BinaryTreeAnomaly", "RandomForestRegressor", "LinearSVR", "LinearSVC", "LogisticRegression", "LinearRegression", "NearestCentroid", "IsolationForest",])
+        raise_error_if_not_in(
+            "model_type",
+            model_type,
+            [
+                "OneHotEncoder",
+                "Normalizer",
+                "SVD",
+                "PCA",
+                "CHAID",
+                "BisectingKMeans",
+                "KMeans",
+                "KPrototypes",
+                "NaiveBayes",
+                "XGBoostClassifier",
+                "XGBoostRegressor",
+                "RandomForestClassifier",
+                "BinaryTreeClassifier",
+                "BinaryTreeRegressor",
+                "BinaryTreeAnomaly",
+                "RandomForestRegressor",
+                "LinearSVR",
+                "LinearSVC",
+                "LogisticRegression",
+                "LinearRegression",
+                "NearestCentroid",
+                "IsolationForest",
+            ],
+        )
         attributes_ = {}
         if model_type == "NaiveBayes":
             if (
@@ -2195,10 +2261,12 @@ attributes: dict
                 attributes_["drop_first"] = bool(attributes["drop_first"])
             if "column_naming" not in attributes:
                 attributes_["column_naming"] = "indices"
-            elif not(attributes_["column_naming"]):
+            elif not (attributes_["column_naming"]):
                 attributes_["column_naming"] = None
             else:
-                raise_error_if_not_in("column_naming", attributes["column_naming"], ["indices", "values"])
+                raise_error_if_not_in(
+                    "column_naming", attributes["column_naming"], ["indices", "values"]
+                )
                 attributes_["column_naming"] = attributes["column_naming"]
             represent = "<{0}>\n\ncategories = {1}\n\ndrop_first = {2}\n\ncolumn_naming = '{3}'".format(
                 model_type,
@@ -2309,7 +2377,9 @@ attributes: dict
             assert "values" in attributes and "method" in attributes, ParameterError(
                 "Normalizer's attributes must include a list including the model's aggregations and a string representing the model's method."
             )
-            raise_error_if_not_in("method", attributes["method"], ["minmax", "zscore", "robust_zscore"])
+            raise_error_if_not_in(
+                "method", attributes["method"], ["minmax", "zscore", "robust_zscore"]
+            )
             attributes_["values"] = np.copy(attributes["values"])
             attributes_["method"] = attributes["method"]
             represent = "<{0}>\n\nvalues =\n{1}\n\nmethod = '{2}'".format(

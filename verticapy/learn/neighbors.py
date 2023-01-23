@@ -49,7 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.metrics import *
 from verticapy.learn.mlplot import *
 from verticapy.utilities import *
@@ -138,9 +142,7 @@ p: int, optional
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
         query = "SELECT {0}, {1} FROM {2} WHERE {1} IS NOT NULL GROUP BY {1} ORDER BY {1} ASC".format(
-            ", ".join(
-                [f"{func}({column}) AS {column}" for column in self.X]
-            ),
+            ", ".join([f"{func}({column}) AS {column}" for column in self.X]),
             self.y,
             self.input_relation,
         )
@@ -352,7 +354,9 @@ p: int, optional
 
     # ---#
     @check_dtypes
-    def classification_report(self, cutoff: Union[int, float, list] = [], labels: list = []):
+    def classification_report(
+        self, cutoff: Union[int, float, list] = [], labels: list = []
+    ):
         """
     ---------------------------------------------------------------------------
     Computes a classification report using multiple metrics to evaluate the model
@@ -945,7 +949,11 @@ xlim: list, optional
         xlim: list = [],
         **kwargs,
     ):
-        raise_error_if_not_in("kernel", str(kernel).lower(), ["gaussian", "logistic", "sigmoid", "silverman"])
+        raise_error_if_not_in(
+            "kernel",
+            str(kernel).lower(),
+            ["gaussian", "logistic", "sigmoid", "silverman"],
+        )
         self.type, self.name = "KernelDensity", name
         self.parameters = {
             "nbins": nbins,
@@ -1287,7 +1295,12 @@ p: int, optional
 
     # ---#
     @check_dtypes
-    def deploySQL(self, X: Union[str, list] = [], test_relation: str = "", key_columns: Union[str, list] = []):
+    def deploySQL(
+        self,
+        X: Union[str, list] = [],
+        test_relation: str = "",
+        key_columns: Union[str, list] = [],
+    ):
         """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 

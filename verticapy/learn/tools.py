@@ -49,7 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.toolbox import *
 from verticapy.utilities import *
 
@@ -889,7 +893,9 @@ def get_model_init_params(model_type: str):
 # This piece of code was taken from
 # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
 @check_dtypes
-def matrix_rotation(Phi: list, gamma: Union[int, float] = 1.0, q: int = 20, tol: float = 1e-6):
+def matrix_rotation(
+    Phi: list, gamma: Union[int, float] = 1.0, q: int = 20, tol: float = 1e-6
+):
     """
 ---------------------------------------------------------------------------
 Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 

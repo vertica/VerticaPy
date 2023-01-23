@@ -54,7 +54,11 @@ from configparser import ConfigParser
 
 # VerticaPy Modules
 import verticapy
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.toolbox import is_special_symbol, get_special_symbols
 from verticapy.errors import *
 

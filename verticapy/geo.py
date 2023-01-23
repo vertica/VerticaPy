@@ -53,7 +53,11 @@ import warnings
 
 # VerticaPy Modules
 import verticapy, vertica_python
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.toolbox import *
 from verticapy.utilities import *
 import verticapy.stats as st

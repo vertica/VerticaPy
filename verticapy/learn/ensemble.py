@@ -54,7 +54,11 @@ import random
 import numpy as np
 
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.metrics import *
 from verticapy.learn.mlplot import *
 from verticapy.utilities import *
@@ -687,8 +691,10 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        if (isinstance(max_features, str)):
-            raise_error_if_not_in("max_features", str(max_features).lower(), ["auto", "max"])
+        if isinstance(max_features, str):
+            raise_error_if_not_in(
+                "max_features", str(max_features).lower(), ["auto", "max"]
+            )
         self.type, self.name = "RandomForestClassifier", name
         self.parameters = {
             "n_estimators": n_estimators,
@@ -758,8 +764,10 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        if (isinstance(max_features, str)):
-            raise_error_if_not_in("max_features", str(max_features).lower(), ["auto", "max"])
+        if isinstance(max_features, str):
+            raise_error_if_not_in(
+                "max_features", str(max_features).lower(), ["auto", "max"]
+            )
         self.type, self.name = "RandomForestRegressor", name
         self.parameters = {
             "n_estimators": n_estimators,
@@ -839,7 +847,11 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        raise_error_if_not_in("split_proposal_method", str(split_proposal_method).lower(), ["local", "global"])
+        raise_error_if_not_in(
+            "split_proposal_method",
+            str(split_proposal_method).lower(),
+            ["local", "global"],
+        )
         self.type, self.name = "XGBoostClassifier", name
         params = {
             "max_ntree": max_ntree,
@@ -926,7 +938,11 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        raise_error_if_not_in("split_proposal_method", str(split_proposal_method).lower(), ["local", "global"])
+        raise_error_if_not_in(
+            "split_proposal_method",
+            str(split_proposal_method).lower(),
+            ["local", "global"],
+        )
         self.type, self.name = "XGBoostRegressor", name
         params = {
             "max_ntree": max_ntree,

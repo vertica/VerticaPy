@@ -49,7 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.vmodel import *
 from verticapy.utilities import save_verticapy_logs
 
@@ -108,10 +112,14 @@ max_iter: int, optional
         class_weight: Union[str, list] = [1, 1],
         max_iter: int = 100,
     ):
-    	raise_error_if_not_in("intercept_mode", str(intercept_mode).lower(), ["regularized", "unregularized"])
-    	if isinstance(class_weight, str):
-    		raise_error_if_not_in("class_weight", class_weight, ["auto", "none"])
-    		class_weight = str(class_weight).lower()
+        raise_error_if_not_in(
+            "intercept_mode",
+            str(intercept_mode).lower(),
+            ["regularized", "unregularized"],
+        )
+        if isinstance(class_weight, str):
+            raise_error_if_not_in("class_weight", class_weight, ["auto", "none"])
+            class_weight = str(class_weight).lower()
         self.type, self.name = "LinearSVC", name
         self.parameters = {
             "tol": tol,
@@ -196,7 +204,11 @@ test_relation: str
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
-    	raise_error_if_not_in("intercept_mode", str(intercept_mode).lower(), ["regularized", "unregularized"])
+        raise_error_if_not_in(
+            "intercept_mode",
+            str(intercept_mode).lower(),
+            ["regularized", "unregularized"],
+        )
         self.type, self.name = "LinearSVR", name
         self.parameters = {
             "tol": tol,

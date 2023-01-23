@@ -54,7 +54,11 @@ import numpy as np
 from typing import Union
 
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -185,7 +189,9 @@ final_relation_: vDataFrame
         save: bool = True,
     ):
         raise_error_if_not_in("cat_method", cat_method, ["label", "ooe"])
-        raise_error_if_not_in("num_method", num_method, ["same_freq", "same_width", "none"])
+        raise_error_if_not_in(
+            "num_method", num_method, ["same_freq", "same_width", "none"]
+        )
         raise_error_if_not_in("na_method", na_method, ["auto", "drop"])
         raise_error_if_not_in("id_method", id_method, ["none", "drop"])
         self.type, self.name = "AutoDataPrep", name
@@ -693,8 +699,14 @@ model_grid_ : tablesample
         print_info: bool = True,
     ):
         raise_error_if_not_in("stepwise_criterion", stepwise_criterion, ["aic", "bic"])
-        raise_error_if_not_in("stepwise_direction", stepwise_direction, ["forward", "backward"])
-        raise_error_if_not_in("stepwise_x_order", stepwise_x_order, ["pearson", "spearman", "random", "none"])
+        raise_error_if_not_in(
+            "stepwise_direction", stepwise_direction, ["forward", "backward"]
+        )
+        raise_error_if_not_in(
+            "stepwise_x_order",
+            stepwise_x_order,
+            ["pearson", "spearman", "random", "none"],
+        )
         assert optimized_grid in [0, 1, 2], ParameterError(
             "Optimized Grid must be an integer between 0 and 2."
         )
@@ -756,7 +768,9 @@ model_grid_ : tablesample
         if isinstance(self.parameters["estimator"], str):
             v = vertica_version()
             self.parameters["estimator"] = self.parameters["estimator"].lower()
-            raise_error_if_not_in("estimator", self.parameters["estimator"], ["native", "all", "fast"])
+            raise_error_if_not_in(
+                "estimator", self.parameters["estimator"], ["native", "all", "fast"]
+            )
             modeltype = None
             estimator_method = self.parameters["estimator"]
             if not (isinstance(input_relation, vDataFrame)):

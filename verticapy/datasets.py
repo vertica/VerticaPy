@@ -53,7 +53,11 @@ import os, datetime
 
 # VerticaPy Modules
 import verticapy, vertica_python
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *

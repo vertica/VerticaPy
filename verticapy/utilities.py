@@ -55,7 +55,11 @@ from typing import Union
 # VerticaPy Modules
 import vertica_python
 import verticapy
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.toolbox import *
 from verticapy.javascript import datatables_repr
 from verticapy.errors import *
@@ -315,7 +319,9 @@ bool
     # -#
     if "relation_type" in kwds and method == "auto":
         method = kwds["relation_type"]
-    raise_error_if_not_in("method", method, ["table", "view", "model", "geo", "text", "auto", "schema"])
+    raise_error_if_not_in(
+        "method", method, ["table", "view", "model", "geo", "text", "auto", "schema"]
+    )
     schema, relation = schema_relation(name)
     schema, relation = schema[1:-1], relation[1:-1]
     if not (name):
@@ -2574,7 +2580,30 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
     value: object, optional
         New value of option.
     """
-    raise_error_if_not_in("option", option, ["cache", "colors", "color_style", "interactive", "count_on", "footer_on", "max_columns", "max_rows", "mode", "overwrite_model", "percent_bar", "print_info", "random_state", "save_query_profile", "sql_on", "temp_schema", "time_on", "tqdm",])
+    raise_error_if_not_in(
+        "option",
+        option,
+        [
+            "cache",
+            "colors",
+            "color_style",
+            "interactive",
+            "count_on",
+            "footer_on",
+            "max_columns",
+            "max_rows",
+            "mode",
+            "overwrite_model",
+            "percent_bar",
+            "print_info",
+            "random_state",
+            "save_query_profile",
+            "sql_on",
+            "temp_schema",
+            "time_on",
+            "tqdm",
+        ],
+    )
     wrong_value = False
     if option == "colors":
         if isinstance(value, list):
@@ -2582,7 +2611,29 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
         else:
             wrong_value = True
     elif option == "color_style":
-        raise_error_if_not_in("value", value, ["rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", "magenta", "orange", "vintage", "vivid", "berries", "refreshing", "summer", "tropical", "india", "default",])
+        raise_error_if_not_in(
+            "value",
+            value,
+            [
+                "rgb",
+                "sunset",
+                "retro",
+                "shimbg",
+                "swamp",
+                "med",
+                "orchid",
+                "magenta",
+                "orange",
+                "vintage",
+                "vivid",
+                "berries",
+                "refreshing",
+                "summer",
+                "tropical",
+                "india",
+                "default",
+            ],
+        )
         if isinstance(value, str):
             verticapy.OPTIONS["color_style"] = value
             verticapy.OPTIONS["colors"] = []
@@ -2633,7 +2684,7 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
             pass
         else:
             wrong_value = True
-        if not(wrong_value):
+        if not (wrong_value):
             verticapy.OPTIONS[option] = value
     elif option == "temp_schema":
         if isinstance(value, str):
@@ -2888,7 +2939,9 @@ The tablesample attributes are the same as the parameters.
         tablesample
             self
         """
-        assert isinstance(tbs, tablesample), ParameterError("tablesamples can only be appended to another tablesample.")
+        assert isinstance(tbs, tablesample), ParameterError(
+            "tablesamples can only be appended to another tablesample."
+        )
         n1, n2 = self.shape()[0], tbs.shape()[0]
         assert n1 == n2, ParameterError(
             "The input and target tablesamples must have the same number of columns."
@@ -2934,7 +2987,9 @@ The tablesample attributes are the same as the parameters.
         tablesample
             self
         """
-        assert isinstance(tbs, tablesample), ParameterError("tablesamples can only be merged with other tablesamples.")
+        assert isinstance(tbs, tablesample), ParameterError(
+            "tablesamples can only be merged with other tablesamples."
+        )
         n1, n2 = self.shape()[1], tbs.shape()[1]
         assert n1 == n2, ParameterError(
             "The input and target tablesamples must have the same number of rows."

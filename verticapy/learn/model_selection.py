@@ -57,7 +57,11 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -1862,7 +1866,9 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    raise_error_if_not_in("method", method, ["efficiency", "performance", "scalability"])
+    raise_error_if_not_in(
+        "method", method, ["efficiency", "performance", "scalability"]
+    )
     from verticapy.plot import range_curve
 
     for s in sizes:

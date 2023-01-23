@@ -58,7 +58,11 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy import *
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
@@ -505,7 +509,10 @@ float
 @check_dtypes
 @save_verticapy_logs
 def quantile_error(
-    q: Union[int, float], y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
+    q: Union[int, float],
+    y_true: str,
+    y_score: str,
+    input_relation: Union[str, vDataFrame],
 ):
     """
 ---------------------------------------------------------------------------

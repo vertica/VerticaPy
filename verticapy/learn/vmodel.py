@@ -56,7 +56,11 @@ from copy import deepcopy
 
 # VerticaPy Modules
 import verticapy
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.learn.mlplot import *
 from verticapy.learn.model_selection import *
@@ -951,7 +955,7 @@ Main Class for Vertica Model
         new_parameters = deepcopy(self.parameters)
         for p in parameters:
             new_parameters[p] = parameters[p]
-        self.__init__(name = self.name, **new_parameters)
+        self.__init__(name=self.name, **new_parameters)
 
     # ---#
     def to_memmodel(self, **kwds):
@@ -2266,7 +2270,12 @@ class BinaryClassifier(Classifier):
 
     # ---#
     @check_dtypes
-    def score(self, method: str = "accuracy", cutoff: Union[int, float] = 0.5, nbins: int = 10000):
+    def score(
+        self,
+        method: str = "accuracy",
+        cutoff: Union[int, float] = 0.5,
+        nbins: int = 10000,
+    ):
         """
 	---------------------------------------------------------------------------
 	Computes the model score.
@@ -2366,7 +2375,10 @@ class MulticlassClassifier(Classifier):
     # ---#
     @check_dtypes
     def classification_report(
-        self, cutoff: Union[int, float, list] = [], labels: Union[str, list] = [], nbins: int = 10000,
+        self,
+        cutoff: Union[int, float, list] = [],
+        labels: Union[str, list] = [],
+        nbins: int = 10000,
     ):
         """
 	---------------------------------------------------------------------------
@@ -3669,7 +3681,10 @@ class Preprocessing(Unsupervised):
     # ---#
     @check_dtypes
     def deploySQL(
-        self, key_columns: Union[str, list] = [], exclude_columns: Union[str, list] = [], X: Union[str, list] = []
+        self,
+        key_columns: Union[str, list] = [],
+        exclude_columns: Union[str, list] = [],
+        X: Union[str, list] = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -3736,7 +3751,10 @@ class Preprocessing(Unsupervised):
     # ---#
     @check_dtypes
     def deployInverseSQL(
-        self, key_columns: Union[str, list] = [], exclude_columns: Union[str, list] = [], X: Union[str, list] = []
+        self,
+        key_columns: Union[str, list] = [],
+        exclude_columns: Union[str, list] = [],
+        X: Union[str, list] = [],
     ) -> str:
         """
     ---------------------------------------------------------------------------
@@ -4146,7 +4164,11 @@ class Decomposition(Preprocessing):
     # ---#
     @check_dtypes
     def score(
-        self, X: Union[str, list] = [], input_relation: str = "", method: str = "avg", p: int = 2
+        self,
+        X: Union[str, list] = [],
+        input_relation: str = "",
+        method: str = "avg",
+        p: int = 2,
     ):
         """
     ---------------------------------------------------------------------------

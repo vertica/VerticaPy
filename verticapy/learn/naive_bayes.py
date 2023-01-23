@@ -49,7 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.vmodel import *
 from verticapy.utilities import save_verticapy_logs
 
@@ -89,7 +93,11 @@ nbtype: str, optional
     @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, alpha: Union[int, float] = 1.0, nbtype: str = "auto"):
-        raise_error_if_not_in("nbtype", str(nbtype).lower(), ["auto", "bernoulli", "categorical", "multinomial", "gaussian"])
+        raise_error_if_not_in(
+            "nbtype",
+            str(nbtype).lower(),
+            ["auto", "bernoulli", "categorical", "multinomial", "gaussian"],
+        )
         self.type, self.name = "NaiveBayes", name
         self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
 

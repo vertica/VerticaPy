@@ -49,7 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.vmodel import *
 from verticapy.utilities import save_verticapy_logs
 
@@ -169,7 +173,9 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        raise_error_if_not_in("max_features", str(max_features).lower(), ["auto", "max"])
+        raise_error_if_not_in(
+            "max_features", str(max_features).lower(), ["auto", "max"]
+        )
         self.type, self.name = "RandomForestClassifier", name
         self.parameters = {
             "n_estimators": 1,
@@ -231,7 +237,9 @@ class DecisionTreeRegressor(Regressor, Tree):
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        raise_error_if_not_in("max_features", str(max_features).lower(), ["auto", "max"])
+        raise_error_if_not_in(
+            "max_features", str(max_features).lower(), ["auto", "max"]
+        )
         self.type, self.name = "RandomForestRegressor", name
         self.parameters = {
             "n_estimators": 1,

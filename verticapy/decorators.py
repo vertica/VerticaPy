@@ -103,7 +103,6 @@ check_minimum_version decorator. It simplifies the code by checking if the
 feature is available in the user's version.
     """
 
-
     @wraps(func)
     def func_prec_check_dtypes(*args, **kwargs):
 
@@ -112,8 +111,8 @@ feature is available in the user's version.
 
         hints = typing.get_type_hints(func)
         all_args = {**kwargs}
-        #TO DO -> Testing arg types
-        #for idx, var in enumerate(args):
+        # TO DO -> Testing arg types
+        # for idx, var in enumerate(args):
         #    all_args[list(hints.keys())[idx]] = var
         for var_name in hints:
             dt = typing.get_args(hints[var_name])
@@ -128,18 +127,24 @@ feature is available in the user's version.
                 var = all_args[var_name]
                 if isinstance(var, vDataFrame) and str_sql in dt:
                     pass
-                elif var != None and not(isinstance(var, dt)):
+                elif var != None and not (isinstance(var, dt)):
                     dt_var = type(var)
                     if single_type:
                         warning_message = f"Parameter '{var_name}' must be of type <{dt_str_list}>, found type <{dt_var}>."
                     else:
                         warning_message = f"Parameter '{var_name}' type must be one of the following: <{dt_str_list}>, found type <{dt_var}>."
-                    warning_message = warning_message.replace("<class '", "").replace("'>", "").replace("verticapy.toolbox.", "").replace("str_sql", "str_sql|vDataFrame")
+                    warning_message = (
+                        warning_message.replace("<class '", "")
+                        .replace("'>", "")
+                        .replace("verticapy.toolbox.", "")
+                        .replace("str_sql", "str_sql|vDataFrame")
+                    )
                     warnings.warn(warning_message, Warning)
 
         return func(*args, **kwargs)
 
     return func_prec_check_dtypes
+
 
 # ---#
 def check_minimum_version(func):

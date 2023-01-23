@@ -53,7 +53,11 @@ import math, warnings
 from typing import Union
 
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame, save_verticapy_logs
@@ -130,7 +134,7 @@ papprox_ma: int, optional
                 "In case of non-seasonality (s = 0), all the parameters P, D or Q must be equal to 0."
             )
         else:
-            assert (D > 0 or P > 0 or Q > 0), ParameterError(
+            assert D > 0 or P > 0 or Q > 0, ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
         self.type, self.name = "SARIMAX", name
@@ -1118,7 +1122,12 @@ solver: str, optional
         assert p > 0, ParameterError(
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
-        self.parameters = {"p": p, "tol": tol, "max_iter": max_iter, "solver": str(solver).lower()}
+        self.parameters = {
+            "p": p,
+            "tol": tol,
+            "max_iter": max_iter,
+            "solver": str(solver).lower(),
+        }
 
     # ---#
     def deploySQL(self):

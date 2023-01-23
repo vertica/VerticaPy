@@ -49,7 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.learn.vmodel import *
@@ -278,7 +282,11 @@ method: str, optional
     ):
         raise_error_if_not_in("method", str(method).lower(), ["lapack"])
         self.type, self.name = "PCA", name
-        self.parameters = {"n_components": n_components, "scale": scale, "method": str(method).lower()}
+        self.parameters = {
+            "n_components": n_components,
+            "scale": scale,
+            "method": str(method).lower(),
+        }
 
 
 # ---#

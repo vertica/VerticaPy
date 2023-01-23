@@ -50,7 +50,11 @@
 #
 # VerticaPy Modules
 from verticapy import vDataFrame
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
@@ -292,7 +296,9 @@ fit_intercept: bool, optional
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
-        raise_error_if_not_in("penalty", str(penalty).lower(), ["none", "l1", "l2", "enet"])
+        raise_error_if_not_in(
+            "penalty", str(penalty).lower(), ["none", "l1", "l2", "enet"]
+        )
         raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs", "cgd"])
         self.type, self.name = "LogisticRegression", name
         if vertica_version()[0] < 12 and not (fit_intercept):
@@ -315,7 +321,9 @@ fit_intercept: bool, optional
             raise_error_if_not_in("solver", str(solver).lower(), ["bfgs", "newton"])
         elif str(penalty).lower() in ("l1", "l2"):
             del self.parameters["l1_ratio"]
-            raise_error_if_not_in("solver", str(solver).lower(), ["bfgs", "newton", "cgd"])
+            raise_error_if_not_in(
+                "solver", str(solver).lower(), ["bfgs", "newton", "cgd"]
+            )
 
 
 # ---#

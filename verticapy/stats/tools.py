@@ -58,7 +58,11 @@ import numpy as np
 
 # VerticaPy Modules
 import verticapy
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.learn.linear_model import LinearRegression
@@ -692,7 +696,9 @@ tablesample
             model.drop()
         return mse
 
-    raise_error_if_not_in("alternative", alternative, ["increasing", "decreasing", "two-sided"])
+    raise_error_if_not_in(
+        "alternative", alternative, ["increasing", "decreasing", "two-sided"]
+    )
     vdf.are_namecols_in([y] + X)
     y = vdf.format_colnames(y)
     X = vdf.format_colnames(X)

@@ -55,7 +55,11 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
@@ -586,7 +590,46 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the vColumn.
 		"""
-        raise_error_if_not_in("func", func, ["abs", "acos", "asin", "atan", "avg", "cbrt", "ceil", "contain", "count", "cos", "cosh", "cot", "dim", "exp", "find", "floor", "len", "length", "ln", "log", "log10", "max", "mean", "mod", "min", "pow", "round", "sign", "sin", "sinh", "sum", "sqrt", "tan", "tanh",])
+        raise_error_if_not_in(
+            "func",
+            func,
+            [
+                "abs",
+                "acos",
+                "asin",
+                "atan",
+                "avg",
+                "cbrt",
+                "ceil",
+                "contain",
+                "count",
+                "cos",
+                "cosh",
+                "cot",
+                "dim",
+                "exp",
+                "find",
+                "floor",
+                "len",
+                "length",
+                "ln",
+                "log",
+                "log10",
+                "max",
+                "mean",
+                "mod",
+                "min",
+                "pow",
+                "round",
+                "sign",
+                "sin",
+                "sinh",
+                "sum",
+                "sqrt",
+                "tan",
+                "tanh",
+            ],
+        )
         if func == "mean":
             func = "avg"
         elif func == "length":
@@ -918,7 +961,11 @@ Attributes
     # ---#
     @check_dtypes
     @save_verticapy_logs
-    def clip(self, lower: Union[int, float, datetime.datetime, datetime.date] = None, upper: Union[int, float, datetime.datetime, datetime.date] = None):
+    def clip(
+        self,
+        lower: Union[int, float, datetime.datetime, datetime.date] = None,
+        upper: Union[int, float, datetime.datetime, datetime.date] = None,
+    ):
         """
 	---------------------------------------------------------------------------
 	Clips the vColumn by transforming the values lesser than the lower bound to 
@@ -1163,7 +1210,9 @@ Attributes
 	--------
 	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
-        raise_error_if_not_in("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"])
+        raise_error_if_not_in(
+            "kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]
+        )
         if by:
             self.parent.are_namecols_in(by)
             by = self.parent.format_colnames(by)
@@ -1274,7 +1323,9 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        raise_error_if_not_in("method", method, ["auto", "numerical", "categorical", "cat_stats"])
+        raise_error_if_not_in(
+            "method", method, ["auto", "numerical", "categorical", "cat_stats"]
+        )
         assert (method != "cat_stats") or (numcol), ParameterError(
             "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
         )
@@ -1471,7 +1522,9 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
-        raise_error_if_not_in("method", method, ["auto", "smart", "same_width", "same_freq", "topk"])
+        raise_error_if_not_in(
+            "method", method, ["auto", "smart", "same_width", "same_freq", "topk"]
+        )
         if self.isnum() and method == "smart":
             schema = verticapy.OPTIONS["temp_schema"]
             if not (schema):
@@ -1749,7 +1802,10 @@ Attributes
     @check_dtypes
     @save_verticapy_logs
     def drop_outliers(
-        self, threshold: Union[int, float] = 4.0, use_threshold: bool = True, alpha: Union[int, float] = 0.05
+        self,
+        threshold: Union[int, float] = 4.0,
+        use_threshold: bool = True,
+        alpha: Union[int, float] = 0.05,
     ):
         """
 	---------------------------------------------------------------------------
@@ -1957,7 +2013,22 @@ Attributes
 	--------
 	vDataFrame[].dropna : Drops the vColumn missing values.
 		"""
-        raise_error_if_not_in("method", method, ["auto", "mode", "0ifnull", "mean", "avg", "median", "ffill", "pad", "bfill", "backfill",])
+        raise_error_if_not_in(
+            "method",
+            method,
+            [
+                "auto",
+                "mode",
+                "0ifnull",
+                "mean",
+                "avg",
+                "median",
+                "ffill",
+                "pad",
+                "bfill",
+                "backfill",
+            ],
+        )
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):
@@ -2470,7 +2541,9 @@ Attributes
 
     # ---#
     @save_verticapy_logs
-    def isin(self, val: Union[str, int, float, datetime.datetime, datetime.date, list], *args):
+    def isin(
+        self, val: Union[str, int, float, datetime.datetime, datetime.date, list], *args
+    ):
         """
 	---------------------------------------------------------------------------
 	Looks if some specific records are in the vColumn and it returns the new 
@@ -2938,7 +3011,10 @@ Attributes
     @check_dtypes
     @save_verticapy_logs
     def normalize(
-        self, method: str = "zscore", by: Union[str, list] = [], return_trans: bool = False
+        self,
+        method: str = "zscore",
+        by: Union[str, list] = [],
+        return_trans: bool = False,
     ):
         """
 	---------------------------------------------------------------------------
@@ -3326,7 +3402,9 @@ Attributes
  	float
  		optimal bar width.
 		"""
-        raise_error_if_not_in("method", method, ["sturges", "freedman_diaconis", "fd", "auto"])
+        raise_error_if_not_in(
+            "method", method, ["sturges", "freedman_diaconis", "fd", "auto"]
+        )
         if method == "auto":
             pre_comp = self.parent.__get_catalog_value__(self.alias, "numh")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -3677,7 +3755,9 @@ Attributes
         self.add_copy(new_name)
         parent = self.drop(add_history=False)
         parent.__add_to_history__(
-            f"[Rename]: The vColumn {old_name} was renamed '{new_name}'.".format(old_name, new_name)
+            f"[Rename]: The vColumn {old_name} was renamed '{new_name}'.".format(
+                old_name, new_name
+            )
         )
         return parent
 

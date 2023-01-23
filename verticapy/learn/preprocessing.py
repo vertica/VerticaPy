@@ -53,7 +53,11 @@ import random
 from typing import Union
 
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
@@ -343,7 +347,9 @@ method: str, optional
     @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, method: str = "zscore"):
-        raise_error_if_not_in("method", str(method).lower(), ["zscore", "robust_zscore", "minmax"])
+        raise_error_if_not_in(
+            "method", str(method).lower(), ["zscore", "robust_zscore", "minmax"]
+        )
         self.type, self.name = "Normalizer", name
         self.parameters = {"method": str(method).lower()}
 
@@ -420,7 +426,11 @@ null_column_name: str, optional
         column_naming: str = "indices",
         null_column_name: str = "null",
     ):
-        raise_error_if_not_in("column_naming", str(column_naming).lower(), ["indices", "values", "values_relaxed"])
+        raise_error_if_not_in(
+            "column_naming",
+            str(column_naming).lower(),
+            ["indices", "values", "values_relaxed"],
+        )
         self.type, self.name = "OneHotEncoder", name
         self.parameters = {
             "extra_levels": extra_levels,
