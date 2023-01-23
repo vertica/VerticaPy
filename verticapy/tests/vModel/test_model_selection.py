@@ -208,7 +208,7 @@ class TestModelSelection:
     def test_grid_search_cv(self, winequality_vd):
         result = grid_search_cv(
             LogisticRegression("model_test"),
-            {"solver": ["Newton", "BFGS", "CGD"], "tol": [0.1, 0.01]},
+            {"solver": ["newton", "bfgs", "cgd"], "tol": [0.1, 0.01]},
             winequality_vd,
             ["residual_sugar", "alcohol"],
             "good",

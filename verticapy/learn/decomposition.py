@@ -78,6 +78,7 @@ name: str
     @save_verticapy_logs
     def __init__(self, name: str):
         self.type, self.name = "MCA", name
+        self.parameters = {}
 
     # ---#
     @check_dtypes

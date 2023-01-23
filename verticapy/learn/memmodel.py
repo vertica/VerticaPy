@@ -2261,7 +2261,7 @@ attributes: dict
                 attributes_["drop_first"] = bool(attributes["drop_first"])
             if "column_naming" not in attributes:
                 attributes_["column_naming"] = "indices"
-            elif not (attributes_["column_naming"]):
+            elif not (attributes["column_naming"]):
                 attributes_["column_naming"] = None
             else:
                 raise_error_if_not_in(

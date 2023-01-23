@@ -134,9 +134,9 @@ feature is available in the user's version.
                 single_type = False
             if var_name in all_args:
                 var = all_args[var_name]
-                if isinstance(var, vDataFrame) and str_sql in dt:
+                if isinstance(var, vDataFrame) and ((isinstance(dt, tuple) and str_sql in dt) or dt == str_sql):
                     pass
-                elif var != None and not (isinstance(var, dt)):
+                elif not(isinstance(var, type(None))) and not (isinstance(var, dt)):
                     dt_var = type(var)
                     if single_type:
                         warning_message = f"Parameter '{var_name}' must be of type <{dt_str_list}>, found type <{dt_var}>."

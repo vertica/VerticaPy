@@ -135,7 +135,7 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
     ----------
     name: str
         Name of the the model. The model will be stored in the DB.
-    max_features: str/int, optional
+    max_features: str / int, optional
         The number of randomly chosen features from which to pick the best
         feature to split on a given tree node. It can be an integer or one
         of the two following methods.
@@ -173,13 +173,15 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        raise_error_if_not_in(
-            "max_features", str(max_features).lower(), ["auto", "max"]
-        )
+        if isinstance(max_features, str):
+            raise_error_if_not_in(
+                "max_features", max_features.lower(), ["auto", "max"]
+            )
+            max_features = max_features.lower()
         self.type, self.name = "RandomForestClassifier", name
         self.parameters = {
             "n_estimators": 1,
-            "max_features": str(max_features).lower(),
+            "max_features": max_features,
             "max_leaf_nodes": max_leaf_nodes,
             "sample": 1.0,
             "max_depth": max_depth,
@@ -199,7 +201,7 @@ class DecisionTreeRegressor(Regressor, Tree):
     ----------
     name: str
         Name of the the model. The model will be stored in the DB.
-    max_features: str/int, optional
+    max_features: str / int, optional
         The number of randomly chosen features from which to pick the best
         feature to split on a given tree node. It can be an integer or one
         of the two following methods.
@@ -237,13 +239,15 @@ class DecisionTreeRegressor(Regressor, Tree):
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        raise_error_if_not_in(
-            "max_features", str(max_features).lower(), ["auto", "max"]
-        )
+        if isinstance(max_features, str):
+            raise_error_if_not_in(
+                "max_features", max_features.lower(), ["auto", "max"]
+            )
+            max_features = max_features.lower()
         self.type, self.name = "RandomForestRegressor", name
         self.parameters = {
             "n_estimators": 1,
-            "max_features": str(max_features).lower(),
+            "max_features": max_features,
             "max_leaf_nodes": max_leaf_nodes,
             "sample": 1.0,
             "max_depth": max_depth,

@@ -650,7 +650,7 @@ name: str
     Name of the the model. The model will be stored in the DB.
 n_estimators: int, optional
     The number of trees in the forest, an integer between 1 and 1000, inclusive.
-max_features: int/str, optional
+max_features: int / str, optional
     The number of randomly chosen features from which to pick the best feature 
     to split on a given tree node. It can be an integer or one of the two following
     methods.
@@ -693,12 +693,13 @@ nbins: int, optional
     ):
         if isinstance(max_features, str):
             raise_error_if_not_in(
-                "max_features", str(max_features).lower(), ["auto", "max"]
+                "max_features", max_features, ["auto", "max"]
             )
+            max_features = max_features.lower()
         self.type, self.name = "RandomForestClassifier", name
         self.parameters = {
             "n_estimators": n_estimators,
-            "max_features": str(max_features).lower(),
+            "max_features": max_features,
             "max_leaf_nodes": max_leaf_nodes,
             "sample": sample,
             "max_depth": max_depth,
@@ -723,7 +724,7 @@ name: str
     Name of the the model. The model will be stored in the DB.
 n_estimators: int, optional
     The number of trees in the forest, an integer between 1 and 1000, inclusive.
-max_features: int/str, optional
+max_features: int / str, optional
     The number of randomly chosen features from which to pick the best feature 
     to split on a given tree node. It can be an integer or one of the two following
     methods.
@@ -766,12 +767,13 @@ nbins: int, optional
     ):
         if isinstance(max_features, str):
             raise_error_if_not_in(
-                "max_features", str(max_features).lower(), ["auto", "max"]
+                "max_features", max_features.lower(), ["auto", "max"]
             )
+            max_features = max_features.lower()
         self.type, self.name = "RandomForestRegressor", name
         self.parameters = {
             "n_estimators": n_estimators,
-            "max_features": str(max_features).lower(),
+            "max_features": max_features,
             "max_leaf_nodes": max_leaf_nodes,
             "sample": sample,
             "max_depth": max_depth,

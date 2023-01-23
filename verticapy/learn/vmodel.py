@@ -952,8 +952,15 @@ Main Class for Vertica Model
 	parameters: dict, optional
 		New parameters.
 		"""
+        all_init_params = list(typing.get_type_hints(self.__init__).keys())
         new_parameters = deepcopy(self.parameters)
+        for p in new_parameters:
+            if p not in all_init_params:
+                del new_parameters[p]
         for p in parameters:
+            if p not in all_init_params:
+                warning_message = f"parameter 'parameters' got an unexpected keyword argument '{p}'"
+                warnings.warn(warning_message, Warning)
             new_parameters[p] = parameters[p]
         self.__init__(name=self.name, **new_parameters)
 

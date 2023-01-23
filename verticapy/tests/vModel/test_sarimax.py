@@ -132,7 +132,7 @@ class TestSARIMAX:
             "papprox_ma": 200,
             "q": 1,
             "s": 12,
-            "solver": "Newton",
+            "solver": "newton",
             "tol": 0.0001,
         }
 

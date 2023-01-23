@@ -1898,9 +1898,10 @@ vColumns : vColumn
         raise_error_if_not_in("acf_type", acf_type, ["line", "heatmap", "bar"])
         raise_error_if_not_in(
             "method",
-            method,
+            str(method).lower(),
             ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer",],
         )
+        method = str(method).lower()
         if isinstance(by, str):
             by = [by]
         self.are_namecols_in([column, ts] + by)
@@ -4530,9 +4531,10 @@ vColumns : vColumn
         """
         raise_error_if_not_in(
             "method",
-            method,
+            str(method).lower(),
             ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer",],
         )
+        method = str(method).lower()
         if isinstance(columns, str):
             columns = [columns]
         self.are_namecols_in(columns)
@@ -4600,7 +4602,7 @@ vColumns : vColumn
         """
         raise_error_if_not_in(
             "method",
-            method,
+            str(method).lower(),
             [
                 "pearson",
                 "kendall",
@@ -4613,6 +4615,7 @@ vColumns : vColumn
                 "cramer",
             ],
         )
+        method = str(method).lower()
 
         from scipy.stats import t, norm, chi2
         from numpy import log
@@ -6706,7 +6709,7 @@ vColumns : vColumn
         """
         raise_error_if_not_in(
             "kind",
-            kind.lower(),
+            str(kind).lower(),
             [
                 "area",
                 "area_range",
@@ -6737,6 +6740,7 @@ vColumns : vColumn
                 "spearmand",
             ],
         )
+        kind = str(kind).lower()
         from verticapy.highchart import hchart_from_vdf
 
         try:
