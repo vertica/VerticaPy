@@ -112,9 +112,9 @@ feature is available in the user's version.
         python_version = [int(i) for i in sys.version.split(" ")[0].split(".")]
 
         # get_type_hints is only available for Python version greater than 3.6
-        if python_version[0] > 3 or (python_version[0] == 3 and python_version[1] > 6):
+        try:
             hints = typing.get_type_hints(func)
-        else:
+        except:
             hints = func.__annotations__
         all_args = {**kwargs}
         # TO DO -> Testing arg types
