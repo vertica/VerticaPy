@@ -166,13 +166,14 @@ feature is available in the user's version.
     @wraps(func)
     def func_prec_check_minimum_version(*args, **kwargs):
 
+        import verticapy as vp
         from verticapy.utilities import vertica_version
 
         fun_name, object_name, condition = func.__name__, "", []
         if len(args) > 0:
             object_name = type(args[0]).__name__
         name = object_name if fun_name == "__init__" else fun_name
-        vertica_version(verticapy.MINIMUM_VERSION[name])
+        vertica_version(vp.MINIMUM_VERSION[name])
 
         return func(*args, **kwargs)
 
