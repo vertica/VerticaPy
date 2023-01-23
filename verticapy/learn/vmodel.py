@@ -49,10 +49,9 @@
 # Modules
 #
 # Standard Python Modules
-import os, warnings, typing
+import os, warnings, typing, copy
 import numpy as np
 from typing import Union
-from copy import deepcopy
 
 # VerticaPy Modules
 import verticapy
@@ -111,17 +110,13 @@ Main Class for Vertica Model
                 try:
                     vertica_version(condition=[9, 0, 0])
                     res = executeSQL(
-                        "SELECT /*+LABEL('learn.vModel.__repr__')*/ GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
-                            name
-                        ),
+                        f"SELECT /*+LABEL('learn.vModel.__repr__')*/ GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{name}')",
                         title="Summarizing the model.",
                         method="fetchfirstelem",
                     )
                 except:
                     res = executeSQL(
-                        "SELECT /*+LABEL('learn.vModel.__repr__')*/ SUMMARIZE_MODEL('{}')".format(
-                            name
-                        ),
+                        f"SELECT /*+LABEL('learn.vModel.__repr__')*/ SUMMARIZE_MODEL('{name}')",
                         title="Summarizing the model.",
                         method="fetchfirstelem",
                     )
@@ -131,13 +126,9 @@ Main Class for Vertica Model
             elif self.type == "AutoDataPrep":
                 rep = self.final_relation_.__repr__()
             elif self.type == "DBSCAN":
-                rep = "=======\ndetails\n=======\nNumber of Clusters: {}\nNumber of Outliers: {}".format(
-                    self.n_cluster_, self.n_noise_
-                )
+                rep = f"=======\ndetails\n=======\nNumber of Clusters: {self.n_cluster_}\nNumber of Outliers: {self.n_noise_}"
             elif self.type == "LocalOutlierFactor":
-                rep = "=======\ndetails\n=======\nNumber of Errors: {}".format(
-                    self.n_errors_
-                )
+                rep = f"=======\ndetails\n=======\nNumber of Errors: {self.n_errors_}"
             elif self.type == "NearestCentroid":
                 rep = "=======\ndetails\n=======\n" + self.centroids_.__repr__()
             elif self.type == "VAR":
@@ -145,40 +136,36 @@ Main Class for Vertica Model
                 for idx, elem in enumerate(self.X):
                     rep += "\n\n # " + str(elem) + "\n\n" + self.coef_[idx].__repr__()
                 rep += "\n\n===============\nAdditional Info\n==============="
-                rep += "\nInput Relation : {}".format(self.input_relation)
-                rep += "\nX : {}".format(", ".join(self.X))
-                rep += "\nts : {}".format(self.ts)
+                rep += f"\nInput Relation : {self.input_relation}"
+                rep += f"\nX : {', '.join(self.X)}"
+                rep += f"\nts : {self.ts}"
             elif self.type == "SARIMAX":
                 rep = "=======\ndetails\n======="
                 rep += "\n\n# Coefficients\n\n" + self.coef_.__repr__()
                 if self.ma_piq_:
                     rep += "\n\n# MA PIQ\n\n" + self.ma_piq_.__repr__()
                 rep += "\n\n===============\nAdditional Info\n==============="
-                rep += "\nInput Relation : {}".format(self.input_relation)
-                rep += "\ny : {}".format(self.y)
-                rep += "\nts : {}".format(self.ts)
+                rep += f"\nInput Relation : {self.input_relation}"
+                rep += f"\ny : {self.y}"
+                rep += f"\nts : {self.ts}"
                 if self.exogenous:
-                    rep += "\nExogenous Variables : {}".format(
-                        ", ".join(self.exogenous)
-                    )
+                    rep += f"\nExogenous Variables : {', '.join(self.exogenous)}"
                 if self.ma_avg_:
-                    rep += "\nMA AVG : {}".format(self.ma_avg_)
+                    rep += f"\nMA AVG : {self.ma_avg_}"
             elif self.type == "CountVectorizer":
                 rep = "=======\ndetails\n======="
                 if self.vocabulary_:
                     voc = [str(elem) for elem in self.vocabulary_]
                     if len(voc) > 100:
-                        voc = voc[0:100] + [
-                            "... ({} more)".format(len(self.vocabulary_) - 100)
-                        ]
+                        voc = voc[0:100] + [f"... ({len(self.vocabulary_) - 100} more)"]
                     rep += "\n\n# Vocabulary\n\n" + ", ".join(voc)
                 if self.stop_words_:
                     rep += "\n\n# Stop Words\n\n" + ", ".join(
                         [str(elem) for elem in self.stop_words_]
                     )
                 rep += "\n\n===============\nAdditional Info\n==============="
-                rep += "\nInput Relation : {}".format(self.input_relation)
-                rep += "\nX : {}".format(", ".join(self.X))
+                rep += f"\nInput Relation : {self.input_relation}"
+                rep += f"\nX : {', '.join(self.X)}"
             if self.type in (
                 "DBSCAN",
                 "NearestCentroid",
@@ -187,17 +174,17 @@ Main Class for Vertica Model
                 "KNeighborsClassifier",
             ):
                 rep += "\n\n===============\nAdditional Info\n==============="
-                rep += "\nInput Relation : {}".format(self.input_relation)
-                rep += "\nX : {}".format(", ".join(self.X))
+                rep += f"\nInput Relation : {self.input_relation}"
+                rep += f"\nX : {', '.join(self.X)}"
             if self.type in (
                 "NearestCentroid",
                 "KNeighborsRegressor",
                 "KNeighborsClassifier",
             ):
-                rep += "\ny : {}".format(self.y)
+                rep += f"\ny : {self.y}"
             return rep
         except:
-            return "<{}>".format(self.type)
+            return f"<{self.type}>"
 
     # ---#
     def contour(
@@ -312,16 +299,12 @@ Main Class for Vertica Model
             return self.best_model_.deploySQL(X)
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
             name = self.tree_name if self.type == "KernelDensity" else self.name
-            X = [quote_ident(elem) for elem in X]
+            X = [quote_ident(predictor) for predictor in X] if not (X) else self.X
             fun = self.get_model_fun()[1]
-            sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(
-                fun, ", ".join(self.X if not (X) else X), name
-            )
+            sql = f"{fun}({', '.join(X)} USING PARAMETERS model_name = '{name}', match_by_pos = 'true')"
             return sql
         else:
-            raise FunctionError(
-                "Method 'deploySQL' for '{}' doesn't exist.".format(self.type)
-            )
+            raise FunctionError(f"Method 'deploySQL' for '{self.type}' doesn't exist.")
 
     # ---#
     def drop(self):
@@ -703,7 +686,13 @@ Main Class for Vertica Model
 	dict
 		model parameters
 		"""
-        return self.parameters
+        all_init_params = list(typing.get_type_hints(self.__init__).keys())
+        parameters = copy.deepcopy(self.parameters)
+        parameters_keys = list(parameters.keys())
+        for p in parameters_keys:
+            if p not in all_init_params:
+                del parameters[p]
+        return parameters
 
     # ---#
     def get_vertica_param_dict(self):
@@ -953,7 +942,7 @@ Main Class for Vertica Model
 		New parameters.
 		"""
         all_init_params = list(typing.get_type_hints(self.__init__).keys())
-        new_parameters = deepcopy(self.parameters)
+        new_parameters = copy.deepcopy(self.parameters)
         new_parameters_keys = list(new_parameters.keys())
         for p in new_parameters_keys:
             if p not in all_init_params:
@@ -1178,7 +1167,7 @@ Main Class for Vertica Model
                     attributes["logodds"] = self.prior_.copy()
         else:
             raise ModelError(
-                "Model type '{}' can not be converted to memModel.".format(self.type)
+                f"Model type '{self.type}' can not be converted to memModel."
             )
         return memModel(model_type=self.type, attributes=attributes)
 
@@ -1227,7 +1216,7 @@ Main Class for Vertica Model
             all_vars = {}
             exec(func, {}, all_vars)
             return all_vars[name]
-        func = "def {}(X):\n\timport numpy as np\n\t".format(name)
+        func = f"def {name}(X):\n\timport numpy as np\n\t"
         if self.type in (
             "LinearRegression",
             "LinearSVR",
@@ -1351,11 +1340,11 @@ Main Class for Vertica Model
             n = len(attr["PC1"])
             for i in range(1, n + 1):
                 pca += [attr["PC{}".format(i)]]
-            func += "avg_values = np.array({})\n".format(avg)
-            func += "\tpca_values = np.array({})\n".format(pca)
+            func += f"avg_values = np.array({avg})\n"
+            func += f"\tpca_values = np.array({pca})\n"
             func += "\tresult = (X - avg_values)\n"
             func += "\tL = []\n"
-            func += "\tfor i in range({}):\n".format(n)
+            func += f"\tfor i in range({n}):\n"
             func += "\t\tL += [np.sum(result * pca_values[i], axis=1)]\n"
             func += "\tresult = np.column_stack(L)\n"
             func += "\treturn result\n"
@@ -1381,13 +1370,13 @@ Main Class for Vertica Model
             attr = self.get_attr("right_singular_vectors")
             n = len(attr["vector1"])
             for i in range(1, n + 1):
-                sv += [attr["vector{}".format(i)]]
+                sv += [attr[f"vector{i}"]]
             value = self.get_attr("singular_values")["value"]
-            func += "singular_values = np.array({})\n".format(value)
-            func += "\tright_singular_vectors = np.array({})\n".format(sv)
+            func += f"singular_values = np.array({value})\n"
+            func += f"\tright_singular_vectors = np.array({sv})\n"
             func += "\tL = []\n"
             n = len(sv[0])
-            func += "\tfor i in range({}):\n".format(n)
+            func += f"\tfor i in range({n}):\n"
             func += "\t\tL += [np.sum(X * right_singular_vectors[i] / singular_values[i], axis=1)]\n"
             func += "\tresult = np.column_stack(L)\n"
             func += "\treturn result\n"
@@ -1395,9 +1384,9 @@ Main Class for Vertica Model
         elif self.type == "NaiveBayes":
             var_info_simplified = self.get_var_info()
             prior = self.get_attr("prior").values["probability"]
-            func += "var_info_simplified = {}\n".format(var_info_simplified)
-            func += "\tprior = np.array({})\n".format(prior)
-            func += "\tclasses = {}\n".format(self.classes_)
+            func += f"var_info_simplified = {var_info_simplified}\n"
+            func += f"\tprior = np.array({prior})\n"
+            func += f"\tclasses = {self.classes_}\n"
             func += "\tdef naive_bayes_score_row(X):\n"
             func += "\t\tresult = []\n"
             func += "\t\tfor c in classes:\n"

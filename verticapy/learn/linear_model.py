@@ -75,7 +75,7 @@ name: str
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy 
     result.
-C: float, optional
+C: int / float, optional
 	The regularization parameter value. The value must be zero or 
     non-negative.
 max_iter: int, optional
@@ -103,7 +103,7 @@ fit_intercept: bool, optional
         self,
         name: str,
         tol: float = 1e-6,
-        C: float = 1.0,
+        C: Union[int, float] = 1.0,
         max_iter: int = 100,
         solver: str = "cgd",
         l1_ratio: float = 0.5,
@@ -141,7 +141,7 @@ name: str
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy 
     result.
-C: float, optional
+C: int / float, optional
     The regularization parameter value. The value must be zero or 
     non-negative.
 max_iter: int, optional
@@ -166,7 +166,7 @@ fit_intercept: bool, optional
         self,
         name: str,
         tol: float = 1e-6,
-        C: float = 1.0,
+        C: Union[int, float] = 1.0,
         max_iter: int = 100,
         solver: str = "CGD",
         fit_intercept: bool = True,
@@ -262,7 +262,7 @@ penalty: str, optional
 		ENet : Combination between L1 and L2
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
-C: float, optional
+C: int / float, optional
 	The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
 	Determines the maximum number of iterations the algorithm performs before 
@@ -290,7 +290,7 @@ fit_intercept: bool, optional
         name: str,
         penalty: str = "None",
         tol: float = 1e-6,
-        C: int = 1,
+        C: Union[int, float] = 1.0,
         max_iter: int = 100,
         solver: str = "newton",
         l1_ratio: float = 0.5,
@@ -340,7 +340,7 @@ name: str
 tol: float, optional
 	Determines whether the algorithm has reached the specified 
     accuracy result.
-C: float, optional
+C: int / float, optional
     The regularization parameter value. The value must be zero 
     or non-negative.
 max_iter: int, optional
@@ -364,7 +364,7 @@ fit_intercept: bool, optional
         self,
         name: str,
         tol: float = 1e-6,
-        C: float = 1.0,
+        C: Union[int, float] = 1.0,
         max_iter: int = 100,
         solver: str = "newton",
         fit_intercept: bool = True,

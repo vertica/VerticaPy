@@ -48,7 +48,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, time, shutil, re, decimal, warnings, pickle, datetime, math, os
+import random, time, shutil, re, decimal, warnings, pickle, datetime, math, os, copy
 from collections.abc import Iterable
 from itertools import combinations_with_replacement
 from typing import Union
@@ -4340,53 +4340,14 @@ vColumns : vColumn
     def copy(self):
         """
     ---------------------------------------------------------------------------
-    Returns a copy of the vDataFrame.
+    Returns a deep copy of the vDataFrame.
 
     Returns
     -------
     vDataFrame
         The copy of the vDataFrame.
         """
-        copy_vDataFrame = vDataFrame("", empty=True)
-        copy_vDataFrame._VERTICAPY_VARIABLES_[
-            "input_relation"
-        ] = self._VERTICAPY_VARIABLES_["input_relation"]
-        copy_vDataFrame._VERTICAPY_VARIABLES_[
-            "main_relation"
-        ] = self._VERTICAPY_VARIABLES_["main_relation"]
-        copy_vDataFrame._VERTICAPY_VARIABLES_["schema"] = self._VERTICAPY_VARIABLES_[
-            "schema"
-        ]
-        copy_vDataFrame._VERTICAPY_VARIABLES_["columns"] = [
-            item for item in self._VERTICAPY_VARIABLES_["columns"]
-        ]
-        copy_vDataFrame._VERTICAPY_VARIABLES_["where"] = [
-            item for item in self._VERTICAPY_VARIABLES_["where"]
-        ]
-        copy_vDataFrame._VERTICAPY_VARIABLES_["order_by"] = {}
-        for item in self._VERTICAPY_VARIABLES_["order_by"]:
-            copy_vDataFrame._VERTICAPY_VARIABLES_["order_by"][
-                item
-            ] = self._VERTICAPY_VARIABLES_["order_by"][item]
-        copy_vDataFrame._VERTICAPY_VARIABLES_["exclude_columns"] = [
-            item for item in self._VERTICAPY_VARIABLES_["exclude_columns"]
-        ]
-        copy_vDataFrame._VERTICAPY_VARIABLES_["history"] = [
-            item for item in self._VERTICAPY_VARIABLES_["history"]
-        ]
-        copy_vDataFrame._VERTICAPY_VARIABLES_["saving"] = [
-            item for item in self._VERTICAPY_VARIABLES_["saving"]
-        ]
-        for column in self._VERTICAPY_VARIABLES_["columns"]:
-            new_vColumn = vColumn(
-                column,
-                parent=copy_vDataFrame,
-                transformations=[elem for elem in self[column].transformations],
-                catalog={},
-            )
-            setattr(copy_vDataFrame, column, new_vColumn)
-            setattr(copy_vDataFrame, column[1:-1], new_vColumn)
-        return copy_vDataFrame
+        return copy.deepcopy(self)
 
     # ---#
     @check_dtypes
