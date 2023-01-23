@@ -53,6 +53,7 @@ import warnings
 
 # VerticaPy Modules
 import verticapy, vertica_python
+from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
 from verticapy.toolbox import *
 from verticapy.utilities import *
 import verticapy.stats as st
@@ -60,6 +61,7 @@ from verticapy.datasets import gen_meshgrid
 from verticapy import vDataFrame
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def create_index(
     vdf: vDataFrame,
@@ -108,17 +110,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("vdf", vdf, [vDataFrame]),
-            ("gid", gid, [str]),
-            ("index", index, [str]),
-            ("g", g, [str]),
-            ("overwrite", overwrite, [bool]),
-            ("max_mem_mb", max_mem_mb, [int]),
-            ("skip_nonindexable_polygons", skip_nonindexable_polygons, [bool]),
-        ]
-    )
     vdf.are_namecols_in([gid, g])
     gid, g = vdf.format_colnames([gid, g])
 
@@ -144,13 +135,14 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def coordinate_converter(
     vdf: vDataFrame,
     x: str,
     y: str,
     x0: float = 0.0,
-    earth_radius: float = 6371,
+    earth_radius: Union[int, float] = 6371,
     reverse: bool = False,
 ):
     """
@@ -168,7 +160,7 @@ y: str
     vColumn used as the ordinate (latitude).
 x0: float, optional
     The initial abscissa.
-earth_radius: float, optional
+earth_radius: int / float, optional
     Earth radius in km.
 reverse: bool, optional
     If set to True, the Euclidean coordinates are converted to latitude 
@@ -179,16 +171,6 @@ Returns
 vDataFrame
     result of the transformation.
     """
-    check_types(
-        [
-            ("vdf", vdf, [vDataFrame]),
-            ("x", x, [str]),
-            ("y", y, [str]),
-            ("x0", x0, [int, float]),
-            ("earth_radius", earth_radius, [int, float]),
-            ("reverse", reverse, [bool]),
-        ]
-    )
     vdf.are_namecols_in([x, y])
 
     result = vdf.copy()
@@ -209,6 +191,7 @@ vDataFrame
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def describe_index(name: str = "", list_polygons: bool = False):
     """
@@ -231,7 +214,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types([("name", name, [str]), ("list_polygons", list_polygons, [bool])])
 
     if not (name):
         query = f"SELECT STV_Describe_Index () OVER ()"
@@ -250,6 +232,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def intersect(
     vdf: vDataFrame, index: str, gid: str, g: str = "", x: str = "", y: str = ""
@@ -280,16 +263,6 @@ Returns
 vDataFrame
     object containing the result of the intersection.
     """
-    check_types(
-        [
-            ("vdf", vdf, [vDataFrame]),
-            ("gid", gid, [str]),
-            ("g", g, [str]),
-            ("x", x, [str]),
-            ("y", y, [str]),
-            ("index", index, [str]),
-        ]
-    )
     vdf.are_namecols_in([gid])
 
     table = vdf.__genSQL__()
@@ -322,6 +295,7 @@ vDataFrame
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def rename_index(source: str, dest: str, overwrite: bool = False):
     """
@@ -343,13 +317,6 @@ Returns
 bool
     True if the index was renamed, False otherwise.
     """
-    check_types(
-        [
-            ("source", source, [str]),
-            ("dest", dest, [str]),
-            ("overwrite", overwrite, [bool]),
-        ]
-    )
 
     query = (
         f"SELECT /*+LABEL(rename_index)*/ STV_Rename_Index (USING PARAMETERS source = '{source}'"
@@ -369,6 +336,7 @@ bool
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def split_polygon_n(p: str, nbins: int = 100):
     """
@@ -392,8 +360,6 @@ Returns
 vDataFrame
     output vDataFrame that includes the new polygons.
     """
-    check_types([("p", p, [str]), ("nbins", nbins, [int])])
-
     sql = """SELECT /*+LABEL(split_polygon_n)*/
                 MIN(ST_X(point)), 
                 MAX(ST_X(point)), 

@@ -49,6 +49,7 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
 from verticapy.learn.vmodel import *
 from verticapy.utilities import save_verticapy_logs
 
@@ -84,7 +85,7 @@ intercept_mode: str, optional
 						regularization on it.
 		unregularized : Fits the intercept but does not include 
 						it in regularization. 
-class_weight: list, optional
+class_weight: str / list, optional
 	Specifies how to determine weights of the two classes. It can 
 	be a list of 2 elements or one of the following method:
 		auto : Weights each class according to the number of samples.
@@ -94,6 +95,7 @@ max_iter: int, optional
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -103,22 +105,23 @@ max_iter: int, optional
         fit_intercept: bool = True,
         intercept_scaling: float = 1.0,
         intercept_mode: str = "regularized",
-        class_weight: list = [1, 1],
+        class_weight: Union[str, list] = [1, 1],
         max_iter: int = 100,
     ):
-        check_types([("name", name, [str])])
+    	raise_error_if_not_in("intercept_mode", str(intercept_mode).lower(), ["regularized", "unregularized"])
+    	if isinstance(class_weight, str):
+    		raise_error_if_not_in("class_weight", class_weight, ["auto", "none"])
+    		class_weight = str(class_weight).lower()
         self.type, self.name = "LinearSVC", name
-        self.set_params(
-            {
-                "tol": tol,
-                "C": C,
-                "fit_intercept": fit_intercept,
-                "intercept_scaling": intercept_scaling,
-                "intercept_mode": intercept_mode,
-                "class_weight": class_weight,
-                "max_iter": max_iter,
-            }
-        )
+        self.parameters = {
+            "tol": tol,
+            "C": C,
+            "fit_intercept": fit_intercept,
+            "intercept_scaling": intercept_scaling,
+            "intercept_mode": str(intercept_mode).lower(),
+            "class_weight": class_weight,
+            "max_iter": max_iter,
+        }
 
 
 # ---#
@@ -180,6 +183,7 @@ test_relation: str
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -192,16 +196,14 @@ test_relation: str
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
-        check_types([("name", name, [str])])
+    	raise_error_if_not_in("intercept_mode", str(intercept_mode).lower(), ["regularized", "unregularized"])
         self.type, self.name = "LinearSVR", name
-        self.set_params(
-            {
-                "tol": tol,
-                "C": C,
-                "fit_intercept": fit_intercept,
-                "intercept_scaling": intercept_scaling,
-                "intercept_mode": intercept_mode,
-                "acceptable_error_margin": acceptable_error_margin,
-                "max_iter": max_iter,
-            }
-        )
+        self.parameters = {
+            "tol": tol,
+            "C": C,
+            "fit_intercept": fit_intercept,
+            "intercept_scaling": intercept_scaling,
+            "intercept_mode": str(intercept_mode).lower(),
+            "acceptable_error_margin": acceptable_error_margin,
+            "max_iter": max_iter,
+        }

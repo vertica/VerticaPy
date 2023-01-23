@@ -54,11 +54,13 @@ from collections.abc import Iterable
 from typing import Union
 
 # VerticaPy Modules
+from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
 from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.utilities import save_verticapy_logs
 
 # ---#
+@check_dtypes
 def predict_from_nb(
     X: Union[list, np.ndarray],
     attributes: list,
@@ -123,15 +125,6 @@ def predict_from_nb(
     numpy.array
         Predicted values
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("attributes", attributes, [list]),
-            ("classes", classes, [list, np.ndarray]),
-            ("prior", prior, [list, np.ndarray]),
-            ("return_proba", return_proba, [bool]),
-        ]
-    )
 
     def naive_bayes_score_row(X):
         result = []
@@ -166,6 +159,7 @@ def predict_from_nb(
 
 
 # ---#
+@check_dtypes
 def sql_from_nb(
     X: Union[list, np.ndarray],
     attributes: list,
@@ -228,14 +222,6 @@ def sql_from_nb(
     numpy.array
         Predicted values
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("attributes", attributes, [list]),
-            ("classes", classes, [list, np.ndarray]),
-            ("prior", prior, [list, np.ndarray]),
-        ]
-    )
     result = []
     for idx, c in enumerate(classes):
         sub_result = []
@@ -265,6 +251,7 @@ def sql_from_nb(
 
 
 # ---#
+@check_dtypes
 def predict_from_chaid_tree(
     X: Union[list, np.ndarray],
     tree: dict,
@@ -292,14 +279,6 @@ def predict_from_chaid_tree(
     numpy.array
       Predicted values
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("tree", tree, [dict]),
-            ("classes", classes, [list, np.ndarray]),
-            ("return_proba", return_proba, [bool]),
-        ]
-    )
 
     def predict_tree(X, tree, classes):
         if tree["is_leaf"]:
@@ -328,6 +307,7 @@ def predict_from_chaid_tree(
 
 
 # ---#
+@check_dtypes
 def sql_from_chaid_tree(
     X: Union[list, np.ndarray],
     tree: dict,
@@ -355,14 +335,6 @@ def sql_from_chaid_tree(
     str / list
       SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("tree", tree, [dict]),
-            ("classes", classes, [list, np.ndarray]),
-            ("return_proba", return_proba, [bool]),
-        ]
-    )
 
     def predict_tree(X, tree, classes, prob_ID: int = 0):
         if tree["is_leaf"]:
@@ -398,7 +370,7 @@ def sql_from_chaid_tree(
     else:
         return predict_tree(X, tree, classes)
 
-
+@check_dtypes
 def chaid_to_graphviz(
     tree: dict,
     classes: Union[list, np.ndarray] = [],
@@ -420,7 +392,7 @@ def chaid_to_graphviz(
     tree: dict
         CHAID tree. You can generate this tree with the vDataFrame.chaid 
         method.
-    classes: list, optional
+    classes: list / numpy.array, optional
         The classes in the CHAID model.
     classes_color: list, optional
         Colors that represent the different classes.
@@ -450,19 +422,6 @@ def chaid_to_graphviz(
       Graphviz code.
     """
     if "process" not in kwds or kwds["process"]:
-        check_types(
-            [
-                ("tree", tree, [dict]),
-                ("classes", classes, [list, np.ndarray]),
-                ("classes_color", classes_color, [list]),
-                ("round_pred", round_pred, [int]),
-                ("percent", percent, [bool]),
-                ("vertical", vertical, [bool]),
-                ("node_style", node_style, [dict]),
-                ("arrow_style", arrow_style, [dict]),
-                ("leaf_style", leaf_style, [dict]),
-            ]
-        )
         if len(classes_color) == 0:
             classes_color = [
                 "#87cefa",
@@ -552,6 +511,7 @@ def chaid_to_graphviz(
 
 
 # ---#
+@check_dtypes
 def predict_from_binary_tree(
     X: Union[list, np.ndarray],
     children_left: Union[list, np.ndarray],
@@ -608,21 +568,6 @@ def predict_from_binary_tree(
     numpy.array
         Predicted values
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("children_left", children_left, [list, np.ndarray]),
-            ("children_right", children_right, [list, np.ndarray]),
-            ("feature", feature, [list, np.ndarray]),
-            ("threshold", threshold, [list, np.ndarray]),
-            ("value", value, [list, np.ndarray]),
-            ("classes", classes, [list, np.ndarray]),
-            ("return_proba", return_proba, [bool]),
-            ("is_regressor", is_regressor, [bool]),
-            ("is_anomaly", is_anomaly, [bool]),
-            ("psy", psy, [int]),
-        ]
-    )
 
     def predict_tree(
         children_left, children_right, feature, threshold, value, node_id, X
@@ -680,6 +625,7 @@ def predict_from_binary_tree(
 
 
 # ---#
+@check_dtypes
 def sql_from_binary_tree(
     X: Union[list, np.ndarray],
     children_left: Union[list, np.ndarray],
@@ -737,21 +683,6 @@ def sql_from_binary_tree(
     str / list
         SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("children_left", children_left, [list, np.ndarray]),
-            ("children_right", children_right, [list, np.ndarray]),
-            ("feature", feature, [list, np.ndarray]),
-            ("threshold", threshold, [list, np.ndarray]),
-            ("value", value, [list, np.ndarray]),
-            ("classes", classes, [list, np.ndarray]),
-            ("return_proba", return_proba, [bool]),
-            ("is_regressor", is_regressor, [bool]),
-            ("is_anomaly", is_anomaly, [bool]),
-            ("psy", psy, [int]),
-        ]
-    )
 
     def predict_tree(
         children_left, children_right, feature, threshold, value, node_id, X, prob_ID=0
@@ -824,7 +755,7 @@ def sql_from_binary_tree(
             children_left, children_right, feature, threshold, value, 0, X
         )
 
-
+@check_dtypes
 def binary_tree_to_graphviz(
     children_left: Union[list, np.ndarray],
     children_right: Union[list, np.ndarray],
@@ -900,26 +831,6 @@ def binary_tree_to_graphviz(
     str
         Graphviz code.
     """
-    check_types(
-        [
-            ("children_left", children_left, [list, np.ndarray]),
-            ("children_right", children_right, [list, np.ndarray]),
-            ("feature", feature, [list, np.ndarray]),
-            ("feature_names", feature_names, [list, np.ndarray]),
-            ("threshold", threshold, [list, np.ndarray]),
-            ("value", value, [list, np.ndarray]),
-            ("classes", classes, [list, np.ndarray]),
-            ("classes_color", classes_color, [list]),
-            ("prefix_pred", prefix_pred, [str]),
-            ("round_pred", round_pred, [int]),
-            ("percent", percent, [bool]),
-            ("vertical", vertical, [bool]),
-            ("node_style", node_style, [dict]),
-            ("arrow_style", arrow_style, [dict]),
-            ("leaf_style", leaf_style, [dict]),
-            ("psy", psy, [int]),
-        ]
-    )
     empty_color = False
     if len(classes_color) == 0:
         empty_color = True
@@ -1038,6 +949,7 @@ def binary_tree_to_graphviz(
 
 
 # ---#
+@check_dtypes
 def predict_from_coef(
     X: Union[list, np.ndarray],
     coefficients: Union[list, np.ndarray],
@@ -1069,19 +981,7 @@ def predict_from_coef(
     numpy.array
         Predicted values
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("coefficients", coefficients, [list, np.ndarray]),
-            ("intercept", intercept, [float, int]),
-            (
-                "method",
-                method,
-                ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],
-            ),
-            ("return_proba", return_proba, [bool]),
-        ]
-    )
+    raise_error_if_not_in("method", method, ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"])
     result = intercept + np.sum(np.array(coefficients) * np.array(X), axis=1)
     if method in ("LogisticRegression", "LinearSVC"):
         result = 1 / (1 + np.exp(-(result)))
@@ -1094,8 +994,9 @@ def predict_from_coef(
 
 
 # ---#
+@check_dtypes
 def sql_from_coef(
-    X: list, coefficients: list, intercept: float, method: str = "LinearRegression"
+    X: Union[list, np.ndarray], coefficients: Union[list, np.ndarray], intercept: float, method: str = "LinearRegression"
 ) -> str:
     """
     ---------------------------------------------------------------------------
@@ -1103,9 +1004,9 @@ def sql_from_coef(
 
     Parameters
     ----------
-    X: list
+    X: list / numpy.array
         The name or values of the input predictors.
-    coefficients: list
+    coefficients: list / numpy.array
         List of the model's coefficients.
     intercept: float
         The intercept or constant value.
@@ -1118,18 +1019,7 @@ def sql_from_coef(
     str
         SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("coefficients", coefficients, [list, np.ndarray]),
-            ("intercept", intercept, [float, int]),
-            (
-                "method",
-                method,
-                ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],
-            ),
-        ]
-    )
+    raise_error_if_not_in("method", method, ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"])
     assert len(X) == len(coefficients), ParameterError(
         "The length of parameter 'X' must be equal to the number of coefficients."
     )
@@ -1141,7 +1031,7 @@ def sql_from_coef(
         return f"1 / (1 + EXP(- ({sql})))"
     return sql
 
-
+@check_dtypes
 def bisecting_kmeans_to_graphviz(
     children_left: Union[list, np.ndarray],
     children_right: Union[list, np.ndarray],
@@ -1193,20 +1083,6 @@ def bisecting_kmeans_to_graphviz(
     str
         Graphviz code.
     """
-    check_types(
-        [
-            ("children_left", children_left, [list, np.ndarray]),
-            ("children_right", children_right, [list, np.ndarray]),
-            ("cluster_size", cluster_size, [list, np.ndarray]),
-            ("cluster_score", cluster_score, [list, np.ndarray]),
-            ("round_score", round_score, [int]),
-            ("percent", percent, [bool]),
-            ("vertical", vertical, [bool]),
-            ("node_style", node_style, [dict]),
-            ("arrow_style", arrow_style, [dict]),
-            ("leaf_style", leaf_style, [dict]),
-        ]
-    )
     if len(leaf_style) == 0:
         leaf_style = {"shape": "none"}
     n, position = (
@@ -1268,6 +1144,7 @@ def bisecting_kmeans_to_graphviz(
 
 
 # ---#
+@check_dtypes
 def predict_from_bisecting_kmeans(
     X: Union[list, np.ndarray],
     clusters: Union[list, np.ndarray],
@@ -1299,15 +1176,6 @@ def predict_from_bisecting_kmeans(
     numpy.array
         Predicted values
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("clusters", clusters, [list, np.ndarray]),
-            ("left_child", left_child, [list, np.ndarray]),
-            ("right_child", right_child, [list, np.ndarray]),
-            ("p", p, [int]),
-        ]
-    )
     centroids = np.array(clusters)
 
     def predict_tree(right_child, left_child, row, node_id, centroids):
@@ -1330,11 +1198,12 @@ def predict_from_bisecting_kmeans(
 
 
 # ---#
+@check_dtypes
 def sql_from_bisecting_kmeans(
-    X: list,
-    clusters: list,
-    left_child: list,
-    right_child: list,
+    X: Union[list, np.ndarray],
+    clusters: Union[list, np.ndarray],
+    left_child: Union[list, np.ndarray],
+    right_child: Union[list, np.ndarray],
     return_distance_clusters: bool = False,
     p: int = 2,
 ) -> Union[list, str]:
@@ -1345,14 +1214,14 @@ def sql_from_bisecting_kmeans(
 
     Parameters
     ----------
-    X: list
+    X: list / numpy.array
         The names or values of the input predictors.
-    clusters: list
+    clusters: list / numpy.array
         List of the model's cluster centers.
-    left_child: list
+    left_child: list / numpy.array
         List of the model's left children IDs. ID i corresponds to the left 
         child ID of node i.
-    right_child: list
+    right_child: list / numpy.array
         List of the model's right children IDs. ID i corresponds to the right 
         child ID of node i.
     return_distance_clusters: bool, optional
@@ -1365,16 +1234,6 @@ def sql_from_bisecting_kmeans(
     str / list
         SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("clusters", clusters, [list, np.ndarray]),
-            ("left_child", left_child, [list, np.ndarray]),
-            ("right_child", right_child, [list, np.ndarray]),
-            ("return_distance_clusters", return_distance_clusters, [bool]),
-            ("p", p, [int]),
-        ]
-    )
     for c in clusters:
         assert len(X) == len(c), ParameterError(
             "The length of parameter 'X' must be the same as the length of each cluster."
@@ -1411,6 +1270,7 @@ def sql_from_bisecting_kmeans(
 
 
 # ---#
+@check_dtypes
 def predict_from_clusters(
     X: Union[list, np.ndarray],
     clusters: Union[list, np.ndarray],
@@ -1443,16 +1303,6 @@ def predict_from_clusters(
     numpy.array
         Predicted values
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("clusters", clusters, [list, np.ndarray]),
-            ("return_distance_clusters", return_distance_clusters, [bool]),
-            ("return_proba", return_proba, [bool]),
-            ("classes", classes, [list, np.ndarray]),
-            ("p", p, [int]),
-        ]
-    )
     assert not (return_distance_clusters) or not (return_proba), ParameterError(
         "Parameters 'return_distance_clusters' and 'return_proba' cannot both be set to True."
     )
@@ -1474,12 +1324,13 @@ def predict_from_clusters(
 
 
 # ---#
+@check_dtypes
 def sql_from_clusters(
-    X: list,
-    clusters: list,
+    X: Union[list, np.ndarray],
+    clusters: Union[list, np.ndarray],
     return_distance_clusters: bool = False,
     return_proba: bool = False,
-    classes: list = [],
+    classes: Union[list, np.ndarray] = [],
     p: int = 2,
 ) -> Union[list, str]:
     """
@@ -1489,15 +1340,15 @@ def sql_from_clusters(
 
     Parameters
     ----------
-    X: list
+    X: list / numpy.array
         The names or values of the input predictors.
-    clusters: list
+    clusters: list / numpy.array
         List of the model's cluster centers.
     return_distance_clusters: bool, optional
         If set to True, the distance to the clusters is returned.
     return_proba: bool, optional
         If set to True, the probability to belong to the clusters is returned.
-    classes: list, optional
+    classes: list / numpy.array, optional
         The classes for the nearest centroids model.
     p: int, optional
         The p corresponding to the one of the p-distances.
@@ -1507,16 +1358,6 @@ def sql_from_clusters(
     str / list
         SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("clusters", clusters, [list, np.ndarray]),
-            ("return_distance_clusters", return_distance_clusters, [bool]),
-            ("return_proba", return_proba, [bool]),
-            ("classes", classes, [list, np.ndarray]),
-            ("p", p, [int, float]),
-        ]
-    )
     for c in clusters:
         assert len(X) == len(c), ParameterError(
             "The length of parameter 'X' must be the same as the length of each cluster."
@@ -1576,6 +1417,7 @@ def sql_from_clusters(
 
 
 # ---#
+@check_dtypes
 def predict_from_clusters_kprotypes(
     X: Union[list, np.ndarray],
     clusters: Union[list, np.ndarray],
@@ -1611,16 +1453,6 @@ def predict_from_clusters_kprotypes(
     numpy.array
         Predicted values
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("clusters", clusters, [list, np.ndarray]),
-            ("return_distance_clusters", return_distance_clusters, [bool]),
-            ("return_proba", return_proba, [bool]),
-            ("p", p, [int]),
-            ("gamma", gamma, [float]),
-        ]
-    )
 
     assert not (return_distance_clusters) or not (return_proba), ParameterError(
         "Parameters 'return_distance_clusters' and 'return_proba' cannot both be set to True."
@@ -1658,14 +1490,15 @@ def predict_from_clusters_kprotypes(
 
 
 # ---#
+@check_dtypes
 def sql_from_clusters_kprotypes(
-    X: list,
-    clusters: list,
+    X: Union[list, np.ndarray],
+    clusters: Union[list, np.ndarray],
     return_distance_clusters: bool = False,
     return_proba: bool = False,
     p: int = 2,
     gamma: float = 1.0,
-    is_categorical: list = [],
+    is_categorical: Union[list, np.ndarray] = [],
 ) -> Union[list, str]:
     """
     ---------------------------------------------------------------------------
@@ -1674,9 +1507,9 @@ def sql_from_clusters_kprotypes(
 
     Parameters
     ----------
-    X: list
+    X: list / numpy.array
         The names or values of the input predictors.
-    clusters: list
+    clusters: list / numpy.array
         List of the model's cluster centers.
     return_distance_clusters: bool, optional
         If set to True, the distance to the clusters is returned.
@@ -1688,7 +1521,7 @@ def sql_from_clusters_kprotypes(
     gamma: float, optional
         Weighting factor for categorical columns. This determines relative 
         importance of numerical and categorical attributes.
-    is_categorical: list, optional
+    is_categorical: list / numpy.array, optional
         List of booleans to indicate whether X[idx] is a categorical variable,
         where True indicates categorical and False numerical. If empty, all
         the variables are considered categorical.
@@ -1698,17 +1531,6 @@ def sql_from_clusters_kprotypes(
     str / list
         SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("clusters", clusters, [list, np.ndarray]),
-            ("return_distance_clusters", return_distance_clusters, [bool]),
-            ("return_proba", return_proba, [bool]),
-            ("p", p, [int]),
-            ("gamma", gamma, [float]),
-            ("is_categorical", is_categorical, [list, np.ndarray]),
-        ]
-    )
 
     assert not (return_distance_clusters) or not (return_proba), ParameterError(
         "Parameters 'return_distance_clusters' and 'return_proba' cannot both be set to True."
@@ -1783,6 +1605,7 @@ def sql_from_clusters_kprotypes(
 
 
 # ---#
+@check_dtypes
 def transform_from_pca(
     X: Union[list, np.ndarray],
     principal_components: Union[list, np.ndarray],
@@ -1806,13 +1629,6 @@ def transform_from_pca(
     numpy.array
         Transformed data
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("principal_components", principal_components, [list, np.ndarray]),
-            ("mean", mean, [list, np.ndarray]),
-        ]
-    )
     pca_values = np.array(principal_components)
     result = X - np.array(mean)
     L, n = [], len(principal_components[0])
@@ -1822,18 +1638,19 @@ def transform_from_pca(
 
 
 # ---#
-def sql_from_pca(X: list, principal_components: list, mean: list) -> list:
+@check_dtypes
+def sql_from_pca(X: Union[list, np.ndarray], principal_components: Union[list, np.ndarray], mean: Union[list, np.ndarray]) -> list:
     """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy a PCA model using its attributes.
 
     Parameters
     ----------
-    X: list
+    X: list / numpy.array
         Names or values of the input predictors.
-    principal_components: list
+    principal_components: list / numpy.array
         Matrix of the principal components.
-    mean: list
+    mean: list / numpy.array
         List of the averages of each input feature.
 
     Returns
@@ -1841,13 +1658,6 @@ def sql_from_pca(X: list, principal_components: list, mean: list) -> list:
     list
         SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("principal_components", principal_components, [list, np.ndarray]),
-            ("mean", mean, [list, np.ndarray]),
-        ]
-    )
     assert len(X) == len(mean), ParameterError(
         "The length of parameter 'X' must be equal to the length of the vector 'mean'."
     )
@@ -1865,7 +1675,8 @@ def sql_from_pca(X: list, principal_components: list, mean: list) -> list:
 
 
 # ---#
-def transform_from_svd(X: list, vectors: list, values: list) -> np.ndarray:
+@check_dtypes
+def transform_from_svd(X: Union[list, np.ndarray], vectors: Union[list, np.ndarray], values: Union[list, np.ndarray]) -> np.ndarray:
     """
     ---------------------------------------------------------------------------
     Transforms the data with an SVD model using the input attributes.
@@ -1884,13 +1695,6 @@ def transform_from_svd(X: list, vectors: list, values: list) -> np.ndarray:
     numpy.array
         Transformed data
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("vectors", vectors, [list, np.ndarray]),
-            ("values", values, [list, np.ndarray]),
-        ]
-    )
     svd_vectors = np.array(vectors)
     L, n = [], len(svd_vectors[0])
     for i in range(n):
@@ -1899,18 +1703,19 @@ def transform_from_svd(X: list, vectors: list, values: list) -> np.ndarray:
 
 
 # ---#
-def sql_from_svd(X: list, vectors: list, values: list) -> list:
+@check_dtypes
+def sql_from_svd(X: Union[list, np.ndarray], vectors: Union[list, np.ndarray], values: Union[list, np.ndarray]) -> list:
     """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy a SVD model using its attributes.
 
     Parameters
     ----------
-    X: list
+    X: list / numpy.array
         input predictors name or values.
-    vectors: list
+    vectors: list / numpy.array
         List of the model's right singular vectors.
-    values: list
+    values: list / numpy.array
         List of the singular values for each input feature.
 
     Returns
@@ -1918,13 +1723,6 @@ def sql_from_svd(X: list, vectors: list, values: list) -> list:
     list
         SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("vectors", vectors, [list, np.ndarray]),
-            ("values", values, [list, np.ndarray]),
-        ]
-    )
     assert len(X) == len(values), ParameterError(
         "The length of parameter 'X' must be equal to the length of the vector 'values'."
     )
@@ -1940,8 +1738,9 @@ def sql_from_svd(X: list, vectors: list, values: list) -> list:
 
 
 # ---#
+@check_dtypes
 def transform_from_normalizer(
-    X: list, values: list, method: str = "zscore"
+    X: Union[list, np.ndarray], values: Union[list, np.ndarray], method: str = "zscore"
 ) -> np.ndarray:
     """
     ---------------------------------------------------------------------------
@@ -1951,7 +1750,7 @@ def transform_from_normalizer(
     ----------
     X: list / numpy.array
         The data to transform.
-    values: list
+    values: list / numpy.array
         List of tuples. These tuples depend on the specified method:
             'zscore': (mean, std)
             'robust_zscore': (median, mad)
@@ -1964,13 +1763,7 @@ def transform_from_normalizer(
     numpy.array
         Transformed data
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("values", values, [list, np.ndarray]),
-            ("method", method, ["zscore", "robust_zscore", "minmax"]),
-        ]
-    )
+    raise_error_if_not_in("method", method, ["zscore", "robust_zscore", "minmax"])
     a, b = (
         np.array([elem[0] for elem in values]),
         np.array([elem[1] for elem in values]),
@@ -1981,16 +1774,17 @@ def transform_from_normalizer(
 
 
 # ---#
-def sql_from_normalizer(X: list, values: list, method: str = "zscore") -> list:
+@check_dtypes
+def sql_from_normalizer(X: Union[list, np.ndarray], values: Union[list, np.ndarray], method: str = "zscore") -> list:
     """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy a normalizer model using its attributes.
 
     Parameters
     ----------
-    X: list
+    X: list / numpy.array
         Names or values of the input predictors.
-    values: list
+    values: list / numpy.array
         List of tuples, including the model's attributes. These required tuple  
         depends on the specified method:
             'zscore': (mean, std)
@@ -2004,13 +1798,7 @@ def sql_from_normalizer(X: list, values: list, method: str = "zscore") -> list:
     list
         SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("values", values, [list, np.ndarray]),
-            ("method", method, ["zscore", "robust_zscore", "minmax"]),
-        ]
-    )
+    raise_error_if_not_in("method", method, ["zscore", "robust_zscore", "minmax"])
     assert len(X) == len(values), ParameterError(
         "The length of parameter 'X' must be equal to the length of the list 'values'."
     )
@@ -2027,8 +1815,9 @@ def sql_from_normalizer(X: list, values: list, method: str = "zscore") -> list:
 
 
 # ---#
+@check_dtypes
 def transform_from_one_hot_encoder(
-    X: list, categories: list, drop_first: bool = False
+    X: Union[list, np.ndarray], categories: Union[list, np.ndarray], drop_first: bool = False
 ) -> np.ndarray:
     """
     ---------------------------------------------------------------------------
@@ -2038,7 +1827,7 @@ def transform_from_one_hot_encoder(
     ----------
     X: list / numpy.array
         Data to transform.
-    categories: list
+    categories: list / numpy.array
         List of the categories of the different input columns.
     drop_first: bool, optional
         If set to False, the first dummy of each category will be dropped.
@@ -2048,13 +1837,6 @@ def transform_from_one_hot_encoder(
     list
         SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("categories", categories, [list, np.ndarray]),
-            ("drop_first", drop_first, [bool]),
-        ]
-    )
 
     def ooe_row(X):
         result = []
@@ -2071,8 +1853,9 @@ def transform_from_one_hot_encoder(
 
 
 # ---#
+@check_dtypes
 def sql_from_one_hot_encoder(
-    X: list, categories: list, drop_first: bool = False, column_naming: str = None
+    X: Union[list, np.ndarray], categories: Union[list, np.ndarray], drop_first: bool = False, column_naming: str = None
 ) -> list:
     """
     ---------------------------------------------------------------------------
@@ -2081,9 +1864,9 @@ def sql_from_one_hot_encoder(
 
     Parameters
     ----------
-    X: list
+    X: list / numpy.array
         The names or values of the input predictors.
-    categories: list
+    categories: list / numpy.array
         List of the categories of the different input columns.
     drop_first: bool, optional
         If set to False, the first dummy of each category will be dropped.
@@ -2101,18 +1884,8 @@ def sql_from_one_hot_encoder(
     list
         SQL code
     """
-    check_types(
-        [
-            ("X", X, [list, np.ndarray]),
-            ("categories", categories, [list, np.ndarray]),
-            ("drop_first", drop_first, [bool]),
-            (
-                "column_naming",
-                column_naming,
-                ["indices", "values", "values_relaxed", None],
-            ),
-        ]
-    )
+    if column_naming:
+        raise_error_if_not_in("column_naming", column_naming, ["indices", "values", "values_relaxed"])
     assert len(X) == len(categories), ParameterError(
         "The length of parameter 'X' must be equal to the length of the list 'values'."
     )
@@ -2262,41 +2035,10 @@ attributes: dict
     # Special Methods
     #
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def __init__(self, model_type: str, attributes: dict):
-        check_types(
-            [
-                ("attributes", attributes, [dict]),
-                (
-                    "model_type",
-                    model_type,
-                    [
-                        "OneHotEncoder",
-                        "Normalizer",
-                        "SVD",
-                        "PCA",
-                        "CHAID",
-                        "BisectingKMeans",
-                        "KMeans",
-                        "KPrototypes",
-                        "NaiveBayes",
-                        "XGBoostClassifier",
-                        "XGBoostRegressor",
-                        "RandomForestClassifier",
-                        "BinaryTreeClassifier",
-                        "BinaryTreeRegressor",
-                        "BinaryTreeAnomaly",
-                        "RandomForestRegressor",
-                        "LinearSVR",
-                        "LinearSVC",
-                        "LogisticRegression",
-                        "LinearRegression",
-                        "NearestCentroid",
-                        "IsolationForest",
-                    ],
-                ),
-            ]
-        )
+        raise_error_if_not_in("model_type", model_type, ["OneHotEncoder", "Normalizer", "SVD", "PCA", "CHAID", "BisectingKMeans", "KMeans", "KPrototypes", "NaiveBayes", "XGBoostClassifier", "XGBoostRegressor", "RandomForestClassifier", "BinaryTreeClassifier", "BinaryTreeRegressor", "BinaryTreeAnomaly", "RandomForestRegressor", "LinearSVR", "LinearSVC", "LogisticRegression", "LinearRegression", "NearestCentroid", "IsolationForest",])
         attributes_ = {}
         if model_type == "NaiveBayes":
             if (
@@ -2307,13 +2049,6 @@ attributes: dict
                 raise ParameterError(
                     f"{model_type}'s attributes must include at least the following lists: attributes, prior, classes."
                 )
-            check_types(
-                [
-                    ("attributes", attributes["attributes"], [list]),
-                    ("prior", attributes["prior"], [list]),
-                    ("classes", attributes["classes"], [list]),
-                ]
-            )
             attributes_["prior"] = np.copy(attributes["prior"])
             attributes_["classes"] = np.copy(attributes["classes"])
             attributes_["attributes"] = []
@@ -2378,22 +2113,17 @@ attributes: dict
                     raise ParameterError(
                         f"{model_type}'s attributes must include the response average and the learning rate."
                     )
-                attributes_["mean"] = attributes["mean"]
-                check_types([("mean", attributes_["mean"], [int, float])])
-                represent += "\n\nmean = {}".format(attributes_["mean"])
+                attributes_["mean"] = float(attributes["mean"])
+                represent += "\n\nmean = {0}".format(attributes_["mean"])
             if model_type == "XGBoostClassifier":
                 if "learning_rate" not in attributes or "logodds" not in attributes:
                     raise ParameterError(
                         f"{model_type}'s attributes must include the response classes logodds and the learning rate."
                     )
                 attributes_["logodds"] = np.copy(attributes["logodds"])
-                check_types([("logodds", attributes_["logodds"], [list])])
                 represent += "\n\nlogodds = {}".format(attributes_["logodds"])
             if model_type in ("XGBoostRegressor", "XGBoostClassifier"):
-                attributes_["learning_rate"] = attributes["learning_rate"]
-                check_types(
-                    [("learning_rate", attributes_["learning_rate"], [int, float])]
-                )
+                attributes_["learning_rate"] = float(attributes["learning_rate"])
                 represent += "\n\nlearning_rate = {0}".format(
                     attributes_["learning_rate"]
                 )
@@ -2423,15 +2153,6 @@ attributes: dict
                     attributes_[elem] = attributes[elem].copy()
                 else:
                     attributes_[elem] = np.copy(attributes[elem])
-            check_types(
-                [
-                    ("children_left", attributes_["children_left"], [list]),
-                    ("children_right", attributes_["children_right"], [list]),
-                    ("feature", attributes_["feature"], [list]),
-                    ("threshold", attributes_["threshold"], [list]),
-                    ("value", attributes_["value"], [list]),
-                ]
-            )
             represent = "<{0}>\n\nchildren_left = {1}\n\nchildren_right = {2}\n\nfeature = {3}\n\nthreshold = {4}\n\nvalue =\n{5}".format(
                 model_type,
                 attributes_["children_left"],
@@ -2445,56 +2166,40 @@ attributes: dict
                     attributes_["classes"] = []
                 else:
                     attributes_["classes"] = np.copy(attributes["classes"])
-                check_types([("classes", attributes_["classes"], [list])])
                 represent += "\n\nclasses = {0}".format(attributes_["classes"])
             if model_type == "BinaryTreeAnomaly":
-                if "psy" not in attributes:
-                    raise ParameterError(
-                        "BinaryTreeAnomaly's must include the sampling size 'psy'."
-                    )
-                else:
-                    attributes_["psy"] = attributes["psy"]
-                check_types([("psy", attributes_["psy"], [int])])
+                assert "psy" in attributes, ParameterError(
+                    "BinaryTreeAnomaly's must include the sampling size 'psy'."
+                )
+                attributes_["psy"] = int(attributes["psy"])
                 represent += "\n\npsy = {0}".format(attributes_["psy"])
         elif model_type == "CHAID":
-            if "tree" not in attributes:
-                raise ParameterError(
-                    f"{model_type}'s attributes must include at least the CHAID tree."
-                )
-            check_types([("tree", attributes["tree"], [dict])])
-            attributes_["tree"] = attributes["tree"]
+            assert "tree" in attributes, ParameterError(
+                f"{model_type}'s attributes must include at least the CHAID tree."
+            )
+            attributes_["tree"] = dict(attributes["tree"])
             represent = "<{0}>\n\ntree = {1}".format(model_type, attributes_["tree"])
             if "classes" not in attributes:
                 attributes_["classes"] = []
             else:
                 attributes_["classes"] = np.copy(attributes["classes"])
-            check_types([("classes", attributes_["classes"], [list])])
             represent += "\n\nclasses = {0}".format(attributes_["classes"])
         elif model_type == "OneHotEncoder":
-            if "categories" not in attributes:
-                raise ParameterError(
-                    "OneHotEncoder's attributes must include a list with all the feature categories for the 'categories' parameter."
-                )
+            assert "categories" in attributes, ParameterError(
+                "OneHotEncoder's attributes must include a list with all the feature categories for the 'categories' parameter."
+            )
             attributes_["categories"] = attributes["categories"].copy()
             if "drop_first" not in attributes:
                 attributes_["drop_first"] = False
             else:
-                attributes_["drop_first"] = attributes["drop_first"]
+                attributes_["drop_first"] = bool(attributes["drop_first"])
             if "column_naming" not in attributes:
                 attributes_["column_naming"] = "indices"
+            elif not(attributes_["column_naming"]):
+                attributes_["column_naming"] = None
             else:
+                raise_error_if_not_in("column_naming", attributes["column_naming"], ["indices", "values"])
                 attributes_["column_naming"] = attributes["column_naming"]
-            check_types(
-                [
-                    ("categories", attributes_["categories"], [list]),
-                    ("drop_first", attributes_["drop_first"], [bool]),
-                    (
-                        "column_naming",
-                        attributes_["column_naming"],
-                        ["indices", "values", None],
-                    ),
-                ]
-            )
             represent = "<{0}>\n\ncategories = {1}\n\ndrop_first = {2}\n\ncolumn_naming = '{3}'".format(
                 model_type,
                 attributes_["categories"],
@@ -2512,13 +2217,7 @@ attributes: dict
                     f"{model_type}'s attributes must include a list with the 'coefficients' and the 'intercept' value."
                 )
             attributes_["coefficients"] = np.copy(attributes["coefficients"])
-            attributes_["intercept"] = attributes["intercept"]
-            check_types(
-                [
-                    ("coefficients", attributes_["coefficients"], [list]),
-                    ("intercept", attributes_["intercept"], [int, float]),
-                ]
-            )
+            attributes_["intercept"] = float(attributes["intercept"])
             represent = "<{0}>\n\ncoefficients = {1}\n\nintercept = {2}".format(
                 model_type, attributes_["coefficients"], attributes_["intercept"]
             )
@@ -2537,15 +2236,7 @@ attributes: dict
             if "p" not in attributes:
                 attributes_["p"] = 2
             else:
-                attributes_["p"] = attributes["p"]
-            check_types(
-                [
-                    ("clusters", attributes_["clusters"], [list]),
-                    ("left_child", attributes_["left_child"], [list]),
-                    ("right_child", attributes_["right_child"], [list]),
-                    ("p", attributes_["p"], [int]),
-                ]
-            )
+                attributes_["p"] = int(attributes["p"])
             represent = "<{0}>\n\nclusters =\n{1}\n\nleft_child = {2}\n\nright_child = {3}\n\np = {4}".format(
                 model_type,
                 attributes_["clusters"],
@@ -2570,13 +2261,7 @@ attributes: dict
             if "p" not in attributes:
                 attributes_["p"] = 2
             else:
-                attributes_["p"] = attributes["p"]
-            check_types(
-                [
-                    ("clusters", attributes_["clusters"], [list]),
-                    ("p", attributes_["p"], [int]),
-                ]
-            )
+                attributes_["p"] = int(attributes["p"])
             represent = "<{0}>\n\nclusters =\n{1}\n\np = {2}".format(
                 model_type, attributes_["clusters"], attributes_["p"]
             )
@@ -2597,7 +2282,6 @@ attributes: dict
                     attributes_["classes"] = None
                 else:
                     attributes_["classes"] = [c for c in attributes["classes"]]
-                check_types([("classes", attributes_["classes"], [list])])
                 represent += "\n\nclasses = {0}".format(attributes_["classes"])
         elif model_type == "PCA":
             if "principal_components" not in attributes or "mean" not in attributes:
@@ -2608,16 +2292,6 @@ attributes: dict
                 attributes["principal_components"]
             )
             attributes_["mean"] = np.copy(attributes["mean"])
-            check_types(
-                [
-                    (
-                        "principal_components",
-                        attributes_["principal_components"],
-                        [list],
-                    ),
-                    ("mean", attributes_["mean"], [list]),
-                ]
-            )
             represent = "<{0}>\n\nprincipal_components = \n{1}\n\nmean = {2}".format(
                 model_type, attributes_["principal_components"], attributes_["mean"]
             )
@@ -2628,32 +2302,16 @@ attributes: dict
                 )
             attributes_["vectors"] = np.copy(attributes["vectors"])
             attributes_["values"] = np.copy(attributes["values"])
-            check_types(
-                [
-                    ("vectors", attributes_["vectors"], [list]),
-                    ("values", attributes_["values"], [list]),
-                ]
-            )
             represent = "<{0}>\n\nvectors = \n{1}\n\nvalues = {2}".format(
                 model_type, attributes_["vectors"], attributes_["values"]
             )
         elif model_type == "Normalizer":
-            if "values" not in attributes or "method" not in attributes:
-                raise ParameterError(
-                    "Normalizer's attributes must include a list including the model's aggregations and a string representing the model's method."
-                )
+            assert "values" in attributes and "method" in attributes, ParameterError(
+                "Normalizer's attributes must include a list including the model's aggregations and a string representing the model's method."
+            )
+            raise_error_if_not_in("method", attributes["method"], ["minmax", "zscore", "robust_zscore"])
             attributes_["values"] = np.copy(attributes["values"])
             attributes_["method"] = attributes["method"]
-            check_types(
-                [
-                    ("values", attributes_["values"], [list]),
-                    (
-                        "method",
-                        attributes_["method"],
-                        ["minmax", "zscore", "robust_zscore"],
-                    ),
-                ]
-            )
             represent = "<{0}>\n\nvalues =\n{1}\n\nmethod = '{2}'".format(
                 model_type, attributes_["values"], attributes_["method"]
             )
@@ -2696,6 +2354,7 @@ attributes: dict
             attributes_tmp[elem] = attributes[elem]
         self.__init__(model_type=self.model_type_, attributes=attributes_tmp)
 
+    @check_dtypes
     def plot_tree(
         self,
         pic_path: str = "",
@@ -2752,7 +2411,6 @@ attributes: dict
                 "To be able to use this method, you'll have to install it.\n"
                 "[Tips] Run: 'pip3 install graphviz' in your terminal to install the module."
             )
-        check_types([("pic_path", pic_path, [str])])
         graphviz_str = self.to_graphviz(
             tree_id=tree_id,
             feature_names=feature_names,

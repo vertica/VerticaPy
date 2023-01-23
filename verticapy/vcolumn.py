@@ -55,6 +55,7 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy
+from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
@@ -307,8 +308,9 @@ Attributes
         return self.apply(func="ABS({})")
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
-    def add(self, x: float):
+    def add(self, x: Union[int, float]):
         """
 	---------------------------------------------------------------------------
 	Adds the input element to the vColumn.
@@ -328,13 +330,13 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        check_types([("x", x, [int, float])])
         if self.isdate():
             return self.apply(func="TIMESTAMPADD(SECOND, {}, {})".format(x, "{}"))
         else:
             return self.apply(func="{} + ({})".format("{}", x))
 
     # ---#
+    @check_dtypes
     def add_copy(self, name: str):
         """
 	---------------------------------------------------------------------------
@@ -354,8 +356,6 @@ Attributes
 	--------
 	vDataFrame.eval : Evaluates a customized expression.
 		"""
-        # -#
-        check_types([("name", name, [str])])
         name = quote_ident(name.replace('"', "_"))
         assert name.replace('"', ""), EmptyParameter(
             "The parameter 'name' must not be empty"
@@ -434,8 +434,9 @@ Attributes
 
     agg = aggregate
     # ---#
+    @check_dtypes
     @save_verticapy_logs
-    def apply(self, func: str, copy_name: str = ""):
+    def apply(self, func: Union[str, str_sql], copy_name: str = ""):
         """
 	---------------------------------------------------------------------------
 	Applies a function to the vColumn.
@@ -462,7 +463,6 @@ Attributes
 		"""
         if isinstance(func, str_sql):
             func = str(func)
-        check_types([("func", func, [str]), ("copy_name", copy_name, [str])])
         try:
             try:
                 ctype = get_data_types(
@@ -529,8 +529,9 @@ Attributes
             )
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
-    def apply_fun(self, func: str, x: float = 2):
+    def apply_fun(self, func: str, x: Union[str, int, float] = 2):
         """
 	---------------------------------------------------------------------------
 	Applies a default function to the vColumn.
@@ -585,56 +586,11 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the vColumn.
 		"""
-        if isinstance(func, str):
-            func = func.lower()
+        raise_error_if_not_in("func", func, ["abs", "acos", "asin", "atan", "avg", "cbrt", "ceil", "contain", "count", "cos", "cosh", "cot", "dim", "exp", "find", "floor", "len", "length", "ln", "log", "log10", "max", "mean", "mod", "min", "pow", "round", "sign", "sin", "sinh", "sum", "sqrt", "tan", "tanh",])
         if func == "mean":
             func = "avg"
         elif func == "length":
             func = "len"
-        # -#
-        check_types(
-            [
-                (
-                    "func",
-                    func,
-                    [
-                        "abs",
-                        "acos",
-                        "asin",
-                        "atan",
-                        "avg",
-                        "cbrt",
-                        "ceil",
-                        "contain",
-                        "count",
-                        "cos",
-                        "cosh",
-                        "cot",
-                        "dim",
-                        "exp",
-                        "find",
-                        "floor",
-                        "len",
-                        "ln",
-                        "log",
-                        "log10",
-                        "max",
-                        "mod",
-                        "min",
-                        "pow",
-                        "round",
-                        "sign",
-                        "sin",
-                        "sinh",
-                        "sum",
-                        "sqrt",
-                        "tan",
-                        "tanh",
-                    ],
-                ),
-                ("x", x, [int, float, str]),
-            ]
-        )
         cat = self.category()
         if func == "len":
             if cat == "vmap":
@@ -659,14 +615,15 @@ Attributes
                     f = "CONTAINS"
             elif func == "find":
                 f = "ARRAY_FIND"
-            if isinstance(x, (str,)):
+            if isinstance(x, str):
                 x = "'" + str(x).replace("'", "''") + "'"
             expr = "{}({}, {})".format(f, "{}", x)
         return self.apply(func=expr)
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
-    def astype(self, dtype):
+    def astype(self, dtype: Union[str, type]):
         """
 	---------------------------------------------------------------------------
 	Converts the vColumn to the input type.
@@ -691,7 +648,6 @@ Attributes
 	vDataFrame.astype : Converts the vColumns to the input type.
 		"""
         dtype = get_vertica_type(dtype)
-        check_types([("dtype", dtype, [str])])
         try:
             if (
                 dtype == "array" or str(dtype).startswith("vmap")
@@ -830,6 +786,7 @@ Attributes
 
     mean = avg
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def bar(
         self,
@@ -837,7 +794,7 @@ Attributes
         of: str = "",
         max_cardinality: int = 6,
         nbins: int = 0,
-        h: float = 0,
+        h: Union[int, float] = 0,
         ax=None,
         **style_kwds,
     ):
@@ -864,7 +821,7 @@ Attributes
  		(No h will be picked or computed)
  	nbins: int, optional
  		Number of nbins. If empty, an optimized number of nbins will be computed.
- 	h: float, optional
+ 	h: int / float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -880,15 +837,6 @@ Attributes
  	--------
  	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
-        check_types(
-            [
-                ("method", method, [str]),
-                ("of", of, [str]),
-                ("max_cardinality", max_cardinality, [int, float]),
-                ("nbins", nbins, [int, float]),
-                ("h", h, [int, float]),
-            ]
-        )
         if of:
             self.parent.are_namecols_in(of)
             of = self.parent.format_colnames(of)
@@ -897,13 +845,14 @@ Attributes
         return bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def boxplot(
         self,
         by: str = "",
-        h: float = 0,
+        h: Union[int, float] = 0,
         max_cardinality: int = 8,
-        cat_priority: list = [],
+        cat_priority: Union[str, int, datetime.datetime, datetime.date, list] = [],
         ax=None,
         **style_kwds,
     ):
@@ -915,14 +864,14 @@ Attributes
  	----------
  	by: str, optional
  		vColumn to use to partition the data.
- 	h: float, optional
+ 	h: int / float, optional
  		Interval width if the vColumn is numerical or of type date like. Optimized 
  		h will be computed if the parameter is empty or invalid.
  	max_cardinality: int, optional
  		Maximum number of vColumn distinct elements to be used as categorical. 
  		The less frequent elements will be gathered together to create a new 
  		category : 'Others'.
- 	cat_priority: list, optional
+ 	cat_priority: str / int / date / list, optional
  		List of the different categories to consider when drawing the box plot.
  		The other categories will be filtered.
     ax: Matplotlib axes object, optional
@@ -941,14 +890,6 @@ Attributes
 		"""
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
-        check_types(
-            [
-                ("by", by, [str]),
-                ("max_cardinality", max_cardinality, [int, float]),
-                ("h", h, [int, float]),
-                ("cat_priority", cat_priority, [list]),
-            ]
-        )
         if by:
             self.parent.are_namecols_in(by)
             by = self.parent.format_colnames(by)
@@ -975,8 +916,9 @@ Attributes
         return self.transformations[-1][2]
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
-    def clip(self, lower=None, upper=None):
+    def clip(self, lower: Union[int, float, datetime.datetime, datetime.date] = None, upper: Union[int, float, datetime.datetime, datetime.date] = None):
         """
 	---------------------------------------------------------------------------
 	Clips the vColumn by transforming the values lesser than the lower bound to 
@@ -985,9 +927,9 @@ Attributes
 
 	Parameters
  	----------
- 	lower: float, optional
+ 	lower: int / float / date, optional
  		Lower bound.
- 	upper: float, optional
+ 	upper: int / float / date, optional
  		Upper bound.
 
  	Returns
@@ -999,7 +941,6 @@ Attributes
  	--------
  	vDataFrame[].fill_outliers : Fills the vColumn outliers using the input method.
 		"""
-        check_types([("lower", lower, [float, int]), ("upper", upper, [float, int])])
         assert (lower != None) or (upper != None), ParameterError(
             "At least 'lower' or 'upper' must have a numerical value"
         )
@@ -1036,6 +977,7 @@ Attributes
         return self.aggregate(["count"]).values[self.alias][0]
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def cut(
         self,
@@ -1069,14 +1011,6 @@ Attributes
     --------
     vDataFrame[].apply : Applies a function to the input vColumn.
         """
-        check_types(
-            [
-                ("breaks", breaks, [list]),
-                ("labels", labels, [list]),
-                ("include_lowest", include_lowest, [bool]),
-                ("right", right, [bool]),
-            ]
-        )
         assert self.isnum() or self.isdate(), TypeError(
             "cut only works on numerical / date-like vColumns."
         )
@@ -1181,11 +1115,12 @@ Attributes
         return self.apply(func=st.decode(str_sql("{}"), *argv))
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def density(
         self,
         by: str = "",
-        bandwidth: float = 1.0,
+        bandwidth: Union[int, float] = 1.0,
         kernel: str = "gaussian",
         nbins: int = 200,
         xlim: tuple = None,
@@ -1228,14 +1163,7 @@ Attributes
 	--------
 	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
-        check_types(
-            [
-                ("by", by, [str]),
-                ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]),
-                ("bandwidth", bandwidth, [int, float]),
-                ("nbins", nbins, [float, int]),
-            ]
-        )
+        raise_error_if_not_in("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"])
         if by:
             self.parent.are_namecols_in(by)
             by = self.parent.format_colnames(by)
@@ -1310,6 +1238,7 @@ Attributes
             raise
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def describe(
         self, method: str = "auto", max_cardinality: int = 6, numcol: str = ""
@@ -1345,15 +1274,7 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        check_types(
-            [
-                ("method", method, ["auto", "numerical", "categorical", "cat_stats"]),
-                ("max_cardinality", max_cardinality, [int, float]),
-                ("numcol", numcol, [str]),
-            ]
-        )
-
-        method = method.lower()
+        raise_error_if_not_in("method", method, ["auto", "numerical", "categorical", "cat_stats"])
         assert (method != "cat_stats") or (numcol), ParameterError(
             "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
         )
@@ -1487,11 +1408,12 @@ Attributes
         return tablesample(values)
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def discretize(
         self,
         method: str = "auto",
-        h: float = 0,
+        h: Union[int, float] = 0,
         nbins: int = -1,
         k: int = 6,
         new_category: str = "Others",
@@ -1515,7 +1437,7 @@ Attributes
  				relevant interval to use for the discretization.
  			topk       : Keeps the topk most frequent categories and merge the other 
  				into one unique category.
- 	h: float, optional
+ 	h: int / float, optional
  		The interval size to convert to use to convert the vColumn. If this parameter 
  		is equal to 0, an optimised interval will be computed.
  	nbins: int, optional
@@ -1549,22 +1471,7 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
-        check_types(
-            [
-                ("RFmodel_params", RFmodel_params, [dict]),
-                ("return_enum_trans", return_enum_trans, [bool]),
-                ("h", h, [int, float]),
-                ("response", response, [str]),
-                ("nbins", nbins, [int, float]),
-                (
-                    "method",
-                    method,
-                    ["auto", "smart", "same_width", "same_freq", "topk"],
-                ),
-                ("return_enum_trans", return_enum_trans, [bool]),
-            ]
-        )
-        method = method.lower()
+        raise_error_if_not_in("method", method, ["auto", "smart", "same_width", "same_freq", "topk"])
         if self.isnum() and method == "smart":
             schema = verticapy.OPTIONS["temp_schema"]
             if not (schema):
@@ -1764,15 +1671,16 @@ Attributes
         return [item for sublist in query_result for item in sublist]
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
-    def div(self, x: float):
+    def div(self, x: Union[int, float]):
         """
 	---------------------------------------------------------------------------
 	Divides the vColumn by the input element.
 
 	Parameters
  	----------
- 	x: float
+ 	x: int / float
  		Input number.
 
  	Returns
@@ -1784,11 +1692,11 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        check_types([("x", x, [int, float])])
         assert x != 0, ValueError("Division by 0 is forbidden !")
         return self.apply(func="{} / ({})".format("{}", x))
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def drop(self, add_history: bool = True):
         """
@@ -1813,7 +1721,6 @@ Attributes
 	--------
 	vDataFrame.drop: Drops the input vColumns from the vDataFrame.
 		"""
-        check_types([("add_history", add_history, [bool])])
         try:
             parent = self.parent
             force_columns = [
@@ -1839,9 +1746,10 @@ Attributes
         return parent
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def drop_outliers(
-        self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05
+        self, threshold: Union[int, float] = 4.0, use_threshold: bool = True, alpha: Union[int, float] = 0.05
     ):
         """
 	---------------------------------------------------------------------------
@@ -1849,13 +1757,13 @@ Attributes
 
 	Parameters
  	----------
- 	threshold: float, optional
+ 	threshold: int / float, optional
  		Uses the Gaussian distribution to identify outliers. After normalizing 
  		the data (Z-Score), if the absolute value of the record is greater than 
  		the threshold, it will be considered as an outlier.
  	use_threshold: bool, optional
  		Uses the threshold instead of the 'alpha' parameter.
- 	alpha: float, optional
+ 	alpha: int / float, optional
  		Number representing the outliers threshold. Values lesser than 
  		quantile(alpha) or greater than quantile(1-alpha) will be dropped.
 
@@ -1870,13 +1778,6 @@ Attributes
 	vDataFrame.outliers      : Adds a new vColumn labeled with 0 and 1 
 		(1 meaning global outlier).
 		"""
-        check_types(
-            [
-                ("alpha", alpha, [int, float]),
-                ("use_threshold", use_threshold, [bool]),
-                ("threshold", threshold, [int, float]),
-            ]
-        )
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
             self.parent.filter(
@@ -1915,13 +1816,14 @@ Attributes
         return self.parent
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def fill_outliers(
         self,
         method: str = "winsorize",
-        threshold: float = 4.0,
+        threshold: Union[int, float] = 4.0,
         use_threshold: bool = True,
-        alpha: float = 0.05,
+        alpha: Union[int, float] = 0.05,
     ):
         """
 	---------------------------------------------------------------------------
@@ -1937,13 +1839,13 @@ Attributes
 				winsorize : Clips the vColumn using as lower bound quantile(alpha) and as 
 					upper bound quantile(1-alpha) if 'use_threshold' is set to False else 
 					the lower and upper ZScores.
-		threshold: float, optional
+		threshold: int / float, optional
 			Uses the Gaussian distribution to define the outliers. After normalizing the 
 			data (Z-Score), if the absolute value of the record is greater than the 
 			threshold it will be considered as an outlier.
 		use_threshold: bool, optional
 			Uses the threshold instead of the 'alpha' parameter.
-		alpha: float, optional
+		alpha: int / float, optional
 			Number representing the outliers threshold. Values lesser than quantile(alpha) 
 			or greater than quantile(1-alpha) will be filled.
 
@@ -1958,16 +1860,7 @@ Attributes
 	vDataFrame.outliers      : Adds a new vColumn labeled with 0 and 1 
 		(1 meaning global outlier).
 		"""
-        if isinstance(method, str):
-            method = method.lower()
-        check_types(
-            [
-                ("method", method, ["winsorize", "null", "mean"]),
-                ("alpha", alpha, [int, float]),
-                ("use_threshold", use_threshold, [bool]),
-                ("threshold", threshold, [int, float]),
-            ]
-        )
+        raise_error_if_not_in("method", method, ["winsorize", "null", "mean"])
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
             p_alpha, p_1_alpha = (
@@ -2021,14 +1914,15 @@ Attributes
         return self.parent
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def fillna(
         self,
-        val=None,
+        val: Union[int, float, str, datetime.datetime, datetime.date] = None,
         method: str = "auto",
-        expr: str = "",
-        by: list = [],
-        order_by: list = [],
+        expr: Union[str, str_sql] = "",
+        by: Union[str, list] = [],
+        order_by: Union[str, list] = [],
     ):
         """
 	---------------------------------------------------------------------------
@@ -2036,7 +1930,7 @@ Attributes
 
 	Parameters
  	----------
- 	val: int/float/str, optional
+ 	val: int / float / str / date, optional
  		Value to use to impute the vColumn.
  	method: dict, optional
  		Method to use to impute the missing values.
@@ -2049,9 +1943,9 @@ Attributes
 			0ifnull : 0 when the vColumn is null, 1 otherwise.
     expr: str, optional
         SQL expression.
-	by: list, optional
+	by: str / list, optional
  		vColumns used in the partition.
- 	order_by: list, optional
+ 	order_by: str / list, optional
  		List of the vColumns to use to sort the data when using TS methods.
 
  	Returns
@@ -2063,33 +1957,11 @@ Attributes
 	--------
 	vDataFrame[].dropna : Drops the vColumn missing values.
 		"""
+        raise_error_if_not_in("method", method, ["auto", "mode", "0ifnull", "mean", "avg", "median", "ffill", "pad", "bfill", "backfill",])
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):
             order_by = [order_by]
-        check_types(
-            [
-                (
-                    "method",
-                    method,
-                    [
-                        "auto",
-                        "mode",
-                        "0ifnull",
-                        "mean",
-                        "avg",
-                        "median",
-                        "ffill",
-                        "pad",
-                        "bfill",
-                        "backfill",
-                    ],
-                ),
-                ("expr", expr, [str]),
-                ("by", by, [list]),
-                ("order_by", order_by, [list]),
-            ]
-        )
         method = method.lower()
         self.parent.are_namecols_in([elem for elem in order_by] + by)
         by = self.parent.format_colnames(by)
@@ -2283,6 +2155,7 @@ Attributes
         return self.parent[columns].to_geopandas(self.alias).plot(*args, **kwargs)
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def get_dummies(
         self,
@@ -2318,14 +2191,6 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
-        check_types(
-            [
-                ("prefix", prefix, [str]),
-                ("prefix_sep", prefix_sep, [str]),
-                ("drop_first", drop_first, [bool]),
-                ("use_numbers_as_suffix", use_numbers_as_suffix, [bool]),
-            ]
-        )
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
             all_new_features = []
@@ -2449,6 +2314,7 @@ Attributes
         return self.iloc(limit=limit)
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def hist(
         self,
@@ -2456,7 +2322,7 @@ Attributes
         of: str = "",
         max_cardinality: int = 6,
         nbins: int = 0,
-        h: float = 0,
+        h: Union[int, float] = 0,
         ax=None,
         **style_kwds,
     ):
@@ -2483,7 +2349,7 @@ Attributes
  		(No h will be picked or computed)
  	nbins: int, optional
  		Number of bins. If empty, an optimized number of bins will be computed.
- 	h: float, optional
+ 	h: int / float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -2499,15 +2365,6 @@ Attributes
  	--------
  	vDataFrame[].bar : Draws the Bar Chart of vColumn based on an aggregation.
 		"""
-        check_types(
-            [
-                ("method", method, [str]),
-                ("of", of, [str]),
-                ("max_cardinality", max_cardinality, [int, float]),
-                ("h", h, [int, float]),
-                ("nbins", nbins, [int, float]),
-            ]
-        )
         if of:
             self.parent.are_namecols_in(of)
             of = self.parent.format_colnames(of)
@@ -2516,6 +2373,7 @@ Attributes
         return hist(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     # ---#
+    @check_dtypes
     def iloc(self, limit: int = 5, offset: int = 0):
         """
     ---------------------------------------------------------------------------
@@ -2539,8 +2397,6 @@ Attributes
     vDataFrame[].head : Returns the head of the vColumn.
     vDataFrame[].tail : Returns the tail of the vColumn.
         """
-        # -#
-        check_types([("limit", limit, [int, float]), ("offset", offset, [int, float])])
         if offset < 0:
             offset = max(0, self.parent.shape()[0] - limit)
         title = "Reads {}.".format(self.alias)
@@ -2614,7 +2470,7 @@ Attributes
 
     # ---#
     @save_verticapy_logs
-    def isin(self, val: list, *args):
+    def isin(self, val: Union[str, int, float, datetime.datetime, datetime.date, list], *args):
         """
 	---------------------------------------------------------------------------
 	Looks if some specific records are in the vColumn and it returns the new 
@@ -2622,7 +2478,7 @@ Attributes
 
 	Parameters
  	----------
- 	val: list
+ 	val: str / int / float / date / list
  		List of the different records. For example, to check if Badr and Fouad  
  		are in the vColumn. You can write the following list: ["Fouad", "Badr"]
 
@@ -2638,7 +2494,6 @@ Attributes
         if isinstance(val, str) or not (isinstance(val, Iterable)):
             val = [val]
         val += list(args)
-        check_types([("val", val, [list])])
         val = {self.alias: val}
         return self.parent.isin(val)
 
@@ -2676,6 +2531,7 @@ Attributes
         )
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def iv_woe(self, y: str, nbins: int = 10):
         """
@@ -2701,16 +2557,15 @@ Attributes
     --------
     vDataFrame.iv_woe : Computes the Information Value (IV) Table.
         """
-        check_types([("y", y, [str]), ("nbins", nbins, [int])])
         self.parent.are_namecols_in(y)
         y = self.parent.format_colnames(y)
         assert self.parent[y].nunique() == 2, TypeError(
-            "vColumn {} must be binary to use iv_woe.".format(y)
+            f"vColumn {y} must be binary to use iv_woe."
         )
         response_cat = self.parent[y].distinct()
         response_cat.sort()
         assert response_cat == [0, 1], TypeError(
-            "vColumn {} must be binary to use iv_woe.".format(y)
+            f"vColumn {y} must be binary to use iv_woe."
         )
         self.parent[y].distinct()
         trans = self.discretize(
@@ -2850,6 +2705,7 @@ Attributes
         return self.aggregate(["max"]).values[self.alias][0]
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def mean_encode(self, response: str):
         """
@@ -2874,7 +2730,6 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 		"""
-        check_types([("response", response, [str])])
         self.parent.are_namecols_in(response)
         response = self.parent.format_colnames(response)
         assert self.parent[response].isnum(), TypeError(
@@ -2971,6 +2826,7 @@ Attributes
         return self.aggregate(["min"]).values[self.alias][0]
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def mode(self, dropna: bool = False, n: int = 1):
         """
@@ -2994,7 +2850,6 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        check_types([("dropna", dropna, [bool]), ("n", n, [int, float])])
         if n == 1:
             pre_comp = self.parent.__get_catalog_value__(self.alias, "top")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -3022,15 +2877,16 @@ Attributes
         return top
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
-    def mul(self, x: float):
+    def mul(self, x: Union[int, float]):
         """
 	---------------------------------------------------------------------------
 	Multiplies the vColumn by the input element.
 
 	Parameters
  	----------
- 	x: float
+ 	x: int / float
  		Input number.
 
  	Returns
@@ -3042,10 +2898,10 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        check_types([("x", x, [int, float])])
         return self.apply(func="{} * ({})".format("{}", x))
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def nlargest(self, n: int = 10):
         """
@@ -3067,7 +2923,6 @@ Attributes
 	--------
 	vDataFrame[].nsmallest : Returns the n smallest elements in the vColumn.
 		"""
-        check_types([("n", n, [int, float])])
         query = "SELECT * FROM {0} WHERE {1} IS NOT NULL ORDER BY {1} DESC LIMIT {2}".format(
             self.parent.__genSQL__(), self.alias, n
         )
@@ -3080,9 +2935,10 @@ Attributes
         )
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def normalize(
-        self, method: str = "zscore", by: list = [], return_trans: bool = False
+        self, method: str = "zscore", by: Union[str, list] = [], return_trans: bool = False
     ):
         """
 	---------------------------------------------------------------------------
@@ -3098,7 +2954,7 @@ Attributes
 				(x - median) / (1.4826 * mad)
  			minmax        : Normalization using the MinMax (min and max).
 				(x - min) / (max - min)
-	by: list, optional
+	by: str / list, optional
  		vColumns used in the partition.
  	return_trans: bool, optimal
  		If set to True, the method will return the transformation used instead of
@@ -3113,15 +2969,9 @@ Attributes
 	--------
 	vDataFrame.outliers : Computes the vDataFrame Global Outliers.
 		"""
+        raise_error_if_not_in("method", method, ["zscore", "robust_zscore", "minmax"])
         if isinstance(by, str):
             by = [by]
-        check_types(
-            [
-                ("method", method, ["zscore", "robust_zscore", "minmax"]),
-                ("by", by, [list]),
-                ("return_trans", return_trans, [bool]),
-            ]
-        )
         method = method.lower()
         self.parent.are_namecols_in(by)
         by = self.parent.format_colnames(by)
@@ -3423,6 +3273,7 @@ Attributes
         return self.parent
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def nsmallest(self, n: int = 10):
         """
@@ -3444,7 +3295,6 @@ Attributes
 	--------
 	vDataFrame[].nlargest : Returns the n largest vColumn elements.
 		"""
-        check_types([("n", n, [int, float])])
         query = "SELECT * FROM {0} WHERE {1} IS NOT NULL ORDER BY {1} ASC LIMIT {2}".format(
             self.parent.__genSQL__(), self.alias, n
         )
@@ -3457,6 +3307,7 @@ Attributes
         )
 
     # ---#
+    @check_dtypes
     def numh(self, method: str = "auto"):
         """
 	---------------------------------------------------------------------------
@@ -3475,11 +3326,7 @@ Attributes
  	float
  		optimal bar width.
 		"""
-        # -#
-        check_types(
-            [("method", method, ["sturges", "freedman_diaconis", "fd", "auto"])]
-        )
-        method = method.lower()
+        raise_error_if_not_in("method", method, ["sturges", "freedman_diaconis", "fd", "auto"])
         if method == "auto":
             pre_comp = self.parent.__get_catalog_value__(self.alias, "numh")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -3535,6 +3382,7 @@ Attributes
         return best_h
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def nunique(self, approx: bool = True):
         """
@@ -3557,20 +3405,20 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        check_types([("approx", approx, [bool])])
         if approx:
             return self.aggregate(func=["approx_unique"]).values[self.alias][0]
         else:
             return self.aggregate(func=["unique"]).values[self.alias][0]
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def pie(
         self,
         method: str = "density",
         of: str = "",
         max_cardinality: int = 6,
-        h: float = 0,
+        h: Union[int, float] = 0,
         pie_type: str = "auto",
         ax=None,
         **style_kwds,
@@ -3596,7 +3444,7 @@ Attributes
 	max_cardinality: int, optional
  		Maximum number of the vColumn distinct elements to be used as categorical 
  		(No h will be picked or computed)
- 	h: float, optional
+ 	h: int / float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
     pie_type: str, optional
         The type of pie chart.
@@ -3618,19 +3466,8 @@ Attributes
  	--------
  	vDataFrame.donut : Draws the donut chart of the vColumn based on an aggregation.
 		"""
-        if isinstance(pie_type, str):
-            pie_type = pie_type.lower()
-        check_types(
-            [
-                ("method", method, [str]),
-                ("of", of, [str]),
-                ("max_cardinality", max_cardinality, [int, float]),
-                ("h", h, [int, float]),
-                ("pie_type", pie_type, ["auto", "donut", "rose"]),
-            ]
-        )
-        donut = True if pie_type == "donut" else False
-        rose = True if pie_type == "rose" else False
+        raise_error_if_not_in("pie_type", pie_type, ["auto", "donut", "rose"])
+        donut, rose = (pie_type == "donut"), (pie_type == "rose")
         if of:
             self.parent.are_namecols_in(of)
             of = self.parent.format_colnames(of)
@@ -3641,13 +3478,14 @@ Attributes
         )
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def plot(
         self,
         ts: str,
         by: str = "",
-        start_date: Union[str, datetime.datetime, datetime.date] = "",
-        end_date: Union[str, datetime.datetime, datetime.date] = "",
+        start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         area: bool = False,
         step: bool = False,
         ax=None,
@@ -3664,10 +3502,10 @@ Attributes
  		date like (date, datetime, timestamp...) or numerical.
  	by: str, optional
  		vColumn to use to partition the TS.
- 	start_date: str / date, optional
+ 	start_date: str / int / float / date, optional
  		Input Start Date. For example, time = '03-11-1993' will filter the data when 
  		'ts' is lesser than November 1993 the 3rd.
- 	end_date: str / date, optional
+ 	end_date: str / int / float / date, optional
  		Input End Date. For example, time = '03-11-1993' will filter the data when 
  		'ts' is greater than November 1993 the 3rd.
  	area: bool, optional
@@ -3688,16 +3526,6 @@ Attributes
 	--------
 	vDataFrame.plot : Draws the time series.
 		"""
-        check_types(
-            [
-                ("ts", ts, [str]),
-                ("by", by, [str]),
-                ("start_date", start_date, [str, datetime.datetime, datetime.date]),
-                ("end_date", end_date, [str, datetime.datetime, datetime.date]),
-                ("area", area, [bool]),
-                ("step", step, [bool]),
-            ]
-        )
         self.parent.are_namecols_in(ts)
         ts = self.parent.format_colnames(ts)
         if by:
@@ -3730,15 +3558,16 @@ Attributes
     prod = product
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
-    def quantile(self, x: float, approx: bool = True):
+    def quantile(self, x: Union[int, float], approx: bool = True):
         """
 	---------------------------------------------------------------------------
 	Aggregates the vColumn using an input 'quantile'.
 
 	Parameters
  	----------
- 	x: float
+ 	x: int / float
  		A float between 0 and 1 that represents the quantile.
         For example: 0.25 represents Q1.
     approx: bool, optional
@@ -3754,20 +3583,20 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        check_types([("x", x, [int, float], ("approx", approx, [bool]))])
         prefix = "approx_" if approx else ""
         return self.aggregate(func=[prefix + "{}%".format(x * 100)]).values[self.alias][
             0
         ]
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def range_plot(
         self,
         ts: str,
-        q: tuple = (0.25, 0.75),
-        start_date: Union[str, datetime.datetime, datetime.date] = "",
-        end_date: Union[str, datetime.datetime, datetime.date] = "",
+        q: Union[tuple, list] = (0.25, 0.75),
+        start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         plot_median: bool = False,
         ax=None,
         **style_kwds,
@@ -3782,12 +3611,12 @@ Attributes
     ts: str
         TS (Time Series) vColumn to use to order the data. The vColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    q: tuple, optional
+    q: tuple / list, optional
         Tuple including the 2 quantiles used to draw the Plot.
-    start_date: str / date, optional
+    start_date: str / int / float / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str / date, optional
+    end_date: str / int / float / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     plot_median: bool, optional
@@ -3806,23 +3635,6 @@ Attributes
     --------
     vDataFrame.plot : Draws the time series.
         """
-        check_types(
-            [
-                ("ts", ts, [str]),
-                ("q", q, [tuple]),
-                (
-                    "start_date",
-                    start_date,
-                    [str, datetime.datetime, datetime.date, int, float],
-                ),
-                (
-                    "end_date",
-                    end_date,
-                    [str, datetime.datetime, datetime.date, int, float],
-                ),
-                ("plot_median", plot_median, [bool]),
-            ]
-        )
         self.parent.are_namecols_in(ts)
         ts = self.parent.format_colnames(ts)
         from verticapy.plot import range_curve_vdf
@@ -3832,6 +3644,7 @@ Attributes
         )
 
     # ---#
+    @check_dtypes
     def rename(self, new_name: str):
         """
 	---------------------------------------------------------------------------
@@ -3856,7 +3669,6 @@ Attributes
 	--------
 	vDataFrame.add_copy : Creates a copy of the vColumn.
 		"""
-        check_types([("new_name", new_name, [str])])
         old_name = quote_ident(self.alias)
         new_name = new_name.replace('"', "")
         assert not (self.parent.is_colname_in(new_name)), NameError(
@@ -3865,11 +3677,12 @@ Attributes
         self.add_copy(new_name)
         parent = self.drop(add_history=False)
         parent.__add_to_history__(
-            "[Rename]: The vColumn {} was renamed '{}'.".format(old_name, new_name)
+            f"[Rename]: The vColumn {old_name} was renamed '{new_name}'.".format(old_name, new_name)
         )
         return parent
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def round(self, n: int):
         """
@@ -3890,7 +3703,6 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        check_types([("n", n, [int, float])])
         return self.apply(func="ROUND({}, {})".format("{}", n))
 
     # ---#
@@ -3931,6 +3743,7 @@ Attributes
 
     skew = skewness
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def slice(self, length: int, unit: str = "second", start: bool = True):
         """
@@ -3956,13 +3769,6 @@ Attributes
 	--------
 	vDataFrame[].date_part : Extracts a specific TS field from the vColumn.
 		"""
-        check_types(
-            [
-                ("length", length, [int, float]),
-                ("unit", unit, [str]),
-                ("start", start, [bool]),
-            ]
-        )
         start_or_end = "START" if (start) else "END"
         return self.apply(
             func="TIME_SLICE({}, {}, '{}', '{}')".format(
@@ -3971,14 +3777,15 @@ Attributes
         )
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def spider(
         self,
         by: str = "",
         method: str = "density",
         of: str = "",
-        max_cardinality: Union[int, tuple] = (6, 6),
-        h: Union[int, float, tuple] = (None, None),
+        max_cardinality: Union[int, tuple, list] = (6, 6),
+        h: Union[int, float, tuple, list] = (None, None),
         ax=None,
         **style_kwds,
     ):
@@ -4002,11 +3809,11 @@ Attributes
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
         The vColumn to use to compute the aggregation.
-    h: int/float/tuple, optional
+    h: int / float / tuple / list, optional
         Interval width of the vColumns 1 and 2 bars. It is only valid if the 
         vColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
-    max_cardinality: int/tuple, optional
+    max_cardinality: int / tuple / list, optional
         Maximum number of distinct elements for vColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     ax: Matplotlib axes object, optional
@@ -4023,15 +3830,6 @@ Attributes
     --------
     vDataFrame.bar : Draws the Bar Chart of the input vColumns based on an aggregation.
         """
-        check_types(
-            [
-                ("by", by, [str]),
-                ("method", method, [str]),
-                ("of", of, [str]),
-                ("max_cardinality", max_cardinality, [list]),
-                ("h", h, [list, float, int]),
-            ]
-        )
         if by:
             self.parent.are_namecols_in(by)
             by = self.parent.format_colnames(by)
@@ -4101,6 +3899,7 @@ Attributes
         return store_usage
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def str_contains(self, pat: str):
         """
@@ -4128,12 +3927,12 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice   : Slices the vColumn.
 		"""
-        check_types([("pat", pat, [str])])
         return self.apply(
             func="REGEXP_COUNT({}, '{}') > 0".format("{}", pat.replace("'", "''"))
         )
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def str_count(self, pat: str):
         """
@@ -4161,12 +3960,12 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        check_types([("pat", pat, [str])])
         return self.apply(
             func="REGEXP_COUNT({}, '{}')".format("{}", pat.replace("'", "''"))
         )
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def str_extract(self, pat: str):
         """
@@ -4194,12 +3993,12 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        check_types([("pat", pat, [str])])
         return self.apply(
             func="REGEXP_SUBSTR({}, '{}')".format("{}", pat.replace("'", "''"))
         )
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def str_replace(self, to_replace: str, value: str = ""):
         """
@@ -4229,7 +4028,6 @@ Attributes
 		vColumn.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        check_types([("to_replace", to_replace, [str]), ("value", value, [str])])
         return self.apply(
             func="REGEXP_REPLACE({}, '{}', '{}')".format(
                 "{}", to_replace.replace("'", "''"), value.replace("'", "''")
@@ -4237,6 +4035,7 @@ Attributes
         )
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def str_slice(self, start: int, step: int):
         """
@@ -4266,19 +4065,19 @@ Attributes
 	vDataFrame[].str_replace  : Replaces the regular expression matches in each of the 
 		vColumn records by an input value.
 		"""
-        check_types([("start", start, [int, float]), ("step", step, [int, float])])
         return self.apply(func="SUBSTR({}, {}, {})".format("{}", start, step))
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
-    def sub(self, x: float):
+    def sub(self, x: Union[int, float]):
         """
 	---------------------------------------------------------------------------
 	Subtracts the input element from the vColumn.
 
 	Parameters
  	----------
- 	x: float
+ 	x: int / float
  		If the vColumn type is date like (date, datetime ...), the parameter 'x' 
  		will represent the number of seconds, otherwise it will represent a number.
 
@@ -4291,7 +4090,6 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        check_types([("x", x, [int, float])])
         if self.isdate():
             return self.apply(func="TIMESTAMPADD(SECOND, -({}), {})".format(x, "{}"))
         else:
@@ -4339,6 +4137,7 @@ Attributes
         return self.iloc(limit=limit, offset=-1)
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def topk(self, k: int = -1, dropna: bool = True):
         """
@@ -4362,7 +4161,6 @@ Attributes
 	--------
 	vDataFrame[].describe : Computes the vColumn descriptive statistics.
 		"""
-        check_types([("k", k, [int, float]), ("dropna", dropna, [bool])])
         topk = "" if (k < 1) else "LIMIT {}".format(k)
         dropna = " WHERE {} IS NOT NULL".format(self.alias) if (dropna) else ""
         query = "SELECT /*+LABEL('vColumn.topk')*/ {0} AS {1}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {2} AS percent FROM {3}{4} GROUP BY {0} ORDER BY _verticapy_cnt_ DESC {5}".format(

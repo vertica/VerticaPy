@@ -49,6 +49,7 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.learn.vmodel import *
@@ -69,13 +70,13 @@ name: str
     """
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str):
-        check_types([("name", name, [str], False)])
         self.type, self.name = "MCA", name
-        self.set_params({})
 
     # ---#
+    @check_dtypes
     def plot_var(
         self, dimensions: tuple = (1, 2), method: str = "auto", ax=None, **style_kwds
     ):
@@ -102,12 +103,7 @@ name: str
     ax
         Matplotlib axes object
         """
-        check_types(
-            [
-                ("dimensions", dimensions, [tuple]),
-                ("method", method, ["auto", "cos2", "contrib"]),
-            ]
-        )
+        raise_error_if_not_in("method", method, ["auto", "cos2", "contrib"])
         x = self.components_["PC{}".format(dimensions[0])]
         y = self.components_["PC{}".format(dimensions[1])]
         n = len(self.cos2_["PC{}".format(dimensions[0])])
@@ -271,6 +267,7 @@ method: str, optional
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -279,11 +276,9 @@ method: str, optional
         scale: bool = False,
         method: str = "lapack",
     ):
-        check_types([("name", name, [str], False)])
+        raise_error_if_not_in("method", str(method).lower(), ["lapack"])
         self.type, self.name = "PCA", name
-        self.set_params(
-            {"n_components": n_components, "scale": scale, "method": method.lower()}
-        )
+        self.parameters = {"n_components": n_components, "scale": scale, "method": str(method).lower()}
 
 
 # ---#
@@ -309,8 +304,9 @@ method: str, optional
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, n_components: int = 0, method: str = "lapack"):
-        check_types([("name", name, [str], False)])
+        raise_error_if_not_in("method", str(method).lower(), ["lapack"])
         self.type, self.name = "SVD", name
-        self.set_params({"n_components": n_components, "method": method.lower()})
+        self.parameters = {"n_components": n_components, "method": str(method).lower()}

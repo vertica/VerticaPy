@@ -116,3 +116,25 @@ class QueryError(Exception):
 # ---#
 class VersionError(Exception):
     pass
+
+# ---#
+def raise_error_if_not_in(variable_name, variable, options):
+    # Raises an error if the input variable does not belong to the input list.
+    from verticapy.toolbox import levenshtein
+
+    if variable not in options:
+        min_distance, min_distance_op = 1000, ""
+        for op in options:
+            if str(variable).lower() == str(op).lower():
+                error_message = f"Parameter '{variable_name}' is not correctly formatted. The correct option is {op}"
+                raise ParameterError(error_message)
+            else:
+                ldistance = levenshtein(variable, op)
+                if ldistance < min_distance:
+                    min_distance, min_distance_op = ldistance, op
+        error_message = "Parameter '{0}' must be in [{1}], found '{2}'.".format(
+            variable_name, "|".join(options), variable
+        )
+        if min_distance < 6:
+            error_message += f"\nDid you mean '{min_distance_op}'?"
+        raise ParameterError(error_message)

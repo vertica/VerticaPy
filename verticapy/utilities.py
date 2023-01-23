@@ -50,12 +50,12 @@
 #
 # Standard Python Modules
 import os, math, shutil, re, time, decimal, warnings, datetime, inspect
-from functools import wraps
-from typing import Union, get_type_hints
+from typing import Union
 
 # VerticaPy Modules
 import vertica_python
 import verticapy
+from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
 from verticapy.toolbox import *
 from verticapy.javascript import datatables_repr
 from verticapy.errors import *
@@ -69,70 +69,10 @@ except:
     pass
 
 #
-# Decorators
-#
-# ---#
-def save_verticapy_logs(func):
-    """
----------------------------------------------------------------------------
-save_verticapy_logs decorator. It simplifies the code and automatically
-identifies which function to save to the QUERY PROFILES table.
-    """
-
-    @wraps(func)
-    def func_prec_save_logs(*args, **kwargs):
-
-        name = func.__name__
-        path = func.__module__.replace("verticapy.", "")
-        json_dict = {}
-        var_names = func.__code__.co_varnames
-        if len(args) == len(var_names):
-            for idx, arg in enumerate(args):
-                if var_names[idx] != "self":
-                    if (
-                        var_names[idx] == "steps"
-                        and path == "pipeline"
-                        and isinstance(arg, list)
-                    ):
-                        json_dict[var_names[idx]] = [item[1].type for item in arg]
-                    else:
-                        json_dict[var_names[idx]] = arg
-                else:
-                    path += "." + type(arg).__name__
-        json_dict = {**json_dict, **kwargs}
-        save_to_query_profile(name=name, path=path, json_dict=json_dict)
-
-        return func(*args, **kwargs)
-
-    return func_prec_save_logs
-
-
-# ---#
-def check_minimum_version(func):
-    """
----------------------------------------------------------------------------
-check_minimum_version decorator. It simplifies the code by checking if the
-feature is available in the user's version.
-    """
-
-    @wraps(func)
-    def func_prec_check_minimum_version(*args, **kwargs):
-
-        fun_name, object_name, condition = func.__name__, "", []
-        if len(args) > 0:
-            object_name = type(args[0]).__name__
-        name = object_name if fun_name == "__init__" else fun_name
-        vertica_version(verticapy.MINIMUM_VERSION[name])
-
-        return func(*args, **kwargs)
-
-    return func_prec_check_minimum_version
-
-
-#
 # Utilities Functions
 #
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def compute_flextable_keys(flex_name: str, usecols: list = []):
     """
@@ -151,9 +91,6 @@ Returns
 List of tuples
     List of virtual column names and their respective data types.
     """
-    check_types(
-        [("flex_name", flex_name, [str]), ("usecols", usecols, [list]),]
-    )
     executeSQL(
         f"SELECT /*+LABEL('utilities.compute_flex_table_keys')*/ compute_flextable_keys('{flex_name}');",
         title="Guessing flex tables keys.",
@@ -176,9 +113,10 @@ List of tuples
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def compute_vmap_keys(
-    expr, vmap_col: str, limit: int = 100,
+    expr: Union[str, str_sql], vmap_col: str, limit: int = 100,
 ):
     """
 ---------------------------------------------------------------------------
@@ -202,13 +140,6 @@ List of tuples
     """
     from verticapy import vDataFrame
 
-    check_types(
-        [
-            ("expr", expr, [str, vDataFrame]),
-            ("vmap_col", vmap_col, [str]),
-            ("limit", limit, [int]),
-        ]
-    )
     vmap = quote_ident(vmap_col)
     if isinstance(expr, vDataFrame):
         assert expr[vmap_col].isvmap(), ParameterError(
@@ -228,6 +159,7 @@ List of tuples
 
 
 # ---#
+@check_dtypes
 def create_schema(
     schema: str, raise_error: bool = False,
 ):
@@ -247,10 +179,6 @@ Returns
 bool
     True if the schema was successfully created, False otherwise.
     """
-    # -#
-    check_types(
-        [("schema", schema, [str]), ("raise_error", raise_error, [bool]),]
-    )
     try:
         executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
         return True
@@ -261,6 +189,7 @@ bool
 
 
 # ---#
+@check_dtypes
 def create_table(
     table_name: str,
     dtype: dict,
@@ -301,17 +230,6 @@ bool
     True if the table was successfully created, False otherwise.
     """
     # -#
-    check_types(
-        [
-            ("table_name", table_name, [str]),
-            ("schema", schema, [str]),
-            ("dtype", dtype, [dict]),
-            ("genSQL", genSQL, [bool]),
-            ("temporary_table", temporary_table, [bool]),
-            ("temporary_local_table", temporary_local_table, [bool]),
-            ("raise_error", raise_error, [bool]),
-        ]
-    )
     if schema.lower() == "v_temp_schema":
         schema = ""
         temporary_local_table = True
@@ -363,6 +281,7 @@ Creates a schema named 'verticapy' used to store VerticaPy extended models.
 
 
 # ---#
+@check_dtypes
 def drop(name: str = "", method: str = "auto", raise_error: bool = False, **kwds):
     """
 ---------------------------------------------------------------------------
@@ -396,19 +315,7 @@ bool
     # -#
     if "relation_type" in kwds and method == "auto":
         method = kwds["relation_type"]
-    if isinstance(method, str):
-        method = method.lower()
-    check_types(
-        [
-            ("name", name, [str]),
-            (
-                "method",
-                method,
-                ["table", "view", "model", "geo", "text", "auto", "schema"],
-            ),
-            ("raise_error", raise_error, [bool]),
-        ]
-    )
+    raise_error_if_not_in("method", method, ["table", "view", "model", "geo", "text", "auto", "schema"])
     schema, relation = schema_relation(name)
     schema, relation = schema[1:-1], relation[1:-1]
     if not (name):
@@ -581,6 +488,7 @@ bool
 
 
 # ---#
+@check_dtypes
 def get_data_types(
     expr: str = "",
     column: str = "",
@@ -617,16 +525,6 @@ Returns
 list of tuples
     The list of the different columns and their respective type.
     """
-    # -#
-    check_types(
-        [
-            ("expr", expr, [str]),
-            ("column", column, [str]),
-            ("table_name", table_name, [str]),
-            ("schema", schema, [str]),
-            ("usecols", usecols, [list]),
-        ]
-    )
     assert expr or table_name, ParameterError(
         "Missing parameter: 'expr' and 'table_name' can not both be empty."
     )
@@ -806,6 +704,7 @@ def init_interactive_mode(all_interactive=False):
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def insert_into(
     table_name: str,
@@ -846,16 +745,6 @@ See Also
 --------
 pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     """
-    check_types(
-        [
-            ("table_name", table_name, [str]),
-            ("column_names", column_names, [list]),
-            ("data", data, [list]),
-            ("schema", schema, [str]),
-            ("copy", copy, [bool]),
-            ("genSQL", genSQL, [bool]),
-        ]
-    )
     if not (schema):
         schema = verticapy.OPTIONS["temp_schema"]
     input_relation = format_schema_table(schema, table_name)
@@ -929,6 +818,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
 
 
 # ---#
+@check_dtypes
 def isflextable(table_name: str, schema: str):
     """
 ---------------------------------------------------------------------------
@@ -946,10 +836,6 @@ Returns
 bool
     True if the relation is a flex table.
     """
-    # -#
-    check_types(
-        [("table_name", table_name, [str]), ("schema", schema, [str]),]
-    )
     table_name = quote_ident(table_name)[1:-1]
     schema = quote_ident(schema)[1:-1]
     sql = (
@@ -963,8 +849,9 @@ bool
 
 
 # ---#
+@check_dtypes
 def isvmap(
-    expr, column: str,
+    expr: Union[str, str_sql], column: str,
 ):
     """
 ---------------------------------------------------------------------------
@@ -972,7 +859,7 @@ Checks if the input column is a VMap.
 
 Parameters
 ----------
-expr: str
+expr: str / vDataFrame
     Any relation or expression. If you enter an expression,
     you must enclose it in parentheses and provide an alias.
 column: str
@@ -984,12 +871,9 @@ bool
     True if the column is a VMap.
     """
     # -#
-    from verticapy import vDataFrame
+    from verticapy.vdataframe import vDataFrame
     from verticapy.connect import current_cursor
 
-    check_types(
-        [("expr", expr, [str, vDataFrame]), ("column", column, [str]),]
-    )
     column = quote_ident(column)
     if isinstance(expr, vDataFrame):
         expr = expr.__genSQL__()
@@ -1022,9 +906,10 @@ bool
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def pandas_to_vertica(
-    df,
+    df: pd.DataFrame,
     name: str = "",
     schema: str = "",
     dtype: dict = {},
@@ -1079,16 +964,6 @@ See Also
 read_csv  : Ingests a  CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    check_types(
-        [
-            ("name", name, [str]),
-            ("schema", schema, [str]),
-            ("parse_nrows", parse_nrows, [int]),
-            ("dtype", dtype, [dict]),
-            ("temp_path", temp_path, [str]),
-            ("insert", insert, [bool]),
-        ]
-    )
     if not (schema):
         schema = verticapy.OPTIONS["temp_schema"]
     assert name or not (insert), ParameterError(
@@ -1364,6 +1239,7 @@ read_json : Ingests a JSON file into the Vertica database.
 
 
 # ---#
+@save_verticapy_logs
 def read_avro(
     path: str,
     schema: str = "",
@@ -1482,6 +1358,8 @@ read_json : Ingests a JSON file into the Vertica database.
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def read_csv(
     path: str,
     schema: str = "",
@@ -1598,37 +1476,6 @@ read_json : Ingests a JSON file into the Vertica database.
 	"""
     from verticapy import vDataFrame
 
-    check_types(
-        [
-            ("path", path, [str]),
-            ("schema", schema, [str]),
-            ("table_name", table_name, [str]),
-            ("sep", sep, [str]),
-            ("header", header, [bool]),
-            ("header_names", header_names, [list]),
-            ("na_rep", na_rep, [str]),
-            ("dtype", dtype, [dict]),
-            ("quotechar", quotechar, [str]),
-            ("escape", escape, [str]),
-            ("record_terminator", record_terminator, [str]),
-            ("trim", trim, [bool]),
-            ("omit_empty_keys", omit_empty_keys, [bool]),
-            ("reject_on_duplicate", reject_on_duplicate, [bool]),
-            ("reject_on_empty_key", reject_on_empty_key, [bool]),
-            (
-                "reject_on_materialized_type_error",
-                reject_on_materialized_type_error,
-                [bool],
-            ),
-            ("parse_nrows", parse_nrows, [int, float]),
-            ("insert", insert, [bool]),
-            ("temporary_table", temporary_table, [bool]),
-            ("temporary_local_table", temporary_local_table, [bool]),
-            ("gen_tmp_table_name", gen_tmp_table_name, [bool]),
-            ("ingest_local", ingest_local, [bool]),
-            ("materialize", materialize, [bool]),
-        ]
-    )
     if schema:
         temporary_local_table = False
     elif temporary_local_table:
@@ -1858,6 +1705,7 @@ read_json : Ingests a JSON file into the Vertica database.
 
 # ---#
 @check_minimum_version
+@check_dtypes
 @save_verticapy_logs
 def read_file(
     path: str,
@@ -1935,23 +1783,6 @@ vDataFrame
     """
     from verticapy import vDataFrame
 
-    check_types(
-        [
-            ("path", path, [str]),
-            ("schema", schema, [str]),
-            ("table_name", table_name, [str]),
-            ("dtype", dtype, [dict]),
-            ("max_files", max_files, [int]),
-            ("genSQL", genSQL, [bool]),
-            ("unknown", unknown, [str]),
-            ("varchar_varbinary_length", varchar_varbinary_length, [int]),
-            ("temporary_table", temporary_table, [bool]),
-            ("temporary_local_table", temporary_local_table, [bool]),
-            ("gen_tmp_table_name", gen_tmp_table_name, [bool]),
-            ("ingest_local", ingest_local, [bool]),
-            ("insert", insert, [bool]),
-        ]
-    )
     assert not (ingest_local) or insert, ParameterError(
         "Ingest local to create new relations is not yet supported for 'read_file'"
     )
@@ -2092,6 +1923,7 @@ vDataFrame
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def read_json(
     path: str,
@@ -2224,40 +2056,6 @@ See Also
 read_csv : Ingests a CSV file into the Vertica database.
 	"""
     from verticapy import vDataFrame
-
-    check_types(
-        [
-            ("path", path, [str]),
-            ("schema", schema, [str]),
-            ("table_name", table_name, [str]),
-            ("usecols", usecols, [list]),
-            ("new_name", new_name, [dict]),
-            ("insert", insert, [bool]),
-            ("temporary_table", temporary_table, [bool]),
-            ("temporary_local_table", temporary_local_table, [bool]),
-            ("gen_tmp_table_name", gen_tmp_table_name, [bool]),
-            ("ingest_local", ingest_local, [bool]),
-            ("start_point", start_point, [str]),
-            ("record_terminator", record_terminator, [str]),
-            (
-                "suppress_nonalphanumeric_key_chars",
-                suppress_nonalphanumeric_key_chars,
-                [bool],
-            ),
-            (
-                "reject_on_materialized_type_error",
-                reject_on_materialized_type_error,
-                [bool],
-            ),
-            ("reject_on_duplicate", reject_on_duplicate, [bool]),
-            ("reject_on_empty_key", reject_on_empty_key, [bool]),
-            ("flatten_arrays", flatten_arrays, [bool]),
-            ("flatten_maps", flatten_maps, [bool]),
-            ("genSQL", genSQL, [bool]),
-            ("materialize", materialize, [bool]),
-            ("use_complex_dt", use_complex_dt, [bool]),
-        ]
-    )
 
     if use_complex_dt:
         assert not (new_name), ParameterError(
@@ -2494,6 +2292,7 @@ read_csv : Ingests a CSV file into the Vertica database.
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def read_shp(
     path: str, schema: str = "public", table_name: str = "",
@@ -2517,13 +2316,6 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
-    check_types(
-        [
-            ("path", path, [str]),
-            ("schema", schema, [str]),
-            ("table_name", table_name, [str]),
-        ]
-    )
     file = path.split("/")[-1]
     file_extension = file[-3 : len(file)]
     if file_extension != "shp":
@@ -2551,6 +2343,7 @@ vDataFrame
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def readSQL(query: str, time_on: bool = False, limit: int = 100):
     """
@@ -2571,13 +2364,6 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     tablesample
         Result of the query.
     """
-    check_types(
-        [
-            ("query", query, [str]),
-            ("time_on", time_on, [bool]),
-            ("limit", limit, [int, float]),
-        ]
-    )
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
     if verticapy.OPTIONS["count_on"]:
@@ -2655,16 +2441,6 @@ bool
     ):
         return False
     try:
-        check_types(
-            [
-                ("name", name, [str]),
-                ("path", path, [str]),
-                ("json_dict", json_dict, [dict]),
-                ("query_label", query_label, [str]),
-                ("return_query", return_query, [bool]),
-                ("add_identifier", add_identifier, [bool]),
-            ]
-        )
 
         def dict_to_json_string(
             name: str = "",
@@ -2729,7 +2505,8 @@ bool
 
 
 # ---#
-def set_option(option: str, value: Union[bool, int, str] = None):
+@check_dtypes
+def set_option(option: str, value: Union[bool, int, str, list] = None):
     """
     ---------------------------------------------------------------------------
     Sets VerticaPy options.
@@ -2797,92 +2574,42 @@ def set_option(option: str, value: Union[bool, int, str] = None):
     value: object, optional
         New value of option.
     """
-    # -#
-    if isinstance(option, str):
-        option = option.lower()
-    check_types(
-        [
-            (
-                "option",
-                option,
-                [
-                    "cache",
-                    "colors",
-                    "color_style",
-                    "interactive",
-                    "count_on",
-                    "footer_on",
-                    "max_columns",
-                    "max_rows",
-                    "mode",
-                    "overwrite_model",
-                    "percent_bar",
-                    "print_info",
-                    "random_state",
-                    "save_query_profile",
-                    "sql_on",
-                    "temp_schema",
-                    "time_on",
-                    "tqdm",
-                ],
-            ),
-        ]
-    )
+    raise_error_if_not_in("option", option, ["cache", "colors", "color_style", "interactive", "count_on", "footer_on", "max_columns", "max_rows", "mode", "overwrite_model", "percent_bar", "print_info", "random_state", "save_query_profile", "sql_on", "temp_schema", "time_on", "tqdm",])
+    wrong_value = False
     if option == "colors":
-        check_types([("value", value, [list])])
         if isinstance(value, list):
             verticapy.OPTIONS["colors"] = [str(elem) for elem in value]
+        else:
+            wrong_value = True
     elif option == "color_style":
-        check_types(
-            [
-                (
-                    "value",
-                    value,
-                    [
-                        "rgb",
-                        "sunset",
-                        "retro",
-                        "shimbg",
-                        "swamp",
-                        "med",
-                        "orchid",
-                        "magenta",
-                        "orange",
-                        "vintage",
-                        "vivid",
-                        "berries",
-                        "refreshing",
-                        "summer",
-                        "tropical",
-                        "india",
-                        "default",
-                    ],
-                )
-            ]
-        )
+        raise_error_if_not_in("value", value, ["rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", "magenta", "orange", "vintage", "vivid", "berries", "refreshing", "summer", "tropical", "india", "default",])
         if isinstance(value, str):
             verticapy.OPTIONS["color_style"] = value
             verticapy.OPTIONS["colors"] = []
+        else:
+            wrong_value = True
     elif option == "max_columns":
-        check_types([("value", value, [int, float])])
-        if value > 0:
+        if isinstance(value, int) and value > 0:
             verticapy.OPTIONS["max_columns"] = int(value)
+        else:
+            wrong_value = True
     elif option == "max_rows":
-        check_types([("value", value, [int, float])])
-        if value >= 0:
+        if isinstance(value, int) and value >= 0:
             verticapy.OPTIONS["max_rows"] = int(value)
+        else:
+            wrong_value = True
     elif option == "mode":
-        check_types([("value", value, ["light", "full"])])
-        if value.lower() in ["light", "full", None]:
-            verticapy.OPTIONS["mode"] = value.lower()
+        raise_error_if_not_in("value", value, ["light", "full"])
+        verticapy.OPTIONS["mode"] = value
     elif option == "random_state":
-        check_types([("value", value, [int])])
         if isinstance(value, int) and (value < 0):
             raise ParameterError("Random State Value must be positive.")
         if isinstance(value, int):
-            verticapy.OPTIONS["random_state"] = int(value)
+            verticapy.OPTIONS["random_state"] = value
         elif value == None:
             verticapy.OPTIONS["random_state"] = None
+        else:
+            wrong_value = True
     elif option in (
         "print_info",
         "sql_on",
@@ -2895,18 +2622,20 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         "percent_bar",
         "interactive",
     ):
-        check_types([("value", value, [bool])])
         if value in (True, False, None):
             verticapy.OPTIONS[option] = value
+        else:
+            wrong_value = True
     elif option == "save_query_profile":
-        check_types([("value", value, [bool, str, list])])
         if value == "all":
             value = True
-        elif not (value):
-            value = False
-        verticapy.OPTIONS[option] = value
+        elif isinstance(value, (bool, list)):
+            pass
+        else:
+            wrong_value = True
+        if not(wrong_value):
+            verticapy.OPTIONS[option] = value
     elif option == "temp_schema":
-        check_types([("value", value, [str])])
         if isinstance(value, str):
             query = """SELECT /*+LABEL('utilities.set_option')*/
                           schema_name 
@@ -2921,8 +2650,13 @@ def set_option(option: str, value: Union[bool, int, str] = None):
                 verticapy.OPTIONS["temp_schema"] = str(value)
             else:
                 raise ParameterError(f"The schema '{value}' could not be found.")
+        else:
+            wrong_value = True
     else:
         raise ParameterError(f"Option '{option}' does not exist.")
+    if wrong_value:
+        warning_message = "The parameter value is incorrect. Nothing was changed."
+        warnings.warn(warning_message, Warning)
 
 
 # ---#
@@ -2962,6 +2696,7 @@ The tablesample attributes are the same as the parameters.
     # Special Methods
     #
     # ---#
+    @check_dtypes
     def __init__(
         self,
         values: dict = {},
@@ -2971,16 +2706,6 @@ The tablesample attributes are the same as the parameters.
         percent: dict = {},
         max_columns: int = -1,
     ):
-        check_types(
-            [
-                ("values", values, [dict]),
-                ("dtype", dtype, [dict]),
-                ("count", count, [int]),
-                ("offset", offset, [int]),
-                ("percent", percent, [dict]),
-                ("max_columns", max_columns, [int]),
-            ]
-        )
         self.values = values
         self.dtype = dtype
         self.count = count
@@ -3147,6 +2872,7 @@ The tablesample attributes are the same as the parameters.
     # Methods
     #
     # ---#
+    @check_dtypes
     def append(self, tbs):
         """
         ---------------------------------------------------------------------------
@@ -3162,7 +2888,7 @@ The tablesample attributes are the same as the parameters.
         tablesample
             self
         """
-        check_types([("tbs", tbs, [tablesample])])
+        assert isinstance(tbs, tablesample), ParameterError("tablesamples can only be appended to another tablesample.")
         n1, n2 = self.shape()[0], tbs.shape()[0]
         assert n1 == n2, ParameterError(
             "The input and target tablesamples must have the same number of columns."
@@ -3192,6 +2918,7 @@ The tablesample attributes are the same as the parameters.
         return self
 
     # ---#
+    @check_dtypes
     def merge(self, tbs):
         """
         ---------------------------------------------------------------------------
@@ -3207,7 +2934,7 @@ The tablesample attributes are the same as the parameters.
         tablesample
             self
         """
-        check_types([("tbs", tbs, [tablesample])])
+        assert isinstance(tbs, tablesample), ParameterError("tablesamples can only be merged with other tablesamples.")
         n1, n2 = self.shape()[1], tbs.shape()[1]
         assert n1 == n2, ParameterError(
             "The input and target tablesamples must have the same number of rows."
@@ -3236,6 +2963,7 @@ The tablesample attributes are the same as the parameters.
         return (n, m)
 
     # ---#
+    @check_dtypes
     def sort(self, column: str, desc: bool = False):
         """
         ---------------------------------------------------------------------------
@@ -3253,7 +2981,6 @@ The tablesample attributes are the same as the parameters.
         tablesample
             self
         """
-        check_types([("column", column, [str]), ("desc", desc, [bool])])
         column = column.replace('"', "").lower()
         columns = [col for col in self.values]
         idx = None
@@ -3452,8 +3179,9 @@ The tablesample attributes are the same as the parameters.
 
 
 # ---#
+@check_dtypes
 def to_tablesample(
-    query: str,
+    query: Union[str, str_sql],
     title: str = "",
     max_columns: int = -1,
     sql_push_ext: bool = False,
@@ -3490,10 +3218,6 @@ def to_tablesample(
 	--------
 	tablesample : Object in memory created for rendering purposes.
 	"""
-    # -#
-    check_types(
-        [("query", query, [str]), ("max_columns", max_columns, [int]),]
-    )
     if verticapy.OPTIONS["sql_on"]:
         print_query(query, title)
     start_time = time.time()
@@ -3527,6 +3251,7 @@ def to_tablesample(
 
 
 # ---#
+@check_dtypes
 def vDataFrameSQL(
     relation: str,
     name: str = "VDF",
@@ -3564,15 +3289,6 @@ vDataFrame
     # Initialization
     from verticapy import vDataFrame
 
-    check_types(
-        [
-            ("relation", relation, [str]),
-            ("name", name, [str]),
-            ("schema", schema, [str]),
-            ("history", history, [list]),
-            ("saving", saving, [list]),
-        ]
-    )
     if isinstance(vdf, vDataFrame):
         external = vdf._VERTICAPY_VARIABLES_["external"]
         symbol = vdf._VERTICAPY_VARIABLES_["symbol"]
@@ -3625,6 +3341,7 @@ vDataFrame
 
 vdf_from_relation = vDataFrameSQL
 # ---#
+@check_dtypes
 def vertica_version(condition: list = []):
     """
 ---------------------------------------------------------------------------
@@ -3643,7 +3360,6 @@ list
     [MAJOR, MINOR, PATCH, POST]
     """
     # -#
-    check_types([("condition", condition, [list])])
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
     if not (verticapy.OPTIONS["vertica_version"]):

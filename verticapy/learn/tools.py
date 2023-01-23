@@ -49,6 +49,7 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
 from verticapy.toolbox import *
 from verticapy.utilities import *
 
@@ -60,6 +61,7 @@ from typing import Union
 
 #
 # ---#
+@check_dtypes
 def does_model_exist(
     name: str, raise_error: bool = False, return_model_type: bool = False
 ):
@@ -84,7 +86,6 @@ int
     2 if the model exists and is not native.
     """
     # -#
-    check_types([("name", name, [str])])
     model_type = None
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], model_name[1:-1]
@@ -125,6 +126,7 @@ int
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def load_model(name: str, input_relation: str = "", test_relation: str = ""):
     """
@@ -148,13 +150,6 @@ Returns
 model
     The model.
     """
-    check_types(
-        [
-            ("name", name, [str]),
-            ("test_relation", test_relation, [str]),
-            ("input_relation", input_relation, [str]),
-        ]
-    )
     does_exist = does_model_exist(name=name, raise_error=False)
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
@@ -893,7 +888,8 @@ def get_model_init_params(model_type: str):
 # ---#
 # This piece of code was taken from
 # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
-def matrix_rotation(Phi: list, gamma: float = 1.0, q: int = 20, tol: float = 1e-6):
+@check_dtypes
+def matrix_rotation(Phi: list, gamma: Union[int, float] = 1.0, q: int = 20, tol: float = 1e-6):
     """
 ---------------------------------------------------------------------------
 Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
@@ -918,14 +914,6 @@ Returns
 model
     The model.
     """
-    check_types(
-        [
-            ("Phi", Phi, [list]),
-            ("gamma", gamma, [int, float]),
-            ("q", q, [int, float]),
-            ("tol", tol, [int, float]),
-        ]
-    )
     Phi = np.array(Phi)
     p, k = Phi.shape
     R = eye(k)

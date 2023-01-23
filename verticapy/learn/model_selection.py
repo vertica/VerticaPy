@@ -57,6 +57,7 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy
+from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -316,10 +317,11 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def best_k(
     input_relation: Union[str, vDataFrame],
-    X: list = [],
+    X: Union[str, list] = [],
     n_cluster: Union[tuple, list] = (1, 100),
     init: Union[str, list] = None,
     max_iter: int = 50,
@@ -337,7 +339,7 @@ Parameters
 ----------
 input_relation: str/vDataFrame
     Relation to use to train the model.
-X: list, optional
+X: str / list, optional
 	List of the predictor columns. If empty, all numerical columns will
     be used.
 n_cluster: tuple/list, optional
@@ -375,19 +377,7 @@ int
         init = "random"
     elif not (init):
         init = "kmeanspp"
-    check_types(
-        [
-            ("X", X, [list]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("n_cluster", n_cluster, [list]),
-            ("init", init, ["kmeanspp", "random"]),
-            ("max_iter", max_iter, [int, float]),
-            ("tol", tol, [int, float]),
-            ("use_kprototype", use_kprototype, [bool]),
-            ("gamma", gamma, [int, float]),
-            ("elbow_score_stop", elbow_score_stop, [int, float]),
-        ]
-    )
+    raise_error_if_not_in("init", init, ["kmeanspp", "random"])
 
     from verticapy.learn.cluster import KMeans, KPrototypes
 
@@ -429,16 +419,17 @@ int
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def cross_validate(
     estimator,
     input_relation: Union[str, vDataFrame],
-    X: list,
+    X: Union[str, list],
     y: str,
     metric: Union[str, list] = "all",
     cv: int = 3,
-    pos_label: Union[int, float, str] = None,
-    cutoff: float = -1,
+    pos_label: Union[str, int, float] = None,
+    cutoff: Union[int, float] = -1,
     show_time: bool = True,
     training_score: bool = False,
     **kwargs,
@@ -451,9 +442,9 @@ Parameters
 ----------
 estimator: object
 	Vertica estimator with a fit method.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use to train the model.
-X: list
+X: str / list
 	List of the predictor columns.
 y: str
 	Response Column.
@@ -491,7 +482,7 @@ cv: int, optional
 	Number of folds.
 pos_label: int/float/str, optional
 	The main class to be considered as positive (classification only).
-cutoff: float, optional
+cutoff: int / float, optional
 	The model cutoff (classification only).
 show_time: bool, optional
     If set to True, the time and the average time will be added to the report.
@@ -506,16 +497,6 @@ tablesample
 	"""
     if isinstance(X, str):
         X = [X]
-    check_types(
-        [
-            ("X", X, [list]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("y", y, [str]),
-            ("metric", metric, [str, list]),
-            ("cv", cv, [int, float]),
-            ("cutoff", cutoff, [int, float]),
-        ]
-    )
     if isinstance(input_relation, str):
         input_relation = vDataFrameSQL(input_relation)
     if cv < 2:
@@ -728,10 +709,11 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def elbow(
     input_relation: Union[str, vDataFrame],
-    X: list = [],
+    X: Union[str, list] = [],
     n_cluster: Union[tuple, list] = (1, 15),
     init: Union[str, list] = None,
     max_iter: int = 50,
@@ -747,15 +729,15 @@ Draws an elbow curve.
 
 Parameters
 ----------
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
     Relation to use to train the model.
-X: list, optional
+X: str / list, optional
     List of the predictor columns. If empty all the numerical vcolumns will
     be used.
-n_cluster: tuple/list, optional
+n_cluster: tuple / list, optional
     Tuple representing the number of cluster to start with and to end with.
     It can also be customized list with the different K to test.
-init: str/list, optional
+init: str / list, optional
     The method used to find the initial cluster centers.
         kmeanspp : Use the k-means++ method to initialize the centers.
                    [Only available when use_kprototype is set to False]
@@ -790,18 +772,7 @@ tablesample
         init = "random"
     elif not (init):
         init = "kmeanspp"
-    check_types(
-        [
-            ("X", X, [list]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("n_cluster", n_cluster, [list]),
-            ("init", init, ["kmeanspp", "random"]),
-            ("max_iter", max_iter, [int, float]),
-            ("tol", tol, [int, float]),
-            ("use_kprototype", use_kprototype, [bool]),
-            ("gamma", gamma, [int, float]),
-        ]
-    )
+    raise_error_if_not_in("init", init, ["kmeanspp", "random"])
     from verticapy.learn.cluster import KMeans, KPrototypes
 
     if isinstance(n_cluster, tuple):
@@ -922,7 +893,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types([("estimator_type", estimator_type, ["logit", "enet", "auto"])])
+    raise_error_if_not_in("estimator_type", estimator_type, ["logit", "enet", "auto"])
     param_grid = parameter_grid(
         {
             "solver": ["cgd"],
@@ -1581,17 +1552,18 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def grid_search_cv(
     estimator,
     param_grid: Union[dict, list],
     input_relation: Union[str, vDataFrame],
-    X: list,
+    X: Union[str, list],
     y: str,
     metric: str = "auto",
     cv: int = 3,
     pos_label: Union[int, float, str] = None,
-    cutoff: float = -1,
+    cutoff: Union[int, float] = -1,
     training_score: bool = True,
     skip_error: bool = True,
     print_info: bool = True,
@@ -1662,15 +1634,6 @@ tablesample
     """
     if isinstance(X, str):
         X = [X]
-    check_types(
-        [
-            ("metric", metric, [str]),
-            ("param_grid", param_grid, [dict, list]),
-            ("training_score", training_score, [bool]),
-            ("skip_error", skip_error, [bool, str]),
-            ("print_info", print_info, [bool]),
-        ]
-    )
     if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
@@ -1813,19 +1776,20 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def learning_curve(
     estimator,
     input_relation: Union[str, vDataFrame],
-    X: list,
+    X: Union[str, list],
     y: str,
     sizes: list = [0.1, 0.33, 0.55, 0.78, 1.0],
     method="efficiency",
     metric: str = "auto",
     cv: int = 3,
     pos_label: Union[int, float, str] = None,
-    cutoff: float = -1,
-    std_coeff: float = 1,
+    cutoff: Union[int, float] = -1,
+    std_coeff: Union[int, float] = 1,
     ax=None,
     **style_kwds,
 ):
@@ -1839,7 +1803,7 @@ estimator: object
     Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
-X: list
+X: str / list
     List of the predictor columns.
 y: str
     Response Column.
@@ -1882,9 +1846,9 @@ cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
     The main class to be considered as positive (classification only).
-cutoff: float, optional
+cutoff: int / float, optional
     The model cutoff (classification only).
-std_coeff: float, optional
+std_coeff: int / float, optional
     Value of the standard deviation coefficient used to compute the area plot 
     around each score.
 ax: Matplotlib axes object, optional
@@ -1898,7 +1862,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types([("method", method, ["efficiency", "performance", "scalability"])])
+    raise_error_if_not_in("method", method, ["efficiency", "performance", "scalability"])
     from verticapy.plot import range_curve
 
     for s in sizes:
@@ -2034,12 +1998,13 @@ tablesample
 
 # ---#
 @check_minimum_version
+@check_dtypes
 @save_verticapy_logs
 def lift_chart(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    pos_label: Union[str, int, float] = 1,
     nbins: int = 30,
     ax=None,
     **style_kwds,
@@ -2054,11 +2019,11 @@ y_true: str
     Response column.
 y_score: str
     Prediction Probability.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: int / float / str, optional
     To compute the Lift Chart, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
@@ -2075,14 +2040,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("nbins", nbins, [int, float]),
-        ]
-    )
     query = "SELECT /*+LABEL('learn.model_selection.lift_chart')*/ LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(
         nbins,
@@ -2148,6 +2105,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def parameter_grid(param_grid: dict):
     """
@@ -2164,19 +2122,19 @@ Returns
 list of dict
     List of the different combinations.
     """
-    check_types([("param_grid", param_grid, [dict])])
     return [
         dict(zip(param_grid.keys(), values)) for values in product(*param_grid.values())
     ]
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def plot_acf_pacf(
     vdf: vDataFrame,
     column: str,
     ts: str,
-    by: list = [],
+    by: Union[str, list] = [],
     p: Union[int, list] = 15,
     **style_kwds,
 ):
@@ -2211,15 +2169,6 @@ tablesample
     """
     if isinstance(by, str):
         by = [by]
-    check_types(
-        [
-            ("column", column, [str]),
-            ("ts", ts, [str]),
-            ("by", by, [list]),
-            ("p", p, [int, float]),
-            ("vdf", vdf, [vDataFrame]),
-        ]
-    )
     tmp_style = {}
     for elem in style_kwds:
         if elem not in ("color", "colors"):
@@ -2281,12 +2230,13 @@ tablesample
 
 # ---#
 @check_minimum_version
+@check_dtypes
 @save_verticapy_logs
 def prc_curve(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    pos_label: Union[str, int, float] = 1,
     nbins: int = 30,
     auc_prc: bool = False,
     ax=None,
@@ -2326,15 +2276,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("nbins", nbins, [int, float]),
-            ("auc_prc", auc_prc, [bool]),
-        ]
-    )
     if nbins < 0:
         nbins = 999999
     query = "SELECT /*+LABEL('learn.model_selection.prc_curve')*/ PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
@@ -2402,16 +2343,17 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def randomized_features_search_cv(
     estimator,
     input_relation: Union[str, vDataFrame],
-    X: list,
+    X: Union[str, list],
     y: str,
     metric: str = "auto",
     cv: int = 3,
     pos_label: Union[int, float, str] = None,
-    cutoff: float = -1,
+    cutoff: Union[int, float] = -1,
     training_score: bool = True,
     comb_limit: int = 100,
     skip_error: bool = True,
@@ -2430,7 +2372,7 @@ estimator: object
     Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
-X: list
+X: str / list
     List of the predictor columns.
 y: str
     Response Column.
@@ -2484,15 +2426,6 @@ tablesample
     """
     if isinstance(X, str):
         X = [X]
-    check_types(
-        [
-            ("metric", metric, [str]),
-            ("training_score", training_score, [bool]),
-            ("skip_error", skip_error, [bool, str]),
-            ("print_info", print_info, [bool]),
-            ("comb_limit", comb_limit, [int]),
-        ]
-    )
     if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
@@ -2725,6 +2658,7 @@ tablesample
 
 # ---#
 @check_minimum_version
+@check_dtypes
 @save_verticapy_logs
 def roc_curve(
     y_true: str,
@@ -2778,17 +2712,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("nbins", nbins, [int, float]),
-            ("auc_roc", auc_roc, [bool]),
-            ("best_threshold", best_threshold, [bool]),
-            ("cutoff_curve", cutoff_curve, [bool]),
-        ]
-    )
     if nbins < 0:
         nbins = 999999
     query = "SELECT /*+LABEL('learn.model_selection.roc_curve')*/ decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
@@ -2902,11 +2825,12 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def stepwise(
     estimator,
     input_relation: Union[str, vDataFrame],
-    X: list,
+    X: Union[str, list],
     y: str,
     criterion: str = "bic",
     direction: str = "backward",
@@ -2930,7 +2854,7 @@ estimator: object
     Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
-X: list
+X: str / list
     List of the predictor columns.
 y: str
     Response Column.
@@ -2972,18 +2896,10 @@ tablesample
 
     if isinstance(X, str):
         X = [X]
-    if isinstance(x_order, str):
-        x_order = x_order.lower()
     assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
-    check_types(
-        [
-            ("criterion", criterion, ["aic", "bic"]),
-            ("direction", direction, ["forward", "backward"]),
-            ("max_steps", max_steps, [int, float]),
-            ("print_info", print_info, [bool]),
-            ("x_order", x_order, ["pearson", "spearman", "random", "none"]),
-        ]
-    )
+    raise_error_if_not_in("criterion", criterion, ["aic", "bic"])
+    raise_error_if_not_in("direction", direction, ["forward", "backward"])
+    raise_error_if_not_in("x_order", x_order, ["pearson", "spearman", "random", "none"])
     if not (verticapy.OPTIONS["overwrite_model"]):
         does_model_exist(name=estimator.name, raise_error=True)
     result, current_step = [], 0

@@ -49,6 +49,7 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
 from verticapy.learn.metrics import *
 from verticapy.learn.mlplot import *
 from verticapy.utilities import *
@@ -82,17 +83,18 @@ p: int, optional
 	to compute the model).
 	"""
 
+    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, p: int = 2):
-        check_types([("name", name, [str], False)])
         self.type, self.name = "NearestCentroid", name
-        self.set_params({"p": p})
+        self.parameters = {"p": p}
 
     # ---#
+    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
-        X: list,
+        X: Union[str, list],
         y: str,
         test_relation: Union[str, vDataFrame] = "",
     ):
@@ -118,14 +120,6 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame], False),
-                ("X", X, [list], False),
-                ("y", y, [str], False),
-                ("test_relation", test_relation, [str, vDataFrame], False),
-            ]
-        )
         if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
@@ -143,15 +137,12 @@ p: int, optional
             self.test_relation = self.input_relation
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
-        query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {} ASC".format(
+        query = "SELECT {0}, {1} FROM {2} WHERE {1} IS NOT NULL GROUP BY {1} ORDER BY {1} ASC".format(
             ", ".join(
-                ["{}({}) AS {}".format(func, column, column) for column in self.X]
+                [f"{func}({column}) AS {column}" for column in self.X]
             ),
             self.y,
             self.input_relation,
-            self.y,
-            self.y,
-            self.y,
         )
         self.centroids_ = to_tablesample(query=query, title="Getting Model Centroids.",)
         self.classes_ = self.centroids_.values[y]
@@ -194,19 +185,20 @@ p: int, optional
 	to compute the model).
 	"""
 
+    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
-        check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsClassifier", name
-        self.set_params({"n_neighbors": n_neighbors, "p": p})
+        self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     # ---#
+    @check_dtypes
     def deploySQL(
         self,
-        X: list = [],
+        X: Union[str, list] = [],
         test_relation: str = "",
         predict: bool = False,
-        key_columns: list = [],
+        key_columns: Union[str, list] = [],
     ):
         """
 	---------------------------------------------------------------------------
@@ -214,13 +206,13 @@ p: int, optional
 
     Parameters
     ----------
-    X: list
+    X: str / list
         List of the predictors.
     test_relation: str, optional
         Relation to use to do the predictions.
     predict: bool, optional
         If set to True, returns the prediction instead of the probability.
-    key_columns: list, optional
+    key_columns: str / list, optional
         A list of columns to include in the results, but to exclude from 
         computation of the prediction.
 
@@ -233,14 +225,6 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        check_types(
-            [
-                ("test_relation", test_relation, [str], False),
-                ("predict", predict, [bool], False),
-                ("X", X, [list], False),
-                ("key_columns", key_columns, [list], False),
-            ],
-        )
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
@@ -295,10 +279,11 @@ p: int, optional
         return sql
 
     # ---#
+    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
-        X: list,
+        X: Union[str, list],
         y: str,
         test_relation: Union[str, vDataFrame] = "",
     ):
@@ -310,7 +295,7 @@ p: int, optional
 	----------
 	input_relation: str/vDataFrame
 		Training relation.
-	X: list
+	X: str / list
 		List of the predictors.
 	y: str
 		Response column.
@@ -324,14 +309,6 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame], False),
-                ("X", X, [list], False),
-                ("y", y, [str], False),
-                ("test_relation", test_relation, [str, vDataFrame], False),
-            ]
-        )
         if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
@@ -374,7 +351,8 @@ p: int, optional
         return self
 
     # ---#
-    def classification_report(self, cutoff: Union[float, list] = [], labels: list = []):
+    @check_dtypes
+    def classification_report(self, cutoff: Union[int, float, list] = [], labels: list = []):
         """
     ---------------------------------------------------------------------------
     Computes a classification report using multiple metrics to evaluate the model
@@ -384,7 +362,7 @@ p: int, optional
 
     Parameters
     ----------
-    cutoff: float/list, optional
+    cutoff: int / float / list, optional
         Cutoff for which the tested category is accepted as a prediction. 
         For multiclass classification, each tested category becomes positive case
         and untested categories are merged into the negative cases. This list 
@@ -400,9 +378,6 @@ p: int, optional
         """
         if not (isinstance(labels, Iterable)) or isinstance(labels, str):
             labels = [labels]
-        check_types(
-            [("cutoff", cutoff, [int, float, list]), ("labels", labels, [list])]
-        )
         if not (labels):
             labels = self.classes_
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
@@ -455,8 +430,9 @@ p: int, optional
         )
 
     # ---#
+    @check_dtypes
     def confusion_matrix(
-        self, pos_label: Union[int, float, str] = None, cutoff: float = -1
+        self, pos_label: Union[int, float, str] = None, cutoff: Union[int, float] = -1
     ):
         """
     ---------------------------------------------------------------------------
@@ -467,7 +443,7 @@ p: int, optional
     pos_label: int/float/str, optional
         Label to consider as positive. All the other classes will be merged and
         considered as negative for multiclass classification.
-    cutoff: float, optional
+    cutoff: int / float, optional
         Cutoff for which the tested category will be accepted as a prediction. If the 
         cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
 
@@ -477,7 +453,6 @@ p: int, optional
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        check_types([("cutoff", cutoff, [int, float])])
         pos_label = (
             self.classes_[1]
             if (pos_label == None and len(self.classes_) == 2)
@@ -592,9 +567,9 @@ p: int, optional
     def predict(
         self,
         vdf: Union[str, vDataFrame],
-        X: list = [],
+        X: Union[str, list] = [],
         name: str = "",
-        cutoff: float = 0.5,
+        cutoff: Union[int, float] = 0.5,
         inplace: bool = True,
         **kwargs,
     ):
@@ -609,7 +584,7 @@ p: int, optional
         relation, but you must enclose it with an alias. For example,  
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
         incorrect.
-    X: list, optional
+    X: str / list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
@@ -627,15 +602,6 @@ p: int, optional
         """
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("name", name, [str]),
-                ("cutoff", cutoff, [int, float]),
-                ("X", X, [list]),
-                ("inplace", inplace, [bool]),
-                ("vdf", vdf, [str, vDataFrame]),
-            ],
-        )
         assert 0 <= cutoff <= 1, ParameterError(
             "Incorrect parameter 'cutoff'.\nThe cutoff "
             "must be between 0 and 1, inclusive."
@@ -688,10 +654,11 @@ p: int, optional
             return vDataFrameSQL(name="Neighbors", relation=sql)
 
     # ---#
+    @check_dtypes
     def predict_proba(
         self,
         vdf: Union[str, vDataFrame],
-        X: list = [],
+        X: Union[str, list] = [],
         name: str = "",
         pos_label: Union[int, str, float] = None,
         inplace: bool = True,
@@ -707,17 +674,17 @@ p: int, optional
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
         is correct, whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: list, optional
+    X: str / list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
         Name of the additional prediction vColumn. If unspecified, a name is 
-	generated based on the model and class names.
+	    generated based on the model and class names.
     pos_label: int/float/str, optional
         Class label, the class for which the probability is calculated. 
-	If name is specified and pos_label is unspecified, the probability column 
-	names use the following format: name_class1, name_class2, etc.
-    inplace: bool, optional
+	    If name is specified and pos_label is unspecified, the probability column 
+	    names use the following format: name_class1, name_class2, etc.
+        inplace: bool, optional
         If set to True, the prediction will be added to the vDataFrame.
 
     Returns
@@ -728,20 +695,11 @@ p: int, optional
         # Inititalization
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("name", name, [str]),
-                ("X", X, [list]),
-                ("inplace", inplace, [bool]),
-                ("vdf", vdf, [str, vDataFrame]),
-                ("pos_label", pos_label, [int, float, str]),
-            ],
-        )
         assert pos_label is None or pos_label in self.classes_, ParameterError(
             (
                 "Incorrect parameter 'pos_label'.\nThe class label "
                 "must be in [{0}]. Found '{1}'."
-            ).format("|".join(["{}".format(c) for c in self.classes_]), pos_label)
+            ).format("|".join([str(c) for c in self.classes_]), pos_label)
         )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
@@ -827,11 +785,12 @@ p: int, optional
         )
 
     # ---#
+    @check_dtypes
     def score(
         self,
         method: str = "accuracy",
-        pos_label: Union[int, float, str] = None,
-        cutoff: float = -1,
+        pos_label: Union[str, int, float] = None,
+        cutoff: Union[int, float] = -1,
         nbins: int = 10000,
     ):
         """
@@ -874,13 +833,6 @@ p: int, optional
     float
         score
         """
-        check_types(
-            [
-                ("cutoff", cutoff, [int, float]),
-                ("method", method, [str]),
-                ("nbins", nbins, [int]),
-            ]
-        )
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
         input_relation = "(SELECT * FROM {0} WHERE predict_neighbors = '{1}') final_centroids_relation".format(
@@ -964,7 +916,7 @@ kernel: str, optional
 p: int, optional
     The p corresponding to the one of the p-distances (distance metric used during 
     the model computation).
-max_leaf_nodes: int, optional
+max_leaf_nodes: int / float, optional
     The maximum number of leaf nodes, an integer between 1 and 1e9, inclusive.
 max_depth: int, optional
     The maximum tree depth, an integer between 1 and 100, inclusive.
@@ -978,6 +930,7 @@ xlim: list, optional
     List of tuples use to compute the kernel window.
     """
 
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -985,45 +938,33 @@ xlim: list, optional
         bandwidth: float = 1,
         kernel: str = "gaussian",
         p: int = 2,
-        max_leaf_nodes: int = 1e9,
+        max_leaf_nodes: Union[int, float] = 1e9,
         max_depth: int = 5,
         min_samples_leaf: int = 1,
         nbins: int = 5,
         xlim: list = [],
         **kwargs,
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("bandwidth", bandwidth, [int, float], False),
-                ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]),
-                ("max_leaf_nodes", max_leaf_nodes, [int, float], False),
-                ("max_depth", max_depth, [int, float], False),
-                ("min_samples_leaf", min_samples_leaf, [int, float], False),
-                ("nbins", nbins, [int, float], False),
-                ("xlim", xlim, [list], False),
-            ]
-        )
+        raise_error_if_not_in("kernel", str(kernel).lower(), ["gaussian", "logistic", "sigmoid", "silverman"])
         self.type, self.name = "KernelDensity", name
-        self.set_params(
-            {
-                "nbins": nbins,
-                "p": p,
-                "bandwidth": bandwidth,
-                "kernel": kernel,
-                "max_leaf_nodes": int(max_leaf_nodes),
-                "max_depth": int(max_depth),
-                "min_samples_leaf": int(min_samples_leaf),
-                "xlim": xlim,
-            }
-        )
+        self.parameters = {
+            "nbins": nbins,
+            "p": p,
+            "bandwidth": bandwidth,
+            "kernel": str(kernel).lower(),
+            "max_leaf_nodes": int(max_leaf_nodes),
+            "max_depth": int(max_depth),
+            "min_samples_leaf": int(min_samples_leaf),
+            "xlim": xlim,
+        }
         if "store" not in kwargs or kwargs["store"]:
             self.verticapy_store = True
         else:
             self.verticapy_store = False
 
     # ---#
-    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
+    @check_dtypes
+    def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
         """
     ---------------------------------------------------------------------------
     Trains the model.
@@ -1042,9 +983,6 @@ xlim: list, optional
         """
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
-        )
         if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
@@ -1341,25 +1279,26 @@ p: int, optional
 	the model computation).
 	"""
 
+    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
-        check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsRegressor", name
-        self.set_params({"n_neighbors": n_neighbors, "p": p})
+        self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     # ---#
-    def deploySQL(self, X: list = [], test_relation: str = "", key_columns: list = []):
+    @check_dtypes
+    def deploySQL(self, X: Union[str, list] = [], test_relation: str = "", key_columns: Union[str, list] = []):
         """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
 
     Parameters
     ----------
-    X: list
+    X: str / list
         List of the predictors.
     test_relation: str, optional
         Relation to use to do the predictions.
-    key_columns: list, optional
+    key_columns: str / list, optional
         A list of columns to include in the results, but to exclude from 
         computation of the prediction.
 
@@ -1372,13 +1311,6 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        check_types(
-            [
-                ("test_relation", test_relation, [str], False),
-                ("X", X, [list], False),
-                ("key_columns", key_columns, [list], False),
-            ],
-        )
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
@@ -1390,19 +1322,19 @@ p: int, optional
         ]
         sql = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
         sql = "ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY {})".format(
-            ", ".join(["x.{}".format(item) for item in X]), sql
+            ", ".join([f"x.{item}" for item in X]), sql
         )
         sql = "SELECT {}{}, {} AS ordered_distance, y.{} AS predict_neighbors, row_id FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM {} WHERE {}) x CROSS JOIN (SELECT * FROM {} WHERE {}) y".format(
-            ", ".join(["x.{}".format(item) for item in X]),
+            ", ".join([f"x.{item}" for item in X]),
             ", " + ", ".join(["x." + quote_ident(elem) for elem in key_columns])
             if (key_columns)
             else "",
             sql,
             self.y,
             test_relation,
-            " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
+            " AND ".join([f"{item} IS NOT NULL" for item in X]),
             self.input_relation,
-            " AND ".join(["{} IS NOT NULL".format(item) for item in self.X]),
+            " AND ".join([f"{item} IS NOT NULL" for item in self.X]),
         )
         sql = "(SELECT {}{}, AVG(predict_neighbors) AS predict_neighbors FROM ({}) z WHERE ordered_distance <= {} GROUP BY {}{}, row_id) knr_table".format(
             ", ".join(X),
@@ -1422,7 +1354,7 @@ p: int, optional
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
-        X: list,
+        X: Union[str, list],
         y: str,
         test_relation: Union[str, vDataFrame] = "",
     ):
@@ -1432,13 +1364,13 @@ p: int, optional
 
 	Parameters
 	----------
-	input_relation: str/vDataFrame
+	input_relation: str / vDataFrame
 		Training relation.
-	X: list
+	X: str / list
 		List of the predictors.
 	y: str
 		Response column.
-	test_relation: str/vDataFrame, optional
+	test_relation: str / vDataFrame, optional
 		Relation used to test the model.
 
 	Returns
@@ -1448,14 +1380,6 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame], False),
-                ("X", X, [list], False),
-                ("y", y, [str], False),
-                ("test_relation", test_relation, [str, vDataFrame], False),
-            ]
-        )
         if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
@@ -1489,10 +1413,11 @@ p: int, optional
         return self
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
-        X: list = [],
+        X: Union[str, list] = [],
         name: str = "",
         inplace: bool = True,
         **kwargs,
@@ -1503,11 +1428,11 @@ p: int, optional
 
     Parameters
     ----------
-    vdf: str/vDataFrame
+    vdf: str / vDataFrame
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
         is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: list, optional
+    X: str / list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
@@ -1522,14 +1447,6 @@ p: int, optional
         """
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("name", name, [str]),
-                ("X", X, [list]),
-                ("vdf", vdf, [str, vDataFrame]),
-                ("inplace", inplace, [bool]),
-            ],
-        )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
@@ -1585,18 +1502,18 @@ p: int, optional
 	The p of the p-distances (distance metric used during the model computation).
 	"""
 
+    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
-        check_types([("name", name, [str], False)])
         self.type, self.name = "LocalOutlierFactor", name
-        self.set_params({"n_neighbors": n_neighbors, "p": p})
+        self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     # ---#
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
-        X: list = [],
-        key_columns: list = [],
+        X: Union[str, list] = [],
+        key_columns: Union[str, list] = [],
         index: str = "",
     ):
         """
@@ -1605,9 +1522,9 @@ p: int, optional
 
 	Parameters
 	----------
-	input_relation: str/vDataFrame
+	input_relation: str / vDataFrame
 		Training relation.
-	X: list, optional
+	X: str / list, optional
 		List of the predictors.
 	key_columns: list, optional
 		Columns not used during the algorithm computation but which will be used
@@ -1625,14 +1542,6 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame], False),
-                ("X", X, [list], False),
-                ("key_columns", key_columns, [list], False),
-                ("index", index, [str], False),
-            ]
-        )
         if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:

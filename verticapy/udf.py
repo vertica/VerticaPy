@@ -54,11 +54,13 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy
+from verticapy.decorators import save_verticapy_logs, check_dtypes, check_minimum_version
 from verticapy.utilities import *
 from verticapy.toolbox import *
 
 #
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def import_lib_udf(udf_list: list, library_name: str, include_dependencies: list = []):
     """
@@ -109,6 +111,7 @@ include_dependencies: list, optional
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def create_lib_udf(
     udf_list: list,
