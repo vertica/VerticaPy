@@ -879,20 +879,18 @@ model_grid_ : tablesample
                         LinearSVR,
                     ),
                 ), ParameterError(
-                    "estimator must be a list of VerticaPy estimators. Found {}.".format(
-                        type(elem)
-                    )
+                    f"estimator must be a list of VerticaPy estimators. Found {elem}."
                 )
         if self.parameters["estimator_type"] == "auto":
             self.parameters["estimator_type"] = self.parameters["estimator"][0].type
         for elem in self.parameters["estimator"]:
             assert (
                 self.parameters["estimator_type"] in ("binary", "multi")
-                and self.MODEL_SUBTYPE == "CLASSIFIER"
+                and elem.MODEL_SUBTYPE == "CLASSIFIER"
                 or self.parameters["estimator_type"] == "regressor"
-                and self.MODEL_SUBTYPE == "REGRESSOR"
+                and elem.MODEL_SUBTYPE == "REGRESSOR"
             ), ParameterError(
-                f"Incorrect list for parameter 'estimator'. Expected type '{self.parameters['estimator_type']}', found type '{self.MODEL_SUBTYPE}'."
+                f"Incorrect list for parameter 'estimator'. Expected type '{self.parameters['estimator_type']}', found type '{elem.MODEL_SUBTYPE}'."
             )
         if (
             self.parameters["estimator_type"] == "regressor"
