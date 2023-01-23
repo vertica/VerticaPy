@@ -138,10 +138,7 @@ class TestTools:
         model.fit(titanic_vd, ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert result.get_params()["tol"] == 1e-88
-        assert (
-            isinstance(result, LinearRegression)
-            and result.get_params()["penalty"] == "none"
-        )
+        assert isinstance(result, LinearRegression)
         model.drop()
         # ElasticNet
         model = ElasticNet("load_model_test.model_test", tol=1e-88)
@@ -149,9 +146,7 @@ class TestTools:
         model.fit(titanic_vd, ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert result.get_params()["tol"] == 1e-88
-        assert (
-            isinstance(result, ElasticNet) and result.get_params()["penalty"] == "enet"
-        )
+        assert isinstance(result, ElasticNet)
         model.drop()
         # Lasso
         model = Lasso("load_model_test.model_test", tol=1e-88)
@@ -159,7 +154,7 @@ class TestTools:
         model.fit(titanic_vd, ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert result.get_params()["tol"] == 1e-88
-        assert isinstance(result, Lasso) and result.get_params()["penalty"] == "l1"
+        assert isinstance(result, Lasso)
         model.drop()
         # Ridge
         model = Ridge("load_model_test.model_test", tol=1e-88)
@@ -167,7 +162,7 @@ class TestTools:
         model.fit(titanic_vd, ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert result.get_params()["tol"] == 1e-88
-        assert isinstance(result, Ridge) and result.get_params()["penalty"] == "l2"
+        assert isinstance(result, Ridge)
         model.drop()
         # LogisticRegression
         model = LogisticRegression(

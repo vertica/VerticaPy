@@ -152,7 +152,6 @@ class TestLinearRegression:
     def test_get_params(self, model):
         assert model.get_params() == {
             "solver": "newton",
-            "penalty": "none",
             "max_iter": 100,
             "tol": 1e-06,
             "fit_intercept": True,

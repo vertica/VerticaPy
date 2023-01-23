@@ -152,16 +152,7 @@ class TestDummyTreeRegressor:
         )
 
     def test_get_params(self, model):
-        assert model.get_params() == {
-            "n_estimators": 1,
-            "max_features": "max",
-            "max_leaf_nodes": 1000000000,
-            "sample": 1.0,
-            "max_depth": 100,
-            "min_samples_leaf": 1,
-            "min_info_gain": 0,
-            "nbins": 1000,
-        }
+        assert model.get_params() == {}
 
     def test_to_python(self, model):
         current_cursor().execute(

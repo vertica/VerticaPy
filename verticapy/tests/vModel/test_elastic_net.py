@@ -158,7 +158,6 @@ class TestElasticNet:
     def test_get_params(self, model):
         assert model.get_params() == {
             "solver": "cgd",
-            "penalty": "enet",
             "max_iter": 100,
             "l1_ratio": 0.5,
             "C": 1,

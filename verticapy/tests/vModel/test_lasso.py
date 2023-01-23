@@ -158,7 +158,6 @@ class TestLasso:
     def test_get_params(self, model):
         assert model.get_params() == {
             "solver": "cgd",
-            "penalty": "l1",
             "max_iter": 100,
             "C": 1.0,
             "tol": 1e-06,

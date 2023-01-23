@@ -77,7 +77,6 @@ class TestPipeline:
             "LinearRegressionWine": {
                 "fit_intercept": True,
                 "max_iter": 100,
-                "penalty": "none",
                 "solver": "newton",
                 "tol": 1e-06,
             },

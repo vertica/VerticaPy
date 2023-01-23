@@ -298,17 +298,7 @@ class TestDummyTreeClassifier:
 
     def test_get_params(self, model):
         params = model.get_params()
-
-        assert params == {
-            "n_estimators": 1,
-            "max_features": "max",
-            "max_leaf_nodes": 1e9,
-            "sample": 1.0,
-            "max_depth": 100,
-            "min_samples_leaf": 1,
-            "min_info_gain": 0,
-            "nbins": 1000,
-        }
+        assert params == {}
 
     def test_prc_curve(self, model):
         prc = model.prc_curve(pos_label="Car", nbins=1000)
