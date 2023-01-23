@@ -50,7 +50,7 @@
 # Modules
 #
 # Standard Python Modules
-import typing, warnings
+import typing, warnings, sys
 from functools import wraps
 
 #
@@ -109,7 +109,13 @@ feature is available in the user's version.
         from verticapy.toolbox import str_sql
         from verticapy.vdataframe import vDataFrame
 
-        hints = typing.get_type_hints(func)
+        python_version = [int(i) for i in sys.version.split(" ")[0].split(".")]
+
+        # get_type_hints is only available for Python version greater than 3.6
+        if python_version[0] > 3 or (python_version[0] == 3 and python_version[1] > 6):
+            hints = typing.get_type_hints(func)
+        else:
+            hints = func.__annotations__
         all_args = {**kwargs}
         # TO DO -> Testing arg types
         # for idx, var in enumerate(args):
