@@ -66,7 +66,9 @@ from verticapy.toolbox import *
 # ---#
 @check_dtypes
 @save_verticapy_logs
-def import_lib_udf(udf_list: list, library_name: str, include_dependencies: list = []):
+def import_lib_udf(
+    udf_list: list, library_name: str, include_dependencies: Union[str, list] = []
+):
     """
 ---------------------------------------------------------------------------
 Install a library of Python functions in Vertica. This function will work only
@@ -87,7 +89,7 @@ udf_list: list
 	    new_name     : [str] New function name when installed in Vertica.
 library_name: str
 	Library Name.
-include_dependencies: list, optional
+include_dependencies: str / list, optional
 	Library files dependencies. The function will copy paste the different files
 	in the UDF definition.
 	"""
@@ -120,7 +122,7 @@ include_dependencies: list, optional
 def create_lib_udf(
     udf_list: list,
     library_name: str,
-    include_dependencies: list = [],
+    include_dependencies: Union[str, list] = [],
     file_path: str = "",
     create_file: bool = False,
 ):
@@ -144,7 +146,7 @@ udf_list: list
 	    new_name     : [str] New function name when installed in Vertica.
 library_name: str
 	Library Name.
-include_dependencies: list, optional
+include_dependencies: str / list, optional
 	Library files dependencies. The function will copy paste the different files
 	in the UDF definition.
 file_path: str, optional
@@ -158,7 +160,7 @@ Returns
 udx_str, sql
     UDF py file, str needed to install the library.
 	"""
-    if isinstance(include_dependencies, (str)):
+    if isinstance(include_dependencies, str):
         include_dependencies = [include_dependencies]
     if not (isinstance(include_dependencies, (list))):
         raise ValueError(

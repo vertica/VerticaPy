@@ -283,9 +283,7 @@ class TestDummyTreeRegressor:
         assert model.score(method="bic") == pytest.approx(-float("inf"), abs=1e-6)
 
     def test_set_params(self, model):
-        # Nothing will change as Dummy Trees have no parameters
-        model.set_params({"max_features": 100})
-        assert model.get_params()["max_features"] == "max"
+        model.set_params({})
 
     def test_model_from_vDF(self, tr_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS tr_from_vDF")

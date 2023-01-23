@@ -118,7 +118,9 @@ parameters passed to the function are of an expected data type.
         #    all_args[list(hints.keys())[idx]] = var
         for var_name in hints:
             # get_args is only available for Python version greater than 3.7
-            if python_version[0] > 3 or (python_version[0] == 3 and python_version[1] > 7):
+            if python_version[0] > 3 or (
+                python_version[0] == 3 and python_version[1] > 7
+            ):
                 dt = typing.get_args(hints[var_name])
             else:
                 try:
@@ -134,9 +136,11 @@ parameters passed to the function are of an expected data type.
                 single_type = False
             if var_name in all_args:
                 var = all_args[var_name]
-                if isinstance(var, vDataFrame) and ((isinstance(dt, tuple) and str_sql in dt) or dt == str_sql):
+                if isinstance(var, vDataFrame) and (
+                    (isinstance(dt, tuple) and str_sql in dt) or dt == str_sql
+                ):
                     pass
-                elif not(isinstance(var, type(None))) and not (isinstance(var, dt)):
+                elif not (isinstance(var, type(None))) and not (isinstance(var, dt)):
                     dt_var = type(var)
                     if single_type:
                         warning_message = f"Parameter '{var_name}' must be of type <{dt_str_list}>, found type <{dt_var}>."

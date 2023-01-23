@@ -215,8 +215,8 @@ class TestModelSelection:
             "auc",
             cv=3,
         )
-        assert len(result.values) == 4
-        assert len(result["parameters"]) == 4
+        assert len(result.values) == 6
+        assert len(result["parameters"]) == 6
 
     def test_lift_chart(self, winequality_vd):
         model = LogisticRegression("model_test")

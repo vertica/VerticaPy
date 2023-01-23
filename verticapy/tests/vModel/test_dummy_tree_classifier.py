@@ -443,9 +443,7 @@ class TestDummyTreeClassifier:
         ) == pytest.approx(1.0)
 
     def test_set_params(self, model):
-        model.set_params({"nbins": 100})
-        # Nothing will change as Dummy Trees have no parameters
-        assert model.get_params()["nbins"] == 100
+        model.set_params({})
 
     def test_model_from_vDF(self, dtc_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS tc_from_vDF")

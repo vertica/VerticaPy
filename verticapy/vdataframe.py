@@ -793,8 +793,8 @@ vColumns : vColumn
                 query = "SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ COVAR_POP({0}{1}, {2}{3}) FROM {4}".format(
                     columns[0], cast_0, columns[1], cast_1, self.__genSQL__()
                 )
-                title = "Computing the covariance between {} and {}.".format(
-                    columns[0], columns[1]
+                title = (
+                    f"Computing the covariance between {columns[0]} and {columns[1]}."
                 )
             try:
                 result = executeSQL(
@@ -1100,8 +1100,7 @@ vColumns : vColumn
                 method_type = ""
             for column in cols:
                 assert self[column].isnum(), TypeError(
-                    "vColumn {column} must be numerical to compute the "
-                    f"{method_name} Vector{method_type}."
+                    f"vColumn '{column}' must be numerical to compute the {method_name} Vector{method_type}."
                 )
         if method in ("spearman", "spearmand", "pearson", "kendall", "cov") and (
             len(cols) >= 1
@@ -1472,19 +1471,19 @@ vColumns : vColumn
             return ""
         if isinstance(columns, dict):
             order_by = []
-            for elem in columns:
-                column_name = self.format_colnames(elem)
-                if columns[elem].lower() not in ("asc", "desc"):
+            for col in columns:
+                column_name = self.format_colnames(col)
+                if columns[col].lower() not in ("asc", "desc"):
                     warning_message = (
                         "Method of {0} must be in (asc, desc), found '{1}'\n"
                         "This column was ignored."
-                    ).format(column_name, columns[elem].lower())
+                    ).format(column_name, columns[col].lower())
                     warnings.warn(warning_message, Warning)
                 else:
-                    order_by += ["{} {}".format(column_name, columns[elem].upper())]
+                    order_by += [f"{column_name} {columns[col].upper()}"]
         else:
-            order_by = [quote_ident(elem) for elem in columns]
-        return " ORDER BY {}".format(", ".join(order_by))
+            order_by = [quote_ident(col) for col in columns]
+        return f" ORDER BY {', '.join(order_by)}"
 
     # ---#
     def __isexternal__(self):
@@ -1611,14 +1610,10 @@ vColumns : vColumn
                     e = ""
                     nearestcol = self.get_nearest_column(column)
                     if nearestcol[1] < 5:
-                        e = "\nDid you mean {} ?".format(nearestcol[0])
+                        e = f"\nDid you mean '{nearestcol[0]}' ?"
                 except:
                     e = ""
-                raise MissingColumn(
-                    "The Virtual Column '{}' doesn't exist{}.".format(
-                        column.lower().replace('"', ""), e
-                    )
-                )
+                raise MissingColumn(f"The Virtual Column '{column}' doesn't exist{e}.")
 
     # ---#
     def format_colnames(self, columns: Union[str, list]):
@@ -1671,10 +1666,9 @@ vColumns : vColumn
         False otherwise.
         """
         columns = self.get_columns()
-        column = column.replace('"', "").lower()
+        column = quote_ident(column).lower()
         for col in columns:
-            col = col.replace('"', "").lower()
-            if column == col:
+            if column == quote_ident(col).lower():
                 return True
         return False
 
@@ -1692,11 +1686,11 @@ vColumns : vColumn
     expected_nb_of_cols: list
         List of the expected number of columns.
         """
-        if len(columns) not in expected_nb_of_cols:
+        n = len(columns)
+        if n not in expected_nb_of_cols:
+            expected_nb_of_cols_str = "|".join([str(nb) for nb in expected_nb_of_cols])
             raise ParameterError(
-                "The number of Virtual Columns expected is {}, found {}.".format(
-                    "|".join([str(elem) for elem in expected_nb_of_cols]), len(columns)
-                )
+                f"The number of Virtual Columns expected is {expected_nb_of_cols_str}, found {n}."
             )
 
     # ---#
@@ -1720,12 +1714,12 @@ vColumns : vColumn
         result = (columns[0], levenshtein(col, columns[0].replace('"', "").lower()))
         if len(columns) == 1:
             return result
-        for elem in columns:
-            if elem != result[0]:
-                current_col = elem.replace('"', "").lower()
+        for col in columns:
+            if col != result[0]:
+                current_col = col.replace('"', "").lower()
                 d = levenshtein(current_col, col)
                 if result[1] > d:
-                    result = (elem, d)
+                    result = (col, d)
         return result
 
     #
@@ -3799,7 +3793,7 @@ vColumns : vColumn
         for i in range(n - 1):
             vdf = vdf.append(
                 self.search("{} = '{}'".format(column, topk["index"][i])).sample(
-                    n=last_count
+                    n=int(last_count)
                 )
             )
         vdf.sort(order_by)
@@ -4336,10 +4330,7 @@ vColumns : vColumn
                             "was ignored."
                         ).format(col, self[col].category())
                     else:
-                        warning_message = (
-                            "vColumn '{0}' has a too high cardinality (> {1}). This "
-                            "vColumn was ignored."
-                        ).format(col, max_cardinality)
+                        warning_message = f"vColumn '{col}' has a too high cardinality (> {max_cardinality}). This vColumn was ignored."
                     warnings.warn(warning_message, Warning)
         for col in remove_cols:
             columns_tmp.remove(col)
@@ -9338,7 +9329,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def sample(
         self,
-        n: int = None,
+        n: Union[int, float] = None,
         x: float = None,
         method: str = "random",
         by: Union[str, list] = [],
@@ -9352,7 +9343,7 @@ vColumns : vColumn
 
     Parameters
      ----------
-     n: int, optional
+     n: int / float, optional
         Approximate number of element to consider in the sample.
      x: float, optional
         The sample size. For example it has to be equal to 0.33 to downsample to 

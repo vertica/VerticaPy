@@ -239,8 +239,8 @@ class XGBoost_utils:
                 else:
                     col_sample_by_tree = "null"
                     col_sample_by_node = "null"
-                condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + [
-                    "{} IS NOT NULL".format(model.y)
+                condition = [f"{predictor} IS NOT NULL" for predictor in model.X] + [
+                    f"{model.y} IS NOT NULL"
                 ]
                 n = model.get_attr("tree_count")["tree_count"][0]
                 if model.type == "XGBoostRegressor" or (
@@ -656,7 +656,7 @@ max_features: int / str, optional
     methods.
         auto : square root of the total number of predictors.
         max  : number of predictors.
-max_leaf_nodes: int, optional
+max_leaf_nodes: int / float, optional
     The maximum number of leaf nodes a tree in the forest can have, an integer 
     between 1 and 1e9, inclusive.
 sample: float, optional
@@ -668,7 +668,7 @@ min_samples_leaf: int, optional
     The minimum number of samples each branch must have after splitting a node, an 
     integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
     is discarded. 
-min_info_gain: float, optional
+min_info_gain: int / float, optional
     The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
     A split with information gain less than this threshold is discarded.
 nbins: int, optional 
@@ -684,17 +684,15 @@ nbins: int, optional
         name: str,
         n_estimators: int = 10,
         max_features: Union[int, str] = "auto",
-        max_leaf_nodes: int = 1e9,
+        max_leaf_nodes: Union[int, float] = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
         min_samples_leaf: int = 1,
-        min_info_gain: float = 0.0,
+        min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
         if isinstance(max_features, str):
-            raise_error_if_not_in(
-                "max_features", max_features, ["auto", "max"]
-            )
+            raise_error_if_not_in("max_features", max_features, ["auto", "max"])
             max_features = max_features.lower()
         self.type, self.name = "RandomForestClassifier", name
         self.parameters = {
@@ -730,7 +728,7 @@ max_features: int / str, optional
     methods.
         auto : square root of the total number of predictors.
         max  : number of predictors.
-max_leaf_nodes: int, optional
+max_leaf_nodes: int / float, optional
     The maximum number of leaf nodes a tree in the forest can have, an integer 
     between 1 and 1e9, inclusive.
 sample: float, optional
@@ -742,7 +740,7 @@ min_samples_leaf: int, optional
     The minimum number of samples each branch must have after splitting a node, an 
     integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
     is discarded. 
-min_info_gain: float, optional
+min_info_gain: int / float, optional
     The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
     A split with information gain less than this threshold is discarded.
 nbins: int, optional 
@@ -758,17 +756,15 @@ nbins: int, optional
         name: str,
         n_estimators: int = 10,
         max_features: Union[int, str] = "auto",
-        max_leaf_nodes: int = 1e9,
+        max_leaf_nodes: Union[int, float] = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
         min_samples_leaf: int = 1,
-        min_info_gain: float = 0.0,
+        min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
         if isinstance(max_features, str):
-            raise_error_if_not_in(
-                "max_features", max_features.lower(), ["auto", "max"]
-            )
+            raise_error_if_not_in("max_features", max_features.lower(), ["auto", "max"])
             max_features = max_features.lower()
         self.type, self.name = "RandomForestRegressor", name
         self.parameters = {

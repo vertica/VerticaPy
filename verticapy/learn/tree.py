@@ -141,7 +141,7 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         of the two following methods.
             auto : square root of the total number of predictors.
             max  : number of predictors.
-    max_leaf_nodes: int, optional
+    max_leaf_nodes: int / float, optional
         The maximum number of leaf nodes a tree in the forest can have, an
         integer between 1 and 1e9, inclusive.
     max_depth: int, optional
@@ -151,7 +151,7 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         The minimum number of samples each branch must have after splitting a
         node, an integer between 1 and 1e6, inclusive. A split that causes
         fewer remaining samples is discarded.
-    min_info_gain: float, optional
+    min_info_gain: int / float, optional
         The minimum threshold for including a split, a float between 0.0 and
         1.0, inclusive. A split with information gain less than this threshold
         is discarded.
@@ -174,9 +174,7 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         nbins: int = 32,
     ):
         if isinstance(max_features, str):
-            raise_error_if_not_in(
-                "max_features", max_features.lower(), ["auto", "max"]
-            )
+            raise_error_if_not_in("max_features", max_features.lower(), ["auto", "max"])
             max_features = max_features.lower()
         self.type, self.name = "RandomForestClassifier", name
         self.parameters = {
@@ -207,7 +205,7 @@ class DecisionTreeRegressor(Regressor, Tree):
         of the two following methods.
             auto : square root of the total number of predictors.
             max  : number of predictors.
-    max_leaf_nodes: int, optional
+    max_leaf_nodes: int / float, optional
         The maximum number of leaf nodes a tree in the forest can have, an
         integer between 1 and 1e9, inclusive.
     max_depth: int, optional
@@ -217,7 +215,7 @@ class DecisionTreeRegressor(Regressor, Tree):
         The minimum number of samples each branch must have after splitting
         a node, an integer between 1 and 1e6, inclusive. A split that causes
         fewer remaining samples is discarded.
-    min_info_gain: float, optional
+    min_info_gain: int / float, optional
         The minimum threshold for including a split, a float between 0.0 and
         1.0, inclusive. A split with information gain less than this threshold
         is discarded.
@@ -240,9 +238,7 @@ class DecisionTreeRegressor(Regressor, Tree):
         nbins: int = 32,
     ):
         if isinstance(max_features, str):
-            raise_error_if_not_in(
-                "max_features", max_features.lower(), ["auto", "max"]
-            )
+            raise_error_if_not_in("max_features", max_features.lower(), ["auto", "max"])
             max_features = max_features.lower()
         self.type, self.name = "RandomForestRegressor", name
         self.parameters = {

@@ -372,13 +372,11 @@ model
     pho = executeSQL(
         query, title="Computing the Cochrane Orcutt pho.", method="fetchfirstelem"
     )
-    for elem in X + [y]:
-        new_val = f"{elem} - {pho} * LAG({elem}) OVER (ORDER BY {ts})"
+    for predictor in X + [y]:
+        new_val = f"{predictor} - {pho} * LAG({predictor}) OVER (ORDER BY {ts})"
         if prais_winsten:
-            new_val = "COALESCE({}, {} * {})".format(
-                new_val, elem, (1 - pho ** 2) ** (0.5)
-            )
-        vdf_tmp[elem] = new_val
+            new_val = f"COALESCE({new_val}, {predictor} * {(1 - pho ** 2) ** (0.5)})"
+        vdf_tmp[predictor] = new_val
     model_tmp.drop()
     model_tmp.fit(vdf_tmp, X, y)
     model_tmp.pho_ = pho
