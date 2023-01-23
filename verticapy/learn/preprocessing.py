@@ -147,6 +147,8 @@ max_text_size: int, optional
         max_text_size: int = 2000,
     ):
         self.type, self.name = "CountVectorizer", name
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "PREPROCESSING"
         self.parameters = {
             "lowercase": lowercase,
             "max_df": max_df,
@@ -354,6 +356,8 @@ method: str, optional
         self.VERTICA_FIT_FUNCTION_SQL = "NORMALIZE_FIT"
         self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_NORMALIZE"
         self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "REVERSE_NORMALIZE"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "PREPROCESSING"
         self.parameters = {"method": str(method).lower()}
 
 
@@ -438,6 +442,8 @@ null_column_name: str, optional
         self.VERTICA_FIT_FUNCTION_SQL = "ONE_HOT_ENCODER_FIT"
         self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_ONE_HOT_ENCODER"
         self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = ""
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "PREPROCESSING"
         self.parameters = {
             "extra_levels": extra_levels,
             "drop_first": drop_first,

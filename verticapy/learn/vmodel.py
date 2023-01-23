@@ -1953,7 +1953,7 @@ class BinaryClassifier(Classifier):
         sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', type = 'probability', match_by_pos = 'true')"
         if cutoff <= 1 and cutoff >= 0:
             sql = f"(CASE WHEN {sql} >= {cutoff} THEN 1 WHEN {sql} IS NULL THEN NULL ELSE 0 END)"
-        return sql.format(fun, ", ".join(X), self.name)
+        return sql
 
     # ---#
     def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds):

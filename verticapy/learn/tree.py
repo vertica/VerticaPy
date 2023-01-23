@@ -179,6 +179,8 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         self.type, self.name = "RandomForestClassifier", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
@@ -245,6 +247,8 @@ class DecisionTreeRegressor(Regressor, Tree):
         self.type, self.name = "RandomForestRegressor", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
@@ -277,6 +281,8 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
         self.type, self.name = "RandomForestClassifier", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",
@@ -309,6 +315,8 @@ class DummyTreeRegressor(Regressor, Tree):
         self.type, self.name = "RandomForestRegressor", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",

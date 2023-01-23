@@ -101,6 +101,8 @@ nbtype: str, optional
         self.type, self.name = "NaiveBayes", name
         self.VERTICA_FIT_FUNCTION_SQL = "NAIVE_BAYES"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_NAIVE_BAYES"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
         self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
 
     # ---#

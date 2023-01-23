@@ -113,6 +113,8 @@ fit_intercept: bool, optional
         self.type, self.name = "LinearRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -177,6 +179,8 @@ fit_intercept: bool, optional
         self.type, self.name = "LinearRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -235,6 +239,8 @@ fit_intercept: bool, optional
         self.type, self.name = "LinearRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -309,6 +315,8 @@ fit_intercept: bool, optional
         self.type, self.name = "LogisticRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LOGISTIC_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LOGISTIC_REG"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -381,6 +389,8 @@ fit_intercept: bool, optional
         self.type, self.name = "LinearRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "

@@ -3256,9 +3256,7 @@ attributes: dict
             )
         else:
             raise FunctionError(
-                "Method 'transform_sql' is not available for model type '{}'.".format(
-                    self.model_type_
-                )
+                f"Method 'transform_sql' is not available for model type '{self.model_type_}'."
             )
         if self.model_type_ == "OneHotEncoder":
             for idx in range(len(result)):
@@ -3300,8 +3298,6 @@ attributes: dict
             self.set_attributes({"principal_components": principal_components})
         else:
             raise FunctionError(
-                "Method 'rotate' is not available for model type '{}'.".format(
-                    self.model_type_
-                )
+                f"Method 'rotate' is not available for model type '{self.model_type_}'."
             )
         return self

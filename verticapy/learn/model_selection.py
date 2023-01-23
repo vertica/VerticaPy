@@ -67,7 +67,7 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.plot import gen_colors
-from verticapy.learn.tools import does_model_exist, get_model_category
+from verticapy.learn.tools import does_model_exist
 from verticapy.learn.mlplot import plot_bubble_ml, plot_stepwise_ml, plot_importance
 
 # Other Python Modules
@@ -505,7 +505,7 @@ tablesample
         input_relation = vDataFrameSQL(input_relation)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
-    if get_model_category(estimator.type)[0] == "regressor":
+    if estimator.MODEL_SUBTYPE == "REGRESSOR":
         all_metrics = [
             "explained_variance",
             "max_error",
@@ -518,7 +518,7 @@ tablesample
             "aic",
             "bic",
         ]
-    elif get_model_category(estimator.type)[0] == "classifier":
+    elif estimator.MODEL_SUBTYPE ==  "CLASSIFIER":
         all_metrics = [
             "auc",
             "prc_auc",
@@ -571,7 +571,7 @@ tablesample
             train, X, y, test,
         )
         total_time += [time.time() - start_time]
-        if get_model_category(estimator.type)[0] == "regressor":
+        if estimator.MODEL_SUBTYPE ==  "REGRESSOR":
             if metric == "all":
                 result["{}-fold".format(i + 1)] = estimator.regression_report().values[
                     "value"
@@ -1638,7 +1638,7 @@ tablesample
     """
     if isinstance(X, str):
         X = [X]
-    if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
+    if estimator.MODEL_SUBTYPE == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -1873,7 +1873,7 @@ tablesample
 
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
-    if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
+    if estimator.MODEL_SUBTYPE == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -2432,7 +2432,7 @@ tablesample
     """
     if isinstance(X, str):
         X = [X]
-    if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
+    if estimator.MODEL_SUBTYPE == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"

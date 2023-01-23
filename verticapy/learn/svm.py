@@ -123,6 +123,8 @@ max_iter: int, optional
         self.type, self.name = "LinearSVC", name
         self.VERTICA_FIT_FUNCTION_SQL = "SVM_CLASSIFIER"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_CLASSIFIER"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
         self.parameters = {
             "tol": tol,
             "C": C,
@@ -214,6 +216,8 @@ test_relation: str
         self.type, self.name = "LinearSVR", name
         self.VERTICA_FIT_FUNCTION_SQL = "SVM_REGRESSOR"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_REGRESSOR"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         self.parameters = {
             "tol": tol,
             "C": C,

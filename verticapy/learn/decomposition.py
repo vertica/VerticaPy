@@ -80,6 +80,8 @@ name: str
         self.type, self.name = "MCA", name
         self.VERTICA_FIT_FUNCTION_SQL = "PCA"
         self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "DECOMPOSITION"
         self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
         self.parameters = {}
 
@@ -289,6 +291,8 @@ method: str, optional
         self.VERTICA_FIT_FUNCTION_SQL = "PCA"
         self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
         self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "DECOMPOSITION"
         self.parameters = {
             "n_components": n_components,
             "scale": scale,
@@ -327,4 +331,6 @@ method: str, optional
         self.VERTICA_FIT_FUNCTION_SQL = "SVD"
         self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_SVD"
         self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_SVD"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "DECOMPOSITION"
         self.parameters = {"n_components": n_components, "method": str(method).lower()}

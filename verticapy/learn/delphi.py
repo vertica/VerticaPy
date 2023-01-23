@@ -72,7 +72,6 @@ from verticapy.learn.neighbors import *
 from verticapy.learn.svm import *
 from verticapy.learn.mlplot import plot_bubble_ml
 from verticapy.learn.vmodel import *
-from verticapy.learn.tools import get_model_category
 
 
 class vAuto(vModel):
@@ -698,10 +697,9 @@ model_grid_ : tablesample
         preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
     ):
+        raise_error_if_not_in("estimator_type", estimator_type, ["auto", "regressor", "binary", "multi"])
         raise_error_if_not_in("stepwise_criterion", stepwise_criterion, ["aic", "bic"])
-        raise_error_if_not_in(
-            "stepwise_direction", stepwise_direction, ["forward", "backward"]
-        )
+        raise_error_if_not_in("stepwise_direction", stepwise_direction, ["forward", "backward"])
         raise_error_if_not_in(
             "stepwise_x_order",
             stepwise_x_order,
@@ -888,16 +886,13 @@ model_grid_ : tablesample
         if self.parameters["estimator_type"] == "auto":
             self.parameters["estimator_type"] = self.parameters["estimator"][0].type
         for elem in self.parameters["estimator"]:
-            cat = get_model_category(elem.type)
             assert (
                 self.parameters["estimator_type"] in ("binary", "multi")
-                and cat[0] == "classifier"
+                and self.MODEL_SUBTYPE == "CLASSIFIER"
                 or self.parameters["estimator_type"] == "regressor"
-                and cat[0] == "regressor"
+                and self.MODEL_SUBTYPE == "REGRESSOR"
             ), ParameterError(
-                "Incorrect list for parameter 'estimator'. Expected type '{}', found type '{}'.".format(
-                    self.parameters["estimator_type"], cat[0]
-                )
+                f"Incorrect list for parameter 'estimator'. Expected type '{self.parameters['estimator_type']}', found type '{self.MODEL_SUBTYPE}'."
             )
         if (
             self.parameters["estimator_type"] == "regressor"

@@ -145,6 +145,8 @@ tol: float, optional
         self.type, self.name = "BisectingKMeans", name
         self.VERTICA_FIT_FUNCTION_SQL = "BISECTING_KMEANS"
         self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_BISECTING_KMEANS"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
         self.parameters = {
             "n_cluster": n_cluster,
             "bisection_iterations": bisection_iterations,
@@ -203,6 +205,8 @@ p: int, optional
     @save_verticapy_logs
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
         self.type, self.name = "DBSCAN", name
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
         self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
 
     # ---#
@@ -488,6 +492,8 @@ tol: float, optional
         self.type, self.name = "KMeans", name
         self.VERTICA_FIT_FUNCTION_SQL = "KMEANS"
         self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KMEANS"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,
@@ -586,6 +592,8 @@ gamma: float, optional
         self.type, self.name = "KPrototypes", name
         self.VERTICA_FIT_FUNCTION_SQL = "KPROTOTYPES"
         self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KPROTOTYPES"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,

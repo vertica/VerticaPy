@@ -460,6 +460,8 @@ col_sample_by_tree: float, optional
         self.type, self.name = "IsolationForest", name
         self.VERTICA_FIT_FUNCTION_SQL = "IFOREST"
         self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_IFOREST"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "ANOMALY_DETECTION"
         self.parameters = {
             "n_estimators": n_estimators,
             "max_depth": max_depth,
@@ -696,6 +698,8 @@ nbins: int, optional
         self.type, self.name = "RandomForestClassifier", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
         self.parameters = {
             "n_estimators": n_estimators,
             "max_features": max_features,
@@ -770,6 +774,8 @@ nbins: int, optional
         self.type, self.name = "RandomForestRegressor", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         self.parameters = {
             "n_estimators": n_estimators,
             "max_features": max_features,
@@ -856,6 +862,8 @@ col_sample_by_node: float, optional
         self.type, self.name = "XGBoostClassifier", name
         self.VERTICA_FIT_FUNCTION_SQL = "XGB_CLASSIFIER"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_CLASSIFIER"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
         params = {
             "max_ntree": max_ntree,
             "max_depth": max_depth,
@@ -949,6 +957,8 @@ col_sample_by_node: float, optional
         self.type, self.name = "XGBoostRegressor", name
         self.VERTICA_FIT_FUNCTION_SQL = "XGB_REGRESSOR"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_REGRESSOR"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         params = {
             "max_ntree": max_ntree,
             "max_depth": max_depth,
