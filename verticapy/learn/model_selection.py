@@ -828,6 +828,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def enet_search_cv(
     input_relation: Union[str, vDataFrame],

@@ -6217,6 +6217,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def flat_vmap(
         self,
@@ -9590,6 +9591,7 @@ vColumns : vColumn
         return scatter_matrix(self, columns, **style_kwds)
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def search(
         self,
@@ -10194,6 +10196,7 @@ vColumns : vColumn
         return self
 
     # ---#
+    @check_dtypes
     def tail(self, limit: int = 5):
         """
     ---------------------------------------------------------------------------

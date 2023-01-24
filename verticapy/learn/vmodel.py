@@ -187,6 +187,7 @@ Main Class for Vertica Model
             return f"<{self.type}>"
 
     # ---#
+    @check_dtypes
     def contour(
         self,
         nbins: int = 100,
@@ -434,6 +435,7 @@ Main Class for Vertica Model
         return tablesample(values=importances).transpose()
 
     # ---#
+    @check_dtypes
     def get_attr(self, attr_name: str = ""):
         """
 	---------------------------------------------------------------------------
@@ -862,6 +864,7 @@ Main Class for Vertica Model
             )
 
     # ---#
+    @check_dtypes
     def set_params(self, parameters: dict = {}):
         """
 	---------------------------------------------------------------------------
@@ -1490,6 +1493,7 @@ Main Class for Vertica Model
             )
 
     # ---#
+    @check_dtypes
     def to_sql(self, X: list = [], return_proba: bool = False):
         """
     ---------------------------------------------------------------------------
@@ -1681,6 +1685,7 @@ class Supervised(vModel):
 class Tree:
 
     # ---#
+    @check_dtypes
     def to_graphviz(
         self,
         tree_id: int = 0,
@@ -1764,6 +1769,7 @@ class Tree:
         return result
 
     # ---#
+    @check_dtypes
     def plot_tree(
         self,
         pic_path: str = "",
@@ -1956,6 +1962,7 @@ class BinaryClassifier(Classifier):
         return sql
 
     # ---#
+    @check_dtypes
     def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds):
         """
 	---------------------------------------------------------------------------
@@ -1986,6 +1993,7 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def prc_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
 	---------------------------------------------------------------------------
@@ -2016,6 +2024,7 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
@@ -2135,6 +2144,7 @@ class BinaryClassifier(Classifier):
         return vdf_return
 
     # ---#
+    @check_dtypes
     def cutoff_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
     ---------------------------------------------------------------------------
@@ -2166,6 +2176,7 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def roc_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
 	---------------------------------------------------------------------------
@@ -2388,6 +2399,7 @@ class MulticlassClassifier(Classifier):
             )
 
     # ---#
+    @check_dtypes
     def cutoff_curve(
         self,
         pos_label: Union[int, float, str] = None,
@@ -2535,6 +2547,7 @@ class MulticlassClassifier(Classifier):
         return sql
 
     # ---#
+    @check_dtypes
     def lift_chart(
         self,
         pos_label: Union[int, float, str] = None,
@@ -2591,6 +2604,7 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def prc_curve(
         self,
         pos_label: Union[int, float, str] = None,
@@ -2781,6 +2795,7 @@ class MulticlassClassifier(Classifier):
         return vdf_return
 
     # ---#
+    @check_dtypes
     def roc_curve(
         self,
         pos_label: Union[int, float, str] = None,
@@ -3728,6 +3743,7 @@ class Preprocessing(Unsupervised):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
+    @check_dtypes
     def get_names(self, inverse: bool = False, X: list = []):
         """
     ---------------------------------------------------------------------------

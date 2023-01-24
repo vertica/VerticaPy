@@ -397,6 +397,7 @@ p: int, optional
     report = classification_report
 
     # ---#
+    @check_dtypes
     def cutoff_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
@@ -406,7 +407,7 @@ p: int, optional
 
     Parameters
     ----------
-    pos_label: int/float/str
+    pos_label: int / float / str
         The response column class to be considered positive.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -452,7 +453,7 @@ p: int, optional
 
     Parameters
     ----------
-    pos_label: int/float/str, optional
+    pos_label: int / float / str, optional
         Label to consider as positive. All the other classes will be merged and
         considered as negative for multiclass classification.
     cutoff: int / float, optional
@@ -496,6 +497,7 @@ p: int, optional
             )
 
     # ---#
+    @check_dtypes
     def lift_chart(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
@@ -505,7 +507,7 @@ p: int, optional
 
     Parameters
     ----------
-    pos_label: int/float/str
+    pos_label: int / float / str
         To draw a lift chart, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -536,6 +538,7 @@ p: int, optional
         )
 
     # ---#
+    @check_dtypes
     def prc_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
@@ -545,7 +548,7 @@ p: int, optional
 
     Parameters
     ----------
-    pos_label: int/float/str
+    pos_label: int / float / str
         To draw the PRC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -576,6 +579,7 @@ p: int, optional
         )
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
@@ -591,7 +595,7 @@ p: int, optional
 
     Parameters
     ----------
-    vdf: str/vDataFrame
+    vdf: str / vDataFrame
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example,  
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
@@ -682,7 +686,7 @@ p: int, optional
 
     Parameters
     ----------
-    vdf: str/vDataFrame
+    vdf: str / vDataFrame
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
         is correct, whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -692,7 +696,7 @@ p: int, optional
     name: str, optional
         Name of the additional prediction vColumn. If unspecified, a name is 
 	    generated based on the model and class names.
-    pos_label: int/float/str, optional
+    pos_label: int / float / str, optional
         Class label, the class for which the probability is calculated. 
 	    If name is specified and pos_label is unspecified, the probability column 
 	    names use the following format: name_class1, name_class2, etc.
@@ -757,6 +761,7 @@ p: int, optional
             return vDataFrameSQL(name="Neighbors", relation=sql)
 
     # ---#
+    @check_dtypes
     def roc_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
@@ -766,7 +771,7 @@ p: int, optional
 
     Parameters
     ----------
-    pos_label: int/float/str
+    pos_label: int / float / str
         To draw the ROC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -1380,6 +1385,7 @@ p: int, optional
         return sql
 
     # ---#
+    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -1542,6 +1548,7 @@ p: int, optional
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     # ---#
+    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
