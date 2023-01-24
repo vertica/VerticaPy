@@ -1749,7 +1749,7 @@ vColumns : vColumn
     def idisplay(self):
         """This method displays the interactive table. It is used when 
         you don't want to activate interactive table for all vDataFrames."""
-        from IPython.core.display import HTML, display
+        from IPython.display import HTML, display
 
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 

@@ -879,7 +879,7 @@ def print_query(query: str, title: str = ""):
     screen_columns = shutil.get_terminal_size().columns
     query_print = indentSQL(query)
     if isnotebook():
-        from IPython.core.display import HTML, display
+        from IPython.display import HTML, display
 
         display(HTML("<h4>{}</h4>".format(title)))
         query_print = query_print.replace("\n", " <br>").replace("  ", " &emsp; ")
@@ -1131,7 +1131,7 @@ def print_table(
 def print_time(elapsed_time: float):
     screen_columns = shutil.get_terminal_size().columns
     if isnotebook():
-        from IPython.core.display import HTML, display
+        from IPython.display import HTML, display
 
         display(
             HTML("<div><b>Execution: </b> {0}s</div>".format(round(elapsed_time, 3)))
