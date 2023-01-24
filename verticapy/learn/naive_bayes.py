@@ -49,6 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.vmodel import *
 from verticapy.utilities import save_verticapy_logs
 
@@ -85,18 +90,20 @@ nbtype: str, optional
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
-    def __init__(self, name: str, alpha: float = 1.0, nbtype: str = "auto"):
-        nbtype_vals = ["auto", "bernoulli", "categorical", "multinomial", "gaussian"]
-        check_types(
-            [
-                ("name", name, [str]),
-                ("alpha", alpha, [int, float]),
-                ("nbtype", nbtype, nbtype_vals),
-            ]
+    def __init__(self, name: str, alpha: Union[int, float] = 1.0, nbtype: str = "auto"):
+        raise_error_if_not_in(
+            "nbtype",
+            str(nbtype).lower(),
+            ["auto", "bernoulli", "categorical", "multinomial", "gaussian"],
         )
         self.type, self.name = "NaiveBayes", name
-        self.set_params({"alpha": alpha, "nbtype": nbtype})
+        self.VERTICA_FIT_FUNCTION_SQL = "NAIVE_BAYES"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_NAIVE_BAYES"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
 
     # ---#
     def get_var_info(self):

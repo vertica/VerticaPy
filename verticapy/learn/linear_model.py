@@ -50,6 +50,11 @@
 #
 # VerticaPy Modules
 from verticapy import vDataFrame
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
@@ -70,7 +75,7 @@ name: str
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy 
     result.
-C: float, optional
+C: int / float, optional
 	The regularization parameter value. The value must be zero or 
     non-negative.
 max_iter: int, optional
@@ -78,9 +83,9 @@ max_iter: int, optional
     before achieving the specified accuracy result.
 solver: str, optional
 	The optimizer method to use to train the model. 
-		Newton : Newton Method
-		BFGS   : Broyden Fletcher Goldfarb Shanno
-		CGD    : Coordinate Gradient Descent
+		newton : Newton Method
+		bfgs   : Broyden Fletcher Goldfarb Shanno
+		cgd    : Coordinate Gradient Descent
 l1_ratio: float, optional
 	ENet mixture parameter that defines how much L1 versus L2 
     regularization to provide.
@@ -92,35 +97,38 @@ fit_intercept: bool, optional
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         tol: float = 1e-6,
-        C: float = 1.0,
+        C: Union[int, float] = 1.0,
         max_iter: int = 100,
-        solver: str = "CGD",
+        solver: str = "cgd",
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
-        check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
+        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs", "cgd"])
         self.type, self.name = "LinearRegression", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
                 "versions greater or equal to 12."
             )
-        self.set_params(
-            {
-                "penalty": "enet",
-                "tol": tol,
-                "C": C,
-                "max_iter": max_iter,
-                "solver": str(solver).lower(),
-                "l1_ratio": l1_ratio,
-                "fit_intercept": fit_intercept,
-            }
-        )
+        self.parameters = {
+            "penalty": "enet",
+            "tol": tol,
+            "C": C,
+            "max_iter": max_iter,
+            "solver": str(solver).lower(),
+            "l1_ratio": l1_ratio,
+            "fit_intercept": fit_intercept,
+        }
 
 
 # ---#
@@ -137,7 +145,7 @@ name: str
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy 
     result.
-C: float, optional
+C: int / float, optional
     The regularization parameter value. The value must be zero or 
     non-negative.
 max_iter: int, optional
@@ -145,9 +153,9 @@ max_iter: int, optional
     before achieving the specified accuracy result.
 solver: str, optional
 	The optimizer method to use to train the model. 
-		Newton : Newton Method
-		BFGS   : Broyden Fletcher Goldfarb Shanno
-		CGD    : Coordinate Gradient Descent
+		newton : Newton Method
+		bfgs   : Broyden Fletcher Goldfarb Shanno
+		cgd    : Coordinate Gradient Descent
 fit_intercept: bool, optional
     Boolean, specifies whether the model includes an intercept. 
     By setting to false, no intercept will be used in training the model. 
@@ -156,36 +164,36 @@ fit_intercept: bool, optional
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         tol: float = 1e-6,
-        C: float = 1.0,
+        C: Union[int, float] = 1.0,
         max_iter: int = 100,
         solver: str = "CGD",
         fit_intercept: bool = True,
     ):
-        check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
+        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs", "cgd"])
         self.type, self.name = "LinearRegression", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
                 "versions greater or equal to 12."
             )
-        self.set_params(
-            {
-                "penalty": "l1",
-                "tol": tol,
-                "C": C,
-                "max_iter": max_iter,
-                "solver": str(solver).lower(),
-                "fit_intercept": fit_intercept,
-            }
-        )
-        for elem in ["l1_ratio"]:
-            if elem in self.parameters:
-                del self.parameters[elem]
+        self.parameters = {
+            "penalty": "l1",
+            "tol": tol,
+            "C": C,
+            "max_iter": max_iter,
+            "solver": str(solver).lower(),
+            "fit_intercept": fit_intercept,
+        }
 
 
 # ---#
@@ -207,8 +215,8 @@ max_iter: int, optional
     before achieving the specified accuracy result.
 solver: str, optional
 	The optimizer method to use to train the model. 
-		Newton : Newton Method
-		BFGS   : Broyden Fletcher Goldfarb Shanno
+		newton : Newton Method
+		bfgs   : Broyden Fletcher Goldfarb Shanno
 fit_intercept: bool, optional
     Boolean, specifies whether the model includes an intercept. 
     By setting to false, no intercept will be used in training the model. 
@@ -217,6 +225,7 @@ fit_intercept: bool, optional
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -226,31 +235,24 @@ fit_intercept: bool, optional
         solver: str = "Newton",
         fit_intercept: bool = True,
     ):
-        check_types(
-            [
-                ("name", name, [str]),
-                ("solver", solver.lower(), ["newton", "bfgs"]),
-                ("fit_intercept", fit_intercept, [bool]),
-            ]
-        )
+        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
         self.type, self.name = "LinearRegression", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
                 "versions greater or equal to 12."
             )
-        self.set_params(
-            {
-                "penalty": "none",
-                "tol": tol,
-                "max_iter": max_iter,
-                "solver": str(solver).lower(),
-                "fit_intercept": fit_intercept,
-            }
-        )
-        for elem in ["l1_ratio", "C"]:
-            if elem in self.parameters:
-                del self.parameters[elem]
+        self.parameters = {
+            "penalty": "none",
+            "tol": tol,
+            "max_iter": max_iter,
+            "solver": str(solver).lower(),
+            "fit_intercept": fit_intercept,
+        }
 
 
 # ---#
@@ -272,16 +274,16 @@ penalty: str, optional
 		ENet : Combination between L1 and L2
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
-C: float, optional
+C: int / float, optional
 	The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
 	Determines the maximum number of iterations the algorithm performs before 
 	achieving the specified accuracy result.
 solver: str, optional
 	The optimizer method to use to train the model. 
-		Newton : Newton Method
-		BFGS   : Broyden Fletcher Goldfarb Shanno
-		CGD    : Coordinate Gradient Descent
+		newton : Newton Method
+		bfgs   : Broyden Fletcher Goldfarb Shanno
+		cgd    : Coordinate Gradient Descent
 l1_ratio: float, optional
 	ENet mixture parameter that defines how much L1 versus L2 regularization 
 	to provide.
@@ -293,46 +295,51 @@ fit_intercept: bool, optional
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         penalty: str = "None",
         tol: float = 1e-6,
-        C: int = 1,
+        C: Union[int, float] = 1.0,
         max_iter: int = 100,
-        solver: str = "Newton",
+        solver: str = "newton",
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
-        check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
+        raise_error_if_not_in(
+            "penalty", str(penalty).lower(), ["none", "l1", "l2", "enet"]
+        )
+        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs", "cgd"])
         self.type, self.name = "LogisticRegression", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LOGISTIC_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LOGISTIC_REG"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
                 "versions greater or equal to 12."
             )
-        self.set_params(
-            {
-                "penalty": str(penalty).lower(),
-                "tol": tol,
-                "C": C,
-                "max_iter": max_iter,
-                "solver": str(solver).lower(),
-                "l1_ratio": l1_ratio,
-                "fit_intercept": fit_intercept,
-            }
-        )
-        if penalty.lower() == "none":
-            for elem in ["l1_ratio", "C"]:
-                if elem in self.parameters:
-                    del self.parameters[elem]
-            check_types([("solver", solver.lower(), ["bfgs", "newton"])])
-        elif penalty.lower() in ("l1", "l2"):
-            for elem in ["l1_ratio"]:
-                if elem in self.parameters:
-                    del self.parameters[elem]
-            check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"])])
+        self.parameters = {
+            "penalty": str(penalty).lower(),
+            "tol": tol,
+            "C": C,
+            "max_iter": max_iter,
+            "solver": str(solver).lower(),
+            "l1_ratio": l1_ratio,
+            "fit_intercept": fit_intercept,
+        }
+        if str(penalty).lower() == "none":
+            del self.parameters["l1_ratio"]
+            del self.parameters["C"]
+            raise_error_if_not_in("solver", str(solver).lower(), ["bfgs", "newton"])
+        elif str(penalty).lower() in ("l1", "l2"):
+            del self.parameters["l1_ratio"]
+            raise_error_if_not_in(
+                "solver", str(solver).lower(), ["bfgs", "newton", "cgd"]
+            )
 
 
 # ---#
@@ -349,7 +356,7 @@ name: str
 tol: float, optional
 	Determines whether the algorithm has reached the specified 
     accuracy result.
-C: float, optional
+C: int / float, optional
     The regularization parameter value. The value must be zero 
     or non-negative.
 max_iter: int, optional
@@ -357,8 +364,8 @@ max_iter: int, optional
     performs before achieving the specified accuracy result.
 solver: str, optional
 	The optimizer method to use to train the model. 
-		Newton : Newton Method
-		BFGS   : Broyden Fletcher Goldfarb Shanno
+		newton : Newton Method
+		bfgs   : Broyden Fletcher Goldfarb Shanno
 fit_intercept: bool, optional
     Boolean, specifies whether the model includes an intercept. 
     By setting to false, no intercept will be used in training the model. 
@@ -367,39 +374,33 @@ fit_intercept: bool, optional
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         tol: float = 1e-6,
-        C: float = 1.0,
+        C: Union[int, float] = 1.0,
         max_iter: int = 100,
-        solver: str = "Newton",
+        solver: str = "newton",
         fit_intercept: bool = True,
     ):
-        check_types(
-            [
-                ("name", name, [str]),
-                ("solver", solver.lower(), ["newton", "bfgs"]),
-                ("fit_intercept", fit_intercept, [bool]),
-            ]
-        )
+        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
         self.type, self.name = "LinearRegression", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
                 "versions greater or equal to 12."
             )
-        self.set_params(
-            {
-                "penalty": "l2",
-                "tol": tol,
-                "C": C,
-                "max_iter": max_iter,
-                "solver": str(solver).lower(),
-                "fit_intercept": fit_intercept,
-            }
-        )
-        for elem in ["l1_ratio"]:
-            if elem in self.parameters:
-                del self.parameters[elem]
+        self.parameters = {
+            "penalty": "l2",
+            "tol": tol,
+            "C": C,
+            "max_iter": max_iter,
+            "solver": str(solver).lower(),
+            "fit_intercept": fit_intercept,
+        }

@@ -53,6 +53,11 @@ import os
 
 # VerticaPy Modules
 import vertica_python, verticapy
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
@@ -97,7 +102,7 @@ min_divisible_cluster_size: int, optional
 distance_method: str, optional
     The measure for distance between two data points. Only Euclidean distance 
     is supported at this time.
-init: str/list, optional
+init: str / list, optional
     The method to use to find the initial KMeans cluster centers.
         kmeanspp : Uses the KMeans++ method to initialize the centers.
         pseudo   : Uses "pseudo center" approach used by Spark, bisects given 
@@ -112,6 +117,7 @@ tol: float, optional
     """
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -121,24 +127,36 @@ tol: float, optional
         split_method: str = "sum_squares",
         min_divisible_cluster_size: int = 2,
         distance_method: str = "euclidean",
-        init: str = "kmeanspp",
+        init: Union[str, list] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        check_types([("name", name, [str])])
-        self.type, self.name = "BisectingKMeans", name
-        self.set_params(
-            {
-                "n_cluster": n_cluster,
-                "bisection_iterations": bisection_iterations,
-                "split_method": split_method,
-                "min_divisible_cluster_size": min_divisible_cluster_size,
-                "distance_method": distance_method,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-            }
+        raise_error_if_not_in(
+            "split_method", str(split_method).lower(), ["size", "sum_squares"]
         )
+        raise_error_if_not_in(
+            "distance_method", str(distance_method).lower(), ["euclidean"]
+        )
+        if isinstance(init, str):
+            raise_error_if_not_in(
+                "init", init.lower(), ["kmeanspp", "pseudo", "random"]
+            )
+            init = init.lower()
+        self.type, self.name = "BisectingKMeans", name
+        self.VERTICA_FIT_FUNCTION_SQL = "BISECTING_KMEANS"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_BISECTING_KMEANS"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.parameters = {
+            "n_cluster": n_cluster,
+            "bisection_iterations": bisection_iterations,
+            "split_method": str(split_method).lower(),
+            "min_divisible_cluster_size": min_divisible_cluster_size,
+            "distance_method": str(distance_method).lower(),
+            "init": init,
+            "max_iter": max_iter,
+            "tol": tol,
+        }
 
     # ---#
     def get_tree(self):
@@ -183,18 +201,23 @@ p: int, optional
 	The p of the p-distance (distance metric used during the model computation).
 	"""
 
+    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
-        check_types([("name", name, [str])])
         self.type, self.name = "DBSCAN", name
-        self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
+        self.VERTICA_FIT_FUNCTION_SQL = ""
+        self.VERTICA_PREDICT_FUNCTION_SQL = ""
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
 
     # ---#
+    @check_dtypes
     def fit(
         self,
-        input_relation: (str, vDataFrame),
-        X: list = [],
-        key_columns: list = [],
+        input_relation: Union[str, vDataFrame],
+        X: Union[str, list] = [],
+        key_columns: Union[str, list] = [],
         index: str = "",
     ):
         """
@@ -203,11 +226,11 @@ p: int, optional
 
 	Parameters
 	----------
-	input_relation: str/vDataFrame
+	input_relation: str / vDataFrame
 		Training relation.
-	X: list, optional
+	X: str / list, optional
 		List of the predictors. If empty, all the numerical vcolumns will be used.
-	key_columns: list, optional
+	key_columns: str / list, optional
 		Columns not used during the algorithm computation but which will be used
 		to create the final relation.
 	index: str, optional
@@ -223,14 +246,6 @@ p: int, optional
             key_columns = [key_columns]
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame]),
-                ("X", X, [list]),
-                ("key_columns", key_columns, [list]),
-                ("index", index, [str]),
-            ]
-        )
         if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
@@ -449,7 +464,7 @@ name: str
 	Name of the the model. The model will be stored in the database.
 n_cluster: int, optional
 	Number of clusters
-init: str/list, optional
+init: str / list, optional
 	The method to use to find the initial cluster centers.
 		kmeanspp : Uses the KMeans++ method to initialize the centers.
 		random   : The centers are initialized randomly.
@@ -463,25 +478,30 @@ tol: float, optional
 	"""
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_cluster: int = 8,
-        init: str = "kmeanspp",
+        init: Union[str, list] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        check_types([("name", name, [str])])
+        if isinstance(init, str):
+            raise_error_if_not_in("init", init.lower(), ["kmeanspp", "random"])
+            init = init.lower()
         self.type, self.name = "KMeans", name
-        self.set_params(
-            {
-                "n_cluster": n_cluster,
-                "init": init.lower() if isinstance(init, str) else init,
-                "max_iter": max_iter,
-                "tol": tol,
-            }
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "KMEANS"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KMEANS"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.parameters = {
+            "n_cluster": n_cluster,
+            "init": init,
+            "max_iter": max_iter,
+            "tol": tol,
+        }
 
     # ---#
     def plot_voronoi(
@@ -541,7 +561,7 @@ name: str
     Name of the the model. The model is stored in the database.
 n_cluster: int, optional
     Number of clusters.
-init: str/list, optional
+init: str / list, optional
     The method used to find the initial cluster centers.
         random   : The centers are initialized randomly.
     You can also provide a list of initial cluster centers.
@@ -557,24 +577,29 @@ gamma: float, optional
     """
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_cluster: int = 8,
-        init: str = "random",
+        init: Union[str, list] = "random",
         max_iter: int = 300,
         tol: float = 1e-4,
         gamma: float = 1.0,
     ):
-        check_types([("name", name, [str])])
+        if isinstance(init, str):
+            raise_error_if_not_in("init", init.lower(), ["random"])
+            init = init.lower()
         self.type, self.name = "KPrototypes", name
-        self.set_params(
-            {
-                "n_cluster": n_cluster,
-                "init": init.lower() if isinstance(init, str) else init,
-                "max_iter": max_iter,
-                "tol": tol,
-                "gamma": gamma,
-            }
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "KPROTOTYPES"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KPROTOTYPES"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.parameters = {
+            "n_cluster": n_cluster,
+            "init": init,
+            "max_iter": max_iter,
+            "tol": tol,
+            "gamma": gamma,
+        }

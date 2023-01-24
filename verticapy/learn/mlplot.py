@@ -59,30 +59,27 @@ from matplotlib.lines import Line2D
 import numpy as np
 
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.plot import gen_colors
 
 # ---#
+@check_dtypes
 def logit_plot(
     X: list,
     y: str,
     input_relation: str,
     coefficients: list,
-    max_nb_points=50,
+    max_nb_points: int = 50,
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("X", X, [list]),
-            ("y", y, [str]),
-            ("input_relation", input_relation, [str]),
-            ("coefficients", coefficients, [list]),
-            ("max_nb_points", max_nb_points, [int, float]),
-        ]
-    )
     param0 = {
         "marker": "o",
         "s": 50,
@@ -253,22 +250,15 @@ def logit_plot(
 
 
 # ---#
+@check_dtypes
 def lof_plot(
     input_relation: str,
     columns: list,
     lof: str,
-    tablesample: float = -1,
+    tablesample: Union[int, float] = -1,
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("input_relation", input_relation, [str]),
-            ("columns", columns, [list]),
-            ("lof", lof, [str]),
-            ("tablesample", tablesample, [int, float]),
-        ]
-    )
     tablesample = (
         "TABLESAMPLE({})".format(tablesample)
         if (tablesample > 0 and tablesample < 100)
@@ -408,6 +398,7 @@ def lof_plot(
 
 
 # ---#
+@check_dtypes
 def plot_importance(
     coeff_importances: dict,
     coeff_sign: dict = {},
@@ -415,13 +406,6 @@ def plot_importance(
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("coeff_importances", coeff_importances, [dict]),
-            ("coeff_sign", coeff_sign, [dict]),
-            ("print_legend", print_legend, [bool]),
-        ]
-    )
     coefficients, importances, signs = [], [], []
     for coeff in coeff_importances:
         coefficients += [coeff]
@@ -843,6 +827,7 @@ def plot_var(
 
 
 # ---#
+@check_dtypes
 def regression_plot(
     X: list,
     y: str,
@@ -852,15 +837,6 @@ def regression_plot(
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("X", X, [list]),
-            ("y", y, [str]),
-            ("input_relation", input_relation, [str]),
-            ("coefficients", coefficients, [list]),
-            ("max_nb_points", max_nb_points, [int, float]),
-        ]
-    )
     param = {
         "marker": "o",
         "color": gen_colors()[0],
@@ -936,6 +912,7 @@ def regression_plot(
 
 
 # ---#
+@check_dtypes
 def regression_tree_plot(
     X: list,
     y: str,
@@ -944,14 +921,6 @@ def regression_tree_plot(
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("X", X, [list]),
-            ("y", y, [str]),
-            ("input_relation", input_relation, [str]),
-            ("max_nb_points", max_nb_points, [int, float]),
-        ]
-    )
     query = "SELECT /*+LABEL('learn.mlplot.regression_tree_plot')*/ {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
         X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
     )
@@ -988,6 +957,7 @@ def regression_tree_plot(
 
 
 # ---#
+@check_dtypes
 def svm_classifier_plot(
     X: list,
     y: str,
@@ -997,15 +967,6 @@ def svm_classifier_plot(
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("X", X, [list]),
-            ("y", y, [str]),
-            ("input_relation", input_relation, [str]),
-            ("coefficients", coefficients, [list]),
-            ("max_nb_points", max_nb_points, [int, float]),
-        ]
-    )
     param0 = {
         "marker": "o",
         "color": gen_colors()[0],
@@ -1186,6 +1147,7 @@ def svm_classifier_plot(
 
 
 # ---#
+@check_dtypes
 def voronoi_plot(
     clusters: list,
     columns: list,
@@ -1195,14 +1157,6 @@ def voronoi_plot(
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("clusters", clusters, [list]),
-            ("columns", columns, [list]),
-            ("input_relation", input_relation, [str]),
-            ("max_nb_points", max_nb_points, [int]),
-        ]
-    )
     from scipy.spatial import voronoi_plot_2d, Voronoi
 
     min_x, max_x, min_y, max_y = (

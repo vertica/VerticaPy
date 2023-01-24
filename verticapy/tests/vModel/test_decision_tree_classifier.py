@@ -308,10 +308,8 @@ class TestDecisionTreeClassifier:
         params = model.get_params()
 
         assert params == {
-            "n_estimators": 1,
             "max_features": 4,
             "max_leaf_nodes": 100,
-            "sample": 1.0,
             "max_depth": 6,
             "min_samples_leaf": 1,
             "min_info_gain": 0,

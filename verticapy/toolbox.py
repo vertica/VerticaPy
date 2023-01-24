@@ -55,6 +55,11 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.errors import *
 
 # Other Modules
@@ -76,14 +81,8 @@ def all_comb(X: list):
 
 
 # ---#
-def arange(start: float, stop: float, step: float):
-    check_types(
-        [
-            ("start", start, [int, float]),
-            ("stop", stop, [int, float]),
-            ("step", step, [int, float]),
-        ]
-    )
+@check_dtypes
+def arange(start: Union[int, float], stop: Union[int, float], step: Union[int, float]):
     if step < 0:
         raise ParameterError("Parameter 'step' must be greater than 0")
     L_final = []
@@ -106,50 +105,6 @@ def bin_spatial_to_str(
         return f"ST_AsText({column})"
     else:
         return column
-
-
-# ---#
-def check_types(types_list: list = []):
-    for elem in types_list:
-        list_check = False
-        for sub_elem in elem[2]:
-            if not (isinstance(sub_elem, type)):
-                list_check = True
-        if list_check:
-            if not (isinstance(elem[1], str)) and (elem[1] != None):
-                warning_message = (
-                    "Parameter '{0}' must be of type {1}, found type {2}"
-                ).format(elem[0], str, type(elem[1]))
-                warnings.warn(warning_message, Warning)
-            if (elem[1] != None) and (
-                elem[1].lower() not in elem[2] and elem[1] not in elem[2]
-            ):
-                warning_message = "Parameter '{0}' must be in [{1}], found '{2}'".format(
-                    elem[0], "|".join(elem[2]), elem[1]
-                )
-                warnings.warn(warning_message, Warning)
-        else:
-            all_types = elem[2] + [type(None)]
-            if str in all_types:
-                all_types += [str_sql]
-            if not (isinstance(elem[1], tuple(all_types))):
-                if (
-                    (list in elem[2])
-                    and isinstance(elem[1], Iterable)
-                    and not (isinstance(elem[1], (dict, str)))
-                ):
-                    pass
-                elif len(elem[2]) == 1:
-                    warning_message = "Parameter '{0}' must be of type {1}, found type {2}".format(
-                        elem[0], elem[2][0], type(elem[1])
-                    )
-                    warnings.warn(warning_message, Warning)
-                else:
-                    warning_message = (
-                        "Parameter '{0}' type must be one of the following"
-                        " {1}, found type {2}"
-                    ).format(elem[0], elem[2], type(elem[1]))
-                    warnings.warn(warning_message, Warning)
 
 
 # ---#
@@ -197,6 +152,7 @@ def erase_space_start_end_in_list_values(L: list):
 
 
 # ---#
+@check_dtypes
 def executeSQL(
     query: str,
     title: str = "",
@@ -207,21 +163,10 @@ def executeSQL(
     sql_push_ext: bool = False,
     symbol: str = "$",
 ):
-    check_types(
-        [
-            ("query", query, [str]),
-            ("title", title, [str]),
-            (
-                "method",
-                method,
-                ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"],
-            ),
-            ("path", path, [str]),
-            ("print_time_sql", print_time_sql, [bool]),
-            ("sql_push_ext", sql_push_ext, [bool]),
-            ("symbol", symbol, [str]),
-        ]
+    raise_error_if_not_in(
+        "method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"]
     )
+
     from verticapy.connect import current_cursor
 
     # Cleaning the query
@@ -377,8 +322,8 @@ def get_category_from_python_type(expr):
 
 
 # ---#
+@check_dtypes
 def get_category_from_vertica_type(ctype: str = ""):
-    check_types([("ctype", ctype, [str])])
     ctype = ctype.lower().strip()
     if ctype != "":
         if (ctype[0:5] == "array") or (ctype[0:3] == "row") or (ctype[0:3] == "set"):
@@ -881,11 +826,11 @@ def print_query(query: str, title: str = ""):
     if isnotebook():
         from IPython.core.display import HTML, display
 
-        display(HTML("<h4>{}</h4>".format(title)))
+        display(HTML(f"<h4>{title}</h4>"))
         query_print = query_print.replace("\n", " <br>").replace("  ", " &emsp; ")
         display(HTML(query_print))
     else:
-        print("$ {} $\n".format(title))
+        print(f"$ {title} $\n")
         print(query_print)
         print("-" * int(screen_columns) + "\n")
 

@@ -54,7 +54,12 @@ from configparser import ConfigParser
 
 # VerticaPy Modules
 import verticapy
-from verticapy.toolbox import check_types, is_special_symbol, get_special_symbols
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
+from verticapy.toolbox import is_special_symbol, get_special_symbols
 from verticapy.errors import *
 
 # Vertica Modules
@@ -225,6 +230,7 @@ Returns the current database cursor.
 
 
 # ---#
+@check_dtypes
 def delete_connection(name: str):
     """
 ---------------------------------------------------------------------------
@@ -240,7 +246,6 @@ Returns
 bool
     True if the connection was deleted, False otherwise.
     """
-    check_types([("name", name, [str])])
     path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
@@ -288,6 +293,7 @@ string
 
 
 # ---#
+@check_dtypes
 def new_connection(
     conn_info: dict,
     name: str = "vertica_connection",
@@ -317,7 +323,6 @@ overwrite: bool, optional
     If set to True and the connection already exists, it will be 
     overwritten.
 	"""
-    check_types([("conn_info", conn_info, [dict])])
     path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
@@ -361,6 +366,7 @@ Automatically creates a connection using the auto-connection.
 
 
 # ---#
+@check_dtypes
 def read_dsn(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
@@ -380,7 +386,6 @@ Returns
 dict
 	dictionary with all the credentials.
 	"""
-    check_types([("dsn", dsn, [str]), ("section", section, [str])])
     confparser = ConfigParser()
     confparser.optionxform = str
 
@@ -478,6 +483,7 @@ conn: object
 
 
 # ---#
+@check_dtypes
 def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$"):
     """
 ---------------------------------------------------------------------------
@@ -500,9 +506,6 @@ symbol: str, optional
     with the input cid by writing $$$QUERY$$$, where QUERY represents 
     a custom query.
     """
-    check_types(
-        [("cid", cid, [str]), ("rowset", rowset, [int]),]
-    )
     assert is_special_symbol(symbol), ParameterError(
         "Parameter 'symbol' must be a special char. One of the following: {0}".format(
             ", ".join(get_special_symbols())
@@ -520,6 +523,7 @@ symbol: str, optional
 
 
 # ---#
+@check_dtypes
 def vertica_connection(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
@@ -538,9 +542,7 @@ Returns
 conn
 	Database connection.
 	"""
-    check_types([("dsn", dsn, [str])])
-    conn = vertica_python.connect(**read_dsn(section, dsn))
-    return conn
+    return vertica_python.connect(**read_dsn(section, dsn))
 
 
 # ---#

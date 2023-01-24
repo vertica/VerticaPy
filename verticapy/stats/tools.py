@@ -58,6 +58,11 @@ import numpy as np
 
 # VerticaPy Modules
 import verticapy
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.learn.linear_model import LinearRegression
@@ -65,6 +70,7 @@ from verticapy import vDataFrame
 
 # Statistical Tests & Tools
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def adfuller(
     vdf: vDataFrame,
@@ -216,17 +222,6 @@ tablesample
                 else:
                     return -3.41
 
-    check_types(
-        [
-            ("ts", ts, [str]),
-            ("column", column, [str]),
-            ("p", p, [int, float]),
-            ("by", by, [list]),
-            ("with_trend", with_trend, [bool]),
-            ("regresults", regresults, [bool]),
-            ("vdf", vdf, [vDataFrame]),
-        ]
-    )
     vdf.are_namecols_in([ts, column] + by)
     ts = vdf.format_colnames(ts)
     column = vdf.format_colnames(column)
@@ -314,6 +309,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def cochrane_orcutt(
     model,
@@ -351,14 +347,6 @@ model
      - anova_table_ : ANOVA table.
      - r2_          : R2
     """
-    check_types(
-        [
-            ("vdf", vdf, [vDataFrame, str]),
-            ("ts", ts, [vDataFrame, str]),
-            ("prais_winsten", prais_winsten, [bool]),
-            ("drop_tmp_model", drop_tmp_model, [bool]),
-        ]
-    )
     if isinstance(vdf, str):
         vdf_tmp = vDataFrameSQL(vdf)
     else:
@@ -378,19 +366,17 @@ model
     eps_name = gen_tmp_name(name="eps")[1:-1]
     model.predict(vdf_tmp, X=X, name=prediction_name)
     vdf_tmp[eps_name] = vdf_tmp[y] - vdf_tmp[prediction_name]
-    query = "SELECT /*+LABEL('stats.tools.cochrane_orcutt')*/ SUM(num) / SUM(den) FROM (SELECT {} * LAG({}) OVER (ORDER BY {}) AS num,  POWER({}, 2) AS den FROM {}) x".format(
-        eps_name, eps_name, ts, eps_name, vdf_tmp.__genSQL__()
+    query = "SELECT /*+LABEL('stats.tools.cochrane_orcutt')*/ SUM(num) / SUM(den) FROM (SELECT {0} * LAG({0}) OVER (ORDER BY {1}) AS num,  POWER({0}, 2) AS den FROM {2}) x".format(
+        eps_name, ts, vdf_tmp.__genSQL__()
     )
     pho = executeSQL(
         query, title="Computing the Cochrane Orcutt pho.", method="fetchfirstelem"
     )
-    for elem in X + [y]:
-        new_val = "{} - {} * LAG({}) OVER (ORDER BY {})".format(elem, pho, elem, ts)
+    for predictor in X + [y]:
+        new_val = f"{predictor} - {pho} * LAG({predictor}) OVER (ORDER BY {ts})"
         if prais_winsten:
-            new_val = "COALESCE({}, {} * {})".format(
-                new_val, elem, (1 - pho ** 2) ** (0.5)
-            )
-        vdf_tmp[elem] = new_val
+            new_val = f"COALESCE({new_val}, {predictor} * {(1 - pho ** 2) ** (0.5)})"
+        vdf_tmp[predictor] = new_val
     model_tmp.drop()
     model_tmp.fit(vdf_tmp, X, y)
     model_tmp.pho_ = pho
@@ -402,6 +388,7 @@ model
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def durbin_watson(vdf: vDataFrame, eps: str, ts: str, by: list = []):
     """
@@ -425,14 +412,6 @@ Returns
 float
     Durbin Watson statistic
     """
-    check_types(
-        [
-            ("ts", ts, [str]),
-            ("eps", eps, [str]),
-            ("by", by, [list]),
-            ("vdf", vdf, [vDataFrame, str]),
-        ]
-    )
     vdf.are_namecols_in([eps] + [ts] + by)
     eps = vdf.format_colnames(eps)
     ts = vdf.format_colnames(ts)
@@ -456,6 +435,7 @@ float
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def endogtest(vdf: vDataFrame, eps: str, X: list):
     """
@@ -477,9 +457,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
-    )
     vdf.are_namecols_in([eps] + X)
     eps = vdf.format_colnames(eps)
     X = vdf.format_colnames(X)
@@ -522,6 +499,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def het_arch(vdf: vDataFrame, eps: str, ts: str, by: list = [], p: int = 1):
     """
@@ -548,14 +526,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("eps", eps, [str]),
-            ("ts", ts, [str]),
-            ("p", p, [int, float]),
-            ("vdf", vdf, [vDataFrame, str]),
-        ]
-    )
     vdf.are_namecols_in([eps, ts] + by)
     eps = vdf.format_colnames(eps)
     ts = vdf.format_colnames(ts)
@@ -611,6 +581,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def het_breuschpagan(vdf: vDataFrame, eps: str, X: list):
     """
@@ -632,9 +603,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
-    )
     vdf.are_namecols_in([eps] + X)
     eps = vdf.format_colnames(eps)
     X = vdf.format_colnames(X)
@@ -679,6 +647,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def het_goldfeldquandt(
     vdf: vDataFrame,
@@ -725,15 +694,8 @@ tablesample
             model.drop()
         return mse
 
-    check_types(
-        [
-            ("y", y, [str]),
-            ("X", X, [list]),
-            ("idx", idx, [int, float]),
-            ("split", split, [int, float]),
-            ("vdf", vdf, [vDataFrame, str]),
-            ("alternative", alternative, ["increasing", "decreasing", "two-sided"]),
-        ]
+    raise_error_if_not_in(
+        "alternative", alternative, ["increasing", "decreasing", "two-sided"]
     )
     vdf.are_namecols_in([y] + X)
     y = vdf.format_colnames(y)
@@ -769,6 +731,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def het_white(vdf: vDataFrame, eps: str, X: list):
     """
@@ -790,9 +753,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
-    )
     vdf.are_namecols_in([eps] + X)
     eps = vdf.format_colnames(eps)
     X = vdf.format_colnames(X)
@@ -850,8 +810,9 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
-def jarque_bera(vdf: vDataFrame, column: str, alpha: float = 0.05):
+def jarque_bera(vdf: vDataFrame, column: str, alpha: Union[int, float] = 0.05):
     """
 ---------------------------------------------------------------------------
 Jarque-Bera test (Distribution Normality).
@@ -862,7 +823,7 @@ vdf: vDataFrame
     input vDataFrame.
 column: str
     Input vcolumn to test.
-alpha: float, optional
+alpha: int / float, optional
     Significance Level. Probability to accept H0.
 
 Returns
@@ -871,13 +832,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("column", column, [str]),
-            ("alpha", alpha, [int, float]),
-            ("vdf", vdf, [vDataFrame]),
-        ]
-    )
     vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
     jb, kurtosis, skewness, n = (
@@ -902,6 +856,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def kurtosistest(vdf: vDataFrame, column: str):
     """
@@ -921,7 +876,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types([("column", column, [str]), ("vdf", vdf, [vDataFrame])])
     vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
     g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
@@ -943,6 +897,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def ljungbox(
     vdf: vDataFrame,
@@ -950,7 +905,7 @@ def ljungbox(
     ts: str,
     by: list = [],
     p: int = 1,
-    alpha: float = 0.05,
+    alpha: Union[int, float] = 0.05,
     box_pierce: bool = False,
 ):
     """
@@ -971,7 +926,7 @@ by: list, optional
     vcolumns used in the partition.
 p: int, optional
     Number of lags to consider in the test.
-alpha: float, optional
+alpha: int / float, optional
     Significance Level. Probability to accept H0.
 box_pierce: bool
     If set to True, the Box-Pierce statistic will be used.
@@ -982,17 +937,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("ts", ts, [str]),
-            ("column", column, [str]),
-            ("by", by, [list]),
-            ("p", p, [int, float]),
-            ("alpha", alpha, [int, float]),
-            ("box_pierce", box_pierce, [bool]),
-            ("vdf", vdf, [vDataFrame]),
-        ]
-    )
     vdf.are_namecols_in([column] + [ts] + by)
     column = vdf.format_colnames(column)
     ts = vdf.format_colnames(ts)
@@ -1023,8 +967,9 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
-def mkt(vdf: vDataFrame, column: str, ts: str, alpha: float = 0.05):
+def mkt(vdf: vDataFrame, column: str, ts: str, alpha: Union[int, float] = 0.05):
     """
 ---------------------------------------------------------------------------
 Mann Kendall test (Time Series trend).
@@ -1043,7 +988,7 @@ column: str
 ts: str
     vcolumn used as timeline. It will be to use to order the data. It can be
     a numerical or type date like (date, datetime, timestamp...) vcolumn.
-alpha: float, optional
+alpha: int / float, optional
     Significance Level. Probability to accept H0.
 
 Returns
@@ -1052,21 +997,11 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("ts", ts, [str]),
-            ("column", column, [str]),
-            ("alpha", alpha, [int, float]),
-            ("vdf", vdf, [vDataFrame]),
-        ]
-    )
     vdf.are_namecols_in([column, ts])
     column = vdf.format_colnames(column)
     ts = vdf.format_colnames(ts)
     table = "(SELECT {}, {} FROM {})".format(column, ts, vdf.__genSQL__())
-    query = "SELECT /*+LABEL('stats.tools.mkt')*/ SUM(SIGN(y.{} - x.{})) FROM {} x CROSS JOIN {} y WHERE y.{} > x.{}".format(
-        column, column, table, table, ts, ts
-    )
+    query = f"SELECT /*+LABEL('stats.tools.mkt')*/ SUM(SIGN(y.{column} - x.{column})) FROM {table} x CROSS JOIN {table} y WHERE y.{ts} > x.{ts}"
     S = executeSQL(
         query, title="Computing the Mann Kendall S.", method="fetchfirstelem"
     )
@@ -1075,8 +1010,8 @@ tablesample
     except:
         S = None
     n = vdf[column].count()
-    query = "SELECT /*+LABEL('stats.tools.mkt')*/ SQRT(({} * ({} - 1) * (2 * {} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
-        n, n, n, column, vdf.__genSQL__()
+    query = "SELECT /*+LABEL('stats.tools.mkt')*/ SQRT(({0} * ({0} - 1) * (2 * {0} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {1}) AS row FROM {2}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
+        n, column, vdf.__genSQL__()
     )
     STDS = executeSQL(
         query,
@@ -1150,12 +1085,13 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def seasonal_decompose(
     vdf: vDataFrame,
     column: str,
     ts: str,
-    by: list = [],
+    by: Union[str, list] = [],
     period: int = -1,
     polynomial_order: int = 1,
     estimate_seasonality: bool = True,
@@ -1176,7 +1112,7 @@ column: str
 ts: str
     TS (Time Series) vcolumn to use to order the data. It can be of type date
     or a numerical vcolumn.
-by: list, optional
+by: str / list, optional
     vcolumns used in the partition.
 period: int, optional
 	Time Series period. It is used to retrieve the seasonality component.
@@ -1206,20 +1142,6 @@ vDataFrame
     """
     if isinstance(by, str):
         by = [by]
-    check_types(
-        [
-            ("ts", ts, [str]),
-            ("column", column, [str]),
-            ("by", by, [list]),
-            ("rule", rule, [str, datetime.timedelta]),
-            ("vdf", vdf, [vDataFrame]),
-            ("period", period, [int]),
-            ("mult", mult, [bool]),
-            ("two_sided", two_sided, [bool]),
-            ("polynomial_order", polynomial_order, [int]),
-            ("estimate_seasonality", estimate_seasonality, [bool]),
-        ]
-    )
     assert period > 0 or polynomial_order > 0, ParameterError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
     )
@@ -1333,6 +1255,7 @@ vDataFrame
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def skewtest(vdf: vDataFrame, column: str):
     """
@@ -1352,7 +1275,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types([("column", column, [str]), ("vdf", vdf, [vDataFrame])])
     vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
     g1, n = vdf[column].agg(["skewness", "count"]).values[column]
@@ -1372,6 +1294,7 @@ tablesample
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def variance_inflation_factor(vdf: vDataFrame, X: list, X_idx: int = None):
     """
@@ -1394,9 +1317,6 @@ Returns
 float
     VIF.
     """
-    check_types(
-        [("X_idx", X_idx, [int]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str]),]
-    )
     vdf.are_namecols_in(X)
     X = vdf.format_colnames(X)
 

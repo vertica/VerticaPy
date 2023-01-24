@@ -49,6 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.stats.tools import *

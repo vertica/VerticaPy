@@ -141,7 +141,6 @@ def hchart_from_vdf(
             z = "COUNT(*)"
         if kind == "hist":
             kind = "column"
-        check_types([("y", y, [str, list])])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         vdf.are_namecols_in(x)
@@ -222,7 +221,6 @@ def hchart_from_vdf(
         else:
             if not (z):
                 z = "COUNT(*)"
-            check_types([("y", y, [str, list])])
             if isinstance(x, Iterable) and not (isinstance(x, str)):
                 x = x[0]
             vdf.are_namecols_in(x)
@@ -267,7 +265,6 @@ def hchart_from_vdf(
             limit,
         )
     elif kind in ("area", "area_ts", "line", "spline"):
-        check_types([("y", y, [str, list])])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         if isinstance(y, Iterable) and not (isinstance(y, str)) and kind == "area_ts":
@@ -296,8 +293,6 @@ def hchart_from_vdf(
                 limit,
             )
         else:
-            check_types([("y", y, [str, list])])
-            check_types([("z", z, [str, list])])
             if isinstance(y, str):
                 vdf.are_namecols_in(y)
                 y = vdf.format_colnames(y)
@@ -331,7 +326,6 @@ def hchart_from_vdf(
                 x, cast, y, z, vdf.__genSQL__(), max(int(limit / unique), 1), z_copy,
             )
     elif kind in ("scatter", "bubble"):
-        check_types([("y", y, [str, list])])
         if isinstance(y, str):
             vdf.are_namecols_in(y)
             y = vdf.format_colnames(y)
@@ -347,7 +341,6 @@ def hchart_from_vdf(
                 " IS NOT NULL AND {2} IS NOT NULL LIMIT {4}"
             ).format(x, cast, y, vdf.__genSQL__(), limit)
         elif not (c) and (z):
-            check_types([("z", z, [str, list])])
             try:
                 z = (
                     vdf.format_colnames(z)
@@ -363,7 +356,6 @@ def hchart_from_vdf(
             ).format(x, cast, y, z, vdf.__genSQL__(), limit)
         else:
             if z:
-                check_types([("z", z, [str, list])])
                 try:
                     z = (
                         vdf.format_colnames(z)
@@ -372,7 +364,6 @@ def hchart_from_vdf(
                     )
                 except:
                     pass
-            check_types([("c", c, [str, list])])
             try:
                 c = (
                     vdf.format_colnames(c)
@@ -410,7 +401,6 @@ def hchart_from_vdf(
                 c_copy,
             )
     elif kind == "area_range":
-        check_types([("y", y, [str, list])])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         vdf.are_namecols_in(x)
@@ -428,7 +418,6 @@ def hchart_from_vdf(
     elif kind == "spider":
         if not (y):
             y = "COUNT(*)"
-        check_types([("y", y, [str, list])])
         if isinstance(y, str):
             y = [y]
         if isinstance(x, Iterable) and not (isinstance(x, str)):
@@ -494,7 +483,6 @@ def hchart_from_vdf(
 		                	FROM {4} GROUP BY 1 ORDER BY 1"""
                 query = query.format(x, y, 1 - alpha, alpha, vdf.__genSQL__())
             else:
-                check_types([("y", y, [list])])
                 query = "SELECT {}::timestamp, {} FROM {} GROUP BY 1 ORDER BY 1".format(
                     x, ", ".join(y), vdf.__genSQL__()
                 )
@@ -560,7 +548,6 @@ def hchart_from_vdf(
     elif kind == "spider":
         return spider(query=query, options=options, width=width, height=height)
     elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmand"):
-        check_types([("x", x, [list])])
         x = vdf.format_colnames(x)
         data = vdf.corr(method=kind, show=False, columns=x)
         narrow_data = get_narrow_tablesample(data, use_number_as_category=True)

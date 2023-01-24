@@ -58,6 +58,11 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy import *
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
@@ -67,6 +72,7 @@ from verticapy.toolbox import *
 # Function used to simplify the code
 #
 # ---#
+@check_dtypes
 def compute_metric_query(
     metric: str,
     y_true: str,
@@ -105,16 +111,6 @@ Returns
 float or tuple of floats
     score(s)
     """
-    check_types(
-        [
-            ("metric", metric, [str]),
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("title", title, [str]),
-            ("fetchfirstelem", fetchfirstelem, [bool]),
-        ]
-    )
     relation = (
         input_relation
         if isinstance(input_relation, str)
@@ -147,11 +143,11 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: int / float / str, optional
     To compute the Confusion Matrix, one of the response column classes must 
     be the positive one. The parameter 'pos_label' represents this class.
 
@@ -176,6 +172,7 @@ tuple
 # Regression
 #
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def aic_bic(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
@@ -191,7 +188,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -203,7 +200,6 @@ Returns
 tuple of floats
     (AIC, BIC)
     """
-    check_types([("k", k, [int])])
     rss, n = compute_metric_query(
         "SUM(POWER({0} - {1}, 2)), COUNT(*)",
         y_true,
@@ -225,6 +221,7 @@ tuple of floats
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def anova_table(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
@@ -239,7 +236,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -252,14 +249,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("k", k, [int]),
-        ]
-    )
     relation = (
         input_relation
         if isinstance(input_relation, str)
@@ -324,7 +313,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -356,7 +345,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -390,7 +379,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -410,6 +399,7 @@ float
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def mean_squared_error(
     y_true: str,
@@ -427,7 +417,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -439,7 +429,6 @@ Returns
 float
 	score
 	"""
-    check_types([("root", root, [bool])])
     result = compute_metric_query(
         "MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE."
     )
@@ -463,7 +452,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -497,7 +486,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -517,9 +506,13 @@ float
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def quantile_error(
-    q: float, y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
+    q: Union[int, float],
+    y_true: str,
+    y_score: str,
+    input_relation: Union[str, vDataFrame],
 ):
     """
 ---------------------------------------------------------------------------
@@ -527,13 +520,13 @@ Computes the input Quantile of the Error.
 
 Parameters
 ----------
-q: float
+q: int / float
     Input Quantile
 y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -543,7 +536,6 @@ Returns
 float
     score
     """
-    check_types([("q", q, [int, float])])
     metric = (
         "APPROXIMATE_PERCENTILE(ABS({0} - {1}) USING PARAMETERS percentile = {2})"
     ).format("{0}", "{1}", q)
@@ -553,6 +545,7 @@ float
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def r2_score(
     y_true: str,
@@ -571,7 +564,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -585,7 +578,6 @@ Returns
 float
 	score
 	"""
-    check_types([("k", k, [int]), ("adj", adj, [bool])])
     result = compute_metric_query(
         "RSQUARED({0}, {1}) OVER()",
         y_true,
@@ -609,6 +601,7 @@ float
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def regression_report(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
@@ -623,7 +616,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -636,14 +629,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("k", k, [int]),
-        ]
-    )
     relation = (
         input_relation
         if isinstance(input_relation, str)
@@ -708,12 +693,13 @@ tablesample
 # Classification
 #
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def accuracy_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = None,
+    pos_label: Union[str, int, float] = None,
 ):
     """
 ---------------------------------------------------------------------------
@@ -725,11 +711,11 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: int / float / str, optional
 	Label to use to identify the positive class. If pos_label is NULL then the
 	global accuracy will be computed.
 
@@ -738,13 +724,6 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
     if pos_label != None:
         tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
         acc = (tp + tn) / (tp + tn + fn + fp)
@@ -812,13 +791,14 @@ float
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def classification_report(
     y_true: str = "",
     y_score: list = [],
     input_relation: Union[str, vDataFrame] = "",
     labels: list = [],
-    cutoff: (float, list) = [],
+    cutoff: Union[int, float, list] = [],
     estimator=None,
     nbins: int = 10000,
 ):
@@ -834,13 +814,13 @@ y_true: str, optional
 	Response column.
 y_score: list, optional
 	List containing the probability and the prediction.
-input_relation: str/vDataFrame, optional
+input_relation: str / vDataFrame, optional
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
 labels: list, optional
 	List of the response column categories to use.
-cutoff: float/list, optional
+cutoff: int / float / list, optional
 	Cutoff for which the tested category will be accepted as prediction. 
 	For multiclass classification, the list will represent the the classes 
     threshold. If it is empty, the best cutoff will be used.
@@ -860,16 +840,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [list]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("labels", labels, [list]),
-            ("cutoff", cutoff, [int, float, list]),
-            ("nbins", nbins, [int]),
-        ]
-    )
     if estimator:
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes != 2) else [estimator.classes_[1]]
@@ -987,12 +957,13 @@ tablesample
 
 # ---#
 @check_minimum_version
+@check_dtypes
 @save_verticapy_logs
 def confusion_matrix(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    pos_label: Union[str, int, float] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1004,11 +975,11 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: str / int / float, optional
 	To compute the one dimension Confusion Matrix, one of the response column 
 	class must be the positive one. The parameter 'pos_label' represents 
 	this class.
@@ -1019,13 +990,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
     relation = (
         input_relation
         if isinstance(input_relation, str)
@@ -1293,6 +1257,7 @@ float
 
 # ---#
 @check_minimum_version
+@check_dtypes
 @save_verticapy_logs
 def multilabel_confusion_matrix(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], labels: list,
@@ -1307,7 +1272,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -1320,14 +1285,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("labels", labels, [list]),
-        ]
-    )
     num_classes = str(len(labels))
     query = """SELECT 
                   CONFUSION_MATRIX(obs, response 

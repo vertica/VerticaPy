@@ -49,6 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -72,9 +77,9 @@ steps: list
     in the order in which they are chained, with the last object an estimator.
 	"""
 
+    @check_dtypes
     @save_verticapy_logs
     def __init__(self, steps: list):
-        check_types([("steps", steps, [list])])
         self.type = "Pipeline"
         self.steps = []
         for idx, elem in enumerate(steps):

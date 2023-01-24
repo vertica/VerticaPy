@@ -121,7 +121,7 @@ class TestVAR:
         assert model.get_params() == {
             "max_iter": 1000,
             "p": 1,
-            "solver": "Newton",
+            "solver": "newton",
             "tol": 0.0001,
         }
 

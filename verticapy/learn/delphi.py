@@ -54,6 +54,11 @@ import numpy as np
 from typing import Union
 
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -67,7 +72,6 @@ from verticapy.learn.neighbors import *
 from verticapy.learn.svm import *
 from verticapy.learn.mlplot import plot_bubble_ml
 from verticapy.learn.vmodel import *
-from verticapy.learn.tools import get_model_category
 
 
 class vAuto(vModel):
@@ -164,6 +168,7 @@ final_relation_: vDataFrame
     """
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -182,24 +187,12 @@ final_relation_: vDataFrame
         identify_ts: bool = True,
         save: bool = True,
     ):
-        check_types(
-            [
-                ("name", name, [str]),
-                ("cat_method", cat_method, ["label", "ooe"]),
-                ("num_method", num_method, ["same_freq", "same_width", "none"]),
-                ("nbins", nbins, [int, float]),
-                ("outliers_threshold", outliers_threshold, [int, float]),
-                ("na_method", na_method, ["auto", "drop"]),
-                ("cat_topk", cat_topk, [int, float]),
-                ("rule", rule, [str, datetime.timedelta]),
-                ("normalize", normalize, [bool]),
-                ("id_method", id_method, ["none", "drop"]),
-                ("apply_pca", apply_pca, [bool]),
-                ("normalize_min_cat", normalize_min_cat, [int, float]),
-                ("identify_ts", identify_ts, [bool]),
-                ("save", save, [bool]),
-            ]
+        raise_error_if_not_in("cat_method", cat_method, ["label", "ooe"])
+        raise_error_if_not_in(
+            "num_method", num_method, ["same_freq", "same_width", "none"]
         )
+        raise_error_if_not_in("na_method", na_method, ["auto", "drop"])
+        raise_error_if_not_in("id_method", id_method, ["none", "drop"])
         self.type, self.name = "AutoDataPrep", name
         if not (self.name):
             self.name = gen_tmp_name(
@@ -437,7 +430,7 @@ name: str
 n_cluster: int, optional
     Number of clusters. If empty, an optimal number of clusters will be
     determined using multiple k-means models.
-init: str/list, optional
+init: str / list, optional
     The method for finding the initial cluster centers.
         kmeanspp : Uses the k-means++ method to initialize the centers.
                    [Only available when use_kprototype is set to False]
@@ -472,12 +465,13 @@ model_: object
     """
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_cluster: int = None,
-        init: str = "kmeanspp",
+        init: Union[str, list] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
         use_kprototype: bool = False,
@@ -491,20 +485,6 @@ model_: object
         },
         print_info: bool = True,
     ):
-        check_types(
-            [
-                ("name", name, [str]),
-                ("n_cluster", n_cluster, [int]),
-                ("init", init, [str, list]),
-                ("max_iter", max_iter, [int]),
-                ("tol", tol, [float]),
-                ("use_kprototype", use_kprototype, [bool]),
-                ("gamma", gamma, [float]),
-                ("preprocess_data", preprocess_data, [bool]),
-                ("preprocess_dict", preprocess_dict, [dict]),
-                ("print_info", print_info, [bool]),
-            ]
-        )
         self.type, self.name = "AutoClustering", name
         self.parameters = {
             "n_cluster": n_cluster,
@@ -694,6 +674,7 @@ model_grid_ : tablesample
     """
 
     # ---#
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -716,29 +697,13 @@ model_grid_ : tablesample
         preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
     ):
-        check_types(
-            [
-                ("name", name, [str]),
-                ("estimator_type", estimator_type, [str]),
-                ("metric", metric, [str]),
-                ("cv", cv, [int]),
-                ("pos_label", pos_label, [int, float, str]),
-                ("cutoff", cutoff, [int, float]),
-                ("nbins", nbins, [int]),
-                ("optimized_grid", optimized_grid, [int]),
-                ("print_info", print_info, [bool]),
-                ("stepwise", stepwise, [bool]),
-                ("stepwise_criterion", stepwise_criterion, ["aic", "bic"]),
-                ("stepwise_direction", stepwise_direction, ["forward", "backward"]),
-                ("stepwise_max_steps", stepwise_max_steps, [int, float]),
-                (
-                    "stepwise_x_order",
-                    stepwise_x_order,
-                    ["pearson", "spearman", "random", "none"],
-                ),
-                ("preprocess_data", preprocess_data, [bool]),
-                ("preprocess_dict", preprocess_dict, [dict]),
-            ]
+        raise_error_if_not_in("estimator_type", estimator_type, ["auto", "regressor", "binary", "multi"])
+        raise_error_if_not_in("stepwise_criterion", stepwise_criterion, ["aic", "bic"])
+        raise_error_if_not_in("stepwise_direction", stepwise_direction, ["forward", "backward"])
+        raise_error_if_not_in(
+            "stepwise_x_order",
+            stepwise_x_order,
+            ["pearson", "spearman", "random", "none"],
         )
         assert optimized_grid in [0, 1, 2], ParameterError(
             "Optimized Grid must be an integer between 0 and 2."
@@ -801,8 +766,8 @@ model_grid_ : tablesample
         if isinstance(self.parameters["estimator"], str):
             v = vertica_version()
             self.parameters["estimator"] = self.parameters["estimator"].lower()
-            check_types(
-                [("estimator", self.parameters["estimator"], ["native", "all", "fast"])]
+            raise_error_if_not_in(
+                "estimator", self.parameters["estimator"], ["native", "all", "fast"]
             )
             modeltype = None
             estimator_method = self.parameters["estimator"]
@@ -914,23 +879,18 @@ model_grid_ : tablesample
                         LinearSVR,
                     ),
                 ), ParameterError(
-                    "estimator must be a list of VerticaPy estimators. Found {}.".format(
-                        type(elem)
-                    )
+                    f"estimator must be a list of VerticaPy estimators. Found {elem}."
                 )
         if self.parameters["estimator_type"] == "auto":
             self.parameters["estimator_type"] = self.parameters["estimator"][0].type
         for elem in self.parameters["estimator"]:
-            cat = get_model_category(elem.type)
             assert (
                 self.parameters["estimator_type"] in ("binary", "multi")
-                and cat[0] == "classifier"
+                and elem.MODEL_SUBTYPE == "CLASSIFIER"
                 or self.parameters["estimator_type"] == "regressor"
-                and cat[0] == "regressor"
+                and elem.MODEL_SUBTYPE == "REGRESSOR"
             ), ParameterError(
-                "Incorrect list for parameter 'estimator'. Expected type '{}', found type '{}'.".format(
-                    self.parameters["estimator_type"], cat[0]
-                )
+                f"Incorrect list for parameter 'estimator'. Expected type '{self.parameters['estimator_type']}', found type '{elem.MODEL_SUBTYPE}'."
             )
         if (
             self.parameters["estimator_type"] == "regressor"
@@ -1068,6 +1028,8 @@ model_grid_ : tablesample
         else:
             best_model.fit(input_relation, X, y)
         self.best_model_ = best_model
+        self.VERTICA_FIT_FUNCTION_SQL = best_model.VERTICA_FIT_FUNCTION_SQL
+        self.VERTICA_PREDICT_FUNCTION_SQL = best_model.VERTICA_PREDICT_FUNCTION_SQL
         self.model_grid_ = result
         self.parameters["reverse"] = not (reverse)
         if self.preprocess_ != None:

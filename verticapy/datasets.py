@@ -53,6 +53,11 @@ import os, datetime
 
 # VerticaPy Modules
 import verticapy, vertica_python
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
@@ -61,6 +66,7 @@ from verticapy.errors import *
 
 # ---#
 @check_minimum_version
+@check_dtypes
 @save_verticapy_logs
 def gen_dataset(features_ranges: dict, nrows: int = 1000):
     """
@@ -94,9 +100,6 @@ Returns
 vDataFrame
     Generated dataset.
     """
-
-    check_types([("features_ranges", features_ranges, [dict]), ("nrows", nrows, [int])])
-
     sql = []
 
     for param in features_ranges:
@@ -163,6 +166,7 @@ vDataFrame
 
 
 # ---#
+@check_dtypes
 @save_verticapy_logs
 def gen_meshgrid(features_ranges: dict):
     """
@@ -197,9 +201,6 @@ Returns
 vDataFrame
     generated dataset.
     """
-
-    check_types([("features_ranges", features_ranges, [dict])])
-
     sql = []
 
     for idx, param in enumerate(features_ranges):
@@ -281,14 +282,13 @@ vDataFrame
 
 
 # ---#
+@check_dtypes
 def load_dataset(
     schema: str, name: str, dtype: dict, copy_cols: list = [], dataset_name: str = ""
 ):
     """
     General Function to ingest a dataset
     """
-
-    check_types([("schema", schema, [str]), ("name", name, [str])])
 
     try:
 

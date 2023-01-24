@@ -54,6 +54,11 @@ import random
 import numpy as np
 
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.metrics import *
 from verticapy.learn.mlplot import *
 from verticapy.utilities import *
@@ -234,8 +239,8 @@ class XGBoost_utils:
                 else:
                     col_sample_by_tree = "null"
                     col_sample_by_node = "null"
-                condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + [
-                    "{} IS NOT NULL".format(model.y)
+                condition = [f"{predictor} IS NOT NULL" for predictor in model.X] + [
+                    f"{model.y} IS NOT NULL"
                 ]
                 n = model.get_attr("tree_count")["tree_count"][0]
                 if model.type == "XGBoostRegressor" or (
@@ -441,6 +446,7 @@ col_sample_by_tree: float, optional
     """
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -451,18 +457,21 @@ col_sample_by_tree: float, optional
         sample: float = 0.632,
         col_sample_by_tree: float = 1.0,
     ):
-        check_types([("name", name, [str], False)])
         self.type, self.name = "IsolationForest", name
-        params = {
+        self.VERTICA_FIT_FUNCTION_SQL = "IFOREST"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_IFOREST"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "ANOMALY_DETECTION"
+        self.parameters = {
             "n_estimators": n_estimators,
             "max_depth": max_depth,
             "nbins": nbins,
             "sample": sample,
             "col_sample_by_tree": col_sample_by_tree,
         }
-        self.set_params(params)
 
     # ---#
+    @check_dtypes
     def decision_function(
         self,
         vdf: Union[str, vDataFrame],
@@ -476,7 +485,7 @@ col_sample_by_tree: float, optional
 
     Parameters
     ----------
-    vdf: str/vDataFrame
+    vdf: str / vDataFrame
         Object to use for the prediction. You can specify a customized 
         relation if it is enclosed with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
@@ -495,13 +504,6 @@ col_sample_by_tree: float, optional
         the input object.
         """
         # Inititalization
-        check_types(
-            [
-                ("name", name, [str]),
-                ("vdf", vdf, [str, vDataFrame]),
-                ("inplace", inplace, [bool]),
-            ],
-        )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
         if not (name):
@@ -514,11 +516,12 @@ col_sample_by_tree: float, optional
         return vdf_return.eval(name, self.deploySQL(X=X, return_score=True,))
 
     # ---#
+    @check_dtypes
     def deploySQL(
         self,
-        X: list = [],
-        cutoff: float = 0.7,
-        contamination: float = None,
+        X: Union[str, list] = [],
+        cutoff: Union[int, float] = 0.7,
+        contamination: Union[int, float] = None,
         return_score: bool = False,
     ):
         """
@@ -527,15 +530,15 @@ col_sample_by_tree: float, optional
 
     Parameters
     ----------
-    X: list, optional
+    X: str / list, optional
         List of the columns used to deploy the model. If empty, the model
         predictors are used.
-    cutoff: float, optional
+    cutoff: int / float, optional
         Float in the range (0.0, 1.0), specifies the threshold that 
         determines if a data point is an anomaly. If the anomaly_score 
         for a data point is greater than or equal to the cutoff, 
         the data point is marked as an anomaly.
-    contamination: float, optional
+    contamination: int / float, optional
         Float in the range (0,1), the approximate ratio of data points in the 
         training data that should be labeled as anomalous. If this parameter is 
         specified, the cutoff parameter is ignored.
@@ -550,14 +553,7 @@ col_sample_by_tree: float, optional
         """
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("X", X, [list]),
-                ("cutoff", cutoff, [float]),
-                ("contamination", contamination, [float]),
-                ("return_score", return_score, [bool]),
-            ]
-        )
+        X = self.X if not (X) else [quote_ident(elem) for elem in X]
         if contamination and not (return_score):
             assert 0 < contamination < 1, ParameterError(
                 "Incorrect parameter 'contamination'.\nThe parameter "
@@ -568,17 +564,13 @@ col_sample_by_tree: float, optional
                 "Incorrect parameter 'cutoff'.\nThe parameter "
                 "'cutoff' must be between 0.0 and 1.0, exclusive."
             )
-        X = [quote_ident(elem) for elem in X]
         if return_score:
             other_parameters = ""
         elif contamination:
             other_parameters = f", contamination = {contamination}"
         else:
             other_parameters = f", threshold = {cutoff}"
-        fun = self.get_model_fun()[1]
-        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'{})".format(
-            fun, ", ".join(self.X if not (X) else X), self.name, other_parameters,
-        )
+        sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', match_by_pos = 'true'{other_parameters})"
         if return_score:
             sql = f"({sql}).anomaly_score"
         else:
@@ -586,13 +578,14 @@ col_sample_by_tree: float, optional
         return sql
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
-        X: list = [],
+        X: Union[str, list] = [],
         name: str = "",
-        cutoff: float = 0.7,
-        contamination: float = None,
+        cutoff: Union[int, float] = 0.7,
+        contamination: Union[int, float] = None,
         inplace: bool = True,
     ):
         """
@@ -601,7 +594,7 @@ col_sample_by_tree: float, optional
 
     Parameters
     ----------
-    vdf: str/vDataFrame
+    vdf: str / vDataFrame
         Object to use for the prediction. You can specify a customized 
         relation if it is enclosed with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
@@ -611,12 +604,12 @@ col_sample_by_tree: float, optional
         predictors are used.
     name: str, optional
         Name of the additional vColumn. If empty, a name is generated.
-    cutoff: float, optional
+    cutoff: int / float, optional
         Float in the range (0.0, 1.0), specifies the threshold that 
         determines if a data point is an anomaly. If the anomaly_score 
         for a data point is greater than or equal to the cutfoff, 
         the data point is marked as an anomaly.
-    contamination: float, optional
+    contamination: int / float, optional
         Float in the range (0,1), the approximate ratio of data points in the
         training data that should be labeled as anomalous. If this parameter is 
         specified, the cutoff parameter is ignored.
@@ -629,13 +622,6 @@ col_sample_by_tree: float, optional
         the input object.
         """
         # Inititalization
-        check_types(
-            [
-                ("name", name, [str]),
-                ("vdf", vdf, [str, vDataFrame]),
-                ("inplace", inplace, [bool]),
-            ],
-        )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
         if not (name):
@@ -665,13 +651,13 @@ name: str
     Name of the the model. The model will be stored in the DB.
 n_estimators: int, optional
     The number of trees in the forest, an integer between 1 and 1000, inclusive.
-max_features: int/str, optional
+max_features: int / str, optional
     The number of randomly chosen features from which to pick the best feature 
     to split on a given tree node. It can be an integer or one of the two following
     methods.
         auto : square root of the total number of predictors.
         max  : number of predictors.
-max_leaf_nodes: int, optional
+max_leaf_nodes: int / float, optional
     The maximum number of leaf nodes a tree in the forest can have, an integer 
     between 1 and 1e9, inclusive.
 sample: float, optional
@@ -683,7 +669,7 @@ min_samples_leaf: int, optional
     The minimum number of samples each branch must have after splitting a node, an 
     integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
     is discarded. 
-min_info_gain: float, optional
+min_info_gain: int / float, optional
     The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
     A split with information gain less than this threshold is discarded.
 nbins: int, optional 
@@ -692,33 +678,38 @@ nbins: int, optional
     """
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_estimators: int = 10,
         max_features: Union[int, str] = "auto",
-        max_leaf_nodes: int = 1e9,
+        max_leaf_nodes: Union[int, float] = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
         min_samples_leaf: int = 1,
-        min_info_gain: float = 0.0,
+        min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        check_types([("name", name, [str], False)])
+        if isinstance(max_features, str):
+            raise_error_if_not_in("max_features", max_features, ["auto", "max"])
+            max_features = max_features.lower()
         self.type, self.name = "RandomForestClassifier", name
-        self.set_params(
-            {
-                "n_estimators": n_estimators,
-                "max_features": max_features,
-                "max_leaf_nodes": max_leaf_nodes,
-                "sample": sample,
-                "max_depth": max_depth,
-                "min_samples_leaf": min_samples_leaf,
-                "min_info_gain": min_info_gain,
-                "nbins": nbins,
-            }
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.parameters = {
+            "n_estimators": n_estimators,
+            "max_features": max_features,
+            "max_leaf_nodes": max_leaf_nodes,
+            "sample": sample,
+            "max_depth": max_depth,
+            "min_samples_leaf": min_samples_leaf,
+            "min_info_gain": min_info_gain,
+            "nbins": nbins,
+        }
 
 
 # ---#
@@ -736,13 +727,13 @@ name: str
     Name of the the model. The model will be stored in the DB.
 n_estimators: int, optional
     The number of trees in the forest, an integer between 1 and 1000, inclusive.
-max_features: int/str, optional
+max_features: int / str, optional
     The number of randomly chosen features from which to pick the best feature 
     to split on a given tree node. It can be an integer or one of the two following
     methods.
         auto : square root of the total number of predictors.
         max  : number of predictors.
-max_leaf_nodes: int, optional
+max_leaf_nodes: int / float, optional
     The maximum number of leaf nodes a tree in the forest can have, an integer 
     between 1 and 1e9, inclusive.
 sample: float, optional
@@ -754,7 +745,7 @@ min_samples_leaf: int, optional
     The minimum number of samples each branch must have after splitting a node, an 
     integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
     is discarded. 
-min_info_gain: float, optional
+min_info_gain: int / float, optional
     The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
     A split with information gain less than this threshold is discarded.
 nbins: int, optional 
@@ -763,33 +754,38 @@ nbins: int, optional
     """
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_estimators: int = 10,
         max_features: Union[int, str] = "auto",
-        max_leaf_nodes: int = 1e9,
+        max_leaf_nodes: Union[int, float] = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
         min_samples_leaf: int = 1,
-        min_info_gain: float = 0.0,
+        min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        check_types([("name", name, [str], False)])
+        if isinstance(max_features, str):
+            raise_error_if_not_in("max_features", max_features.lower(), ["auto", "max"])
+            max_features = max_features.lower()
         self.type, self.name = "RandomForestRegressor", name
-        self.set_params(
-            {
-                "n_estimators": n_estimators,
-                "max_features": max_features,
-                "max_leaf_nodes": max_leaf_nodes,
-                "sample": sample,
-                "max_depth": max_depth,
-                "min_samples_leaf": min_samples_leaf,
-                "min_info_gain": min_info_gain,
-                "nbins": nbins,
-            }
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.parameters = {
+            "n_estimators": n_estimators,
+            "max_features": max_features,
+            "max_leaf_nodes": max_leaf_nodes,
+            "sample": sample,
+            "max_depth": max_depth,
+            "min_samples_leaf": min_samples_leaf,
+            "min_info_gain": min_info_gain,
+            "nbins": nbins,
+        }
 
 
 # ---#
@@ -841,6 +837,7 @@ col_sample_by_node: float, optional
     """
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -857,13 +854,21 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        check_types([("name", name, [str], False)])
+        raise_error_if_not_in(
+            "split_proposal_method",
+            str(split_proposal_method).lower(),
+            ["local", "global"],
+        )
         self.type, self.name = "XGBoostClassifier", name
+        self.VERTICA_FIT_FUNCTION_SQL = "XGB_CLASSIFIER"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_CLASSIFIER"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
         params = {
             "max_ntree": max_ntree,
             "max_depth": max_depth,
             "nbins": nbins,
-            "split_proposal_method": split_proposal_method,
+            "split_proposal_method": str(split_proposal_method).lower(),
             "tol": tol,
             "learning_rate": learning_rate,
             "min_split_loss": min_split_loss,
@@ -875,7 +880,7 @@ col_sample_by_node: float, optional
         if v:
             params["col_sample_by_tree"] = col_sample_by_tree
             params["col_sample_by_node"] = col_sample_by_node
-        self.set_params(params)
+        self.parameters = params
 
 
 # ---#
@@ -927,6 +932,7 @@ col_sample_by_node: float, optional
     """
 
     @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -943,13 +949,21 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        check_types([("name", name, [str], False)])
+        raise_error_if_not_in(
+            "split_proposal_method",
+            str(split_proposal_method).lower(),
+            ["local", "global"],
+        )
         self.type, self.name = "XGBoostRegressor", name
+        self.VERTICA_FIT_FUNCTION_SQL = "XGB_REGRESSOR"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_REGRESSOR"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
         params = {
             "max_ntree": max_ntree,
             "max_depth": max_depth,
             "nbins": nbins,
-            "split_proposal_method": split_proposal_method,
+            "split_proposal_method": str(split_proposal_method).lower(),
             "tol": tol,
             "learning_rate": learning_rate,
             "min_split_loss": min_split_loss,
@@ -961,4 +975,4 @@ col_sample_by_node: float, optional
         if v:
             params["col_sample_by_tree"] = col_sample_by_tree
             params["col_sample_by_node"] = col_sample_by_node
-        self.set_params(params)
+        self.parameters = params

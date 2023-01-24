@@ -53,6 +53,11 @@ import math, warnings
 from typing import Union
 
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame, save_verticapy_logs
@@ -96,14 +101,16 @@ max_iter: int, optional
     achieving the specified accuracy result.
 solver: str, optional
     The optimizer method to use to train the model. 
-        Newton : Newton Method
-        BFGS   : Broyden Fletcher Goldfarb Shanno
+        newton : Newton Method
+        bfgs   : Broyden Fletcher Goldfarb Shanno
 max_pik: int, optional
     Number of inverse MA coefficient used to approximate the MA.
 papprox_ma: int, optional
     the p of the AR(p) used to approximate the MA coefficients.
     """
 
+    @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -117,45 +124,36 @@ papprox_ma: int, optional
         s: int = 0,
         tol: float = 1e-4,
         max_iter: int = 1000,
-        solver: str = "Newton",
+        solver: str = "newton",
         max_pik: int = 100,
         papprox_ma: int = 200,
     ):
-        vertica_version([8, 0, 0])
-        check_types([("name", name, [str])])
-        self.type, self.name = "SARIMAX", name
-        self.set_params(
-            {
-                "p": p,
-                "d": d,
-                "q": q,
-                "P": P,
-                "D": D,
-                "Q": Q,
-                "s": s,
-                "tol": tol,
-                "max_iter": max_iter,
-                "solver": solver,
-                "max_pik": max_pik,
-                "papprox_ma": papprox_ma,
-            }
-        )
-        if self.parameters["s"] == 0:
-            assert (
-                self.parameters["D"] == 0
-                and self.parameters["P"] == 0
-                and self.parameters["Q"] == 0
-            ), ParameterError(
+        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
+        if s == 0:
+            assert (D, P, Q) == (0, 0, 0), ParameterError(
                 "In case of non-seasonality (s = 0), all the parameters P, D or Q must be equal to 0."
             )
         else:
-            assert (
-                self.parameters["D"] > 0
-                or self.parameters["P"] > 0
-                or self.parameters["Q"] > 0
-            ), ParameterError(
+            assert D > 0 or P > 0 or Q > 0, ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
+        self.type, self.name = "SARIMAX", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.parameters = {
+            "p": p,
+            "d": d,
+            "q": q,
+            "P": P,
+            "D": D,
+            "Q": Q,
+            "s": s,
+            "tol": tol,
+            "max_iter": max_iter,
+            "solver": str(solver).lower(),
+            "max_pik": max_pik,
+            "papprox_ma": papprox_ma,
+        }
 
     # ---#
     def deploySQL(self):
@@ -308,13 +306,14 @@ papprox_ma: int, optional
             return None
 
     # ---#
+    @check_dtypes
     def fit(
         self,
-        input_relation: Union[vDataFrame, str],
+        input_relation: Union[str, vDataFrame],
         y: str,
         ts: str,
         X: list = [],
-        test_relation: Union[vDataFrame, str] = "",
+        test_relation: Union[str, vDataFrame] = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -338,14 +337,6 @@ papprox_ma: int, optional
     object
         model
         """
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame]),
-                ("y", y, [str]),
-                ("test_relation", test_relation, [str, vDataFrame]),
-                ("ts", ts, [str]),
-            ]
-        )
         # Initialization
         if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
@@ -707,6 +698,7 @@ papprox_ma: int, optional
         return self
 
     # ---#
+    @check_dtypes
     def plot(
         self,
         vdf: vDataFrame = None,
@@ -765,17 +757,6 @@ papprox_ma: int, optional
         """
         if not (vdf):
             vdf = vDataFrameSQL(relation=self.input_relation)
-        check_types(
-            [
-                ("limit", limit, [int, float]),
-                ("nlead", nlead, [int, float]),
-                ("dynamic", dynamic, [bool]),
-                ("observed", observed, [bool]),
-                ("one_step", one_step, [bool]),
-                ("confidence", confidence, [bool]),
-                ("vdf", vdf, [vDataFrame]),
-            ],
-        )
         delta_limit, limit = (
             limit,
             max(
@@ -975,6 +956,7 @@ papprox_ma: int, optional
         return ax
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: vDataFrame,
@@ -1008,16 +990,6 @@ papprox_ma: int, optional
     vDataFrame
         object including the prediction.
         """
-        check_types(
-            [
-                ("name", name, [str]),
-                ("y", y, [str]),
-                ("ts", ts, [str]),
-                ("X", X, [list]),
-                ("nlead", nlead, [int, float]),
-                ("vdf", vdf, [vDataFrame]),
-            ],
-        )
         if not (y):
             y = self.y
         if not (ts):
@@ -1136,6 +1108,8 @@ solver: str, optional
         BFGS   : Broyden Fletcher Goldfarb Shanno
     """
 
+    @check_minimum_version
+    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -1145,13 +1119,17 @@ solver: str, optional
         max_iter: int = 1000,
         solver: str = "Newton",
     ):
-        vertica_version([8, 0, 0])
-        check_types([("name", name, [str])])
+        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
         self.type, self.name = "VAR", name
         assert p > 0, ParameterError(
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
-        self.set_params({"p": p, "tol": tol, "max_iter": max_iter, "solver": solver})
+        self.parameters = {
+            "p": p,
+            "tol": tol,
+            "max_iter": max_iter,
+            "solver": str(solver).lower(),
+        }
 
     # ---#
     def deploySQL(self):
@@ -1181,8 +1159,9 @@ solver: str, optional
         return sql
 
     # ---#
+    @check_dtypes
     def features_importance(
-        self, X_idx: int = 0, ax=None, show: bool = True, **style_kwds
+        self, X_idx: Union[int, str] = 0, show: bool = True, ax=None, **style_kwds
     ):
         """
     ---------------------------------------------------------------------------
@@ -1190,13 +1169,13 @@ solver: str, optional
 
     Parameters
     ----------
-    X_idx: int/str, optional
+    X_idx: int / str, optional
         Index of the main vector vcolumn used to draw the features importance.
         It can also be the name of a predictor vcolumn.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
     show: bool
         If set to True, draw the features importance.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -1205,7 +1184,6 @@ solver: str, optional
     ax
         Matplotlib axes object
         """
-        check_types([("X_idx", X_idx, [int, float, str]), ("show", show, [bool])])
         if isinstance(X_idx, str):
             X_idx = quote_ident(X_idx).lower()
             for idx, elem in enumerate(self.X):
@@ -1253,12 +1231,13 @@ solver: str, optional
         return tablesample(values=importances).transpose()
 
     # ---#
+    @check_dtypes
     def fit(
         self,
-        input_relation: Union[vDataFrame, str],
+        input_relation: Union[str, vDataFrame],
         X: list,
         ts: str,
-        test_relation: Union[vDataFrame, str] = "",
+        test_relation: Union[str, vDataFrame] = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -1280,14 +1259,6 @@ solver: str, optional
     object
         self
         """
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame]),
-                ("X", X, [list]),
-                ("ts", ts, [str]),
-                ("test_relation", test_relation, [str, vDataFrame]),
-            ]
-        )
         # Initialization
         if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
@@ -1416,7 +1387,7 @@ solver: str, optional
         vdf: vDataFrame = None,
         X: list = [],
         ts: str = "",
-        X_idx: int = 0,
+        X_idx: Union[str, int] = 0,
         dynamic: bool = False,
         one_step: bool = True,
         observed: bool = True,
@@ -1470,18 +1441,6 @@ solver: str, optional
         """
         if not (vdf):
             vdf = vDataFrameSQL(relation=self.input_relation)
-        check_types(
-            [
-                ("limit", limit, [int, float]),
-                ("nlead", nlead, [int, float]),
-                ("X_idx", X_idx, [int, float, str]),
-                ("dynamic", dynamic, [bool]),
-                ("observed", observed, [bool]),
-                ("one_step", one_step, [bool]),
-                ("confidence", confidence, [bool]),
-                ("vdf", vdf, [vDataFrame]),
-            ],
-        )
         delta_limit, limit = (
             limit,
             max(max(limit, self.parameters["p"] + 1 + nlast), 200),
@@ -1683,6 +1642,7 @@ solver: str, optional
         return ax
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: vDataFrame,
@@ -1713,15 +1673,6 @@ solver: str, optional
     vDataFrame
         object including the prediction.
         """
-        check_types(
-            [
-                ("name", name, [list]),
-                ("ts", ts, [str]),
-                ("nlead", nlead, [int, float]),
-                ("X", X, [list]),
-                ("vdf", vdf, [vDataFrame]),
-            ],
-        )
         if not (ts):
             ts = self.ts
         if not (X):
