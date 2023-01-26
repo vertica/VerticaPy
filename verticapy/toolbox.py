@@ -1181,16 +1181,14 @@ def replace_vars_in_query(query: str, locals_dict: dict):
                         val = val[int(v[s[0] + 1 : s[1] + 1])]
                 fail = False
             except Exception as e:
-                warning_message = "Failed to replace variables in the query.\nError: {0}".format(
-                    e
-                )
+                warning_message = f"Failed to replace variables in the query.\nError: {e}"
                 warnings.warn(warning_message, Warning)
                 fail = True
         if not (fail):
             if isinstance(val, vDataFrame):
                 val = val.__genSQL__()
             elif isinstance(val, tablesample):
-                val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
+                val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
             elif isinstance(val, pd.DataFrame):
                 val = pandas_to_vertica(val).__genSQL__()
             elif isinstance(val, list):

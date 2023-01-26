@@ -436,6 +436,7 @@ dict
             if option_name.lower().startswith("env"):
                 if option_val.lower() in ("true", "t", "yes", "y"):
                     env = True
+                break
 
         for option_name, option_val in options:
 
@@ -446,7 +447,7 @@ dict
                     option_name = "password"
                 elif option_name == "uid":
                     option_name = "user"
-                if os.getenv(option_val):
+                if os.getenv(option_val) != None:
                     conn_info[option_name] = os.getenv(option_val)
                 else:
                     raise ParameterError(

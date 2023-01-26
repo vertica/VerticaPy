@@ -266,7 +266,7 @@ tablesample
     )
     executeSQL(query, print_time_sql=False)
     model = LinearRegression(name, solver="Newton", max_iter=1000)
-    predictors = ["lag1"] + ["delta{}".format(i) for i in range(1, p + 1)]
+    predictors = ["lag1"] + [f"delta{i}" for i in range(1, p + 1)]
     if with_trend:
         predictors += ["ts"]
     model.fit(relation_name, predictors, "delta")
@@ -469,12 +469,9 @@ tablesample
         model.fit(vdf, X, eps)
         R2 = model.score("r2")
     except:
-        try:
-            model.set_params({"solver": "bfgs"})
-            model.fit(vdf, X, eps)
-            R2 = model.score("r2")
-        except:
-            raise
+        model.set_params({"solver": "bfgs"})
+        model.fit(vdf, X, eps)
+        R2 = model.score("r2")
     finally:
         model.drop()
     n = vdf.shape()[0]
@@ -985,7 +982,7 @@ tablesample
     vdf.are_namecols_in([column, ts])
     column = vdf.format_colnames(column)
     ts = vdf.format_colnames(ts)
-    table = "(SELECT {}, {} FROM {})".format(column, ts, vdf.__genSQL__())
+    table = f"(SELECT {column}, {ts} FROM {vdf.__genSQL__()})"
     query = f"SELECT /*+LABEL('stats.tools.mkt')*/ SUM(SIGN(y.{column} - x.{column})) FROM {table} x CROSS JOIN {table} y WHERE y.{ts} > x.{ts}"
     S = executeSQL(
         query, title="Computing the Mann Kendall S.", method="fetchfirstelem"

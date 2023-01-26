@@ -2278,7 +2278,7 @@ class BinaryClassifier(Classifier):
         elif method in ("specificity", "tnr"):
             return specificity_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("negative_predictive_value", "npv"):
-            return negative_predictive_value(
+            return negative_predictive_score(
                 self.y, self.deploySQL(cutoff), self.test_relation
             )
         elif method in ("log_loss", "logloss"):
