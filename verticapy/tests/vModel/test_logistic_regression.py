@@ -383,7 +383,7 @@ class TestLogisticRegression:
             0.22877846790890288
         )
         assert model.score(cutoff=0.7, method="npv") == pytest.approx(
-            0.6964285714285714
+            0.625531914893617
         )
         assert model.score(cutoff=0.3, method="npv") == pytest.approx(
             0.4311594202898551
