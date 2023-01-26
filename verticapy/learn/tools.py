@@ -694,7 +694,7 @@ model
 # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
 @check_dtypes
 def matrix_rotation(
-    Phi: list, gamma: Union[int, float] = 1.0, q: int = 20, tol: float = 1e-6
+    Phi: Union[list, np.ndarray], gamma: Union[int, float] = 1.0, q: int = 20, tol: float = 1e-6
 ):
     """
 ---------------------------------------------------------------------------
