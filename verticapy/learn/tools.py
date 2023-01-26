@@ -688,6 +688,7 @@ model
                 )
     return model
 
+
 # ---#
 # This piece of code was taken from
 # https://en.wikipedia.org/wiki/Talk:Varimax_rotation

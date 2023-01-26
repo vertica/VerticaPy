@@ -50,7 +50,7 @@
 # Modules
 #
 # Standard Python Modules
-import typing, warnings, sys
+import typing, warnings, sys, inspect
 from functools import wraps
 
 #
@@ -113,9 +113,13 @@ parameters passed to the function are of an expected data type.
 
         hints = typing.get_type_hints(func)
         all_args = {**kwargs}
-        # TO DO -> Testing arg types
-        # for idx, var in enumerate(args):
-        #    all_args[list(hints.keys())[idx]] = var
+
+        args_name = inspect.getfullargspec(func)[0]
+        n = len(args_name)
+        for idx, var in enumerate(args):
+            if idx < n:
+                all_args[args_name[idx]] = var
+
         for var_name in hints:
             # get_args is only available for Python version greater than 3.7
             if python_version[0] > 3 or (

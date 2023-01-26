@@ -49,16 +49,17 @@
 # Modules
 #
 # Standard Python Modules
-import datetime, decimal, inspect, os
+import datetime, decimal, inspect, os, warnings
 from typing import Union
 
 # VerticaPy Modules
-import verticapy
+import verticapy as vp
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
     check_minimum_version,
 )
+from verticapy.errors import raise_error_if_not_in
 from verticapy.utilities import *
 from verticapy.toolbox import *
 
@@ -68,7 +69,7 @@ from verticapy.toolbox import *
 @save_verticapy_logs
 def import_lib_udf(
     udf_list: list, library_name: str, include_dependencies: Union[str, list] = []
-):
+) -> bool:
     """
 ---------------------------------------------------------------------------
 Install a library of Python functions in Vertica. This function will work only
@@ -92,28 +93,34 @@ library_name: str
 include_dependencies: str / list, optional
 	Library files dependencies. The function will copy paste the different files
 	in the UDF definition.
+
+Returns
+-------
+bool
+    True if the installation was a success, False otherwise.
 	"""
-    directory = os.path.dirname(verticapy.__file__)
+    directory = os.path.dirname(vp.__file__)
     session_name = get_session()
     file_name = f"{library_name}_{session_name}.py"
     try:
-        os.remove(directory + "/" + file_name)
+        os.remove(f"{directory}/{file_name}")
     except:
         pass
     udx_str, sql = create_lib_udf(
-        udf_list, library_name, include_dependencies, directory + "/" + file_name
+        udf_list, library_name, include_dependencies, f"{directory}/{file_name}"
     )
-    f = open(directory + "/" + file_name, "w")
+    f = open(f"{directory}/{file_name}", "w")
     f.write(udx_str)
     f.close()
     try:
         for idx, query in enumerate(sql):
-            executeSQL(query, title="UDF installation. [step {}]".format(idx))
-        os.remove(directory + "/" + file_name)
+            executeSQL(query, title=f"UDF installation. [step {idx}]")
         return True
     except Exception as e:
-        os.remove(directory + "/" + file_name)
-        raise e
+        warnings.warn(e, Warning)
+        return False
+    finally:
+        os.remove(f"{directory}/{file_name}")
 
 
 # ---#
@@ -125,7 +132,7 @@ def create_lib_udf(
     include_dependencies: Union[str, list] = [],
     file_path: str = "",
     create_file: bool = False,
-):
+) -> (str, str):
     """
 ---------------------------------------------------------------------------
 Generates the code needed to install a library of Python functions. It will
@@ -236,7 +243,7 @@ def create_udf(
     parameters: dict = {},
     new_name: str = "",
     library_name: str = "",
-):
+) -> (str, str):
     if not (hasattr(function, "__call__")):
         raise ValueError(
             f"The function parameter must be a Python function. Found {type(function)}."
@@ -389,8 +396,7 @@ def get_func_info(func):
         del argspec["return"]
     else:
         return_type = None
-    arg_types = {}
-    parameters = {}
+    arg_types, parameters = {}, {}
     for param in argspec:
         if inspect.signature(func).parameters[param].default == inspect._empty:
             arg_types[param] = argspec[param]
@@ -422,7 +428,8 @@ def get_module_func_info(module):
 # ---#
 def get_set_add_function(ftype, func: str = "get"):
     # func = get / set / add
-    func = func.lower()
+    raise_error_if_not_in("func", str(func).lower(), ["get", "set", "add"])
+    func = str(func).lower()
     if ftype == bytes:
         return f"{func}Binary"
     elif ftype == bool:

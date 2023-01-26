@@ -697,9 +697,13 @@ model_grid_ : tablesample
         preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
     ):
-        raise_error_if_not_in("estimator_type", estimator_type, ["auto", "regressor", "binary", "multi"])
+        raise_error_if_not_in(
+            "estimator_type", estimator_type, ["auto", "regressor", "binary", "multi"]
+        )
         raise_error_if_not_in("stepwise_criterion", stepwise_criterion, ["aic", "bic"])
-        raise_error_if_not_in("stepwise_direction", stepwise_direction, ["forward", "backward"])
+        raise_error_if_not_in(
+            "stepwise_direction", stepwise_direction, ["forward", "backward"]
+        )
         raise_error_if_not_in(
             "stepwise_x_order",
             stepwise_x_order,

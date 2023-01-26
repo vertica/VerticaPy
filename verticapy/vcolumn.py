@@ -1182,7 +1182,7 @@ Attributes
  	----------
     by: str, optional
         vColumn to use to partition the data.
- 	bandwidth: float, optional
+ 	bandwidth: int / float, optional
  		The bandwidth of the kernel.
  	kernel: str, optional
  		The method used for the plot.
@@ -1280,11 +1280,11 @@ Attributes
             result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(
                 ax=ax, **style_kwds
             )
-            model.drop()
             return result
         except:
-            model.drop()
             raise
+        finally:
+            model.drop()
 
     # ---#
     @check_dtypes

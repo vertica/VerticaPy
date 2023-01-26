@@ -922,7 +922,7 @@ This object uses pure SQL to compute the final score.
 
 Parameters
 ----------
-bandwidth: float, optional
+bandwidth: int / float, optional
     The bandwidth of the kernel.
 kernel: str, optional
     The kernel used during the learning phase.
@@ -952,7 +952,7 @@ xlim: list, optional
     def __init__(
         self,
         name: str,
-        bandwidth: float = 1,
+        bandwidth: Union[int, float] = 1.0,
         kernel: str = "gaussian",
         p: int = 2,
         max_leaf_nodes: Union[int, float] = 1e9,

@@ -471,16 +471,16 @@ vColumns : vColumn
                     return getattr(self, index)
         elif isinstance(index, Iterable):
             try:
-                return self.select(columns=[str(elem) for elem in index])
+                return self.select(columns=[str(col) for col in index])
             except:
-                return self.search(conditions=[str(elem) for elem in index])
+                return self.search(conditions=[str(col) for col in index])
         else:
             return getattr(self, index)
 
     # ---#
     def __iter__(self):
         columns = self.get_columns()
-        return (elem for elem in columns)
+        return (col for col in columns)
 
     # ---#
     def __len__(self):
@@ -1729,7 +1729,7 @@ vColumns : vColumn
     def idisplay(self):
         """This method displays the interactive table. It is used when 
         you don't want to activate interactive table for all vDataFrames."""
-        from IPython.core.display import HTML, display
+        from IPython.display import HTML, display
 
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
@@ -3046,7 +3046,7 @@ vColumns : vColumn
             try:
                 self.eval(
                     name,
-                    "{0}({1}) OVER ({2}{3})".format(
+                    f"{0}({1}{2}) OVER ({3}{4})".format(
                         func.upper(), columns[0], info_param, by, order_by
                     ),
                 )
@@ -6080,11 +6080,11 @@ vColumns : vColumn
                     self[self.format_colnames(column)].fillna(val=val[column])
                 for column in method:
                     self[self.format_colnames(column)].fillna(method=method[column],)
-            verticapy.OPTIONS["print_info"] = print_info
             return self
         except:
-            verticapy.OPTIONS["print_info"] = print_info
             raise
+        finally:
+            verticapy.OPTIONS["print_info"] = print_info
 
     # ---#
     @check_dtypes
@@ -8034,18 +8034,14 @@ vColumns : vColumn
                 table = self.__genSQL__()
             else:
                 table = self.interpolate(
-                    ts=ts, rule="1 {}".format(unit), method={column: "linear"}, by=by
+                    ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
                 ).__genSQL__()
-            by = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
+            by = f"PARTITION BY {', '.join(by)} " if (by) else ""
             columns = [
-                "LAG({}, {}) OVER ({}ORDER BY {}) AS lag_{}_{}".format(
-                    column, i, by, ts, i, gen_name([column])
-                )
+                f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
                 for i in range(1, p + 1)
             ]
-            relation = "(SELECT {} FROM {}) pacf".format(
-                ", ".join([column] + columns), table
-            )
+            relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) pacf"
             tmp_view_name = gen_tmp_name(
                 schema=verticapy.OPTIONS["temp_schema"], name="linear_reg_view"
             )
@@ -8057,9 +8053,7 @@ vColumns : vColumn
             )
             try:
                 drop(tmp_view_name, method="view")
-                query = "CREATE VIEW {} AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {}".format(
-                    tmp_view_name, relation
-                )
+                query = f"CREATE VIEW {tmp_view_name} AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"
                 executeSQL(query, print_time_sql=False)
                 vdf = vDataFrame(tmp_view_name)
 
@@ -8069,7 +8063,7 @@ vColumns : vColumn
                 model = LinearRegression(name=tmp_lr0_name, solver="Newton")
                 model.fit(
                     input_relation=tmp_view_name,
-                    X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
+                    X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
                     y=column,
                 )
                 model.predict(vdf, name="prediction_0")
@@ -8077,26 +8071,21 @@ vColumns : vColumn
                 model = LinearRegression(name=tmp_lr1_name, solver="Newton")
                 model.fit(
                     input_relation=tmp_view_name,
-                    X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
-                    y="lag_{}_{}".format(p, gen_name([column])),
+                    X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
+                    y=f"lag_{p}_{gen_name([column])}",
                 )
                 model.predict(vdf, name="prediction_p")
-                vdf.eval(expr="{} - prediction_0".format(column), name="eps_0")
+                vdf.eval(expr=f"{column} - prediction_0", name="eps_0")
                 vdf.eval(
-                    expr="{} - prediction_p".format(
-                        "lag_{}_{}".format(p, gen_name([column]))
-                    ),
-                    name="eps_p",
+                    expr=f"lag_{p}_{gen_name([column])} - prediction_p", name="eps_p",
                 )
                 result = vdf.corr(["eps_0", "eps_p"])
-                drop(tmp_view_name, method="view")
-                drop(tmp_lr0_name, method="model")
-                drop(tmp_lr1_name, method="model")
             except:
+                raise
+            finally:
                 drop(tmp_view_name, method="view")
                 drop(tmp_lr0_name, method="model")
                 drop(tmp_lr1_name, method="model")
-                raise
             return result
         else:
             if isinstance(p, (float, int)):
@@ -9513,10 +9502,10 @@ vColumns : vColumn
                         ),
                     )
                 )
-                model.drop()
             except:
-                model.drop()
                 raise
+            finally:
+                model.drop()
             return ax
         if isinstance(columns, str):
             columns = [columns]

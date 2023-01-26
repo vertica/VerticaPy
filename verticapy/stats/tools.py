@@ -468,16 +468,15 @@ tablesample
     try:
         model.fit(vdf, X, eps)
         R2 = model.score("r2")
-        model.drop()
     except:
         try:
             model.set_params({"solver": "bfgs"})
             model.fit(vdf, X, eps)
             R2 = model.score("r2")
-            model.drop()
         except:
-            model.drop()
             raise
+    finally:
+        model.drop()
     n = vdf.shape()[0]
     k = len(X)
     LM = n * R2
@@ -550,16 +549,12 @@ tablesample
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
         R2 = model.score("r2")
-        model.drop()
     except:
-        try:
-            model.set_params({"solver": "bfgs"})
-            model.fit(vdf_lags, X_names[1:], X_names[0])
-            R2 = model.score("r2")
-            model.drop()
-        except:
-            model.drop()
-            raise
+        model.set_params({"solver": "bfgs"})
+        model.fit(vdf_lags, X_names[1:], X_names[0])
+        R2 = model.score("r2")
+    finally:
+        model.drop()
     n = vdf.shape()[0]
     k = len(X)
     LM = (n - p) * R2
@@ -616,16 +611,12 @@ tablesample
     try:
         model.fit(vdf_copy, X, "v_eps2")
         R2 = model.score("r2")
-        model.drop()
     except:
-        try:
-            model.set_params({"solver": "bfgs"})
-            model.fit(vdf_copy, X, "v_eps2")
-            R2 = model.score("r2")
-            model.drop()
-        except:
-            model.drop()
-            raise
+        model.set_params({"solver": "bfgs"})
+        model.fit(vdf_copy, X, "v_eps2")
+        R2 = model.score("r2")
+    finally:
+        model.drop()
     n = vdf.shape()[0]
     k = len(X)
     LM = n * R2
@@ -710,12 +701,10 @@ tablesample
     try:
         mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
     except:
-        try:
-            model.set_params({"solver": "bfgs"})
-            mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
-        except:
-            model.drop()
-            raise
+        model.set_params({"solver": "bfgs"})
+        mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
+    finally:
+        model.drop()
     n, m, k = vdf_0_half.shape()[0], vdf_1_half.shape()[0], len(X)
     F = mse1 / mse0
     if alternative.lower() in ["increasing"]:
@@ -776,16 +765,12 @@ tablesample
     try:
         model.fit(vdf_white, variables_names, "v_eps2")
         R2 = model.score("r2")
-        model.drop()
     except:
-        try:
-            model.set_params({"solver": "bfgs"})
-            model.fit(vdf_white, variables_names, "v_eps2")
-            R2 = model.score("r2")
-            model.drop()
-        except:
-            model.drop()
-            raise
+        model.set_params({"solver": "bfgs"})
+        model.fit(vdf_white, variables_names, "v_eps2")
+        R2 = model.score("r2")
+    finally:
+        model.drop()
     n = vdf.shape()[0]
     if len(X) > 1:
         k = 2 * len(X) + math.factorial(len(X)) / 2 / (math.factorial(len(X) - 2))
@@ -1340,16 +1325,12 @@ float
         try:
             model.fit(vdf, X_r, y_r)
             R2 = model.score("r2")
-            model.drop()
         except:
-            try:
-                model.set_params({"solver": "bfgs"})
-                model.fit(vdf, X_r, y_r)
-                R2 = model.score("r2")
-                model.drop()
-            except:
-                model.drop()
-                raise
+            model.set_params({"solver": "bfgs"})
+            model.fit(vdf, X_r, y_r)
+            R2 = model.score("r2")
+        finally:
+            model.drop()
         if 1 - R2 != 0:
             return 1 / (1 - R2)
         else:

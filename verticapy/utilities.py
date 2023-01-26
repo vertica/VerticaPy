@@ -68,7 +68,7 @@ from verticapy.errors import *
 import pandas as pd
 
 try:
-    from IPython.core.display import display
+    from IPython.display import display
 except:
     pass
 
@@ -637,7 +637,7 @@ VERTICAPY Interactive Help (FAQ).
     """
 
     try:
-        from IPython.core.display import HTML, display, Markdown
+        from IPython.display import HTML, display, Markdown
     except:
         pass
     path = os.path.dirname(verticapy.__file__)

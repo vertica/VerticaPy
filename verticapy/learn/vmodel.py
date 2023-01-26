@@ -109,17 +109,14 @@ Main Class for Vertica Model
                 name = self.tree_name if self.type == "KernelDensity" else self.name
                 try:
                     vertica_version(condition=[9, 0, 0])
-                    res = executeSQL(
-                        f"SELECT /*+LABEL('learn.vModel.__repr__')*/ GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{name}')",
-                        title="Summarizing the model.",
-                        method="fetchfirstelem",
-                    )
+                    func = f"GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{name}')"
                 except:
-                    res = executeSQL(
-                        f"SELECT /*+LABEL('learn.vModel.__repr__')*/ SUMMARIZE_MODEL('{name}')",
-                        title="Summarizing the model.",
-                        method="fetchfirstelem",
-                    )
+                    func = f"SUMMARIZE_MODEL('{name}')"
+                res = executeSQL(
+                    f"SELECT /*+LABEL('learn.vModel.__repr__')*/ {func}",
+                    title="Summarizing the model.",
+                    method="fetchfirstelem",
+                )
                 return res
             elif self.type == "AutoML":
                 rep = self.best_model_.__repr__()
@@ -859,9 +856,7 @@ Main Class for Vertica Model
                 **style_kwds,
             )
         else:
-            raise FunctionError(
-                "Method 'plot' for '{}' doesn't exist.".format(self.type)
-            )
+            raise FunctionError(f"Method 'plot' for '{self.type}' doesn't exist.")
 
     # ---#
     @check_dtypes
@@ -1273,7 +1268,7 @@ Main Class for Vertica Model
             attr = self.get_attr("principal_components")
             n = len(attr["PC1"])
             for i in range(1, n + 1):
-                pca += [attr["PC{}".format(i)]]
+                pca += [attr[f"PC{i}"]]
             func += f"avg_values = np.array({avg})\n"
             func += f"\tpca_values = np.array({pca})\n"
             func += "\tresult = (X - avg_values)\n"
@@ -1650,12 +1645,11 @@ class Supervised(vModel):
         query += ")"
         try:
             executeSQL(query, title="Fitting the model.")
-            if tmp_view:
-                drop(relation, method="view")
         except:
+            raise
+        finally:
             if tmp_view:
                 drop(relation, method="view")
-            raise
         if self.type in (
             "LinearSVC",
             "LinearSVR",
@@ -2284,7 +2278,9 @@ class BinaryClassifier(Classifier):
         elif method in ("specificity", "tnr"):
             return specificity_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("negative_predictive_value", "npv"):
-            return precision_score(self.y, self.deploySQL(cutoff), self.test_relation)
+            return negative_predictive_value(
+                self.y, self.deploySQL(cutoff), self.test_relation
+            )
         elif method in ("log_loss", "logloss"):
             return log_loss(self.y, self.deploySQL(), self.test_relation)
         elif method == "f1":
@@ -2921,35 +2917,35 @@ class MulticlassClassifier(Classifier):
             )
         elif method == "auc":
             return auc(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
                 nbins=nbins,
             )
         elif method == "aic":
             return aic_bic(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
                 len(self.X),
             )[0]
         elif method == "bic":
             return aic_bic(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
                 len(self.X),
             )[1]
         elif method == "prc_auc":
             return prc_auc(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
                 nbins=nbins,
             )
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
                 best_threshold=True,
@@ -2968,12 +2964,12 @@ class MulticlassClassifier(Classifier):
                 self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("negative_predictive_value", "npv"):
-            return precision_score(
+            return negative_predictive_score(
                 self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("log_loss", "logloss"):
             return log_loss(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
             )
@@ -3505,11 +3501,7 @@ class Unsupervised(vModel):
         query += ")"
         try:
             executeSQL(query, "Fitting the model.")
-            if tmp_view:
-                drop(relation, method="view")
         except:
-            if tmp_view:
-                drop(relation, method="view")
             if (
                 "init_method" in parameters
                 and not (isinstance(parameters["init_method"], str))
@@ -3517,6 +3509,9 @@ class Unsupervised(vModel):
             ):
                 drop(name_init, method="table")
             raise
+        finally:
+            if tmp_view:
+                drop(relation, method="view")
         if self.type in ("KMeans", "BisectingKMeans", "KPrototypes",):
             if "init_method" in parameters and not (
                 isinstance(parameters["init_method"], str)
@@ -3579,38 +3574,27 @@ class Unsupervised(vModel):
         elif self.type == "Normalizer":
             self.param_ = self.get_attr("details")
         elif self.type == "OneHotEncoder":
+            query = f"""SELECT 
+                            category_name, 
+                            category_level::varchar, 
+                            category_level_index 
+                        FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                        model_name = '{self.name}', 
+                                        attr_name = 'integer_categories')) 
+                                        VERTICAPY_SUBTABLE"""
             try:
                 self.param_ = to_tablesample(
-                    query="""SELECT 
-                                category_name, 
-                                category_level::varchar, 
-                                category_level_index 
-                             FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                                model_name = '{0}', 
-                                                attr_name = 'integer_categories')) 
-                                                VERTICAPY_SUBTABLE 
-                             UNION ALL 
-                             SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                        model_name = '{0}', 
-                                        attr_name = 'varchar_categories')""".format(
-                        self.name,
-                    ),
+                    query=f"""{query}
+                              UNION ALL 
+                              SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                        model_name = '{self.name}', 
+                                        attr_name = 'varchar_categories')""",
                     title="Getting Model Attributes.",
                 )
             except:
                 try:
                     self.param_ = to_tablesample(
-                        query="""SELECT 
-                                    category_name, 
-                                    category_level::varchar, 
-                                    category_level_index 
-                                 FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                                model_name = '{0}', 
-                                                attr_name = 'integer_categories')) 
-                                                VERTICAPY_SUBTABLE""".format(
-                            self.name
-                        ),
-                        title="Getting Model Attributes.",
+                        query=query, title="Getting Model Attributes.",
                     )
                 except:
                     self.param_ = self.get_attr("varchar_categories")
@@ -3728,19 +3712,17 @@ class Preprocessing(Unsupervised):
             raise ModelError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
-        X = [quote_ident(elem) for elem in X]
+        X = self.X if not (X) else [quote_ident(x) for x in X]
         fun = self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL
-        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
+        sql = f"{fun}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', match_by_pos = 'true'"
         if key_columns:
-            sql += ", key_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in key_columns])
-            )
+            key_columns = ", ".join([quote_ident(kcol) for kcol in key_columns])
+            sql += f", key_columns = '{key_columns}'"
         if exclude_columns:
-            sql += ", exclude_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in exclude_columns])
-            )
+            exclude_columns = ", ".join([quote_ident(ecol) for ecol in exclude_columns])
+            sql += f", exclude_columns = '{exclude_columns}'"
         sql += ")"
-        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
+        return sql
 
     # ---#
     @check_dtypes
@@ -3851,10 +3833,10 @@ class Preprocessing(Unsupervised):
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
-        main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-            self.deployInverseSQL(exclude_columns, exclude_columns, all_columns),
-            relation,
+        inverse_sql = self.deployInverseSQL(
+            exclude_columns, exclude_columns, all_columns
         )
+        main_relation = f"(SELECT {inverse_sql} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrameSQL(main_relation, "Inverse Transformation")
 
     # ---#
@@ -4289,11 +4271,8 @@ class Clustering(Unsupervised):
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X]
-        name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
-        )
+        if not (name):
+            name = self.type + "_" + "".join(ch for ch in self.name if ch.isalnum())
         if inplace:
             return vdf.eval(name, self.deploySQL(X=X))
         else:

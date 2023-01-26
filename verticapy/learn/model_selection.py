@@ -518,7 +518,7 @@ tablesample
             "aic",
             "bic",
         ]
-    elif estimator.MODEL_SUBTYPE ==  "CLASSIFIER":
+    elif estimator.MODEL_SUBTYPE == "CLASSIFIER":
         all_metrics = [
             "auc",
             "prc_auc",
@@ -571,7 +571,7 @@ tablesample
             train, X, y, test,
         )
         total_time += [time.time() - start_time]
-        if estimator.MODEL_SUBTYPE ==  "REGRESSOR":
+        if estimator.MODEL_SUBTYPE == "REGRESSOR":
             if metric == "all":
                 result["{}-fold".format(i + 1)] = estimator.regression_report().values[
                     "value"
