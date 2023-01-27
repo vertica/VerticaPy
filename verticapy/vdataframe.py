@@ -461,8 +461,8 @@ vColumns : vColumn
             elif isinstance(index, str_sql):
                 index = str(index)
                 is_sql = True
-            new_index = self.format_colnames(index)
             try:
+                new_index = self.format_colnames(index)
                 return getattr(self, new_index)
             except:
                 if is_sql:
@@ -1641,7 +1641,7 @@ vColumns : vColumn
                 result += [self.format_colnames(columns=arg)]
             return result
         else:
-            if not(columns):
+            if not(columns) or isinstance(columns, (int, float)):
                 return columns
             self.are_namecols_in(columns)
             if isinstance(columns, str):
@@ -3155,16 +3155,14 @@ vColumns : vColumn
             else:
                 kind = "bubble"
         assert kind == "ts" or columns, ParameterError(
-            "Parameter 'columns' can not be empty when using kind = '{}'.".format(kind)
+            f"Parameter 'columns' can not be empty when using kind = '{kind}'."
         )
         assert (
             2 <= len(columns) <= 4
             and self[columns[0]].isnum()
             and self[columns[1]].isnum()
         ) or kind != "bubble", ParameterError(
-            "Parameter 'columns' must include at least 2 numerical vColumns and maximum 4 vColumns when using kind = '{}'.".format(
-                kind
-            )
+            f"Parameter 'columns' must include at least 2 numerical vColumns and maximum 4 vColumns when using kind = '{kind}'."
         )
         columns, ts, by = self.format_colnames(columns, ts, by)
         if kind == "bubble":
@@ -3382,8 +3380,9 @@ vColumns : vColumn
     vDataFrame.applymap : Applies a function to all vColumns.
     vDataFrame.eval     : Evaluates a customized expression.
         """
+        func = self.format_colnames(func)
         for column in func:
-            self[self.format_colnames(column)].apply(func[column])
+            self[column].apply(func[column])
         return self
 
     # ---#
@@ -7595,9 +7594,11 @@ vColumns : vColumn
     --------
     vDataFrame.pivot : Returns the pivot table of the vDataFrame.
         """
+        index, columns = self.format_colnames(index, columns)
         if isinstance(columns, str):
             columns = [columns]
-        index, columns = self.format_colnames(index, columns)
+        if isinstance(index, str):
+            index = [index]
         if not (columns):
             columns = self.numcol()
         for idx in index:
