@@ -61,7 +61,7 @@ from verticapy.learn.vmodel import *
 # ---#
 class MCA(Decomposition):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Creates a MCA (multiple correspondence analysis) object using the Vertica 
 PCA algorithm on the data. It uses the property that the MCA is a PCA 
 applied to a complete disjunctive table. The input relation is transformed 
@@ -91,7 +91,7 @@ name: str
         self, dimensions: tuple = (1, 2), method: str = "auto", ax=None, **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Draws the MCA (multiple correspondence analysis) graph.
 
     Parameters
@@ -163,7 +163,7 @@ name: str
     # ---#
     def plot_contrib(self, dimension: int = 1, ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Draws a decomposition contribution plot of the input dimension.
 
     Parameters
@@ -212,7 +212,7 @@ name: str
     # ---#
     def plot_cos2(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Draws a MCA (multiple correspondence analysis) cos2 plot of 
     the two input dimensions.
 
@@ -254,7 +254,7 @@ name: str
 # ---#
 class PCA(Decomposition):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Creates a PCA (Principal Component Analysis) object using the Vertica PCA
 algorithm on the data.
  
@@ -303,7 +303,7 @@ method: str, optional
 # ---#
 class SVD(Decomposition):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Creates an SVD (Singular Value Decomposition) object using the Vertica SVD
 algorithm on the data.
  

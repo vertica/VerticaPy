@@ -73,7 +73,7 @@ def predict_from_nb(
     return_proba: bool = False,
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using a naive Bayes model and the input attributes.
 
     Parameters
@@ -171,7 +171,7 @@ def sql_from_nb(
     prior: Union[list, np.ndarray],
 ) -> list:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using a naive Bayes model and the input attributes. This function
     returns the unnormalized probabilities of each class as raw SQL code to 
     deploy the model.
@@ -263,7 +263,7 @@ def predict_from_chaid_tree(
     return_proba: bool = False,
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using a CHAID model and the input attributes.
 
     Parameters
@@ -319,7 +319,7 @@ def sql_from_chaid_tree(
     return_proba: bool = False,
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the CHAID model.
 
     Parameters
@@ -389,7 +389,7 @@ def chaid_to_graphviz(
     **kwds,
 ):
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the code for a Graphviz tree.
 
     Parameters
@@ -531,7 +531,7 @@ def predict_from_binary_tree(
     psy: int = -1,
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using a binary tree model and the input attributes.
 
     Parameters
@@ -645,7 +645,7 @@ def sql_from_binary_tree(
     psy: int = -1,
 ) -> Union[list, str]:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a binary tree model using 
     its attributes.
 
@@ -781,7 +781,7 @@ def binary_tree_to_graphviz(
     psy: int = -1,
 ):
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the code for a Graphviz tree.
 
     Parameters
@@ -964,7 +964,7 @@ def predict_from_coef(
     return_proba: bool = False,
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using a linear regression model and the input attributes.
 
     Parameters
@@ -1012,7 +1012,7 @@ def sql_from_coef(
     method: str = "LinearRegression",
 ) -> str:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a linear model using its attributes.
 
     Parameters
@@ -1063,7 +1063,7 @@ def bisecting_kmeans_to_graphviz(
     leaf_style: dict = {},
 ):
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the code for a Graphviz tree.
 
     Parameters
@@ -1171,7 +1171,7 @@ def predict_from_bisecting_kmeans(
     p: int = 2,
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using a bisecting k-means model and the input attributes.
 
     Parameters
@@ -1226,7 +1226,7 @@ def sql_from_bisecting_kmeans(
     p: int = 2,
 ) -> Union[list, str]:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a bisecting k-means model using its 
     attributes.
 
@@ -1298,7 +1298,7 @@ def predict_from_clusters(
     p: int = 2,
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using a k-means or nearest centroid model and the input attributes.
 
     Parameters
@@ -1352,7 +1352,7 @@ def sql_from_clusters(
     p: int = 2,
 ) -> Union[list, str]:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a k-means or nearest centroids model 
     using its attributes.
 
@@ -1445,7 +1445,7 @@ def predict_from_clusters_kprotypes(
     gamma: float = 1.0,
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using a k-prototypes model and the input attributes.
 
     Parameters
@@ -1519,7 +1519,7 @@ def sql_from_clusters_kprotypes(
     is_categorical: Union[list, np.ndarray] = [],
 ) -> Union[list, str]:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a k-prototypes or nearest centroids 
     model using its attributes.
 
@@ -1630,7 +1630,7 @@ def transform_from_pca(
     mean: Union[list, np.ndarray],
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Transforms the data with a PCA model using the input attributes.
 
     Parameters
@@ -1663,7 +1663,7 @@ def sql_from_pca(
     mean: Union[list, np.ndarray],
 ) -> list:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a PCA model using its attributes.
 
     Parameters
@@ -1704,7 +1704,7 @@ def transform_from_svd(
     values: Union[list, np.ndarray],
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Transforms the data with an SVD model using the input attributes.
 
     Parameters
@@ -1736,7 +1736,7 @@ def sql_from_svd(
     values: Union[list, np.ndarray],
 ) -> list:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a SVD model using its attributes.
 
     Parameters
@@ -1773,7 +1773,7 @@ def transform_from_normalizer(
     X: Union[list, np.ndarray], values: Union[list, np.ndarray], method: str = "zscore"
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Transforms the data with a normalizer model using the input attributes.
 
     Parameters
@@ -1809,7 +1809,7 @@ def sql_from_normalizer(
     X: Union[list, np.ndarray], values: Union[list, np.ndarray], method: str = "zscore"
 ) -> list:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a normalizer model using its attributes.
 
     Parameters
@@ -1854,7 +1854,7 @@ def transform_from_one_hot_encoder(
     drop_first: bool = False,
 ) -> np.ndarray:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Transforms the data with a one-hot encoder model using the input attributes.
 
     Parameters
@@ -1895,7 +1895,7 @@ def sql_from_one_hot_encoder(
     column_naming: str = None,
 ) -> list:
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a one-hot encoder model using its 
     attributes.
 
@@ -1956,7 +1956,7 @@ def sql_from_one_hot_encoder(
 # ---#
 class memModel:
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Independent machine learning models that can easily be deployed 
 using raw SQL or Python code.
 
@@ -2401,7 +2401,7 @@ attributes: dict
     # ---#
     def get_attributes(self) -> dict:
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns model's attributes.
         """
         return self.attributes_
@@ -2409,7 +2409,7 @@ attributes: dict
     # ---#
     def set_attributes(self, attributes: dict):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Sets new model's attributes.
 
     Parameters
@@ -2439,7 +2439,7 @@ attributes: dict
         leaf_style: dict = {},
     ):
         """
-        ---------------------------------------------------------------------------
+        ------------------------------------------------------------------------------------
         Draws the input tree. Requires the graphviz module.
 
         Parameters
@@ -2500,7 +2500,7 @@ attributes: dict
     # ---#
     def predict(self, X: list) -> np.ndarray:
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using the model's attributes.
 
     Parameters
@@ -2617,7 +2617,7 @@ attributes: dict
     # ---#
     def predict_sql(self, X: list) -> Union[list, str]:
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Parameters
@@ -2774,7 +2774,7 @@ attributes: dict
     # ---#
     def predict_proba(self, X: list) -> np.ndarray:
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts probabilities using the model's attributes.
 
     Parameters
@@ -2870,7 +2870,7 @@ attributes: dict
     # ---#
     def predict_proba_sql(self, X: list) -> list:
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the probabilities model.
 
     Parameters
@@ -3023,7 +3023,7 @@ attributes: dict
         leaf_style: dict = {},
     ):
         """
-        ---------------------------------------------------------------------------
+        ------------------------------------------------------------------------------------
         Returns the code for a Graphviz tree.
 
         Parameters
@@ -3160,7 +3160,7 @@ attributes: dict
     # ---#
     def transform(self, X: list) -> np.ndarray:
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Transforms the data using the model's attributes.
 
     Parameters
@@ -3210,7 +3210,7 @@ attributes: dict
     # ---#
     def transform_sql(self, X: list) -> list:
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Parameters
@@ -3268,7 +3268,7 @@ attributes: dict
     # ---#
     def rotate(self, gamma: float = 1.0, q: int = 20, tol: float = 1e-6):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Performs a Oblimin (Varimax, Quartimax) rotation on the the model's PCA 
     matrix.
 

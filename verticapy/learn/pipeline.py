@@ -66,7 +66,7 @@ from typing import Union
 # ---#
 class Pipeline:
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Creates a Pipeline object. Sequentially apply a list of transforms and a 
 final estimator. The intermediate steps must implement a transform method.
 
@@ -123,7 +123,7 @@ steps: list
     # ---#
     def drop(self):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Drops the model from the Vertica database.
         """
         for step in self.steps:
@@ -138,7 +138,7 @@ steps: list
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -189,7 +189,7 @@ steps: list
     # ---#
     def get_params(self):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the models Parameters.
 
     Returns
@@ -207,7 +207,7 @@ steps: list
         self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator"
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Applies the model on a vDataFrame.
 
     Parameters
@@ -257,7 +257,7 @@ steps: list
     # ---#
     def report(self):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Computes a regression/classification report using multiple metrics to evaluate 
     the model depending on its type. 
 
@@ -275,7 +275,7 @@ steps: list
     # ---#
     def score(self, method: str = ""):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Computes the model score.
 
     Parameters
@@ -299,7 +299,7 @@ steps: list
     # ---#
     def transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Applies the model on a vDataFrame.
 
     Parameters
@@ -339,7 +339,7 @@ steps: list
     # ---#
     def inverse_transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Applies the inverse model transformation on a vDataFrame.
 
     Parameters
@@ -382,7 +382,7 @@ steps: list
     # ---#
     def set_params(self, parameters: dict = {}):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Sets the parameters of the model.
 
     Parameters
@@ -405,7 +405,7 @@ steps: list
         return_str: bool = False,
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the Python code needed to deploy the pipeline without using 
     built-in Vertica functions.
 

@@ -71,7 +71,7 @@ def import_lib_udf(
     udf_list: list, library_name: str, include_dependencies: Union[str, list] = []
 ) -> bool:
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Install a library of Python functions in Vertica. This function will work only
 when it is executed directly in the server.
 
@@ -132,9 +132,9 @@ def create_lib_udf(
     include_dependencies: Union[str, list] = [],
     file_path: str = "",
     create_file: bool = False,
-) -> (str, str):
+) -> tuple:
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Generates the code needed to install a library of Python functions. It will
 use the Vertica SDK to create UDF of the input functions.
 
@@ -212,11 +212,9 @@ udx_str, sql
         tmp = create_udf(*udf, **{"library_name": library_name})
         udx_str += tmp[0]
         sql += [tmp[1]]
-    sql_path = (
-        os.path.dirname(file_path) + "/" + library_name + ".sql"
-        if (file_path)
-        else library_name + ".sql"
-    )
+    sql_path = f"{library_name}.sql"
+    if file_path:
+        sql_path = f"{os.path.dirname(file_path)}/{sql_path}"
     if not (file_path):
         file_path = f"verticapy_{library_name}.py"
     sql = [
@@ -243,7 +241,7 @@ def create_udf(
     parameters: dict = {},
     new_name: str = "",
     library_name: str = "",
-) -> (str, str):
+) -> tuple:
     if not (hasattr(function, "__call__")):
         raise ValueError(
             f"The function parameter must be a Python function. Found {type(function)}."
@@ -387,8 +385,9 @@ def create_udf(
 
 
 # ---#
-def get_func_info(func):
+def get_func_info(func) -> tuple:
     # TO COMPLETE - GUESS FUNCTIONS TYPES
+
     name = func.__name__
     argspec = inspect.getfullargspec(func)[6]
     if "return" in argspec:
@@ -396,18 +395,21 @@ def get_func_info(func):
         del argspec["return"]
     else:
         return_type = None
+
     arg_types, parameters = {}, {}
     for param in argspec:
         if inspect.signature(func).parameters[param].default == inspect._empty:
             arg_types[param] = argspec[param]
         else:
             parameters[param] = argspec[param]
+
     return (func, arg_types, return_type, parameters)
 
 
 # ---#
-def get_module_func_info(module):
-    # ---#
+def get_module_func_info(module) -> list:
+    # TO COMPLETE - TRY AND RAISE THE APPROPRIATE ERROR
+
     def get_list(module):
         func_list = []
         for func in dir(module):
@@ -415,7 +417,6 @@ def get_module_func_info(module):
                 func_list += [func]
         return func_list
 
-    # TO COMPLETE - TRY AND RAISE THE APPROPRIATE ERROR
     func_list = get_list(module)
     func_info = []
     for func in func_list:
@@ -426,7 +427,7 @@ def get_module_func_info(module):
 
 
 # ---#
-def get_set_add_function(ftype, func: str = "get"):
+def get_set_add_function(ftype: type, func: str = "get") -> str:
     # func = get / set / add
     raise_error_if_not_in("func", str(func).lower(), ["get", "set", "add"])
     func = str(func).lower()

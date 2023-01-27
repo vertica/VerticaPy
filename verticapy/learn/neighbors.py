@@ -72,7 +72,7 @@ from typing import Union
 # ---#
 class NearestCentroid(MulticlassClassifier):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 [Beta Version]
 Creates a NearestCentroid object using the k-nearest centroid algorithm. 
 This object uses pure SQL to compute the distances and final score. 
@@ -107,7 +107,7 @@ p: int, optional
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-	---------------------------------------------------------------------------
+	------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -171,7 +171,7 @@ p: int, optional
 # ---#
 class KNeighborsClassifier(vModel):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 [Beta Version]
 Creates a KNeighborsClassifier object using the k-nearest neighbors algorithm. 
 This object uses pure SQL to compute the distances and final score.
@@ -211,7 +211,7 @@ p: int, optional
         key_columns: Union[str, list] = [],
     ):
         """
-	---------------------------------------------------------------------------
+	------------------------------------------------------------------------------------
 	Returns the SQL code needed to deploy the model. 
 
     Parameters
@@ -298,7 +298,7 @@ p: int, optional
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-	---------------------------------------------------------------------------
+	------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -366,7 +366,7 @@ p: int, optional
         self, cutoff: Union[int, float, list] = [], labels: list = []
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Computes a classification report using multiple metrics to evaluate the model
     (AUC, accuracy, PRC AUC, F1, etc.). For multiclass classification, this 
     function tests the model by considering one class as the sole positive case, 
@@ -402,7 +402,7 @@ p: int, optional
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Draws the ROC curve of a classification model.
 
     Parameters
@@ -448,7 +448,7 @@ p: int, optional
         self, pos_label: Union[int, float, str] = None, cutoff: Union[int, float] = -1
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Computes the model confusion matrix.
 
     Parameters
@@ -502,7 +502,7 @@ p: int, optional
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Draws the model Lift Chart.
 
     Parameters
@@ -543,7 +543,7 @@ p: int, optional
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Draws the model PRC curve.
 
     Parameters
@@ -590,7 +590,7 @@ p: int, optional
         **kwargs,
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -681,7 +681,7 @@ p: int, optional
         **kwargs,
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the model's probabilities using the input relation.
 
     Parameters
@@ -766,7 +766,7 @@ p: int, optional
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Draws the model ROC curve.
 
     Parameters
@@ -811,7 +811,7 @@ p: int, optional
         nbins: int = 10000,
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Computes the model score.
 
     Parameters
@@ -915,7 +915,7 @@ p: int, optional
 # ---#
 class KernelDensity(Regressor, Tree):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 [Beta Version]
 Creates a KernelDensity object. 
 This object uses pure SQL to compute the final score.
@@ -991,7 +991,7 @@ xlim: list, optional
     @check_dtypes
     def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -1193,7 +1193,7 @@ xlim: list, optional
     # ---#
     def plot(self, ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Draws the Model.
 
     Parameters
@@ -1283,7 +1283,7 @@ xlim: list, optional
 # ---#
 class KNeighborsRegressor(Regressor):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 [Beta Version]
 Creates a KNeighborsRegressor object using the k-nearest neighbors 
 algorithm. This object uses pure SQL to compute all the distances and 
@@ -1323,7 +1323,7 @@ p: int, optional
         key_columns: Union[str, list] = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
 
     Parameters
@@ -1394,7 +1394,7 @@ p: int, optional
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-	---------------------------------------------------------------------------
+	------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -1458,7 +1458,7 @@ p: int, optional
         **kwargs,
     ):
         """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -1513,7 +1513,7 @@ p: int, optional
 # ---#
 class LocalOutlierFactor(vModel):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 [Beta Version]
 Creates a LocalOutlierFactor object by using the Local Outlier Factor algorithm 
 as defined by Markus M. Breunig, Hans-Peter Kriegel, Raymond T. Ng and Jörg 
@@ -1557,7 +1557,7 @@ p: int, optional
         index: str = "",
     ):
         """
-	---------------------------------------------------------------------------
+	------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -1714,7 +1714,7 @@ p: int, optional
     # ---#
     def predict(self):
         """
-	---------------------------------------------------------------------------
+	------------------------------------------------------------------------------------
 	Creates a vDataFrame of the model.
 
 	Returns

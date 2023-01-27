@@ -1089,7 +1089,7 @@ def print_time(elapsed_time: float):
 # ---#
 def quote_ident(column: str):
     """
-    ---------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------
     Returns the specified string argument in the format that is required in
     order to use that string as an identifier in an SQL statement.
 
@@ -1181,7 +1181,9 @@ def replace_vars_in_query(query: str, locals_dict: dict):
                         val = val[int(v[s[0] + 1 : s[1] + 1])]
                 fail = False
             except Exception as e:
-                warning_message = f"Failed to replace variables in the query.\nError: {e}"
+                warning_message = (
+                    f"Failed to replace variables in the query.\nError: {e}"
+                )
                 warnings.warn(warning_message, Warning)
                 fail = True
         if not (fail):
@@ -1562,7 +1564,7 @@ class str_sql:
 # ---#
 def erase_prefix_in_name(name: str, prefix: list = []):
     """
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Excludes the input lists of prefixes from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1590,7 +1592,7 @@ name
 # ---#
 def erase_suffix_in_name(name: str, suffix: list = []):
     """
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Excludes the input lists of suffixes from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1618,7 +1620,7 @@ name
 # ---#
 def erase_word_in_name(name: str, word: list = []):
     """
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Excludes the input lists of words from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1650,7 +1652,7 @@ def erase_in_name(
     order: list = ["p", "s", "w"],
 ):
     """
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Excludes the input lists of suffixes and prefixes from the input name and 
 returns it. When there is a match, the other elements of the list are ignored.
 
@@ -1698,7 +1700,7 @@ def is_similar_name(
     order: list = ["p", "s", "w"],
 ):
     """
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Excludes the input lists of suffixes, prefixes and words from the input name 
 and returns it.
 
@@ -1747,7 +1749,7 @@ def belong_to_group(
     order: list = ["p", "s", "w"],
 ):
     """
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Excludes the input lists of suffixes, prefixes and words from the input name 
 and looks if it belongs to a specific group.
 
@@ -1798,7 +1800,7 @@ def group_similar_names(
     order: list = ["p", "s", "w"],
 ):
     """
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates similar group using the input column names.
 
 Parameters
@@ -1843,7 +1845,7 @@ dict
 # ---#
 def gen_coalesce(group_dict: dict):
     """
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Generates the SQL statement to merge the groups together.
 
 Parameters

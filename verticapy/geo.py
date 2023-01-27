@@ -75,9 +75,9 @@ def create_index(
     overwrite: bool = False,
     max_mem_mb: int = 256,
     skip_nonindexable_polygons: bool = False,
-):
+) -> tablesample:
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Creates a spatial index on a set of polygons to speed up spatial 
 intersection with a set of points.
 
@@ -148,9 +148,9 @@ def coordinate_converter(
     x0: float = 0.0,
     earth_radius: Union[int, float] = 6371,
     reverse: bool = False,
-):
+) -> vDataFrame:
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Converts between geographic coordinates (latitude and longitude) and 
 Euclidean coordinates (x,y).
 
@@ -197,9 +197,9 @@ vDataFrame
 # ---#
 @check_dtypes
 @save_verticapy_logs
-def describe_index(name: str = "", list_polygons: bool = False):
+def describe_index(name: str = "", list_polygons: bool = False) -> tablesample:
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Retrieves information about an index that contains a set of polygons. If 
 you do not pass any parameters, this function returns all defined indexes.
 
@@ -240,9 +240,9 @@ tablesample
 @save_verticapy_logs
 def intersect(
     vdf: vDataFrame, index: str, gid: str, g: str = "", x: str = "", y: str = ""
-):
+) -> vDataFrame:
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Spatially intersects a point or points with a set of polygons.
 
 Parameters
@@ -301,9 +301,9 @@ vDataFrame
 # ---#
 @check_dtypes
 @save_verticapy_logs
-def rename_index(source: str, dest: str, overwrite: bool = False):
+def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Renames a spatial index.
 
 Parameters
@@ -342,9 +342,9 @@ bool
 # ---#
 @check_dtypes
 @save_verticapy_logs
-def split_polygon_n(p: str, nbins: int = 100):
+def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Splits a polygon into (nbins ** 2) smaller polygons of approximately equal
 total area. This process is inexact, and the split polygons have 
 approximated edges; greater values for nbins produces more accurate and 

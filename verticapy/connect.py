@@ -72,7 +72,7 @@ VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
 # ---#
 def available_connections():
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Displays all the available connections.
 
 Returns
@@ -94,7 +94,7 @@ available_auto_connection = available_connections
 # ---#
 def change_auto_connection(name: str):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Changes the current auto connection.
 
 Parameters
@@ -129,7 +129,7 @@ name: str
 # ---#
 def close_connection():
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Closes the connection to the database.
     """
     if verticapy.OPTIONS["connection"]["conn"] and not (
@@ -141,7 +141,7 @@ Closes the connection to the database.
 # ---#
 def connect(section: str, dsn: str = ""):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Connects to the database.
 
 Parameters
@@ -177,7 +177,7 @@ dsn: str, optional
 # ---#
 def current_connection():
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Returns the current database connection.
 If the connection is closed, VerticaPy attempts to reconnect with the 
 existing connection.
@@ -226,7 +226,7 @@ VerticaLab Environment.
 # ---#
 def current_cursor():
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Returns the current database cursor.
     """
     return current_connection().cursor()
@@ -236,7 +236,7 @@ Returns the current database cursor.
 @check_dtypes
 def delete_connection(name: str):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Deletes a specified connection from the connection file.
 
 Parameters
@@ -275,7 +275,7 @@ bool
 # ---#
 def get_connection_file():
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Gets (and creates, if necessary) the auto-connection file.
 If the environment variable 'VERTICAPY_CONNECTIONS' is set, it is assumed 
 to be the full path to the auto-connection file.
@@ -304,7 +304,7 @@ def new_connection(
     overwrite: bool = True,
 ):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Saves the new connection in the VerticaPy connection file.
 The information is saved plaintext in the local machine.
 The function 'get_connection_file' returns the associated connection file path.
@@ -374,7 +374,7 @@ new_auto_connection = new_connection
 # ---#
 def read_auto_connect():
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Automatically creates a connection using the auto-connection.
 	"""
     path = get_connection_file()
@@ -396,7 +396,7 @@ Automatically creates a connection using the auto-connection.
 @check_dtypes
 def read_dsn(section: str, dsn: str = ""):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Reads the DSN information from the VERTICAPY_CONNECTIONS environment 
 variable or the input file.
 
@@ -508,7 +508,7 @@ dict
 # ---#
 def set_connection(conn):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Saves a custom connection to the VerticaPy object. This allows you to 
 specify, for example, a JDBC or ODBC connection. This should not be 
 confused with a native VerticaPy connection created by the new_connection 
@@ -534,7 +534,7 @@ conn: object
 @check_dtypes
 def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$"):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Sets a Connection Identifier Database. It connects to an external
 source using DBLINK. For more information, see:
 https://github.com/vertica/dblink
@@ -572,7 +572,7 @@ symbol: str, optional
 @check_dtypes
 def vertica_connection(section: str, dsn: str = ""):
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Reads the input DSN and creates a Vertica Database connection.
 
 Parameters
@@ -594,7 +594,7 @@ conn
 # ---#
 def verticalab_connection():
     """
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 Returns the VerticaLab connection if possible.
 
 Returns
