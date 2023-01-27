@@ -71,7 +71,7 @@ def import_lib_udf(
     udf_list: list, library_name: str, include_dependencies: Union[str, list] = []
 ) -> bool:
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Install a library of Python functions in Vertica. This function will work only
 when it is executed directly in the server.
 
@@ -134,7 +134,7 @@ def create_lib_udf(
     create_file: bool = False,
 ) -> tuple:
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Generates the code needed to install a library of Python functions. It will
 use the Vertica SDK to create UDF of the input functions.
 
@@ -285,7 +285,11 @@ def create_udf(
 
     # Main Function
     if isinstance(return_type, dict):
-        is_udtf, process_function, ftype = True, "processPartition", "TransformFunction"
+        is_udtf, process_function, ftype = (
+            True,
+            "processPartition",
+            "TransformFunction",
+        )
     elif isinstance(return_type, type):
         is_udtf, process_function, ftype = False, "processBlock", "ScalarFunction"
     else:

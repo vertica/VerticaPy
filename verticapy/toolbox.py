@@ -164,7 +164,7 @@ def executeSQL(
     symbol: str = "$",
 ):
     raise_error_if_not_in(
-        "method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"]
+        "method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"],
     )
 
     from verticapy.connect import current_cursor
@@ -1089,7 +1089,7 @@ def print_time(elapsed_time: float):
 # ---#
 def quote_ident(column: str):
     """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the specified string argument in the format that is required in
     order to use that string as an identifier in an SQL statement.
 
@@ -1304,7 +1304,7 @@ class str_sql:
             isinstance(x, vColumn) and x.isarray()
         ):
             return str_sql(
-                "ARRAY_CAT({}, {})".format(self.init_transf, x.init_transf), "complex"
+                "ARRAY_CAT({}, {})".format(self.init_transf, x.init_transf), "complex",
             )
         val = format_magic(x)
         op = (
@@ -1322,7 +1322,7 @@ class str_sql:
             isinstance(x, vColumn) and x.isarray()
         ):
             return str_sql(
-                "ARRAY_CAT({}, {})".format(x.init_transf, self.init_transf), "complex"
+                "ARRAY_CAT({}, {})".format(x.init_transf, self.init_transf), "complex",
             )
         val = format_magic(x)
         op = (
@@ -1408,7 +1408,7 @@ class str_sql:
         if order_by:
             order_by = "ORDER BY {}".format(order_by)
         return str_sql(
-            "{} OVER ({} {})".format(self.init_transf, by, order_by), self.category()
+            "{} OVER ({} {})".format(self.init_transf, by, order_by), self.category(),
         )
 
     # ---#
@@ -1564,7 +1564,7 @@ class str_sql:
 # ---#
 def erase_prefix_in_name(name: str, prefix: list = []):
     """
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of prefixes from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1592,7 +1592,7 @@ name
 # ---#
 def erase_suffix_in_name(name: str, suffix: list = []):
     """
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of suffixes from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1620,7 +1620,7 @@ name
 # ---#
 def erase_word_in_name(name: str, word: list = []):
     """
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of words from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1652,7 +1652,7 @@ def erase_in_name(
     order: list = ["p", "s", "w"],
 ):
     """
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of suffixes and prefixes from the input name and 
 returns it. When there is a match, the other elements of the list are ignored.
 
@@ -1700,7 +1700,7 @@ def is_similar_name(
     order: list = ["p", "s", "w"],
 ):
     """
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of suffixes, prefixes and words from the input name 
 and returns it.
 
@@ -1731,10 +1731,10 @@ bool
     True if the two names are similar, false otherwise.
     """
     n1 = erase_in_name(
-        name=name1, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order
+        name=name1, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order,
     )
     n2 = erase_in_name(
-        name=name2, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order
+        name=name2, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order,
     )
     return n1 == n2
 
@@ -1749,7 +1749,7 @@ def belong_to_group(
     order: list = ["p", "s", "w"],
 ):
     """
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of suffixes, prefixes and words from the input name 
 and looks if it belongs to a specific group.
 
@@ -1800,7 +1800,7 @@ def group_similar_names(
     order: list = ["p", "s", "w"],
 ):
     """
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Creates similar group using the input column names.
 
 Parameters
@@ -1845,7 +1845,7 @@ dict
 # ---#
 def gen_coalesce(group_dict: dict):
     """
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Generates the SQL statement to merge the groups together.
 
 Parameters

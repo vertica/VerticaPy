@@ -476,7 +476,9 @@ class TestvDFPlot:
         assert isinstance(result, Highchart)
         # area_range
         result = amazon_vd.hchart(
-            x="date", y=["MIN(number)", "AVG(number)", "MAX(number)"], kind="area_range"
+            x="date",
+            y=["MIN(number)", "AVG(number)", "MAX(number)"],
+            kind="area_range",
         )
         assert isinstance(result, Highchart)
         # area_ts
@@ -523,15 +525,15 @@ class TestvDFPlot:
         )
         assert isinstance(result, Highchart)
         result = titanic_vd.hchart(
-            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="bar", drilldown=True
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="bar", drilldown=True,
         )
         assert isinstance(result, Highchart)
         result = titanic_vd.hchart(
-            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="hist", drilldown=True
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="hist", drilldown=True,
         )
         assert isinstance(result, Highchart)
         result = titanic_vd.hchart(
-            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="pie", drilldown=True
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="pie", drilldown=True,
         )
         assert isinstance(result, Highchart)
         # bubble or scatter

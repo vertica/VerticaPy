@@ -61,7 +61,7 @@ class TestvDFCombineJoinSort:
         ), "testing vDataFrame.append(vDataFrame) failed"
 
         result_vDF = iris_vd.append("public.iris")
-        assert result_vDF.shape() == (300, 5), "testing vDataFrame.append(str) failed"
+        assert result_vDF.shape() == (300, 5,), "testing vDataFrame.append(str) failed"
 
         result_vDF = iris_vd.append(
             iris_vd,
@@ -212,7 +212,7 @@ class TestvDFCombineJoinSort:
         #        SELECT a.Name as Name1, b.Name as Name2
         #        FROM not_fresh AS a NATURAL JOIN not_dried AS b;
         natural_join = not_fresh.join(
-            not_dried, how="natural", expr1=["Name AS Name1"], expr2=["Name AS Name2"]
+            not_dried, how="natural", expr1=["Name AS Name1"], expr2=["Name AS Name2"],
         )
         assert natural_join.shape() == (194, 2)
         # SELECT COUNT(*) FROM natural_join WHERE Name1 IS NULL;
@@ -254,7 +254,7 @@ class TestvDFCombineJoinSort:
         d2 = tablesample(
             {
                 "name2": ["Badr", "Umar", "Arash"],
-                "email2": ["badr.ouali@me.fr", "umar.f@me.com", "arash.farad@me.com"],
+                "email2": ["badr.ouali@me.fr", "umar.f@me.com", "arash.farad@me.com",],
                 "age2": [29, 26, 35],
                 "fav_car2": ["BMW", "Audi", "Mercedes"],
             }

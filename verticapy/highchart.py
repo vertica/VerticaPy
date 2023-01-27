@@ -547,7 +547,7 @@ def hchart_from_vdf(
         return negative_bar(query=query, options=options, width=width, height=height)
     elif kind == "spider":
         return spider(query=query, options=options, width=width, height=height)
-    elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmand"):
+    elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmand",):
         x = vdf.format_colnames(x)
         data = vdf.corr(method=kind, show=False, columns=x)
         narrow_data = get_narrow_tablesample(data, use_number_as_category=True)
@@ -1031,8 +1031,11 @@ def heatmap(
                 all_subcategories[i] = "None"
         chart.set_dict_options(
             {
-                "xAxis": {"categories": all_categories, "title": {"text": names[0]}},
-                "yAxis": {"categories": all_subcategories, "title": {"text": names[1]}},
+                "xAxis": {"categories": all_categories, "title": {"text": names[0]},},
+                "yAxis": {
+                    "categories": all_subcategories,
+                    "title": {"text": names[1]},
+                },
             }
         )
     chart.set_options(
@@ -1112,7 +1115,7 @@ def line(
                     "marker": {
                         "radius": 5,
                         "states": {
-                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)"}
+                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)",}
                         },
                     },
                     "states": {"hover": {"marker": {"enabled": False}}},
@@ -1244,7 +1247,11 @@ def negative_bar(query: str, options: dict = {}, width: int = 600, height: int =
         "title": {"text": ""},
         "subtitle": {"text": ""},
         "xAxis": [
-            {"categories": all_subcategories, "reversed": False, "labels": {"step": 1}},
+            {
+                "categories": all_subcategories,
+                "reversed": False,
+                "labels": {"step": 1},
+            },
             {
                 "opposite": True,
                 "reversed": False,

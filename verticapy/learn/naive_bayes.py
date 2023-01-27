@@ -60,7 +60,7 @@ from verticapy.utilities import save_verticapy_logs
 # ---#
 class NaiveBayes(MulticlassClassifier):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a NaiveBayes object using the Vertica Naive Bayes algorithm on 
 the data. It is a "probabilistic classifier" based on applying Bayes' 
 theorem with strong (naïve) independence assumptions between the features.

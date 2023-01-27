@@ -60,7 +60,7 @@ from functools import wraps
 # ---#
 def save_verticapy_logs(func):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 save_verticapy_logs decorator. It simplifies the code and automatically
 identifies which function to save to the QUERY PROFILES table.
     """
@@ -98,7 +98,7 @@ identifies which function to save to the QUERY PROFILES table.
 # ---#
 def check_dtypes(func):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 check_dtypes decorator. It simplifies the code by checking whether the
 parameters passed to the function are of an expected data type.
     """
@@ -166,7 +166,7 @@ parameters passed to the function are of an expected data type.
 # ---#
 def check_minimum_version(func):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 check_minimum_version decorator. It simplifies the code by checking if the
 feature is available in the user's version.
     """

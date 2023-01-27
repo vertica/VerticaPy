@@ -32,7 +32,7 @@ class TestDatasets:
                 "age": {"type": int, "range": [20, 40]},
                 "distance": {"type": float, "range": [1000, 4000]},
                 "date": {"type": datetime.date, "range": ["1993-11-03", 365]},
-                "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365]},
+                "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365],},
             }
         )
         assert result["name"].mode() == "Badr"

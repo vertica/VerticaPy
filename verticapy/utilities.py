@@ -80,7 +80,7 @@ except:
 @save_verticapy_logs
 def compute_flextable_keys(flex_name: str, usecols: list = []):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the flex table keys and returns the predicted data types.
 
 Parameters
@@ -123,7 +123,7 @@ def compute_vmap_keys(
     expr: Union[str, str_sql], vmap_col: str, limit: int = 100,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the most frequent keys in the input VMap.
 
 Parameters
@@ -168,7 +168,7 @@ def create_schema(
     schema: str, raise_error: bool = False,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a new schema.
 
 Parameters
@@ -204,7 +204,7 @@ def create_table(
     raise_error: bool = False,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a new table using the input columns' names and data types.
 
 Parameters
@@ -267,7 +267,7 @@ bool
 # ---#
 def create_verticapy_schema():
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a schema named 'verticapy' used to store VerticaPy extended models.
     """
     sql = "CREATE SCHEMA IF NOT EXISTS verticapy;"
@@ -288,7 +288,7 @@ Creates a schema named 'verticapy' used to store VerticaPy extended models.
 @check_dtypes
 def drop(name: str = "", method: str = "auto", raise_error: bool = False, **kwds):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Drops the input relation. This can be a model, view, table, text index,
 schema, or geo index.
 
@@ -320,7 +320,7 @@ bool
     if "relation_type" in kwds and method == "auto":
         method = kwds["relation_type"]
     raise_error_if_not_in(
-        "method", method, ["table", "view", "model", "geo", "text", "auto", "schema"]
+        "method", method, ["table", "view", "model", "geo", "text", "auto", "schema"],
     )
     schema, relation = schema_relation(name)
     schema, relation = schema[1:-1], relation[1:-1]
@@ -503,7 +503,7 @@ def get_data_types(
     usecols: list = [],
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Returns customized relation columns and the respective data types.
 This process creates a temporary table.
 
@@ -632,7 +632,7 @@ list of tuples
 @save_verticapy_logs
 def help_start():
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 VERTICAPY Interactive Help (FAQ).
     """
 
@@ -721,7 +721,7 @@ def insert_into(
     genSQL: bool = False,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Inserts the dataset into an existing Vertica table.
 
 Parameters
@@ -827,7 +827,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
 @check_dtypes
 def isflextable(table_name: str, schema: str):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Checks if the input relation is a flextable.
 
 Parameters
@@ -860,7 +860,7 @@ def isvmap(
     expr: Union[str, str_sql], column: str,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Checks if the input column is a VMap.
 
 Parameters
@@ -924,7 +924,7 @@ def pandas_to_vertica(
     insert: bool = False,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests a pandas DataFrame into the Vertica database by creating a 
 CSV file and then using flex tables to load the data.
 
@@ -980,7 +980,7 @@ read_json : Ingests a JSON file into the Vertica database.
     else:
         tmp_name = ""
     path = "{0}{1}{2}.csv".format(
-        temp_path, "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else "", name
+        temp_path, "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else "", name,
     )
     try:
         # Adding the quotes to STR pandas columns in order to simplify the ingestion.
@@ -1002,7 +1002,7 @@ read_json : Ingests a JSON file into the Vertica database.
         import csv
 
         tmp_df.to_csv(
-            path, index=False, quoting=csv.QUOTE_NONE, quotechar="", escapechar="\027"
+            path, index=False, quoting=csv.QUOTE_NONE, quotechar="", escapechar="\027",
         )
         if str_cols:
             # to_csv is adding an undesired special character
@@ -1082,7 +1082,7 @@ def pcsv(
     genSQL: bool = False,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Parses a CSV file using flex tables. It will identify the columns and their
 respective types.
 
@@ -1204,7 +1204,7 @@ vHelp = help_start
 # ---#
 def pjson(path: str, ingest_local: bool = True):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Parses a JSON file using flex tables. It will identify the columns and their
 respective types.
 
@@ -1265,7 +1265,7 @@ def read_avro(
     use_complex_dt: bool = False,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests an AVRO file using flex tables.
 
 Parameters
@@ -1393,7 +1393,7 @@ def read_csv(
     materialize: bool = True,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests a CSV file using flex tables.
 
 Parameters
@@ -1729,7 +1729,7 @@ def read_file(
     max_files: int = 100,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Inspects and ingests a file in CSV, Parquet, ORC, JSON, or Avro format.
 This function uses the Vertica complex data type.
 For new table creation, the file must be located in the server.
@@ -1854,7 +1854,7 @@ vDataFrame
         f"max_files={max_files}, max_candidates=1);"
     )
     result = executeSQL(
-        sql, title="Generating the CREATE and COPY statement.", method="fetchfirstelem"
+        sql, title="Generating the CREATE and COPY statement.", method="fetchfirstelem",
     )
     result = result.replace("UNKNOWN", unknown)
     result = "create" + "create".join(result.split("create")[1:])
@@ -1956,7 +1956,7 @@ def read_json(
     is_avro: bool = False,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests a JSON file using flex tables.
 
 Parameters
@@ -2304,7 +2304,7 @@ def read_shp(
     path: str, schema: str = "public", table_name: str = "",
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests a SHP file. For the moment, only files located in the Vertica server 
 can be ingested.
 
@@ -2353,7 +2353,7 @@ vDataFrame
 @save_verticapy_logs
 def readSQL(query: str, time_on: bool = False, limit: int = 100):
     """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the result of a SQL query as a tablesample object.
 
     Parameters
@@ -2415,7 +2415,7 @@ def save_to_query_profile(
     add_identifier: bool = True,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Saves information about the specified VerticaPy method to the QUERY_PROFILES 
 table in the Vertica database. It is used to collect usage statistics on 
 methods and their parameters. This function generates a JSON string.
@@ -2514,7 +2514,7 @@ bool
 @check_dtypes
 def set_option(option: str, value: Union[bool, int, str, list] = None):
     """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Sets VerticaPy options.
 
     Parameters
@@ -2713,7 +2713,7 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
 # ---#
 class tablesample:
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 The tablesample is the transition from 'Big Data' to 'Small Data'. 
 This object allows you to conveniently display your results without any  
 dependencies on any other module. It stores the aggregated result in memory
@@ -2926,7 +2926,7 @@ The tablesample attributes are the same as the parameters.
     @check_dtypes
     def append(self, tbs):
         """
-        ------------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------
         Appends the input tablesample to a target tablesample.
 
         Parameters
@@ -2955,7 +2955,7 @@ The tablesample attributes are the same as the parameters.
     # ---#
     def decimal_to_float(self):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts all the tablesample's decimals to floats.
 
     Returns
@@ -2974,7 +2974,7 @@ The tablesample attributes are the same as the parameters.
     @check_dtypes
     def merge(self, tbs):
         """
-        ------------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------
         Merges the input tablesample to a target tablesample.
 
         Parameters
@@ -3005,7 +3005,7 @@ The tablesample attributes are the same as the parameters.
     # ---#
     def shape(self):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the tablesample shape.
 
     Returns
@@ -3021,7 +3021,7 @@ The tablesample attributes are the same as the parameters.
     @check_dtypes
     def sort(self, column: str, desc: bool = False):
         """
-        ------------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------
         Sorts the tablesample using the input column.
 
         Parameters
@@ -3064,7 +3064,7 @@ The tablesample attributes are the same as the parameters.
     # ---#
     def transpose(self):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Transposes the tablesample.
 
  	Returns
@@ -3090,7 +3090,7 @@ The tablesample attributes are the same as the parameters.
     # ---#
     def to_list(self):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts the tablesample to a list.
 
     Returns
@@ -3113,7 +3113,7 @@ The tablesample attributes are the same as the parameters.
     # ---#
     def to_numpy(self):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts the tablesample to a numpy array.
 
     Returns
@@ -3128,7 +3128,7 @@ The tablesample attributes are the same as the parameters.
     # ---#
     def to_pandas(self):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Converts the tablesample to a pandas DataFrame.
 
  	Returns
@@ -3150,7 +3150,7 @@ The tablesample attributes are the same as the parameters.
     # ---#
     def to_sql(self):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Generates the SQL query associated to the tablesample.
 
     Returns
@@ -3216,7 +3216,7 @@ The tablesample attributes are the same as the parameters.
     # ---#
     def to_vdf(self):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Converts the tablesample to a vDataFrame.
 
  	Returns
@@ -3242,7 +3242,7 @@ def to_tablesample(
     symbol: str = "$",
 ):
     """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the result of a SQL query as a tablesample object.
 
 	Parameters
@@ -3315,7 +3315,7 @@ def vDataFrameSQL(
     vdf=None,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a vDataFrame based on a customized relation.
 
 Parameters
@@ -3398,7 +3398,7 @@ vdf_from_relation = vDataFrameSQL
 @check_dtypes
 def vertica_version(condition: list = []):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Returns the Vertica Version.
 
 Parameters

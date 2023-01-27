@@ -193,7 +193,7 @@ class TestKPrototypes:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT APPLY_KPROTOTYPES(5.006, 3.418, 1.464, 0.244, 'Iris-setosa' USING PARAMETERS model_name = '{0}', match_by_pos=True)::float, {1}::float".format(
-                model.name, model.to_sql([5.006, 3.418, 1.464, 0.244, "'Iris-setosa'"])
+                model.name, model.to_sql([5.006, 3.418, 1.464, 0.244, "'Iris-setosa'"]),
             )
         )
         prediction = current_cursor().fetchone()

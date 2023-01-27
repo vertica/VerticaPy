@@ -70,7 +70,7 @@ def does_model_exist(
     name: str, raise_error: bool = False, return_model_type: bool = False
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Checks if the model already exists.
 
 Parameters
@@ -134,7 +134,7 @@ int
 @save_verticapy_logs
 def load_model(name: str, input_relation: str = "", test_relation: str = ""):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Loads a Vertica model and returns the associated object.
 
 Parameters
@@ -700,7 +700,7 @@ def matrix_rotation(
     tol: float = 1e-6,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
 PCA matrix.
 

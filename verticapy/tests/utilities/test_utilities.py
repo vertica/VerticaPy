@@ -497,7 +497,7 @@ class TestUtilities:
         assert result.shape() == (891, 15)
         assert drop("public.titanic_verticapy_test_json", method="table")
         result = read_json(
-            path + "titanic-passengers.json", table_name="titanic_verticapy_test_json"
+            path + "titanic-passengers.json", table_name="titanic_verticapy_test_json",
         )
         assert result.shape() == (891, 15)
         assert drop("v_temp_schema.titanic_verticapy_test_json", method="table")
@@ -645,7 +645,7 @@ class TestUtilities:
         assert result.shape() == (1234, 14)
         # insert
         result = read_csv(
-            path, table_name="titanic_verticapy_test_csv", schema="public", insert=True
+            path, table_name="titanic_verticapy_test_csv", schema="public", insert=True,
         )
         assert result.shape() == (2468, 14)
         drop("public.titanic_verticapy_test_csv", method="table")
@@ -684,7 +684,7 @@ class TestUtilities:
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # genSQL
         result = read_csv(
-            path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True
+            path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True,
         )
         assert result[0][0:50] == 'CREATE TABLE "public"."titanic_verticapy_test_csv"'
         assert result[1][0:42] == 'COPY "public"."titanic_verticapy_test_csv"'

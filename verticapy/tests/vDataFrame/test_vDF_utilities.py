@@ -570,7 +570,15 @@ class TestvDFUtilities:
     def test_vDF_numcol(self, titanic_vd):
         result = [elem.replace('"', "") for elem in titanic_vd.numcol()]
         result.sort()
-        assert result == ["age", "body", "fare", "parch", "pclass", "sibsp", "survived"]
+        assert result == [
+            "age",
+            "body",
+            "fare",
+            "parch",
+            "pclass",
+            "sibsp",
+            "survived",
+        ]
 
     def test_vDF_tail(self, titanic_vd):
         # testing vDataFrame[].tail

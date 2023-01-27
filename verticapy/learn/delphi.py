@@ -78,7 +78,7 @@ class vAuto(vModel):
     # ---#
     def set_params(self, parameters: dict = {}):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Sets the parameters of the model.
 
     Parameters
@@ -94,7 +94,7 @@ class vAuto(vModel):
 
 class AutoDataPrep(vAuto):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Automatically find relations between the different features to preprocess
 the data according to each column type.
 
@@ -223,7 +223,7 @@ final_relation_: vDataFrame
         by: list = [],
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -420,7 +420,7 @@ final_relation_: vDataFrame
 
 class AutoClustering(vAuto):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Automatically creates k different groups with which to generalize the data.
 
 Parameters
@@ -501,7 +501,7 @@ model_: object
     # ---#
     def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -578,7 +578,7 @@ model_: object
 
 class AutoML(vAuto):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Tests multiple models to find those that maximize the input score.
 
 Parameters
@@ -698,7 +698,7 @@ model_grid_ : tablesample
         print_info: bool = True,
     ):
         raise_error_if_not_in(
-            "estimator_type", estimator_type, ["auto", "regressor", "binary", "multi"]
+            "estimator_type", estimator_type, ["auto", "regressor", "binary", "multi"],
         )
         raise_error_if_not_in("stepwise_criterion", stepwise_criterion, ["aic", "bic"])
         raise_error_if_not_in(
@@ -736,7 +736,7 @@ model_grid_ : tablesample
     # ---#
     def fit(self, input_relation: Union[str, vDataFrame], X: list = [], y: str = ""):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -1044,7 +1044,7 @@ model_grid_ : tablesample
     # ---#
     def plot(self, mltype: str = "champion", ax=None, **style_kwds):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the AutoML plot.
 
     Parameters

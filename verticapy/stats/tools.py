@@ -82,7 +82,7 @@ def adfuller(
     regresults: bool = False,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Augmented Dickey Fuller test (Time Series stationarity).
 
 Parameters
@@ -241,11 +241,11 @@ tablesample
         "LAG({}, {}) OVER ({}ORDER BY {}) - LAG({}, {}) OVER ({}ORDER BY {}) AS delta{}".format(
             column,
             i,
-            "PARTITION BY {}".format(", ".join(by)) if (by) else "",
+            f"PARTITION BY {', '.join(by)}" if (by) else "",
             ts,
             column,
             i + 1,
-            "PARTITION BY {}".format(", ".join(by)) if (by) else "",
+            f"PARTITION BY {', '.join(by)}" if (by) else "",
             ts,
             i,
         )
@@ -253,7 +253,7 @@ tablesample
     ]
     lag += [
         "{} - LAG({}, 1) OVER ({}ORDER BY {}) AS delta".format(
-            column, column, "PARTITION BY {}".format(", ".join(by)) if (by) else "", ts
+            column, column, "PARTITION BY {}".format(", ".join(by)) if (by) else "", ts,
         )
     ]
     query = "CREATE VIEW {} AS SELECT /*+LABEL('stats.tools.adfuller')*/ {}, {} AS ts FROM {}".format(
@@ -319,7 +319,7 @@ def cochrane_orcutt(
     drop_tmp_model: bool = True,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Performs a Cochrane-Orcutt estimation.
 
 Parameters
@@ -392,7 +392,7 @@ model
 @save_verticapy_logs
 def durbin_watson(vdf: vDataFrame, eps: str, ts: str, by: list = []):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Durbin Watson test (residuals autocorrelation).
 
 Parameters
@@ -439,7 +439,7 @@ float
 @save_verticapy_logs
 def endogtest(vdf: vDataFrame, eps: str, X: list):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Endogeneity test.
 
 Parameters
@@ -499,7 +499,7 @@ tablesample
 @save_verticapy_logs
 def het_arch(vdf: vDataFrame, eps: str, ts: str, by: list = [], p: int = 1):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Engle’s Test for Autoregressive Conditional Heteroscedasticity (ARCH).
 
 Parameters
@@ -577,7 +577,7 @@ tablesample
 @save_verticapy_logs
 def het_breuschpagan(vdf: vDataFrame, eps: str, X: list):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Uses the Breusch-Pagan to test a model for heteroskedasticity.
 
 Parameters
@@ -646,7 +646,7 @@ def het_goldfeldquandt(
     alternative: str = "increasing",
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Goldfeld-Quandt homoscedasticity test.
 
 Parameters
@@ -721,7 +721,7 @@ tablesample
 @save_verticapy_logs
 def het_white(vdf: vDataFrame, eps: str, X: list):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 White’s Lagrange Multiplier Test for heteroscedasticity.
 
 Parameters
@@ -796,7 +796,7 @@ tablesample
 @save_verticapy_logs
 def jarque_bera(vdf: vDataFrame, column: str, alpha: Union[int, float] = 0.05):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Jarque-Bera test (Distribution Normality).
 
 Parameters
@@ -842,7 +842,7 @@ tablesample
 @save_verticapy_logs
 def kurtosistest(vdf: vDataFrame, column: str):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Test whether the kurtosis is different from the normal distribution.
 
 Parameters
@@ -891,7 +891,7 @@ def ljungbox(
     box_pierce: bool = False,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ljung–Box test (whether any of a group of autocorrelations of a time series 
 are different from zero).
 
@@ -953,7 +953,7 @@ tablesample
 @save_verticapy_logs
 def mkt(vdf: vDataFrame, column: str, ts: str, alpha: Union[int, float] = 0.05):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Mann Kendall test (Time Series trend).
 
 \u26A0 Warning : This Test is computationally expensive. It is using a CROSS 
@@ -1043,7 +1043,7 @@ tablesample
 @save_verticapy_logs
 def normaltest(vdf: vDataFrame, column: str):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Test whether a sample differs from a normal distribution.
 
 Parameters
@@ -1059,7 +1059,10 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    Z1, Z2 = skewtest(vdf, column)["value"][0], kurtosistest(vdf, column)["value"][0]
+    Z1, Z2 = (
+        skewtest(vdf, column)["value"][0],
+        kurtosistest(vdf, column)["value"][0],
+    )
     Z = Z1 ** 2 + Z2 ** 2
     pvalue = chi2.sf(Z, 2)
     result = tablesample({"index": ["Statistic", "p_value"], "value": [Z, pvalue]})
@@ -1082,7 +1085,7 @@ def seasonal_decompose(
     two_sided: bool = False,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Performs a seasonal time series decomposition.
 
 Parameters
@@ -1241,7 +1244,7 @@ vDataFrame
 @save_verticapy_logs
 def skewtest(vdf: vDataFrame, column: str):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Test whether the skewness is different from the normal distribution.
 
 Parameters
@@ -1280,7 +1283,7 @@ tablesample
 @save_verticapy_logs
 def variance_inflation_factor(vdf: vDataFrame, X: list, X_idx: int = None):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the variance inflation factor (VIF). It can be used to detect
 multicollinearity in an OLS Regression Analysis.
 

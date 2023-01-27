@@ -222,18 +222,18 @@ class TestNB:
         )
         mmodel = model_class.to_memmodel()
         res = mmodel.predict(
-            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True]]
+            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True],]
         )
         res_py = model_class.to_python()(
-            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True]]
+            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True],]
         )
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
         res = mmodel.predict_proba(
-            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True]]
+            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True],]
         )
         res_py = model_class.to_python(return_proba=True)(
-            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True]]
+            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True],]
         )
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]

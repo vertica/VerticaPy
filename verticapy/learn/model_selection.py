@@ -97,7 +97,7 @@ def bayesian_search_cv(
     **kwargs,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the k-fold bayesian search of an estimator using a random
 forest model to estimate a probable optimal set of parameters.
 
@@ -336,7 +336,7 @@ def best_k(
     **kwargs,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Finds the k-means / k-prototypes k based on a score.
 
 Parameters
@@ -439,7 +439,7 @@ def cross_validate(
     **kwargs,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the K-Fold cross validation of an estimator.
 
 Parameters
@@ -728,7 +728,7 @@ def elbow(
     **style_kwds,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Draws an elbow curve.
 
 Parameters
@@ -785,7 +785,10 @@ tablesample
         L = n_cluster
         L.sort()
     schema, relation = schema_relation(input_relation)
-    all_within_cluster_SS, model_name = [], gen_tmp_name(schema=schema, name="kmeans")
+    all_within_cluster_SS, model_name = (
+        [],
+        gen_tmp_name(schema=schema, name="kmeans"),
+    )
     if isinstance(n_cluster, tuple):
         L = [i for i in range(n_cluster[0], n_cluster[1])]
     else:
@@ -842,7 +845,7 @@ def enet_search_cv(
     **kwargs,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the k-fold grid search using multiple ENet models.
 
 Parameters
@@ -959,7 +962,7 @@ def gen_params_grid(
     optimized_grid: int = 0,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Generates the estimator grid.
 
 Parameters
@@ -1093,11 +1096,15 @@ tablesample
                 "max_leaf_nodes": {"type": int, "range": [32, 1e9], "nbins": nbins},
                 "max_depth": {"type": int, "range": [2, 30], "nbins": nbins},
                 "min_samples_leaf": {"type": int, "range": [1, 15], "nbins": nbins},
-                "min_info_gain": {"type": float, "range": [0.0, 0.1], "nbins": nbins},
+                "min_info_gain": {"type": float, "range": [0.0, 0.1], "nbins": nbins,},
                 "nbins": {"type": int, "range": [10, 1000], "nbins": nbins},
             }
             if isinstance(RandomForestRegressor, RandomForestClassifier):
-                result["sample"] = {"type": float, "range": [0.1, 1.0], "nbins": nbins}
+                result["sample"] = {
+                    "type": float,
+                    "range": [0.1, 1.0],
+                    "nbins": nbins,
+                }
                 result["n_estimators"] = {
                     "type": int,
                     "range": [1, 100],
@@ -1190,7 +1197,7 @@ tablesample
                     "values": [0.0, 0.25],
                     "nbins": nbins,
                 },
-                "learning_rate": {"type": float, "range": [0.0, 1.0], "nbins": nbins},
+                "learning_rate": {"type": float, "range": [0.0, 1.0], "nbins": nbins,},
                 "sample": {"type": float, "range": [0.0, 1.0], "nbins": nbins},
                 "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
                 "max_ntree": {"type": int, "range": [1, 20], "nbins": nbins},
@@ -1232,7 +1239,10 @@ tablesample
         params_grid = {"method": ["minmax", "robust_zscore", "zscore"]}
         if optimized_grid == -666:
             return {
-                "method": {"type": str, "values": ["minmax", "robust_zscore", "zscore"]}
+                "method": {
+                    "type": str,
+                    "values": ["minmax", "robust_zscore", "zscore"],
+                }
             }
     elif isinstance(
         estimator,
@@ -1283,7 +1293,10 @@ tablesample
                 "min_samples": list(range(1, 1000, math.ceil(1000 / nbins))),
             }
         elif optimized_grid == 1:
-            params_grid = {"p": [1, 2, 3, 4], "min_samples": [1, 2, 3, 4, 5, 10, 100]}
+            params_grid = {
+                "p": [1, 2, 3, 4],
+                "min_samples": [1, 2, 3, 4, 5, 10, 100],
+            }
         elif optimized_grid == 2:
             params_grid = {"p": [1, 2], "min_samples": [5, 10]}
         elif optimized_grid == -666:
@@ -1323,7 +1336,17 @@ tablesample
             if isinstance(estimator, (LogisticRegression)):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, (LogisticRegression, ElasticNet)):
-                params_grid["l1_ratio"] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+                params_grid["l1_ratio"] = [
+                    0.1,
+                    0.2,
+                    0.3,
+                    0.4,
+                    0.5,
+                    0.6,
+                    0.7,
+                    0.8,
+                    0.9,
+                ]
         elif optimized_grid == 2:
             params_grid = {"tol": [1e-6], "max_iter": [100]}
             if isinstance(estimator, LogisticRegression):
@@ -1353,7 +1376,11 @@ tablesample
             elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
                 result["solver"] = {"type": str, "values": ["bfgs", "cgd"]}
             if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
-                result["C"] = {"type": float, "range": [0.0, 1000.0], "nbins": nbins}
+                result["C"] = {
+                    "type": float,
+                    "range": [0.0, 1000.0],
+                    "nbins": nbins,
+                }
             if isinstance(estimator, (LogisticRegression)):
                 result["penalty"] = {
                     "type": str,
@@ -1575,7 +1602,7 @@ def grid_search_cv(
     **kwargs,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the k-fold grid search of an estimator.
 
 Parameters
@@ -1799,7 +1826,7 @@ def learning_curve(
     **style_kwds,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Draws the learning curve.
 
 Parameters
@@ -2017,7 +2044,7 @@ def lift_chart(
     **style_kwds,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Draws the Lift Chart.
 
 Parameters
@@ -2085,7 +2112,7 @@ tablesample
     if color1 == color2:
         color2 = gen_colors()[1]
     ax.fill_between(
-        decision_boundary, positive_prediction_ratio, lift, facecolor=color1, alpha=0.2
+        decision_boundary, positive_prediction_ratio, lift, facecolor=color1, alpha=0.2,
     )
     ax.fill_between(
         decision_boundary,
@@ -2116,7 +2143,7 @@ tablesample
 @save_verticapy_logs
 def parameter_grid(param_grid: dict):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Generates the list of the different combinations of input parameters.
 
 Parameters
@@ -2146,7 +2173,7 @@ def plot_acf_pacf(
     **style_kwds,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Draws the ACF and PACF Charts.
 
 Parameters
@@ -2216,7 +2243,10 @@ tablesample
     }
     ax1.scatter(x, y, **updated_dict(param, tmp_style))
     ax1.plot(
-        [-1] + x + [x[-1] + 1], [0 for elem in range(len(x) + 2)], color=color, zorder=0
+        [-1] + x + [x[-1] + 1],
+        [0 for elem in range(len(x) + 2)],
+        color=color,
+        zorder=0,
     )
     ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
     ax1.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
@@ -2226,7 +2256,10 @@ tablesample
     ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
     ax2.scatter(x, y, **updated_dict(param, tmp_style))
     ax2.plot(
-        [-1] + x + [x[-1] + 1], [0 for elem in range(len(x) + 2)], color=color, zorder=0
+        [-1] + x + [x[-1] + 1],
+        [0 for elem in range(len(x) + 2)],
+        color=color,
+        zorder=0,
     )
     ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
     ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
@@ -2250,7 +2283,7 @@ def prc_curve(
     **style_kwds,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Draws the PRC Curve.
 
 Parameters
@@ -2368,7 +2401,7 @@ def randomized_features_search_cv(
     **kwargs,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the k-fold grid search of an estimator using different features
 combinations. It can be used to find the parameters which will optimize
 the model.
@@ -2582,7 +2615,7 @@ def randomized_search_cv(
     print_info: bool = True,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the K-Fold randomized search of an estimator.
 
 Parameters
@@ -2680,7 +2713,7 @@ def roc_curve(
     **style_kwds,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Draws the ROC Curve.
 
 Parameters
@@ -2805,7 +2838,7 @@ tablesample
             **updated_dict({"color": gen_colors()[0]}, style_kwds),
         )
         ax.fill_between(
-            false_positive, false_positive, true_positive, facecolor=color1, alpha=0.1
+            false_positive, false_positive, true_positive, facecolor=color1, alpha=0.1,
         )
         ax.fill_between([0, 1], [0, 0], [0, 1], facecolor=color2, alpha=0.1)
         ax.plot([0, 1], [0, 1], color=color2)
@@ -2851,7 +2884,7 @@ def stepwise(
     **style_kwds,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Uses the Stepwise algorithm to find the most suitable number of features
 when fitting the estimator.
 
@@ -3072,7 +3105,7 @@ def validation_curve(
     **style_kwds,
 ):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Draws the validation curve.
 
 Parameters

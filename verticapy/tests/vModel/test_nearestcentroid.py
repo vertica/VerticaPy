@@ -135,10 +135,10 @@ class TestNearestCentroid:
         titanic["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare"])[1]
         titanic = model.predict(titanic, name="prediction_vertica_sql", cutoff=0.5)
         titanic = model.predict_proba(
-            titanic, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0]
+            titanic, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0],
         )
         titanic = model.predict_proba(
-            titanic, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1]
+            titanic, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1],
         )
         score = titanic.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         print(titanic[["prediction_sql", "prediction_vertica_sql"]])
@@ -244,7 +244,7 @@ class TestNearestCentroid:
         )
         assert model.to_python(return_str=False, return_distance_clusters=True)(
             [[5.006, 3.418]]
-        )[0][0] in (pytest.approx(32.519389961314424), pytest.approx(45.6436412237776))
+        )[0][0] in (pytest.approx(32.519389961314424), pytest.approx(45.6436412237776),)
 
     def test_to_sql(self, model):
         current_cursor().execute("SELECT {}::int".format(model.to_sql([3.0, 11.0])))

@@ -163,7 +163,12 @@ class TestRFR:
 
         m_att_details = model.get_attr(attr_name="details")
 
-        assert m_att_details["predictor"] == ["gender", "owned cars", "cost", "income"]
+        assert m_att_details["predictor"] == [
+            "gender",
+            "owned cars",
+            "cost",
+            "income",
+        ]
         assert m_att_details["type"] == [
             "char or varchar",
             "int",
@@ -293,7 +298,10 @@ class TestRFR:
             pytest.approx(0.0),
             pytest.approx(6.9),
         ]
-        assert reg_rep_anova["MS"][:-1] == [pytest.approx(1.725), pytest.approx(0.0)]
+        assert reg_rep_anova["MS"][:-1] == [
+            pytest.approx(1.725),
+            pytest.approx(0.0),
+        ]
 
     def test_score(self, model):
         # method = "max"

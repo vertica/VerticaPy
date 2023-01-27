@@ -473,7 +473,7 @@ class TestRFC:
         current_cursor().execute("DROP MODEL IF EXISTS rfc_from_vDF")
         model_test = RandomForestClassifier("rfc_from_vDF",)
         model_test.fit(
-            rfc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation"
+            rfc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation",
         )
 
         current_cursor().execute(

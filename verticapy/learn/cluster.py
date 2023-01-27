@@ -69,7 +69,7 @@ from verticapy.learn.tools import *
 # ---#
 class BisectingKMeans(Clustering, Tree):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a BisectingKMeans object using the Vertica bisecting k-means 
 algorithm on the data. k-means clustering is a method of vector quantization, 
 originally from signal processing, that aims to partition n observations into 
@@ -161,7 +161,7 @@ tol: float, optional
     # ---#
     def get_tree(self):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns a table containing information about the BK-tree.
         """
         return self.cluster_centers_
@@ -170,7 +170,7 @@ tol: float, optional
 # ---#
 class DBSCAN(vModel):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 [Beta Version]
 Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin 
 Ester, Hans-Peter Kriegel, Jörg Sander, and Xiaowei Xu. This object uses 
@@ -221,7 +221,7 @@ p: int, optional
         index: str = "",
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -434,7 +434,7 @@ p: int, optional
     # ---#
     def predict(self):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Creates a vDataFrame of the model.
 
 	Returns
@@ -448,7 +448,7 @@ p: int, optional
 # ---#
 class KMeans(Clustering):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a KMeans object using the Vertica k-means algorithm on the data. 
 k-means clustering is a method of vector quantization, originally from signal 
 processing, that aims to partition n observations into k clusters in which 
@@ -503,10 +503,10 @@ tol: float, optional
 
     # ---#
     def plot_voronoi(
-        self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds
+        self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the Voronoi Graph of the model.
 
     Parameters
@@ -548,7 +548,7 @@ tol: float, optional
 # ---#
 class KPrototypes(Clustering):
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a KPrototypes object by using the Vertica k-prototypes algorithm on 
 the data. The algorithm combines the k-means and k-modes algorithms in order
 to handle both numerical and categorical data.

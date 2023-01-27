@@ -83,14 +83,14 @@ from verticapy.learn.memmodel import *
 # ---#
 class vModel:
     """
-------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Main Class for Vertica Model
 	"""
 
     # ---#
     def __repr__(self):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the model Representation.
 		"""
         try:
@@ -193,7 +193,7 @@ Main Class for Vertica Model
         **style_kwds,
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the model's contour plot. Only available for regressors, binary 
     classifiers, and for models of exactly two predictors.
 
@@ -261,7 +261,7 @@ Main Class for Vertica Model
             if self.type == "IsolationForest":
                 cbar_title = "anomaly_score"
             return vDataFrameSQL(self.input_relation).contour(
-                self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds
+                self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds,
             )
         else:
             return vDataFrameSQL(self.input_relation).contour(
@@ -277,7 +277,7 @@ Main Class for Vertica Model
     @check_dtypes
     def deploySQL(self, X: Union[str, list] = []):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the SQL code needed to deploy the model. 
 
 	Parameters
@@ -306,7 +306,7 @@ Main Class for Vertica Model
     # ---#
     def drop(self):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Drops the model from the Vertica database.
 		"""
         drop(self.name, method="model", model_type=self.type)
@@ -317,7 +317,7 @@ Main Class for Vertica Model
         self, ax=None, tree_id: int = None, show: bool = True, **style_kwds
     ):
         """
-		------------------------------------------------------------------------------------
+		----------------------------------------------------------------------------------------
 		Computes the model's features importance.
 
         Parameters
@@ -435,7 +435,7 @@ Main Class for Vertica Model
     @check_dtypes
     def get_attr(self, attr_name: str = ""):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the model attribute.
 
 	Parameters
@@ -608,7 +608,7 @@ Main Class for Vertica Model
     # ---#
     def get_params(self):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the parameters of the model.
 
 	Returns
@@ -627,7 +627,7 @@ Main Class for Vertica Model
     # ---#
     def get_vertica_param_dict(self):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the Vertica parameters dict to use when fitting the
     model. As some model's parameters names are not the same in
     Vertica. It is important to map them.
@@ -639,51 +639,26 @@ Main Class for Vertica Model
         """
 
         def map_to_vertica_param_name(param: str):
-
-            if param.lower() == "class_weights":
-                return "class_weight"
-
-            elif param.lower() == "solver":
-                return "optimizer"
-
-            elif param.lower() == "tol":
-                return "epsilon"
-
-            elif param.lower() == "max_iter":
-                return "max_iterations"
-
-            elif param.lower() == "penalty":
-                return "regularization"
-
-            elif param.lower() == "C":
-                return "lambda"
-
-            elif param.lower() == "l1_ratio":
-                return "alpha"
-
-            elif param.lower() == "n_estimators":
-                return "ntree"
-
-            elif param.lower() == "max_features":
-                return "mtry"
-
-            elif param.lower() == "sample":
-                return "sampling_size"
-
-            elif param.lower() == "max_leaf_nodes":
-                return "max_breadth"
-
-            elif param.lower() == "min_samples_leaf":
-                return "min_leaf_size"
-
-            elif param.lower() == "n_components":
-                return "num_components"
-
-            elif param.lower() == "init":
-                return "init_method"
-
-            else:
-                return param
+            param = param.lower()
+            options = {
+                "class_weights": "class_weight",
+                "solver": "optimizer",
+                "tol": "epsilon",
+                "max_iter": "max_iterations",
+                "penalty": "regularization",
+                "C": "lambda",
+                "l1_ratio": "alpha",
+                "n_estimators": "ntree",
+                "max_features": "mtry",
+                "sample": "sampling_size",
+                "max_leaf_nodes": "max_breadth",
+                "min_samples_leaf": "min_leaf_size",
+                "n_components": "num_components",
+                "init": "init_method",
+            }
+            if param in options:
+                return options[param]
+            return param
 
         parameters = {}
 
@@ -718,16 +693,16 @@ Main Class for Vertica Model
 
             elif param == "class_weight":
                 if isinstance(self.parameters[param], Iterable):
-                    parameters["class_weights"] = "'{}'".format(
-                        ", ".join([str(item) for item in self.parameters[param]])
-                    )
+                    parameters[
+                        "class_weights"
+                    ] = f"'{', '.join([str(p) for p in self.parameters[param]])}'"
                 else:
-                    parameters["class_weights"] = "'{}'".format(self.parameters[param])
+                    parameters["class_weights"] = f"'{self.parameters[param]}'"
 
             elif isinstance(self.parameters[param], (str, dict)):
-                parameters[map_to_vertica_param_name(param)] = "'{}'".format(
-                    self.parameters[param]
-                )
+                parameters[
+                    map_to_vertica_param_name(param)
+                ] = f"'{self.parameters[param]}'"
 
             else:
                 parameters[map_to_vertica_param_name(param)] = self.parameters[param]
@@ -738,7 +713,7 @@ Main Class for Vertica Model
     @check_dtypes
     def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model.
 
 	Parameters
@@ -862,7 +837,7 @@ Main Class for Vertica Model
     @check_dtypes
     def set_params(self, parameters: dict = {}):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Sets the parameters of the model.
 
 	Parameters
@@ -888,7 +863,7 @@ Main Class for Vertica Model
     # ---#
     def to_memmodel(self, **kwds):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts a specified Vertica model to a memModel model.
 
     Returns
@@ -1109,7 +1084,7 @@ Main Class for Vertica Model
         return_str: bool = False,
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the Python code needed to deploy the model without using built-in
     Vertica functions.
 
@@ -1172,9 +1147,9 @@ Main Class for Vertica Model
         elif self.type == "BisectingKMeans":
             bktree = self.get_attr("BKTree")
             cluster = [elem[1:-7] for elem in bktree.to_list()]
-            func += "centroids = np.array({})\n".format(cluster)
-            func += "\tright_child = {}\n".format(bktree["right_child"])
-            func += "\tleft_child = {}\n".format(bktree["left_child"])
+            func += f"centroids = np.array({cluster})\n"
+            func += f"\tright_child = {bktree['right_child']}\n"
+            func += f"\tleft_child = {bktree['left_child']}\n"
             func += "\tdef predict_tree(right_child, left_child, row, node_id, centroids):\n"
             func += "\t\tif left_child[node_id] == right_child[node_id] == None:\n"
             func += "\t\t\treturn int(node_id)\n"
@@ -1194,7 +1169,7 @@ Main Class for Vertica Model
             return func
         elif self.type in ("KPrototypes",):
             centroids = self.cluster_centers_.to_list()
-            func += "centroids = np.array({})\n\n".format(centroids)
+            func += f"centroids = np.array({centroids})\n\n"
             func += "\tdef compute_distance_row(X):\n"
             func += "\t\tresult = []\n"
             func += "\t\tfor centroid in centroids:\n"
@@ -1491,7 +1466,7 @@ Main Class for Vertica Model
     @check_dtypes
     def to_sql(self, X: list = [], return_proba: bool = False):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model without using built-in 
     Vertica functions.
 
@@ -1530,7 +1505,7 @@ class Supervised(vModel):
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -1658,7 +1633,11 @@ class Supervised(vModel):
             "SARIMAX",
         ):
             self.coef_ = self.get_attr("details")
-        elif self.type in ("RandomForestClassifier", "NaiveBayes", "XGBoostClassifier"):
+        elif self.type in (
+            "RandomForestClassifier",
+            "NaiveBayes",
+            "XGBoostClassifier",
+        ):
             if not (isinstance(input_relation, vDataFrame)):
                 classes = executeSQL(
                     "SELECT /*+LABEL('learn.vModel.fit')*/ DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
@@ -1692,7 +1671,7 @@ class Tree:
         leaf_style: dict = {},
     ):
         """
-        ------------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------
         Returns the code for a Graphviz tree.
 
         Parameters
@@ -1738,7 +1717,7 @@ class Tree:
     @check_dtypes
     def get_tree(self, tree_id: int = 0):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns a table with all the input tree information.
 
 	Parameters
@@ -1753,12 +1732,10 @@ class Tree:
 		utilities.tablesample.
 		"""
         name = self.tree_name if self.type == "KernelDensity" else self.name
-        query = """SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS 
-                                        model_name = '{0}', 
-                                        tree_id = {1}, 
-                                        format = 'tabular')) x ORDER BY node_id;""".format(
-            name, tree_id
-        )
+        query = f"""SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS 
+                                                     model_name = '{name}', 
+                                                     tree_id = {tree_id}, 
+                                                     format = 'tabular')) x ORDER BY node_id;"""
         result = to_tablesample(query=query, title="Reading Tree.")
         return result
 
@@ -1777,7 +1754,7 @@ class Tree:
         leaf_style: dict = {},
     ):
         """
-        ------------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------
         Draws the input tree. Requires the graphviz module.
 
         Parameters
@@ -1827,7 +1804,7 @@ class Tree:
         self, tree_id: int = None,
     ):
         """
-        ------------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------
         Returns the feature importance metrics for the input tree.
 
         Parameters
@@ -1872,7 +1849,7 @@ class BinaryClassifier(Classifier):
         self, cutoff: Union[int, float] = 0.5, nbins: int = 10000,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
 	(AUC, accuracy, PRC AUC, F1...). 
 
@@ -1910,7 +1887,7 @@ class BinaryClassifier(Classifier):
     @check_dtypes
     def confusion_matrix(self, cutoff: Union[int, float] = 0.5):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes the model confusion matrix.
 
 	Parameters
@@ -1930,7 +1907,7 @@ class BinaryClassifier(Classifier):
     @check_dtypes
     def deploySQL(self, cutoff: Union[int, float] = -1, X: Union[str, list] = []):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the SQL code needed to deploy the model. 
 
 	Parameters
@@ -1959,7 +1936,7 @@ class BinaryClassifier(Classifier):
     @check_dtypes
     def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model Lift Chart.
 
     Parameters
@@ -1990,7 +1967,7 @@ class BinaryClassifier(Classifier):
     @check_dtypes
     def prc_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model PRC curve.
 
     Parameters
@@ -2028,7 +2005,7 @@ class BinaryClassifier(Classifier):
         inplace: bool = True,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
@@ -2083,7 +2060,7 @@ class BinaryClassifier(Classifier):
         inplace: bool = True,
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the model's probabilities using the input relation.
 
     Parameters
@@ -2141,7 +2118,7 @@ class BinaryClassifier(Classifier):
     @check_dtypes
     def cutoff_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the model Cutoff curve.
 
     Parameters
@@ -2173,7 +2150,7 @@ class BinaryClassifier(Classifier):
     @check_dtypes
     def roc_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model ROC curve.
 
     Parameters
@@ -2209,7 +2186,7 @@ class BinaryClassifier(Classifier):
         nbins: int = 10000,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes the model score.
 
 	Parameters
@@ -2257,11 +2234,11 @@ class BinaryClassifier(Classifier):
             return aic_bic(self.y, self.deploySQL(), self.test_relation, len(self.X))[1]
         elif method == "prc_auc":
             return prc_curve(
-                self.y, self.deploySQL(), self.test_relation, auc_prc=True, nbins=nbins
+                self.y, self.deploySQL(), self.test_relation, auc_prc=True, nbins=nbins,
             )
         elif method == "auc":
             return roc_curve(
-                self.y, self.deploySQL(), self.test_relation, auc_roc=True, nbins=nbins
+                self.y, self.deploySQL(), self.test_relation, auc_roc=True, nbins=nbins,
             )
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
@@ -2315,7 +2292,7 @@ class MulticlassClassifier(Classifier):
         nbins: int = 10000,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
 	(AUC, accuracy, PRC AUC, F1...). For multiclass classification, it will consider 
     each category as positive and switch to the next one during the computation.
@@ -2356,10 +2333,10 @@ class MulticlassClassifier(Classifier):
     # ---#
     @check_dtypes
     def confusion_matrix(
-        self, pos_label: Union[int, float, str] = None, cutoff: Union[int, float] = -1
+        self, pos_label: Union[int, float, str] = None, cutoff: Union[int, float] = -1,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes the model confusion matrix.
 
 	Parameters
@@ -2404,7 +2381,7 @@ class MulticlassClassifier(Classifier):
         **style_kwds,
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the model Cutoff curve.
 
     Parameters
@@ -2462,7 +2439,7 @@ class MulticlassClassifier(Classifier):
         X: Union[str, list] = [],
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the SQL code needed to deploy the model. 
 
 	Parameters
@@ -2514,7 +2491,7 @@ class MulticlassClassifier(Classifier):
                         "{0}({1} USING PARAMETERS model_name = '{2}', class = '{3}', "
                         "type = 'probability', match_by_pos = 'true')"
                     ).format(
-                        fun, ", ".join(self.X if not (X) else X), self.name, pos_label
+                        fun, ", ".join(self.X if not (X) else X), self.name, pos_label,
                     )
             if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
                 if len(self.classes_) > 2:
@@ -2552,7 +2529,7 @@ class MulticlassClassifier(Classifier):
         **style_kwds,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model Lift Chart.
 
 	Parameters
@@ -2609,7 +2586,7 @@ class MulticlassClassifier(Classifier):
         **style_kwds,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model PRC curve.
 
 	Parameters
@@ -2667,7 +2644,7 @@ class MulticlassClassifier(Classifier):
         inplace: bool = True,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
@@ -2734,7 +2711,7 @@ class MulticlassClassifier(Classifier):
         inplace: bool = True,
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the model's probabilities using the input relation.
 
     Parameters
@@ -2800,7 +2777,7 @@ class MulticlassClassifier(Classifier):
         **style_kwds,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model ROC curve.
 
 	Parameters
@@ -2857,7 +2834,7 @@ class MulticlassClassifier(Classifier):
         nbins: int = 10000,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes the model score.
 
 	Parameters
@@ -2913,7 +2890,10 @@ class MulticlassClassifier(Classifier):
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         if method in ("accuracy", "acc"):
             return accuracy_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation, pos_label
+                self.y,
+                self.deploySQL(pos_label, cutoff),
+                self.test_relation,
+                pos_label,
             )
         elif method == "auc":
             return auc(
@@ -3015,7 +2995,7 @@ class Regressor(Supervised):
         inplace: bool = True,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
@@ -3056,7 +3036,7 @@ class Regressor(Supervised):
     @check_dtypes
     def regression_report(self, method: str = "metrics"):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes a regression report using multiple metrics to evaluate the model
 	(r2, mse, max error...). 
 
@@ -3087,7 +3067,9 @@ class Regressor(Supervised):
         if self.type == "SARIMAX":
             test_relation = self.transform_relation
             test_relation = "(SELECT {} AS prediction, {} FROM {}) VERTICAPY_SUBTABLE".format(
-                self.deploySQL(), "VerticaPy_y_copy AS {}".format(self.y), test_relation
+                self.deploySQL(),
+                "VerticaPy_y_copy AS {}".format(self.y),
+                test_relation,
             )
             test_relation = (
                 test_relation.format(self.test_relation)
@@ -3193,7 +3175,7 @@ class Regressor(Supervised):
     @check_dtypes
     def score(self, method: str = "r2"):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes the model score.
 
 	Parameters
@@ -3231,7 +3213,9 @@ class Regressor(Supervised):
         if self.type == "SARIMAX":
             test_relation = self.transform_relation
             test_relation = "(SELECT {} AS prediction, {} FROM {}) VERTICAPY_SUBTABLE".format(
-                self.deploySQL(), "VerticaPy_y_copy AS {}".format(self.y), test_relation
+                self.deploySQL(),
+                "VerticaPy_y_copy AS {}".format(self.y),
+                test_relation,
             )
             test_relation = (
                 test_relation.format(self.test_relation)
@@ -3357,7 +3341,7 @@ class Unsupervised(vModel):
     @check_dtypes
     def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -3613,7 +3597,7 @@ class Preprocessing(Unsupervised):
         X: Union[str, list] = [],
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
 
     Parameters
@@ -3669,7 +3653,10 @@ class Preprocessing(Unsupervised):
                 separator,
                 self.parameters["column_naming"],
             )
-            if self.parameters["column_naming"].lower() in ("values", "values_relaxed"):
+            if self.parameters["column_naming"].lower() in (
+                "values",
+                "values_relaxed",
+            ):
                 sql += ", null_column_name = {}".format(null_column_name)
         sql += ")"
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
@@ -3683,7 +3670,7 @@ class Preprocessing(Unsupervised):
         X: Union[str, list] = [],
     ) -> str:
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the inverse model. 
 
     Parameters
@@ -3728,7 +3715,7 @@ class Preprocessing(Unsupervised):
     @check_dtypes
     def get_names(self, inverse: bool = False, X: list = []):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the Transformation output names.
 
     Parameters
@@ -3800,7 +3787,7 @@ class Preprocessing(Unsupervised):
     @check_dtypes
     def inverse_transform(self, vdf: Union[str, vDataFrame], X: Union[str, list] = []):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies the Inverse Model on a vDataFrame.
 
     Parameters
@@ -3843,7 +3830,7 @@ class Preprocessing(Unsupervised):
     @check_dtypes
     def transform(self, vdf: Union[str, vDataFrame] = None, X: Union[str, list] = []):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies the model on a vDataFrame.
 
     Parameters
@@ -3893,7 +3880,7 @@ class Decomposition(Preprocessing):
         X: Union[str, list] = [],
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
 
     Parameters
@@ -3946,7 +3933,7 @@ class Decomposition(Preprocessing):
     @check_dtypes
     def plot(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws a decomposition scatter plot.
     Parameters
     ----------
@@ -3995,7 +3982,7 @@ class Decomposition(Preprocessing):
     @check_dtypes
     def plot_circle(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws a decomposition circle.
 
     Parameters
@@ -4035,7 +4022,7 @@ class Decomposition(Preprocessing):
     # ---#
     def plot_scree(self, ax=None, **style_kwds):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws a decomposition scree plot.
 
     Parameters
@@ -4096,7 +4083,7 @@ class Decomposition(Preprocessing):
         p: int = 2,
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the decomposition score on a dataset for each transformed column. It
     is the average / median of the p-distance between the real column and its 
     result after applying the decomposition model and its inverse.  
@@ -4186,7 +4173,7 @@ class Decomposition(Preprocessing):
         cutoff: Union[int, float] = 1,
     ):
         """
-    ------------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies the model on a vDataFrame.
 
     Parameters
@@ -4244,7 +4231,7 @@ class Clustering(Unsupervised):
         inplace: bool = True,
     ):
         """
-	------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters

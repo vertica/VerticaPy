@@ -439,7 +439,7 @@ class TestDummyTreeClassifier:
         current_cursor().execute("DROP MODEL IF EXISTS tc_from_vDF")
         model_test = DummyTreeClassifier("tc_from_vDF",)
         model_test.fit(
-            dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation"
+            dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation",
         )
 
         current_cursor().execute(
