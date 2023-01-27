@@ -114,26 +114,16 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    gid, g = vdf.format_colnames([gid, g])
-
-    query = """SELECT 
-                    STV_Create_Index({0}, {1} 
+    gid, g = vdf.format_colnames(gid, g)
+    query = f"""SELECT 
+                    STV_Create_Index({gid}, {g} 
                                      USING PARAMETERS 
-                                        index='{2}', 
-                                        overwrite={3} , 
-                                        max_mem_mb={4}, 
-                                        skip_nonindexable_polygons={5}) 
+                                        index='{index}', 
+                                        overwrite={overwrite} , 
+                                        max_mem_mb={max_mem_mb}, 
+                                        skip_nonindexable_polygons={skip_nonindexable_polygons}) 
                                         OVER() 
-                FROM {6}""".format(
-        gid,
-        g,
-        index,
-        overwrite,
-        max_mem_mb,
-        skip_nonindexable_polygons,
-        vdf.__genSQL__(),
-    )
-
+                FROM {vdf.__genSQL__()}"""
     return to_tablesample(query)
 
 
@@ -174,8 +164,7 @@ Returns
 vDataFrame
     result of the transformation.
     """
-    x = vdf.format_colnames(x)
-    y = vdf.format_colnames(y)
+    x, y = vdf.format_colnames(x, y)
 
     result = vdf.copy()
 
@@ -267,13 +256,12 @@ Returns
 vDataFrame
     object containing the result of the intersection.
     """
-    gid = vdf.format_colnames(gid)
+    x, y, gid, g = vdf.format_colnames(x, y, gid, g)
 
     table = vdf.__genSQL__()
 
     if g:
 
-        g = vdf.format_colnames(g)
         query = (
             f"(SELECT STV_Intersect({gid}, {g} USING PARAMETERS"
             f" index='{index}') OVER (PARTITION BEST) AS "
@@ -282,7 +270,6 @@ vDataFrame
 
     elif x and y:
 
-        x, y = vdf.format_colnames([x, y])
         query = (
             f"(SELECT STV_Intersect({gid}, {x}, {y} USING PARAMETERS"
             f" index='{index}') OVER (PARTITION BEST) AS "

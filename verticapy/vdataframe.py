@@ -1593,7 +1593,7 @@ vColumns : vColumn
     # Methods used to check & format the inputs
     #
     # ---#
-    def are_namecols_in(self, columns: Union[str, list]):
+    def are_namecols_in(self, columns: Union[str, list, dict]):
         """
     ----------------------------------------------------------------------------------------
     Method used to check if the input column names are used by the vDataFrame.
@@ -1618,7 +1618,7 @@ vColumns : vColumn
                 raise MissingColumn(f"The Virtual Column '{column}' doesn't exist{e}.")
 
     # ---#
-    def format_colnames(self, *argv, columns: Union[str, list] = []):
+    def format_colnames(self, *argv, columns: Union[str, list, dict] = []):
         """
     ----------------------------------------------------------------------------------------
     Method used to format the input columns by using the vDataFrame columns' names.
@@ -1641,11 +1641,13 @@ vColumns : vColumn
                 result += [self.format_colnames(columns=arg)]
             return result
         else:
+            if not(columns):
+                return columns
             self.are_namecols_in(columns)
             if isinstance(columns, str):
                 vdf_columns = self.get_columns()
                 for col in vdf_columns:
-                    if quote_ident(column).lower() == quote_ident(col).lower():
+                    if quote_ident(col).lower() == quote_ident(col).lower():
                         result = col
                         break
             elif isinstance(columns, dict):
