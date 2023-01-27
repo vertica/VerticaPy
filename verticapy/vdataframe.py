@@ -1618,15 +1618,17 @@ vColumns : vColumn
                 raise MissingColumn(f"The Virtual Column '{column}' doesn't exist{e}.")
 
     # ---#
-    def format_colnames(self, *argv, columns: Union[str, list, dict] = []):
+    def format_colnames(self, *argv, columns: Union[str, list, dict] = [], raise_error: bool = True):
         """
     ----------------------------------------------------------------------------------------
     Method used to format the input columns by using the vDataFrame columns' names.
 
     Parameters
     ----------
-    columns: list / str
+    columns: list / str, optional
         List of columns' names to format.
+    raise_error: bool, optional
+        If set to True and if there is an error, it will be raised.
 
     Returns
     -------
@@ -1643,8 +1645,10 @@ vColumns : vColumn
         else:
             if not(columns) or isinstance(columns, (int, float)):
                 return columns
-            self.are_namecols_in(columns)
+            if raise_error:
+                self.are_namecols_in(columns)
             if isinstance(columns, str):
+                result = columns
                 vdf_columns = self.get_columns()
                 for col in vdf_columns:
                     if quote_ident(columns).lower() == quote_ident(col).lower():
@@ -3737,11 +3741,11 @@ vColumns : vColumn
     vDataFrame
         balanced vDataFrame
         """
+        column, order_by = self.format_colnames(column, order_by)
         raise_error_if_not_in("method", method, ["hybrid", "over", "under"])
         if isinstance(order_by, str):
             order_by = [order_by]
         assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
-        column = self.format_colnames(column, order_by)
         topk = self[column].topk()
         last_count, last_elem, n = (
             topk["count"][-1],
@@ -9562,11 +9566,11 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         for i in range(len(columns)):
-            column = self.format_colnames([columns[i]])
+            column = self.format_colnames(columns[i], raise_error=False)
             if column:
                 dtype = ""
                 if self._VERTICAPY_VARIABLES_["isflex"]:
-                    dtype = self[column[0]].ctype().lower()
+                    dtype = self[column].ctype().lower()
                     if (
                         "array" in dtype
                         or "map" in dtype
@@ -9576,7 +9580,7 @@ vColumns : vColumn
                         dtype = ""
                     else:
                         dtype = f"::{dtype}"
-                columns[i] = column[0] + dtype
+                columns[i] = column + dtype
             else:
                 columns[i] = str(columns[i])
         table = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(

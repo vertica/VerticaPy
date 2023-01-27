@@ -135,7 +135,7 @@ def hchart_from_vdf(
 ):
     if not (x):
         x = vdf.numcol()
-    x, y, z, c = vdf.format_colnames(x, y, z, c)
+    x, y, z, c = vdf.format_colnames(x, y, z, c, raise_error=False)
     if drilldown:
         if not (z):
             z = "COUNT(*)"
