@@ -1607,7 +1607,7 @@ vColumns : vColumn
                 try:
                     e = ""
                     nearestcol = self.get_nearest_column(column)
-                    if nearestcol[1] < 5:
+                    if nearestcol[1] < 8:
                         e = f"\nDid you mean '{nearestcol[0]}' ?"
                 except:
                     e = ""
@@ -2760,7 +2760,7 @@ vColumns : vColumn
         by = self.format_colnames(by)
         func = func.lower()
         by = ", ".join(by)
-        by = "PARTITION BY {}".format(by) if (by) else ""
+        by = f"PARTITION BY {by}" if (by) else ""
         order_by = self.__get_sort_syntax__(order_by)
         func = get_verticapy_function(func.lower(), method="vertica")
         if func in (
@@ -2820,32 +2820,15 @@ vColumns : vColumn
                 if func == "kurtosis":
                     self.eval(
                         name,
-                        "AVG(POWER(({} - {}) / NULLIFZERO({}), 4)) OVER ({}) * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3))".format(
-                            columns[0],
-                            mean_name,
-                            std_name,
-                            by,
-                            count_name,
-                            count_name,
-                            count_name,
-                            count_name,
-                            count_name,
-                            count_name,
-                            count_name,
-                            count_name,
+                        "AVG(POWER(({0} - {1}) / NULLIFZERO({2}), 4)) OVER ({3}) * POWER({4}, 2) * ({4} + 1) / NULLIFZERO(({4} - 1) * ({4} - 2) * ({4} - 3)) - 3 * POWER({4} - 1, 2) / NULLIFZERO(({4} - 2) * ({4} - 3))".format(
+                            columns[0], mean_name, std_name, by, count_name,
                         ),
                     )
                 elif func == "skewness":
                     self.eval(
                         name,
-                        "AVG(POWER(({} - {}) / NULLIFZERO({}), 3)) OVER ({}) * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2))".format(
-                            columns[0],
-                            mean_name,
-                            std_name,
-                            by,
-                            count_name,
-                            count_name,
-                            count_name,
+                        "AVG(POWER(({0} - {1}) / NULLIFZERO({2}), 3)) OVER ({3}) * POWER({4}, 2) / NULLIFZERO(({4} - 1) * ({4} - 2))".format(
+                            columns[0], mean_name, std_name, by, count_name,
                         ),
                     )
                 elif func == "jb":
@@ -3404,7 +3387,7 @@ vColumns : vColumn
     vDataFrame.applymap : Applies a function to all vColumns.
     vDataFrame.eval     : Evaluates a customized expression.
         """
-        self.are_namecols_in([elem for elem in func])
+        self.are_namecols_in([col for col in func])
         for column in func:
             self[self.format_colnames(column)].apply(func[column])
         return self
@@ -3588,7 +3571,7 @@ vColumns : vColumn
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
         self.are_namecols_in(ts)
-        self.filter("{}::time = '{}'".format(quote_ident(ts), time))
+        self.filter(f"{quote_ident(ts)}::time = '{time}'")
         return self
 
     # ---#
@@ -3683,8 +3666,10 @@ vColumns : vColumn
      See Also
      --------
      vDataFrame.boxplot     : Draws the Box Plot of the input vColumns.
-     vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
-     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
+     vDataFrame.hist        : Draws the histogram of the input vColumns based 
+                              on an aggregation.
+     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an 
+                              aggregation.
         """
         raise_error_if_not_in(
             "hist_type",
@@ -3787,10 +3772,10 @@ vColumns : vColumn
             last_count = last_count * x
         elif method == "under":
             last_count = last_count / x
-        vdf = self.search("{} = '{}'".format(column, last_elem))
+        vdf = self.search(f"{column} = '{last_elem}'")
         for i in range(n - 1):
             vdf = vdf.append(
-                self.search("{} = '{}'".format(column, topk["index"][i])).sample(
+                self.search(f"{column} = '{topk['index'][i]}'").sample(
                     n=int(last_count)
                 )
             )
@@ -3835,11 +3820,7 @@ vColumns : vColumn
     vDataFrame.last    : Filters the data by only keeping the last records.
         """
         self.are_namecols_in(ts)
-        self.filter(
-            "{}::time BETWEEN '{}' AND '{}'".format(
-                quote_ident(ts), start_time, end_time
-            ),
-        )
+        self.filter(f"{quote_ident(ts)}::time BETWEEN '{start_time}' AND '{end_time}'",)
         return self
 
     # ---#
@@ -3889,10 +3870,13 @@ vColumns : vColumn
 
     See Also
     --------
-    vDataFrame.bar         : Draws the bar chart of the input vColumns based on an aggregation.
+    vDataFrame.bar         : Draws the bar chart of the input vColumns based 
+                             on an aggregation.
     vDataFrame.boxplot     : Draws the vColumn box plot.
-    vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
-    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
+    vDataFrame.hist        : Draws the histogram of the input vColumns based 
+                             on an aggregation.
+    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an 
+                             aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
