@@ -1635,10 +1635,10 @@ vColumns : vColumn
         """
         if argv:
             if len(argv) == 1:
-                return format_colnames(columns=argv[0])
+                return self.format_colnames(columns=argv[0])
             result = []
             for arg in argv:
-                result += [format_colnames(columns=arg)]
+                result += [self.format_colnames(columns=arg)]
             return result
         else:
             self.are_namecols_in(columns)
@@ -3464,7 +3464,7 @@ vColumns : vColumn
         """
         if isinstance(by, str):
             by = [by]
-        ts, by = self.format_colnames(ts), self.format_colnames(by)
+        method, ts, by = self.format_colnames(method, ts, by)
         all_elements = []
         for column in method:
             assert method[column] in (
@@ -3482,11 +3482,7 @@ vColumns : vColumn
                 func, interp = "TS_FIRST_VALUE", "const"
             else:
                 func, interp = "TS_FIRST_VALUE", "linear"
-            all_elements += [
-                "{0}({1}, '{2}') AS {1}".format(
-                    func, self.format_colnames(column), interp
-                )
-            ]
+            all_elements += ["{0}({1}, '{2}') AS {1}".format(func, column, interp)]
         table = "SELECT {} FROM {}".format("{}", self.__genSQL__())
         tmp_query = [f"slice_time AS {quote_ident(ts)}"]
         tmp_query += [quote_ident(column) for column in by]
@@ -3676,9 +3672,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [1, 2])
-        columns = self.format_colnames(columns)
-        if of:
-            of = self.format_colnames(of)
+        columns, of = self.format_colnames(columns, of)
         if len(columns) == 1:
             return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax, **style_kwds)
         else:
@@ -3746,8 +3740,7 @@ vColumns : vColumn
         if isinstance(order_by, str):
             order_by = [order_by]
         assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
-        column = self.format_colnames(column)
-        order_by = self.format_colnames(order_by)
+        column = self.format_colnames(column, order_by)
         topk = self[column].topk()
         last_count, last_elem, n = (
             topk["count"][-1],
@@ -3925,13 +3918,10 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [2])
-        columns = self.format_colnames(columns)
-        if catcol:
-            catcol = self.format_colnames(catcol)
-        if size_bubble_col:
-            size_bubble_col = self.format_colnames(size_bubble_col)
-        if cmap_col:
-            cmap_col = self.format_colnames(cmap_col)
+        columns, catcol, size_bubble_col, cmap_col = self.format_colnames(
+            columns, catcol, size_bubble_col, cmap_col
+        )
+
         from verticapy.plot import bubble
 
         return bubble(
@@ -4442,35 +4432,29 @@ vColumns : vColumn
     vDataFrame.pacf : Computes the partial autocorrelations of the input vColumn.
     vDataFrame.regr : Computes the regression matrix of the vDataFrame. 
         """
+        method = str(method).lower()
         raise_error_if_not_in(
             "method",
-            str(method).lower(),
+            method,
             ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer",],
         )
-        method = str(method).lower()
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
-        if not (focus):
-            return self.__aggregate_matrix__(
-                method=method,
-                columns=columns,
-                round_nb=round_nb,
-                show=show,
-                ax=ax,
-                **style_kwds,
-            )
-        else:
-            focus = self.format_colnames(focus)
-            return self.__aggregate_vector__(
-                focus,
-                method=method,
-                columns=columns,
-                round_nb=round_nb,
-                show=show,
-                ax=ax,
-                **style_kwds,
-            )
+        columns, focus = self.format_colnames(columns, focus)
+        fun = self.__aggregate_matrix__
+        argv = []
+        kwds = {
+            "method": method,
+            "columns": columns,
+            "round_nb": round_nb,
+            "show": show,
+            "ax": ax,
+            **style_kwds,
+        }
+        if focus:
+            argv += [focus]
+            fun = self.__aggregate_vector__
+        return fun(*argv, **kwds)
 
     # ---#
     @check_dtypes
@@ -4531,7 +4515,7 @@ vColumns : vColumn
         from scipy.stats import t, norm, chi2
         from numpy import log
 
-        column1, column2 = self.format_colnames([column1, column2])
+        column1, column2 = self.format_colnames(column1, column2)
         if method[0:7] == "kendall":
             if method == "kendall":
                 kendall_type = "b"
@@ -4775,16 +4759,22 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
-        if focus == "":
-            return self.__aggregate_matrix__(
-                method="cov", columns=columns, show=show, ax=ax, **style_kwds
-            )
-        else:
-            focus = self.format_colnames(focus)
-            return self.__aggregate_vector__(
-                focus, method="cov", columns=columns, show=show, ax=ax, **style_kwds
-            )
+
+        columns, focus = self.format_colnames(columns, focus)
+        fun = self.__aggregate_matrix__
+        argv = []
+        kwds = {
+            "method": "cov",
+            "columns": columns,
+            "show": show,
+            "ax": ax,
+            **style_kwds,
+        }
+        if focus:
+            argv += [focus]
+            fun = self.__aggregate_vector__
+
+        return fun(*argv, **kwds)
 
     # ---#
     @save_verticapy_logs
@@ -6401,23 +6391,23 @@ vColumns : vColumn
                         "When parameter 'rollup' is not a boolean, it has to be a list of booleans."
                     )
                 for item in elem:
-                    colname = self.format_colnames([item])
+                    colname = self.format_colnames(item)
                     if colname:
-                        rollup_expr += colname[0]
-                        columns_to_select += [colname[0]]
+                        rollup_expr += colname
+                        columns_to_select += [colname]
                     else:
                         rollup_expr += str(item)
                         columns_to_select += [item]
                     rollup_expr += ", "
                 rollup_expr = rollup_expr[:-2] + "), "
             elif isinstance(elem, str):
-                colname = self.format_colnames([elem])
+                colname = self.format_colnames(elem)
                 if colname:
                     if not (isinstance(rollup, bool)) and (rollup[idx] == True):
-                        rollup_expr += "ROLLUP(" + colname[0] + ")"
+                        rollup_expr += "ROLLUP(" + colname + ")"
                     else:
-                        rollup_expr += colname[0]
-                    columns_to_select += [colname[0]]
+                        rollup_expr += colname
+                    columns_to_select += [colname]
                 else:
                     if not (isinstance(rollup, bool)) and (rollup[idx] == True):
                         rollup_expr += "ROLLUP(" + str(elem) + ")"
@@ -6758,9 +6748,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [2])
-        columns = self.format_colnames(columns)
-        if of:
-            of = self.format_colnames(of)
+        columns, of = self.format_colnames(columns, of)
         for column in columns:
             assert self[column].isnum(), TypeError(
                 f"vColumn {column} must be numerical to draw the Heatmap."
@@ -6841,9 +6829,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [2])
-        columns = self.format_colnames(columns)
-        if of:
-            of = self.format_colnames(of)
+        columns, of = self.format_colnames(columns, of)
         from verticapy.plot import hexbin
 
         return hexbin(self, columns, method, of, bbox, img, ax=ax, **style_kwds)
@@ -6914,9 +6900,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [1, 2, 3, 4, 5])
-        columns = self.format_colnames(columns)
-        if of:
-            of = self.format_colnames(of)
+        columns, of = self.format_colnames(columns, of)
         stacked = True if (hist_type.lower() == "stacked") else False
         multi = True if (hist_type.lower() == "multi") else False
         if len(columns) == 1:
@@ -7611,11 +7595,7 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        if isinstance(index, str):
-            index = self.format_colnames([index])
-        else:
-            index = self.format_colnames(index)
-        columns = self.format_colnames(columns)
+        index, columns = self.format_colnames(index, columns)
         if not (columns):
             columns = self.numcol()
         for idx in index:
@@ -7965,9 +7945,7 @@ vColumns : vColumn
                 return 1.0
             elif p == 1:
                 return self.acf(ts=ts, column=column, by=by, p=[1], unit=unit)
-            by = self.format_colnames(by)
-            column = self.format_colnames(column)
-            ts = self.format_colnames(ts)
+            by, column, ts = self.format_colnames(by, column, ts)
             if unit == "rows":
                 table = self.__genSQL__()
             else:
@@ -8150,9 +8128,7 @@ vColumns : vColumn
     vDataFrame.pivot_table : Draws the pivot table of one or two columns based on an 
         aggregation.
         """
-        index = self.format_colnames(index)
-        columns = self.format_colnames(columns)
-        values = self.format_colnames(values)
+        index, columns, values = self.format_colnames(index, columns, values)
         aggr = aggr.upper()
         if "{}" not in aggr:
             aggr += "({})"
@@ -8233,8 +8209,7 @@ vColumns : vColumn
         raise_error_if_not_in("method", method, ["smart", "same_width"])
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
-        response = self.format_colnames(response)
+        columns, response = self.format_colnames(columns, response)
         assert 2 <= nbins <= 16, ParameterError(
             "Parameter 'nbins' must be between 2 and 16, inclusive."
         )
@@ -8367,9 +8342,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [1, 2])
-        columns = self.format_colnames(columns)
-        if of:
-            of = self.format_colnames(of)
+        columns, of = self.format_colnames(columns, of)
         from verticapy.plot import pivot_table
 
         return pivot_table(
@@ -8435,8 +8408,7 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
-        ts = self.format_colnames(ts)
+        columns, ts = self.format_colnames(columns, ts)
         kind = "step" if step else "line"
         from verticapy.plot import multi_ts_plot
 
@@ -8616,7 +8588,7 @@ vColumns : vColumn
         The vDataFrame of the recommendation.
         """
         raise_error_if_not_in("method", method, ["count", "avg", "median"])
-        unique_id, item_id = self.format_colnames([unique_id, item_id])
+        unique_id, item_id, ts = self.format_colnames(unique_id, item_id, ts)
         vdf = self.copy()
         assert (
             method == "count" or rating
@@ -8630,7 +8602,6 @@ vColumns : vColumn
             ), "Method 'count' can not be used if parameter 'rating' is defined."
             rating = self.format_colnames(rating)
         if ts:
-            ts = self.format_colnames(ts)
             if start_date and end_date:
                 vdf = self.search(f"{ts} BETWEEN '{start_date}' AND '{end_date}'")
             elif start_date:
@@ -9084,8 +9055,8 @@ vColumns : vColumn
             name = "moving_{}".format(
                 gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]])
             )
-        columns = self.format_colnames(columns)
-        by = "" if not (by) else "PARTITION BY " + ", ".join(self.format_colnames(by))
+        columns, by = self.format_colnames(columns, by)
+        by = "" if not (by) else "PARTITION BY " + ", ".join(by)
         order_by = (
             " ORDER BY {}".format(columns[0])
             if not (order_by)
@@ -9442,11 +9413,9 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [2, 3])
-        columns = self.format_colnames(columns)
-        if catcol:
-            catcol = self.format_colnames([catcol])
-        else:
-            catcol = []
+        columns, catcol = self.format_colnames(columns, catcol)
+        catcol = [catcol] if catcol else []
+
         if len(columns) == 2:
             from verticapy.plot import scatter2D
 
@@ -9685,8 +9654,7 @@ vColumns : vColumn
         """
         if isinstance(by, str):
             by = [by]
-        by = self.format_colnames(by)
-        ts = self.format_colnames(ts)
+        by, ts = self.format_colnames(by, ts)
         partition = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
         expr = f"CONDITIONAL_TRUE_EVENT({ts}::timestamp - LAG({ts}::timestamp) > '{session_threshold}') OVER ({partition} ORDER BY {ts})"
         return self.eval(name=name, expr=expr)
@@ -9748,8 +9716,7 @@ vColumns : vColumn
         """
         import verticapy.learn.metrics as mt
 
-        y_true = self.format_colnames(y_true)
-        y_score = self.format_colnames(y_score)
+        y_true, y_score = self.format_colnames(y_true, y_score)
         method = str(method).lower()
         raise_error_if_not_in("method", method, list(mt.FUNCTIONS_DICTIONNARY.keys()))
         fun = mt.FUNCTIONS_DICTIONNARY[method]
@@ -9909,8 +9876,7 @@ vColumns : vColumn
         assert min(self.min(columns)["min"]) >= 0, ValueError(
             "Columns having negative values can not be processed by the 'stacked_area' method."
         )
-        columns = self.format_colnames(columns)
-        ts = self.format_colnames(ts)
+        columns, ts = self.format_colnames(columns, ts)
         from verticapy.plot import multi_ts_plot
 
         return multi_ts_plot(
@@ -10010,8 +9976,7 @@ vColumns : vColumn
                 )
             )
             column2 = self.get_columns()[column2]
-        column1 = self.format_colnames(column1)
-        column2 = self.format_colnames(column2)
+        column1, column2 = self.format_colnames(column1, column2)
         columns = self._VERTICAPY_VARIABLES_["columns"]
         all_cols = {}
         for idx, elem in enumerate(columns):
@@ -10956,8 +10921,7 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
-        y = self.format_colnames(y)
+        columns, y = self.format_colnames(columns, y)
         if not (columns):
             columns = self.get_columns(exclude_columns=[y])
         coeff_importances = {}
