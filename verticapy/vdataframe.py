@@ -1647,7 +1647,7 @@ vColumns : vColumn
             if isinstance(columns, str):
                 vdf_columns = self.get_columns()
                 for col in vdf_columns:
-                    if quote_ident(col).lower() == quote_ident(col).lower():
+                    if quote_ident(columns).lower() == quote_ident(col).lower():
                         result = col
                         break
             elif isinstance(columns, dict):
