@@ -998,7 +998,6 @@ papprox_ma: int, optional
             ts = self.ts
         if not (X):
             X = self.exogenous
-        vdf.are_namecols_in([y, ts])
         y, ts = vdf.format_colnames([y, ts])
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -1679,7 +1678,6 @@ solver: str, optional
             ts = self.ts
         if not (X):
             X = self.X
-        vdf.are_namecols_in(X + [ts])
         X = vdf.format_colnames(X)
         ts = vdf.format_colnames(ts)
         all_pred, names = [], []

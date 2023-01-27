@@ -892,7 +892,6 @@ Attributes
  	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
         if of:
-            self.parent.are_namecols_in(of)
             of = self.parent.format_colnames(of)
         from verticapy.plot import bar
 
@@ -945,7 +944,6 @@ Attributes
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
         if by:
-            self.parent.are_namecols_in(by)
             by = self.parent.format_colnames(by)
         from verticapy.plot import boxplot
 
@@ -1225,7 +1223,6 @@ Attributes
             "kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]
         )
         if by:
-            self.parent.are_namecols_in(by)
             by = self.parent.format_colnames(by)
             from verticapy.plot import gen_colors
             from matplotlib.lines import Line2D
@@ -1548,7 +1545,6 @@ Attributes
             assert response, ParameterError(
                 "Parameter 'response' can not be empty in case of discretization using the method 'smart'."
             )
-            self.parent.are_namecols_in(response)
             response = self.parent.format_colnames(response)
             drop(tmp_view_name, method="view")
             self.parent.to_db(tmp_view_name)
@@ -2045,7 +2041,7 @@ Attributes
         if isinstance(order_by, str):
             order_by = [order_by]
         method = method.lower()
-        self.parent.are_namecols_in([elem for elem in order_by] + by)
+        order_by = self.parent.format_colnames(order_by)
         by = self.parent.format_colnames(by)
         if method == "auto":
             method = "mean" if (self.isnum() and self.nunique(True) > 6) else "mode"
@@ -2053,9 +2049,7 @@ Attributes
         if (method == "mode") and (val == None):
             val = self.mode(dropna=True)
             if val == None:
-                warning_message = "The vColumn {} has no mode (only missing values).\nNothing was filled.".format(
-                    self.alias
-                )
+                warning_message = f"The vColumn {self.alias} has no mode (only missing values).\nNothing was filled."
                 warnings.warn(warning_message, Warning)
                 return self.parent
         if isinstance(val, str):
@@ -2218,7 +2212,6 @@ Attributes
         else:
             check = False
         if check:
-            self.parent.are_namecols_in(column)
             column = self.parent.format_colnames(column)
             columns += [column]
             if not ("cmap" in kwargs):
@@ -2451,7 +2444,6 @@ Attributes
  	vDataFrame[].bar : Draws the Bar Chart of vColumn based on an aggregation.
 		"""
         if of:
-            self.parent.are_namecols_in(of)
             of = self.parent.format_colnames(of)
         from verticapy.plot import hist
 
@@ -2646,7 +2638,6 @@ Attributes
     --------
     vDataFrame.iv_woe : Computes the Information Value (IV) Table.
         """
-        self.parent.are_namecols_in(y)
         y = self.parent.format_colnames(y)
         assert self.parent[y].nunique() == 2, TypeError(
             f"vColumn {y} must be binary to use iv_woe."
@@ -2819,7 +2810,6 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 		"""
-        self.parent.are_namecols_in(response)
         response = self.parent.format_colnames(response)
         assert self.parent[response].isnum(), TypeError(
             "The response column must be numerical to use a mean encoding"
@@ -3065,7 +3055,6 @@ Attributes
         if isinstance(by, str):
             by = [by]
         method = method.lower()
-        self.parent.are_namecols_in(by)
         by = self.parent.format_colnames(by)
         nullifzero, n = 1, len(by)
         if self.isbool():
@@ -3563,7 +3552,6 @@ Attributes
         raise_error_if_not_in("pie_type", pie_type, ["auto", "donut", "rose"])
         donut, rose = (pie_type == "donut"), (pie_type == "rose")
         if of:
-            self.parent.are_namecols_in(of)
             of = self.parent.format_colnames(of)
         from verticapy.plot import pie
 
@@ -3620,10 +3608,8 @@ Attributes
 	--------
 	vDataFrame.plot : Draws the time series.
 		"""
-        self.parent.are_namecols_in(ts)
         ts = self.parent.format_colnames(ts)
         if by:
-            self.parent.are_namecols_in(by)
             by = self.parent.format_colnames(by)
         from verticapy.plot import ts_plot
 
@@ -3729,7 +3715,6 @@ Attributes
     --------
     vDataFrame.plot : Draws the time series.
         """
-        self.parent.are_namecols_in(ts)
         ts = self.parent.format_colnames(ts)
         from verticapy.plot import range_curve_vdf
 
@@ -3927,13 +3912,11 @@ Attributes
     vDataFrame.bar : Draws the Bar Chart of the input vColumns based on an aggregation.
         """
         if by:
-            self.parent.are_namecols_in(by)
             by = self.parent.format_colnames(by)
             columns = [self.alias, by]
         else:
             columns = [self.alias]
         if of:
-            self.parent.are_namecols_in(of)
             of = self.parent.format_colnames(of)
         from verticapy.plot import spider as spider_plot
 

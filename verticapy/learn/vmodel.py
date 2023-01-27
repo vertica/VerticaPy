@@ -3855,7 +3855,6 @@ class Preprocessing(Unsupervised):
             X = self.X
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
-        vdf.are_namecols_in(X)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
@@ -4204,7 +4203,6 @@ class Decomposition(Preprocessing):
             X = self.X
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
-        vdf.are_namecols_in(X)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)

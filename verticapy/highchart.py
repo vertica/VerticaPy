@@ -143,12 +143,9 @@ def hchart_from_vdf(
             kind = "column"
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
-        vdf.are_namecols_in(x)
         if isinstance(y, str):
-            vdf.are_namecols_in(y)
             y = vdf.format_colnames(y)
         else:
-            vdf.are_namecols_in(y)
             y = vdf.format_colnames(y)[0]
         query = [
             "SELECT {}, {} FROM {} GROUP BY 1 LIMIT {}".format(
@@ -165,7 +162,6 @@ def hchart_from_vdf(
             y = "COUNT(*)"
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
-        vdf.are_namecols_in(x)
         unique = vdf[x].nunique()
         is_num = vdf[x].isnum()
         order_by = " ORDER BY 2 DESC "
@@ -223,12 +219,9 @@ def hchart_from_vdf(
                 z = "COUNT(*)"
             if isinstance(x, Iterable) and not (isinstance(x, str)):
                 x = x[0]
-            vdf.are_namecols_in(x)
             if isinstance(y, str):
-                vdf.are_namecols_in(y)
                 y = vdf.format_colnames(y)
             else:
-                vdf.are_namecols_in(y)
                 y = vdf.format_colnames(y)[0]
             # y
             unique = vdf[y].nunique()
@@ -269,15 +262,12 @@ def hchart_from_vdf(
             x = x[0]
         if isinstance(y, Iterable) and not (isinstance(y, str)) and kind == "area_ts":
             y = y[0]
-        vdf.are_namecols_in(x)
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         if not (z):
             if not (aggregate):
                 if isinstance(y, str):
-                    vdf.are_namecols_in(y)
                     y = vdf.format_colnames(y)
                 else:
-                    vdf.are_namecols_in(y)
                     y = vdf.format_colnames(y)
             if not (isinstance(y, str)):
                 y = ", ".join(y)
@@ -294,16 +284,12 @@ def hchart_from_vdf(
             )
         else:
             if isinstance(y, str):
-                vdf.are_namecols_in(y)
                 y = vdf.format_colnames(y)
             else:
-                vdf.are_namecols_in(y)
                 y = vdf.format_colnames(y)[0]
             if isinstance(z, str):
-                vdf.are_namecols_in(z)
                 z = vdf.format_colnames(z)
             else:
-                vdf.are_namecols_in(z)
                 z = vdf.format_colnames(z)[0]
             # z
             unique = vdf[z].nunique()
@@ -327,10 +313,8 @@ def hchart_from_vdf(
             )
     elif kind in ("scatter", "bubble"):
         if isinstance(y, str):
-            vdf.are_namecols_in(y)
             y = vdf.format_colnames(y)
         else:
-            vdf.are_namecols_in(y)
             y = vdf.format_colnames(y)[0]
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
@@ -403,7 +387,6 @@ def hchart_from_vdf(
     elif kind == "area_range":
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
-        vdf.are_namecols_in(x)
         order_by = " ORDER BY 1 " if (vdf[x].isdate() or vdf[x].isnum()) else ""
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         query = "SELECT {0}{1}, {2} FROM {3}{4}{5} LIMIT {6}".format(
@@ -422,7 +405,6 @@ def hchart_from_vdf(
             y = [y]
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
-        vdf.are_namecols_in(x)
         # x
         unique = vdf[x].nunique()
         is_num = vdf[x].isnum()
@@ -467,7 +449,6 @@ def hchart_from_vdf(
     elif kind == "candlestick":
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
-        vdf.are_namecols_in(x)
         if aggregate:
             if isinstance(y, Iterable) and not (isinstance(y, str)) and len(y) == 1:
                 y = y[0]

@@ -114,7 +114,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([gid, g])
     gid, g = vdf.format_colnames([gid, g])
 
     query = """SELECT 
@@ -175,7 +174,8 @@ Returns
 vDataFrame
     result of the transformation.
     """
-    vdf.are_namecols_in([x, y])
+    x = vdf.format_colnames(x)
+    y = vdf.format_colnames(y)
 
     result = vdf.copy()
 
@@ -267,13 +267,12 @@ Returns
 vDataFrame
     object containing the result of the intersection.
     """
-    vdf.are_namecols_in([gid])
+    gid = vdf.format_colnames(gid)
 
     table = vdf.__genSQL__()
 
     if g:
 
-        vdf.are_namecols_in(g)
         g = vdf.format_colnames(g)
         query = (
             f"(SELECT STV_Intersect({gid}, {g} USING PARAMETERS"
@@ -283,7 +282,6 @@ vDataFrame
 
     elif x and y:
 
-        vdf.are_namecols_in([x, y])
         x, y = vdf.format_colnames([x, y])
         query = (
             f"(SELECT STV_Intersect({gid}, {x}, {y} USING PARAMETERS"

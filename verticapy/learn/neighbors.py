@@ -1024,7 +1024,6 @@ xlim: list, optional
                 vdf = vDataFrameSQL(input_relation)
             if not (X):
                 X = vdf.numcol()
-        vdf.are_namecols_in(X)
         X = vdf.format_colnames(X)
 
         # ---#
@@ -1038,10 +1037,10 @@ xlim: list, optional
         ):
             # ---#
             def density_kde(vdf, columns: list, kernel: str, x, p: int, h=None):
-                for elem in columns:
-                    if not (vdf[elem].isnum()):
+                for col in columns:
+                    if not (vdf[col].isnum()):
                         raise TypeError(
-                            f"Cannot compute KDE for non-numerical columns. {elem} is not numerical."
+                            f"Cannot compute KDE for non-numerical columns. {col} is not numerical."
                         )
                 if kernel == "gaussian":
                     fkernel = "EXP(-1 / 2 * POWER({0}, 2)) / SQRT(2 * PI())"
@@ -1084,7 +1083,6 @@ xlim: list, optional
                 else:
                     return 0
 
-            vdf.are_namecols_in(columns)
             columns = vdf.format_colnames(columns)
             x_vars = []
             y = []

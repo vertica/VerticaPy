@@ -273,7 +273,6 @@ final_relation_: vDataFrame
                 ts = ts_tmp
             if nb_date == 1 and nb_others == 1:
                 by = [cat_tmp]
-        vdf.are_namecols_in(X)
         X = vdf.format_colnames(X)
         X_diff = vdf.get_columns(exclude_columns=X)
         columns_to_drop = []
@@ -368,7 +367,6 @@ final_relation_: vDataFrame
         if columns_to_drop:
             vdf.drop(columns_to_drop)
         if ts:
-            vdf.are_namecols_in([ts] + by)
             ts = vdf.format_colnames(ts)
             by = vdf.format_colnames(by)
             if self.parameters["rule"] == "auto":
@@ -379,9 +377,7 @@ final_relation_: vDataFrame
                 ] = f"({ts}::timestamp - (LAG({ts}) OVER ({by_tmp}ORDER BY {ts}))::timestamp) / '00:00:01'"
                 vdf_tmp = vdf_tmp.groupby(["verticapy_time_delta"], ["COUNT(*) AS cnt"])
                 rule = executeSQL(
-                    "SELECT /*+LABEL('learn.delphi.AutoDataPrep.fit')*/ verticapy_time_delta FROM {} ORDER BY cnt DESC LIMIT 1".format(
-                        vdf_tmp.__genSQL__()
-                    ),
+                    f"SELECT /*+LABEL('learn.delphi.AutoDataPrep.fit')*/ verticapy_time_delta FROM { vdf_tmp.__genSQL__()} ORDER BY cnt DESC LIMIT 1",
                     method="fetchfirstelem",
                     print_time_sql=False,
                 )

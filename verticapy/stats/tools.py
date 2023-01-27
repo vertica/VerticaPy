@@ -222,7 +222,6 @@ tablesample
                 else:
                     return -3.41
 
-    vdf.are_namecols_in([ts, column] + by)
     ts = vdf.format_colnames(ts)
     column = vdf.format_colnames(column)
     by = vdf.format_colnames(by)
@@ -351,7 +350,7 @@ model
         vdf_tmp = vDataFrameSQL(vdf)
     else:
         vdf_tmp = vdf.copy()
-    vdf.are_namecols_in(ts)
+    ts = vdf.format_colnames(ts)
     name = gen_tmp_name(schema=schema_relation(model.name)[0], name="linear")
     param = model.get_params()
     model_tmp = type(model)(name)
@@ -412,7 +411,6 @@ Returns
 float
     Durbin Watson statistic
     """
-    vdf.are_namecols_in([eps] + [ts] + by)
     eps = vdf.format_colnames(eps)
     ts = vdf.format_colnames(ts)
     by = vdf.format_colnames(by)
@@ -457,7 +455,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([eps] + X)
     eps = vdf.format_colnames(eps)
     X = vdf.format_colnames(X)
 
@@ -522,7 +519,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([eps, ts] + by)
     eps = vdf.format_colnames(eps)
     ts = vdf.format_colnames(ts)
     by = vdf.format_colnames(by)
@@ -595,7 +591,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([eps] + X)
     eps = vdf.format_colnames(eps)
     X = vdf.format_colnames(X)
 
@@ -685,7 +680,6 @@ tablesample
     raise_error_if_not_in(
         "alternative", alternative, ["increasing", "decreasing", "two-sided"]
     )
-    vdf.are_namecols_in([y] + X)
     y = vdf.format_colnames(y)
     X = vdf.format_colnames(X)
     split_value = vdf[X[idx]].quantile(split)
@@ -739,7 +733,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([eps] + X)
     eps = vdf.format_colnames(eps)
     X = vdf.format_colnames(X)
     X_0 = ["1"] + X
@@ -814,7 +807,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
     jb, kurtosis, skewness, n = (
         vdf[column].agg(["jb", "kurtosis", "skewness", "count"]).values[column]
@@ -858,7 +850,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
     g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
     mu1 = -6 / (n + 1)
@@ -919,7 +910,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([column] + [ts] + by)
     column = vdf.format_colnames(column)
     ts = vdf.format_colnames(ts)
     by = vdf.format_colnames(by)
@@ -979,7 +969,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([column, ts])
     column = vdf.format_colnames(column)
     ts = vdf.format_colnames(ts)
     table = f"(SELECT {column}, {ts} FROM {vdf.__genSQL__()})"
@@ -1130,7 +1119,6 @@ vDataFrame
     assert period > 0 or polynomial_order > 0, ParameterError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
     )
-    vdf.are_namecols_in([column, ts] + by)
     ts, column, by = (
         vdf.format_colnames(ts),
         vdf.format_colnames(column),
@@ -1260,7 +1248,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
     g1, n = vdf[column].agg(["skewness", "count"]).values[column]
     mu1 = 0
@@ -1302,13 +1289,12 @@ Returns
 float
     VIF.
     """
-    vdf.are_namecols_in(X)
     X = vdf.format_colnames(X)
 
     if isinstance(X_idx, str):
-        vdf.are_namecols_in(X_idx)
+        X_idx = vdf.format_colnames(X_idx)
         for i in range(len(X)):
-            if quote_ident(X[i]) == quote_ident(X_idx):
+            if X[i] == X_idx:
                 X_idx = i
                 break
     if isinstance(X_idx, (int, float)):
