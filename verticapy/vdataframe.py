@@ -461,9 +461,9 @@ vColumns : vColumn
             elif isinstance(index, str_sql):
                 index = str(index)
                 is_sql = True
-            new_index = self.format_colnames([index])
+            new_index = self.format_colnames(index)
             try:
-                return getattr(self, new_index[0])
+                return getattr(self, new_index)
             except:
                 if is_sql:
                     return self.search(conditions=index)

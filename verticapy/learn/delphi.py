@@ -273,7 +273,7 @@ final_relation_: vDataFrame
                 ts = ts_tmp
             if nb_date == 1 and nb_others == 1:
                 by = [cat_tmp]
-        X = vdf.format_colnames(X)
+        X, ts, by = vdf.format_colnames(X, ts, by)
         X_diff = vdf.get_columns(exclude_columns=X)
         columns_to_drop = []
         n = vdf.shape()[0]
@@ -367,8 +367,6 @@ final_relation_: vDataFrame
         if columns_to_drop:
             vdf.drop(columns_to_drop)
         if ts:
-            ts = vdf.format_colnames(ts)
-            by = vdf.format_colnames(by)
             if self.parameters["rule"] == "auto":
                 vdf_tmp = vdf[[ts] + by]
                 by_tmp = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""

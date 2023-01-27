@@ -2211,8 +2211,7 @@ tablesample
         color = style_kwds["color"]
     else:
         color = gen_colors()[0]
-    by = vdf.format_colnames(by)
-    column, ts = vdf.format_colnames([column, ts])
+    by, column, ts = vdf.format_colnames(by, column, ts)
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
     result = tablesample(

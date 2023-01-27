@@ -222,9 +222,7 @@ tablesample
                 else:
                     return -3.41
 
-    ts = vdf.format_colnames(ts)
-    column = vdf.format_colnames(column)
-    by = vdf.format_colnames(by)
+    ts, column, by = vdf.format_colnames(ts, column, by)
     name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
     relation_name = gen_tmp_name(
         schema=verticapy.OPTIONS["temp_schema"], name="linear_reg_view"
@@ -411,9 +409,7 @@ Returns
 float
     Durbin Watson statistic
     """
-    eps = vdf.format_colnames(eps)
-    ts = vdf.format_colnames(ts)
-    by = vdf.format_colnames(by)
+    eps, ts, by = vdf.format_colnames(eps, ts, by)
     query = "(SELECT et, LAG(et) OVER({}ORDER BY {}) AS lag_et FROM (SELECT {} AS et, {}{} FROM {}) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE".format(
         "PARTITION BY {} ".format(", ".join(by)) if (by) else "",
         ts,
@@ -455,8 +451,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    eps = vdf.format_colnames(eps)
-    X = vdf.format_colnames(X)
+    eps, X = vdf.format_colnames(eps, X)
 
     from verticapy.learn.linear_model import LinearRegression
 
@@ -519,9 +514,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    eps = vdf.format_colnames(eps)
-    ts = vdf.format_colnames(ts)
-    by = vdf.format_colnames(by)
+    eps, ts, by = vdf.format_colnames(eps, ts, by)
     X = []
     X_names = []
     for i in range(0, p + 1):
@@ -591,8 +584,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    eps = vdf.format_colnames(eps)
-    X = vdf.format_colnames(X)
+    eps, X = vdf.format_colnames(eps, X)
 
     from verticapy.learn.linear_model import LinearRegression
 
@@ -680,8 +672,7 @@ tablesample
     raise_error_if_not_in(
         "alternative", alternative, ["increasing", "decreasing", "two-sided"]
     )
-    y = vdf.format_colnames(y)
-    X = vdf.format_colnames(X)
+    y, X = vdf.format_colnames(y, X)
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
@@ -733,8 +724,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    eps = vdf.format_colnames(eps)
-    X = vdf.format_colnames(X)
+    eps, X = vdf.format_colnames(eps, X)
     X_0 = ["1"] + X
     variables = []
     variables_names = []
@@ -910,9 +900,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    column = vdf.format_colnames(column)
-    ts = vdf.format_colnames(ts)
-    by = vdf.format_colnames(by)
+    column, ts, by = vdf.format_colnames(column, ts, by)
     acf = vdf.acf(column=column, ts=ts, by=by, p=p, show=False)
     if p >= 2:
         acf = acf.values["value"][1:]
@@ -969,8 +957,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    column = vdf.format_colnames(column)
-    ts = vdf.format_colnames(ts)
+    column, ts = vdf.format_colnames(column, ts)
     table = f"(SELECT {column}, {ts} FROM {vdf.__genSQL__()})"
     query = f"SELECT /*+LABEL('stats.tools.mkt')*/ SUM(SIGN(y.{column} - x.{column})) FROM {table} x CROSS JOIN {table} y WHERE y.{ts} > x.{ts}"
     S = executeSQL(
@@ -1119,11 +1106,7 @@ vDataFrame
     assert period > 0 or polynomial_order > 0, ParameterError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
     )
-    ts, column, by = (
-        vdf.format_colnames(ts),
-        vdf.format_colnames(column),
-        vdf.format_colnames(by),
-    )
+    ts, column, by = vdf.format_colnames(ts, column, by)
     if rule:
         vdf_tmp = vdf.interpolate(ts=ts, rule=period, method={column: "linear"}, by=by)
     else:
@@ -1134,7 +1117,7 @@ vDataFrame
         "{}_epsilon".format(column[1:-1]),
     )
     by, by_tmp = (
-        "" if not (by) else "PARTITION BY " + ", ".join(vdf.format_colnames(by)) + " ",
+        "" if not (by) else "PARTITION BY " + ", ".join(by) + " ",
         by,
     )
     if polynomial_order <= 0:
@@ -1289,10 +1272,9 @@ Returns
 float
     VIF.
     """
-    X = vdf.format_colnames(X)
+    X, X_idx = vdf.format_colnames(X, X_idx)
 
     if isinstance(X_idx, str):
-        X_idx = vdf.format_colnames(X_idx)
         for i in range(len(X)):
             if X[i] == X_idx:
                 X_idx = i

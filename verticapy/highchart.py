@@ -479,7 +479,6 @@ def hchart_from_vdf(
     elif kind == "spider":
         return spider(query=query, options=options, width=width, height=height)
     elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmand",):
-        x = vdf.format_colnames(x)
         data = vdf.corr(method=kind, show=False, columns=x)
         narrow_data = get_narrow_tablesample(data, use_number_as_category=True)
         for idx, elem in enumerate(narrow_data[0]):

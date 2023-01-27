@@ -998,7 +998,7 @@ papprox_ma: int, optional
             ts = self.ts
         if not (X):
             X = self.exogenous
-        y, ts = vdf.format_colnames([y, ts])
+        y, ts = vdf.format_colnames(y, ts)
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -1678,8 +1678,7 @@ solver: str, optional
             ts = self.ts
         if not (X):
             X = self.X
-        X = vdf.format_colnames(X)
-        ts = vdf.format_colnames(ts)
+        X, ts = vdf.format_colnames(X, ts)
         all_pred, names = [], []
         transform_relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts)
         for idx, elem in enumerate(X):
