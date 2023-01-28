@@ -76,7 +76,7 @@ class XGBoost_utils:
 
     def to_json(self, path: str = ""):
         """
-        ---------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------
         Creates a Python XGBoost JSON file that can be imported into the Python
         XGBoost API.
         
@@ -372,7 +372,7 @@ class XGBoost_utils:
     # ---#
     def get_prior(self):
         """
-        ---------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------
         Returns the XGB Priors.
             
         Returns
@@ -422,7 +422,7 @@ class XGBoost_utils:
 # ---#
 class IsolationForest(Clustering, Tree):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates an IsolationForest object using the Vertica IFOREST algorithm.
 
 Parameters
@@ -480,7 +480,7 @@ col_sample_by_tree: float, optional
         inplace: bool = True,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the anomaly score using the input relation.
 
     Parameters
@@ -525,7 +525,7 @@ col_sample_by_tree: float, optional
         return_score: bool = False,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
 
     Parameters
@@ -589,7 +589,7 @@ col_sample_by_tree: float, optional
         inplace: bool = True,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -639,7 +639,7 @@ col_sample_by_tree: float, optional
 # ---#
 class RandomForestClassifier(MulticlassClassifier, Tree):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a RandomForestClassifier object using the Vertica RF_CLASSIFIER 
 function. It is one of the ensemble learning methods for classification 
 that operates by constructing a multitude of decision trees at 
@@ -715,7 +715,7 @@ nbins: int, optional
 # ---#
 class RandomForestRegressor(Regressor, Tree):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a RandomForestRegressor object using the Vertica RF_REGRESSOR 
 function. It is one of the ensemble learning methods for regression that 
 operates by constructing a multitude of decision trees at training-time 
@@ -791,7 +791,7 @@ nbins: int, optional
 # ---#
 class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost_utils):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates an XGBoostClassifier object using the Vertica XGB_CLASSIFIER 
 algorithm.
 
@@ -886,7 +886,7 @@ col_sample_by_node: float, optional
 # ---#
 class XGBoostRegressor(Regressor, Tree, XGBoost_utils):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates an XGBoostRegressor object using the Vertica XGB_REGRESSOR 
 algorithm.
 

@@ -65,11 +65,14 @@ from verticapy.errors import *
 # Vertica Modules
 import vertica_python
 
+# Global Variables
+VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
+
 #
 # ---#
 def available_connections():
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Displays all the available connections.
 
 Returns
@@ -81,8 +84,8 @@ list
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
-    if confparser.has_section("VERTICAPY_AUTO_CONNECTION"):
-        confparser.remove_section("VERTICAPY_AUTO_CONNECTION")
+    if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
+        confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
     all_connections = confparser.sections()
     return all_connections
 
@@ -91,7 +94,7 @@ available_auto_connection = available_connections
 # ---#
 def change_auto_connection(name: str):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Changes the current auto connection.
 
 Parameters
@@ -106,9 +109,9 @@ name: str
 
     if confparser.has_section(name):
 
-        confparser.remove_section("VERTICAPY_AUTO_CONNECTION")
-        confparser.add_section("VERTICAPY_AUTO_CONNECTION")
-        confparser.set("VERTICAPY_AUTO_CONNECTION", "name", name)
+        confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
+        confparser.add_section(VERTICAPY_AUTO_CONNECTION)
+        confparser.set(VERTICAPY_AUTO_CONNECTION, "name", name)
         f = open(path, "w+")
         confparser.write(f)
         f.close()
@@ -126,7 +129,7 @@ name: str
 # ---#
 def close_connection():
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Closes the connection to the database.
     """
     if verticapy.OPTIONS["connection"]["conn"] and not (
@@ -138,7 +141,7 @@ Closes the connection to the database.
 # ---#
 def connect(section: str, dsn: str = ""):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Connects to the database.
 
 Parameters
@@ -174,7 +177,7 @@ dsn: str, optional
 # ---#
 def current_connection():
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Returns the current database connection.
 If the connection is closed, VerticaPy attempts to reconnect with the 
 existing connection.
@@ -223,7 +226,7 @@ VerticaLab Environment.
 # ---#
 def current_cursor():
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Returns the current database cursor.
     """
     return current_connection().cursor()
@@ -233,7 +236,7 @@ Returns the current database cursor.
 @check_dtypes
 def delete_connection(name: str):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Deletes a specified connection from the connection file.
 
 Parameters
@@ -254,10 +257,10 @@ bool
     if confparser.has_section(name):
 
         confparser.remove_section(name)
-        if confparser.has_section("VERTICAPY_AUTO_CONNECTION"):
-            name_auto = confparser.get("VERTICAPY_AUTO_CONNECTION", "name")
+        if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
+            name_auto = confparser.get(VERTICAPY_AUTO_CONNECTION, "name")
             if name_auto == name:
-                confparser.remove_section("VERTICAPY_AUTO_CONNECTION")
+                confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
         f = open(path, "w+")
         confparser.write(f)
         f.close()
@@ -272,7 +275,7 @@ bool
 # ---#
 def get_connection_file():
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Gets (and creates, if necessary) the auto-connection file.
 If the environment variable 'VERTICAPY_CONNECTIONS' is set, it is assumed 
 to be the full path to the auto-connection file.
@@ -301,9 +304,11 @@ def new_connection(
     overwrite: bool = True,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Saves the new connection in the VerticaPy connection file.
-The function 'get_connection_file' returns the connection file path.
+The information is saved plaintext in the local machine.
+The function 'get_connection_file' returns the associated connection file path.
+If you want a temporary connection, you can use the 'set_connection' function.
 
 Parameters
 ----------
@@ -315,6 +320,16 @@ conn_info: dict
 		port     : Database Port (optional, default: 5433).
 		user     : User ID (optional, default: dbadmin).
         ...
+        env      : Bool to indicate whether the user and password are replaced 
+                   by the associated environment variables. If True, VerticaPy 
+                   reads the associated environment variables instead of 
+                   writing and directly using the username and password. 
+                   For example: {'user': 'ENV_USER', 'password': 'ENV_PASSWORD'}
+                   This works only for the user and password. The real values 
+                   of the other variables are stored plaintext in the VerticaPy 
+                   connection file. Using the enviornment variables hides the 
+                   username and password in cases where the local machine is 
+                   shared.
 name: str, optional
 	Name of the connection.
 auto: bool, optional
@@ -322,6 +337,11 @@ auto: bool, optional
 overwrite: bool, optional
     If set to True and the connection already exists, it will be 
     overwritten.
+env: bool, optional
+    If True, user and password are replaced by the associated environment 
+    variables. VerticaPy reads the associated environment variables instead 
+    of writing and directly using the username and password.
+    For example: {'user': 'ENV_USER', 'password': 'ENV_PASSWORD'}  
 	"""
     path = get_connection_file()
     confparser = ConfigParser()
@@ -339,8 +359,8 @@ overwrite: bool, optional
         confparser.remove_section(name)
 
     confparser.add_section(name)
-    for elem in conn_info:
-        confparser.set(name, elem, str(conn_info[elem]))
+    for c in conn_info:
+        confparser.set(name, c, str(conn_info[c]))
     f = open(path, "w+")
     confparser.write(f)
     f.close()
@@ -354,14 +374,21 @@ new_auto_connection = new_connection
 # ---#
 def read_auto_connect():
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Automatically creates a connection using the auto-connection.
 	"""
     path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
-    section = confparser.get("VERTICAPY_AUTO_CONNECTION", "name")
+    if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
+        section = confparser.get(VERTICAPY_AUTO_CONNECTION, "name")
+    else:
+        raise ConnectionError(
+            "No Auto Connection available. You can create one using "
+            "the 'new_connection' function or set manually a connection"
+            " using the 'set_connection' function."
+        )
     connect(section, path)
 
 
@@ -369,7 +396,7 @@ Automatically creates a connection using the auto-connection.
 @check_dtypes
 def read_dsn(section: str, dsn: str = ""):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Reads the DSN information from the VERTICAPY_CONNECTIONS environment 
 variable or the input file.
 
@@ -400,16 +427,37 @@ dict
         conn_info = {
             "port": 5433,
             "user": "dbadmin",
-            "session_label": "verticapy-"
-            + verticapy.__version__
-            + "-"
-            + verticapy.OPTIONS["identifier"],
+            "session_label": f"verticapy-{verticapy.__version__}-{verticapy.OPTIONS['identifier']}",
         }
+
+        env = False
+        for option_name, option_val in options:
+            if option_name.lower().startswith("env"):
+                if option_val.lower() in ("true", "t", "yes", "y"):
+                    env = True
+                break
 
         for option_name, option_val in options:
 
             option_name = option_name.lower()
-            if option_name in ("servername", "server"):
+
+            if option_name in ("pwd", "password", "uid", "user") and env:
+                if option_name == "pwd":
+                    option_name = "password"
+                elif option_name == "uid":
+                    option_name = "user"
+                if os.getenv(option_val) != None:
+                    conn_info[option_name] = os.getenv(option_val)
+                else:
+                    raise ParameterError(
+                        f"The '{option_name}' environment variable '{option_val}' does not exist "
+                        "and the 'env' option is set to True.\n"
+                        "Impossible to set up the final DSN.\nTips: You can manually set it "
+                        "up by importing os and running the following command:\n"
+                        f"os.environ['{option_name}'] = '******'"
+                    )
+
+            elif option_name in ("servername", "server"):
                 conn_info["host"] = option_val
 
             elif option_name == "uid":
@@ -447,7 +495,7 @@ dict
                 option_val = option_val.lower()
                 conn_info[option_name] = option_val in ("true", "t", "yes", "y")
 
-            elif option_name != "session_label":
+            elif option_name != "session_label" and not (option_name.startswith("env")):
                 conn_info[option_name] = option_val
 
         return conn_info
@@ -460,7 +508,7 @@ dict
 # ---#
 def set_connection(conn):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Saves a custom connection to the VerticaPy object. This allows you to 
 specify, for example, a JDBC or ODBC connection. This should not be 
 confused with a native VerticaPy connection created by the new_connection 
@@ -486,7 +534,7 @@ conn: object
 @check_dtypes
 def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Sets a Connection Identifier Database. It connects to an external
 source using DBLINK. For more information, see:
 https://github.com/vertica/dblink
@@ -507,9 +555,7 @@ symbol: str, optional
     a custom query.
     """
     assert is_special_symbol(symbol), ParameterError(
-        "Parameter 'symbol' must be a special char. One of the following: {0}".format(
-            ", ".join(get_special_symbols())
-        )
+        f"Parameter 'symbol' must be a special char. One of the following: {', '.join(get_special_symbols())}"
     )
     if isinstance(cid, str) and isinstance(rowset, int):
         verticapy.OPTIONS["external_connection"][symbol] = {
@@ -526,7 +572,7 @@ symbol: str, optional
 @check_dtypes
 def vertica_connection(section: str, dsn: str = ""):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Reads the input DSN and creates a Vertica Database connection.
 
 Parameters
@@ -548,7 +594,7 @@ conn
 # ---#
 def verticalab_connection():
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Returns the VerticaLab connection if possible.
 
 Returns
@@ -563,9 +609,6 @@ conn
         "password": "",
         "database": "demo",
         "backup_server_node": ["localhost"],
-        "session_label": "verticapy-"
-        + verticapy.__version__
-        + "-"
-        + verticapy.OPTIONS["identifier"],
+        "session_label": f"verticapy-{verticapy.__version__}-{verticapy.OPTIONS['identifier']}",
     }
     return vertica_python.connect(**conn_info)

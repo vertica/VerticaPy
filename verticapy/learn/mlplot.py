@@ -629,7 +629,12 @@ def plot_bubble_ml(
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
-        param = {"alpha": 0.8, "marker": "o", "color": colors[0], "edgecolors": "black"}
+        param = {
+            "alpha": 0.8,
+            "marker": "o",
+            "color": colors[0],
+            "edgecolors": "black",
+        }
         if s:
             size = s
         else:
@@ -642,7 +647,7 @@ def plot_bubble_ml(
         )
     if reverse[1]:
         ax.set_ylim(
-            max(y) + 0.1 * (1 + max(y) - min(y)), min(y) - 0.1 * (1 + max(y) - min(y))
+            max(y) + 0.1 * (1 + max(y) - min(y)), min(y) - 0.1 * (1 + max(y) - min(y)),
         )
     if plt_text:
         ax.set_xlabel(x_label, loc="right")
@@ -730,7 +735,7 @@ def plot_pca_circle(
     ax.add_patch(circle1)
     for i in range(n):
         ax.arrow(
-            0, 0, x[i], y[i], head_width=0.05, color="black", length_includes_head=True
+            0, 0, x[i], y[i], head_width=0.05, color="black", length_includes_head=True,
         )
         ax.text(x[i], y[i], variable_names[i])
     ax.plot([-1.1, 1.1], [0.0, 0.0], linestyle="--", color="black")
@@ -1000,7 +1005,7 @@ def svm_classifier_plot(
             else:
                 x1 += [float(item[0])]
         x_svm, y_svm = (
-            [-coefficients[0] / coefficients[1], -coefficients[0] / coefficients[1]],
+            [-coefficients[0] / coefficients[1], -coefficients[0] / coefficients[1],],
             [-1, 1],
         )
         ax.plot(x_svm, y_svm, alpha=1, color="black")

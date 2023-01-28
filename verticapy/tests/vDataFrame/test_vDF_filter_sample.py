@@ -120,7 +120,7 @@ class TestvDFFilterSample:
         # testing vDataFrame.isin
         assert amazon_vd.isin(
             {"state": ["SERGIPE", "TOCANTINS"], "number": [0, 0]}
-        ).shape() == (90, 3)
+        ).shape() == (90, 3,)
 
         # testing vDataFrame[].isin
         assert amazon_vd["state"].isin(

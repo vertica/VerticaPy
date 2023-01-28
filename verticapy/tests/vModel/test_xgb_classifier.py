@@ -478,10 +478,10 @@ class TestXGBC:
         )
         assert model.score(
             cutoff=0.9, method="npv", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.1, method="npv", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.9, method="prc_auc", pos_label="Train"
         ) == pytest.approx(1.0)

@@ -60,7 +60,7 @@ from verticapy.utilities import save_verticapy_logs
 # ---#
 class LinearSVC(BinaryClassifier):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a LinearSVC object using the Vertica Support Vector Machine (SVM) 
 algorithm on the data. Given a set of training examples, each marked as 
 belonging to one or the other of two categories, an SVM training algorithm 
@@ -139,7 +139,7 @@ max_iter: int, optional
 # ---#
 class LinearSVR(Regressor):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a LinearSVR object using the Vertica SVM (Support Vector Machine) 
 algorithm. This algorithm finds the hyperplane used to approximate 
 distribution of the data..

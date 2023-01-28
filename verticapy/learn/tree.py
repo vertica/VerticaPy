@@ -128,7 +128,7 @@ def get_tree_list_of_arrays(
 # ---#
 class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     A DecisionTreeClassifier made of a single tree.
 
     Parameters
@@ -196,7 +196,7 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
 # ---#
 class DecisionTreeRegressor(Regressor, Tree):
     """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     A DecisionTreeRegressor made of a single tree.
 
     Parameters
@@ -264,7 +264,7 @@ class DecisionTreeRegressor(Regressor, Tree):
 # ---#
 class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     A classifier that overfits the training data. These models are typically
     used as a control to compare with your other models.
 
@@ -298,7 +298,7 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
 # ---#
 class DummyTreeRegressor(Regressor, Tree):
     """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     A regressor that overfits the training data. These models are typically
     used as a control to compare with your other models.
 

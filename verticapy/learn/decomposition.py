@@ -61,7 +61,7 @@ from verticapy.learn.vmodel import *
 # ---#
 class MCA(Decomposition):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a MCA (multiple correspondence analysis) object using the Vertica 
 PCA algorithm on the data. It uses the property that the MCA is a PCA 
 applied to a complete disjunctive table. The input relation is transformed 
@@ -91,7 +91,7 @@ name: str
         self, dimensions: tuple = (1, 2), method: str = "auto", ax=None, **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the MCA (multiple correspondence analysis) graph.
 
     Parameters
@@ -163,7 +163,7 @@ name: str
     # ---#
     def plot_contrib(self, dimension: int = 1, ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws a decomposition contribution plot of the input dimension.
 
     Parameters
@@ -205,14 +205,14 @@ name: str
         ax.plot([1, n + 1], [1 / n * 100, 1 / n * 100], c="r", linestyle="--")
         for i in range(n):
             ax.text(
-                i + 1.5, contribution[i] + 1, "{}%".format(round(contribution[i], 1))
+                i + 1.5, contribution[i] + 1, "{}%".format(round(contribution[i], 1)),
             )
         return ax
 
     # ---#
     def plot_cos2(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws a MCA (multiple correspondence analysis) cos2 plot of 
     the two input dimensions.
 
@@ -254,7 +254,7 @@ name: str
 # ---#
 class PCA(Decomposition):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a PCA (Principal Component Analysis) object using the Vertica PCA
 algorithm on the data.
  
@@ -303,7 +303,7 @@ method: str, optional
 # ---#
 class SVD(Decomposition):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates an SVD (Singular Value Decomposition) object using the Vertica SVD
 algorithm on the data.
  
@@ -333,4 +333,7 @@ method: str, optional
         self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_SVD"
         self.MODEL_TYPE = "UNSUPERVISED"
         self.MODEL_SUBTYPE = "DECOMPOSITION"
-        self.parameters = {"n_components": n_components, "method": str(method).lower()}
+        self.parameters = {
+            "n_components": n_components,
+            "method": str(method).lower(),
+        }

@@ -409,10 +409,10 @@ class TestDummyTreeClassifier:
         )
         assert model.score(
             cutoff=0.9, method="npv", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.1, method="npv", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.9, method="prc_auc", pos_label="Train"
         ) == pytest.approx(1.0)
@@ -439,7 +439,7 @@ class TestDummyTreeClassifier:
         current_cursor().execute("DROP MODEL IF EXISTS tc_from_vDF")
         model_test = DummyTreeClassifier("tc_from_vDF",)
         model_test.fit(
-            dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation"
+            dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation",
         )
 
         current_cursor().execute(

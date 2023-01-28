@@ -71,7 +71,7 @@ import matplotlib.pyplot as plt
 # ---#
 class SARIMAX(Regressor):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 [Beta Version]
 Creates an SARIMAX object using the Vertica Linear Regression algorithm on 
 the data.
@@ -158,7 +158,7 @@ papprox_ma: int, optional
     # ---#
     def deploySQL(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Returns
@@ -172,7 +172,8 @@ papprox_ma: int, optional
         ):
             for i in range(0, self.parameters["d"] + 1):
                 for k in range(
-                    0, max((self.parameters["D"] + 1) * min(1, self.parameters["s"]), 1)
+                    0,
+                    max((self.parameters["D"] + 1) * min(1, self.parameters["s"]), 1),
                 ):
                     if (k, i) != (0, 0):
                         comb_i_d = (
@@ -194,7 +195,7 @@ papprox_ma: int, optional
     # ---#
     def fpredict(self, L: list):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the prediction.
 
     Parameters
@@ -282,7 +283,8 @@ papprox_ma: int, optional
                     j += 1
             for i in range(0, self.parameters["d"] + 1):
                 for k in range(
-                    0, max((self.parameters["D"] + 1) * min(1, self.parameters["s"]), 1)
+                    0,
+                    max((self.parameters["D"] + 1) * min(1, self.parameters["s"]), 1),
                 ):
                     if (k, i) != (0, 0):
                         comb_i_d = (
@@ -316,7 +318,7 @@ papprox_ma: int, optional
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -605,7 +607,7 @@ papprox_ma: int, optional
                         thetaq[self.parameters["s"] * j - 1]
                     ]
                     self.deploy_predict_ += " + {} * MA{}".format(
-                        thetaq[self.parameters["s"] * j - 1], self.parameters["s"] * j
+                        thetaq[self.parameters["s"] * j - 1], self.parameters["s"] * j,
                     )
             for j in range(0, self.parameters["max_pik"]):
                 piq_tmp = 0
@@ -716,7 +718,7 @@ papprox_ma: int, optional
         **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the SARIMAX model.
 
     Parameters
@@ -890,7 +892,7 @@ papprox_ma: int, optional
             )
             if confidence:
                 ax.fill_between(
-                    dynamic_forecast[0], lower_d, upper_d, alpha=0.08, color="#555555"
+                    dynamic_forecast[0], lower_d, upper_d, alpha=0.08, color="#555555",
                 )
                 ax.plot(dynamic_forecast[0], lower_d, alpha=0.08, color="#000000")
                 ax.plot(dynamic_forecast[0], upper_d, alpha=0.08, color="#000000")
@@ -967,7 +969,7 @@ papprox_ma: int, optional
         name: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -996,8 +998,7 @@ papprox_ma: int, optional
             ts = self.ts
         if not (X):
             X = self.exogenous
-        vdf.are_namecols_in([y, ts])
-        y, ts = vdf.format_colnames([y, ts])
+        y, ts = vdf.format_colnames(y, ts)
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -1086,7 +1087,7 @@ papprox_ma: int, optional
 # ---#
 class VAR(Regressor):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 [Beta Version]
 Creates an VAR object using the Vertica Linear Regression algorithm on the 
 data.
@@ -1134,7 +1135,7 @@ solver: str, optional
     # ---#
     def deploySQL(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Returns
@@ -1164,7 +1165,7 @@ solver: str, optional
         self, X_idx: Union[int, str] = 0, show: bool = True, ax=None, **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the model's features importance.
 
     Parameters
@@ -1240,7 +1241,7 @@ solver: str, optional
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -1346,7 +1347,7 @@ solver: str, optional
     # ---#
     def fpredict(self, L: list):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the prediction.
 
     Parameters
@@ -1399,7 +1400,7 @@ solver: str, optional
         **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the VAR model.
 
     Parameters
@@ -1586,7 +1587,7 @@ solver: str, optional
             )
             if confidence:
                 ax.fill_between(
-                    dynamic_forecast[0], lower_d, upper_d, alpha=0.08, color="#555555"
+                    dynamic_forecast[0], lower_d, upper_d, alpha=0.08, color="#555555",
                 )
                 ax.plot(dynamic_forecast[0], lower_d, alpha=0.08, color="#000000")
                 ax.plot(dynamic_forecast[0], upper_d, alpha=0.08, color="#000000")
@@ -1652,7 +1653,7 @@ solver: str, optional
         name: list = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -1677,9 +1678,7 @@ solver: str, optional
             ts = self.ts
         if not (X):
             X = self.X
-        vdf.are_namecols_in(X + [ts])
-        X = vdf.format_colnames(X)
-        ts = vdf.format_colnames(ts)
+        X, ts = vdf.format_colnames(X, ts)
         all_pred, names = [], []
         transform_relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts)
         for idx, elem in enumerate(X):
@@ -1719,7 +1718,9 @@ solver: str, optional
                 new_line,
             )
             query = "SELECT /*+LABEL('learn.tsa.VAR.predict')*/ {} FROM {} ORDER BY {} DESC LIMIT 1".format(
-                ", ".join(self.deploySQL()), transform_relation.format(relation_tmp), ts
+                ", ".join(self.deploySQL()),
+                transform_relation.format(relation_tmp),
+                ts,
             )
             prediction = executeSQL(query, method="fetchrow", print_time_sql=False)
             for idx, elem in enumerate(X):

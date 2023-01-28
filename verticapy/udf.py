@@ -49,16 +49,17 @@
 # Modules
 #
 # Standard Python Modules
-import datetime, decimal, inspect, os
+import datetime, decimal, inspect, os, warnings
 from typing import Union
 
 # VerticaPy Modules
-import verticapy
+import verticapy as vp
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
     check_minimum_version,
 )
+from verticapy.errors import raise_error_if_not_in
 from verticapy.utilities import *
 from verticapy.toolbox import *
 
@@ -68,9 +69,9 @@ from verticapy.toolbox import *
 @save_verticapy_logs
 def import_lib_udf(
     udf_list: list, library_name: str, include_dependencies: Union[str, list] = []
-):
+) -> bool:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Install a library of Python functions in Vertica. This function will work only
 when it is executed directly in the server.
 
@@ -92,28 +93,34 @@ library_name: str
 include_dependencies: str / list, optional
 	Library files dependencies. The function will copy paste the different files
 	in the UDF definition.
+
+Returns
+-------
+bool
+    True if the installation was a success, False otherwise.
 	"""
-    directory = os.path.dirname(verticapy.__file__)
+    directory = os.path.dirname(vp.__file__)
     session_name = get_session()
     file_name = f"{library_name}_{session_name}.py"
     try:
-        os.remove(directory + "/" + file_name)
+        os.remove(f"{directory}/{file_name}")
     except:
         pass
     udx_str, sql = create_lib_udf(
-        udf_list, library_name, include_dependencies, directory + "/" + file_name
+        udf_list, library_name, include_dependencies, f"{directory}/{file_name}"
     )
-    f = open(directory + "/" + file_name, "w")
+    f = open(f"{directory}/{file_name}", "w")
     f.write(udx_str)
     f.close()
     try:
         for idx, query in enumerate(sql):
-            executeSQL(query, title="UDF installation. [step {}]".format(idx))
-        os.remove(directory + "/" + file_name)
+            executeSQL(query, title=f"UDF installation. [step {idx}]")
         return True
     except Exception as e:
-        os.remove(directory + "/" + file_name)
-        raise e
+        warnings.warn(e, Warning)
+        return False
+    finally:
+        os.remove(f"{directory}/{file_name}")
 
 
 # ---#
@@ -125,9 +132,9 @@ def create_lib_udf(
     include_dependencies: Union[str, list] = [],
     file_path: str = "",
     create_file: bool = False,
-):
+) -> tuple:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Generates the code needed to install a library of Python functions. It will
 use the Vertica SDK to create UDF of the input functions.
 
@@ -205,11 +212,9 @@ udx_str, sql
         tmp = create_udf(*udf, **{"library_name": library_name})
         udx_str += tmp[0]
         sql += [tmp[1]]
-    sql_path = (
-        os.path.dirname(file_path) + "/" + library_name + ".sql"
-        if (file_path)
-        else library_name + ".sql"
-    )
+    sql_path = f"{library_name}.sql"
+    if file_path:
+        sql_path = f"{os.path.dirname(file_path)}/{sql_path}"
     if not (file_path):
         file_path = f"verticapy_{library_name}.py"
     sql = [
@@ -236,7 +241,7 @@ def create_udf(
     parameters: dict = {},
     new_name: str = "",
     library_name: str = "",
-):
+) -> tuple:
     if not (hasattr(function, "__call__")):
         raise ValueError(
             f"The function parameter must be a Python function. Found {type(function)}."
@@ -280,7 +285,11 @@ def create_udf(
 
     # Main Function
     if isinstance(return_type, dict):
-        is_udtf, process_function, ftype = True, "processPartition", "TransformFunction"
+        is_udtf, process_function, ftype = (
+            True,
+            "processPartition",
+            "TransformFunction",
+        )
     elif isinstance(return_type, type):
         is_udtf, process_function, ftype = False, "processBlock", "ScalarFunction"
     else:
@@ -380,8 +389,9 @@ def create_udf(
 
 
 # ---#
-def get_func_info(func):
+def get_func_info(func) -> tuple:
     # TO COMPLETE - GUESS FUNCTIONS TYPES
+
     name = func.__name__
     argspec = inspect.getfullargspec(func)[6]
     if "return" in argspec:
@@ -389,19 +399,21 @@ def get_func_info(func):
         del argspec["return"]
     else:
         return_type = None
-    arg_types = {}
-    parameters = {}
+
+    arg_types, parameters = {}, {}
     for param in argspec:
         if inspect.signature(func).parameters[param].default == inspect._empty:
             arg_types[param] = argspec[param]
         else:
             parameters[param] = argspec[param]
+
     return (func, arg_types, return_type, parameters)
 
 
 # ---#
-def get_module_func_info(module):
-    # ---#
+def get_module_func_info(module) -> list:
+    # TO COMPLETE - TRY AND RAISE THE APPROPRIATE ERROR
+
     def get_list(module):
         func_list = []
         for func in dir(module):
@@ -409,7 +421,6 @@ def get_module_func_info(module):
                 func_list += [func]
         return func_list
 
-    # TO COMPLETE - TRY AND RAISE THE APPROPRIATE ERROR
     func_list = get_list(module)
     func_info = []
     for func in func_list:
@@ -420,9 +431,10 @@ def get_module_func_info(module):
 
 
 # ---#
-def get_set_add_function(ftype, func: str = "get"):
+def get_set_add_function(ftype: type, func: str = "get") -> str:
     # func = get / set / add
-    func = func.lower()
+    raise_error_if_not_in("func", str(func).lower(), ["get", "set", "add"])
+    func = str(func).lower()
     if ftype == bytes:
         return f"{func}Binary"
     elif ftype == bool:

@@ -82,7 +82,7 @@ def compute_metric_query(
     fetchfirstelem: bool = True,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 A helper function that uses a specified metric to generate and score a query.
 
 Parameters
@@ -120,7 +120,7 @@ float or tuple of floats
         metric.format(y_true, y_score), relation, y_true, y_score
     )
     return executeSQL(
-        query, title=title, method="fetchfirstelem" if fetchfirstelem else "fetchrow"
+        query, title=title, method="fetchfirstelem" if fetchfirstelem else "fetchrow",
     )
 
 
@@ -132,7 +132,7 @@ def compute_tn_fn_fp_tp(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 A helper function that computes the confusion matrix for the specified 
 'pos_label' class and returns its values as a tuple of the following: 
 true negatives, false negatives, false positives, and true positives.
@@ -178,7 +178,7 @@ def aic_bic(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the AIC (Akaike’s Information Criterion) & BIC (Bayesian Information 
 Criterion).
 
@@ -227,7 +227,7 @@ def anova_table(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Anova Table.
 
 Parameters
@@ -304,7 +304,7 @@ def explained_variance(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Explained Variance.
 
 Parameters
@@ -336,7 +336,7 @@ float
 @save_verticapy_logs
 def max_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Max Error.
 
 Parameters
@@ -370,7 +370,7 @@ def mean_absolute_error(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Mean Absolute Error.
 
 Parameters
@@ -408,7 +408,7 @@ def mean_squared_error(
     root: bool = False,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Mean Squared Error.
 
 Parameters
@@ -430,7 +430,7 @@ float
 	score
 	"""
     result = compute_metric_query(
-        "MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE."
+        "MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE.",
     )
     if root:
         return math.sqrt(result)
@@ -443,7 +443,7 @@ def mean_squared_log_error(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Mean Squared Log Error.
 
 Parameters
@@ -477,7 +477,7 @@ def median_absolute_error(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Median Absolute Error.
 
 Parameters
@@ -515,7 +515,7 @@ def quantile_error(
     input_relation: Union[str, vDataFrame],
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the input Quantile of the Error.
 
 Parameters
@@ -555,7 +555,7 @@ def r2_score(
     adj: bool = True,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the R2 Score.
 
 Parameters
@@ -607,7 +607,7 @@ def regression_report(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes a regression report using multiple metrics (r2, mse, max error...). 
 
 Parameters
@@ -702,7 +702,7 @@ def accuracy_score(
     pos_label: Union[str, int, float] = None,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Accuracy Score.
 
 Parameters
@@ -757,7 +757,7 @@ def auc(
     nbins: int = 10000,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the ROC AUC (Area Under Curve).
 
 Parameters
@@ -803,7 +803,7 @@ def classification_report(
     nbins: int = 10000,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes a classification report using multiple metrics (AUC, accuracy, PRC 
 AUC, F1...). It will consider each category as positive and switch to the 
 next one during the computation.
@@ -966,7 +966,7 @@ def confusion_matrix(
     pos_label: Union[str, int, float] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Confusion Matrix.
 
 Parameters
@@ -1031,7 +1031,7 @@ def critical_success_index(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Critical Success Index.
 
 Parameters
@@ -1067,7 +1067,7 @@ def f1_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the F1 Score.
 
 Parameters
@@ -1109,7 +1109,7 @@ def informedness(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Informedness.
 
 Parameters
@@ -1146,7 +1146,7 @@ def log_loss(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Log Loss.
 
 Parameters
@@ -1186,7 +1186,7 @@ def markedness(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Markedness.
 
 Parameters
@@ -1223,7 +1223,7 @@ def matthews_corrcoef(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Matthews Correlation Coefficient.
 
 Parameters
@@ -1263,7 +1263,7 @@ def multilabel_confusion_matrix(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], labels: list,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Multi Label Confusion Matrix.
 
 Parameters
@@ -1325,7 +1325,7 @@ def negative_predictive_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Negative Predictive Score.
 
 Parameters
@@ -1362,7 +1362,7 @@ def prc_auc(
     nbins: int = 10000,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the area under the curve (AUC) of a Precision-Recall (PRC) curve.
 
 Parameters
@@ -1404,7 +1404,7 @@ def precision_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Precision Score.
 
 Parameters
@@ -1440,7 +1440,7 @@ def recall_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Recall Score.
 
 Parameters
@@ -1476,7 +1476,7 @@ def specificity_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Specificity Score.
 
 Parameters
@@ -1501,3 +1501,55 @@ float
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     tnr = tn / (tn + fp) if (tn + fp != 0) else 0
     return tnr
+
+
+#
+# TOOLS
+#
+# ---#
+FUNCTIONS_DICTIONNARY = {
+    "r2": r2_score,
+    "rsquared": r2_score,
+    "mae": mean_absolute_error,
+    "mean_absolute_error": mean_absolute_error,
+    "mse": mean_squared_error,
+    "mean_squared_error": mean_squared_error,
+    "msle": mean_squared_log_error,
+    "mean_squared_log_error": mean_squared_log_error,
+    "max": max_error,
+    "max_error": max_error,
+    "median": median_absolute_error,
+    "median_absolute_error": median_absolute_error,
+    "var": explained_variance,
+    "explained_variance": explained_variance,
+    "accuracy": accuracy_score,
+    "acc": accuracy_score,
+    "auc": auc,
+    "prc_auc": prc_auc,
+    "best_cutoff": roc_curve,
+    "best_threshold": roc_curve,
+    "recall": recall_score,
+    "tpr": recall_score,
+    "precision": precision_score,
+    "ppv": precision_score,
+    "specificity": specificity_score,
+    "tnr": specificity_score,
+    "negative_predictive_value": negative_predictive_score,
+    "npv": negative_predictive_score,
+    "log_loss": log_loss,
+    "logloss": log_loss,
+    "f1": f1_score,
+    "mcc": matthews_corrcoef,
+    "bm": informedness,
+    "informedness": informedness,
+    "mk": markedness,
+    "markedness": markedness,
+    "csi": critical_success_index,
+    "critical_success_index": critical_success_index,
+    "roc_curve": roc_curve,
+    "roc": roc_curve,
+    "prc_curve": prc_curve,
+    "prc": prc_curve,
+    "lift_chart": lift_chart,
+    "lift": lift_chart,
+}

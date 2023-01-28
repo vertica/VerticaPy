@@ -15,7 +15,7 @@
 import pytest
 
 # VerticaPy
-from vertica_python.errors import VerticaSyntaxError
+from verticapy.errors import MissingColumn
 from verticapy import drop, set_option, tablesample
 from verticapy.datasets import load_iris, load_market, load_amazon, load_titanic
 
@@ -61,7 +61,7 @@ class TestvDFCombineJoinSort:
         ), "testing vDataFrame.append(vDataFrame) failed"
 
         result_vDF = iris_vd.append("public.iris")
-        assert result_vDF.shape() == (300, 5), "testing vDataFrame.append(str) failed"
+        assert result_vDF.shape() == (300, 5,), "testing vDataFrame.append(str) failed"
 
         result_vDF = iris_vd.append(
             iris_vd,
@@ -90,12 +90,14 @@ class TestvDFCombineJoinSort:
             4,
         ), "testing vDataFrame.groupby(columns, expr) failed"
 
-        with pytest.raises(VerticaSyntaxError) as exception_info:
+        with pytest.raises(MissingColumn) as exception_info:
             result2 = market_vd.groupby(
                 columns=["For", "Name"],
                 expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
             )
-        assert exception_info.match('Syntax error at or near "For"')
+        assert exception_info.match(
+            "The Virtual Column 'For' doesn't exist\nDid you mean '\"Form\"' ?"
+        )
         # with rollup
         result3 = market_vd.groupby(
             columns=["Form", "Name"],
@@ -212,7 +214,7 @@ class TestvDFCombineJoinSort:
         #        SELECT a.Name as Name1, b.Name as Name2
         #        FROM not_fresh AS a NATURAL JOIN not_dried AS b;
         natural_join = not_fresh.join(
-            not_dried, how="natural", expr1=["Name AS Name1"], expr2=["Name AS Name2"]
+            not_dried, how="natural", expr1=["Name AS Name1"], expr2=["Name AS Name2"],
         )
         assert natural_join.shape() == (194, 2)
         # SELECT COUNT(*) FROM natural_join WHERE Name1 IS NULL;
@@ -254,7 +256,7 @@ class TestvDFCombineJoinSort:
         d2 = tablesample(
             {
                 "name2": ["Badr", "Umar", "Arash"],
-                "email2": ["badr.ouali@me.fr", "umar.f@me.com", "arash.farad@me.com"],
+                "email2": ["badr.ouali@me.fr", "umar.f@me.com", "arash.farad@me.com",],
                 "age2": [29, 26, 35],
                 "fav_car2": ["BMW", "Audi", "Mercedes"],
             }

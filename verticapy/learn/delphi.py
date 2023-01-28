@@ -78,7 +78,7 @@ class vAuto(vModel):
     # ---#
     def set_params(self, parameters: dict = {}):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Sets the parameters of the model.
 
     Parameters
@@ -94,7 +94,7 @@ class vAuto(vModel):
 
 class AutoDataPrep(vAuto):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Automatically find relations between the different features to preprocess
 the data according to each column type.
 
@@ -223,7 +223,7 @@ final_relation_: vDataFrame
         by: list = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -273,8 +273,7 @@ final_relation_: vDataFrame
                 ts = ts_tmp
             if nb_date == 1 and nb_others == 1:
                 by = [cat_tmp]
-        vdf.are_namecols_in(X)
-        X = vdf.format_colnames(X)
+        X, ts, by = vdf.format_colnames(X, ts, by)
         X_diff = vdf.get_columns(exclude_columns=X)
         columns_to_drop = []
         n = vdf.shape()[0]
@@ -368,9 +367,6 @@ final_relation_: vDataFrame
         if columns_to_drop:
             vdf.drop(columns_to_drop)
         if ts:
-            vdf.are_namecols_in([ts] + by)
-            ts = vdf.format_colnames(ts)
-            by = vdf.format_colnames(by)
             if self.parameters["rule"] == "auto":
                 vdf_tmp = vdf[[ts] + by]
                 by_tmp = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
@@ -379,9 +375,7 @@ final_relation_: vDataFrame
                 ] = f"({ts}::timestamp - (LAG({ts}) OVER ({by_tmp}ORDER BY {ts}))::timestamp) / '00:00:01'"
                 vdf_tmp = vdf_tmp.groupby(["verticapy_time_delta"], ["COUNT(*) AS cnt"])
                 rule = executeSQL(
-                    "SELECT /*+LABEL('learn.delphi.AutoDataPrep.fit')*/ verticapy_time_delta FROM {} ORDER BY cnt DESC LIMIT 1".format(
-                        vdf_tmp.__genSQL__()
-                    ),
+                    f"SELECT /*+LABEL('learn.delphi.AutoDataPrep.fit')*/ verticapy_time_delta FROM { vdf_tmp.__genSQL__()} ORDER BY cnt DESC LIMIT 1",
                     method="fetchfirstelem",
                     print_time_sql=False,
                 )
@@ -420,7 +414,7 @@ final_relation_: vDataFrame
 
 class AutoClustering(vAuto):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Automatically creates k different groups with which to generalize the data.
 
 Parameters
@@ -501,7 +495,7 @@ model_: object
     # ---#
     def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -578,7 +572,7 @@ model_: object
 
 class AutoML(vAuto):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Tests multiple models to find those that maximize the input score.
 
 Parameters
@@ -697,9 +691,13 @@ model_grid_ : tablesample
         preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
     ):
-        raise_error_if_not_in("estimator_type", estimator_type, ["auto", "regressor", "binary", "multi"])
+        raise_error_if_not_in(
+            "estimator_type", estimator_type, ["auto", "regressor", "binary", "multi"],
+        )
         raise_error_if_not_in("stepwise_criterion", stepwise_criterion, ["aic", "bic"])
-        raise_error_if_not_in("stepwise_direction", stepwise_direction, ["forward", "backward"])
+        raise_error_if_not_in(
+            "stepwise_direction", stepwise_direction, ["forward", "backward"]
+        )
         raise_error_if_not_in(
             "stepwise_x_order",
             stepwise_x_order,
@@ -732,7 +730,7 @@ model_grid_ : tablesample
     # ---#
     def fit(self, input_relation: Union[str, vDataFrame], X: list = [], y: str = ""):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -1040,7 +1038,7 @@ model_grid_ : tablesample
     # ---#
     def plot(self, mltype: str = "champion", ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the AutoML plot.
 
     Parameters

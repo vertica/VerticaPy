@@ -475,7 +475,10 @@ def animated_bubble_plot(
         fig = ax.get_figure()
     count = vdf.shape()[0]
     if columns[2] != 1:
-        max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
+        max_size, min_size = (
+            float(vdf[columns[2]].max()),
+            float(vdf[columns[2]].min()),
+        )
     where = (
         " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
     )
@@ -881,7 +884,7 @@ def bar2D(
         if unique[1] != 2:
             columns = [columns[1], columns[0]]
     all_columns = vdf.pivot_table(
-        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False
+        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
     ).values
     all_columns = [[column] + all_columns[column] for column in all_columns]
     n = len(all_columns)
@@ -1570,7 +1573,7 @@ def bubble(
                 "edgecolors": "black",
             }
             im = ax.scatter(
-                column1, column2, c=column3, s=size, **updated_dict(param, style_kwds)
+                column1, column2, c=column3, s=size, **updated_dict(param, style_kwds),
             )
         if columns[2] != 1:
             if catcol:
@@ -1981,7 +1984,9 @@ def compute_plot_variables(
                 vdf.alias, vdf.alias
             )
             query_result = executeSQL(
-                query=query, title="Computing the histogram interval", method="fetchrow"
+                query=query,
+                title="Computing the histogram interval",
+                method="fetchrow",
             )
             h = float(query_result[0]) / nbins
         min_date = vdf.min()
@@ -2099,7 +2104,14 @@ def gen_colors():
         elif verticapy.OPTIONS["color_style"] == "india":
             colors = ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625"]
         else:
-            colors = ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"]
+            colors = [
+                "#FE5016",
+                "#263133",
+                "#0073E7",
+                "#FDE159",
+                "#33C180",
+                "#FF454F",
+            ]
         all_colors = [item for item in plt_colors.cnames]
         shuffle(all_colors)
         for c in all_colors:
@@ -2276,7 +2288,7 @@ def hist2D(
 ):
     colors = gen_colors()
     all_columns = vdf.pivot_table(
-        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False
+        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
     ).values
     all_columns = [[column] + all_columns[column] for column in all_columns]
     n, m = len(all_columns), len(all_columns[0])
@@ -2707,7 +2719,7 @@ def range_curve(
             ax.plot(X, elem[1], label=label, **updated_dict(param, style_kwds, i))
         if (not (without_scatter) or len(X) < 20) and plot_median:
             ax.scatter(
-                X, elem[1], c="white", marker="o", s=60, edgecolors="black", zorder=3
+                X, elem[1], c="white", marker="o", s=60, edgecolors="black", zorder=3,
             )
     ax.set_xlabel(param_name)
     ax.set_ylabel(score_name)
@@ -3021,7 +3033,11 @@ def pie(
         handles, labels = ax.get_legend_handles_labels()
         labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
         ax.legend(
-            handles, labels, title=vdf.alias, loc="center left", bbox_to_anchor=[1, 0.5]
+            handles,
+            labels,
+            title=vdf.alias,
+            loc="center left",
+            bbox_to_anchor=[1, 0.5],
         )
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -3388,7 +3404,9 @@ def scatter_matrix(
     n = len(columns)
     fig, axes = (
         plt.subplots(
-            nrows=n, ncols=n, figsize=(min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500))
+            nrows=n,
+            ncols=n,
+            figsize=(min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)),
         )
         if isnotebook()
         else plt.subplots(
@@ -3746,7 +3764,11 @@ def scatter3D(
                     method="fetchall",
                 )
                 query_result = [item for sublist in query_result for item in sublist]
-            all_columns, all_scatter, all_categories = [query_result], [], query_result
+            all_columns, all_scatter, all_categories = (
+                [query_result],
+                [],
+                query_result,
+            )
             if not (ax):
                 if isnotebook():
                     plt.figure(figsize=(8, 6))
@@ -3882,7 +3904,7 @@ def spider(
         )
     colors = gen_colors()
     all_columns = vdf.pivot_table(
-        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False
+        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
     ).values
     all_cat = [category for category in all_columns]
     n = len(all_columns)
@@ -3967,7 +3989,7 @@ def ts_plot(
         )
         query += " ORDER BY {}, {}".format(order_by, vdf.alias)
         query_result = executeSQL(
-            query=query, title="Selecting points to draw the curve", method="fetchall"
+            query=query, title="Selecting points to draw the curve", method="fetchall",
         )
         order_by_values = [item[0] for item in query_result]
         try:

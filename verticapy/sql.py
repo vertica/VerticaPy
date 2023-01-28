@@ -58,7 +58,7 @@
 # ---#
 # Jupyter Modules
 from IPython.core.magic import needs_local_scope
-from IPython.core.display import HTML, display
+from IPython.display import HTML, display
 
 # Standard Python Modules
 import warnings, re, time

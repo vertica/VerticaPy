@@ -71,7 +71,7 @@ def Balance(
     name: str, input_relation: str, y: str, method: str = "hybrid", ratio: float = 0.5,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a view with an equal distribution of the input data based on the 
 response_column.
  
@@ -109,7 +109,7 @@ vDataFrame
 # ---#
 class CountVectorizer(vModel):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a Text Index which will count the occurences of each word in the 
 data.
  
@@ -161,7 +161,7 @@ max_text_size: int, optional
     # ---#
     def compute_stop_words(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the CountVectorizer Stop Words. It will affect the result to the
     stop_words_ attribute.
         """
@@ -189,7 +189,7 @@ max_text_size: int, optional
     # ---#
     def compute_vocabulary(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the CountVectorizer Vocabulary. It will affect the result to the
     vocabulary_ attribute.
         """
@@ -199,7 +199,7 @@ max_text_size: int, optional
     # ---#
     def deploySQL(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Returns
@@ -230,7 +230,7 @@ max_text_size: int, optional
     @check_dtypes
     def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -312,7 +312,7 @@ max_text_size: int, optional
     # ---#
     def transform(self):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Creates a vDataFrame of the model.
 
 	Returns
@@ -328,7 +328,7 @@ max_text_size: int, optional
 # ---#
 class Normalizer(Preprocessing):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a Vertica Normalizer object.
  
 Parameters
@@ -388,7 +388,7 @@ class MinMaxScaler(Normalizer):
 # ---#
 class OneHotEncoder(Preprocessing):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a Vertica One Hot Encoder object.
  
 Parameters

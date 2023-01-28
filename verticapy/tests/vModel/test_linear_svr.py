@@ -38,7 +38,7 @@ def model(winequality_vd):
     model_class = LinearSVR("lsvr_model_test",)
     model_class.drop()
     model_class.fit(
-        "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality"
+        "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality",
     )
     yield model_class
     model_class.drop()

@@ -82,7 +82,7 @@ def adfuller(
     regresults: bool = False,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Augmented Dickey Fuller test (Time Series stationarity).
 
 Parameters
@@ -222,10 +222,7 @@ tablesample
                 else:
                     return -3.41
 
-    vdf.are_namecols_in([ts, column] + by)
-    ts = vdf.format_colnames(ts)
-    column = vdf.format_colnames(column)
-    by = vdf.format_colnames(by)
+    ts, column, by = vdf.format_colnames(ts, column, by)
     name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
     relation_name = gen_tmp_name(
         schema=verticapy.OPTIONS["temp_schema"], name="linear_reg_view"
@@ -241,11 +238,11 @@ tablesample
         "LAG({}, {}) OVER ({}ORDER BY {}) - LAG({}, {}) OVER ({}ORDER BY {}) AS delta{}".format(
             column,
             i,
-            "PARTITION BY {}".format(", ".join(by)) if (by) else "",
+            f"PARTITION BY {', '.join(by)}" if (by) else "",
             ts,
             column,
             i + 1,
-            "PARTITION BY {}".format(", ".join(by)) if (by) else "",
+            f"PARTITION BY {', '.join(by)}" if (by) else "",
             ts,
             i,
         )
@@ -253,7 +250,7 @@ tablesample
     ]
     lag += [
         "{} - LAG({}, 1) OVER ({}ORDER BY {}) AS delta".format(
-            column, column, "PARTITION BY {}".format(", ".join(by)) if (by) else "", ts
+            column, column, "PARTITION BY {}".format(", ".join(by)) if (by) else "", ts,
         )
     ]
     query = "CREATE VIEW {} AS SELECT /*+LABEL('stats.tools.adfuller')*/ {}, {} AS ts FROM {}".format(
@@ -266,7 +263,7 @@ tablesample
     )
     executeSQL(query, print_time_sql=False)
     model = LinearRegression(name, solver="Newton", max_iter=1000)
-    predictors = ["lag1"] + ["delta{}".format(i) for i in range(1, p + 1)]
+    predictors = ["lag1"] + [f"delta{i}" for i in range(1, p + 1)]
     if with_trend:
         predictors += ["ts"]
     model.fit(relation_name, predictors, "delta")
@@ -319,7 +316,7 @@ def cochrane_orcutt(
     drop_tmp_model: bool = True,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Performs a Cochrane-Orcutt estimation.
 
 Parameters
@@ -351,7 +348,7 @@ model
         vdf_tmp = vDataFrameSQL(vdf)
     else:
         vdf_tmp = vdf.copy()
-    vdf.are_namecols_in(ts)
+    ts = vdf.format_colnames(ts)
     name = gen_tmp_name(schema=schema_relation(model.name)[0], name="linear")
     param = model.get_params()
     model_tmp = type(model)(name)
@@ -392,7 +389,7 @@ model
 @save_verticapy_logs
 def durbin_watson(vdf: vDataFrame, eps: str, ts: str, by: list = []):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Durbin Watson test (residuals autocorrelation).
 
 Parameters
@@ -412,10 +409,7 @@ Returns
 float
     Durbin Watson statistic
     """
-    vdf.are_namecols_in([eps] + [ts] + by)
-    eps = vdf.format_colnames(eps)
-    ts = vdf.format_colnames(ts)
-    by = vdf.format_colnames(by)
+    eps, ts, by = vdf.format_colnames(eps, ts, by)
     query = "(SELECT et, LAG(et) OVER({}ORDER BY {}) AS lag_et FROM (SELECT {} AS et, {}{} FROM {}) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE".format(
         "PARTITION BY {} ".format(", ".join(by)) if (by) else "",
         ts,
@@ -439,7 +433,7 @@ float
 @save_verticapy_logs
 def endogtest(vdf: vDataFrame, eps: str, X: list):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Endogeneity test.
 
 Parameters
@@ -457,9 +451,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([eps] + X)
-    eps = vdf.format_colnames(eps)
-    X = vdf.format_colnames(X)
+    eps, X = vdf.format_colnames(eps, X)
 
     from verticapy.learn.linear_model import LinearRegression
 
@@ -468,16 +460,12 @@ tablesample
     try:
         model.fit(vdf, X, eps)
         R2 = model.score("r2")
-        model.drop()
     except:
-        try:
-            model.set_params({"solver": "bfgs"})
-            model.fit(vdf, X, eps)
-            R2 = model.score("r2")
-            model.drop()
-        except:
-            model.drop()
-            raise
+        model.set_params({"solver": "bfgs"})
+        model.fit(vdf, X, eps)
+        R2 = model.score("r2")
+    finally:
+        model.drop()
     n = vdf.shape()[0]
     k = len(X)
     LM = n * R2
@@ -503,7 +491,7 @@ tablesample
 @save_verticapy_logs
 def het_arch(vdf: vDataFrame, eps: str, ts: str, by: list = [], p: int = 1):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Engle’s Test for Autoregressive Conditional Heteroscedasticity (ARCH).
 
 Parameters
@@ -526,10 +514,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([eps, ts] + by)
-    eps = vdf.format_colnames(eps)
-    ts = vdf.format_colnames(ts)
-    by = vdf.format_colnames(by)
+    eps, ts, by = vdf.format_colnames(eps, ts, by)
     X = []
     X_names = []
     for i in range(0, p + 1):
@@ -550,16 +535,12 @@ tablesample
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
         R2 = model.score("r2")
-        model.drop()
     except:
-        try:
-            model.set_params({"solver": "bfgs"})
-            model.fit(vdf_lags, X_names[1:], X_names[0])
-            R2 = model.score("r2")
-            model.drop()
-        except:
-            model.drop()
-            raise
+        model.set_params({"solver": "bfgs"})
+        model.fit(vdf_lags, X_names[1:], X_names[0])
+        R2 = model.score("r2")
+    finally:
+        model.drop()
     n = vdf.shape()[0]
     k = len(X)
     LM = (n - p) * R2
@@ -585,7 +566,7 @@ tablesample
 @save_verticapy_logs
 def het_breuschpagan(vdf: vDataFrame, eps: str, X: list):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Uses the Breusch-Pagan to test a model for heteroskedasticity.
 
 Parameters
@@ -603,9 +584,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([eps] + X)
-    eps = vdf.format_colnames(eps)
-    X = vdf.format_colnames(X)
+    eps, X = vdf.format_colnames(eps, X)
 
     from verticapy.learn.linear_model import LinearRegression
 
@@ -616,16 +595,12 @@ tablesample
     try:
         model.fit(vdf_copy, X, "v_eps2")
         R2 = model.score("r2")
-        model.drop()
     except:
-        try:
-            model.set_params({"solver": "bfgs"})
-            model.fit(vdf_copy, X, "v_eps2")
-            R2 = model.score("r2")
-            model.drop()
-        except:
-            model.drop()
-            raise
+        model.set_params({"solver": "bfgs"})
+        model.fit(vdf_copy, X, "v_eps2")
+        R2 = model.score("r2")
+    finally:
+        model.drop()
     n = vdf.shape()[0]
     k = len(X)
     LM = n * R2
@@ -658,7 +633,7 @@ def het_goldfeldquandt(
     alternative: str = "increasing",
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Goldfeld-Quandt homoscedasticity test.
 
 Parameters
@@ -697,9 +672,7 @@ tablesample
     raise_error_if_not_in(
         "alternative", alternative, ["increasing", "decreasing", "two-sided"]
     )
-    vdf.are_namecols_in([y] + X)
-    y = vdf.format_colnames(y)
-    X = vdf.format_colnames(X)
+    y, X = vdf.format_colnames(y, X)
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
@@ -710,12 +683,10 @@ tablesample
     try:
         mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
     except:
-        try:
-            model.set_params({"solver": "bfgs"})
-            mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
-        except:
-            model.drop()
-            raise
+        model.set_params({"solver": "bfgs"})
+        mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
+    finally:
+        model.drop()
     n, m, k = vdf_0_half.shape()[0], vdf_1_half.shape()[0], len(X)
     F = mse1 / mse0
     if alternative.lower() in ["increasing"]:
@@ -735,7 +706,7 @@ tablesample
 @save_verticapy_logs
 def het_white(vdf: vDataFrame, eps: str, X: list):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 White’s Lagrange Multiplier Test for heteroscedasticity.
 
 Parameters
@@ -753,9 +724,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([eps] + X)
-    eps = vdf.format_colnames(eps)
-    X = vdf.format_colnames(X)
+    eps, X = vdf.format_colnames(eps, X)
     X_0 = ["1"] + X
     variables = []
     variables_names = []
@@ -776,16 +745,12 @@ tablesample
     try:
         model.fit(vdf_white, variables_names, "v_eps2")
         R2 = model.score("r2")
-        model.drop()
     except:
-        try:
-            model.set_params({"solver": "bfgs"})
-            model.fit(vdf_white, variables_names, "v_eps2")
-            R2 = model.score("r2")
-            model.drop()
-        except:
-            model.drop()
-            raise
+        model.set_params({"solver": "bfgs"})
+        model.fit(vdf_white, variables_names, "v_eps2")
+        R2 = model.score("r2")
+    finally:
+        model.drop()
     n = vdf.shape()[0]
     if len(X) > 1:
         k = 2 * len(X) + math.factorial(len(X)) / 2 / (math.factorial(len(X) - 2))
@@ -814,7 +779,7 @@ tablesample
 @save_verticapy_logs
 def jarque_bera(vdf: vDataFrame, column: str, alpha: Union[int, float] = 0.05):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Jarque-Bera test (Distribution Normality).
 
 Parameters
@@ -832,7 +797,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
     jb, kurtosis, skewness, n = (
         vdf[column].agg(["jb", "kurtosis", "skewness", "count"]).values[column]
@@ -860,7 +824,7 @@ tablesample
 @save_verticapy_logs
 def kurtosistest(vdf: vDataFrame, column: str):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Test whether the kurtosis is different from the normal distribution.
 
 Parameters
@@ -876,7 +840,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
     g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
     mu1 = -6 / (n + 1)
@@ -909,7 +872,7 @@ def ljungbox(
     box_pierce: bool = False,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ljung–Box test (whether any of a group of autocorrelations of a time series 
 are different from zero).
 
@@ -937,10 +900,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([column] + [ts] + by)
-    column = vdf.format_colnames(column)
-    ts = vdf.format_colnames(ts)
-    by = vdf.format_colnames(by)
+    column, ts, by = vdf.format_colnames(column, ts, by)
     acf = vdf.acf(column=column, ts=ts, by=by, p=p, show=False)
     if p >= 2:
         acf = acf.values["value"][1:]
@@ -971,7 +931,7 @@ tablesample
 @save_verticapy_logs
 def mkt(vdf: vDataFrame, column: str, ts: str, alpha: Union[int, float] = 0.05):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Mann Kendall test (Time Series trend).
 
 \u26A0 Warning : This Test is computationally expensive. It is using a CROSS 
@@ -997,10 +957,8 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in([column, ts])
-    column = vdf.format_colnames(column)
-    ts = vdf.format_colnames(ts)
-    table = "(SELECT {}, {} FROM {})".format(column, ts, vdf.__genSQL__())
+    column, ts = vdf.format_colnames(column, ts)
+    table = f"(SELECT {column}, {ts} FROM {vdf.__genSQL__()})"
     query = f"SELECT /*+LABEL('stats.tools.mkt')*/ SUM(SIGN(y.{column} - x.{column})) FROM {table} x CROSS JOIN {table} y WHERE y.{ts} > x.{ts}"
     S = executeSQL(
         query, title="Computing the Mann Kendall S.", method="fetchfirstelem"
@@ -1061,7 +1019,7 @@ tablesample
 @save_verticapy_logs
 def normaltest(vdf: vDataFrame, column: str):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Test whether a sample differs from a normal distribution.
 
 Parameters
@@ -1077,7 +1035,10 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    Z1, Z2 = skewtest(vdf, column)["value"][0], kurtosistest(vdf, column)["value"][0]
+    Z1, Z2 = (
+        skewtest(vdf, column)["value"][0],
+        kurtosistest(vdf, column)["value"][0],
+    )
     Z = Z1 ** 2 + Z2 ** 2
     pvalue = chi2.sf(Z, 2)
     result = tablesample({"index": ["Statistic", "p_value"], "value": [Z, pvalue]})
@@ -1100,7 +1061,7 @@ def seasonal_decompose(
     two_sided: bool = False,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Performs a seasonal time series decomposition.
 
 Parameters
@@ -1145,12 +1106,7 @@ vDataFrame
     assert period > 0 or polynomial_order > 0, ParameterError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
     )
-    vdf.are_namecols_in([column, ts] + by)
-    ts, column, by = (
-        vdf.format_colnames(ts),
-        vdf.format_colnames(column),
-        vdf.format_colnames(by),
-    )
+    ts, column, by = vdf.format_colnames(ts, column, by)
     if rule:
         vdf_tmp = vdf.interpolate(ts=ts, rule=period, method={column: "linear"}, by=by)
     else:
@@ -1161,7 +1117,7 @@ vDataFrame
         "{}_epsilon".format(column[1:-1]),
     )
     by, by_tmp = (
-        "" if not (by) else "PARTITION BY " + ", ".join(vdf.format_colnames(by)) + " ",
+        "" if not (by) else "PARTITION BY " + ", ".join(by) + " ",
         by,
     )
     if polynomial_order <= 0:
@@ -1259,7 +1215,7 @@ vDataFrame
 @save_verticapy_logs
 def skewtest(vdf: vDataFrame, column: str):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Test whether the skewness is different from the normal distribution.
 
 Parameters
@@ -1275,7 +1231,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
     g1, n = vdf[column].agg(["skewness", "count"]).values[column]
     mu1 = 0
@@ -1298,7 +1253,7 @@ tablesample
 @save_verticapy_logs
 def variance_inflation_factor(vdf: vDataFrame, X: list, X_idx: int = None):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the variance inflation factor (VIF). It can be used to detect
 multicollinearity in an OLS Regression Analysis.
 
@@ -1317,13 +1272,11 @@ Returns
 float
     VIF.
     """
-    vdf.are_namecols_in(X)
-    X = vdf.format_colnames(X)
+    X, X_idx = vdf.format_colnames(X, X_idx)
 
     if isinstance(X_idx, str):
-        vdf.are_namecols_in(X_idx)
         for i in range(len(X)):
-            if quote_ident(X[i]) == quote_ident(X_idx):
+            if X[i] == X_idx:
                 X_idx = i
                 break
     if isinstance(X_idx, (int, float)):
@@ -1340,16 +1293,12 @@ float
         try:
             model.fit(vdf, X_r, y_r)
             R2 = model.score("r2")
-            model.drop()
         except:
-            try:
-                model.set_params({"solver": "bfgs"})
-                model.fit(vdf, X_r, y_r)
-                R2 = model.score("r2")
-                model.drop()
-            except:
-                model.drop()
-                raise
+            model.set_params({"solver": "bfgs"})
+            model.fit(vdf, X_r, y_r)
+            R2 = model.score("r2")
+        finally:
+            model.drop()
         if 1 - R2 != 0:
             return 1 / (1 - R2)
         else:

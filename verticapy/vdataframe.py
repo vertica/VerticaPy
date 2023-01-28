@@ -91,7 +91,7 @@ from verticapy.errors import *
 # ---#
 class vDataFrame:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 An object that records all user modifications, allowing users to 
 manipulate the relation without mutating the underlying data in Vertica. 
 When changes are made, the vDataFrame queries the Vertica database, which 
@@ -461,9 +461,9 @@ vColumns : vColumn
             elif isinstance(index, str_sql):
                 index = str(index)
                 is_sql = True
-            new_index = self.format_colnames([index])
             try:
-                return getattr(self, new_index[0])
+                new_index = self.format_colnames(index)
+                return getattr(self, new_index)
             except:
                 if is_sql:
                     return self.search(conditions=index)
@@ -471,16 +471,16 @@ vColumns : vColumn
                     return getattr(self, index)
         elif isinstance(index, Iterable):
             try:
-                return self.select(columns=[str(elem) for elem in index])
+                return self.select(columns=[str(col) for col in index])
             except:
-                return self.search(conditions=[str(elem) for elem in index])
+                return self.search(conditions=[str(col) for col in index])
         else:
             return getattr(self, index)
 
     # ---#
     def __iter__(self):
         columns = self.get_columns()
-        return (elem for elem in columns)
+        return (col for col in columns)
 
     # ---#
     def __len__(self):
@@ -556,7 +556,7 @@ vColumns : vColumn
     # ---#
     def __add_to_history__(self, message: str):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     VERTICAPY stores the user modification and help the user to look at 
     what he/she did. This method is to use to add a customized message in the 
     vDataFrame history attribute.
@@ -577,7 +577,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Global method to use to compute the Correlation/Cov/Regr Matrix.
 
     See Also
@@ -587,7 +587,7 @@ vColumns : vColumn
     vDataFrame.regr : Computes the Regression  Matrix of the vDataFrame.
         """
         method_name = "Correlation"
-        method_type = " using the method = '{}'".format(method)
+        method_type = f" using the method = '{method}'"
         if method == "cov":
             method_name = "Covariance"
             method_type = ""
@@ -906,7 +906,11 @@ vColumns : vColumn
                             elif method in ("pearson", "spearman", "spearmand"):
                                 all_list += [
                                     "ROUND(CORR({0}{1}, {2}{3}), {4})".format(
-                                        columns[i], cast_i, columns[j], cast_j, round_nb
+                                        columns[i],
+                                        cast_i,
+                                        columns[j],
+                                        cast_j,
+                                        round_nb,
                                     )
                                 ]
                             elif method == "kendall":
@@ -1055,7 +1059,7 @@ vColumns : vColumn
                     "No numerical column found in the vDataFrame."
                 )
             return self.__aggregate_matrix__(
-                method=method, columns=cols, round_nb=round_nb, show=show, **style_kwds
+                method=method, columns=cols, round_nb=round_nb, show=show, **style_kwds,
             )
 
     # ---#
@@ -1070,7 +1074,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Global method to use to compute the Correlation/Cov/Beta Vector.
 
     See Also
@@ -1094,7 +1098,7 @@ vColumns : vColumn
             cols = self.format_colnames(columns)
         if method != "cramer":
             method_name = "Correlation"
-            method_type = " using the method = '{}'".format(method)
+            method_type = f" using the method = '{method}'"
             if method == "cov":
                 method_name = "Covariance"
                 method_type = ""
@@ -1127,9 +1131,7 @@ vColumns : vColumn
                         nb_precomputed += 1
                     elif method in ("pearson", "spearman", "spearmand"):
                         all_list += [
-                            "ROUND(CORR({}{}, {}{}), {})".format(
-                                focus, cast_i, column, cast_j, round_nb
-                            )
+                            f"ROUND(CORR({focus}{cast_i}, {column}{cast_j}), {round_nb})"
                         ]
                     elif method == "kendall":
                         n = "SQRT(COUNT(*))"
@@ -1265,10 +1267,10 @@ vColumns : vColumn
 
     # ---#
     def __genSQL__(
-        self, split: bool = False, transformations: dict = {}, force_columns: list = []
+        self, split: bool = False, transformations: dict = {}, force_columns: list = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Method to use to generate the SQL final relation. It will look at all 
     transformations to build a nested query where each transformation will 
     be associated to a specific floor.
@@ -1409,7 +1411,7 @@ vColumns : vColumn
         self, column: str = "", key: str = "", method: str = "", columns: list = []
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     VERTICAPY stores the already computed aggregations to avoid useless 
     computations. This method returns the stored aggregation if it was already 
     computed.
@@ -1450,7 +1452,7 @@ vColumns : vColumn
     # ---#
     def __get_last_order_by__(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the last column used to sort the data.
         """
         max_pos, order_by = 0, ""
@@ -1464,7 +1466,7 @@ vColumns : vColumn
     # ---#
     def __get_sort_syntax__(self, columns: list):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL syntax to use to sort the input columns.
         """
         if not (columns):
@@ -1488,7 +1490,7 @@ vColumns : vColumn
     # ---#
     def __isexternal__(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns true if it is an external vDataFrame.
         """
         return self._VERTICAPY_VARIABLES_["external"]
@@ -1503,7 +1505,7 @@ vColumns : vColumn
         column: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     VERTICAPY stores the already computed aggregations to avoid useless 
     computations. This method stores the input aggregation in the vColumn catalog.
         """
@@ -1579,7 +1581,7 @@ vColumns : vColumn
     # ---#
     def __vDataFrameSQL__(self, table: str, func: str, history: str):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     This method is to use to build a vDataFrame based on a relation
         """
         schema = self._VERTICAPY_VARIABLES_["schema"]
@@ -1591,9 +1593,9 @@ vColumns : vColumn
     # Methods used to check & format the inputs
     #
     # ---#
-    def are_namecols_in(self, columns: Union[str, list]):
+    def are_namecols_in(self, columns: Union[str, list, dict]):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Method used to check if the input column names are used by the vDataFrame.
     If not, the function raises an error.
 
@@ -1609,48 +1611,67 @@ vColumns : vColumn
                 try:
                     e = ""
                     nearestcol = self.get_nearest_column(column)
-                    if nearestcol[1] < 5:
+                    if nearestcol[1] < 8:
                         e = f"\nDid you mean '{nearestcol[0]}' ?"
                 except:
                     e = ""
                 raise MissingColumn(f"The Virtual Column '{column}' doesn't exist{e}.")
 
     # ---#
-    def format_colnames(self, columns: Union[str, list]):
+    def format_colnames(
+        self, *argv, columns: Union[str, list, dict] = [], raise_error: bool = True
+    ):
         """
-    ---------------------------------------------------------------------------
-    Method used to format the input columns by using the vDataFrame columns'
-    names.
+    ----------------------------------------------------------------------------------------
+    Method used to format the input columns by using the vDataFrame columns' names.
 
     Parameters
     ----------
-    columns: list/str
+    columns: list / str, optional
         List of columns' names to format.
+    raise_error: bool, optional
+        If set to True and if there is an error, it will be raised.
 
     Returns
     -------
     list
         Formatted columns' names.
         """
-        is_str = False
-        if isinstance(columns, str):
-            columns = [columns]
-            is_str = True
-        vdf_columns = self.get_columns()
-        f_columns_names = []
-        for column in columns:
-            for vdf_column in vdf_columns:
-                if quote_ident(column).lower() == quote_ident(vdf_column).lower():
-                    f_columns_names += [quote_ident(vdf_column)]
-        if is_str:
-            return f_columns_names[0]
+        if argv:
+            if len(argv) == 1:
+                return self.format_colnames(columns=argv[0], raise_error=raise_error)
+            result = []
+            for arg in argv:
+                result += [self.format_colnames(columns=arg, raise_error=raise_error)]
+            return result
         else:
-            return f_columns_names
+            if not (columns) or isinstance(columns, (int, float)):
+                return copy.deepcopy(columns)
+            if raise_error:
+                self.are_namecols_in(columns)
+            if isinstance(columns, str):
+                result = columns
+                vdf_columns = self.get_columns()
+                for col in vdf_columns:
+                    if quote_ident(columns).lower() == quote_ident(col).lower():
+                        result = col
+                        break
+            elif isinstance(columns, dict):
+                result = {}
+                for col in columns:
+                    result[
+                        self.format_colnames(col, raise_error=raise_error)
+                    ] = columns[col]
+            else:
+                result = []
+                for col in columns:
+                    result += [self.format_colnames(col, raise_error=raise_error)]
+            return result
 
     # ---#
     def is_colname_in(self, column: str):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Method used to check if the input column name is used by the vDataFrame.
     If not, the function raises an error.
 
@@ -1675,7 +1696,7 @@ vColumns : vColumn
     # ---#
     def is_nb_cols_correct(self, columns: list, expected_nb_of_cols: list):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Method used to check if the length of the input columns list match the
     expected number of columns. If not, the function raises an error.
 
@@ -1696,7 +1717,7 @@ vColumns : vColumn
     # ---#
     def get_nearest_column(self, column: str):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Method used to find the nearest column's name to the input one.
 
     Parameters
@@ -1729,7 +1750,7 @@ vColumns : vColumn
     def idisplay(self):
         """This method displays the interactive table. It is used when 
         you don't want to activate interactive table for all vDataFrames."""
-        from IPython.core.display import HTML, display
+        from IPython.display import HTML, display
 
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
@@ -1742,7 +1763,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'aad' (Average Absolute Deviation).
 
     Parameters
@@ -1770,7 +1791,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def abs(self, columns: Union[str, list] = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies the absolute value function to all input vColumns. 
 
     Parameters
@@ -1791,7 +1812,6 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         columns = self.numcol() if not (columns) else self.format_colnames(columns)
         func = {}
         for column in columns:
@@ -1819,7 +1839,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the correlations of the input vColumn and its lags. 
 
     Parameters
@@ -1898,28 +1918,21 @@ vColumns : vColumn
         method = str(method).lower()
         if isinstance(by, str):
             by = [by]
-        self.are_namecols_in([column, ts] + by)
-        by = self.format_colnames(by)
-        column = self.format_colnames(column)
-        ts = self.format_colnames(ts)
+        by, column, ts = self.format_colnames(by, column, ts)
         if unit == "rows":
             table = self.__genSQL__()
         else:
             table = self.interpolate(
-                ts=ts, rule="1 {}".format(unit), method={column: "linear"}, by=by
+                ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
             ).__genSQL__()
         if isinstance(p, (int, float)):
             p = range(1, p + 1)
-        by = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
+        by = f"PARTITION BY {', '.join(by)} " if (by) else ""
         columns = [
-            "LAG({}, {}) OVER ({}ORDER BY {}) AS lag_{}_{}".format(
-                column, i, by, ts, i, gen_name([column])
-            )
+            f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
             for i in p
         ]
-        relation = "(SELECT {} FROM {}) acf".format(
-            ", ".join([column] + columns), table
-        )
+        relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) acf"
         if len(p) == 1:
             return self.__vDataFrameSQL__(relation, "acf", "").corr([], method=method)
         elif acf_type == "heatmap":
@@ -1978,7 +1991,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def add_duplicates(self, weight: Union[int, str], use_gcd: bool = True):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Duplicates the vDataFrame using the input weight.
 
     Parameters
@@ -1995,12 +2008,9 @@ vColumns : vColumn
         the output vDataFrame
         """
         if isinstance(weight, str):
-            self.are_namecols_in(weight)
             weight = self.format_colnames(weight)
             assert self[weight].category() == "int", TypeError(
-                "The weight vColumn category must be 'integer', found {}.".format(
-                    self[weight].category()
-                )
+                f"The weight vColumn category must be 'integer', found {self[weight].category()}."
             )
             L = sorted(self[weight].distinct())
             gcd, max_value, n = L[0], L[-1], len(L)
@@ -2042,7 +2052,7 @@ vColumns : vColumn
         processes: int = 1,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using the input functions.
 
     Parameters
@@ -2111,7 +2121,6 @@ vColumns : vColumn
             columns = [columns]
         if isinstance(func, str):
             func = [func]
-        self.are_namecols_in(columns)
         if not (columns):
             columns = self.get_columns()
             cat_agg = [
@@ -2626,7 +2635,7 @@ vColumns : vColumn
         self, columns: list, **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'bool_and'.
 
     Parameters
@@ -2664,7 +2673,7 @@ vColumns : vColumn
         add_count: bool = True,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Adds a new vColumn to the vDataFrame by using an advanced analytical 
     function on one or two specific vColumns.
 
@@ -2747,22 +2756,19 @@ vColumns : vColumn
             by = [by]
         if isinstance(order_by, str):
             order_by = [order_by]
-        self.are_namecols_in([elem for elem in order_by] + by)
         if isinstance(columns, str):
             if columns:
                 columns = [columns]
             else:
                 columns = []
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
+        columns, by = self.format_colnames(columns, by)
         by_name = ["by"] + by if (by) else []
         by_order = ["order_by"] + [elem for elem in order_by] if (order_by) else []
         if not (name):
             name = gen_name([func] + columns + by_name + by_order)
-        by = self.format_colnames(by)
         func = func.lower()
         by = ", ".join(by)
-        by = "PARTITION BY {}".format(by) if (by) else ""
+        by = f"PARTITION BY {by}" if (by) else ""
         order_by = self.__get_sort_syntax__(order_by)
         func = get_verticapy_function(func.lower(), method="vertica")
         if func in (
@@ -2822,32 +2828,15 @@ vColumns : vColumn
                 if func == "kurtosis":
                     self.eval(
                         name,
-                        "AVG(POWER(({} - {}) / NULLIFZERO({}), 4)) OVER ({}) * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3))".format(
-                            columns[0],
-                            mean_name,
-                            std_name,
-                            by,
-                            count_name,
-                            count_name,
-                            count_name,
-                            count_name,
-                            count_name,
-                            count_name,
-                            count_name,
-                            count_name,
+                        "AVG(POWER(({0} - {1}) / NULLIFZERO({2}), 4)) OVER ({3}) * POWER({4}, 2) * ({4} + 1) / NULLIFZERO(({4} - 1) * ({4} - 2) * ({4} - 3)) - 3 * POWER({4} - 1, 2) / NULLIFZERO(({4} - 2) * ({4} - 3))".format(
+                            columns[0], mean_name, std_name, by, count_name,
                         ),
                     )
                 elif func == "skewness":
                     self.eval(
                         name,
-                        "AVG(POWER(({} - {}) / NULLIFZERO({}), 3)) OVER ({}) * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2))".format(
-                            columns[0],
-                            mean_name,
-                            std_name,
-                            by,
-                            count_name,
-                            count_name,
-                            count_name,
+                        "AVG(POWER(({0} - {1}) / NULLIFZERO({2}), 3)) OVER ({3}) * POWER({4}, 2) / NULLIFZERO(({4} - 1) * ({4} - 2))".format(
+                            columns[0], mean_name, std_name, by, count_name,
                         ),
                     )
                 elif func == "jb":
@@ -3046,7 +3035,7 @@ vColumns : vColumn
             try:
                 self.eval(
                     name,
-                    "{0}({1}) OVER ({2}{3})".format(
+                    f"{0}({1}{2}) OVER ({3}{4})".format(
                         func.upper(), columns[0], info_param, by, order_by
                     ),
                 )
@@ -3095,7 +3084,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the animated chart.
 
     Parameters
@@ -3174,23 +3163,16 @@ vColumns : vColumn
             else:
                 kind = "bubble"
         assert kind == "ts" or columns, ParameterError(
-            "Parameter 'columns' can not be empty when using kind = '{}'.".format(kind)
+            f"Parameter 'columns' can not be empty when using kind = '{kind}'."
         )
         assert (
             2 <= len(columns) <= 4
             and self[columns[0]].isnum()
             and self[columns[1]].isnum()
         ) or kind != "bubble", ParameterError(
-            "Parameter 'columns' must include at least 2 numerical vColumns and maximum 4 vColumns when using kind = '{}'.".format(
-                kind
-            )
+            f"Parameter 'columns' must include at least 2 numerical vColumns and maximum 4 vColumns when using kind = '{kind}'."
         )
-        self.are_namecols_in(columns + [ts])
-        columns = self.format_colnames(columns)
-        ts = self.format_colnames(ts)
-        if by:
-            self.are_namecols_in(by)
-            by = self.format_colnames(by)
+        columns, ts, by = self.format_colnames(columns, ts, by)
         if kind == "bubble":
             from verticapy.plot import animated_bubble_plot
 
@@ -3294,7 +3276,7 @@ vColumns : vColumn
         self, columns: list, **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'bool_or'.
 
     Parameters
@@ -3327,7 +3309,7 @@ vColumns : vColumn
         union_all: bool = True,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Merges the vDataFrame with another one or an input relation and returns 
     a new vDataFrame.
 
@@ -3384,7 +3366,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def apply(self, func: dict):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies each function of the dictionary to the input vColumns.
 
     Parameters
@@ -3406,9 +3388,9 @@ vColumns : vColumn
     vDataFrame.applymap : Applies a function to all vColumns.
     vDataFrame.eval     : Evaluates a customized expression.
         """
-        self.are_namecols_in([elem for elem in func])
+        func = self.format_colnames(func)
         for column in func:
-            self[self.format_colnames(column)].apply(func[column])
+            self[column].apply(func[column])
         return self
 
     # ---#
@@ -3416,7 +3398,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def applymap(self, func: str, numeric_only: bool = True):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies a function to all vColumns. 
 
     Parameters
@@ -3456,7 +3438,7 @@ vColumns : vColumn
         by: Union[str, list] = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes a regular time interval vDataFrame by interpolating the missing 
     values using different techniques.
 
@@ -3491,8 +3473,7 @@ vColumns : vColumn
         """
         if isinstance(by, str):
             by = [by]
-        self.are_namecols_in(by + [elem for elem in method])
-        ts, by = self.format_colnames(ts), self.format_colnames(by)
+        method, ts, by = self.format_colnames(method, ts, by)
         all_elements = []
         for column in method:
             assert method[column] in (
@@ -3510,13 +3491,9 @@ vColumns : vColumn
                 func, interp = "TS_FIRST_VALUE", "const"
             else:
                 func, interp = "TS_FIRST_VALUE", "linear"
-            all_elements += [
-                "{0}({1}, '{2}') AS {1}".format(
-                    func, self.format_colnames(column), interp
-                )
-            ]
+            all_elements += ["{0}({1}, '{2}') AS {1}".format(func, column, interp)]
         table = "SELECT {} FROM {}".format("{}", self.__genSQL__())
-        tmp_query = ["slice_time AS {}".format(quote_ident(ts))]
+        tmp_query = [f"slice_time AS {quote_ident(ts)}"]
         tmp_query += [quote_ident(column) for column in by]
         tmp_query += all_elements
         table = table.format(", ".join(tmp_query))
@@ -3540,7 +3517,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def astype(self, dtype: dict):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts the vColumns to the input types.
 
     Parameters
@@ -3555,7 +3532,6 @@ vColumns : vColumn
     vDataFrame
         self
         """
-        self.are_namecols_in([elem for elem in dtype])
         for column in dtype:
             self[self.format_colnames(column)].astype(dtype=dtype[column])
         return self
@@ -3565,7 +3541,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def at_time(self, ts: str, time: Union[str, datetime.timedelta]):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the records at the input time.
 
     Parameters
@@ -3589,8 +3565,7 @@ vColumns : vColumn
     vDataFrame.filter       : Filters the data using the input expression.
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
-        self.are_namecols_in(ts)
-        self.filter("{}::time = '{}'".format(quote_ident(ts), time))
+        self.filter(f"{self.format_colnames(ts)}::time = '{time}'")
         return self
 
     # ---#
@@ -3599,7 +3574,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'avg' (Average).
 
     Parameters
@@ -3638,7 +3613,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the bar chart of the input vColumns based on an aggregation.
 
     Parameters
@@ -3685,8 +3660,10 @@ vColumns : vColumn
      See Also
      --------
      vDataFrame.boxplot     : Draws the Box Plot of the input vColumns.
-     vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
-     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
+     vDataFrame.hist        : Draws the histogram of the input vColumns based 
+                              on an aggregation.
+     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an 
+                              aggregation.
         """
         raise_error_if_not_in(
             "hist_type",
@@ -3704,11 +3681,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [1, 2])
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
-        if of:
-            self.are_namecols_in(of)
-            of = self.format_colnames(of)
+        columns, of = self.format_colnames(columns, of)
         if len(columns) == 1:
             return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax, **style_kwds)
         else:
@@ -3746,7 +3719,7 @@ vColumns : vColumn
         order_by: Union[str, list] = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Balances the dataset using the input method.
 
     \u26A0 Warning : If the data is not sorted, the generated SQL code may
@@ -3772,13 +3745,11 @@ vColumns : vColumn
     vDataFrame
         balanced vDataFrame
         """
+        column, order_by = self.format_colnames(column, order_by)
         raise_error_if_not_in("method", method, ["hybrid", "over", "under"])
         if isinstance(order_by, str):
             order_by = [order_by]
         assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
-        self.are_namecols_in([column] + order_by)
-        column = self.format_colnames(column)
-        order_by = self.format_colnames(order_by)
         topk = self[column].topk()
         last_count, last_elem, n = (
             topk["count"][-1],
@@ -3789,10 +3760,10 @@ vColumns : vColumn
             last_count = last_count * x
         elif method == "under":
             last_count = last_count / x
-        vdf = self.search("{} = '{}'".format(column, last_elem))
+        vdf = self.search(f"{column} = '{last_elem}'")
         for i in range(n - 1):
             vdf = vdf.append(
-                self.search("{} = '{}'".format(column, topk["index"][i])).sample(
+                self.search(f"{column} = '{topk['index'][i]}'").sample(
                     n=int(last_count)
                 )
             )
@@ -3809,7 +3780,7 @@ vColumns : vColumn
         end_time: Union[str, datetime.timedelta],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the records between two input times.
 
     Parameters
@@ -3836,11 +3807,8 @@ vColumns : vColumn
     vDataFrame.filter  : Filters the data using the input expression.
     vDataFrame.last    : Filters the data by only keeping the last records.
         """
-        self.are_namecols_in(ts)
         self.filter(
-            "{}::time BETWEEN '{}' AND '{}'".format(
-                quote_ident(ts), start_time, end_time
-            ),
+            f"{self.format_colnames(ts)}::time BETWEEN '{start_time}' AND '{end_time}'",
         )
         return self
 
@@ -3848,7 +3816,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def bool_to_int(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts all booleans vColumns to integers.
 
     Returns
@@ -3871,7 +3839,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def boxplot(self, columns: Union[str, list] = [], ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the Box Plot of the input vColumns. 
 
     Parameters
@@ -3891,14 +3859,16 @@ vColumns : vColumn
 
     See Also
     --------
-    vDataFrame.bar         : Draws the bar chart of the input vColumns based on an aggregation.
+    vDataFrame.bar         : Draws the bar chart of the input vColumns based 
+                             on an aggregation.
     vDataFrame.boxplot     : Draws the vColumn box plot.
-    vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
-    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
+    vDataFrame.hist        : Draws the histogram of the input vColumns based 
+                             on an aggregation.
+    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an 
+                             aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         columns = self.format_colnames(columns) if (columns) else self.numcol()
         from verticapy.plot import boxplot2D
 
@@ -3920,7 +3890,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the bubble plot of the input vColumns.
 
     Parameters
@@ -3957,17 +3927,10 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [2])
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
-        if catcol:
-            self.are_namecols_in(catcol)
-            catcol = self.format_colnames(catcol)
-        if size_bubble_col:
-            self.are_namecols_in(size_bubble_col)
-            size_bubble_col = self.format_colnames(size_bubble_col)
-        if cmap_col:
-            self.are_namecols_in(cmap_col)
-            cmap_col = self.format_colnames(cmap_col)
+        columns, catcol, size_bubble_col, cmap_col = self.format_colnames(
+            columns, catcol, size_bubble_col, cmap_col
+        )
+
         from verticapy.plot import bubble
 
         return bubble(
@@ -3986,7 +3949,7 @@ vColumns : vColumn
     @check_dtypes
     def catcol(self, max_cardinality: int = 12):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the vDataFrame categorical vColumns.
     
     Parameters
@@ -4037,7 +4000,7 @@ vColumns : vColumn
         drop_transf_cols: bool = True,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the complete disjunctive table of the vDataFrame.
     Numerical features are transformed to categorical using
     the 'discretize' method. Applying PCA on TCDT leads to MCA 
@@ -4069,7 +4032,6 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         if columns:
-            self.are_namecols_in(columns)
             columns = self.format_colnames(columns)
         else:
             columns = self.get_columns()
@@ -4114,7 +4076,7 @@ vColumns : vColumn
         **kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns a CHAID (Chi-square Automatic Interaction Detector) tree.
     CHAID is a decision tree technique based on adjusted significance testing 
     (Bonferroni test).
@@ -4154,7 +4116,6 @@ vColumns : vColumn
             raise_error_if_not_in("method", method, ["smart", "same_width"])
             if isinstance(columns, str):
                 columns = [columns]
-            self.are_namecols_in(columns + [response])
             assert 2 <= nbins <= 16, ParameterError(
                 "Parameter 'nbins' must be between 2 and 16, inclusive."
             )
@@ -4287,7 +4248,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def chaid_columns(self, columns: list = [], max_cardinality: int = 16):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Function used to simplify the code. It returns the columns picked by
     the CHAID algorithm.
 
@@ -4339,7 +4300,7 @@ vColumns : vColumn
     # ---#
     def copy(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns a deep copy of the vDataFrame.
 
     Returns
@@ -4354,7 +4315,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def case_when(self, name: str, *argv):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Creates a new feature by evaluating some conditions.
     
     Parameters
@@ -4386,7 +4347,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def contour(self, columns: list, func, nbins: int = 100, ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the contour plot of the input function two input vColumns.
 
     Parameters
@@ -4415,7 +4376,6 @@ vColumns : vColumn
      vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
         self.is_nb_cols_correct(columns, [2])
-        self.are_namecols_in(columns)
         columns = self.format_colnames(columns)
         from verticapy.plot import contour_plot
 
@@ -4435,7 +4395,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the Correlation Matrix of the vDataFrame. 
 
     Parameters
@@ -4481,44 +4441,36 @@ vColumns : vColumn
     vDataFrame.pacf : Computes the partial autocorrelations of the input vColumn.
     vDataFrame.regr : Computes the regression matrix of the vDataFrame. 
         """
+        method = str(method).lower()
         raise_error_if_not_in(
             "method",
-            str(method).lower(),
+            method,
             ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer",],
         )
-        method = str(method).lower()
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
-        if not (focus):
-            return self.__aggregate_matrix__(
-                method=method,
-                columns=columns,
-                round_nb=round_nb,
-                show=show,
-                ax=ax,
-                **style_kwds,
-            )
-        else:
-            self.are_namecols_in(focus)
-            focus = self.format_colnames(focus)
-            return self.__aggregate_vector__(
-                focus,
-                method=method,
-                columns=columns,
-                round_nb=round_nb,
-                show=show,
-                ax=ax,
-                **style_kwds,
-            )
+        columns, focus = self.format_colnames(columns, focus)
+        fun = self.__aggregate_matrix__
+        argv = []
+        kwds = {
+            "method": method,
+            "columns": columns,
+            "round_nb": round_nb,
+            "show": show,
+            "ax": ax,
+            **style_kwds,
+        }
+        if focus:
+            argv += [focus]
+            fun = self.__aggregate_vector__
+        return fun(*argv, **kwds)
 
     # ---#
     @check_dtypes
     @save_verticapy_logs
     def corr_pvalue(self, column1: str, column2: str, method: str = "pearson"):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the Correlation Coefficient of the two input vColumns and its pvalue. 
 
     Parameters
@@ -4572,8 +4524,7 @@ vColumns : vColumn
         from scipy.stats import t, norm, chi2
         from numpy import log
 
-        self.are_namecols_in([column1, column2])
-        column1, column2 = self.format_colnames([column1, column2])
+        column1, column2 = self.format_colnames(column1, column2)
         if method[0:7] == "kendall":
             if method == "kendall":
                 kendall_type = "b"
@@ -4708,7 +4659,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using a list of 'count' (Number of non-missing 
     values).
 
@@ -4742,7 +4693,7 @@ vColumns : vColumn
         **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using a list of 'count' (the number of non-missing 
     values) and percent (the percent of non-missing values).
 
@@ -4785,7 +4736,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the covariance matrix of the vDataFrame. 
 
     Parameters
@@ -4817,18 +4768,22 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
-        if focus == "":
-            return self.__aggregate_matrix__(
-                method="cov", columns=columns, show=show, ax=ax, **style_kwds
-            )
-        else:
-            self.are_namecols_in(focus)
-            focus = self.format_colnames(focus)
-            return self.__aggregate_vector__(
-                focus, method="cov", columns=columns, show=show, ax=ax, **style_kwds
-            )
+
+        columns, focus = self.format_colnames(columns, focus)
+        fun = self.__aggregate_matrix__
+        argv = []
+        kwds = {
+            "method": "cov",
+            "columns": columns,
+            "show": show,
+            "ax": ax,
+            **style_kwds,
+        }
+        if focus:
+            argv += [focus]
+            fun = self.__aggregate_vector__
+
+        return fun(*argv, **kwds)
 
     # ---#
     @save_verticapy_logs
@@ -4840,7 +4795,7 @@ vColumns : vColumn
         name: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Adds a new vColumn to the vDataFrame by computing the cumulative maximum of
     the input vColumn.
 
@@ -4885,7 +4840,7 @@ vColumns : vColumn
         name: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Adds a new vColumn to the vDataFrame by computing the cumulative minimum of
     the input vColumn.
 
@@ -4930,7 +4885,7 @@ vColumns : vColumn
         name: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Adds a new vColumn to the vDataFrame by computing the cumulative product of 
     the input vColumn.
 
@@ -4975,7 +4930,7 @@ vColumns : vColumn
         name: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Adds a new vColumn to the vDataFrame by computing the cumulative sum of the 
     input vColumn.
 
@@ -5013,7 +4968,7 @@ vColumns : vColumn
     # ---#
     def current_relation(self, reindent: bool = True):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the current vDataFrame relation.
 
     Parameters
@@ -5034,7 +4989,7 @@ vColumns : vColumn
     # ---#
     def datecol(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns a list of the vColumns of type date in the vDataFrame.
 
     Returns
@@ -5058,7 +5013,7 @@ vColumns : vColumn
     # ---#
     def del_catalog(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Deletes the current vDataFrame catalog.
 
     Returns
@@ -5082,7 +5037,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the vColumns Density Plot.
 
     Parameters
@@ -5123,7 +5078,6 @@ vColumns : vColumn
         )
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         columns = self.format_colnames(columns)
         if not (columns):
             columns = self.numcol()
@@ -5173,7 +5127,7 @@ vColumns : vColumn
         processes: int = 1,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using multiple statistical aggregations: min, 
     max, median, unique... depending on the types of the vColumns.
 
@@ -5238,7 +5192,6 @@ vColumns : vColumn
             columns = [columns]
         if method == "auto":
             method = "numerical" if (self.numcol()) else "categorical"
-        self.are_namecols_in(columns)
         columns = self.format_colnames(columns)
         for i in range(len(columns)):
             columns[i] = quote_ident(columns[i])
@@ -5578,7 +5531,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def drop(self, columns: Union[str, list] = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Drops the input vColumns from the vDataFrame. Dropping vColumns means 
     not selecting them in the final SQL code generation.
     Be Careful when using this method. It can make the vDataFrame structure 
@@ -5596,7 +5549,6 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         columns = self.format_colnames(columns)
         for column in columns:
             self[column].drop()
@@ -5607,7 +5559,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def drop_duplicates(self, columns: Union[str, list] = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Filters the duplicated using a partition by the input vColumns.
 
     \u26A0 Warning : Dropping duplicates will make the vDataFrame structure 
@@ -5628,7 +5580,6 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         count = self.duplicated(columns=columns, count=True)
         if count:
             columns = (
@@ -5654,7 +5605,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def dropna(self, columns: Union[str, list] = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Filters the vDataFrame where the input vColumns are missing.
 
     Parameters
@@ -5673,7 +5624,6 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         columns = self.get_columns() if not (columns) else self.format_colnames(columns)
         total = self.shape()[0]
         print_info = verticapy.OPTIONS["print_info"]
@@ -5694,7 +5644,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def dtypes(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the different vColumns types.
 
     Returns
@@ -5716,7 +5666,7 @@ vColumns : vColumn
         self, columns: Union[str, list] = [], count: bool = False, limit: int = 30
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the duplicated values.
 
     Parameters
@@ -5740,7 +5690,6 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         columns = self.get_columns() if not (columns) else self.format_colnames(columns)
         query = "(SELECT *, ROW_NUMBER() OVER (PARTITION BY {}) AS duplicated_index FROM {}) duplicated_index_table WHERE duplicated_index > 1".format(
             ", ".join(columns), self.__genSQL__()
@@ -5777,7 +5726,7 @@ vColumns : vColumn
     # ---#
     def empty(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns True if the vDataFrame is empty.
 
     Returns
@@ -5792,7 +5741,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def eval(self, name: str, expr: Union[str, str_sql]):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Evaluates a customized expression.
 
     Parameters
@@ -5869,7 +5818,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def expected_store_usage(self, unit: str = "b"):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the vDataFrame expected store usage. 
 
     Parameters
@@ -5990,7 +5939,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def explain(self, digraph: bool = False):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Provides information on how Vertica is computing the current vDataFrame
     relation.
 
@@ -6029,7 +5978,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def fillna(self, val: dict = {}, method: dict = {}, numeric_only: bool = False):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Fills the vColumns missing elements using specific rules.
 
     Parameters
@@ -6063,7 +6012,6 @@ vColumns : vColumn
     vDataFrame[].fillna : Fills the vColumn missing values. This method is more 
         complete than the vDataFrame.fillna method by allowing more parameters.
         """
-        self.are_namecols_in([elem for elem in val] + [elem for elem in method])
         print_info = verticapy.OPTIONS["print_info"]
         verticapy.OPTIONS["print_info"] = False
         try:
@@ -6080,18 +6028,18 @@ vColumns : vColumn
                     self[self.format_colnames(column)].fillna(val=val[column])
                 for column in method:
                     self[self.format_colnames(column)].fillna(method=method[column],)
-            verticapy.OPTIONS["print_info"] = print_info
             return self
         except:
-            verticapy.OPTIONS["print_info"] = print_info
             raise
+        finally:
+            verticapy.OPTIONS["print_info"] = print_info
 
     # ---#
     @check_dtypes
     @save_verticapy_logs
-    def filter(self, conditions: Union[list, str] = [], *args, **kwds):
+    def filter(self, conditions: Union[list, str] = [], *argv, **kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Filters the vDataFrame using the input expressions.
 
     Parameters
@@ -6117,12 +6065,12 @@ vColumns : vColumn
         """
         count = self.shape()[0]
         conj = "s were " if count > 1 else " was "
-        if not (isinstance(conditions, str)) or (args):
+        if not (isinstance(conditions, str)) or (argv):
             if isinstance(conditions, str) or not (isinstance(conditions, Iterable)):
                 conditions = [conditions]
             else:
                 conditions = list(conditions)
-            conditions += list(args)
+            conditions += list(argv)
             for condition in conditions:
                 self.filter(str(condition), print_info=False)
             count -= self.shape()[0]
@@ -6178,7 +6126,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def first(self, ts: str, offset: str):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the first records.
 
     Parameters
@@ -6226,7 +6174,7 @@ vColumns : vColumn
         exclude_columns: list = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Flatten the selected VMap. A new vDataFrame is returned.
     
     \u26A0 Warning : This function might have a long runtime and can make your
@@ -6284,7 +6232,7 @@ vColumns : vColumn
     @check_dtypes
     def get_columns(self, exclude_columns: Union[str, list] = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the vDataFrame vColumns.
 
     Parameters
@@ -6330,7 +6278,7 @@ vColumns : vColumn
         use_numbers_as_suffix: bool = False,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Encodes the vColumns using the One Hot Encoding algorithm.
 
     Parameters
@@ -6365,7 +6313,6 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         cols_hand = True if (columns) else False
         columns = self.get_columns() if not (columns) else self.format_colnames(columns)
         for column in columns:
@@ -6390,7 +6337,7 @@ vColumns : vColumn
         having: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame by grouping the elements.
 
     Parameters
@@ -6453,23 +6400,23 @@ vColumns : vColumn
                         "When parameter 'rollup' is not a boolean, it has to be a list of booleans."
                     )
                 for item in elem:
-                    colname = self.format_colnames([item])
+                    colname = self.format_colnames(item)
                     if colname:
-                        rollup_expr += colname[0]
-                        columns_to_select += [colname[0]]
+                        rollup_expr += colname
+                        columns_to_select += [colname]
                     else:
                         rollup_expr += str(item)
                         columns_to_select += [item]
                     rollup_expr += ", "
                 rollup_expr = rollup_expr[:-2] + "), "
             elif isinstance(elem, str):
-                colname = self.format_colnames([elem])
+                colname = self.format_colnames(elem)
                 if colname:
                     if not (isinstance(rollup, bool)) and (rollup[idx] == True):
-                        rollup_expr += "ROLLUP(" + colname[0] + ")"
+                        rollup_expr += "ROLLUP(" + colname + ")"
                     else:
-                        rollup_expr += colname[0]
-                    columns_to_select += [colname[0]]
+                        rollup_expr += colname
+                    columns_to_select += [colname]
                 else:
                     if not (isinstance(rollup, bool)) and (rollup[idx] == True):
                         rollup_expr += "ROLLUP(" + str(elem) + ")"
@@ -6533,7 +6480,7 @@ vColumns : vColumn
         alpha: float = 0.25,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     [Beta Version]
     Draws responsive charts using the High Chart API: 
     https://api.highcharts.com/highcharts/
@@ -6738,7 +6685,7 @@ vColumns : vColumn
     # ---#
     def head(self, limit: int = 5):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the vDataFrame head.
 
     Parameters
@@ -6771,7 +6718,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the Heatmap of the two input vColumns.
 
     Parameters
@@ -6810,11 +6757,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [2])
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
-        if of:
-            self.are_namecols_in(of)
-            of = self.format_colnames(of)
+        columns, of = self.format_colnames(columns, of)
         for column in columns:
             assert self[column].isnum(), TypeError(
                 f"vColumn {column} must be numerical to draw the Heatmap."
@@ -6853,7 +6796,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the Hexbin of the input vColumns based on an aggregation.
 
     Parameters
@@ -6895,11 +6838,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [2])
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
-        if of:
-            self.are_namecols_in(of)
-            of = self.format_colnames(of)
+        columns, of = self.format_colnames(columns, of)
         from verticapy.plot import hexbin
 
         return hexbin(self, columns, method, of, bbox, img, ax=ax, **style_kwds)
@@ -6919,7 +6858,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the histogram of the input vColumns based on an aggregation.
 
     Parameters
@@ -6970,11 +6909,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [1, 2, 3, 4, 5])
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
-        if of:
-            self.are_namecols_in(of)
-            of = self.format_colnames(of)
+        columns, of = self.format_colnames(columns, of)
         stacked = True if (hist_type.lower() == "stacked") else False
         multi = True if (hist_type.lower() == "multi") else False
         if len(columns) == 1:
@@ -7009,7 +6944,7 @@ vColumns : vColumn
     @check_dtypes
     def iloc(self, limit: int = 5, offset: int = 0, columns: Union[str, list] = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns a part of the vDataFrame (delimited by an offset and a limit).
 
     Parameters
@@ -7089,7 +7024,7 @@ vColumns : vColumn
     # ---#
     def info(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Displays information about the different vDataFrame transformations.
 
     Returns
@@ -7113,7 +7048,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def isin(self, val: dict):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Looks if some specific records are in the vDataFrame and it returns the new 
     vDataFrame of the search.
 
@@ -7130,7 +7065,7 @@ vColumns : vColumn
     vDataFrame
         The vDataFrame of the search.
         """
-        self.are_namecols_in([elem for elem in val])
+        val = self.format_colnames(val)
         n = len(val[list(val.keys())[0]])
         result = []
         for i in range(n):
@@ -7159,7 +7094,7 @@ vColumns : vColumn
         expr2: Union[str, list] = ["*"],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Joins the vDataFrame with another one or an input relation.
 
     \u26A0 Warning : Joins can make the vDataFrame structure heavier. It is 
@@ -7270,9 +7205,9 @@ vColumns : vColumn
             on_list += [elem for elem in on]
         on_list += [(key, on[key], "linterpolate") for key in on_interpolate]
         # Checks
-        self.are_namecols_in([elem[0] for elem in on_list])
+        self.format_colnames([elem[0] for elem in on_list])
         if isinstance(input_relation, vDataFrame):
-            input_relation.are_namecols_in([elem[1] for elem in on_list])
+            input_relation.format_colnames([elem[1] for elem in on_list])
             relation = input_relation.__genSQL__()
         else:
             relation = input_relation
@@ -7344,7 +7279,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'kurtosis'.
 
     Parameters
@@ -7373,7 +7308,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def last(self, ts: str, offset: str):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the last records.
 
     Parameters
@@ -7416,7 +7351,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def load(self, offset: int = -1):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Loads a previous structure of the vDataFrame. 
 
     Parameters
@@ -7443,7 +7378,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'mad' (Median Absolute Deviation).
 
     Parameters
@@ -7472,7 +7407,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'max' (Maximum).
 
     Parameters
@@ -7501,7 +7436,7 @@ vColumns : vColumn
         self, columns: list = [], approx: bool = True, **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'median'.
 
     Parameters
@@ -7531,7 +7466,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def memory_usage(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the vDataFrame memory usage. 
 
     Returns
@@ -7564,7 +7499,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def merge_similar_names(self, skip_word: Union[str, list]):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Merges columns with similar names. The function generates a COALESCE 
     statement that merges the columns into a single column that excludes 
     the input words. Note that the order of the variables in the COALESCE 
@@ -7608,7 +7543,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'min' (Minimum).
 
     Parameters
@@ -7642,7 +7577,7 @@ vColumns : vColumn
         val_name: str = "value",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the Narrow Table of the vDataFrame using the input vColumns.
 
     Parameters
@@ -7667,13 +7602,11 @@ vColumns : vColumn
     --------
     vDataFrame.pivot : Returns the pivot table of the vDataFrame.
         """
+        index, columns = self.format_colnames(index, columns)
         if isinstance(columns, str):
             columns = [columns]
         if isinstance(index, str):
-            index = self.format_colnames([index])
-        else:
-            index = self.format_colnames(index)
-        columns = self.format_colnames(columns)
+            index = [index]
         if not (columns):
             columns = self.numcol()
         for idx in index:
@@ -7715,7 +7648,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def normalize(self, columns: Union[str, list] = [], method: str = "zscore"):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Normalizes the input vColumns using the input method.
 
     Parameters
@@ -7746,7 +7679,6 @@ vColumns : vColumn
         raise_error_if_not_in("method", method, ["zscore", "robust_zscore", "minmax"])
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         no_cols = True if not (columns) else False
         columns = self.numcol() if not (columns) else self.format_colnames(columns)
         for column in columns:
@@ -7764,7 +7696,7 @@ vColumns : vColumn
     # ---#
     def numcol(self, exclude_columns: list = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns a list of names of the numerical vColumns in the vDataFrame.
 
     Parameters
@@ -7794,7 +7726,7 @@ vColumns : vColumn
         self, columns: list = [], approx: bool = True, **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'unique' (cardinality).
 
     Parameters
@@ -7832,7 +7764,7 @@ vColumns : vColumn
         robust: bool = False,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Adds a new vColumn labeled with 0 and 1. 1 means that the record is a global 
     outlier.
 
@@ -7860,7 +7792,6 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         columns = self.format_colnames(columns) if (columns) else self.numcol()
         if not (robust):
             result = self.aggregate(func=["std", "avg"], columns=columns).values
@@ -7906,7 +7837,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the global outliers plot of one or two columns based on their ZSCORE.
 
     Parameters
@@ -7938,7 +7869,6 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [1, 2])
-        self.are_namecols_in(columns)
         columns = self.format_colnames(columns)
         from verticapy.plot import outliers_contour_plot
 
@@ -7972,7 +7902,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the partial autocorrelations of the input vColumn.
 
     Parameters
@@ -8026,26 +7956,19 @@ vColumns : vColumn
                 return 1.0
             elif p == 1:
                 return self.acf(ts=ts, column=column, by=by, p=[1], unit=unit)
-            self.are_namecols_in([column, ts] + by)
-            by = self.format_colnames(by)
-            column = self.format_colnames(column)
-            ts = self.format_colnames(ts)
+            by, column, ts = self.format_colnames(by, column, ts)
             if unit == "rows":
                 table = self.__genSQL__()
             else:
                 table = self.interpolate(
-                    ts=ts, rule="1 {}".format(unit), method={column: "linear"}, by=by
+                    ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
                 ).__genSQL__()
-            by = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
+            by = f"PARTITION BY {', '.join(by)} " if (by) else ""
             columns = [
-                "LAG({}, {}) OVER ({}ORDER BY {}) AS lag_{}_{}".format(
-                    column, i, by, ts, i, gen_name([column])
-                )
+                f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
                 for i in range(1, p + 1)
             ]
-            relation = "(SELECT {} FROM {}) pacf".format(
-                ", ".join([column] + columns), table
-            )
+            relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) pacf"
             tmp_view_name = gen_tmp_name(
                 schema=verticapy.OPTIONS["temp_schema"], name="linear_reg_view"
             )
@@ -8057,9 +7980,7 @@ vColumns : vColumn
             )
             try:
                 drop(tmp_view_name, method="view")
-                query = "CREATE VIEW {} AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {}".format(
-                    tmp_view_name, relation
-                )
+                query = f"CREATE VIEW {tmp_view_name} AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"
                 executeSQL(query, print_time_sql=False)
                 vdf = vDataFrame(tmp_view_name)
 
@@ -8069,7 +7990,7 @@ vColumns : vColumn
                 model = LinearRegression(name=tmp_lr0_name, solver="Newton")
                 model.fit(
                     input_relation=tmp_view_name,
-                    X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
+                    X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
                     y=column,
                 )
                 model.predict(vdf, name="prediction_0")
@@ -8077,26 +7998,21 @@ vColumns : vColumn
                 model = LinearRegression(name=tmp_lr1_name, solver="Newton")
                 model.fit(
                     input_relation=tmp_view_name,
-                    X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
-                    y="lag_{}_{}".format(p, gen_name([column])),
+                    X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
+                    y=f"lag_{p}_{gen_name([column])}",
                 )
                 model.predict(vdf, name="prediction_p")
-                vdf.eval(expr="{} - prediction_0".format(column), name="eps_0")
+                vdf.eval(expr=f"{column} - prediction_0", name="eps_0")
                 vdf.eval(
-                    expr="{} - prediction_p".format(
-                        "lag_{}_{}".format(p, gen_name([column]))
-                    ),
-                    name="eps_p",
+                    expr=f"lag_{p}_{gen_name([column])} - prediction_p", name="eps_p",
                 )
                 result = vdf.corr(["eps_0", "eps_p"])
-                drop(tmp_view_name, method="view")
-                drop(tmp_lr0_name, method="model")
-                drop(tmp_lr1_name, method="model")
             except:
+                raise
+            finally:
                 drop(tmp_view_name, method="view")
                 drop(tmp_lr0_name, method="model")
                 drop(tmp_lr1_name, method="model")
-                raise
             return result
         else:
             if isinstance(p, (float, int)):
@@ -8146,7 +8062,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the nested density pie chart of the input vColumns.
 
     Parameters
@@ -8176,7 +8092,6 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         columns = self.format_colnames(columns)
         from verticapy.plot import nested_pie
 
@@ -8186,10 +8101,15 @@ vColumns : vColumn
     @check_dtypes
     @save_verticapy_logs
     def pivot(
-        self, index: str, columns: str, values: str, aggr: str = "sum", prefix: str = ""
+        self,
+        index: str,
+        columns: str,
+        values: str,
+        aggr: str = "sum",
+        prefix: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the Pivot of the vDataFrame using the input aggregation.
 
     Parameters
@@ -8219,9 +8139,7 @@ vColumns : vColumn
     vDataFrame.pivot_table : Draws the pivot table of one or two columns based on an 
         aggregation.
         """
-        index = self.format_colnames(index)
-        columns = self.format_colnames(columns)
-        values = self.format_colnames(values)
+        index, columns, values = self.format_colnames(index, columns, values)
         aggr = aggr.upper()
         if "{}" not in aggr:
             aggr += "({})"
@@ -8265,7 +8183,7 @@ vColumns : vColumn
         RFmodel_params: dict = {},
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the chi-square term using the pivot table of the response vColumn 
     against the input vColumns.
 
@@ -8302,7 +8220,7 @@ vColumns : vColumn
         raise_error_if_not_in("method", method, ["smart", "same_width"])
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns + [response])
+        columns, response = self.format_colnames(columns, response)
         assert 2 <= nbins <= 16, ParameterError(
             "Parameter 'nbins' must be between 2 and 16, inclusive."
         )
@@ -8384,7 +8302,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the pivot table of one or two columns based on an aggregation.
 
     Parameters
@@ -8435,11 +8353,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [1, 2])
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
-        if of:
-            self.are_namecols_in(of)
-            of = self.format_colnames(of)
+        columns, of = self.format_colnames(columns, of)
         from verticapy.plot import pivot_table
 
         return pivot_table(
@@ -8470,7 +8384,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the time series.
 
     Parameters
@@ -8505,9 +8419,7 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns + [ts])
-        columns = self.format_colnames(columns)
-        ts = self.format_colnames(ts)
+        columns, ts = self.format_colnames(columns, ts)
         kind = "step" if step else "line"
         from verticapy.plot import multi_ts_plot
 
@@ -8520,7 +8432,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def polynomial_comb(self, columns: Union[str, list] = [], r: int = 2):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns a vDataFrame containing different product combination of the 
     input vColumns. This function is ideal for bivariate analysis.
 
@@ -8539,7 +8451,6 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         if not (columns):
             numcol = self.numcol()
         else:
@@ -8557,7 +8468,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'product'.
 
     Parameters
@@ -8592,7 +8503,7 @@ vColumns : vColumn
         **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using a list of 'quantiles'.
 
     Parameters
@@ -8645,7 +8556,7 @@ vColumns : vColumn
         end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Recommend items based on the Collaborative Filtering (CF) technique.
     The implementation is the same as APRIORI algorithm, but is limited to pairs 
     of items.
@@ -8688,8 +8599,7 @@ vColumns : vColumn
         The vDataFrame of the recommendation.
         """
         raise_error_if_not_in("method", method, ["count", "avg", "median"])
-        self.are_namecols_in([unique_id, item_id])
-        unique_id, item_id = self.format_colnames([unique_id, item_id])
+        unique_id, item_id, ts = self.format_colnames(unique_id, item_id, ts)
         vdf = self.copy()
         assert (
             method == "count" or rating
@@ -8701,11 +8611,8 @@ vColumns : vColumn
             assert (
                 method != "count"
             ), "Method 'count' can not be used if parameter 'rating' is defined."
-            self.are_namecols_in(rating)
             rating = self.format_colnames(rating)
         if ts:
-            self.are_namecols_in(ts)
-            ts = self.format_colnames(ts)
             if start_date and end_date:
                 vdf = self.search(f"{ts} BETWEEN '{start_date}' AND '{end_date}'")
             elif start_date:
@@ -8763,7 +8670,7 @@ vColumns : vColumn
         name: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes a new vColumn based on regular expressions. 
 
     Parameters
@@ -8825,7 +8732,6 @@ vColumns : vColumn
                 "substr",
             ],
         )
-        self.are_namecols_in(column)
         column = self.format_colnames(column)
         expr = "REGEXP_{}({}, '{}'".format(
             method.upper(), column, pattern.replace("'", "''")
@@ -8854,7 +8760,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the regression matrix of the vDataFrame.
 
     Parameters
@@ -8928,7 +8834,6 @@ vColumns : vColumn
             assert columns, EmptyParameter(
                 "No numerical column found in the vDataFrame."
             )
-        self.are_namecols_in(columns)
         columns = self.format_colnames(columns)
         for column in columns:
             assert self[column].isnum(), TypeError(
@@ -9056,7 +8961,7 @@ vColumns : vColumn
         name: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Adds a new vColumn to the vDataFrame by using an advanced analytical window 
     function on one or two specific vColumns.
 
@@ -9157,13 +9062,12 @@ vColumns : vColumn
                 window[idx] = abs(int(window[idx]))
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns + by + [elem for elem in order_by])
         if not (name):
             name = "moving_{}".format(
                 gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]])
             )
-        columns = self.format_colnames(columns)
-        by = "" if not (by) else "PARTITION BY " + ", ".join(self.format_colnames(by))
+        columns, by = self.format_colnames(columns, by)
+        by = "" if not (by) else "PARTITION BY " + ", ".join(by)
         order_by = (
             " ORDER BY {}".format(columns[0])
             if not (order_by)
@@ -9297,7 +9201,7 @@ vColumns : vColumn
         by: Union[str, list] = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Downsamples the input vDataFrame.
 
     \u26A0 Warning : The result may be inconsistent between attempts at SQL
@@ -9345,7 +9249,6 @@ vColumns : vColumn
             )
         if isinstance(by, str):
             by = [by]
-        self.are_namecols_in(by)
         by = self.format_colnames(by)
         random_int = random.randint(0, 10000000)
         name = "__verticapy_random_{}__".format(random_int)
@@ -9391,7 +9294,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def save(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Saves the current structure of the vDataFrame. 
     This function is useful for loading previous transformations.
 
@@ -9426,7 +9329,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the scatter plot of the input vColumns.
 
     Parameters
@@ -9513,21 +9416,17 @@ vColumns : vColumn
                         ),
                     )
                 )
-                model.drop()
             except:
-                model.drop()
                 raise
+            finally:
+                model.drop()
             return ax
         if isinstance(columns, str):
             columns = [columns]
         self.is_nb_cols_correct(columns, [2, 3])
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
-        if catcol:
-            self.are_namecols_in(catcol)
-            catcol = self.format_colnames([catcol])
-        else:
-            catcol = []
+        columns, catcol = self.format_colnames(columns, catcol)
+        catcol = [catcol] if catcol else []
+
         if len(columns) == 2:
             from verticapy.plot import scatter2D
 
@@ -9562,7 +9461,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def scatter_matrix(self, columns: Union[str, list] = [], **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the scatter matrix of the vDataFrame.
 
     Parameters
@@ -9584,7 +9483,6 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns)
         columns = self.format_colnames(columns)
         from verticapy.plot import scatter_matrix
 
@@ -9601,7 +9499,7 @@ vColumns : vColumn
         order_by: Union[str, dict, list] = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Searches the elements which matches with the input conditions.
     
     Parameters
@@ -9652,7 +9550,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def select(self, columns: Union[str, list]):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns a copy of the vDataFrame with only the selected vColumns.
 
     Parameters
@@ -9672,11 +9570,11 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         for i in range(len(columns)):
-            column = self.format_colnames([columns[i]])
+            column = self.format_colnames(columns[i], raise_error=False)
             if column:
                 dtype = ""
                 if self._VERTICAPY_VARIABLES_["isflex"]:
-                    dtype = self[column[0]].ctype().lower()
+                    dtype = self[column].ctype().lower()
                     if (
                         "array" in dtype
                         or "map" in dtype
@@ -9686,11 +9584,11 @@ vColumns : vColumn
                         dtype = ""
                     else:
                         dtype = f"::{dtype}"
-                columns[i] = column[0] + dtype
+                columns[i] = column + dtype
             else:
                 columns[i] = str(columns[i])
-        table = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-            ", ".join(columns), self.__genSQL__()
+        table = (
+            f"(SELECT {', '.join(columns)} FROM {self.__genSQL__()}) VERTICAPY_SUBTABLE"
         )
         return self.__vDataFrameSQL__(
             table, self._VERTICAPY_VARIABLES_["input_relation"], ""
@@ -9702,7 +9600,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'sem' (Standard Error of the Mean).
 
     Parameters
@@ -9736,7 +9634,7 @@ vColumns : vColumn
         name: str = "session_id",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Adds a new vColumn to the vDataFrame which will correspond to sessions 
     (user activity during a specific time). A session ends when ts - lag(ts) 
     is greater than a specific threshold.
@@ -9767,9 +9665,7 @@ vColumns : vColumn
         """
         if isinstance(by, str):
             by = [by]
-        self.are_namecols_in(by + [ts])
-        by = self.format_colnames(by)
-        ts = self.format_colnames(ts)
+        by, ts = self.format_colnames(by, ts)
         partition = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
         expr = f"CONDITIONAL_TRUE_EVENT({ts}::timestamp - LAG({ts}::timestamp) > '{session_threshold}') OVER ({partition} ORDER BY {ts})"
         return self.eval(name=name, expr=expr)
@@ -9779,7 +9675,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def score(self, y_true: str, y_score: str, method: str, nbins: int = 30):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the score using the input columns and the input method.
 
     Parameters
@@ -9829,114 +9725,27 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        self.are_namecols_in([y_true, y_score])
-        if method in ("r2", "rsquared"):
-            from verticapy.learn.metrics import r2_score
+        import verticapy.learn.metrics as mt
 
-            return r2_score(y_true, y_score, self.__genSQL__())
-        elif method in ("mae", "mean_absolute_error"):
-            from verticapy.learn.metrics import mean_absolute_error
-
-            return mean_absolute_error(y_true, y_score, self.__genSQL__())
-        elif method in ("mse", "mean_squared_error"):
-            from verticapy.learn.metrics import mean_squared_error
-
-            return mean_squared_error(y_true, y_score, self.__genSQL__())
-        elif method in ("msle", "mean_squared_log_error"):
-            from verticapy.learn.metrics import mean_squared_log_error
-
-            return mean_squared_log_error(y_true, y_score, self.__genSQL__())
-        elif method in ("max", "max_error"):
-            from verticapy.learn.metrics import max_error
-
-            return max_error(y_true, y_score, self.__genSQL__())
-        elif method in ("median", "median_absolute_error"):
-            from verticapy.learn.metrics import median_absolute_error
-
-            return median_absolute_error(y_true, y_score, self.__genSQL__())
-        elif method in ("var", "explained_variance"):
-            from verticapy.learn.metrics import explained_variance
-
-            return explained_variance(y_true, y_score, self.__genSQL__())
-        elif method in ("accuracy", "acc"):
-            from verticapy.learn.metrics import accuracy_score
-
-            return accuracy_score(y_true, y_score, self.__genSQL__(), pos_label=None)
-        elif method == "auc":
-            from verticapy.learn.metrics import auc
-
-            return auc(y_true, y_score, self.__genSQL__())
-        elif method == "prc_auc":
-            from verticapy.learn.metrics import prc_auc
-
-            return prc_auc(y_true, y_score, self.__genSQL__())
+        y_true, y_score = self.format_colnames(y_true, y_score)
+        method = str(method).lower()
+        raise_error_if_not_in("method", method, list(mt.FUNCTIONS_DICTIONNARY.keys()))
+        fun = mt.FUNCTIONS_DICTIONNARY[method]
+        argv = [y_true, y_score, self.__genSQL__()]
+        kwds = {}
+        if method in ("accuracy", "acc"):
+            kwds["pos_label"] = None
         elif method in ("best_cutoff", "best_threshold"):
-            from verticapy.learn.model_selection import roc_curve
-
-            return roc_curve(
-                y_true, y_score, self.__genSQL__(), best_threshold=True, nbins=nbins
-            )
-        elif method in ("recall", "tpr"):
-            from verticapy.learn.metrics import recall_score
-
-            return recall_score(y_true, y_score, self.__genSQL__())
-        elif method in ("precision", "ppv"):
-            from verticapy.learn.metrics import precision_score
-
-            return precision_score(y_true, y_score, self.__genSQL__())
-        elif method in ("specificity", "tnr"):
-            from verticapy.learn.metrics import specificity_score
-
-            return specificity_score(y_true, y_score, self.__genSQL__())
-        elif method in ("negative_predictive_value", "npv"):
-            from verticapy.learn.metrics import precision_score
-
-            return precision_score(y_true, y_score, self.__genSQL__())
-        elif method in ("log_loss", "logloss"):
-            from verticapy.learn.metrics import log_loss
-
-            return log_loss(y_true, y_score, self.__genSQL__())
-        elif method == "f1":
-            from verticapy.learn.metrics import f1_score
-
-            return f1_score(y_true, y_score, self.__genSQL__())
-        elif method == "mcc":
-            from verticapy.learn.metrics import matthews_corrcoef
-
-            return matthews_corrcoef(y_true, y_score, self.__genSQL__())
-        elif method in ("bm", "informedness"):
-            from verticapy.learn.metrics import informedness
-
-            return informedness(y_true, y_score, self.__genSQL__())
-        elif method in ("mk", "markedness"):
-            from verticapy.learn.metrics import markedness
-
-            return markedness(y_true, y_score, self.__genSQL__())
-        elif method in ("csi", "critical_success_index"):
-            from verticapy.learn.metrics import critical_success_index
-
-            return critical_success_index(y_true, y_score, self.__genSQL__())
-        elif method in ("roc_curve", "roc"):
-            from verticapy.learn.model_selection import roc_curve
-
-            return roc_curve(y_true, y_score, self.__genSQL__(), nbins=nbins)
-        elif method in ("prc_curve", "prc"):
-            from verticapy.learn.model_selection import prc_curve
-
-            return prc_curve(y_true, y_score, self.__genSQL__(), nbins=nbins)
-        elif method in ("lift_chart", "lift"):
-            from verticapy.learn.model_selection import lift_chart
-
-            return lift_chart(y_true, y_score, self.__genSQL__(), nbins=nbins)
-        else:
-            raise ParameterError(
-                "The parameter 'method' must be in roc|prc|lift|accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index|r2|mae|mse|msle|max|median|var"
-            )
+            kwds["nbins"] = nbins
+            kwds["best_threshold"] = True
+        elif method in ("roc_curve", "roc", "prc_curve", "prc", "lift_chart", "lift"):
+            kwds["nbins"] = nbins
+        return mt.FUNCTIONS_DICTIONNARY[method](*argv, **kwds)
 
     # ---#
     def shape(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the number of rows and columns of the vDataFrame.
 
     Returns
@@ -9948,9 +9757,7 @@ vColumns : vColumn
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return (pre_comp, m)
-        query = "SELECT /*+LABEL('vDataframe.shape')*/ COUNT(*) FROM {} LIMIT 1".format(
-            self.__genSQL__()
-        )
+        query = f"SELECT /*+LABEL('vDataframe.shape')*/ COUNT(*) FROM {self.__genSQL__()} LIMIT 1"
         self._VERTICAPY_VARIABLES_["count"] = executeSQL(
             query,
             title="Computing the total number of elements (COUNT(*))",
@@ -9966,7 +9773,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'skewness'.
 
     Parameters
@@ -9995,7 +9802,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def sort(self, columns: Union[str, dict, list]):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Sorts the vDataFrame using the input vColumns.
 
     Parameters
@@ -10018,7 +9825,7 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in([elem for elem in columns])
+        columns = self.format_colnames(columns)
         max_pos = 0
         columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
         for column in columns_tmp:
@@ -10042,7 +9849,7 @@ vColumns : vColumn
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the stacked area chart of the time series.
 
     Parameters
@@ -10080,9 +9887,7 @@ vColumns : vColumn
         assert min(self.min(columns)["min"]) >= 0, ValueError(
             "Columns having negative values can not be processed by the 'stacked_area' method."
         )
-        self.are_namecols_in(columns + [ts])
-        columns = self.format_colnames(columns)
-        ts = self.format_colnames(ts)
+        columns, ts = self.format_colnames(columns, ts)
         from verticapy.plot import multi_ts_plot
 
         return multi_ts_plot(
@@ -10095,7 +9900,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'std' (Standard Deviation).
 
     Parameters
@@ -10125,7 +9930,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'sum'.
 
     Parameters
@@ -10153,7 +9958,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def swap(self, column1: Union[int, str], column2: Union[int, str]):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Swap the two input vColumns.
 
     Parameters
@@ -10182,9 +9987,7 @@ vColumns : vColumn
                 )
             )
             column2 = self.get_columns()[column2]
-        self.are_namecols_in([column1, column2])
-        column1 = self.format_colnames(column1)
-        column2 = self.format_colnames(column2)
+        column1, column2 = self.format_colnames(column1, column2)
         columns = self._VERTICAPY_VARIABLES_["columns"]
         all_cols = {}
         for idx, elem in enumerate(columns):
@@ -10199,7 +10002,7 @@ vColumns : vColumn
     @check_dtypes
     def tail(self, limit: int = 5):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the tail of the vDataFrame.
 
     Parameters
@@ -10235,7 +10038,7 @@ vColumns : vColumn
         n_files: int = 1,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Creates a CSV file or folder of CSV files of the current vDataFrame 
     relation.
 
@@ -10384,7 +10187,7 @@ vColumns : vColumn
         nb_split: int = 0,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Saves the vDataFrame current relation to the Vertica database.
 
     Parameters
@@ -10432,7 +10235,6 @@ vColumns : vColumn
         if isinstance(usecols, str):
             usecols = [usecols]
         relation_type = relation_type.lower()
-        self.are_namecols_in(usecols)
         usecols = self.format_colnames(usecols)
         commit = (
             " ON COMMIT PRESERVE ROWS"
@@ -10517,7 +10319,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def to_geopandas(self, geometry: str):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts the vDataFrame to a Geopandas DataFrame.
 
     \u26A0 Warning : The data will be loaded in memory.
@@ -10574,7 +10376,7 @@ vColumns : vColumn
         n_files: int = 1,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Creates a JSON file or folder of JSON files of the current vDataFrame 
     relation.
 
@@ -10693,7 +10495,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def to_list(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts the vDataFrame to a Python list.
 
     \u26A0 Warning : The data will be loaded in memory.
@@ -10727,7 +10529,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def to_numpy(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts the vDataFrame to a Numpy array.
 
     \u26A0 Warning : The data will be loaded in memory.
@@ -10743,7 +10545,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def to_pandas(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts the vDataFrame to a pandas DataFrame.
 
     \u26A0 Warning : The data will be loaded in memory.
@@ -10784,7 +10586,7 @@ vColumns : vColumn
         order_by: Union[str, list, dict] = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Exports a table, columns from a table, or query results to Parquet files.
     You can partition data instead of or in addition to exporting the column data, 
     which enables partition pruning and improves query performance. 
@@ -10896,7 +10698,7 @@ vColumns : vColumn
     @save_verticapy_logs
     def to_pickle(self, name: str):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Saves the vDataFrame to a Python pickle file.
 
     Parameters
@@ -10925,7 +10727,7 @@ vColumns : vColumn
         shape: str = "Polygon",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Creates a SHP file of the current vDataFrame relation. For the moment, 
     files will be exported in the Vertica server.
 
@@ -10986,7 +10788,7 @@ vColumns : vColumn
         random_state: int = None,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Creates 2 vDataFrame (train/test) which can be to use to evaluate a model.
     The intersection between the train and the test is empty only if a unique
     order is specified.
@@ -11046,7 +10848,7 @@ vColumns : vColumn
         self, columns: list = [], **agg_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Aggregates the vDataFrame using 'variance'.
 
     Parameters
@@ -11073,7 +10875,7 @@ vColumns : vColumn
     # ---#
     def vertica_version(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the version of Vertica.
 
     Returns
@@ -11098,7 +10900,7 @@ vColumns : vColumn
         ax=None,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the Information Value (IV) Table. It tells the predictive power of 
     an independent variable in relation to the dependent variable.
 
@@ -11130,9 +10932,7 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.are_namecols_in(columns + [y])
-        columns = self.format_colnames(columns)
-        y = self.format_colnames(y)
+        columns, y = self.format_colnames(columns, y)
         if not (columns):
             columns = self.get_columns(exclude_columns=[y])
         coeff_importances = {}

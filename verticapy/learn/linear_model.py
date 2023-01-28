@@ -63,7 +63,7 @@ from verticapy.learn.vmodel import *
 # ---#
 class ElasticNet(Regressor):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a ElasticNet object using the Vertica Linear Regression algorithm 
 on the data. The Elastic Net is a regularized regression method that 
 linearly combines the L1 and L2 penalties of the Lasso and Ridge methods.
@@ -134,7 +134,7 @@ fit_intercept: bool, optional
 # ---#
 class Lasso(Regressor):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a Lasso object using the Vertica Linear Regression algorithm on the 
 data. The Lasso is a regularized regression method which uses an L1 penalty.
 
@@ -199,7 +199,7 @@ fit_intercept: bool, optional
 # ---#
 class LinearRegression(Regressor):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a LinearRegression object using the Vertica Linear Regression 
 algorithm on the data.
 
@@ -258,7 +258,7 @@ fit_intercept: bool, optional
 # ---#
 class LogisticRegression(BinaryClassifier):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a LogisticRegression object using the Vertica Logistic Regression
 algorithm on the data.
 
@@ -345,7 +345,7 @@ fit_intercept: bool, optional
 # ---#
 class Ridge(Regressor):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a Ridge object using the Vertica Linear Regression algorithm on the 
 data. The Ridge is a regularized regression method which uses an L2 penalty. 
 

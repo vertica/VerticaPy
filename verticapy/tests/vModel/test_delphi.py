@@ -71,7 +71,7 @@ class TestDelphi:
         assert model2.final_relation_.shape() == (1234, 101)
         model2.drop()
         model3 = AutoDataPrep(
-            "AutoML_test_dp", num_method="same_width", na_method="drop", apply_pca=True
+            "AutoML_test_dp", num_method="same_width", na_method="drop", apply_pca=True,
         )
         model3.drop()
         model3.fit(titanic_vd)
