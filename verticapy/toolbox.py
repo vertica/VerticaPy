@@ -909,9 +909,7 @@ def print_table(
                     val = "[null]"
                     color = "#999999"
                 else:
-                    if isinstance(val, bool) and (
-                        vp.OPTIONS["mode"] in ("full", None)
-                    ):
+                    if isinstance(val, bool) and (vp.OPTIONS["mode"] in ("full", None)):
                         val = (
                             "<center>&#9989;</center>"
                             if (val)
@@ -919,11 +917,7 @@ def print_table(
                         )
                     color = "black"
                 html_table += '<td style="background-color: '
-                if (
-                    (j == 0)
-                    or (i == 0)
-                    or (vp.OPTIONS["mode"] not in ("full", None))
-                ):
+                if (j == 0) or (i == 0) or (vp.OPTIONS["mode"] not in ("full", None)):
                     html_table += " #FFFFFF; "
                 elif val == "[null]":
                     html_table += " #EEEEEE; "
@@ -1261,7 +1255,7 @@ class str_sql:
 
     # ---#
     def __abs__(self):
-        return str_sql("ABS({})".format(self.init_transf), self.category())
+        return str_sql(f"ABS({self.init_transf})", self.category())
 
     # ---#
     def __add__(self, x):
@@ -1275,9 +1269,7 @@ class str_sql:
         op = (
             "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
         )
-        return str_sql(
-            f"({self.init_transf}) {op} ({val})", self.category()
-        )
+        return str_sql(f"({self.init_transf}) {op} ({val})", self.category())
 
     # ---#
     def __radd__(self, x):
@@ -1291,9 +1283,7 @@ class str_sql:
         op = (
             "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
         )
-        return str_sql(
-            f"({val}) {op} ({self.init_transf})", self.category()
-        )
+        return str_sql(f"({val}) {op} ({self.init_transf})", self.category())
 
     # ---#
     def __and__(self, x):
@@ -1310,8 +1300,7 @@ class str_sql:
         val1 = str(format_magic(x))
         val2 = str(format_magic(y))
         return str_sql(
-            f"({self.init_transf}) BETWEEN ({val1}) AND ({val2})",
-            self.category(),
+            f"({self.init_transf}) BETWEEN ({val1}) AND ({val2})", self.category(),
         )
 
     # ---#
@@ -1346,9 +1335,7 @@ class str_sql:
         )
         val = [str(format_magic(elem)) for elem in x]
         val = ", ".join(val)
-        return str_sql(
-            f"({self.init_transf}) NOT IN ({val})", self.category()
-        )
+        return str_sql(f"({self.init_transf}) NOT IN ({val})", self.category())
 
     # ---#
     def _as(self, x):
@@ -1370,9 +1357,7 @@ class str_sql:
         order_by = ", ".join([str(elem) for elem in order_by])
         if order_by:
             order_by = f"ORDER BY {order_by}"
-        return str_sql(
-            f"{self.init_transf} OVER ({by} {order_by})", self.category(),
-        )
+        return str_sql(f"{self.init_transf} OVER ({by} {order_by})", self.category(),)
 
     # ---#
     def __eq__(self, x):
@@ -1412,19 +1397,15 @@ class str_sql:
 
     # ---#
     def __mul__(self, x):
-        if self.category() == "text" and isinstance(x, (int)):
-            return str_sql(
-                f"REPEAT({self.init_transf}, {x})", self.category()
-            )
+        if self.category() == "text" and isinstance(x, int):
+            return str_sql(f"REPEAT({self.init_transf}, {x})", self.category())
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) * ({val})", self.category())
 
     # ---#
     def __rmul__(self, x):
-        if self.category() == "text" and isinstance(x, (int)):
-            return str_sql(
-                f"REPEAT({self.init_transf}, {x})", self.category()
-            )
+        if self.category() == "text" and isinstance(x, int):
+            return str_sql(f"REPEAT({self.init_transf}, {x})", self.category())
         val = format_magic(x)
         return str_sql(f"({val}) * ({self.init_transf})", self.category())
 
@@ -1479,42 +1460,42 @@ class str_sql:
     # ---#
     def __truediv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) / ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) / ({val})", self.category())
 
     # ---#
     def __rtruediv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) / ({})".format(val, self.init_transf), self.category())
+        return str_sql(f"({val}) / ({self.init_transf})", self.category())
 
     # ---#
     def __floordiv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) // ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) // ({val})", self.category())
 
     # ---#
     def __rfloordiv__(self, x):
         val = format_magic(x)
-        return str_sql("({}) // ({})".format(val, self.init_transf), self.category())
+        return str_sql(f"({val}) // ({self.init_transf})", self.category())
 
     # ---#
     def __ceil__(self):
-        return str_sql("CEIL({})".format(self.init_transf), self.category())
+        return str_sql(f"CEIL({self.init_transf})", self.category())
 
     # ---#
     def __floor__(self):
-        return str_sql("FLOOR({})".format(self.init_transf), self.category())
+        return str_sql(f"FLOOR({self.init_transf})", self.category())
 
     # ---#
     def __trunc__(self):
-        return str_sql("TRUNC({})".format(self.init_transf), self.category())
+        return str_sql(f"TRUNC({self.init_transf})", self.category())
 
     # ---#
     def __invert__(self):
-        return str_sql("-({}) - 1".format(self.init_transf), self.category())
+        return str_sql(f"-({self.init_transf}) - 1", self.category())
 
     # ---#
     def __round__(self, x):
-        return str_sql("ROUND({}, {})".format(self.init_transf, x), self.category())
+        return str_sql(f"ROUND({self.init_transf}, {x})", self.category())
 
     def category(self):
         return self.category_

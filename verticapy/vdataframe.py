@@ -1291,15 +1291,13 @@ vColumns : vColumn
         The SQL final relation.
         """
         # The First step is to find the Max Floor
-        all_imputations_grammar, force_columns_copy = (
-            [],
-            [elem for elem in force_columns],
-        )
+        all_imputations_grammar = []
+        force_columns_copy = [col for col in force_columns]
         if not (force_columns):
-            force_columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+            force_columns = [col for col in self._VERTICAPY_VARIABLES_["columns"]]
         for column in force_columns:
             all_imputations_grammar += [
-                [item[0] for item in self[column].transformations]
+                [transformation[0] for transformation in self[column].transformations]
             ]
         for column in transformations:
             all_imputations_grammar += [transformations[column]]
@@ -1317,7 +1315,7 @@ vColumns : vColumn
         for i in range(0, len(self._VERTICAPY_VARIABLES_["where"])):
             all_where[where_positions[i]] += [self._VERTICAPY_VARIABLES_["where"][i][0]]
         all_where = [
-            " AND ".join(["({})".format(elem) for elem in item]) for item in all_where
+            " AND ".join([f"({elem})" for elem in condition]) for condition in all_where
         ]
         for i in range(len(all_where)):
             if all_where[i] != "":

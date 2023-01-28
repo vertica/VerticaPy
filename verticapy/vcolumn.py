@@ -369,7 +369,8 @@ Attributes
             "The parameter 'name' must not be empty"
         )
         assert not (self.parent.is_colname_in(name)), NameError(
-            f"A vColumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue."
+            f"A vColumn has already the alias {name}.\nBy changing "
+            "the parameter 'name', you'll be able to solve this issue."
         )
         new_vColumn = vColumn(
             name,
@@ -381,9 +382,8 @@ Attributes
         setattr(self.parent, name[1:-1], new_vColumn)
         self.parent._VERTICAPY_VARIABLES_["columns"] += [name]
         self.parent.__add_to_history__(
-            "[Add Copy]: A copy of the vColumn {} named {} was added to the vDataFrame.".format(
-                self.alias, name
-            )
+            f"[Add Copy]: A copy of the vColumn {self.alias} "
+            f"named {name} was added to the vDataFrame."
         )
         return self.parent
 
