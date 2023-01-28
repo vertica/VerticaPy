@@ -67,7 +67,7 @@ import warnings, re, time
 import pandas as pd
 
 # VerticaPy Modules
-import verticapy
+import verticapy as vp
 from verticapy.errors import QueryError, ParameterError, ParsingError
 from verticapy import (
     executeSQL,
