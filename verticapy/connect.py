@@ -53,20 +53,22 @@ import os
 from configparser import ConfigParser
 
 # VerticaPy Modules
-import verticapy
+import verticapy as vp
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
     check_minimum_version,
 )
 from verticapy.toolbox import is_special_symbol, get_special_symbols
-from verticapy.errors import *
+from verticapy.errors import ConnectionError, ParameterError
 
 # Vertica Modules
 import vertica_python
 
 # Global Variables
 VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
+SESSION_LABEL = f"verticapy-{vp.__version__}-{vp.OPTIONS['identifier']}"
+CONNECTION = CONNECTION
 
 #
 # ---#
@@ -132,10 +134,8 @@ def close_connection():
 ----------------------------------------------------------------------------------------
 Closes the connection to the database.
     """
-    if verticapy.OPTIONS["connection"]["conn"] and not (
-        verticapy.OPTIONS["connection"]["conn"].closed()
-    ):
-        verticapy.OPTIONS["connection"]["conn"].close()
+    if CONNECTION["conn"] and not (CONNECTION["conn"].closed()):
+        CONNECTION["conn"].close()
 
 
 # ---#
@@ -152,15 +152,15 @@ dsn: str, optional
     Path to the file containing the credentials. If empty, the 
     Connection File will be used.
     """
-    prev_conn = verticapy.OPTIONS["connection"]["conn"]
+    prev_conn = CONNECTION["conn"]
     if not (dsn):
         dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
     try:
-        verticapy.OPTIONS["connection"]["conn"] = vertica_connection(section, dsn)
-        verticapy.OPTIONS["connection"]["dsn"] = dsn
-        verticapy.OPTIONS["connection"]["section"] = section
+        CONNECTION["conn"] = vertica_connection(section, dsn)
+        CONNECTION["dsn"] = dsn
+        CONNECTION["section"] = section
     except Exception as e:
         if "The DSN Section" in str(e):
             raise ConnectionError(
@@ -189,19 +189,12 @@ VerticaLab Environment.
     """
 
     # Look if the connection does not exist or is closed
-    if (
-        not (verticapy.OPTIONS["connection"]["conn"])
-        or verticapy.OPTIONS["connection"]["conn"].closed()
-    ):
+    if not (CONNECTION["conn"]) or CONNECTION["conn"].closed():
 
         # Connection using the existing credentials
-        if (
-            verticapy.OPTIONS["connection"]["section"]
-            and verticapy.OPTIONS["connection"]["dsn"]
-        ):
+        if CONNECTION["section"] and CONNECTION["dsn"]:
             connect(
-                verticapy.OPTIONS["connection"]["section"],
-                verticapy.OPTIONS["connection"]["dsn"],
+                CONNECTION["section"], CONNECTION["dsn"],
             )
 
         else:
@@ -215,12 +208,12 @@ VerticaLab Environment.
                 try:
                     # Connection to the VerticaLab environment
                     conn = verticalab_connection()
-                    verticapy.OPTIONS["connection"]["conn"] = conn
+                    CONNECTION["conn"] = conn
 
                 except:
                     raise (e)
 
-    return verticapy.OPTIONS["connection"]["conn"]
+    return CONNECTION["conn"]
 
 
 # ---#
@@ -427,7 +420,7 @@ dict
         conn_info = {
             "port": 5433,
             "user": "dbadmin",
-            "session_label": f"verticapy-{verticapy.__version__}-{verticapy.OPTIONS['identifier']}",
+            "session_label": SESSION_LABEL,
         }
 
         env = False
@@ -525,9 +518,9 @@ conn: object
         assert res == 1
     except:
         ParameterError("The input connector is not working properly.")
-    verticapy.OPTIONS["connection"]["conn"] = conn
-    verticapy.OPTIONS["connection"]["dsn"] = None
-    verticapy.OPTIONS["connection"]["section"] = None
+    CONNECTION["conn"] = conn
+    CONNECTION["dsn"] = None
+    CONNECTION["section"] = None
 
 
 # ---#
@@ -555,10 +548,10 @@ symbol: str, optional
     a custom query.
     """
     assert is_special_symbol(symbol), ParameterError(
-        f"Parameter 'symbol' must be a special char. One of the following: {', '.join(get_special_symbols())}"
+        f"Parameter 'symbol' must be a special character. One of the following: {', '.join(get_special_symbols())}"
     )
     if isinstance(cid, str) and isinstance(rowset, int):
-        verticapy.OPTIONS["external_connection"][symbol] = {
+        vp.OPTIONS["external_connection"][symbol] = {
             "cid": cid,
             "rowset": rowset,
         }
@@ -609,6 +602,6 @@ conn
         "password": "",
         "database": "demo",
         "backup_server_node": ["localhost"],
-        "session_label": f"verticapy-{verticapy.__version__}-{verticapy.OPTIONS['identifier']}",
+        "session_label": SESSION_LABEL,
     }
     return vertica_python.connect(**conn_info)
