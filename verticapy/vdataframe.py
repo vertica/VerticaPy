@@ -64,6 +64,7 @@ import numpy as np
 
 # VerticaPy Modules
 import verticapy as vp
+import verticapy.plot as plt
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
@@ -1011,8 +1012,6 @@ vColumns : vColumn
                         matrix[i + 1][j + 1] = current
                         matrix[j + 1][i + 1] = current
             if show:
-                from verticapy.plot import cmatrix
-
                 vmin = 0 if (method == "cramer") else -1
                 if method == "cov":
                     vmin = None
@@ -1032,12 +1031,10 @@ vColumns : vColumn
                     else None
                 )
                 if "cmap" not in style_kwds:
-                    from verticapy.plot import gen_cmap
-
-                    cm1, cm2 = gen_cmap()
+                    cm1, cm2 = plt.gen_cmap()
                     cmap = cm1 if (method == "cramer") else cm2
                     style_kwds["cmap"] = cmap
-                cmatrix(
+                plt.cmatrix(
                     matrix,
                     columns,
                     columns,
@@ -1230,8 +1227,6 @@ vColumns : vColumn
         data.sort(key=lambda tup: abs(tup[1]), reverse=True)
         cols, vector = [elem[0] for elem in data], [elem[1] for elem in data]
         if show:
-            from verticapy.plot import cmatrix
-
             vmin = 0 if (method == "cramer") else -1
             if method == "cov":
                 vmin = None
@@ -1251,13 +1246,11 @@ vColumns : vColumn
                 else None
             )
             if "cmap" not in style_kwds:
-                from verticapy.plot import gen_cmap
-
-                cm1, cm2 = gen_cmap()
+                cm1, cm2 = plt.gen_cmap()
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwds["cmap"] = cmap
             title = f"Correlation Vector of {focus} ({method})"
-            cmatrix(
+            plt.cmatrix(
                 [cols, [focus] + vector],
                 cols,
                 [focus],
@@ -1982,9 +1975,7 @@ vColumns : vColumn
             if acf_band:
                 result.values["confidence"] = acf_band
             if show:
-                from verticapy.plot import acf_plot
-
-                acf_plot(
+                plt.acf_plot(
                     result.values["index"],
                     result.values["value"],
                     title="Autocorrelation",
@@ -3181,8 +3172,6 @@ vColumns : vColumn
         )
         columns, ts, by = self.format_colnames(columns, ts, by)
         if kind == "bubble":
-            from verticapy.plot import animated_bubble_plot
-
             if len(columns) == 3 and not (self[columns[2]].isnum()):
                 label_name = columns[2]
                 columns = columns[0:2]
@@ -3199,7 +3188,7 @@ vColumns : vColumn
                 bubble_img["img"] = ""
             if "bbox" not in bubble_img:
                 bubble_img["bbox"] = []
-            return animated_bubble_plot(
+            return plt.animated_bubble_plot(
                 self,
                 order_by=ts,
                 columns=columns,
@@ -3223,9 +3212,7 @@ vColumns : vColumn
                 **style_kwds,
             )
         elif kind in ("bar", "pie"):
-            from verticapy.plot import animated_bar
-
-            return animated_bar(
+            return plt.animated_bar(
                 self,
                 order_by=ts,
                 columns=columns,
@@ -3246,8 +3233,6 @@ vColumns : vColumn
                 **style_kwds,
             )
         else:
-            from verticapy.plot import animated_ts_plot
-
             if by:
                 assert len(columns) == 1, ParameterError(
                     "Parameter 'columns' can not be empty when using kind = 'ts' and when parameter 'by' is not empty."
@@ -3260,7 +3245,7 @@ vColumns : vColumn
                 ts_steps["step"] = 5
             if "window" not in ts_steps:
                 ts_steps["window"] = 100
-            return animated_ts_plot(
+            return plt.animated_ts_plot(
                 vdf,
                 order_by=ts,
                 columns=columns,
@@ -3699,9 +3684,7 @@ vColumns : vColumn
                 stacked = True
             elif hist_type in ("pyramid", "density"):
                 density = True
-            from verticapy.plot import bar2D
-
-            return bar2D(
+            return plt.bar2D(
                 self,
                 columns,
                 method,
@@ -3877,9 +3860,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         columns = self.format_colnames(columns) if (columns) else self.numcol()
-        from verticapy.plot import boxplot2D
-
-        return boxplot2D(self, columns, ax=ax, **style_kwds)
+        return plt.boxplot2D(self, columns, ax=ax, **style_kwds)
 
     # ---#
     @check_dtypes
@@ -3937,10 +3918,7 @@ vColumns : vColumn
         columns, catcol, size_bubble_col, cmap_col = self.format_colnames(
             columns, catcol, size_bubble_col, cmap_col
         )
-
-        from verticapy.plot import bubble
-
-        return bubble(
+        return plt.bubble(
             self,
             columns + [size_bubble_col] if size_bubble_col else columns,
             catcol,
@@ -4384,9 +4362,7 @@ vColumns : vColumn
         """
         self.is_nb_cols_correct(columns, [2])
         columns = self.format_colnames(columns)
-        from verticapy.plot import contour_plot
-
-        return contour_plot(self, columns, func, nbins, ax=ax, **style_kwds,)
+        return plt.contour_plot(self, columns, func, nbins, ax=ax, **style_kwds,)
 
     # ---#
     @check_dtypes
@@ -5094,10 +5070,9 @@ vColumns : vColumn
                     f"vColumn {column} is not numerical to draw KDE"
                 )
         assert columns, EmptyParameter("No Numerical Columns found to draw KDE.")
-        from verticapy.plot import gen_colors
         from matplotlib.lines import Line2D
 
-        colors = gen_colors()
+        colors = plt.gen_colors()
         min_max = self.agg(func=["min", "max"], columns=columns)
         if not xlim:
             xmin = min(min_max["min"])
@@ -6773,10 +6748,8 @@ vColumns : vColumn
             assert self[column].isnum(), TypeError(
                 f"vColumn {column} must be numerical to draw the Heatmap."
             )
-        from verticapy.plot import pivot_table
-
         min_max = self.agg(func=["min", "max"], columns=columns).transpose()
-        ax = pivot_table(
+        ax = plt.pivot_table(
             vdf=self,
             columns=columns,
             method=method,
@@ -6850,9 +6823,7 @@ vColumns : vColumn
             columns = [columns]
         self.is_nb_cols_correct(columns, [2])
         columns, of = self.format_colnames(columns, of)
-        from verticapy.plot import hexbin
-
-        return hexbin(self, columns, method, of, bbox, img, ax=ax, **style_kwds)
+        return plt.hexbin(self, columns, method, of, bbox, img, ax=ax, **style_kwds)
 
     # ---#
     @check_dtypes
@@ -6927,19 +6898,15 @@ vColumns : vColumn
             return self[columns[0]].hist(method, of, 6, 0, 0, **style_kwds)
         else:
             if multi:
-                from verticapy.plot import multiple_hist
-
                 if isinstance(h, (int, float)):
                     h_0 = h
                 else:
                     h_0 = h[0] if (h[0]) else 0
-                return multiple_hist(
+                return plt.multiple_hist(
                     self, columns, method, of, h_0, ax=ax, **style_kwds,
                 )
             else:
-                from verticapy.plot import hist2D
-
-                return hist2D(
+                return plt.hist2D(
                     self,
                     columns,
                     method,
@@ -7879,9 +7846,7 @@ vColumns : vColumn
             columns = [columns]
         self.is_nb_cols_correct(columns, [1, 2])
         columns = self.format_colnames(columns)
-        from verticapy.plot import outliers_contour_plot
-
-        return outliers_contour_plot(
+        return plt.outliers_contour_plot(
             self,
             columns,
             color=color,
@@ -8046,9 +8011,7 @@ vColumns : vColumn
             if pacf_band:
                 result.values["confidence"] = pacf_band
             if show:
-                from verticapy.plot import acf_plot
-
-                acf_plot(
+                plt.acf_plot(
                     result.values["index"],
                     result.values["value"],
                     title="Partial Autocorrelation",
@@ -8102,9 +8065,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         columns = self.format_colnames(columns)
-        from verticapy.plot import nested_pie
-
-        return nested_pie(self, columns, max_cardinality, h, ax=None, **style_kwds)
+        return plt.nested_pie(self, columns, max_cardinality, h, ax=None, **style_kwds)
 
     # ---#
     @check_dtypes
@@ -8363,9 +8324,7 @@ vColumns : vColumn
             columns = [columns]
         self.is_nb_cols_correct(columns, [1, 2])
         columns, of = self.format_colnames(columns, of)
-        from verticapy.plot import pivot_table
-
-        return pivot_table(
+        return plt.pivot_table(
             self,
             columns,
             method,
@@ -8430,9 +8389,7 @@ vColumns : vColumn
             columns = [columns]
         columns, ts = self.format_colnames(columns, ts)
         kind = "step" if step else "line"
-        from verticapy.plot import multi_ts_plot
-
-        return multi_ts_plot(
+        return plt.multi_ts_plot(
             self, ts, columns, start_date, end_date, kind, ax=ax, **style_kwds,
         )
 
@@ -8924,15 +8881,13 @@ vColumns : vColumn
                     current = float("nan")
                 matrix[i + 1][j + 1] = current
         if show:
-            from verticapy.plot import cmatrix
-
             if method == "slope":
                 method_title = "Beta"
             elif method == "intercept":
                 method_title = "Alpha"
             else:
                 method_title = method
-            cmatrix(
+            plt.cmatrix(
                 matrix,
                 columns,
                 columns,
@@ -9434,9 +9389,7 @@ vColumns : vColumn
         catcol = [catcol] if catcol else []
 
         if len(columns) == 2:
-            from verticapy.plot import scatter2D
-
-            return scatter2D(
+            return plt.scatter2D(
                 self,
                 columns + catcol,
                 max_cardinality,
@@ -9449,9 +9402,7 @@ vColumns : vColumn
                 **style_kwds,
             )
         elif len(columns) == 3:
-            from verticapy.plot import scatter3D
-
-            return scatter3D(
+            return plt.scatter3D(
                 self,
                 columns + catcol,
                 max_cardinality,
@@ -9490,9 +9441,7 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         columns = self.format_colnames(columns)
-        from verticapy.plot import scatter_matrix
-
-        return scatter_matrix(self, columns, **style_kwds)
+        return plt.scatter_matrix(self, columns, **style_kwds)
 
     # ---#
     @check_dtypes
@@ -9894,9 +9843,7 @@ vColumns : vColumn
             "Columns having negative values can not be processed by the 'stacked_area' method."
         )
         columns, ts = self.format_colnames(columns, ts)
-        from verticapy.plot import multi_ts_plot
-
-        return multi_ts_plot(
+        return plt.multi_ts_plot(
             self, ts, columns, start_date, end_date, kind=kind, ax=ax, **style_kwds,
         )
 

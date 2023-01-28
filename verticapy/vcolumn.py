@@ -55,6 +55,7 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy
+import verticapy.plot as plt
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
@@ -878,9 +879,7 @@ Attributes
  	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
         of = self.parent.format_colnames(of)
-        from verticapy.plot import bar
-
-        return bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
+        return plt.bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     # ---#
     @check_dtypes
@@ -929,9 +928,7 @@ Attributes
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
         by = self.parent.format_colnames(by)
-        from verticapy.plot import boxplot
-
-        return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds)
+        return plt.boxplot(self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds)
 
     # ---#
     def category(self):
@@ -1209,10 +1206,9 @@ Attributes
         )
         if by:
             by = self.parent.format_colnames(by)
-            from verticapy.plot import gen_colors
             from matplotlib.lines import Line2D
 
-            colors = gen_colors()
+            colors = plt.gen_colors()
             if not xlim:
                 xmin = self.min()
                 xmax = self.max()
@@ -2199,14 +2195,10 @@ Attributes
             column = self.parent.format_colnames(column)
             columns += [column]
             if not ("cmap" in kwargs):
-                from verticapy.plot import gen_cmap
-
-                kwargs["cmap"] = gen_cmap()[0]
+                kwargs["cmap"] = plt.gen_cmap()[0]
         else:
             if not ("color" in kwargs):
-                from verticapy.plot import gen_colors
-
-                kwargs["color"] = gen_colors()[0]
+                kwargs["color"] = plt.gen_colors()[0]
         if not ("legend" in kwargs):
             kwargs["legend"] = True
         if not ("figsize" in kwargs):
@@ -2425,9 +2417,7 @@ Attributes
  	vDataFrame[].bar : Draws the Bar Chart of vColumn based on an aggregation.
 		"""
         of = self.parent.format_colnames(of)
-        from verticapy.plot import hist
-
-        return hist(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
+        return plt.hist(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     # ---#
     @check_dtypes
@@ -3556,9 +3546,7 @@ Attributes
         raise_error_if_not_in("pie_type", pie_type, ["auto", "donut", "rose"])
         donut, rose = (pie_type == "donut"), (pie_type == "rose")
         of = self.parent.format_colnames(of)
-        from verticapy.plot import pie
-
-        return pie(
+        return plt.pie(
             self, method, of, max_cardinality, h, donut, rose, ax=None, **style_kwds,
         )
 
@@ -3612,9 +3600,7 @@ Attributes
 	vDataFrame.plot : Draws the time series.
 		"""
         ts, by = self.parent.format_colnames(ts, by)
-        from verticapy.plot import ts_plot
-
-        return ts_plot(
+        return plt.ts_plot(
             self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwds,
         )
 
@@ -3717,9 +3703,7 @@ Attributes
     vDataFrame.plot : Draws the time series.
         """
         ts = self.parent.format_colnames(ts)
-        from verticapy.plot import range_curve_vdf
-
-        return range_curve_vdf(
+        return plt.range_curve_vdf(
             self, ts, q, start_date, end_date, plot_median, ax=ax, **style_kwds,
         )
 
@@ -3912,16 +3896,11 @@ Attributes
     --------
     vDataFrame.bar : Draws the Bar Chart of the input vColumns based on an aggregation.
         """
+        columns = [self.alias]
         if by:
-            by = self.parent.format_colnames(by)
-            columns = [self.alias, by]
-        else:
-            columns = [self.alias]
-        if of:
-            of = self.parent.format_colnames(of)
-        from verticapy.plot import spider as spider_plot
-
-        return spider_plot(
+            columns += [by]
+        by, of = self.parent.format_colnames(by, of)
+        return plt.spider_plot(
             self.parent, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
         )
 
