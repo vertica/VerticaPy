@@ -1618,7 +1618,9 @@ vColumns : vColumn
                 raise MissingColumn(f"The Virtual Column '{column}' doesn't exist{e}.")
 
     # ---#
-    def format_colnames(self, *argv, columns: Union[str, list, dict] = [], raise_error: bool = True):
+    def format_colnames(
+        self, *argv, columns: Union[str, list, dict] = [], raise_error: bool = True
+    ):
         """
     ----------------------------------------------------------------------------------------
     Method used to format the input columns by using the vDataFrame columns' names.
@@ -1643,7 +1645,7 @@ vColumns : vColumn
                 result += [self.format_colnames(columns=arg, raise_error=raise_error)]
             return result
         else:
-            if not(columns) or isinstance(columns, (int, float)):
+            if not (columns) or isinstance(columns, (int, float)):
                 return columns
             if raise_error:
                 self.are_namecols_in(columns)
@@ -1657,7 +1659,9 @@ vColumns : vColumn
             elif isinstance(columns, dict):
                 result = {}
                 for col in columns:
-                    result[self.format_colnames(col, raise_error=raise_error)] = columns[col]
+                    result[
+                        self.format_colnames(col, raise_error=raise_error)
+                    ] = columns[col]
             else:
                 result = []
                 for col in columns:
@@ -9583,7 +9587,9 @@ vColumns : vColumn
                 columns[i] = column + dtype
             else:
                 columns[i] = str(columns[i])
-        table = f"(SELECT {', '.join(columns)} FROM {self.__genSQL__()}) VERTICAPY_SUBTABLE"
+        table = (
+            f"(SELECT {', '.join(columns)} FROM {self.__genSQL__()}) VERTICAPY_SUBTABLE"
+        )
         return self.__vDataFrameSQL__(
             table, self._VERTICAPY_VARIABLES_["input_relation"], ""
         )

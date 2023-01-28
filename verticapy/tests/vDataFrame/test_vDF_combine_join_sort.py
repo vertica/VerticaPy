@@ -95,7 +95,9 @@ class TestvDFCombineJoinSort:
                 columns=["For", "Name"],
                 expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
             )
-        assert exception_info.match("The Virtual Column 'For' doesn't exist\nDid you mean '\"Form\"' ?")
+        assert exception_info.match(
+            "The Virtual Column 'For' doesn't exist\nDid you mean '\"Form\"' ?"
+        )
         # with rollup
         result3 = market_vd.groupby(
             columns=["Form", "Name"],

@@ -2036,7 +2036,7 @@ Attributes
                 "backfill",
             ],
         )
-        by = self.parent.format_colnames(by)
+        # by = self.parent.format_colnames(by)
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):
@@ -2054,9 +2054,9 @@ Attributes
         if isinstance(val, str):
             val = val.replace("'", "''")
         if val != None:
-            new_column = "COALESCE({}, '{}')".format("{}", val)
+            new_column = f"COALESCE({{}}, '{val}')"
         elif expr:
-            new_column = "COALESCE({}, {})".format("{}", expr)
+            new_column = f"COALESCE({{}}, {expr})"
         elif method == "0ifnull":
             new_column = "DECODE({}, NULL, 0, 1)"
         elif method in ("mean", "avg", "median"):
@@ -2066,14 +2066,12 @@ Attributes
                     val = self.avg()
                 elif fun == "MEDIAN":
                     val = self.median()
-                new_column = "COALESCE({}, {})".format("{}", val)
+                new_column = f"COALESCE({{}}, {val})"
             elif (len(by) == 1) and (self.parent[by[0]].nunique() < 50):
                 try:
                     if fun == "MEDIAN":
                         fun = "APPROXIMATE_MEDIAN"
-                    query = "SELECT /*+LABEL('vColumn.fillna')*/ {0}, {1}({2}) FROM {3} GROUP BY {0};".format(
-                        by[0], fun, self.alias, self.parent.__genSQL__()
-                    )
+                    query = f"SELECT /*+LABEL('vColumn.fillna')*/ {by[0]}, {fun}({self.alias}) FROM {self.parent.__genSQL__()} GROUP BY {by[0]};"
                     result = executeSQL(
                         query,
                         title="Computing the different aggregations.",
@@ -2104,29 +2102,19 @@ Attributes
                         symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                     )
                 except:
-                    new_column = "COALESCE({}, {}({}) OVER (PARTITION BY {}))".format(
-                        "{}", fun, "{}", ", ".join(by)
-                    )
+                    new_column = f"COALESCE({{}}, {fun}({{}}) OVER (PARTITION BY {', '.join(by)}))"
             else:
-                new_column = "COALESCE({}, {}({}) OVER (PARTITION BY {}))".format(
-                    "{}", fun, "{}", ", ".join(by)
+                new_column = (
+                    f"COALESCE({{}}, {fun}({{}}) OVER (PARTITION BY {', '.join(by)}))"
                 )
         elif method in ("ffill", "pad", "bfill", "backfill"):
             assert order_by, ParameterError(
                 "If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data"
             )
             desc = "" if (method in ("ffill", "pad")) else " DESC"
-            partition_by = (
-                "PARTITION BY {}".format(
-                    ", ".join([quote_ident(column) for column in by])
-                )
-                if (by)
-                else ""
-            )
+            partition_by = f"PARTITION BY {', '.join(by)}" if (by) else ""
             order_by_ts = ", ".join([quote_ident(column) + desc for column in order_by])
-            new_column = "COALESCE({}, LAST_VALUE({} IGNORE NULLS) OVER ({} ORDER BY {}))".format(
-                "{}", "{}", partition_by, order_by_ts
-            )
+            new_column = f"COALESCE({{}}, LAST_VALUE({{}} IGNORE NULLS) OVER ({partition_by} ORDER BY {order_by_ts}))"
         if method in ("mean", "median") or isinstance(val, float):
             category, ctype = "float", "float"
         elif method == "0ifnull":
@@ -2168,18 +2156,16 @@ Attributes
             total = int(total)
             conj = "s were " if total > 1 else " was "
             if verticapy.OPTIONS["print_info"]:
-                print("{} element{}filled.".format(total, conj))
+                print(f"{total} element{conj}filled.")
             self.parent.__add_to_history__(
-                "[Fillna]: {} {} missing value{} filled.".format(
-                    total, self.alias, conj,
-                )
+                f"[Fillna]: {total} {self.alias} missing value{conj} filled."
             )
         else:
             if verticapy.OPTIONS["print_info"]:
                 print("Nothing was filled.")
-            self.transformations = [elem for elem in copy_trans]
-            for elem in sauv:
-                self.catalog[elem] = sauv[elem]
+            self.transformations = [t for t in copy_trans]
+            for s in sauv:
+                self.catalog[s] = sauv[s]
         return self.parent
 
     # ---#
