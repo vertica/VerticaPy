@@ -54,11 +54,7 @@ from configparser import ConfigParser
 
 # VerticaPy Modules
 import verticapy as vp
-from verticapy.decorators import (
-    save_verticapy_logs,
-    check_dtypes,
-    check_minimum_version,
-)
+from verticapy.decorators import check_dtypes
 from verticapy.toolbox import is_special_symbol, get_special_symbols
 from verticapy.errors import ConnectionError, ParameterError
 
@@ -68,7 +64,7 @@ import vertica_python
 # Global Variables
 VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
 SESSION_LABEL = f"verticapy-{vp.__version__}-{vp.OPTIONS['identifier']}"
-CONNECTION = CONNECTION
+CONNECTION = vp.OPTIONS["connection"]
 
 #
 # ---#
