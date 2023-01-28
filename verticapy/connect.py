@@ -55,7 +55,7 @@ from configparser import ConfigParser
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.decorators import check_dtypes
-from verticapy.errors import ConnectionError, ParameterError
+from verticapy.errors import ConnectionError, ParameterError, raise_error_if_not_in
 
 # Vertica Modules
 import vertica_python
