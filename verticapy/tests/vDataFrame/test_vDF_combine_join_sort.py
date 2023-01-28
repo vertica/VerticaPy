@@ -15,7 +15,7 @@
 import pytest
 
 # VerticaPy
-from vertica_python.errors import VerticaSyntaxError
+from verticapy.errors import MissingColumn
 from verticapy import drop, set_option, tablesample
 from verticapy.datasets import load_iris, load_market, load_amazon, load_titanic
 
@@ -90,12 +90,12 @@ class TestvDFCombineJoinSort:
             4,
         ), "testing vDataFrame.groupby(columns, expr) failed"
 
-        with pytest.raises(VerticaSyntaxError) as exception_info:
+        with pytest.raises(MissingColumn) as exception_info:
             result2 = market_vd.groupby(
                 columns=["For", "Name"],
                 expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
             )
-        assert exception_info.match('Syntax error at or near "For"')
+        assert exception_info.match("The Virtual Column 'For' doesn't exist\nDid you mean '\"Form\"' ?")
         # with rollup
         result3 = market_vd.groupby(
             columns=["Form", "Name"],

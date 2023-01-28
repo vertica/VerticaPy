@@ -1333,7 +1333,7 @@ Main Class for Vertica Model
                 category_level += [details["category_level"][pos[0] : pos[-1] + 1]]
             if self.parameters["drop_first"]:
                 category_level = [elem[1:] for elem in category_level]
-            func += "category_level = {}\n\t".format(category_level)
+            func += f"category_level = {category_level}\n\t"
             func += "def ooe_row(X):\n\t"
             func += "\tresult = []\n\t"
             func += "\tfor idx, elem in enumerate(X):\n\t\t"
@@ -1390,9 +1390,7 @@ Main Class for Vertica Model
                     self.parameters["sample"]
                     * int(self.get_attr("accepted_row_count")["accepted_row_count"][0])
                 )
-                func += "\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4][node_id][1])) / heuristic_length({})\n".format(
-                    psy
-                )
+                func += f"\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4][node_id][1])) / heuristic_length({psy})\n"
             elif self.type == "RandomForestClassifier":
                 func += "\t\t\treturn tree[4][node_id]\n"
             else:
@@ -1424,14 +1422,12 @@ Main Class for Vertica Model
                             np.log(self.prior_ / (1 - self.prior_)),
                         )
                     else:
-                        func += "\t\tlogodds = np.array({})\n".format(self.prior_)
+                        func += f"\t\tlogodds = np.array({self.prior_})\n"
                     func += "\t\tfor idx, elem in enumerate(all_classes_score):\n"
                     func += "\t\t\tfor val in result:\n"
                     func += "\t\t\t\tall_classes_score[elem] += val[elem]\n"
                     func += "\t\t\tall_classes_score[elem] = 1 / (1 + np.exp( - "
-                    func += "(logodds[idx] + {} * all_classes_score[elem])))\n".format(
-                        self.parameters["learning_rate"]
-                    )
+                    func += f"(logodds[idx] + {self.parameters['learning_rate']} * all_classes_score[elem])))\n"
                     func += "\t\tresult = [all_classes_score[elem] for elem in "
                     func += "all_classes_score]\n"
             elif self.type == "RandomForestRegressor":
@@ -1457,9 +1453,7 @@ Main Class for Vertica Model
             return func
         else:
             raise ModelError(
-                "Function to_python not yet available for model type '{}'.".format(
-                    self.type
-                )
+                f"Function to_python not yet available for model type '{self.type}'."
             )
 
     # ---#

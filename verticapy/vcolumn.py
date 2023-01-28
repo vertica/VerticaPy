@@ -2036,13 +2036,12 @@ Attributes
                 "backfill",
             ],
         )
+        order_by, by = self.parent.format_colnames(order_by, by)
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):
             order_by = [order_by]
         method = method.lower()
-        order_by = self.parent.format_colnames(order_by)
-        by = self.parent.format_colnames(by)
         if method == "auto":
             method = "mean" if (self.isnum() and self.nunique(True) > 6) else "mode"
         total = self.count()

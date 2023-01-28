@@ -1637,10 +1637,10 @@ vColumns : vColumn
         """
         if argv:
             if len(argv) == 1:
-                return self.format_colnames(columns=argv[0])
+                return self.format_colnames(columns=argv[0], raise_error=raise_error)
             result = []
             for arg in argv:
-                result += [self.format_colnames(columns=arg)]
+                result += [self.format_colnames(columns=arg, raise_error=raise_error)]
             return result
         else:
             if not(columns) or isinstance(columns, (int, float)):
@@ -1657,11 +1657,11 @@ vColumns : vColumn
             elif isinstance(columns, dict):
                 result = {}
                 for col in columns:
-                    result[self.format_colnames(col)] = columns[col]
+                    result[self.format_colnames(col, raise_error=raise_error)] = columns[col]
             else:
                 result = []
                 for col in columns:
-                    result += [self.format_colnames(col)]
+                    result += [self.format_colnames(col, raise_error=raise_error)]
             return result
 
     # ---#
