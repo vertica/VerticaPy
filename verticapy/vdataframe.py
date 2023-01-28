@@ -63,8 +63,7 @@ import pandas as pd
 import numpy as np
 
 # VerticaPy Modules
-import verticapy
-import verticapy.connect as vp_conn
+import verticapy as vp
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
@@ -221,7 +220,7 @@ vColumns : vColumn
             columns = [columns]
 
         if external:
-            raise_error_if_not_in("symbol", symbol, vp_conn.SPECIAL_SYMBOLS)
+            raise_error_if_not_in("symbol", symbol, vp.SPECIAL_SYMBOLS)
 
             if input_relation:
                 assert isinstance(input_relation, str), ParameterError(
@@ -237,7 +236,7 @@ vColumns : vColumn
             else:
                 query = sql
 
-            if symbol in verticapy.OPTIONS["external_connection"]:
+            if symbol in vp.OPTIONS["external_connection"]:
                 sql = symbol * 3 + query + symbol * 3
 
             else:
@@ -495,12 +494,12 @@ vColumns : vColumn
         ):
             return readSQL(
                 self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
-                verticapy.OPTIONS["time_on"],
-                verticapy.OPTIONS["max_rows"],
+                vp.OPTIONS["time_on"],
+                vp.OPTIONS["max_rows"],
             ).__repr__()
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
-            max_rows = verticapy.OPTIONS["max_rows"]
+            max_rows = vp.OPTIONS["max_rows"]
         return self.head(limit=max_rows).__repr__()
 
     # ---#
@@ -511,12 +510,12 @@ vColumns : vColumn
             self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
             return readSQL(
                 self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
-                verticapy.OPTIONS["time_on"],
-                verticapy.OPTIONS["max_rows"],
+                vp.OPTIONS["time_on"],
+                vp.OPTIONS["max_rows"],
             )._repr_html_(interactive)
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
-            max_rows = verticapy.OPTIONS["max_rows"]
+            max_rows = vp.OPTIONS["max_rows"]
         return self.head(limit=max_rows)._repr_html_(interactive)
 
     # ---#
@@ -883,7 +882,7 @@ vColumns : vColumn
                     title = "Covariance Matrix"
                     i0, step = 0, 1
                 n = len(columns)
-                loop = tqdm(range(i0, n)) if verticapy.OPTIONS["tqdm"] else range(i0, n)
+                loop = tqdm(range(i0, n)) if vp.OPTIONS["tqdm"] else range(i0, n)
                 try:
                     all_list = []
                     nb_precomputed = 0
@@ -1412,7 +1411,7 @@ vColumns : vColumn
     computations. This method returns the stored aggregation if it was already 
     computed.
         """
-        if not (verticapy.OPTIONS["cache"]):
+        if not (vp.OPTIONS["cache"]):
             return "VERTICAPY_NOT_PRECOMPUTED"
         if column == "VERTICAPY_COUNT":
             if self._VERTICAPY_VARIABLES_["count"] < 0:
@@ -2198,7 +2197,7 @@ vColumns : vColumn
 
         if ncols_block < len(columns) and processes <= 1:
 
-            if verticapy.OPTIONS["tqdm"]:
+            if vp.OPTIONS["tqdm"]:
                 loop = tqdm(range(0, len(columns), ncols_block))
             else:
                 loop = range(0, len(columns), ncols_block)
@@ -2585,7 +2584,7 @@ vColumns : vColumn
                             values[columns[i]] = pre_comp_val
                         else:
                             values[columns[i]] = [
-                                elem for elem in vp_conn.current_cursor().fetchone()
+                                elem for elem in vp.current_cursor().fetchone()
                             ]
                 except:
 
@@ -2788,7 +2787,7 @@ vColumns : vColumn
             "iqr",
             "sem",
         ) or ("%" in func):
-            if order_by and not (verticapy.OPTIONS["print_info"]):
+            if order_by and not (vp.OPTIONS["print_info"]):
                 print(
                     f"\u26A0 '{func}' analytic method doesn't need an "
                     "order by clause, it was ignored"
@@ -3682,11 +3681,11 @@ vColumns : vColumn
             return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax, **style_kwds)
         else:
             stacked, fully_stacked, density = False, False, False
-            if hist_type.lower() in ("fully", "fully stacked", "fully_stacked"):
+            if hist_type in ("fully", "fully stacked", "fully_stacked"):
                 fully_stacked = True
-            elif hist_type.lower() == "stacked":
+            elif hist_type == "stacked":
                 stacked = True
-            elif hist_type.lower() in ("pyramid", "density"):
+            elif hist_type in ("pyramid", "density"):
                 density = True
             from verticapy.plot import bar2D
 
@@ -5208,7 +5207,7 @@ vColumns : vColumn
                 " method = 'numerical'."
             )
             if ncols_block < len(columns) and processes <= 1:
-                if verticapy.OPTIONS["tqdm"]:
+                if vp.OPTIONS["tqdm"]:
                     loop = tqdm(range(0, len(columns), ncols_block))
                 else:
                     loop = range(0, len(columns), ncols_block)
@@ -5258,7 +5257,7 @@ vColumns : vColumn
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
                                 col_to_compute += [column]
                                 break
-                    elif verticapy.OPTIONS["print_info"]:
+                    elif vp.OPTIONS["print_info"]:
                         warning_message = (
                             f"The vColumn {column} is not numerical, it was ignored."
                             "\nTo get statistical information about all different "
@@ -5592,7 +5591,7 @@ vColumns : vColumn
             )
             self.filter('"{}" = 1'.format(name))
             self._VERTICAPY_VARIABLES_["exclude_columns"] += ['"{}"'.format(name)]
-        elif verticapy.OPTIONS["print_info"]:
+        elif vp.OPTIONS["print_info"]:
             print("No duplicates detected.")
         return self
 
@@ -5622,12 +5621,12 @@ vColumns : vColumn
             columns = [columns]
         columns = self.get_columns() if not (columns) else self.format_colnames(columns)
         total = self.shape()[0]
-        print_info = verticapy.OPTIONS["print_info"]
+        print_info = vp.OPTIONS["print_info"]
         for column in columns:
-            verticapy.OPTIONS["print_info"] = False
+            vp.OPTIONS["print_info"] = False
             self[column].dropna()
-            verticapy.OPTIONS["print_info"] = print_info
-        if verticapy.OPTIONS["print_info"]:
+            vp.OPTIONS["print_info"] = print_info
+        if vp.OPTIONS["print_info"]:
             total -= self.shape()[0]
             if total == 0:
                 print("Nothing was filtered.")
@@ -6008,8 +6007,8 @@ vColumns : vColumn
     vDataFrame[].fillna : Fills the vColumn missing values. This method is more 
         complete than the vDataFrame.fillna method by allowing more parameters.
         """
-        print_info = verticapy.OPTIONS["print_info"]
-        verticapy.OPTIONS["print_info"] = False
+        print_info = vp.OPTIONS["print_info"]
+        vp.OPTIONS["print_info"] = False
         try:
             if not (val) and not (method):
                 cols = self.get_columns()
@@ -6028,7 +6027,7 @@ vColumns : vColumn
         except:
             raise
         finally:
-            verticapy.OPTIONS["print_info"] = print_info
+            vp.OPTIONS["print_info"] = print_info
 
     # ---#
     @check_dtypes
@@ -6071,12 +6070,12 @@ vColumns : vColumn
                 self.filter(str(condition), print_info=False)
             count -= self.shape()[0]
             if count > 0:
-                if verticapy.OPTIONS["print_info"]:
+                if vp.OPTIONS["print_info"]:
                     print(f"{count} element{conj}filtered")
                 self.__add_to_history__(
                     f"[Filter]: {count} element{conj}filtered using the filter '{conditions}'"
                 )
-            elif verticapy.OPTIONS["print_info"]:
+            elif vp.OPTIONS["print_info"]:
                 print("Nothing was filtered.")
         else:
             max_pos = 0
@@ -6098,7 +6097,7 @@ vColumns : vColumn
                 count -= new_count
             except:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
-                if verticapy.OPTIONS["print_info"]:
+                if vp.OPTIONS["print_info"]:
                     warning_message = f"The expression '{conditions}' is incorrect.\nNothing was filtered."
                     warnings.warn(warning_message, Warning)
                 return self
@@ -6106,14 +6105,14 @@ vColumns : vColumn
                 self.__update_catalog__(erase=True)
                 self._VERTICAPY_VARIABLES_["count"] = new_count
                 conj = "s were " if count > 1 else " was "
-                if verticapy.OPTIONS["print_info"] and "print_info" not in kwds:
-                    print("{} element{}filtered.".format(count, conj))
+                if vp.OPTIONS["print_info"] and "print_info" not in kwds:
+                    print(f"{count} element{conj}filtered.")
                 self.__add_to_history__(
                     f"[Filter]: {count} element{conj}filtered using the filter '{conditions}'"
                 )
             else:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
-                if verticapy.OPTIONS["print_info"] and "print_info" not in kwds:
+                if vp.OPTIONS["print_info"] and "print_info" not in kwds:
                     print("Nothing was filtered.")
         return self
 
@@ -6316,7 +6315,7 @@ vColumns : vColumn
                 self[column].get_dummies(
                     "", prefix_sep, drop_first, use_numbers_as_suffix
                 )
-            elif cols_hand and verticapy.OPTIONS["print_info"]:
+            elif cols_hand and vp.OPTIONS["print_info"]:
                 warning_message = f"The vColumn '{column}' was ignored because of its high cardinality.\nIncrease the parameter 'max_cardinality' to solve this issue or use directly the vColumn get_dummies method."
                 warnings.warn(warning_message, Warning)
         return self
@@ -6997,7 +6996,7 @@ vColumns : vColumn
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             result.count = pre_comp
-        elif verticapy.OPTIONS["count_on"]:
+        elif vp.OPTIONS["count_on"]:
             result.count = self.shape()[0]
         result.offset = offset
         result.name = self._VERTICAPY_VARIABLES_["input_relation"]
@@ -7006,8 +7005,8 @@ vColumns : vColumn
         for column in columns:
             if not ("percent" in self[column].catalog):
                 all_percent = False
-        all_percent = (all_percent or (verticapy.OPTIONS["percent_bar"] == True)) and (
-            verticapy.OPTIONS["percent_bar"] != False
+        all_percent = (all_percent or (vp.OPTIONS["percent_bar"] == True)) and (
+            vp.OPTIONS["percent_bar"] != False
         )
         if all_percent:
             percent = self.aggregate(["percent"], columns).transpose().values
@@ -7682,10 +7681,8 @@ vColumns : vColumn
                 self[column].normalize(method=method)
             elif (no_cols) and (self[column].isbool()):
                 pass
-            elif verticapy.OPTIONS["print_info"]:
-                warning_message = "The vColumn {} was skipped.\nNormalize only accept numerical data types.".format(
-                    column
-                )
+            elif vp.OPTIONS["print_info"]:
+                warning_message = f"The vColumn {column} was skipped.\nNormalize only accept numerical data types."
                 warnings.warn(warning_message, Warning)
         return self
 
@@ -7966,13 +7963,13 @@ vColumns : vColumn
             ]
             relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) pacf"
             tmp_view_name = gen_tmp_name(
-                schema=verticapy.OPTIONS["temp_schema"], name="linear_reg_view"
+                schema=vp.OPTIONS["temp_schema"], name="linear_reg_view"
             )
             tmp_lr0_name = gen_tmp_name(
-                schema=verticapy.OPTIONS["temp_schema"], name="linear_reg0"
+                schema=vp.OPTIONS["temp_schema"], name="linear_reg0"
             )
             tmp_lr1_name = gen_tmp_name(
-                schema=verticapy.OPTIONS["temp_schema"], name="linear_reg1"
+                schema=vp.OPTIONS["temp_schema"], name="linear_reg1"
             )
             try:
                 drop(tmp_view_name, method="view")
@@ -8013,7 +8010,7 @@ vColumns : vColumn
         else:
             if isinstance(p, (float, int)):
                 p = range(0, p + 1)
-            loop = tqdm(p) if verticapy.OPTIONS["tqdm"] else p
+            loop = tqdm(p) if vp.OPTIONS["tqdm"] else p
             pacf = []
             for i in loop:
                 pacf += [self.pacf(ts=ts, column=column, by=by, p=[i], unit=unit)]
@@ -9252,7 +9249,7 @@ vColumns : vColumn
         vdf = self.copy()
         assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
         if method == "random":
-            random_state = verticapy.OPTIONS["random_state"]
+            random_state = vp.OPTIONS["random_state"]
             random_seed = (
                 random_state
                 if isinstance(random_state, int)
@@ -9261,10 +9258,10 @@ vColumns : vColumn
             random_func = "SEEDED_RANDOM({})".format(random_seed)
             vdf.eval(name, random_func)
             q = vdf[name].quantile(x)
-            print_info_init = verticapy.OPTIONS["print_info"]
+            print_info_init = vp.OPTIONS["print_info"]
             verticapy.OPTIONS["print_info"] = False
-            vdf.filter("{} <= {}".format(name, q))
-            verticapy.OPTIONS["print_info"] = print_info_init
+            vdf.filter(f"{name} <= {q}")
+            vp.OPTIONS["print_info"] = print_info_init
             vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
             assert method != "stratified" or (by), ParameterError(
@@ -9279,10 +9276,10 @@ vColumns : vColumn
                     name, name, x, name
                 ),
             )
-            print_info_init = verticapy.OPTIONS["print_info"]
+            print_info_init = vp.OPTIONS["print_info"]
             verticapy.OPTIONS["print_info"] = False
-            vdf.filter("{} = {}".format(name, name2))
-            verticapy.OPTIONS["print_info"] = print_info_init
+            vdf.filter(f"{name} = {name2}".format(name, name2))
+            vp.OPTIONS["print_info"] = print_info_init
             vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name, name2]
         return vdf
 
@@ -9375,7 +9372,7 @@ vColumns : vColumn
             dimensions = (1, 2)
         if isinstance(dimensions, Iterable):
             model_name = gen_tmp_name(
-                schema=verticapy.OPTIONS["temp_schema"], name="pca_plot"
+                schema=vp.OPTIONS["temp_schema"], name="pca_plot"
             )
             from verticapy.learn.decomposition import PCA
 
@@ -10352,7 +10349,7 @@ vColumns : vColumn
         data = executeSQL(
             query, title="Getting the vDataFrame values.", method="fetchall"
         )
-        column_names = [column[0] for column in vp_conn.current_cursor().description]
+        column_names = [column[0] for column in vp.current_cursor().description]
         df = pd.DataFrame(data)
         df.columns = column_names
         if len(geometry) > 2 and geometry[0] == geometry[-1] == '"':
@@ -10561,7 +10558,7 @@ vColumns : vColumn
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
             symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
-        column_names = [column[0] for column in vp_conn.current_cursor().description]
+        column_names = [column[0] for column in vp.current_cursor().description]
         df = pd.DataFrame(data)
         df.columns = column_names
         return df
@@ -10812,7 +10809,7 @@ vColumns : vColumn
             order_by = [order_by]
         order_by = self.__get_sort_syntax__(order_by)
         if not random_state:
-            random_state = verticapy.OPTIONS["random_state"]
+            random_state = vp.OPTIONS["random_state"]
         random_seed = (
             random_state
             if isinstance(random_state, int)
