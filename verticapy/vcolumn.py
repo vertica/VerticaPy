@@ -2036,7 +2036,7 @@ Attributes
                 "backfill",
             ],
         )
-        order_by, by = self.parent.format_colnames(order_by, by)
+        by = self.parent.format_colnames(by)
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):
@@ -2155,7 +2155,7 @@ Attributes
             total = abs(self.count() - total)
         except Exception as e:
             self.transformations = [elem for elem in copy_trans]
-            raise QueryError("{}\nAn Error happened during the filling.".format(e))
+            raise QueryError(f"{e}\nAn Error happened during the filling.")
         if total > 0:
             try:
                 if "count" in sauv:

@@ -1361,10 +1361,10 @@ Main Class for Vertica Model
                 n = self.parameters["n_estimators"]
             else:
                 n = self.get_attr("tree_count")["tree_count"][0]
-            func += "n = {}\n".format(n)
+            func += f"n = {n}\n"
             if self.type in ("XGBoostClassifier", "RandomForestClassifier"):
                 func += "\tclasses = np.array({})\n".format(
-                    [str(elem) for elem in self.classes_]
+                    [str(c) for c in self.classes_]
                 )
             func += "\ttree_list = []\n"
             for i in range(n):
@@ -1412,9 +1412,7 @@ Main Class for Vertica Model
             if self.type in ("XGBoostRegressor", "XGBoostClassifier"):
                 if self.type == "XGBoostRegressor":
                     avg = self.prior_
-                    func += "\t\treturn {} + {} * np.sum(result)\n".format(
-                        avg, self.parameters["learning_rate"]
-                    )
+                    func += f"\t\treturn {avg} + {self.parameters['learning_rate']} * np.sum(result)\n"
                 else:
                     if not (isinstance(self.prior_, list)):
                         func += "\t\tlogodds = np.array([{}, {}])\n".format(

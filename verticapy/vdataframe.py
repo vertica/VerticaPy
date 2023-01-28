@@ -9583,9 +9583,7 @@ vColumns : vColumn
                 columns[i] = column + dtype
             else:
                 columns[i] = str(columns[i])
-        table = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-            ", ".join(columns), self.__genSQL__()
-        )
+        table = f"(SELECT {', '.join(columns)} FROM {self.__genSQL__()}) VERTICAPY_SUBTABLE"
         return self.__vDataFrameSQL__(
             table, self._VERTICAPY_VARIABLES_["input_relation"], ""
         )
