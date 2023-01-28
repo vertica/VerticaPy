@@ -2036,7 +2036,7 @@ Attributes
                 "backfill",
             ],
         )
-        # by = self.parent.format_colnames(by)
+        by, order_by = self.parent.format_colnames(by, order_by)
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):

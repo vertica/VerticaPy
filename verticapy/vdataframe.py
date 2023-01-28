@@ -1646,7 +1646,7 @@ vColumns : vColumn
             return result
         else:
             if not (columns) or isinstance(columns, (int, float)):
-                return columns
+                return copy.deepcopy(columns)
             if raise_error:
                 self.are_namecols_in(columns)
             if isinstance(columns, str):
