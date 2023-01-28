@@ -171,7 +171,12 @@ def sql(line, cell="", local_ns=None):
             external_queries = re.findall(
                 f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries
             )
-            warning_message = f"External Query detected but no corresponding Connection Identifier Database is defined (Using the symbol '{s}'). Use the function connect.set_external_connection to set one with the correct symbol."
+            warning_message = (
+                f"External Query detected but no corresponding Connection "
+                "Identifier Database is defined (Using the symbol '{s}'). "
+                "Use the function connect.set_external_connection to set "
+                "one with the correct symbol."
+            )
 
             if external_queries:
                 warnings.warn(warning_message, Warning)
@@ -218,7 +223,7 @@ def sql(line, cell="", local_ns=None):
 
             query = queries[i]
             if (i < n - 1) and (queries[i + 1].lower() == "end"):
-                query += "; {}".format(queries[i + 1])
+                query += f"; {queries[i + 1]}"
                 i += 1
             queries_tmp += [query]
             i += 1
@@ -289,7 +294,7 @@ def sql(line, cell="", local_ns=None):
                 error = ""
 
                 try:
-                    result = vDataFrameSQL("({}) VSQL_MAGIC".format(query))
+                    result = vDataFrameSQL(f"({query}) VSQL_MAGIC")
                     result._VERTICAPY_VARIABLES_["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:
