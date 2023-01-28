@@ -54,16 +54,13 @@ from collections.abc import Iterable
 from typing import Union
 
 # VerticaPy Modules
-import verticapy
-from verticapy.decorators import (
-    save_verticapy_logs,
-    check_dtypes,
-    check_minimum_version,
-)
+import verticapy as vp
+from verticapy.decorators import check_dtypes
 from verticapy.errors import *
 
 # Other Modules
 import numpy as np
+import pandas as pd
 
 #
 #
@@ -167,21 +164,19 @@ def executeSQL(
         "method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"],
     )
 
-    import verticapy.connect as vp_conn
-
     # Cleaning the query
-    if sql_push_ext and (symbol in vp_conn.SPECIAL_SYMBOLS):
+    if sql_push_ext and (symbol in vp.SPECIAL_SYMBOLS):
         query = erase_label(query)
         query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
 
-    elif sql_push_ext and (symbol not in vp_conn.SPECIAL_SYMBOLS):
+    elif sql_push_ext and (symbol not in vp.SPECIAL_SYMBOLS):
         raise ParameterError(f"Symbol '{symbol}' is not supported.")
 
     query = replace_external_queries_in_query(query)
     query = clean_query(query)
 
-    cursor = vp_conn.current_cursor()
-    if verticapy.OPTIONS["sql_on"] and print_time_sql:
+    cursor = vp.current_cursor()
+    if vp.OPTIONS["sql_on"] and print_time_sql:
         print_query(query, title)
     start_time = time.time()
     if data:
@@ -192,7 +187,7 @@ def executeSQL(
     else:
         cursor.execute(query)
     elapsed_time = time.time() - start_time
-    if verticapy.OPTIONS["time_on"] and print_time_sql:
+    if vp.OPTIONS["time_on"] and print_time_sql:
         print_time(elapsed_time)
     if method == "fetchrow":
         return cursor.fetchone()
@@ -257,10 +252,7 @@ def flat_dict(d: dict) -> str:
 
 # ---#
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
-
-    from verticapy.vcolumn import vColumn
-
-    if isinstance(x, vColumn):
+    if isinstance(x, vp.vColumn):
         val = x.alias
     elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
         x, str_sql
@@ -366,13 +358,13 @@ def get_category_from_vertica_type(ctype: str = ""):
 
 # ---#
 def get_dblink_fun(query: str, symbol: str = "$"):
-    assert symbol in verticapy.OPTIONS["external_connection"], ConnectionError(
+    assert symbol in vp.OPTIONS["external_connection"], ConnectionError(
         f"External Query detected but no corresponding Connection Identifier Database is defined (Using the symbol '{symbol}'). Use the function connect.set_external_connection to set one with the correct symbol."
     )
     return "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ()".format(
-        verticapy.OPTIONS["external_connection"][symbol]["cid"].replace("'", "''"),
+        vp.OPTIONS["external_connection"][symbol]["cid"].replace("'", "''"),
         query.replace("'", "''"),
-        verticapy.OPTIONS["external_connection"][symbol]["rowset"],
+        vp.OPTIONS["external_connection"][symbol]["rowset"],
     )
 
 
@@ -530,7 +522,7 @@ def get_magic_options(line: str):
 
 # ---#
 def get_random_function(rand_int=None):
-    random_state = verticapy.OPTIONS["random_state"]
+    random_state = vp.OPTIONS["random_state"]
     if isinstance(rand_int, int):
         if isinstance(random_state, int):
             random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
@@ -918,7 +910,7 @@ def print_table(
                     color = "#999999"
                 else:
                     if isinstance(val, bool) and (
-                        verticapy.OPTIONS["mode"] in ("full", None)
+                        vp.OPTIONS["mode"] in ("full", None)
                     ):
                         val = (
                             "<center>&#9989;</center>"
@@ -930,7 +922,7 @@ def print_table(
                 if (
                     (j == 0)
                     or (i == 0)
-                    or (verticapy.OPTIONS["mode"] not in ("full", None))
+                    or (vp.OPTIONS["mode"] not in ("full", None))
                 ):
                     html_table += " #FFFFFF; "
                 elif val == "[null]":
@@ -938,7 +930,7 @@ def print_table(
                 else:
                     html_table += " #FAFAFA; "
                 html_table += "color: {}; white-space:nowrap; ".format(color)
-                if verticapy.OPTIONS["mode"] in ("full", None):
+                if vp.OPTIONS["mode"] in ("full", None):
                     if (j == 0) or (i == 0):
                         html_table += "border: 1px solid #AAAAAA; "
                     else:
@@ -964,7 +956,7 @@ def print_table(
                     if j != 0:
                         type_val, category, missing_values = "", "", ""
                         if data_columns[j][0] in dtype and (
-                            verticapy.OPTIONS["mode"] in ("full", None)
+                            vp.OPTIONS["mode"] in ("full", None)
                         ):
                             if dtype[data_columns[j][0]] != "undefined":
                                 type_val = dtype[data_columns[j][0]].capitalize()
@@ -1020,8 +1012,8 @@ def print_table(
                     else:
                         ctype, missing_values, category = "", "", ""
                     if (i == 0) and (j == 0):
-                        if dtype and (verticapy.OPTIONS["mode"] in ("full", None)):
-                            val = verticapy.gen_verticapy_logo_html(size="45px")
+                        if dtype and (vp.OPTIONS["mode"] in ("full", None)):
+                            val = vp.gen_verticapy_logo_html(size="45px")
                         else:
                             val = ""
                     elif cell_width[j] > 240:
@@ -1034,7 +1026,7 @@ def print_table(
                     )
                 elif cell_width[j] > 240:
                     background = "#EEEEEE" if val == "[null]" else "#FAFAFA"
-                    if verticapy.OPTIONS["mode"] not in ("full", None):
+                    if vp.OPTIONS["mode"] not in ("full", None):
                         background = "#FFFFFF"
                     html_table += (
                         '><input style="background-color: {0}; border: none; '
@@ -1101,7 +1093,7 @@ def replace_external_queries_in_query(query: str):
         "update ",
     )
     nb_external_queries = 0
-    for s in verticapy.OPTIONS["external_connection"]:
+    for s in vp.OPTIONS["external_connection"]:
         external_queries = re.findall(f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", query)
         for external_query in external_queries:
             if external_query.strip().lower().startswith(sql_keyword):
@@ -1135,9 +1127,6 @@ def replace_external_queries_in_query(query: str):
 
 # ---#
 def replace_vars_in_query(query: str, locals_dict: dict):
-    from verticapy import vDataFrame, tablesample, pandas_to_vertica
-    import pandas as pd
-
     variables, query_tmp = re.findall("(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
         fail = True
@@ -1167,12 +1156,12 @@ def replace_vars_in_query(query: str, locals_dict: dict):
                 warnings.warn(warning_message, Warning)
                 fail = True
         if not (fail):
-            if isinstance(val, vDataFrame):
+            if isinstance(val, vp.vDataFrame):
                 val = val.__genSQL__()
-            elif isinstance(val, tablesample):
+            elif isinstance(val, vp.tablesample):
                 val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
             elif isinstance(val, pd.DataFrame):
-                val = pandas_to_vertica(val).__genSQL__()
+                val = vp.pandas_to_vertica(val).__genSQL__()
             elif isinstance(val, list):
                 val = ", ".join(["NULL" if elem is None else str(elem) for elem in val])
             query_tmp = query_tmp.replace(v, str(val))
@@ -1199,10 +1188,8 @@ def reverse_score(metric: str):
 
 # ---#
 def schema_relation(relation):
-    from verticapy import vDataFrame
-
-    if isinstance(relation, vDataFrame):
-        schema, relation = verticapy.OPTIONS["temp_schema"], ""
+    if isinstance(relation, vp.vDataFrame):
+        schema, relation = vp.OPTIONS["temp_schema"], ""
     else:
         quote_nb = relation.count('"')
         if quote_nb not in (0, 2, 4):
@@ -1278,56 +1265,52 @@ class str_sql:
 
     # ---#
     def __add__(self, x):
-        from verticapy.vcolumn import vColumn
-
-        if (isinstance(self, vColumn) and self.isarray()) and (
-            isinstance(x, vColumn) and x.isarray()
+        if (isinstance(self, vp.vColumn) and self.isarray()) and (
+            isinstance(x, vp.vColumn) and x.isarray()
         ):
             return str_sql(
-                "ARRAY_CAT({}, {})".format(self.init_transf, x.init_transf), "complex",
+                f"ARRAY_CAT({self.init_transf}, {x.init_transf})", "complex",
             )
         val = format_magic(x)
         op = (
             "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
         )
         return str_sql(
-            "({}) {} ({})".format(self.init_transf, op, val), self.category()
+            f"({self.init_transf}) {op} ({val})", self.category()
         )
 
     # ---#
     def __radd__(self, x):
-        from verticapy.vcolumn import vColumn
-
-        if (isinstance(self, vColumn) and self.isarray()) and (
-            isinstance(x, vColumn) and x.isarray()
+        if (isinstance(self, vp.vColumn) and self.isarray()) and (
+            isinstance(x, vp.vColumn) and x.isarray()
         ):
             return str_sql(
-                "ARRAY_CAT({}, {})".format(x.init_transf, self.init_transf), "complex",
+                f"ARRAY_CAT({x.init_transf}, {self.init_transf})", "complex",
             )
         val = format_magic(x)
         op = (
             "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
         )
         return str_sql(
-            "({}) {} ({})".format(val, op, self.init_transf), self.category()
+            f"({val}) {op} ({self.init_transf})", self.category()
         )
 
     # ---#
     def __and__(self, x):
         val = format_magic(x)
-        return str_sql("({}) AND ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) AND ({val})", self.category())
 
     # ---#
     def __rand__(self, x):
         val = format_magic(x)
-        return str_sql("({}) AND ({})".format(val, self.init_transf), self.category())
+        return str_sql(f"({val}) AND ({self.init_transf})", self.category())
 
     # ---#
     def _between(self, x, y):
         val1 = str(format_magic(x))
         val2 = str(format_magic(y))
         return str_sql(
-            "({}) BETWEEN ({}) AND ({})".format(self.init_transf, val1, val2),
+            f"({self.init_transf}) BETWEEN ({val1}) AND ({val2})",
             self.category(),
         )
 
@@ -1346,7 +1329,7 @@ class str_sql:
         )
         val = [str(format_magic(elem)) for elem in x]
         val = ", ".join(val)
-        return str_sql("({}) IN ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) IN ({val})", self.category())
 
     # ---#
     def _not_in(self, *argv):
@@ -1364,16 +1347,16 @@ class str_sql:
         val = [str(format_magic(elem)) for elem in x]
         val = ", ".join(val)
         return str_sql(
-            "({}) NOT IN ({})".format(self.init_transf, val), self.category()
+            f"({self.init_transf}) NOT IN ({val})", self.category()
         )
 
     # ---#
     def _as(self, x):
-        return str_sql("({}) AS {}".format(self.init_transf, x), self.category())
+        return str_sql(f"({self.init_transf}) AS {x}", self.category())
 
     # ---#
     def _distinct(self):
-        return str_sql("DISTINCT ({})".format(self.init_transf), self.category())
+        return str_sql(f"DISTINCT ({self.init_transf})", self.category())
 
     # ---#
     def _over(self, by: (str, list) = [], order_by: (str, list) = []):
@@ -1383,12 +1366,12 @@ class str_sql:
             order_by = [order_by]
         by = ", ".join([str(elem) for elem in by])
         if by:
-            by = "PARTITION BY {}".format(by)
+            by = f"PARTITION BY {by}"
         order_by = ", ".join([str(elem) for elem in order_by])
         if order_by:
-            order_by = "ORDER BY {}".format(order_by)
+            order_by = f"ORDER BY {order_by}"
         return str_sql(
-            "{} OVER ({} {})".format(self.init_transf, by, order_by), self.category(),
+            f"{self.init_transf} OVER ({by} {order_by})", self.category(),
         )
 
     # ---#
@@ -1396,31 +1379,31 @@ class str_sql:
         op = "IS" if (x == None) and not (isinstance(x, str_sql)) else "="
         val = format_magic(x)
         if val != "NULL":
-            val = "({})".format(val)
-        return str_sql("({}) {} {}".format(self.init_transf, op, val), self.category())
+            val = f"({val})"
+        return str_sql(f"({self.init_transf}) {op} {val}", self.category())
 
     # ---#
     def __ne__(self, x):
         op = "IS NOT" if (x == None) and not (isinstance(x, str_sql)) else "!="
         val = format_magic(x)
         if val != "NULL":
-            val = "({})".format(val)
-        return str_sql("({}) {} {}".format(self.init_transf, op, val), self.category())
+            val = f"({val})"
+        return str_sql(f"({self.init_transf}) {op} {val}", self.category())
 
     # ---#
     def __ge__(self, x):
         val = format_magic(x)
-        return str_sql("({}) >= ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) >= ({val})", self.category())
 
     # ---#
     def __gt__(self, x):
         val = format_magic(x)
-        return str_sql("({}) > ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) > ({val})", self.category())
 
     # ---#
     def __le__(self, x):
         val = format_magic(x)
-        return str_sql("({}) <= ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) <= ({val})", self.category())
 
     # ---#
     def __lt__(self, x):

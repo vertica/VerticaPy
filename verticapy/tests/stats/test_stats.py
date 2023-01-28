@@ -610,8 +610,8 @@ class TestStats:
         assert str(st.zeroifnull(amazon_vd["date"])) == 'ZEROIFNULL("date")'
 
     def test_constants(self):
-        assert str(st.pi) == "PI()"
-        assert str(st.e) == "EXP(1)"
-        assert str(st.tau) == "2 * PI()"
-        assert str(st.inf) == "'inf'::float"
-        assert str(st.nan) == "'nan'::float"
+        assert str(st.PI) == "PI()"
+        assert str(st.E) == "EXP(1)"
+        assert str(st.TAU) == "2 * PI()"
+        assert str(st.INF) == "'inf'::float"
+        assert str(st.NAN) == "'nan'::float"

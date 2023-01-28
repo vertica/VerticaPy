@@ -59,13 +59,13 @@ from verticapy.toolbox import *
 from verticapy.stats.tools import *
 
 #
-# Variables
+# Global Variables
 # ---#
-pi = str_sql("PI()")
-e = str_sql("EXP(1)")
-tau = str_sql("2 * PI()")
-inf = str_sql("'inf'::float")
-nan = str_sql("'nan'::float")
+PI = str_sql("PI()")
+E = str_sql("EXP(1)")
+TAU = str_sql("2 * PI()")
+INF = str_sql("'inf'::float")
+NAN = str_sql("'nan'::float")
 
 
 # Soundex

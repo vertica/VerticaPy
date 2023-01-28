@@ -52,17 +52,12 @@
 import warnings
 
 # VerticaPy Modules
-import verticapy, vertica_python
-from verticapy.decorators import (
-    save_verticapy_logs,
-    check_dtypes,
-    check_minimum_version,
-)
-from verticapy.toolbox import *
-from verticapy.utilities import *
 import verticapy.stats as st
-from verticapy.datasets import gen_meshgrid
-from verticapy import vDataFrame
+import verticapy.datasets as vp_datasets
+from verticapy.decorators import save_verticapy_logs, check_dtypes
+from verticapy.vdataframe import vDataFrame
+from verticapy.toolbox import executeSQL
+from verticapy.utilities import tablesample, to_tablesample, vDataFrameSQL
 
 # ---#
 @check_dtypes
@@ -115,15 +110,16 @@ tablesample
     utilities.tablesample.
     """
     gid, g = vdf.format_colnames(gid, g)
-    query = f"""SELECT 
-                    STV_Create_Index({gid}, {g} 
-                                     USING PARAMETERS 
-                                        index='{index}', 
-                                        overwrite={overwrite} , 
-                                        max_mem_mb={max_mem_mb}, 
-                                        skip_nonindexable_polygons={skip_nonindexable_polygons}) 
-                                        OVER() 
-                FROM {vdf.__genSQL__()}"""
+    query = f"""
+        SELECT 
+            STV_Create_Index({gid}, {g} 
+            USING PARAMETERS 
+                index='{index}', 
+                overwrite={overwrite} , 
+                max_mem_mb={max_mem_mb}, 
+                skip_nonindexable_polygons={skip_nonindexable_polygons}) 
+            OVER() 
+        FROM {vdf.__genSQL__()}"""
     return to_tablesample(query)
 
 
@@ -170,15 +166,15 @@ vDataFrame
 
     if reverse:
 
-        result[x] = result[x] / earth_radius * 180 / st.pi + x0
+        result[x] = result[x] / earth_radius * 180 / st.PI + x0
         result[y] = (
-            (st.atan(st.exp(result[y] / earth_radius)) - st.pi / 4) / st.pi * 360
+            (st.atan(st.exp(result[y] / earth_radius)) - st.PI / 4) / st.PI * 360
         )
 
     else:
 
-        result[x] = earth_radius * ((result[x] - x0) * st.pi / 180)
-        result[y] = earth_radius * st.ln(st.tan(result[y] * st.pi / 360 + st.pi / 4))
+        result[x] = earth_radius * ((result[x] - x0) * st.PI / 180)
+        result[y] = earth_radius * st.ln(st.tan(result[y] * st.PI / 360 + st.PI / 4))
 
     return result
 
@@ -211,10 +207,13 @@ tablesample
     if not (name):
         query = f"SELECT STV_Describe_Index () OVER ()"
     else:
-        query = (
-            "SELECT STV_Describe_Index (USING PARAMETERS"
-            f" index='{name}', list_polygons={list_polygons}) OVER ()"
-        )
+        query = f"""
+            SELECT 
+                STV_Describe_Index (
+                USING PARAMETERS 
+                    index='{name}', 
+                    list_polygons={list_polygons}) 
+            OVER()"""
 
     if list_polygons:
         result = vDataFrameSQL(f"({query}) x")
@@ -262,19 +261,23 @@ vDataFrame
 
     if g:
 
-        query = (
-            f"(SELECT STV_Intersect({gid}, {g} USING PARAMETERS"
-            f" index='{index}') OVER (PARTITION BEST) AS "
-            f"(point_id, polygon_gid) FROM {table}) x"
-        )
+        query = f"""
+            (SELECT 
+                STV_Intersect({gid}, {g} 
+                USING PARAMETERS
+                    index='{index}') 
+                OVER (PARTITION BEST) AS (point_id, polygon_gid) 
+            FROM {table}) x"""
 
     elif x and y:
 
-        query = (
-            f"(SELECT STV_Intersect({gid}, {x}, {y} USING PARAMETERS"
-            f" index='{index}') OVER (PARTITION BEST) AS "
-            f"(point_id, polygon_gid) FROM {table}) x"
-        )
+        query = f"""
+            (SELECT 
+                STV_Intersect({gid}, {x}, {y} 
+                USING PARAMETERS 
+                    index='{index}') 
+                OVER (PARTITION BEST) AS (point_id, polygon_gid) 
+            FROM {table}) x"""
 
     else:
 
@@ -307,10 +310,14 @@ bool
     True if the index was renamed, False otherwise.
     """
 
-    query = (
-        f"SELECT /*+LABEL(rename_index)*/ STV_Rename_Index (USING PARAMETERS source = '{source}'"
-        f", dest = '{dest}', overwrite = {overwrite}) OVER ();"
-    )
+    query = f"""
+        SELECT /*+LABEL(rename_index)*/ 
+            STV_Rename_Index(
+            USING PARAMETERS 
+                source = '{source}', 
+                dest = '{dest}', 
+                overwrite = {overwrite}) 
+            OVER ();"""
 
     try:
 
@@ -349,35 +356,37 @@ Returns
 vDataFrame
     output vDataFrame that includes the new polygons.
     """
-    sql = """SELECT /*+LABEL(split_polygon_n)*/
+    sql = f"""SELECT /*+LABEL(split_polygon_n)*/
                 MIN(ST_X(point)), 
                 MAX(ST_X(point)), 
                 MIN(ST_Y(point)), 
                 MAX(ST_Y(point)) 
              FROM (SELECT 
                         STV_PolygonPoint(geom) OVER() 
-                   FROM (SELECT ST_GeomFromText('{0}') 
-                                AS geom) x) y""".format(
-        p
-    )
+                   FROM (SELECT ST_GeomFromText('{p}') 
+                                AS geom) x) y"""
     min_x, max_x, min_y, max_y = executeSQL(
         sql, title="Computing min & max: x & y.", method="fetchrow"
     )
 
     delta_x, delta_y = (max_x - min_x) / nbins, (max_y - min_y) / nbins
-    vdf = gen_meshgrid(
+    vdf = vp_datasets.gen_meshgrid(
         {
             "x": {"type": float, "range": [min_x, max_x], "nbins": nbins},
             "y": {"type": float, "range": [min_y, max_y], "nbins": nbins},
         }
     )
     vdf["gid"] = "ROW_NUMBER() OVER (ORDER BY x, y)"
-    vdf["geom"] = (
-        "ST_GeomFromText('POLYGON ((' || x || ' ' || y || ', ' "
-        f"|| x + {delta_x} || ' ' || y || ', ' || x + {delta_x} "
-        f"|| ' ' || y + {delta_y} || ', ' || x || ' ' || y +"
-        f" {delta_y} || ', ' || x || ' ' || y || '))')"
-    )
+    vdf[
+        "geom"
+    ] = f"""
+        ST_GeomFromText(
+            'POLYGON ((' || x || ' ' || y 
+                || ', ' || x + {delta_x} || ' ' 
+                || y || ', ' || x + {delta_x} 
+                || ' ' || y + {delta_y} || ', ' 
+                || x || ' ' || y + {delta_y} 
+                || ', ' || x || ' ' || y || '))')"""
     vdf["gid"].apply("ROW_NUMBER() OVER (ORDER BY {})")
     vdf.filter(f"ST_Intersects(geom, ST_GeomFromText('{p}'))", print_info=False)
 
