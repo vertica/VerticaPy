@@ -55,7 +55,6 @@ from configparser import ConfigParser
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.decorators import check_dtypes
-from verticapy.toolbox import is_special_symbol, get_special_symbols
 from verticapy.errors import ConnectionError, ParameterError
 
 # Vertica Modules
@@ -65,6 +64,18 @@ import vertica_python
 VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
 SESSION_LABEL = f"verticapy-{vp.__version__}-{vp.OPTIONS['identifier']}"
 CONNECTION = vp.OPTIONS["connection"]
+SPECIAL_SYMBOLS = [
+    "$",
+    "€",
+    "£",
+    "%",
+    "@",
+    "&",
+    "§",
+    "%",
+    "?",
+    "!",
+]
 
 #
 # ---#
@@ -439,11 +450,12 @@ dict
                     conn_info[option_name] = os.getenv(option_val)
                 else:
                     raise ParameterError(
-                        f"The '{option_name}' environment variable '{option_val}' does not exist "
-                        "and the 'env' option is set to True.\n"
-                        "Impossible to set up the final DSN.\nTips: You can manually set it "
-                        "up by importing os and running the following command:\n"
-                        f"os.environ['{option_name}'] = '******'"
+                        f"The '{option_name}' environment variable "
+                        f"'{option_val}' does not exist and the 'env' "
+                        "option is set to True.\nImpossible to set up "
+                        "the final DSN.\nTips: You can manually set "
+                        "it up by importing os and running the following "
+                        f"command:\nos.environ['{option_name}'] = '******'"
                     )
 
             elif option_name in ("servername", "server"):
@@ -543,9 +555,7 @@ symbol: str, optional
     with the input cid by writing $$$QUERY$$$, where QUERY represents 
     a custom query.
     """
-    assert is_special_symbol(symbol), ParameterError(
-        f"Parameter 'symbol' must be a special character. One of the following: {', '.join(get_special_symbols())}"
-    )
+    raise_error_if_not_in("symbol", symbol, SPECIAL_SYMBOLS)
     if isinstance(cid, str) and isinstance(rowset, int):
         vp.OPTIONS["external_connection"][symbol] = {
             "cid": cid,

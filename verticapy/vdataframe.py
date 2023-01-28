@@ -64,12 +64,12 @@ import numpy as np
 
 # VerticaPy Modules
 import verticapy
+import verticapy.connect as vp_conn
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
     check_minimum_version,
 )
-from verticapy.connect import current_cursor
 from verticapy.vcolumn import vColumn
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -221,9 +221,7 @@ vColumns : vColumn
             columns = [columns]
 
         if external:
-            assert is_special_symbol(symbol), ParameterError(
-                "Parameter 'symbol' must be a special char. Example: $, €, ..."
-            )
+            raise_error_if_not_in("symbol", symbol, vp_conn.SPECIAL_SYMBOLS)
 
             if input_relation:
                 assert isinstance(input_relation, str), ParameterError(
@@ -2589,7 +2587,7 @@ vColumns : vColumn
                             values[columns[i]] = pre_comp_val
                         else:
                             values[columns[i]] = [
-                                elem for elem in current_cursor().fetchone()
+                                elem for elem in vp_conn.current_cursor().fetchone()
                             ]
                 except:
 
@@ -10356,7 +10354,7 @@ vColumns : vColumn
         data = executeSQL(
             query, title="Getting the vDataFrame values.", method="fetchall"
         )
-        column_names = [column[0] for column in current_cursor().description]
+        column_names = [column[0] for column in vp_conn.current_cursor().description]
         df = pd.DataFrame(data)
         df.columns = column_names
         if len(geometry) > 2 and geometry[0] == geometry[-1] == '"':
@@ -10565,7 +10563,7 @@ vColumns : vColumn
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
             symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
-        column_names = [column[0] for column in current_cursor().description]
+        column_names = [column[0] for column in vp_conn.current_cursor().description]
         df = pd.DataFrame(data)
         df.columns = column_names
         return df

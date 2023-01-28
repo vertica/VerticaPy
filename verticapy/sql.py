@@ -68,6 +68,7 @@ import pandas as pd
 
 # VerticaPy Modules
 import verticapy
+import verticapy.connect as vp_conn
 from verticapy.errors import QueryError, ParameterError, ParsingError
 from verticapy import (
     executeSQL,
@@ -80,7 +81,6 @@ from verticapy import (
     replace_vars_in_query,
     save_verticapy_logs,
     replace_external_queries_in_query,
-    get_special_symbols,
 )
 
 # ---#
@@ -167,7 +167,7 @@ def sql(line, cell="", local_ns=None):
         queries = replace_external_queries_in_query(queries)
 
         # Looking at very specific external queries symbols
-        for s in get_special_symbols():
+        for s in vp_conn.SPECIAL_SYMBOLS:
 
             external_queries = re.findall(
                 f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries

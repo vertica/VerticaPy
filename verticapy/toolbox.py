@@ -167,20 +167,20 @@ def executeSQL(
         "method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"],
     )
 
-    from verticapy.connect import current_cursor
+    import verticapy.connect as vp_conn
 
     # Cleaning the query
-    if sql_push_ext and is_special_symbol(symbol):
+    if sql_push_ext and (symbol in vp_conn.SPECIAL_SYMBOLS):
         query = erase_label(query)
         query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
 
-    elif sql_push_ext and not (is_special_symbol(symbol)):
+    elif sql_push_ext and (symbol not in vp_conn.SPECIAL_SYMBOLS):
         raise ParameterError(f"Symbol '{symbol}' is not supported.")
 
     query = replace_external_queries_in_query(query)
     query = clean_query(query)
 
-    cursor = current_cursor()
+    cursor = vp_conn.current_cursor()
     if verticapy.OPTIONS["sql_on"] and print_time_sql:
         print_query(query, title)
     start_time = time.time()
@@ -558,21 +558,6 @@ def get_session(add_username: bool = True):
     return result
 
 
-def get_special_symbols():
-    return (
-        "$",
-        "€",
-        "£",
-        "%",
-        "@",
-        "&",
-        "§",
-        "%",
-        "?",
-        "!",
-    )
-
-
 # ---#
 def get_vertica_type(dtype):
     if dtype in (str, "str", "string"):
@@ -789,11 +774,6 @@ def isnotebook():
             return False  # Other type (?)
     except NameError:
         return False  # Probably standard Python interpreter
-
-
-# ---#
-def is_special_symbol(s: str):
-    return s in get_special_symbols()
 
 
 # ---#
