@@ -1408,73 +1408,73 @@ class str_sql:
     # ---#
     def __lt__(self, x):
         val = format_magic(x)
-        return str_sql("({}) < ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) < ({val})", self.category())
 
     # ---#
     def __mul__(self, x):
         if self.category() == "text" and isinstance(x, (int)):
             return str_sql(
-                "REPEAT({}, {})".format(self.init_transf, x), self.category()
+                f"REPEAT({self.init_transf}, {x})", self.category()
             )
         val = format_magic(x)
-        return str_sql("({}) * ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) * ({val})", self.category())
 
     # ---#
     def __rmul__(self, x):
         if self.category() == "text" and isinstance(x, (int)):
             return str_sql(
-                "REPEAT({}, {})".format(self.init_transf, x), self.category()
+                f"REPEAT({self.init_transf}, {x})", self.category()
             )
         val = format_magic(x)
-        return str_sql("({}) * ({})".format(val, self.init_transf), self.category())
+        return str_sql(f"({val}) * ({self.init_transf})", self.category())
 
     # ---#
     def __or__(self, x):
         val = format_magic(x)
-        return str_sql("({}) OR ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) OR ({val})", self.category())
 
     # ---#
     def __ror__(self, x):
         val = format_magic(x)
-        return str_sql("({}) OR ({})".format(val, self.init_transf), self.category())
+        return str_sql(f"({val}) OR ({self.init_transf})", self.category())
 
     # ---#
     def __pos__(self):
-        return str_sql("+({})".format(self.init_transf), self.category())
+        return str_sql(f"+({self.init_transf})", self.category())
 
     # ---#
     def __neg__(self):
-        return str_sql("-({})".format(self.init_transf), self.category())
+        return str_sql(f"-({self.init_transf})", self.category())
 
     # ---#
     def __pow__(self, x):
         val = format_magic(x)
-        return str_sql("POWER({}, {})".format(self.init_transf, val), self.category())
+        return str_sql(f"POWER({self.init_transf}, {val})", self.category())
 
     # ---#
     def __rpow__(self, x):
         val = format_magic(x)
-        return str_sql("POWER({}, {})".format(val, self.init_transf), self.category())
+        return str_sql(f"POWER({val}, {self.init_transf})", self.category())
 
     # ---#
     def __mod__(self, x):
         val = format_magic(x)
-        return str_sql("MOD({}, {})".format(self.init_transf, val), self.category())
+        return str_sql(f"MOD({self.init_transf}, {val})", self.category())
 
     # ---#
     def __rmod__(self, x):
         val = format_magic(x)
-        return str_sql("MOD({}, {})".format(val, self.init_transf), self.category())
+        return str_sql(f"MOD({val}, {self.init_transf})", self.category())
 
     # ---#
     def __sub__(self, x):
         val = format_magic(x)
-        return str_sql("({}) - ({})".format(self.init_transf, val), self.category())
+        return str_sql(f"({self.init_transf}) - ({val})", self.category())
 
     # ---#
     def __rsub__(self, x):
         val = format_magic(x)
-        return str_sql("({}) - ({})".format(val, self.init_transf), self.category())
+        return str_sql(f"({val}) - ({self.init_transf})", self.category())
 
     # ---#
     def __truediv__(self, x):

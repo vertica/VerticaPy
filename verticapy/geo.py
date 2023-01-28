@@ -50,6 +50,7 @@
 #
 # Standard Python Modules
 import warnings
+from typing import Union
 
 # VerticaPy Modules
 import verticapy.stats as st
