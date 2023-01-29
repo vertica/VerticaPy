@@ -5954,11 +5954,12 @@ vColumns : vColumn
     str
         explain plan
         """
-        query = "EXPLAIN SELECT /*+LABEL('vDataframe.explain')*/ * FROM {}".format(
-            self.__genSQL__()
-        )
         result = executeSQL(
-            query=query,
+            query=f"""
+                EXPLAIN 
+                SELECT 
+                    /*+LABEL('vDataframe.explain')*/ * 
+                FROM {self.__genSQL__()}""",
             title="Explaining the Current Relation",
             method="fetchall",
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -6077,7 +6078,8 @@ vColumns : vColumn
                 if vp.OPTIONS["print_info"]:
                     print(f"{count} element{conj}filtered")
                 self.__add_to_history__(
-                    f"[Filter]: {count} element{conj}filtered using the filter '{conditions}'"
+                    f"[Filter]: {count} element{conj}filtered "
+                    f"using the filter '{conditions}'"
                 )
             elif vp.OPTIONS["print_info"]:
                 print("Nothing was filtered.")
@@ -6090,9 +6092,11 @@ vColumns : vColumn
             self._VERTICAPY_VARIABLES_["where"] += [(conditions, max_pos)]
             try:
                 new_count = executeSQL(
-                    "SELECT /*+LABEL('vDataframe.filter')*/ COUNT(*) FROM {}".format(
-                        self.__genSQL__()
-                    ),
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('vDataframe.filter')*/ 
+                            COUNT(*) 
+                        FROM {self.__genSQL__()}""",
                     title="Computing the new number of elements.",
                     method="fetchfirstelem",
                     sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -6102,7 +6106,10 @@ vColumns : vColumn
             except:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
                 if vp.OPTIONS["print_info"]:
-                    warning_message = f"The expression '{conditions}' is incorrect.\nNothing was filtered."
+                    warning_message = (
+                        f"The expression '{conditions}' is incorrect.\n"
+                        "Nothing was filtered."
+                    )
                     warnings.warn(warning_message, Warning)
                 return self
             if count > 0:
@@ -6150,11 +6157,12 @@ vColumns : vColumn
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
         ts = self.format_colnames(ts)
-        query = "SELECT /*+LABEL('vDataframe.first')*/ (MIN({}) + '{}'::interval)::varchar FROM {}".format(
-            ts, offset, self.__genSQL__()
-        )
         first_date = executeSQL(
-            query,
+            query=f"""
+                SELECT 
+                    /*+LABEL('vDataframe.first')*/ 
+                    (MIN({ts}) + '{offset}'::interval)::varchar 
+                FROM {self.__genSQL__()}""",
             title="Getting the vDataFrame first values.",
             method="fetchfirstelem",
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -6312,15 +6320,22 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
+        columns = self.format_colnames(columns)
+        if not (columns):
+            columns = self.get_columns()
         cols_hand = True if (columns) else False
-        columns = self.get_columns() if not (columns) else self.format_colnames(columns)
         for column in columns:
             if self[column].nunique(True) < max_cardinality:
                 self[column].get_dummies(
                     "", prefix_sep, drop_first, use_numbers_as_suffix
                 )
             elif cols_hand and vp.OPTIONS["print_info"]:
-                warning_message = f"The vColumn '{column}' was ignored because of its high cardinality.\nIncrease the parameter 'max_cardinality' to solve this issue or use directly the vColumn get_dummies method."
+                warning_message = (
+                    f"The vColumn '{column}' was ignored because of "
+                    "its high cardinality.\nIncrease the parameter "
+                    "'max_cardinality' to solve this issue or use "
+                    "directly the vColumn get_dummies method."
+                )
                 warnings.warn(warning_message, Warning)
         return self
 
@@ -6381,7 +6396,8 @@ vColumns : vColumn
         assert not (isinstance(rollup, list)) or len(rollup) == len(
             columns
         ), ParameterError(
-            "If parameter 'rollup' is of type list, it should have the same length as the 'columns' parameter."
+            "If parameter 'rollup' is of type list, it should have "
+            "the same length as the 'columns' parameter."
         )
         columns_to_select = []
         if rollup == True:
@@ -6396,7 +6412,8 @@ vColumns : vColumn
                     rollup_expr += "ROLLUP("
                 elif not (isinstance(rollup[idx], bool)):
                     raise ParameterError(
-                        "When parameter 'rollup' is not a boolean, it has to be a list of booleans."
+                        "When parameter 'rollup' is not a boolean, it "
+                        "has to be a list of booleans."
                     )
                 for item in elem:
                     colname = self.format_colnames(item)
@@ -6425,13 +6442,14 @@ vColumns : vColumn
                 rollup_expr += ", "
             else:
                 raise ParameterError(
-                    "Parameter 'columns' must be a string; list of strings or tuples (only when rollup is set to True)."
+                    "Parameter 'columns' must be a string; list of strings "
+                    "or tuples (only when rollup is set to True)."
                 )
         rollup_expr = rollup_expr[:-2]
         if rollup == True:
             rollup_expr += ")"
         if having:
-            having = " HAVING {}".format(having)
+            having = f" HAVING {having}"
         relation = "(SELECT {} FROM {} GROUP BY {}{}) VERTICAPY_SUBTABLE".format(
             ", ".join(
                 [str(elem) for elem in columns_to_select] + [str(elem) for elem in expr]
@@ -6606,9 +6624,10 @@ vColumns : vColumn
     Highchart
         Chart Object
         """
+        kind = str(kind).lower()
         raise_error_if_not_in(
             "kind",
-            str(kind).lower(),
+            kind,
             [
                 "area",
                 "area_range",
@@ -6639,7 +6658,6 @@ vColumns : vColumn
                 "spearmand",
             ],
         )
-        kind = str(kind).lower()
         params = [
             self,
             x,
@@ -6957,15 +6975,17 @@ vColumns : vColumn
                     bin_spatial_to_str(self[column].category(), column), column
                 )
             ]
-        title = f"Reads the final relation using a limit of {limit} and an offset of {offset}."
+        title = (
+            "Reads the final relation using a limit "
+            f"of {limit} and an offset of {offset}."
+        )
         result = util.to_tablesample(
-            "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
-                ", ".join(all_columns),
-                self.__genSQL__(),
-                self.__get_last_order_by__(),
-                limit,
-                offset,
-            ),
+            query=f"""
+                SELECT 
+                    {', '.join(all_columns)} 
+                FROM {self.__genSQL__()}
+                {self.__get_last_order_by__()} 
+                LIMIT {limit} OFFSET {offset}""",
             title=title,
             max_columns=self._VERTICAPY_VARIABLES_["max_columns"],
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -7169,7 +7189,9 @@ vColumns : vColumn
         # List with the operators
         if str(how).lower() == "natural" and (on or on_interpolate):
             raise ParameterError(
-                "Natural Joins cannot be computed if any of the parameters 'on' or 'on_interpolate' are defined."
+                "Natural Joins cannot be computed if any of "
+                "the parameters 'on' or 'on_interpolate' are "
+                "defined."
             )
         on_list = []
         if isinstance(on, dict):
@@ -7306,11 +7328,12 @@ vColumns : vColumn
     vDataFrame.filter       : Filters the data using the input expression.
         """
         ts = self.format_colnames(ts)
-        query = "SELECT /*+LABEL('vDataframe.last')*/ (MAX({}) - '{}'::interval)::varchar FROM {}".format(
-            ts, offset, self.__genSQL__()
-        )
         last_date = executeSQL(
-            query,
+            query=f"""
+                SELECT 
+                    /*+LABEL('vDataframe.last')*/ 
+                    (MAX({ts}) - '{offset}'::interval)::varchar 
+                FROM {self.__genSQL__()}""",
             title="Getting the vDataFrame last values.",
             method="fetchfirstelem",
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -7495,13 +7518,10 @@ vColumns : vColumn
             skip_word = [skip_word]
         columns = self.get_columns()
         group_dict = group_similar_names(columns, skip_word=skip_word)
-        sql = (
-            "(SELECT "
-            + gen_coalesce(group_dict)
-            + " FROM "
-            + self.__genSQL__()
-            + ") VERTICAPY_SUBTABLE"
-        )
+        sql = f"""
+            (SELECT 
+                {gen_coalesce(group_dict)} 
+            FROM {self.__genSQL__()}) VERTICAPY_SUBTABLE"""
         return self.__vDataFrameSQL__(
             sql,
             "merge_similar_names",
@@ -7596,16 +7616,14 @@ vColumns : vColumn
                 conv = "::varchar"
             elif self[column].category() == "int":
                 conv = "::int"
+            column_str = column.replace("'", "''")[1:-1]
             query += [
-                "(SELECT {}, '{}' AS {}, {}{} AS {} FROM {})".format(
-                    ", ".join(index),
-                    column.replace("'", "''")[1:-1],
-                    col_name,
-                    column,
-                    conv,
-                    val_name,
-                    self.__genSQL__(),
-                )
+                f"""
+                (SELECT 
+                    {', '.join(index)}, 
+                    '{column_str}' AS {col_name}, 
+                    {column}{conv} AS {val_name} 
+                FROM {self.__genSQL__()})"""
             ]
         query = " UNION ALL ".join(query)
         query = f"({query}) VERTICAPY_SUBTABLE"
@@ -7658,7 +7676,10 @@ vColumns : vColumn
             elif (no_cols) and (self[column].isbool()):
                 pass
             elif vp.OPTIONS["print_info"]:
-                warning_message = f"The vColumn {column} was skipped.\nNormalize only accept numerical data types."
+                warning_message = (
+                    f"The vColumn {column} was skipped.\n"
+                    "Normalize only accept numerical data types."
+                )
                 warnings.warn(warning_message, Warning)
         return self
 
@@ -7769,24 +7790,22 @@ vColumns : vColumn
                 func=["mad", "approx_median"], columns=columns
             ).values
         conditions = []
-        for idx, elem in enumerate(result["index"]):
+        for idx, col in enumerate(result["index"]):
             if not (robust):
-                conditions += [
-                    "ABS({} - {}) / NULLIFZERO({}) > {}".format(
-                        elem, result["avg"][idx], result["std"][idx], threshold
-                    )
+                conditions += [f"""
+                    ABS({col} - {result['avg'][idx]}) 
+                    / NULLIFZERO({result['std'][idx]}) 
+                    > {threshold}"""
                 ]
             else:
                 conditions += [
-                    "ABS({} - {}) / NULLIFZERO({} * 1.4826) > {}".format(
-                        elem,
-                        result["approx_median"][idx],
-                        result["mad"][idx],
-                        threshold,
-                    )
+                    f"""
+                    ABS({col} - {result['approx_median'][idx]}) 
+                    / NULLIFZERO({result['mad'][idx]} * 1.4826) 
+                    > {threshold}"""
                 ]
         self.eval(
-            name, "(CASE WHEN {} THEN 1 ELSE 0 END)".format(" OR ".join(conditions))
+            name, f"(CASE WHEN {' OR '.join(conditions)} THEN 1 ELSE 0 END)"
         )
         return self
 
