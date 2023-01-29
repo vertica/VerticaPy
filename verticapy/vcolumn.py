@@ -49,13 +49,16 @@
 # Modules
 #
 # Standard Python Modules
-import math, re, decimal, warnings, datetime
+import math, re, decimal, warnings, datetime, sys
 from collections.abc import Iterable
 from typing import Union
 
 # VerticaPy Modules
-import verticapy
+import verticapy as vp
+import verticapy.stats as st
 import verticapy.plot as plt
+import verticapy.learn.ensemble as vpy_ensemble
+import verticapy.learn.neighbors as vpy_neighbors
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
@@ -267,11 +270,11 @@ Attributes
 
     # ---#
     def __repr__(self):
-        return self.head(limit=verticapy.OPTIONS["max_rows"]).__repr__()
+        return self.head(limit=vp.OPTIONS["max_rows"]).__repr__()
 
     # ---#
     def _repr_html_(self):
-        return self.head(limit=verticapy.OPTIONS["max_rows"])._repr_html_()
+        return self.head(limit=vp.OPTIONS["max_rows"])._repr_html_()
 
     # ---#
     def __setattr__(self, attr, val):
@@ -1153,8 +1156,6 @@ Attributes
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
-        import verticapy.stats as st
-
         return self.apply(func=st.decode(str_sql("{}"), *argv))
 
     # ---#
@@ -1206,13 +1207,13 @@ Attributes
 	--------
 	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
+        from matplotlib.lines import Line2D
+
         raise_error_if_not_in(
             "kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]
         )
         if by:
             by = self.parent.format_colnames(by)
-            from matplotlib.lines import Line2D
-
             colors = plt.gen_colors()
             if not xlim:
                 xmin = self.min()
@@ -1252,9 +1253,7 @@ Attributes
             ax.set_xlabel(self.alias)
             return ax
         kernel = kernel.lower()
-        from verticapy.learn.neighbors import KernelDensity
-
-        schema = verticapy.OPTIONS["temp_schema"]
+        schema = vp.OPTIONS["temp_schema"]
         if not (schema):
             schema = "public"
         name = gen_tmp_name(schema=schema, name="kde")
@@ -1262,7 +1261,7 @@ Attributes
             xlim_tmp = [xlim]
         else:
             xlim_tmp = []
-        model = KernelDensity(
+        model = vpy_neighbors.KernelDensity(
             name,
             bandwidth=bandwidth,
             kernel=kernel,
@@ -1520,7 +1519,7 @@ Attributes
             "method", method, ["auto", "smart", "same_width", "same_freq", "topk"]
         )
         if self.isnum() and method == "smart":
-            schema = verticapy.OPTIONS["temp_schema"]
+            schema = vp.OPTIONS["temp_schema"]
             if not (schema):
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
@@ -1534,30 +1533,36 @@ Attributes
             response = self.parent.format_colnames(response)
             drop(tmp_view_name, method="view")
             self.parent.to_db(tmp_view_name)
-            from verticapy.learn.ensemble import (
-                RandomForestClassifier,
-                RandomForestRegressor,
-            )
-
             drop(tmp_model_name, method="model")
             if self.parent[response].category() == "float":
-                model = RandomForestRegressor(tmp_model_name)
+                model = vpy_ensemble.RandomForestRegressor(tmp_model_name)
             else:
-                model = RandomForestClassifier(tmp_model_name)
+                model = vpy_ensemble.RandomForestClassifier(tmp_model_name)
             model.set_params({"n_estimators": 20, "max_depth": 8, "nbins": 100})
             model.set_params(RFmodel_params)
             parameters = model.get_params()
             try:
                 model.fit(tmp_view_name, [self.alias], response)
                 query = [
-                    "(SELECT READ_TREE(USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular'))".format(
-                        tmp_model_name, i
-                    )
+                    f"""
+                    (SELECT 
+                        READ_TREE(USING PARAMETERS 
+                            model_name = '{tmp_model_name}', 
+                            tree_id = {i}, 
+                            format = 'tabular'))"""
                     for i in range(parameters["n_estimators"])
                 ]
-                query = "SELECT /*+LABEL('vColumn.discretize')*/ split_value FROM (SELECT split_value, MAX(weighted_information_gain) FROM ({}) VERTICAPY_SUBTABLE WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY split_value::float".format(
-                    " UNION ALL ".join(query), nbins - 1
-                )
+                query = f"""
+                    SELECT 
+                        /*+LABEL('vColumn.discretize')*/ split_value 
+                    FROM 
+                        (SELECT 
+                            split_value, 
+                            MAX(weighted_information_gain) 
+                        FROM ({' UNION ALL '.join(query)}) VERTICAPY_SUBTABLE 
+                        WHERE split_value IS NOT NULL 
+                        GROUP BY 1 ORDER BY 2 DESC LIMIT {nbins - 1}) VERTICAPY_SUBTABLE 
+                    ORDER BY split_value::float"""
                 result = executeSQL(
                     query=query,
                     title="Computing the optimized histogram nbins using Random Forest.",
@@ -1567,11 +1572,10 @@ Attributes
                 )
                 result = [elem[0] for elem in result]
             except:
+                raise
+            finally:
                 drop(tmp_view_name, method="view")
                 drop(tmp_model_name, method="model")
-                raise
-            drop(tmp_view_name, method="view")
-            drop(tmp_model_name, method="model")
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
             assert k >= 2, ParameterError(
@@ -2155,13 +2159,13 @@ Attributes
                 pass
             total = int(total)
             conj = "s were " if total > 1 else " was "
-            if verticapy.OPTIONS["print_info"]:
+            if vp.OPTIONS["print_info"]:
                 print(f"{total} element{conj}filled.")
             self.parent.__add_to_history__(
                 f"[Fillna]: {total} {self.alias} missing value{conj} filled."
             )
         else:
-            if verticapy.OPTIONS["print_info"]:
+            if vp.OPTIONS["print_info"]:
                 print("Nothing was filled.")
             self.transformations = [t for t in copy_trans]
             for s in sauv:
@@ -2829,7 +2833,7 @@ Attributes
             f"[Mean Encode]: The vColumn {self.alias} was transformed "
             f"using a mean encoding with {response} as Response Column."
         )
-        if verticapy.OPTIONS["print_info"]:
+        if vp.OPTIONS["print_info"]:
             print("The mean encoding was successfully done.")
         return self.parent
 
@@ -2875,8 +2879,6 @@ Attributes
 	--------
 	vDataFrame.memory_usage : Returns the vDataFrame memory usage.
 		"""
-        import sys
-
         total = (
             sys.getsizeof(self)
             + sys.getsizeof(self.alias)
@@ -3903,10 +3905,10 @@ Attributes
     --------
     vDataFrame.bar : Draws the Bar Chart of the input vColumns based on an aggregation.
         """
+        by, of = self.parent.format_colnames(by, of)
         columns = [self.alias]
         if by:
             columns += [by]
-        by, of = self.parent.format_colnames(by, of)
         return plt.spider(
             self.parent, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
         )

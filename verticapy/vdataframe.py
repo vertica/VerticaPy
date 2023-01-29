@@ -48,11 +48,10 @@
 # Modules
 #
 # Standard Python Modules
-import random, time, shutil, re, decimal, warnings, pickle, datetime, math, os, copy
+import random, time, shutil, re, decimal, warnings, pickle, datetime, math, os, copy, sys
 from collections.abc import Iterable
 from itertools import combinations_with_replacement
 from typing import Union
-import numpy as np
 
 pickle.DEFAULT_PROTOCOL = 4
 
@@ -61,10 +60,35 @@ import multiprocessing
 from tqdm.auto import tqdm
 import pandas as pd
 import numpy as np
+import scipy.stats as scipy_st
+import scipy.special as scipy_special
+from matplotlib.lines import Line2D
+
+# Geopandas - Optional
+try:
+    from geopandas import GeoDataFrame
+    from shapely import wkt
+    GEOPANDAS_ON = True
+except:
+    GEOPANDAS_ON = False
+
+# Jupyter - Optional
+try:
+    from IPython.display import HTML, display
+except:
+    pass
 
 # VerticaPy Modules
 import verticapy as vp
 import verticapy.plot as plt
+import verticapy.highchart as vpy_hchart
+import verticapy.stats as st
+import verticapy.utilities as util
+import verticapy.learn.metrics as mt
+import verticapy.learn.memmodel as mem
+import verticapy.learn.mlplot as ml_plot
+import verticapy.learn.decomposition as vpy_decomposition
+import verticapy.learn.linear_model as vpy_linear
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
@@ -1752,8 +1776,6 @@ vColumns : vColumn
     def idisplay(self):
         """This method displays the interactive table. It is used when 
         you don't want to activate interactive table for all vDataFrames."""
-        from IPython.display import HTML, display
-
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
     #
@@ -1954,12 +1976,10 @@ vColumns : vColumn
             acf = [elem for elem in result.values[column]]
             acf_band = []
             if confidence:
-                from scipy.special import erfinv
-
                 for k in range(1, len(acf) + 1):
                     acf_band += [
                         math.sqrt(2)
-                        * erfinv(alpha)
+                        * scipy_special.erfinv(alpha)
                         / math.sqrt(self[column].count() - k + 1)
                         * math.sqrt((1 + 2 * sum([acf[i] ** 2 for i in range(1, k)])))
                     ]
@@ -4189,9 +4209,9 @@ vColumns : vColumn
                 }
             tree["children"] = children
             if "process" not in kwds or kwds["process"]:
-                from verticapy.learn.memmodel import memModel
-
-                return memModel("CHAID", attributes={"tree": tree, "classes": classes})
+                return mem.memModel(
+                    "CHAID", attributes={"tree": tree, "classes": classes}
+                )
             return tree, idx
         else:
             tree["children"] = {}
@@ -4224,9 +4244,9 @@ vColumns : vColumn
                     node_id=idx + 1,
                 )
             if "process" not in kwds or kwds["process"]:
-                from verticapy.learn.memmodel import memModel
-
-                return memModel("CHAID", attributes={"tree": tree, "classes": classes})
+                return mem.memModel(
+                    "CHAID", attributes={"tree": tree, "classes": classes}
+                )
             return tree, idx
 
     # ---#
@@ -4323,8 +4343,6 @@ vColumns : vColumn
     vDataFrame[].decode : Encodes the vColumn using a User Defined Encoding.
     vDataFrame.eval : Evaluates a customized expression.
         """
-        import verticapy.stats as st
-
         return self.eval(name=name, expr=st.case_when(*argv))
 
     # ---#
@@ -4503,10 +4521,6 @@ vColumns : vColumn
             ],
         )
         method = str(method).lower()
-
-        from scipy.stats import t, norm, chi2
-        from numpy import log
-
         column1, column2 = self.format_colnames(column1, column2)
         if method[0:7] == "kendall":
             if method == "kendall":
@@ -4518,9 +4532,11 @@ vColumns : vColumn
             kendall_type = None
         if (method == "kendall" and kendall_type == "b") or (method != "kendall"):
             val = self.corr(columns=[column1, column2], method=method)
-        sql = "SELECT /*+LABEL('vDataframe.corr_pvalue')*/ COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-            self.__genSQL__(), column1, column2
-        )
+        sql = f"""
+            SELECT 
+                /*+LABEL('vDataframe.corr_pvalue')*/ COUNT(*) 
+            FROM {self.__genSQL__()} 
+            WHERE {column1} IS NOT NULL AND {column2} IS NOT NULL;"""
         n = executeSQL(
             sql,
             title="Computing the number of elements.",
@@ -4530,10 +4546,10 @@ vColumns : vColumn
         )
         if method in ("pearson", "biserial"):
             x = val * math.sqrt((n - 2) / (1 - val * val))
-            pvalue = 2 * t.sf(abs(x), n - 2)
+            pvalue = 2 * scipy_st.t.sf(abs(x), n - 2)
         elif method in ("spearman", "spearmand"):
-            z = math.sqrt((n - 3) / 1.06) * 0.5 * log((1 + val) / (1 - val))
-            pvalue = 2 * norm.sf(abs(z))
+            z = math.sqrt((n - 3) / 1.06) * 0.5 * np.log((1 + val) / (1 - val))
+            pvalue = 2 * scipy_st.norm.sf(abs(z))
         elif method == "kendall":
             cast_i = "::int" if (self[column1].isbool()) else ""
             cast_j = "::int" if (self[column2].isbool()) else ""
@@ -4615,7 +4631,7 @@ vColumns : vColumn
                     )
                     m = min(k, r)
                     val = 2 * (nc - nd) / (n * n * (m - 1) / m)
-            pvalue = 2 * norm.sf(abs(Z))
+            pvalue = 2 * scipy_st.norm.sf(abs(Z))
         elif method == "cramer":
             sql = """SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                         APPROXIMATE_COUNT_DISTINCT({0}) AS k, 
@@ -4633,7 +4649,7 @@ vColumns : vColumn
                 symbol=self._VERTICAPY_VARIABLES_["symbol"],
             )
             x = val * val * n * min(k, r)
-            pvalue = chi2.sf(x, (k - 1) * (r - 1))
+            pvalue = scipy_st.chi2.sf(x, (k - 1) * (r - 1))
         return (val, pvalue)
 
     # ---#
@@ -5070,8 +5086,6 @@ vColumns : vColumn
                     f"vColumn {column} is not numerical to draw KDE"
                 )
         assert columns, EmptyParameter("No Numerical Columns found to draw KDE.")
-        from matplotlib.lines import Line2D
-
         colors = plt.gen_colors()
         min_max = self.agg(func=["min", "max"], columns=columns)
         if not xlim:
@@ -6627,46 +6641,29 @@ vColumns : vColumn
             ],
         )
         kind = str(kind).lower()
-        from verticapy.highchart import hchart_from_vdf
-
+        params = [
+            self,
+            x,
+            y,
+            z,
+            c,
+            aggregate,
+            kind,
+            width,
+            height,
+            options,
+            h,
+            max_cardinality,
+            limit,
+            drilldown,
+            stock,
+            alpha,
+        ]
         try:
-            return hchart_from_vdf(
-                self,
-                x,
-                y,
-                z,
-                c,
-                aggregate,
-                kind,
-                width,
-                height,
-                options,
-                h,
-                max_cardinality,
-                limit,
-                drilldown,
-                stock,
-                alpha,
-            )
+            return vpy_hchart.hchart_from_vdf(*params)
         except:
-            return hchart_from_vdf(
-                self,
-                x,
-                y,
-                z,
-                c,
-                not (aggregate),
-                kind,
-                width,
-                height,
-                options,
-                h,
-                max_cardinality,
-                limit,
-                drilldown,
-                stock,
-                alpha,
-            )
+            params[5] = not (params[5])
+            return vpy_hchart.hchart_from_vdf(*params)
 
     # ---#
     def head(self, limit: int = 5):
@@ -7457,8 +7454,6 @@ vColumns : vColumn
     --------
     vDataFrame.expected_store_usage : Returns the expected store usage.
         """
-        import sys
-
         total = sum(
             [sys.getsizeof(elem) for elem in self._VERTICAPY_VARIABLES_]
         ) + sys.getsizeof(self)
@@ -7957,11 +7952,8 @@ vColumns : vColumn
                 query = f"CREATE VIEW {tmp_view_name} AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"
                 executeSQL(query, print_time_sql=False)
                 vdf = vDataFrame(tmp_view_name)
-
-                from verticapy.learn.linear_model import LinearRegression
-
                 drop(tmp_lr0_name, method="model")
-                model = LinearRegression(name=tmp_lr0_name, solver="Newton")
+                model = vpy_linear.LinearRegression(name=tmp_lr0_name, solver="Newton")
                 model.fit(
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
@@ -7969,7 +7961,7 @@ vColumns : vColumn
                 )
                 model.predict(vdf, name="prediction_0")
                 drop(tmp_lr1_name, method="model")
-                model = LinearRegression(name=tmp_lr1_name, solver="Newton")
+                model = vpy_linear.LinearRegression(name=tmp_lr1_name, solver="Newton")
                 model.fit(
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
@@ -7998,12 +7990,10 @@ vColumns : vColumn
             columns = [elem for elem in p]
             pacf_band = []
             if confidence:
-                from scipy.special import erfinv
-
                 for k in range(1, len(pacf) + 1):
                     pacf_band += [
                         math.sqrt(2)
-                        * erfinv(alpha)
+                        * scipy_special.erfinv(alpha)
                         / math.sqrt(self[column].count() - k + 1)
                         * math.sqrt((1 + 2 * sum([pacf[i] ** 2 for i in range(1, k)])))
                     ]
@@ -8237,21 +8227,19 @@ vColumns : vColumn
                     ]
                     j += 1
                 i += 1
-            from scipy.stats import t, norm, chi2
-
             val = sum(sum(tmp_res)) * (sum(all_chi2) - 1)
             k, r = tmp_res.shape
             dof = (k - 1) * (r - 1)
-            pval = chi2.sf(val, dof)
+            pval = scipy_st.chi2.sf(val, dof)
             chi2_list += [(col, val, pval, dof, vdf[col].distinct(), self[col].isnum())]
         chi2_list = sorted(chi2_list, key=lambda tup: tup[1], reverse=True)
         result = {
-            "index": [elem[0] for elem in chi2_list],
-            "chi2": [elem[1] for elem in chi2_list],
-            "p_value": [elem[2] for elem in chi2_list],
-            "dof": [elem[3] for elem in chi2_list],
-            "categories": [elem[4] for elem in chi2_list],
-            "is_numerical": [elem[5] for elem in chi2_list],
+            "index": [chi2[0] for chi2 in chi2_list],
+            "chi2": [chi2[1] for chi2 in chi2_list],
+            "p_value": [chi2[2] for chi2 in chi2_list],
+            "dof": [chi2[3] for chi2 in chi2_list],
+            "categories": [chi2[4] for chi2 in chi2_list],
+            "is_numerical": [chi2[5] for chi2 in chi2_list],
         }
         return tablesample(result)
 
@@ -9342,9 +9330,7 @@ vColumns : vColumn
             dimensions = (1, 2)
         if isinstance(dimensions, Iterable):
             model_name = gen_tmp_name(schema=vp.OPTIONS["temp_schema"], name="pca_plot")
-            from verticapy.learn.decomposition import PCA
-
-            model = PCA(model_name)
+            model = vpy_decomposition.PCA(model_name)
             model.drop()
             try:
                 model.fit(self, columns)
@@ -9680,8 +9666,6 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        import verticapy.learn.metrics as mt
-
         y_true, y_score = self.format_colnames(y_true, y_score)
         method = str(method).lower()
         raise_error_if_not_in("method", method, list(mt.FUNCTIONS_DICTIONNARY.keys()))
@@ -10288,10 +10272,7 @@ vColumns : vColumn
     geopandas.GeoDataFrame
         The geopandas.GeoDataFrame of the current vDataFrame relation.
         """
-        try:
-            from geopandas import GeoDataFrame
-            from shapely import wkt
-        except:
+        if not(GEOPANDAS_ON):
             raise ImportError(
                 "The geopandas module doesn't seem to be installed in your "
                 "environment.\nTo be able to use this method, you'll have to "
@@ -10837,9 +10818,7 @@ vColumns : vColumn
         List containing the version information.
         [MAJOR, MINOR, PATCH, POST]
         """
-        from verticapy.utilities import vertica_version as vversion
-
-        return vversion()
+        return util.vertica_version()
 
     # ---#
     @check_dtypes
@@ -10892,9 +10871,7 @@ vColumns : vColumn
         for elem in columns:
             coeff_importances[elem] = self[elem].iv_woe(y=y, nbins=nbins)["iv"][-1]
         if show:
-            from verticapy.learn.mlplot import plot_importance
-
-            ax = plot_importance(coeff_importances, print_legend=False, ax=ax)
+            ax = ml_plot.plot_importance(coeff_importances, print_legend=False, ax=ax)
             ax.set_xlabel("IV")
         index = [elem for elem in coeff_importances]
         iv = [coeff_importances[elem] for elem in coeff_importances]
