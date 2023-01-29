@@ -82,10 +82,10 @@ except:
 # VerticaPy Modules
 import verticapy as vp
 import verticapy.plot as plt
-import verticapy.highchart as vpy_hchart
 import verticapy.utilities as util
 import verticapy.learn.memmodel as mem
 import verticapy.learn.mlplot as ml_plot
+from verticapy.highchart import hchart_from_vdf
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
@@ -1931,13 +1931,13 @@ vColumns : vColumn
     vDataFrame.pacf        : Computes the partial autocorrelations of the 
                              input vColumn.
         """
+        method = str(method).lower()
         raise_error_if_not_in("acf_type", acf_type, ["line", "heatmap", "bar"])
         raise_error_if_not_in(
             "method",
-            str(method).lower(),
+            method,
             ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer",],
         )
-        method = str(method).lower()
         if isinstance(by, str):
             by = [by]
         by, column, ts = self.format_colnames(by, column, ts)
@@ -2028,7 +2028,8 @@ vColumns : vColumn
         if isinstance(weight, str):
             weight = self.format_colnames(weight)
             assert self[weight].category() == "int", TypeError(
-                f"The weight vColumn category must be 'integer', found {self[weight].category()}."
+                "The weight vColumn category must be "
+                f"'integer', found {self[weight].category()}."
             )
             L = sorted(self[weight].distinct())
             gcd, max_value, n = L[0], L[-1], len(L)
@@ -2279,9 +2280,10 @@ vColumns : vColumn
                     except:
                         raise FunctionError(
                             f"The aggregation '{fun}' doesn't exist. To"
-                            " compute the frequency of the n-th most occurent element,"
-                            " use 'topk_percent' with k > 0. For example: "
-                            "top2_percent computes the frequency of the second most occurent "
+                            " compute the frequency of the n-th most "
+                            "occurent element, use 'topk_percent' with "
+                            "k > 0. For example: top2_percent computes "
+                            "the frequency of the second most occurent "
                             "element."
                         )
                     try:
@@ -3493,7 +3495,8 @@ vColumns : vColumn
                 "ffill",
                 "linear",
             ), ParameterError(
-                "Each element of the 'method' dictionary must be in bfill|backfill|pad|ffill|linear"
+                "Each element of the 'method' dictionary must be "
+                "in bfill|backfill|pad|ffill|linear"
             )
             if method[column] in ("bfill", "backfill"):
                 func, interp = "TS_LAST_VALUE", "const"
@@ -5299,7 +5302,7 @@ vColumns : vColumn
                     values = util.tablesample(vals).transpose().values
 
             except:
-                raise
+
                 values = self.aggregate(
                     [
                         "count",
@@ -6029,8 +6032,6 @@ vColumns : vColumn
                 for column in method:
                     self[self.format_colnames(column)].fillna(method=method[column],)
             return self
-        except:
-            raise
         finally:
             vp.OPTIONS["print_info"] = print_info
 
@@ -6660,10 +6661,10 @@ vColumns : vColumn
             alpha,
         ]
         try:
-            return vpy_hchart.hchart_from_vdf(*params)
+            return hchart_from_vdf(*params)
         except:
             params[5] = not (params[5])
-            return vpy_hchart.hchart_from_vdf(*params)
+            return hchart_from_vdf(*params)
 
     # ---#
     def head(self, limit: int = 5):
@@ -7977,8 +7978,6 @@ vColumns : vColumn
                     expr=f"lag_{p}_{gen_name([column])} - prediction_p", name="eps_p",
                 )
                 result = vdf.corr(["eps_0", "eps_p"])
-            except:
-                raise
             finally:
                 util.drop(tmp_view_name, method="view")
                 util.drop(tmp_lr0_name, method="model")
@@ -9221,7 +9220,7 @@ vColumns : vColumn
             vdf.eval(name, random_func)
             q = vdf[name].quantile(x)
             print_info_init = vp.OPTIONS["print_info"]
-            verticapy.OPTIONS["print_info"] = False
+            vp.OPTIONS["print_info"] = False
             vdf.filter(f"{name} <= {q}")
             vp.OPTIONS["print_info"] = print_info_init
             vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
@@ -9239,7 +9238,7 @@ vColumns : vColumn
                 ),
             )
             print_info_init = vp.OPTIONS["print_info"]
-            verticapy.OPTIONS["print_info"] = False
+            vp.OPTIONS["print_info"] = False
             vdf.filter(f"{name} = {name2}".format(name, name2))
             vp.OPTIONS["print_info"] = print_info_init
             vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name, name2]
@@ -9367,8 +9366,6 @@ vColumns : vColumn
                         ),
                     )
                 )
-            except:
-                raise
             finally:
                 model.drop()
             return ax
@@ -10706,7 +10703,11 @@ vColumns : vColumn
         )
         if isinstance(usecols, str):
             usecols = [usecols]
-        query = f"SELECT /*+LABEL('vDataframe.to_shp')*/ STV_SetExportShapefileDirectory(USING PARAMETERS path = '{path}');"
+        query = f"""
+            SELECT 
+                /*+LABEL('vDataframe.to_shp')*/ 
+                STV_SetExportShapefileDirectory(
+                USING PARAMETERS path = '{path}');"""
         executeSQL(query=query, title="Setting SHP Export directory.")
         columns = (
             self.get_columns()
@@ -10714,7 +10715,15 @@ vColumns : vColumn
             else [quote_ident(column) for column in usecols]
         )
         columns = ", ".join(columns)
-        query = f"SELECT /*+LABEL('vDataframe.to_shp')*/ STV_Export2Shapefile({columns} USING PARAMETERS shapefile = '{name}.shp', overwrite = {overwrite}, shape = '{shape}') OVER() FROM {self.__genSQL__()};"
+        query = f"""
+            SELECT 
+                /*+LABEL('vDataframe.to_shp')*/ 
+                STV_Export2Shapefile({columns} 
+                USING PARAMETERS shapefile = '{name}.shp',
+                                 overwrite = {overwrite}, 
+                                 shape = '{shape}') 
+                OVER() 
+            FROM {self.__genSQL__()};"""
         executeSQL(query=query, title="Exporting the SHP.")
         return self
 

@@ -1274,8 +1274,6 @@ Attributes
                 ax=ax, **style_kwds
             )
             return result
-        except:
-            raise
         finally:
             model.drop()
 
@@ -1571,8 +1569,6 @@ Attributes
                     symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                 )
                 result = [elem[0] for elem in result]
-            except:
-                raise
             finally:
                 drop(tmp_view_name, method="view")
                 drop(tmp_model_name, method="model")

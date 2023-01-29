@@ -330,13 +330,6 @@ def sql(line, cell="", local_ns=None):
                 elif error:
                     raise QueryError(error)
 
-        # Displaying the information
-
-        elapsed_time = round(time.time() - start_time, 3)
-
-        if vp.OPTIONS["print_info"]:
-            display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
-
         # Exporting the result
 
         if isinstance(result, vDataFrame) and "-o" in options:
@@ -346,19 +339,20 @@ def sql(line, cell="", local_ns=None):
             else:
                 result.to_csv(options["-o"])
 
-        # we load the previous configuration before returning the result.
-        set_option("sql_on", sql_on)
-        set_option("time_on", time_on)
+        # Displaying the information
+
+        elapsed_time = round(time.time() - start_time, 3)
+
+        if vp.OPTIONS["print_info"]:
+            display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
 
         return result
 
-    except:
+    finally:
 
-        # If it fails, we load the previous configuration before raising the error.
+        # we load the previous configuration before returning the result.
         set_option("sql_on", sql_on)
         set_option("time_on", time_on)
-
-        raise
 
 
 # ---#

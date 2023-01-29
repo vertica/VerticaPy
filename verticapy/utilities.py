@@ -595,9 +595,8 @@ list of tuples
                     ),
                     print_time_sql=False,
                 )
-        except:
+        finally:
             drop(format_schema_table(schema, table_name), method="table")
-            raise
         drop_final_table = True
     else:
         drop_final_table = False
@@ -1051,14 +1050,10 @@ read_json : Ingests a JSON file into the Vertica database.
                 parse_nrows=parse_nrows,
                 escape="\027",
             )
-        os.remove(path)
-    except:
+    finally:
         os.remove(path)
         if clear:
             del tmp_df
-        raise
-    if clear:
-        del tmp_df
     return vdf
 
 
@@ -1922,9 +1917,8 @@ vDataFrame
             executeSQL(
                 result[1], title="Ingesting the data.",
             )
-        except:
+        finally:
             drop(f'"{schema}"."{table_name}"', method="table")
-            raise
     return vDataFrame(input_relation=table_name, schema=schema)
 
 
@@ -2374,7 +2368,9 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         query = query[:-1]
     if verticapy.OPTIONS["count_on"]:
         count = executeSQL(
-            f"SELECT /*+LABEL('utilities.readSQL')*/ COUNT(*) FROM ({query}) VERTICAPY_SUBTABLE",
+            f"""SELECT 
+                    /*+LABEL('utilities.readSQL')*/ COUNT(*) 
+                FROM ({query}) VERTICAPY_SUBTABLE""",
             method="fetchfirstelem",
             print_time_sql=False,
         )
@@ -2389,12 +2385,9 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
             result = to_tablesample(f"{query} LIMIT {limit}")
         except:
             result = to_tablesample(query)
-    except:
+    finally:
         verticapy.OPTIONS["time_on"] = time_on_init
         verticapy.OPTIONS["sql_on"] = sql_on_init
-        raise
-    verticapy.OPTIONS["time_on"] = time_on_init
-    verticapy.OPTIONS["sql_on"] = sql_on_init
     result.count = count
     if verticapy.OPTIONS["percent_bar"]:
         vdf = vDataFrameSQL(f"({query}) VERTICAPY_SUBTABLE")

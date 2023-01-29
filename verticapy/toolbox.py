@@ -78,30 +78,17 @@ def all_comb(X: list):
 
 
 # ---#
-@check_dtypes
-def arange(start: Union[int, float], stop: Union[int, float], step: Union[int, float]):
-    if step < 0:
-        raise ParameterError("Parameter 'step' must be greater than 0")
-    L_final = []
-    tmp = start
-    while tmp < stop:
-        L_final += [tmp]
-        tmp += step
-    return L_final
-
-
-# ---#
 def bin_spatial_to_str(
     category: str, column: str = "{}",
 ):
-    if category == "vmap":
-        return f"MAPTOSTRING({column})"
-    elif category == "binary":
-        return f"TO_HEX({column})"
-    elif category == "spatial":
-        return f"ST_AsText({column})"
-    else:
-        return column
+    map_dict = {
+        "vmap": f"MAPTOSTRING({column})",
+        "binary": f"TO_HEX({column})",
+        "spatial": f"ST_AsText({column})",
+    }
+    if category in map_dict:
+        return map_dict[column]
+    return column
 
 
 # ---#
@@ -241,12 +228,12 @@ def find_val_in_dict(x: str, d: dict, return_key: bool = False):
 def flat_dict(d: dict) -> str:
     # converts dictionary to string with a specific format
     res = []
-    for elem in d:
-        q = '"' if isinstance(d[elem], str) else ""
-        res += ["{}={}{}{}".format(elem, q, d[elem], q)]
+    for key in d:
+        q = '"' if isinstance(d[key], str) else ""
+        res += [f"{key}={q}{d[key]}{q}"]
     res = ", ".join(res)
     if res:
-        res = ", {}".format(res)
+        res = f", {res}"
     return res
 
 
@@ -287,9 +274,9 @@ def gen_tmp_name(schema: str = "", name: str = ""):
     L[0] = "".join(filter(str.isalnum, L[0]))
     L[1] = "".join(filter(str.isalnum, L[1]))
     random_int = random.randint(0, 10e9)
-    name = '"_verticapy_tmp_{}_{}_{}_{}_"'.format(name.lower(), L[0], L[1], random_int)
+    name = f'"_verticapy_tmp_{name.lower()}_{L[0]}_{L[1]}_{random_int}_"'
     if schema:
-        name = "{}.{}".format(quote_ident(schema), name)
+        name = f"{quote_ident(schema)}.{name}"
     return name
 
 
@@ -298,11 +285,11 @@ def get_category_from_python_type(expr):
     try:
         category = expr.category()
     except:
-        if isinstance(expr, (float)):
+        if isinstance(expr, float):
             category = "float"
-        elif isinstance(expr, (int)):
+        elif isinstance(expr, int):
             category = "int"
-        elif isinstance(expr, (str)):
+        elif isinstance(expr, str):
             category = "text"
         elif isinstance(expr, (datetime.date, datetime.datetime)):
             category = "date"
@@ -1103,10 +1090,16 @@ def replace_external_queries_in_query(query: str):
                 alias = '"' + external_query.strip().replace('"', '""') + '"'
             if nb_external_queries >= 1:
                 temp_table_name = '"' + gen_tmp_name(name=alias).replace('"', "") + '"'
-                create_statement = f"CREATE LOCAL TEMPORARY TABLE {temp_table_name} ON COMMIT PRESERVE ROWS AS {query_dblink_template}"
+                create_statement = f"""
+                    CREATE LOCAL TEMPORARY TABLE {temp_table_name} 
+                    ON COMMIT PRESERVE ROWS 
+                    AS {query_dblink_template}"""
                 executeSQL(
                     create_statement,
-                    title=f"Creating a temporary local table to store the {nb_external_queries} external table.",
+                    title=(
+                        "Creating a temporary local table to "
+                        f"store the {nb_external_queries} external table."
+                    ),
                 )
                 query_dblink_template = f"v_temp_schema.{temp_table_name} AS {alias}"
             else:
@@ -1211,7 +1204,7 @@ def schema_relation(relation):
 def format_schema_table(schema: str, table_name: str):
     if not (schema):
         schema = "public"
-    return quote_ident(schema) + "." + quote_ident(table_name)
+    return f"{quote_ident(schema)}.{quote_ident(table_name)}"
 
 
 # ---#
@@ -1313,9 +1306,7 @@ class str_sql:
             x = [elem for elem in argv]
         assert isinstance(x, Iterable) and not (
             isinstance(x, str)
-        ), "Method '_in' only works on iterable elements other than str. Found {}.".format(
-            x
-        )
+        ), f"Method '_in' only works on iterable elements other than str. Found {x}."
         val = [str(format_magic(elem)) for elem in x]
         val = ", ".join(val)
         return str_sql(f"({self.init_transf}) IN ({val})", self.category())
