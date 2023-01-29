@@ -1661,8 +1661,14 @@ vColumns : vColumn
             if not (columns) or isinstance(columns, (int, float)):
                 return copy.deepcopy(columns)
             if raise_error:
-                for column in list(columns):
-                    raise_error_if_not_in(column, column, self.get_columns(), vdf_check = True)
+                if isinstance(columns, str):
+                    cols_to_check = [columns]
+                else:
+                    cols_to_check = copy.deepcopy(columns)
+                for column in cols_to_check:
+                    raise_error_if_not_in(
+                        column, column, self.get_columns(), vdf_check=True
+                    )
             if isinstance(columns, str):
                 result = columns
                 vdf_columns = self.get_columns()

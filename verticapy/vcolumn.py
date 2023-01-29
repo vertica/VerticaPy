@@ -1697,19 +1697,28 @@ Attributes
 	--------
 	vDataFrame.topk : Returns the vColumn most occurent elements.
 		"""
+        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
         if "agg" not in kwargs:
-            query = "SELECT /*+LABEL('vColumn.distinct')*/ {0} AS {1} FROM {2} WHERE {1} IS NOT NULL GROUP BY {1} ORDER BY {1}".format(
-                bin_spatial_to_str(self.category(), self.alias),
-                self.alias,
-                self.parent.__genSQL__(),
-            )
+            query = f"""
+                SELECT 
+                    /*+LABEL('vColumn.distinct')*/ 
+                    {alias_sql_repr} AS {self.alias} 
+                FROM {self.parent.__genSQL__()} 
+                WHERE {self.alias} IS NOT NULL 
+                GROUP BY {self.alias} 
+                ORDER BY {self.alias}"""
         else:
-            query = "SELECT /*+LABEL('vColumn.distinct')*/ {0} FROM (SELECT {1} AS {0}, {2} AS verticapy_agg FROM {3} WHERE {0} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
-                self.alias,
-                bin_spatial_to_str(self.category(), self.alias),
-                kwargs["agg"],
-                self.parent.__genSQL__(),
-            )
+            query = f"""
+                SELECT 
+                    /*+LABEL('vColumn.distinct')*/ {self.alias} 
+                FROM 
+                    (SELECT 
+                        {alias_sql_repr} AS {self.alias}, 
+                        {kwargs['agg']} AS verticapy_agg 
+                     FROM {self.parent.__genSQL__()} 
+                     WHERE {self.alias} IS NOT NULL 
+                     GROUP BY 1) x 
+                ORDER BY verticapy_agg DESC"""
         query_result = executeSQL(
             query=query,
             title="Computing the distinct categories of {}.".format(self.alias),
@@ -1777,9 +1786,11 @@ Attributes
             ]
             force_columns.remove(self.alias)
             executeSQL(
-                "SELECT /*+LABEL('vColumn.drop')*/ * FROM {} LIMIT 10".format(
-                    self.parent.__genSQL__(force_columns=force_columns)
-                ),
+                query=f"""
+                    SELECT 
+                        /*+LABEL('vColumn.drop')*/ * 
+                    FROM {self.parent.__genSQL__(force_columns=force_columns)} 
+                    LIMIT 10""",
                 print_time_sql=False,
                 sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
                 symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
@@ -2047,7 +2058,10 @@ Attributes
         if (method == "mode") and (val == None):
             val = self.mode(dropna=True)
             if val == None:
-                warning_message = f"The vColumn {self.alias} has no mode (only missing values).\nNothing was filled."
+                warning_message = (
+                    f"The vColumn {self.alias} has no mode "
+                    "(only missing values).\nNothing was filled."
+                )
                 warnings.warn(warning_message, Warning)
                 return self.parent
         if isinstance(val, str):
@@ -2070,9 +2084,14 @@ Attributes
                 try:
                     if fun == "MEDIAN":
                         fun = "APPROXIMATE_MEDIAN"
-                    query = f"SELECT /*+LABEL('vColumn.fillna')*/ {by[0]}, {fun}({self.alias}) FROM {self.parent.__genSQL__()} GROUP BY {by[0]};"
+                    query = f"""
+                        SELECT 
+                            /*+LABEL('vColumn.fillna')*/ {by[0]}, 
+                            {fun}({self.alias})
+                        FROM {self.parent.__genSQL__()} 
+                        GROUP BY {by[0]};"""
                     result = executeSQL(
-                        query,
+                        query=query,
                         title="Computing the different aggregations.",
                         method="fetchall",
                         sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -2093,19 +2112,24 @@ Attributes
                         ),
                     )
                     executeSQL(
-                        "SELECT /*+LABEL('vColumn.fillna')*/ {} FROM {} LIMIT 1".format(
-                            new_column.format(self.alias), self.parent.__genSQL__()
-                        ),
+                        query=f"""
+                            SELECT 
+                                /*+LABEL('vColumn.fillna')*/ 
+                                {new_column.format(self.alias)} 
+                            FROM {self.parent.__genSQL__()} 
+                            LIMIT 1""",
                         print_time_sql=False,
                         sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
                         symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                     )
                 except:
-                    new_column = f"COALESCE({{}}, {fun}({{}}) OVER (PARTITION BY {', '.join(by)}))"
+                    new_column = f"""
+                        COALESCE({{}}, {fun}({{}}) 
+                            OVER (PARTITION BY {', '.join(by)}))"""
             else:
-                new_column = (
-                    f"COALESCE({{}}, {fun}({{}}) OVER (PARTITION BY {', '.join(by)}))"
-                )
+                new_column = f"""
+                    COALESCE({{}}, {fun}({{}}) 
+                        OVER (PARTITION BY {', '.join(by)}))"""
         elif method in ("ffill", "pad", "bfill", "backfill"):
             assert order_by, ParameterError(
                 "If the method is in ffill|pad|bfill|backfill then 'order_by'"
@@ -2114,7 +2138,10 @@ Attributes
             desc = "" if (method in ("ffill", "pad")) else " DESC"
             partition_by = f"PARTITION BY {', '.join(by)}" if (by) else ""
             order_by_ts = ", ".join([quote_ident(column) + desc for column in order_by])
-            new_column = f"COALESCE({{}}, LAST_VALUE({{}} IGNORE NULLS) OVER ({partition_by} ORDER BY {order_by_ts}))"
+            new_column = f"""
+                COALESCE({{}}, LAST_VALUE({{}} IGNORE NULLS) 
+                    OVER ({partition_by} 
+                    ORDER BY {order_by_ts}))"""
         if method in ("mean", "median") or isinstance(val, float):
             category, ctype = "float", "float"
         elif method == "0ifnull":
@@ -2258,17 +2285,19 @@ Attributes
             n = 1 if drop_first else 0
             for k in range(len(distinct_elements) - n):
                 name = (
-                    '"{}{}"'.format(prefix, k)
+                    f'"{prefix}{k}"'
                     if (use_numbers_as_suffix)
                     else '"{}{}"'.format(
                         prefix, str(distinct_elements[k]).replace('"', "_")
                     )
                 )
                 assert not (self.parent.is_colname_in(name)), NameError(
-                    f"A vColumn has already the alias of one of the dummies ({name}).\n"
-                    "It can be the result of using previously the method on the vColumn "
-                    "or simply because of ambiguous columns naming.\nBy changing one of "
-                    "the parameters ('prefix', 'prefix_sep'), you'll be able to solve this "
+                    "A vColumn has already the alias of one of "
+                    f"the dummies ({name}).\nIt can be the result "
+                    "of using previously the method on the vColumn "
+                    "or simply because of ambiguous columns naming."
+                    "\nBy changing one of the parameters ('prefix', "
+                    "'prefix_sep'), you'll be able to solve this "
                     "issue."
                 )
             for k in range(len(distinct_elements) - n):
@@ -3741,7 +3770,9 @@ Attributes
         old_name = quote_ident(self.alias)
         new_name = new_name.replace('"', "")
         assert not (self.parent.is_colname_in(new_name)), NameError(
-            f"A vColumn has already the alias {new_name}.\nBy changing the parameter 'new_name', you'll be able to solve this issue."
+            f"A vColumn has already the alias {new_name}.\n"
+            "By changing the parameter 'new_name', you'll "
+            "be able to solve this issue."
         )
         self.add_copy(new_name)
         parent = self.drop(add_history=False)

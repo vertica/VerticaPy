@@ -120,7 +120,11 @@ class VersionError(Exception):
 
 # ---#
 def raise_error_if_not_in(
-    variable_name: str, variable: str, options: list, threshold: int = 8, vdf_check: bool = False
+    variable_name: str,
+    variable: str,
+    options: list,
+    threshold: int = 8,
+    vdf_check: bool = False,
 ):
     # Raises an error if the input variable does not belong to the input list.
     from verticapy.toolbox import levenshtein, quote_ident
