@@ -120,15 +120,17 @@ class VersionError(Exception):
 
 # ---#
 def raise_error_if_not_in(
-    variable_name: str, variable: str, options: list, threshold: int = 6
+    variable_name: str, variable: str, options: list, threshold: int = 8, vdf_check: bool = False
 ):
     # Raises an error if the input variable does not belong to the input list.
-    from verticapy.toolbox import levenshtein
+    from verticapy.toolbox import levenshtein, quote_ident
 
     if variable not in options:
         min_distance, min_distance_op = 1000, ""
         for op in options:
-            if str(variable).lower() == str(op).lower():
+            if vdf_check and quote_ident(variable).lower() == quote_ident(op).lower():
+                return
+            elif str(variable).lower() == str(op).lower():
                 error_message = (
                     f"Parameter '{variable_name}' is not correctly"
                     f" formatted. The correct option is {op}"
@@ -138,10 +140,15 @@ def raise_error_if_not_in(
                 ldistance = levenshtein(variable, op)
                 if ldistance < min_distance:
                     min_distance, min_distance_op = ldistance, op
-        error_message = (
-            f"Parameter '{variable_name}' must be in "
-            f"[{'|'.join(options)}], found '{variable}'."
-        )
+        if vdf_check:
+            error_message = f"The Virtual Column '{variable_name}' doesn't exist."
+            error_type = MissingColumn
+        else:
+            error_message = (
+                f"Parameter '{variable_name}' must be in "
+                f"[{'|'.join(options)}], found '{variable}'."
+            )
+            error_type = ParameterError
         if min_distance < threshold:
-            error_message += f"\nDid you mean '{min_distance_op}'?"
-        raise ParameterError(error_message)
+            error_message += f"\nDid you mean '{min_distance_op}' ?"
+        raise error_type(error_message)

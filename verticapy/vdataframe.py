@@ -1662,17 +1662,7 @@ vColumns : vColumn
                 return copy.deepcopy(columns)
             if raise_error:
                 for column in list(columns):
-                    if not (self.is_colname_in(column)):
-                        try:
-                            e = ""
-                            nearestcol = self.get_nearest_column(column)
-                            if nearestcol[1] < 8:
-                                e = f"\nDid you mean '{nearestcol[0]}' ?"
-                        except:
-                            e = ""
-                        raise MissingColumn(
-                            f"The Virtual Column '{column}' doesn't exist{e}."
-                        )
+                    raise_error_if_not_in(column, column, self.get_columns(), vdf_check = True)
             if isinstance(columns, str):
                 result = columns
                 vdf_columns = self.get_columns()
