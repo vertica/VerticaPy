@@ -1617,33 +1617,12 @@ vColumns : vColumn
     # Methods used to check & format the inputs
     #
     # ---#
-    def are_namecols_in(self, columns: Union[str, list, dict]):
-        """
-    ----------------------------------------------------------------------------------------
-    Method used to check if the input column names are used by the vDataFrame.
-    If not, the function raises an error.
-
-    Parameters
-    ----------
-    columns: list/str
-        List of columns names.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        for column in columns:
-            if not (self.is_colname_in(column)):
-                try:
-                    e = ""
-                    nearestcol = self.get_nearest_column(column)
-                    if nearestcol[1] < 8:
-                        e = f"\nDid you mean '{nearestcol[0]}' ?"
-                except:
-                    e = ""
-                raise MissingColumn(f"The Virtual Column '{column}' doesn't exist{e}.")
-
-    # ---#
     def format_colnames(
-        self, *argv, columns: Union[str, list, dict] = [], raise_error: bool = True
+        self,
+        *argv,
+        columns: Union[str, list, dict] = [],
+        expected_nb_of_cols: Union[int, list] = [],
+        raise_error: bool = True,
     ):
         """
     ----------------------------------------------------------------------------------------
@@ -1651,28 +1630,49 @@ vColumns : vColumn
 
     Parameters
     ----------
-    columns: list / str, optional
+    *argv: str / list / dict, optional
+        List of columns' names to format. It allows to use as input multiple
+        objects and to get all of them formatted.
+        Example: self.format_colnames(x0, x1, x2) will return x0_f, x1_f, 
+        x2_f where xi_f represents xi correctly formatted.
+    columns: str / list / dict, optional
         List of columns' names to format.
+    expected_nb_of_cols: int / list
+        [Only used for the function first argument]
+        List of the expected number of columns.
+        Example: If expected_nb_of_cols is set to [2, 3], the parameters
+        'columns' or the first argument of argv should have exactly 2 or
+        3 elements. Otherwise, the function will raise an error.
     raise_error: bool, optional
         If set to True and if there is an error, it will be raised.
 
     Returns
     -------
-    list
+    str / list
         Formatted columns' names.
         """
         if argv:
-            if len(argv) == 1:
-                return self.format_colnames(columns=argv[0], raise_error=raise_error)
             result = []
             for arg in argv:
                 result += [self.format_colnames(columns=arg, raise_error=raise_error)]
-            return result
+            if len(argv) == 1:
+                result = result[0]
         else:
             if not (columns) or isinstance(columns, (int, float)):
                 return copy.deepcopy(columns)
             if raise_error:
-                self.are_namecols_in(columns)
+                for column in list(columns):
+                    if not (self.is_colname_in(column)):
+                        try:
+                            e = ""
+                            nearestcol = self.get_nearest_column(column)
+                            if nearestcol[1] < 8:
+                                e = f"\nDid you mean '{nearestcol[0]}' ?"
+                        except:
+                            e = ""
+                        raise MissingColumn(
+                            f"The Virtual Column '{column}' doesn't exist{e}."
+                        )
             if isinstance(columns, str):
                 result = columns
                 vdf_columns = self.get_columns()
@@ -1683,14 +1683,25 @@ vColumns : vColumn
             elif isinstance(columns, dict):
                 result = {}
                 for col in columns:
-                    result[
-                        self.format_colnames(col, raise_error=raise_error)
-                    ] = columns[col]
+                    key = self.format_colnames(col, raise_error=raise_error)
+                    result[key] = columns[col]
             else:
                 result = []
                 for col in columns:
                     result += [self.format_colnames(col, raise_error=raise_error)]
-            return result
+        if raise_error:
+            if isinstance(expected_nb_of_cols, int):
+                expected_nb_of_cols = [expected_nb_of_cols]
+            if len(expected_nb_of_cols) > 0:
+                if len(argv) > 0:
+                    columns = argv[0]
+                n = len(columns)
+                if n not in expected_nb_of_cols:
+                    x = "|".join([str(nb) for nb in expected_nb_of_cols])
+                    raise ParameterError(
+                        f"The number of Virtual Columns expected is [{x}], found {n}."
+                    )
+        return result
 
     # ---#
     def is_colname_in(self, column: str):
@@ -1716,27 +1727,6 @@ vColumns : vColumn
             if column == quote_ident(col).lower():
                 return True
         return False
-
-    # ---#
-    def is_nb_cols_correct(self, columns: list, expected_nb_of_cols: list):
-        """
-    ----------------------------------------------------------------------------------------
-    Method used to check if the length of the input columns list match the
-    expected number of columns. If not, the function raises an error.
-
-    Parameters
-    ----------
-    columns: list
-        List of columns names.
-    expected_nb_of_cols: list
-        List of the expected number of columns.
-        """
-        n = len(columns)
-        if n not in expected_nb_of_cols:
-            expected_nb_of_cols_str = "|".join([str(nb) for nb in expected_nb_of_cols])
-            raise ParameterError(
-                f"The number of Virtual Columns expected is {expected_nb_of_cols_str}, found {n}."
-            )
 
     # ---#
     def get_nearest_column(self, column: str):
@@ -3527,8 +3517,8 @@ vColumns : vColumn
         tmp_query += all_elements
         table = table.format(", ".join(tmp_query))
         partition = ""
-        if (by):
-            partition = ', '.join([quote_ident(column) for column in by])
+        if by:
+            partition = ", ".join([quote_ident(column) for column in by])
             partition = f"PARTITION BY {partition} "
         table += f""" 
             TIMESERIES slice_time AS '{rule}' 
@@ -3708,8 +3698,7 @@ vColumns : vColumn
         )
         if isinstance(columns, str):
             columns = [columns]
-        self.is_nb_cols_correct(columns, [1, 2])
-        columns, of = self.format_colnames(columns, of)
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         if len(columns) == 1:
             return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax, **style_kwds)
         else:
@@ -3950,9 +3939,8 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.is_nb_cols_correct(columns, [2])
         columns, catcol, size_bubble_col, cmap_col = self.format_colnames(
-            columns, catcol, size_bubble_col, cmap_col
+            columns, catcol, size_bubble_col, cmap_col, expected_nb_of_cols=2
         )
         return plt.bubble(
             self,
@@ -4394,8 +4382,7 @@ vColumns : vColumn
      vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
      vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
-        self.is_nb_cols_correct(columns, [2])
-        columns = self.format_colnames(columns)
+        columns = self.format_colnames(columns, expected_nb_of_cols=2)
         return plt.contour_plot(self, columns, func, nbins, ax=ax, **style_kwds,)
 
     # ---#
@@ -6755,8 +6742,7 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.is_nb_cols_correct(columns, [2])
-        columns, of = self.format_colnames(columns, of)
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=2)
         for column in columns:
             assert self[column].isnum(), TypeError(
                 f"vColumn {column} must be numerical to draw the Heatmap."
@@ -6834,8 +6820,7 @@ vColumns : vColumn
         )
         if isinstance(columns, str):
             columns = [columns]
-        self.is_nb_cols_correct(columns, [2])
-        columns, of = self.format_colnames(columns, of)
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=2)
         return plt.hexbin(self, columns, method, of, bbox, img, ax=ax, **style_kwds)
 
     # ---#
@@ -6903,8 +6888,9 @@ vColumns : vColumn
         raise_error_if_not_in("hist_type", hist_type, ["auto", "multi", "stacked"])
         if isinstance(columns, str):
             columns = [columns]
-        self.is_nb_cols_correct(columns, [1, 2, 3, 4, 5])
-        columns, of = self.format_colnames(columns, of)
+        columns, of = self.format_colnames(
+            columns, of, expected_nb_of_cols=[1, 2, 3, 4, 5]
+        )
         stacked = True if (hist_type.lower() == "stacked") else False
         multi = True if (hist_type.lower() == "multi") else False
         if len(columns) == 1:
@@ -7855,8 +7841,7 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.is_nb_cols_correct(columns, [1, 2])
-        columns = self.format_colnames(columns)
+        columns = self.format_colnames(columns, expected_nb_of_cols=[1, 2])
         return plt.outliers_contour_plot(
             self,
             columns,
@@ -8328,8 +8313,7 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        self.is_nb_cols_correct(columns, [1, 2])
-        columns, of = self.format_colnames(columns, of)
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         return plt.pivot_table(
             self,
             columns,
@@ -9386,8 +9370,9 @@ vColumns : vColumn
             return ax
         if isinstance(columns, str):
             columns = [columns]
-        self.is_nb_cols_correct(columns, [2, 3])
-        columns, catcol = self.format_colnames(columns, catcol)
+        columns, catcol = self.format_colnames(
+            columns, catcol, expected_nb_of_cols=[2, 3]
+        )
         catcol = [catcol] if catcol else []
 
         if len(columns) == 2:

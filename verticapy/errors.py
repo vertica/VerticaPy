@@ -119,7 +119,9 @@ class VersionError(Exception):
 
 
 # ---#
-def raise_error_if_not_in(variable_name: str, variable: str, options: list):
+def raise_error_if_not_in(
+    variable_name: str, variable: str, options: list, threshold: int = 6
+):
     # Raises an error if the input variable does not belong to the input list.
     from verticapy.toolbox import levenshtein
 
@@ -140,6 +142,6 @@ def raise_error_if_not_in(variable_name: str, variable: str, options: list):
             f"Parameter '{variable_name}' must be in "
             f"[{'|'.join(options)}], found '{variable}'."
         )
-        if min_distance < 6:
+        if min_distance < threshold:
             error_message += f"\nDid you mean '{min_distance_op}'?"
         raise ParameterError(error_message)
