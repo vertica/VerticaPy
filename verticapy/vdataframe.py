@@ -7792,7 +7792,8 @@ vColumns : vColumn
         conditions = []
         for idx, col in enumerate(result["index"]):
             if not (robust):
-                conditions += [f"""
+                conditions += [
+                    f"""
                     ABS({col} - {result['avg'][idx]}) 
                     / NULLIFZERO({result['std'][idx]}) 
                     > {threshold}"""
@@ -7804,9 +7805,7 @@ vColumns : vColumn
                     / NULLIFZERO({result['mad'][idx]} * 1.4826) 
                     > {threshold}"""
                 ]
-        self.eval(
-            name, f"(CASE WHEN {' OR '.join(conditions)} THEN 1 ELSE 0 END)"
-        )
+        self.eval(name, f"(CASE WHEN {' OR '.join(conditions)} THEN 1 ELSE 0 END)")
         return self
 
     # ---#
@@ -9219,18 +9218,16 @@ vColumns : vColumn
             by = [by]
         by = self.format_colnames(by)
         random_int = random.randint(0, 10000000)
-        name = "__verticapy_random_{}__".format(random_int)
-        name2 = "__verticapy_random_{}__".format(random_int + 1)
+        name = f"__verticapy_random_{random_int}__"
+        name2 = f"__verticapy_random_{random_int + 1}__"
         vdf = self.copy()
         assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
         if method == "random":
             random_state = vp.OPTIONS["random_state"]
-            random_seed = (
-                random_state
-                if isinstance(random_state, int)
-                else random.randint(-10e6, 10e6)
-            )
-            random_func = "SEEDED_RANDOM({})".format(random_seed)
+            random_seed = random.randint(-10e6, 10e6)
+            if isinstance(random_state, int):
+                random_seed = random_state
+            random_func = f"SEEDED_RANDOM({random_seed})"
             vdf.eval(name, random_func)
             q = vdf[name].quantile(x)
             print_info_init = vp.OPTIONS["print_info"]
@@ -9240,16 +9237,16 @@ vColumns : vColumn
             vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
             assert method != "stratified" or (by), ParameterError(
-                "Parameter 'by' must include at least one column when using 'stratified' sampling."
+                "Parameter 'by' must include at least one "
+                "column when using 'stratified' sampling."
             )
             if method == "stratified":
                 order_by = "ORDER BY " + ", ".join(by)
-            vdf.eval(name, "ROW_NUMBER() OVER({})".format(order_by))
+            vdf.eval(name, f"ROW_NUMBER() OVER({order_by})")
             vdf.eval(
                 name2,
-                "MIN({}) OVER (PARTITION BY CAST({} * {} AS Integer) ORDER BY {} ROWS BETWEEN UNBOUNDED PRECEDING AND 0 FOLLOWING)".format(
-                    name, name, x, name
-                ),
+                f"""MIN({name}) OVER (PARTITION BY CAST({name} * {x} AS Integer) 
+                    ORDER BY {name} ROWS BETWEEN UNBOUNDED PRECEDING AND 0 FOLLOWING)""",
             )
             print_info_init = vp.OPTIONS["print_info"]
             vp.OPTIONS["print_info"] = False
@@ -9390,30 +9387,20 @@ vColumns : vColumn
         )
         catcol = [catcol] if catcol else []
 
+        arg = [
+            self,
+            columns + catcol,
+            max_cardinality,
+            cat_priority,
+            with_others,
+            max_nb_points,
+        ]
         if len(columns) == 2:
-            return plt.scatter2D(
-                self,
-                columns + catcol,
-                max_cardinality,
-                cat_priority,
-                with_others,
-                max_nb_points,
-                bbox,
-                img,
-                ax=ax,
-                **style_kwds,
-            )
+            fun = plt.scatter2D
+            arg += [bbox, img]
         elif len(columns) == 3:
-            return plt.scatter3D(
-                self,
-                columns + catcol,
-                max_cardinality,
-                cat_priority,
-                with_others,
-                max_nb_points,
-                ax=ax,
-                **style_kwds,
-            )
+            fun = plt.scatter3D
+        return fun(*arg, ax=ax, **style_kwds,)
 
     # ---#
     @check_dtypes
@@ -9492,11 +9479,13 @@ vColumns : vColumn
             expr = [expr]
         if isinstance(conditions, Iterable) and not (isinstance(conditions, str)):
             conditions = " AND ".join([f"({elem})" for elem in conditions])
-        conditions = " WHERE {}".format(conditions) if conditions else ""
+        if conditions:
+            conditions = f" WHERE {conditions}"
         all_cols = ", ".join(["*"] + expr)
-        table = "(SELECT {} FROM {}{}) VERTICAPY_SUBTABLE".format(
-            all_cols, self.__genSQL__(), conditions
-        )
+        table = f"""
+            (SELECT 
+                {all_cols} 
+            FROM {self.__genSQL__()}{conditions}) VERTICAPY_SUBTABLE"""
         result = self.__vDataFrameSQL__(table, "search", "")
         if usecols:
             result = result.select(usecols)
@@ -9544,9 +9533,10 @@ vColumns : vColumn
                 columns[i] = column + dtype
             else:
                 columns[i] = str(columns[i])
-        table = (
-            f"(SELECT {', '.join(columns)} FROM {self.__genSQL__()}) VERTICAPY_SUBTABLE"
-        )
+        table = f"""
+            (SELECT 
+                {', '.join(columns)} 
+            FROM {self.__genSQL__()}) VERTICAPY_SUBTABLE"""
         return self.__vDataFrameSQL__(
             table, self._VERTICAPY_VARIABLES_["input_relation"], ""
         )
@@ -9623,8 +9613,13 @@ vColumns : vColumn
         if isinstance(by, str):
             by = [by]
         by, ts = self.format_colnames(by, ts)
-        partition = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
-        expr = f"CONDITIONAL_TRUE_EVENT({ts}::timestamp - LAG({ts}::timestamp) > '{session_threshold}') OVER ({partition} ORDER BY {ts})"
+        partition = ""
+        if by:
+            partition = f"PARTITION BY {', '.join(by)}"
+        expr = f"""CONDITIONAL_TRUE_EVENT(
+                    {ts}::timestamp - LAG({ts}::timestamp) 
+                  > '{session_threshold}') 
+                  OVER ({partition} ORDER BY {ts})"""
         return self.eval(name=name, expr=expr)
 
     # ---#
@@ -9714,9 +9709,12 @@ vColumns : vColumn
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return (pre_comp, m)
-        query = f"SELECT /*+LABEL('vDataframe.shape')*/ COUNT(*) FROM {self.__genSQL__()} LIMIT 1"
         self._VERTICAPY_VARIABLES_["count"] = executeSQL(
-            query,
+            query=f"""
+                SELECT 
+                    /*+LABEL('vDataframe.shape')*/ COUNT(*) 
+                FROM {self.__genSQL__()} LIMIT 1
+            """,
             title="Computing the total number of elements (COUNT(*))",
             method="fetchfirstelem",
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -9842,7 +9840,8 @@ vColumns : vColumn
         else:
             kind = "area_stacked"
         assert min(self.min(columns)["min"]) >= 0, ValueError(
-            "Columns having negative values can not be processed by the 'stacked_area' method."
+            "Columns having negative values can not be "
+            "processed by the 'stacked_area' method."
         )
         columns, ts = self.format_colnames(columns, ts)
         return plt.multi_ts_plot(
@@ -9930,16 +9929,18 @@ vColumns : vColumn
         """
         if isinstance(column1, int):
             assert column1 < self.shape()[1], ParameterError(
-                "The parameter 'column1' is incorrect, it is greater or equal to the vDataFrame number of columns: {}>={}\nWhen this parameter type is 'integer', it must represent the index of the column to swap.".format(
-                    column1, self.shape()[1]
-                )
+                "The parameter 'column1' is incorrect, it is greater or equal "
+                f"to the vDataFrame number of columns: {column1}>={self.shape()[1]}"
+                "\nWhen this parameter type is 'integer', it must represent the index "
+                "of the column to swap."
             )
             column1 = self.get_columns()[column1]
         if isinstance(column2, int):
             assert column2 < self.shape()[1], ParameterError(
-                "The parameter 'column2' is incorrect, it is greater or equal to the vDataFrame number of columns: {}>={}\nWhen this parameter type is 'integer', it must represent the index of the column to swap.".format(
-                    column2, self.shape()[1]
-                )
+                "The parameter 'column2' is incorrect, it is greater or equal "
+                f"to the vDataFrame number of columns: {column2}>={self.shape()[1]}"
+                "\nWhen this parameter type is 'integer', it must represent the "
+                "index of the column to swap."
             )
             column2 = self.get_columns()[column2]
         column1, column2 = self.format_colnames(column1, column2)
@@ -10057,8 +10058,9 @@ vColumns : vColumn
         for col in columns:
             if self[col].category() in ("vmap", "complex"):
                 raise TypeError(
-                    f"Impossible to export virtual column {col} as it includes complex "
-                    "data types or vmaps. Use 'astype' method to cast them before using "
+                    f"Impossible to export virtual column {col} as"
+                    " it includes complex data types or vmaps. "
+                    "Use 'astype' method to cast them before using "
                     "this function."
                 )
         assert not (new_header) or len(new_header) == len(columns), ParsingError(
@@ -10089,13 +10091,14 @@ vColumns : vColumn
                     ]
                 )
             result = executeSQL(
-                "SELECT /*+LABEL('vDataframe.to_csv')*/ {} FROM {}{} LIMIT {} OFFSET {}".format(
-                    ", ".join(columns),
-                    self.__genSQL__(),
-                    order_by,
-                    limit,
-                    current_nb_rows_written,
-                ),
+                query=f"""
+                    SELECT 
+                        /*+LABEL('vDataframe.to_csv')*/ 
+                        {', '.join(columns)} 
+                    FROM {self.__genSQL__()}
+                    {order_by} 
+                    LIMIT {limit} 
+                    OFFSET {current_nb_rows_written}""",
                 title="Reading the data.",
                 method="fetchall",
                 sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -10224,26 +10227,28 @@ vColumns : vColumn
             db_filter = " AND ".join([f"({elem})" for elem in db_filter])
         db_filter = f" WHERE {db_filter}" if (db_filter) else ""
         if relation_type == "insert":
-            query = "INSERT INTO {0}{1} SELECT {2}{3} FROM {4}{5}{6}".format(
-                name,
-                f" ({insert_usecols})" if not (nb_split) and select != "*" else "",
-                select,
-                nb_split,
-                self.__genSQL__(),
-                db_filter,
-                self.__get_last_order_by__(),
+            insert_usecols_str = (
+                f" ({insert_usecols})" if not (nb_split) and select != "*" else ""
             )
+            query = f"""
+                INSERT INTO {name}{insert_usecols_str} 
+                    SELECT 
+                        {select}{nb_split} 
+                    FROM {self.__genSQL__()}
+                    {db_filter}
+                    {self.__get_last_order_by__()}"""
         else:
-            query = "CREATE {0} {1}{2} AS SELECT /*+LABEL('vDataframe.to_db')*/ {3}{4} FROM {5}{6}{7}".format(
-                relation_type.upper(),
-                name,
-                commit,
-                select,
-                nb_split,
-                self.__genSQL__(),
-                db_filter,
-                self.__get_last_order_by__(),
-            )
+            query = f"""
+                CREATE 
+                    {relation_type.upper()}
+                    {name}{commit} 
+                AS 
+                SELECT 
+                    /*+LABEL('vDataframe.to_db')*/ 
+                    {select}{nb_split} 
+                FROM {self.__genSQL__()}
+                {db_filter}
+                {self.__get_last_order_by__()}"""
         executeSQL(
             query=query,
             title=f"Creating a new {relation_type} to save the vDataFrame.",
@@ -10251,7 +10256,8 @@ vColumns : vColumn
         if relation_type == "insert":
             executeSQL(query="COMMIT;", title="Commit.")
         self.__add_to_history__(
-            f"[Save]: The vDataFrame was saved into a {relation_type} named '{name}'."
+            "[Save]: The vDataFrame was saved into a "
+            f"{relation_type} named '{name}'."
         )
         if inplace:
             history, saving = (
@@ -10298,13 +10304,12 @@ vColumns : vColumn
                 "terminal to install the module."
             )
         columns = self.get_columns(exclude_columns=[geometry])
-        columns = ", ".join(columns)
-        if columns:
-            columns += ", "
-        columns += "ST_AsText({}) AS {}".format(geometry, geometry)
-        query = "SELECT /*+LABEL('vDataframe.to_geopandas')*/ {} FROM {}{}".format(
-            columns, self.__genSQL__(), self.__get_last_order_by__()
-        )
+        columns = ", ".join(columns + [f"ST_AsText({geometry}) AS {geometry}"])
+        query = f"""
+            SELECT 
+                /*+LABEL('vDataframe.to_geopandas')*/ {columns} 
+            FROM {self.__genSQL__()}
+            {self.__get_last_order_by__()}"""
         data = executeSQL(
             query, title="Getting the vDataFrame values.", method="fetchall"
         )
@@ -10381,10 +10386,10 @@ vColumns : vColumn
         transformations, is_complex_vmap = [], []
         for col in columns:
             if self[col].category() == "complex":
-                transformations += ["TO_JSON({0}) AS {0}".format(col)]
+                transformations += [f"TO_JSON({col}) AS {col}"]
                 is_complex_vmap += [True]
             elif self[col].category() == "vmap":
-                transformations += ["MAPTOSTRING({0}) AS {0}".format(col)]
+                transformations += [f"MAPTOSTRING({col}) AS {col}"]
                 is_complex_vmap += [True]
             else:
                 transformations += [col]
@@ -10402,13 +10407,14 @@ vColumns : vColumn
         while current_nb_rows_written < total:
             json_file = "[\n"
             result = executeSQL(
-                "SELECT /*+LABEL('vDataframe.to_json')*/ {} FROM {}{} LIMIT {} OFFSET {}".format(
-                    ", ".join(transformations),
-                    self.__genSQL__(),
-                    order_by,
-                    limit,
-                    current_nb_rows_written,
-                ),
+                query=f"""
+                    SELECT 
+                        /*+LABEL('vDataframe.to_json')*/ 
+                        {', '.join(transformations)} 
+                    FROM {self.__genSQL__()}
+                    {order_by} 
+                    LIMIT {limit} 
+                    OFFSET {current_nb_rows_written}""",
                 title="Reading the data.",
                 method="fetchall",
                 sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -10420,9 +10426,9 @@ vColumns : vColumn
                     if isinstance(item, (float, int, decimal.Decimal)) or (
                         isinstance(item, (str,)) and is_complex_vmap[i]
                     ):
-                        tmp_row += ["{}: {}".format(quote_ident(columns[i]), item)]
+                        tmp_row += [f"{quote_ident(columns[i])}: {item}"]
                     elif item != None:
-                        tmp_row += ['{}: "{}"'.format(quote_ident(columns[i]), item)]
+                        tmp_row += [f'{quote_ident(columns[i])}: "{item}"']
                 json_file += "{" + ", ".join(tmp_row) + "},\n"
             current_nb_rows_written += limit
             file_id += 1
@@ -10457,11 +10463,12 @@ vColumns : vColumn
     List
         The list of the current vDataFrame relation.
         """
-        query = "SELECT /*+LABEL('vDataframe.to_list')*/ * FROM {}{}".format(
-            self.__genSQL__(), self.__get_last_order_by__()
-        )
         result = executeSQL(
-            query,
+            query=f"""
+                SELECT 
+                    /*+LABEL('vDataframe.to_list')*/ * 
+                FROM {self.__genSQL__()}
+                {self.__get_last_order_by__()}""",
             title="Getting the vDataFrame values.",
             method="fetchall",
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -10507,11 +10514,11 @@ vColumns : vColumn
     pandas.DataFrame
         The pandas.DataFrame of the current vDataFrame relation.
         """
-        query = "SELECT /*+LABEL('vDataframe.to_pandas')*/ * FROM {0}{1}".format(
-            self.__genSQL__(), self.__get_last_order_by__()
-        )
         data = executeSQL(
-            query,
+            query=f"""
+                SELECT 
+                    /*+LABEL('vDataframe.to_pandas')*/ * 
+                FROM {self.__genSQL__()}{self.__get_last_order_by__()}""",
             title="Getting the vDataFrame values.",
             method="fetchall",
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -10624,23 +10631,21 @@ vColumns : vColumn
             "Parameter 'fileSizeMB' must be greater than 0."
         )
         by = self.format_colnames(by)
-        partition = "PARTITION BY {0}".format(", ".join(by)) if (by) else ""
-        query = "EXPORT TO PARQUET(directory = '{0}', compression = '{1}', rowGroupSizeMB = {2}, fileSizeMB = {3}, fileMode = '{4}', dirMode = '{5}', int96AsTimestamp = {6}) OVER({7}{8}) AS SELECT * FROM {9};".format(
-            directory,
-            compression,
-            rowGroupSizeMB,
-            fileSizeMB,
-            fileMode,
-            dirMode,
-            str(int96AsTimestamp).lower(),
-            partition,
-            self.__get_sort_syntax__(order_by),
-            self.__genSQL__(),
-        )
-        title = "Exporting data to Parquet format."
+        partition = ""
+        if by:
+            partition = f"PARTITION BY {', '.join(by)}"
         result = util.to_tablesample(
-            query,
-            title=title,
+            query=f"""
+                EXPORT TO PARQUET(directory = '{directory}',
+                                  compression = '{compression}',
+                                  rowGroupSizeMB = {rowGroupSizeMB},
+                                  fileSizeMB = {fileSizeMB},
+                                  fileMode = '{fileMode}',
+                                  dirMode = '{dirMode}',
+                                  int96AsTimestamp = {str(int96AsTimestamp).lower()}) 
+                          OVER({partition}{self.__get_sort_syntax__(order_by)}) 
+                       AS SELECT * FROM {self.__genSQL__()};""",
+            title="Exporting data to Parquet format.",
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
             symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )

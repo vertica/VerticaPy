@@ -66,6 +66,7 @@ from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
+import verticapy.learn.metrics as mt
 from verticapy.learn.metrics import *
 from verticapy.learn.tools import *
 from verticapy.learn.memmodel import *
@@ -3191,24 +3192,19 @@ class Regressor(Supervised):
 	float
 		score
 		"""
-        method = method.lower()
-        if method in ("r2a", "r2adj", "r2adjusted"):
-            method = "r2"
-            adj = True
-        else:
-            adj = False
-        if method == "rmse":
-            method = "mse"
-            root = True
-        else:
-            root = False
+        methods = list(mt.FUNCTIONS_REGRESSION_DICTIONNARY.keys())
+        methods += ["r2a", "rmse"]
+        method = str(method).lower()
+        if method in ["r2adj", "r2adjusted"]:
+            method = "r2a"
+        raise_error_if_not_in("method", method, methods)
+
         if self.type == "SARIMAX":
-            test_relation = self.transform_relation
-            test_relation = "(SELECT {} AS prediction, {} FROM {}) VERTICAPY_SUBTABLE".format(
-                self.deploySQL(),
-                "VerticaPy_y_copy AS {}".format(self.y),
-                test_relation,
-            )
+            test_relation = f"""
+                (SELECT 
+                    {self.deploySQL()} AS prediction, 
+                    VerticaPy_y_copy AS {self.y} 
+                 FROM {self.transform_relation}) VERTICAPY_SUBTABLE"""
             test_relation = (
                 test_relation.format(self.test_relation)
                 .replace("[VerticaPy_ts]", self.ts)
@@ -3227,103 +3223,38 @@ class Regressor(Supervised):
             ).format(self.test_relation)
             for idx, elem in enumerate(self.X):
                 relation = relation.replace(f"[X{idx}]", elem)
-            if method == "mse" and root:
-                index = "rmse"
-            elif method == "r2" and adj:
-                index = "r2a"
-            else:
-                index = method
-            result = tablesample({"index": [index]})
+            result = tablesample({"index": [method]})
         elif self.type == "KNeighborsRegressor":
-            test_relation = self.deploySQL()
-            prediction = "predict_neighbors"
+            test_relation, prediction = self.deploySQL(), "predict_neighbors"
         elif self.type == "KernelDensity":
-            test_relation = self.map
-            prediction = self.deploySQL()
+            test_relation, prediction = self.map, self.deploySQL()
         else:
-            test_relation = self.test_relation
-            prediction = self.deploySQL()
-        if method == "aic":
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        aic_bic(y, self.deploySQL()[idx], relation, len(self.X),)[0]
-                    ]
-            else:
-                return aic_bic(self.y, prediction, test_relation, len(self.X))[0]
-        elif method == "bic":
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        aic_bic(y, self.deploySQL()[idx], relation, len(self.X))[1]
-                    ]
-            else:
-                return aic_bic(self.y, prediction, test_relation, len(self.X))[1]
-        elif method in ("r2", "rsquared"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        r2_score(
-                            y,
-                            self.deploySQL()[idx],
-                            relation,
-                            len(self.X) * self.parameters["p"],
-                            adj,
-                        )
-                    ]
-            else:
-                return r2_score(self.y, prediction, test_relation, len(self.X), adj)
-        elif method in ("mae", "mean_absolute_error"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        mean_absolute_error(y, self.deploySQL()[idx], relation,)
-                    ]
-            else:
-                return mean_absolute_error(self.y, prediction, test_relation,)
-        elif method in ("mse", "mean_squared_error"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        mean_squared_error(y, self.deploySQL()[idx], relation, root)
-                    ]
-            else:
-                return mean_squared_error(self.y, prediction, test_relation, root)
-        elif method in ("msle", "mean_squared_log_error"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        mean_squared_log_error(y, self.deploySQL()[idx], relation)
-                    ]
-            else:
-                return mean_squared_log_error(self.y, prediction, test_relation)
-        elif method in ("max", "max_error"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [max_error(y, self.deploySQL()[idx], relation)]
-            else:
-                return max_error(self.y, prediction, test_relation)
-        elif method in ("median", "median_absolute_error"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        median_absolute_error(y, self.deploySQL()[idx], relation)
-                    ]
-            else:
-                return median_absolute_error(self.y, prediction, test_relation)
-        elif method in ("var", "explained_variance"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        explained_variance(y, self.deploySQL()[idx], relation)
-                    ]
-            else:
-                return explained_variance(self.y, prediction, test_relation)
+            test_relation, prediction = self.test_relation, self.deploySQL()
+
+        arg = [self.y, prediction, test_relation]
+        adj, root = False, False
+        if method in ("r2a", "r2adj", "r2adjusted"):
+            method, adj = "r2", True
+            arg += [len(self.X), True]
+        elif method == "rmse":
+            method, root = "mse", True
+            arg += [True]
+        elif method in ("aic", "bic"):
+            arg += [len(self.X)]
+        fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
+        if self.type == "VAR":
+            for idx, y in enumerate(self.X):
+                arg = [y, self.deploySQL()[idx], relation]
+                if method in ("aic", "bic"):
+                    arg += [len(self.X) * self.parameters["p"]]
+                elif root:
+                    arg += [True]
+                elif adj:
+                    arg += [len(self.X) * self.parameters["p"], True]
+                result.values[y] = [fun(*arg)]
+            return result.transpose()
         else:
-            raise ParameterError(
-                "The parameter 'method' must be in r2|mae|mse|msle|max|median|var"
-            )
-        return result.transpose()
+            return fun(*arg)
 
 
 # ---#
