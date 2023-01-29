@@ -2217,60 +2217,20 @@ class BinaryClassifier(Classifier):
 	float
 		score
 		"""
+        method = str(method).lower()
+        raise_error_if_not_in("method", method, mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)
+        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
+        args = [self.y, self.deploySQL(cutoff), self.test_relation]
+        kwds = {}
         if method in ("accuracy", "acc"):
-            return accuracy_score(
-                self.y, self.deploySQL(cutoff), self.test_relation, pos_label=1
-            )
-        elif method == "aic":
-            return aic_bic(self.y, self.deploySQL(), self.test_relation, len(self.X))[0]
-        elif method == "bic":
-            return aic_bic(self.y, self.deploySQL(), self.test_relation, len(self.X))[1]
-        elif method == "prc_auc":
-            return prc_curve(
-                self.y, self.deploySQL(), self.test_relation, auc_prc=True, nbins=nbins,
-            )
-        elif method == "auc":
-            return roc_curve(
-                self.y, self.deploySQL(), self.test_relation, auc_roc=True, nbins=nbins,
-            )
-        elif method in ("best_cutoff", "best_threshold"):
-            return roc_curve(
-                self.y,
-                self.deploySQL(),
-                self.test_relation,
-                best_threshold=True,
-                nbins=nbins,
-            )
-        elif method in ("recall", "tpr"):
-            return recall_score(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("precision", "ppv"):
-            return precision_score(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("specificity", "tnr"):
-            return specificity_score(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("negative_predictive_value", "npv"):
-            return negative_predictive_score(
-                self.y, self.deploySQL(cutoff), self.test_relation
-            )
-        elif method in ("log_loss", "logloss"):
-            return log_loss(self.y, self.deploySQL(), self.test_relation)
-        elif method == "f1":
-            return f1_score(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method == "mcc":
-            return matthews_corrcoef(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("bm", "informedness"):
-            return informedness(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("mk", "markedness"):
-            return markedness(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("csi", "critical_success_index"):
-            return critical_success_index(
-                self.y, self.deploySQL(cutoff), self.test_relation
-            )
-        else:
-            raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall"
-                "|precision|log_loss|negative_predictive_value|specificity|mcc|informedness"
-                "|markedness|critical_success_index|aic|bic"
-            )
+            kwds["pos_label"] = 1
+        elif method in ("aic", "bic"):
+            args += [len(self.X)]
+        elif method in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
+            kwds["nbins"] = nbins
+            if method in ("best_cutoff", "best_threshold"):
+                kwds["best_threshold"] = True
+        return fun(*args, **kwds)
 
 
 # ---#
@@ -2866,11 +2826,11 @@ class MulticlassClassifier(Classifier):
 	float
 		score
 		"""
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        method = str(method).lower()
+        raise_error_if_not_in("method", method, mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)
+        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if (pos_label not in self.classes_) and (method != "accuracy"):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
@@ -2881,98 +2841,22 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
+        args = [self.y, self.deploySQL(pos_label, cutoff), self.test_relation]
+        kwds = {}
         if method in ("accuracy", "acc"):
-            return accuracy_score(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
-                pos_label,
-            )
-        elif method == "auc":
-            return auc(
+            args += [pos_label]
+        elif method in ("aic", "bic"):
+            args += [len(self.X)]
+        elif method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
+            args = [
                 f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
-                nbins=nbins,
-            )
-        elif method == "aic":
-            return aic_bic(
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
-                len(self.X),
-            )[0]
-        elif method == "bic":
-            return aic_bic(
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
-                len(self.X),
-            )[1]
-        elif method == "prc_auc":
-            return prc_auc(
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
-                nbins=nbins,
-            )
-        elif method in ("best_cutoff", "best_threshold"):
-            return roc_curve(
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
-                best_threshold=True,
-                nbins=nbins,
-            )
-        elif method in ("recall", "tpr"):
-            return recall_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("precision", "ppv"):
-            return precision_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("specificity", "tnr"):
-            return specificity_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("negative_predictive_value", "npv"):
-            return negative_predictive_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("log_loss", "logloss"):
-            return log_loss(
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
-            )
-        elif method == "f1":
-            return f1_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method == "mcc":
-            return matthews_corrcoef(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("bm", "informedness"):
-            return informedness(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("mk", "markedness"):
-            return markedness(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("csi", "critical_success_index"):
-            return critical_success_index(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        else:
-            raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc"
-                "|best_cutoff|recall|precision|log_loss|negative_predictive_value"
-                "|specificity|mcc|informedness|markedness|critical_success_index"
-                "|aic|bic"
-            )
+            ]
+            kwds["nbins"] = nbins
+            if method in ("best_cutoff", "best_threshold"):
+                kwds["best_threshold"] = True
+        return fun(*args, **kwds)
 
 
 # ---#
@@ -3230,30 +3114,27 @@ class Regressor(Supervised):
             test_relation, prediction = self.map, self.deploySQL()
         else:
             test_relation, prediction = self.test_relation, self.deploySQL()
-
-        arg = [self.y, prediction, test_relation]
         adj, root = False, False
         if method in ("r2a", "r2adj", "r2adjusted"):
             method, adj = "r2", True
-            arg += [len(self.X), True]
         elif method == "rmse":
             method, root = "mse", True
-            arg += [True]
-        elif method in ("aic", "bic"):
-            arg += [len(self.X)]
         fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
         if self.type == "VAR":
             for idx, y in enumerate(self.X):
                 arg = [y, self.deploySQL()[idx], relation]
-                if method in ("aic", "bic"):
+                if method in ("aic", "bic") or adj:
                     arg += [len(self.X) * self.parameters["p"]]
-                elif root:
+                if root or adj:
                     arg += [True]
-                elif adj:
-                    arg += [len(self.X) * self.parameters["p"], True]
                 result.values[y] = [fun(*arg)]
             return result.transpose()
         else:
+            arg = [self.y, prediction, test_relation]
+            if method in ("aic", "bic") or adj:
+                arg += [len(self.X)]
+            if root or adj:
+                arg += [True]
             return fun(*arg)
 
 

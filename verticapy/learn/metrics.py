@@ -1524,6 +1524,8 @@ def bic_score(
 
 
 FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
+    "aic": aic_score,
+    "bic": bic_score,
     "accuracy": accuracy_score,
     "acc": accuracy_score,
     "auc": auc,
