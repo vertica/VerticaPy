@@ -2220,7 +2220,20 @@ class BinaryClassifier(Classifier):
         method = str(method).lower()
         raise_error_if_not_in("method", method, mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)
         fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
-        args = [self.y, self.deploySQL(cutoff), self.test_relation]
+        if method in (
+            "log_loss",
+            "logloss",
+            "aic",
+            "bic",
+            "prc_auc",
+            "auc",
+            "best_cutoff",
+            "best_threshold",
+        ):
+            args2 = self.deploySQL()
+        else:
+            args2 = self.deploySQL(cutoff)
+        args = [self.y, args2, self.test_relation]
         kwds = {}
         if method in ("accuracy", "acc"):
             kwds["pos_label"] = 1
@@ -2847,13 +2860,21 @@ class MulticlassClassifier(Classifier):
             args += [pos_label]
         elif method in ("aic", "bic"):
             args += [len(self.X)]
-        elif method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
+        elif method in (
+            "auc",
+            "prc_auc",
+            "best_cutoff",
+            "best_threshold",
+            "log_loss",
+            "logloss",
+        ):
             args = [
                 f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
             ]
-            kwds["nbins"] = nbins
+            if method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
+                kwds["nbins"] = nbins
             if method in ("best_cutoff", "best_threshold"):
                 kwds["best_threshold"] = True
         return fun(*args, **kwds)
@@ -3929,41 +3950,40 @@ class Decomposition(Preprocessing):
             n_components = len(X)
         col_init_1 = [f"{X[idx]} AS col_init{idx}" for idx in range(len(X))]
         col_init_2 = [f"col_init{idx}" for idx in range(len(X))]
-        cols = ["col{}".format(idx + 1) for idx in range(n_components)]
-        query = """SELECT 
-                        {0}({1} USING PARAMETERS 
-                            model_name = '{2}', 
-                            key_columns = '{1}', 
-                            num_components = {3}) OVER () 
-                    FROM {4}""".format(
-            self.VERTICA_TRANSFORM_FUNCTION_SQL,
-            ", ".join(self.X),
-            self.name,
-            n_components,
-            input_relation,
-        )
-        query = (
-            f"SELECT {', '.join(col_init_1 + cols)} FROM ({query}) VERTICAPY_SUBTABLE"
-        )
-        query = """SELECT 
-                        {0}({1} USING PARAMETERS 
-                            model_name = '{2}', 
-                            key_columns = '{3}', 
-                            exclude_columns = '{3}', 
-                            num_components = {4}) OVER () 
-                   FROM ({5}) y""".format(
-            self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL,
-            ", ".join(col_init_2 + cols),
-            self.name,
-            ", ".join(col_init_2),
-            n_components,
-            query,
-        )
+        cols = [f"col{idx + 1}" for idx in range(n_components)]
+        query = f"""SELECT 
+                        {self.VERTICA_TRANSFORM_FUNCTION_SQL}
+                        ({', '.join(self.X)} 
+                            USING PARAMETERS 
+                            model_name = '{self.name}', 
+                            key_columns = '{', '.join(self.X)}', 
+                            num_components = {n_components}) OVER () 
+                    FROM {input_relation}"""
+        query = f"""
+            SELECT 
+                {', '.join(col_init_1 + cols)} 
+            FROM ({query}) VERTICAPY_SUBTABLE"""
+        query = f"""
+            SELECT 
+                {self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL}
+                ({', '.join(col_init_2 + cols)} 
+                    USING PARAMETERS 
+                    model_name = '{self.name}', 
+                    key_columns = '{', '.join(col_init_2)}', 
+                    exclude_columns = '{', '.join(col_init_2)}', 
+                    num_components = {n_components}) OVER () 
+            FROM ({query}) y"""
         p_distances = [
-            f"{method}(POWER(ABS(POWER({X[idx]}, {p}) - POWER(col_init{idx}, {p})), {1 / p})) AS {X[idx]}"
+            f"""{method}(POWER(ABS(POWER({X[idx]}, {p}) 
+                         - POWER(col_init{idx}, {p})), {1 / p})) 
+                         AS {X[idx]}"""
             for idx in range(len(X))
         ]
-        query = f"SELECT 'Score' AS 'index', {', '.join(p_distances)} FROM ({query}) z"
+        query = f"""
+            SELECT 
+                'Score' AS 'index', 
+                {', '.join(p_distances)} 
+            FROM ({query}) z"""
         return to_tablesample(query, title="Getting Model Score.").transpose()
 
     # ---#
