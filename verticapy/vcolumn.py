@@ -703,9 +703,12 @@ Attributes
             ) and self.category() == "text":
                 if dtype == "array":
                     vertica_version(condition=[10, 0, 0])
-                query = "SELECT {0} FROM {1} ORDER BY LENGTH({0}) DESC LIMIT 1".format(
-                    self.alias, self.parent.__genSQL__()
-                )
+                query = f"""
+                    SELECT 
+                        {self.alias} 
+                    FROM {self.parent.__genSQL__()} 
+                    ORDER BY LENGTH({self.alias}) DESC 
+                    LIMIT 1"""
                 biggest_str = executeSQL(
                     query, title="getting the biggest string", method="fetchfirstelem",
                 )
@@ -928,7 +931,9 @@ Attributes
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
         by = self.parent.format_colnames(by)
-        return plt.boxplot(self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds)
+        return plt.boxplot(
+            self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds
+        )
 
     # ---#
     def category(self):
@@ -2417,7 +2422,9 @@ Attributes
  	vDataFrame[].bar : Draws the Bar Chart of vColumn based on an aggregation.
 		"""
         of = self.parent.format_colnames(of)
-        return plt.hist(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
+        return plt.hist(
+            self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds
+        )
 
     # ---#
     @check_dtypes
@@ -3900,7 +3907,7 @@ Attributes
         if by:
             columns += [by]
         by, of = self.parent.format_colnames(by, of)
-        return plt.spider_plot(
+        return plt.spider(
             self.parent, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
         )
 
