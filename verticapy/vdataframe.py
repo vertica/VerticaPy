@@ -254,7 +254,8 @@ vColumns : vColumn
 
             if input_relation:
                 assert isinstance(input_relation, str), ParameterError(
-                    "Parameter 'input_relation' must be a string when using external tables."
+                    "Parameter 'input_relation' must be a string when using "
+                    "external tables."
                 )
                 if schema:
                     relation = f"{schema}.{input_relation}"
@@ -271,9 +272,10 @@ vColumns : vColumn
 
             else:
                 raise ConnectionError(
-                    "No corresponding Connection Identifier Database is defined "
-                    f"(Using the symbol '{symbol}'). Use the function "
-                    "connect.set_external_connection to set one with the correct symbol."
+                    "No corresponding Connection Identifier Database is "
+                    f"defined (Using the symbol '{symbol}'). Use the "
+                    "function connect.set_external_connection to set "
+                    "one with the correct symbol."
                 )
 
         self._VERTICAPY_VARIABLES_ = {
@@ -636,7 +638,8 @@ vColumns : vColumn
         if method != "cramer":
             for column in columns:
                 assert self[column].isnum(), TypeError(
-                    f"vColumn {column} must be numerical to compute the {method_name} Matrix{method_type}."
+                    f"vColumn {column} must be numerical to "
+                    f"compute the {method_name} Matrix{method_type}."
                 )
         if len(columns) == 1:
             if method in (
@@ -659,21 +662,23 @@ vColumns : vColumn
             if method in ("pearson", "spearman", "spearmand",):
                 if columns[1] == columns[0]:
                     return 1
-                table = (
-                    self.__genSQL__()
-                    if (method == "pearson")
-                    else (
-                        "(SELECT RANK() OVER (ORDER BY {0}) AS {0}, RANK() OVER "
-                        "(ORDER BY {1}) AS {1} FROM {2}) rank_spearman_table"
-                    ).format(
-                        columns[0], columns[1], self.__genSQL__(),
-                    )
-                )
-                query = "SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ CORR({0}{1}, {2}{3}) FROM {4}".format(
-                    columns[0], cast_0, columns[1], cast_1, table
-                )
-                title = "Computes the {0} correlation between {1} and {2}.".format(
-                    method, columns[0], columns[1]
+                if method == "pearson":
+                    table = self.__genSQL__()
+                else:
+                    table = f"""
+                        (SELECT 
+                            RANK() OVER (ORDER BY {columns[0]}) AS {columns[0]}, 
+                            RANK() OVER (ORDER BY {columns[1]}) AS {columns[1]} 
+                        FROM {self.__genSQL__()}) rank_spearman_table
+                    """
+                query = f"""
+                    SELECT 
+                        /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
+                        CORR({columns[0]}{cast_0}, {columns[1]}{cast_1}) 
+                    FROM {table}"""
+                title = (
+                    f"Computes the {method} correlation between "
+                    f"{columns[0]} and {columns[1]}."
                 )
             elif method == "biserial":
                 if columns[1] == columns[0]:
@@ -996,13 +1001,20 @@ vColumns : vColumn
                         table = self.__genSQL__()
                     if nb_precomputed == nb_loop:
                         result = executeSQL(
-                            f"SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ {', '.join(all_list)}",
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
+                                    {', '.join(all_list)}""",
                             print_time_sql=False,
                             method="fetchrow",
                         )
                     else:
                         result = executeSQL(
-                            query=f"SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ {', '.join(all_list)} FROM {table}",
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
+                                    {', '.join(all_list)} 
+                                FROM {table}""",
                             title=title_query,
                             method="fetchrow",
                             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -1209,17 +1221,21 @@ vColumns : vColumn
                     table = self.__genSQL__()
                 if nb_precomputed == len(cols):
                     result = executeSQL(
-                        "SELECT /*+LABEL('vDataframe.__aggregate_vector__')*/ {0}".format(
-                            ", ".join(all_list)
-                        ),
+                        query=f"""
+                            SELECT 
+                                /*+LABEL('vDataframe.__aggregate_vector__')*/ 
+                                {', '.join(all_list)}""",
                         method="fetchrow",
                         print_time_sql=False,
                     )
                 else:
                     result = executeSQL(
-                        query="SELECT /*+LABEL('vDataframe.__aggregate_vector__')*/ {0} FROM {1} LIMIT 1".format(
-                            ", ".join(all_list), table
-                        ),
+                        query=f"""
+                            SELECT 
+                                /*+LABEL('vDataframe.__aggregate_vector__')*/ 
+                                {', '.join(all_list)} 
+                            FROM {table} 
+                            LIMIT 1""",
                         title=f"Computing the Correlation Vector ({method})",
                         method="fetchrow",
                         sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -1534,49 +1550,33 @@ vColumns : vColumn
     computations. This method stores the input aggregation in the vColumn catalog.
         """
         columns = self.format_colnames(columns)
+        agg_dict = {
+            "cov": {},
+            "pearson": {},
+            "spearman": {},
+            "spearmand": {},
+            "kendall": {},
+            "cramer": {},
+            "biserial": {},
+            "regr_avgx": {},
+            "regr_avgy": {},
+            "regr_count": {},
+            "regr_intercept": {},
+            "regr_r2": {},
+            "regr_slope": {},
+            "regr_sxx": {},
+            "regr_sxy": {},
+            "regr_syy": {},
+        }
         if erase:
             if not (columns):
                 columns = self.get_columns()
             for column in columns:
-                self[column].catalog = {
-                    "cov": {},
-                    "pearson": {},
-                    "spearman": {},
-                    "spearmand": {},
-                    "kendall": {},
-                    "cramer": {},
-                    "biserial": {},
-                    "regr_avgx": {},
-                    "regr_avgy": {},
-                    "regr_count": {},
-                    "regr_intercept": {},
-                    "regr_r2": {},
-                    "regr_slope": {},
-                    "regr_sxx": {},
-                    "regr_sxy": {},
-                    "regr_syy": {},
-                }
+                self[column].catalog = copy.deepcopy(agg_dict)
             self._VERTICAPY_VARIABLES_["count"] = -1
         elif matrix:
             matrix = get_verticapy_function(matrix.lower())
-            if matrix in [
-                "cov",
-                "pearson",
-                "spearman",
-                "spearmand",
-                "kendall",
-                "cramer",
-                "biserial",
-                "regr_avgx",
-                "regr_avgy",
-                "regr_count",
-                "regr_intercept",
-                "regr_r2",
-                "regr_slope",
-                "regr_sxx",
-                "regr_sxy",
-                "regr_syy",
-            ]:
+            if matrix in agg_dict:
                 for elem in values:
                     val = values[elem]
                     try:
@@ -2418,48 +2418,55 @@ vColumns : vColumn
                     expr = f"AVG({column}{cast})"
 
                 elif fun.lower() == "iqr":
-                    expr = (
-                        f"APPROXIMATE_PERCENTILE({column}{cast} USING PARAMETERS "
-                        f"percentile = 0.75) - APPROXIMATE_PERCENTILE({column}{cast} "
-                        "USING PARAMETERS percentile = 0.25)"
-                    ).format(column, cast)
+                    expr = f"""
+                        APPROXIMATE_PERCENTILE({column}{cast} 
+                                               USING PARAMETERS
+                                               percentile = 0.75) 
+                      - APPROXIMATE_PERCENTILE({column}{cast}
+                                               USING PARAMETERS 
+                                               percentile = 0.25)"""
 
                 elif "%" == fun[-1]:
                     try:
                         if (len(fun.lower()) >= 8) and fun[0:7] == "approx_":
-                            expr = "APPROXIMATE_PERCENTILE({0}{1} USING PARAMETERS percentile = {2})".format(
-                                column, cast, float(fun[7:-1]) / 100
-                            )
+                            percentile = float(fun[7:-1]) / 100
+                            expr = f"""
+                                APPROXIMATE_PERCENTILE({column}{cast} 
+                                                       USING PARAMETERS 
+                                                       percentile = {percentile})"""
                         else:
                             if column in exact_percent:
                                 expr = format_magic(exact_percent[column][0])
                             else:
-                                expr = "PERCENTILE_CONT({0}) WITHIN GROUP (ORDER BY {1}{2}) OVER ()".format(
-                                    float(fun[0:-1]) / 100, column, cast
-                                )
+                                percentile = float(fun[0:-1]) / 100
+                                expr = f"""
+                                    PERCENTILE_CONT({percentile}) 
+                                                    WITHIN GROUP 
+                                                    (ORDER BY {column}{cast}) 
+                                                    OVER ()"""
                     except:
                         raise FunctionError(
-                            f"The aggregation '{fun}' doesn't exist. If you want to compute the percentile x "
-                            "of the element please write 'x%' with x > 0. Example: 50% for the median or "
-                            "approx_50% for the approximate median."
+                            f"The aggregation '{fun}' doesn't exist. If you "
+                            "want to compute the percentile x of the element "
+                            "please write 'x%' with x > 0. Example: 50% for "
+                            "the median or approx_50% for the approximate median."
                         )
 
                 elif fun.lower() == "cvar":
                     q95 = self[column].quantile(0.95)
-                    expr = "AVG(CASE WHEN {0}{1} >= {2} THEN {0}{1} ELSE NULL END)".format(
-                        column, cast, q95
-                    )
+                    expr = f"""AVG(
+                                CASE 
+                                    WHEN {column}{cast} >= {q95} 
+                                        THEN {column}{cast} 
+                                    ELSE NULL 
+                                END)"""
 
                 elif fun.lower() == "sem":
-                    expr = "STDDEV({0}{1}) / SQRT(COUNT({0}))".format(
-                        column, cast, column
-                    )
+                    expr = f"STDDEV({column}{cast}) / SQRT(COUNT({column}))"
 
                 elif fun.lower() == "aad":
                     mean = self[column].avg()
-                    expr = "SUM(ABS({0}{1} - {2})) / COUNT({0})".format(
-                        column, cast, mean
-                    )
+                    expr = f"SUM(ABS({column}{cast} - {mean})) / COUNT({column})"
 
                 elif fun.lower() == "mad":
                     median = self[column].median()
@@ -2468,12 +2475,14 @@ vColumns : vColumn
                     )
 
                 elif fun.lower() in ("prod", "product"):
-                    expr = (
-                        "DECODE(ABS(MOD(SUM(CASE WHEN {0}{1} < 0 "
-                        "THEN 1 ELSE 0 END), 2))"
-                        ", 0, 1, -1) * "
-                        "POWER(10, SUM(LOG(ABS({0}{1}))))"
-                    ).format(column, cast)
+                    expr = f"""
+                        DECODE(ABS(MOD(SUM(
+                            CASE 
+                                WHEN {column}{cast} < 0 THEN 1 
+                                ELSE 0 
+                            END), 
+                        2)), 0, 1, -1) * 
+                        POWER(10, SUM(LOG(ABS({column}{cast}))))"""
 
                 elif fun.lower() in ("percent", "count_percent"):
                     expr = "ROUND(COUNT({0}) / {1} * 100, 3)::float".format(
@@ -2481,7 +2490,7 @@ vColumns : vColumn
                     )
 
                 elif "{}" not in fun:
-                    expr = "{0}({1}{2})".format(fun.upper(), column, cast)
+                    expr = f"{fun.upper()}({column}{cast})"
 
                 else:
                     expr = fun.replace("{}", column)
@@ -3366,7 +3375,14 @@ vColumns : vColumn
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)
         union = "UNION" if not (union_all) else "UNION ALL"
-        table = f"(SELECT {columns} FROM {first_relation}) {union} (SELECT {columns2} FROM {second_relation})"
+        table = f"""
+            (SELECT 
+                {columns} 
+             FROM {first_relation}) 
+             {union} 
+            (SELECT 
+                {columns2} 
+             FROM {second_relation})"""
         return self.__vDataFrameSQL__(
             f"({table}) append_table",
             self._VERTICAPY_VARIABLES_["input_relation"],
@@ -3504,20 +3520,19 @@ vColumns : vColumn
                 func, interp = "TS_FIRST_VALUE", "const"
             else:
                 func, interp = "TS_FIRST_VALUE", "linear"
-            all_elements += ["{0}({1}, '{2}') AS {1}".format(func, column, interp)]
-        table = "SELECT {} FROM {}".format("{}", self.__genSQL__())
+            all_elements += [f"{func}({column}, '{interp}') AS {column}"]
+        table = f"SELECT {{}} FROM {self.__genSQL__()}"
         tmp_query = [f"slice_time AS {quote_ident(ts)}"]
         tmp_query += [quote_ident(column) for column in by]
         tmp_query += all_elements
         table = table.format(", ".join(tmp_query))
-        partition = (
-            "PARTITION BY {} ".format(", ".join([quote_ident(column) for column in by]))
-            if (by)
-            else ""
-        )
-        table += " TIMESERIES slice_time AS '{}' OVER ({}ORDER BY {}::timestamp)".format(
-            rule, partition, quote_ident(ts)
-        )
+        partition = ""
+        if (by):
+            partition = ', '.join([quote_ident(column) for column in by])
+            partition = f"PARTITION BY {partition} "
+        table += f""" 
+            TIMESERIES slice_time AS '{rule}' 
+            OVER ({partition}ORDER BY {quote_ident(ts)}::timestamp)"""
         return self.__vDataFrameSQL__(
             f"({table}) interpolate",
             "interpolate",
