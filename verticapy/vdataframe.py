@@ -68,6 +68,7 @@ from matplotlib.lines import Line2D
 try:
     from geopandas import GeoDataFrame
     from shapely import wkt
+
     GEOPANDAS_ON = True
 except:
     GEOPANDAS_ON = False
@@ -82,13 +83,9 @@ except:
 import verticapy as vp
 import verticapy.plot as plt
 import verticapy.highchart as vpy_hchart
-import verticapy.stats as st
 import verticapy.utilities as util
-import verticapy.learn.metrics as mt
 import verticapy.learn.memmodel as mem
 import verticapy.learn.mlplot as ml_plot
-import verticapy.learn.decomposition as vpy_decomposition
-import verticapy.learn.linear_model as vpy_linear
 from verticapy.decorators import (
     save_verticapy_logs,
     check_dtypes,
@@ -105,7 +102,6 @@ from verticapy.errors import (
     QueryError,
     raise_error_if_not_in,
 )
-from verticapy.utilities import *
 from verticapy.toolbox import *
 
 ###
@@ -219,7 +215,7 @@ vColumns : vColumn
     def __init__(
         self,
         input_relation: Union[
-            str, pd.DataFrame, np.ndarray, list, tablesample, dict
+            str, pd.DataFrame, np.ndarray, list, util.tablesample, dict
         ] = "",
         columns: Union[str, list] = [],
         usecols: Union[str, list] = [],
@@ -292,7 +288,7 @@ vColumns : vColumn
             "sql_push_ext": external and sql_push_ext,
         }
 
-        if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
+        if isinstance(input_relation, (util.tablesample, list, np.ndarray, dict)):
 
             tb = input_relation
 
@@ -310,27 +306,27 @@ vColumns : vColumn
                 for idx in range(nb_cols):
                     col_name = columns[idx] if idx < len(columns) else f"col{idx}"
                     tb[col_name] = [l[idx] for l in input_relation]
-                tb = tablesample(tb)
+                tb = util.tablesample(tb)
 
             elif isinstance(input_relation, dict):
 
-                tb = tablesample(tb)
+                tb = util.tablesample(tb)
 
             if usecols:
                 tb_final = {}
                 for col in usecols:
                     tb_final[col] = tb[col]
-                tb = tablesample(tb_final)
+                tb = util.tablesample(tb_final)
 
             relation = f"({tb.to_sql()}) sql_relation"
-            vDataFrameSQL(relation, name="", schema="", vdf=self)
+            util.vDataFrameSQL(relation, name="", schema="", vdf=self)
 
         elif isinstance(input_relation, pd.DataFrame):
 
             if usecols:
-                df = pandas_to_vertica(input_relation[usecols])
+                df = util.pandas_to_vertica(input_relation[usecols])
             else:
-                df = pandas_to_vertica(input_relation)
+                df = util.pandas_to_vertica(input_relation)
             schema = df._VERTICAPY_VARIABLES_["schema"]
             input_relation = df._VERTICAPY_VARIABLES_["input_relation"]
             self.__init__(input_relation=input_relation, schema=schema)
@@ -347,7 +343,7 @@ vColumns : vColumn
                 sql_tmp = f"(SELECT {usecols_tmp} FROM {sql_tmp}) VERTICAPY_SUBTABLE"
 
             # vDataFrame of the Query
-            vDataFrameSQL(sql_tmp, name="", schema="", vdf=self)
+            util.vDataFrameSQL(sql_tmp, name="", schema="", vdf=self)
 
         elif not (empty):
 
@@ -359,14 +355,14 @@ vColumns : vColumn
             )
             table_name = self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''")
             schema = self._VERTICAPY_VARIABLES_["schema"].replace("'", "''")
-            isflex = isflextable(table_name=table_name, schema=schema)
+            isflex = util.isflextable(table_name=table_name, schema=schema)
             self._VERTICAPY_VARIABLES_["isflex"] = isflex
             if isflex:
-                columns_dtype = compute_flextable_keys(
+                columns_dtype = util.compute_flextable_keys(
                     flex_name=f'"{schema}".{table_name}', usecols=usecols
                 )
             else:
-                columns_dtype = get_data_types(
+                columns_dtype = util.get_data_types(
                     table_name=table_name, schema=schema, usecols=usecols
                 )
             columns_dtype = [(str(dt[0]), str(dt[1])) for dt in columns_dtype]
@@ -388,7 +384,7 @@ vColumns : vColumn
                 category = get_category_from_vertica_type(dtype)
                 if (dtype.lower()[0:12] in ("long varbina", "long varchar")) and (
                     isflex
-                    or isvmap(
+                    or util.isvmap(
                         expr=format_schema_table(schema, table_name), column=column,
                     )
                 ):
@@ -472,7 +468,7 @@ vColumns : vColumn
                 FROM {self.__genSQL__()}
                 {self.__get_last_order_by__()} 
                 OFFSET {index_start}{limit}) VERTICAPY_SUBTABLE"""
-            return vDataFrameSQL(query)
+            return util.vDataFrameSQL(query)
 
         elif isinstance(index, int):
             columns = self.get_columns()
@@ -538,7 +534,7 @@ vColumns : vColumn
         if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (
             self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"
         ):
-            return readSQL(
+            return util.readSQL(
                 self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
                 vp.OPTIONS["time_on"],
                 vp.OPTIONS["max_rows"],
@@ -554,7 +550,7 @@ vColumns : vColumn
             self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"
         ):
             self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
-            return readSQL(
+            return util.readSQL(
                 self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
                 vp.OPTIONS["time_on"],
                 vp.OPTIONS["max_rows"],
@@ -886,7 +882,7 @@ vColumns : vColumn
                         self.__genSQL__(),
                     )
                 )
-                vertica_version(condition=[9, 2, 1])
+                util.vertica_version(condition=[9, 2, 1])
                 result = executeSQL(
                     query=f"""SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
                                 CORR_MATRIX({', '.join(columns)}) 
@@ -1081,7 +1077,7 @@ vColumns : vColumn
                     for idx, column2 in enumerate(values["index"]):
                         val[column2] = values[column1][idx]
                     self.__update_catalog__(values=val, matrix=method, column=column1)
-            return tablesample(values=values).decimal_to_float()
+            return util.tablesample(values=values).decimal_to_float()
         else:
             if method == "cramer":
                 cols = self.catcol()
@@ -1295,7 +1291,9 @@ vColumns : vColumn
             self.__update_catalog__(
                 values={column: vector[idx]}, matrix=method, column=focus
             )
-        return tablesample(values={"index": cols, focus: vector}).decimal_to_float()
+        return util.tablesample(
+            values={"index": cols, focus: vector}
+        ).decimal_to_float()
 
     # ---#
     def __genSQL__(
@@ -1613,7 +1611,7 @@ vColumns : vColumn
         schema = self._VERTICAPY_VARIABLES_["schema"]
         history = self._VERTICAPY_VARIABLES_["history"] + [history]
         saving = self._VERTICAPY_VARIABLES_["saving"]
-        return vDataFrameSQL(table, func, schema, history, saving)
+        return util.vDataFrameSQL(table, func, schema, history, saving)
 
     #
     # Methods used to check & format the inputs
@@ -2646,7 +2644,7 @@ vColumns : vColumn
                         pass
 
         self.__update_catalog__(values)
-        return tablesample(values=values).decimal_to_float().transpose()
+        return util.tablesample(values=values).decimal_to_float().transpose()
 
     agg = aggregate
     # ---#
@@ -4343,7 +4341,7 @@ vColumns : vColumn
     vDataFrame[].decode : Encodes the vColumn using a User Defined Encoding.
     vDataFrame.eval : Evaluates a customized expression.
         """
-        return self.eval(name=name, expr=st.case_when(*argv))
+        return self.eval(name=name, expr=vp.stats.case_when(*argv))
 
     # ---#
     @check_dtypes
@@ -5235,7 +5233,7 @@ vColumns : vColumn
                     result.append(L[i])
                 return result
             try:
-                vertica_version(condition=[9, 0, 0])
+                util.vertica_version(condition=[9, 0, 0])
                 idx = [
                     "index",
                     "count",
@@ -5294,11 +5292,11 @@ vColumns : vColumn
                     # Formatting - to have the same columns' order than the input one.
                     for i, key in enumerate(idx):
                         values[key] += [elem[i] for elem in query_result]
-                    tb = tablesample(values).transpose()
+                    tb = util.tablesample(values).transpose()
                     vals = {"index": tb["index"]}
                     for col in columns:
                         vals[col] = tb[col]
-                    values = tablesample(vals).transpose().values
+                    values = util.tablesample(vals).transpose().values
 
             except:
                 raise
@@ -5514,9 +5512,11 @@ vColumns : vColumn
                 processes=processes,
             ).values["unique"]
 
-        self.__update_catalog__(tablesample(values).transpose().values)
+        self.__update_catalog__(util.tablesample(values).transpose().values)
         values["index"] = [quote_ident(elem) for elem in values["index"]]
-        result = tablesample(values, percent=percent, dtype=dtype).decimal_to_float()
+        result = util.tablesample(
+            values, percent=percent, dtype=dtype
+        ).decimal_to_float()
         if method == "all":
             result = result.transpose()
 
@@ -5653,7 +5653,7 @@ vColumns : vColumn
         for column in self.get_columns():
             values["index"] += [column]
             values["dtype"] += [self[column].ctype()]
-        return tablesample(values)
+        return util.tablesample(values)
 
     # ---#
     @check_dtypes
@@ -5701,7 +5701,7 @@ vColumns : vColumn
         )
         if count:
             return total
-        result = to_tablesample(
+        result = util.to_tablesample(
             "SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {} ORDER BY occurrence DESC LIMIT {}".format(
                 ", ".join(columns), query, ", ".join(columns), limit
             ),
@@ -5770,7 +5770,7 @@ vColumns : vColumn
             )
         try:
             query = f"SELECT {expr} AS {name} FROM {self.__genSQL__()} LIMIT 0"
-            ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
+            ctype = util.get_data_types(query, name[1:-1].replace("'", "''"),)
         except:
             raise QueryError(
                 f"The expression '{expr}' seems to be incorrect.\nBy "
@@ -5782,7 +5782,7 @@ vColumns : vColumn
             ctype = "undefined"
         elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
             self._VERTICAPY_VARIABLES_["isflex"]
-            or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
+            or util.isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
         ):
             category = "vmap"
             ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
@@ -5933,7 +5933,7 @@ vColumns : vColumn
         total += values["header"][0]
         total_expected += values["header"][0]
         values["rawsize"] = [total_expected, total, ""]
-        return tablesample(values=values).transpose()
+        return util.tablesample(values=values).transpose()
 
     # ---#
     @save_verticapy_logs
@@ -6216,7 +6216,7 @@ vColumns : vColumn
             raise EmptyParameter("No VMAP was detected.")
         maplookup = []
         for vmap in vmap_col_final:
-            keys = compute_vmap_keys(expr=self, vmap_col=vmap, limit=limit)
+            keys = util.compute_vmap_keys(expr=self, vmap_col=vmap, limit=limit)
             keys = [k[0] for k in keys]
             maplookup += [
                 "MAPLOOKUP({0}, '{1}') AS {2}".format(
@@ -6960,7 +6960,7 @@ vColumns : vColumn
                 )
             ]
         title = f"Reads the final relation using a limit of {limit} and an offset of {offset}."
-        result = to_tablesample(
+        result = util.to_tablesample(
             "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
                 ", ".join(all_columns),
                 self.__genSQL__(),
@@ -7221,9 +7221,9 @@ vColumns : vColumn
                 on_join += [f"y.{key2} INTERPOLATE PREVIOUS VALUE x.{key1}"]
             elif op in ("jaro", "jarow", "lev"):
                 if op in ("jaro", "jarow"):
-                    vertica_version(condition=[12, 0, 2])
+                    util.vertica_version(condition=[12, 0, 2])
                 else:
-                    vertica_version(condition=[10, 1, 0])
+                    util.vertica_version(condition=[10, 1, 0])
                 op2, x = elem[3], elem[4]
                 raise_error_if_not_in("operator2", op2, simple_operators)
                 map_to_fun = {
@@ -7465,7 +7465,7 @@ vColumns : vColumn
             total += self[column].memory_usage()
         values["index"] += ["total"]
         values["value"] += [total]
-        return tablesample(values=values)
+        return util.tablesample(values=values)
 
     # ---#
     @check_dtypes
@@ -7948,20 +7948,24 @@ vColumns : vColumn
                 schema=vp.OPTIONS["temp_schema"], name="linear_reg1"
             )
             try:
-                drop(tmp_view_name, method="view")
+                util.drop(tmp_view_name, method="view")
                 query = f"CREATE VIEW {tmp_view_name} AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"
                 executeSQL(query, print_time_sql=False)
                 vdf = vDataFrame(tmp_view_name)
-                drop(tmp_lr0_name, method="model")
-                model = vpy_linear.LinearRegression(name=tmp_lr0_name, solver="Newton")
+                util.drop(tmp_lr0_name, method="model")
+                model = vp.learn.linear_model.LinearRegression(
+                    name=tmp_lr0_name, solver="Newton"
+                )
                 model.fit(
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
                     y=column,
                 )
                 model.predict(vdf, name="prediction_0")
-                drop(tmp_lr1_name, method="model")
-                model = vpy_linear.LinearRegression(name=tmp_lr1_name, solver="Newton")
+                util.drop(tmp_lr1_name, method="model")
+                model = vp.learn.linear_model.LinearRegression(
+                    name=tmp_lr1_name, solver="Newton"
+                )
                 model.fit(
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
@@ -7976,9 +7980,9 @@ vColumns : vColumn
             except:
                 raise
             finally:
-                drop(tmp_view_name, method="view")
-                drop(tmp_lr0_name, method="model")
-                drop(tmp_lr1_name, method="model")
+                util.drop(tmp_view_name, method="view")
+                util.drop(tmp_lr0_name, method="model")
+                util.drop(tmp_lr1_name, method="model")
             return result
         else:
             if isinstance(p, (float, int)):
@@ -7997,7 +8001,7 @@ vColumns : vColumn
                         / math.sqrt(self[column].count() - k + 1)
                         * math.sqrt((1 + 2 * sum([pacf[i] ** 2 for i in range(1, k)])))
                     ]
-            result = tablesample({"index": columns, "value": pacf})
+            result = util.tablesample({"index": columns, "value": pacf})
             if pacf_band:
                 result.values["confidence"] = pacf_band
             if show:
@@ -8241,7 +8245,7 @@ vColumns : vColumn
             "categories": [chi2[4] for chi2 in chi2_list],
             "is_numerical": [chi2[5] for chi2 in chi2_list],
         }
-        return tablesample(result)
+        return util.tablesample(result)
 
     # ---#
     @check_dtypes
@@ -8897,7 +8901,7 @@ vColumns : vColumn
                 for idx, column2 in enumerate(values["index"]):
                     val[column2] = values[column1][idx]
                 self.__update_catalog__(values=val, matrix=method, column=column1)
-        return tablesample(values=values).decimal_to_float()
+        return util.tablesample(values=values).decimal_to_float()
 
     # ---#
     @check_dtypes
@@ -9330,7 +9334,7 @@ vColumns : vColumn
             dimensions = (1, 2)
         if isinstance(dimensions, Iterable):
             model_name = gen_tmp_name(schema=vp.OPTIONS["temp_schema"], name="pca_plot")
-            model = vpy_decomposition.PCA(model_name)
+            model = vp.learn.decomposition.PCA(model_name)
             model.drop()
             try:
                 model.fit(self, columns)
@@ -9668,8 +9672,10 @@ vColumns : vColumn
         """
         y_true, y_score = self.format_colnames(y_true, y_score)
         method = str(method).lower()
-        raise_error_if_not_in("method", method, list(mt.FUNCTIONS_DICTIONNARY.keys()))
-        fun = mt.FUNCTIONS_DICTIONNARY[method]
+        raise_error_if_not_in(
+            "method", method, list(vp.learn.metrics.FUNCTIONS_DICTIONNARY.keys())
+        )
+        fun = vp.learn.metrics.FUNCTIONS_DICTIONNARY[method]
         argv = [y_true, y_score, self.__genSQL__()]
         kwds = {}
         if method in ("accuracy", "acc"):
@@ -9679,7 +9685,7 @@ vColumns : vColumn
             kwds["best_threshold"] = True
         elif method in ("roc_curve", "roc", "prc_curve", "prc", "lift_chart", "lift"):
             kwds["nbins"] = nbins
-        return mt.FUNCTIONS_DICTIONNARY[method](*argv, **kwds)
+        return vp.learn.metrics.FUNCTIONS_DICTIONNARY[method](*argv, **kwds)
 
     # ---#
     def shape(self):
@@ -10272,7 +10278,7 @@ vColumns : vColumn
     geopandas.GeoDataFrame
         The geopandas.GeoDataFrame of the current vDataFrame relation.
         """
-        if not(GEOPANDAS_ON):
+        if not (GEOPANDAS_ON):
             raise ImportError(
                 "The geopandas module doesn't seem to be installed in your "
                 "environment.\nTo be able to use this method, you'll have to "
@@ -10620,7 +10626,7 @@ vColumns : vColumn
             self.__genSQL__(),
         )
         title = "Exporting data to Parquet format."
-        result = to_tablesample(
+        result = util.to_tablesample(
             query,
             title=title,
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -10756,24 +10762,29 @@ vColumns : vColumn
             if isinstance(random_state, int)
             else random.randint(-10e6, 10e6)
         )
-        random_func = "SEEDED_RANDOM({})".format(random_seed)
-        query = "SELECT /*+LABEL('vDataframe.train_test_split')*/ APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {}".format(
-            random_func, test_size, self.__genSQL__()
-        )
+        random_func = f"SEEDED_RANDOM({random_seed})"
+        query = f"""
+            SELECT 
+                /*+LABEL('vDataframe.train_test_split')*/ 
+                APPROXIMATE_PERCENTILE({random_func} 
+                    USING PARAMETERS percentile = {test_size}) 
+            FROM {self.__genSQL__()}"""
         q = executeSQL(
             query,
             title="Computing the seeded numbers quantile.",
             method="fetchfirstelem",
         )
-        test_table = "(SELECT * FROM {} WHERE {} < {}{}) x".format(
-            self.__genSQL__(), random_func, q, order_by,
-        )
-        train_table = "(SELECT * FROM {} WHERE {} > {}{}) x".format(
-            self.__genSQL__(), random_func, q, order_by,
-        )
+        test_table = f"""
+            (SELECT * 
+             FROM {self.__genSQL__()} 
+             WHERE {random_func} < {q}{order_by}) x"""
+        train_table = f"""
+            (SELECT * 
+             FROM {self.__genSQL__()} 
+             WHERE {random_func} > {q}{order_by}) x"""
         return (
-            vDataFrameSQL(relation=train_table),
-            vDataFrameSQL(relation=test_table),
+            util.vDataFrameSQL(relation=train_table),
+            util.vDataFrameSQL(relation=test_table),
         )
 
     # ---#
@@ -10877,7 +10888,7 @@ vColumns : vColumn
         iv = [coeff_importances[elem] for elem in coeff_importances]
         data = [(index[i], iv[i]) for i in range(len(iv))]
         data = sorted(data, key=lambda tup: tup[1], reverse=True)
-        return tablesample(
+        return util.tablesample(
             {"index": [elem[0] for elem in data], "iv": [elem[1] for elem in data],}
         )
 
