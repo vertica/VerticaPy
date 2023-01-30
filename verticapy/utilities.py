@@ -328,52 +328,88 @@ bool
         method = "temp"
     if method == "auto":
         fail, end_conditions = False, False
-        query = (
-            f"SELECT /*+LABEL('utilities.drop')*/ * FROM columns WHERE table_schema = '{schema}'"
-            f" AND table_name = '{relation}'"
+        result = executeSQL(
+            query=f"""
+            SELECT 
+                /*+LABEL('utilities.drop')*/ * 
+            FROM columns 
+            WHERE table_schema = '{schema}' 
+                AND table_name = '{relation}'""",
+            print_time_sql=False,
+            method="fetchrow",
         )
-        result = executeSQL(query, print_time_sql=False, method="fetchrow")
         if not (result):
-            query = (
-                f"SELECT /*+LABEL('utilities.drop')*/ * FROM view_columns WHERE table_schema = '{schema}'"
-                f" AND table_name = '{relation}'"
+            result = executeSQL(
+                query=f"""
+                SELECT 
+                    /*+LABEL('utilities.drop')*/ * 
+                FROM view_columns 
+                WHERE table_schema = '{schema}' 
+                    AND table_name = '{relation}'""",
+                print_time_sql=False,
+                method="fetchrow",
             )
-            result = executeSQL(query, print_time_sql=False, method="fetchrow")
         elif not (end_conditions):
             method = "table"
             end_conditions = True
         if not (result):
             try:
-                query = (
-                    "SELECT /*+LABEL('utilities.drop')*/ model_type FROM verticapy.models WHERE "
-                    "LOWER(model_name) = '{0}'"
-                ).format(quote_ident(name).lower())
-                result = executeSQL(query, print_time_sql=False, method="fetchrow")
+                result = executeSQL(
+                    query=f"""
+                    SELECT 
+                        /*+LABEL('utilities.drop')*/ model_type 
+                    FROM verticapy.models 
+                    WHERE LOWER(model_name) = '{quote_ident(name).lower()}'""",
+                    print_time_sql=False,
+                    method="fetchrow",
+                )
             except:
                 result = []
         elif not (end_conditions):
             method = "view"
             end_conditions = True
         if not (result):
-            query = f"SELECT /*+LABEL('utilities.drop')*/ * FROM models WHERE schema_name = '{schema}' AND model_name = '{relation}'"
-            result = executeSQL(query, print_time_sql=False, method="fetchrow")
+            result = executeSQL(
+                query=f"""
+                SELECT 
+                    /*+LABEL('utilities.drop')*/ * 
+                FROM models 
+                WHERE schema_name = '{schema}' 
+                    AND model_name = '{relation}'""",
+                print_time_sql=False,
+                method="fetchrow",
+            )
         elif not (end_conditions):
             method = "model"
             end_conditions = True
         if not (result):
-            query = (
-                "SELECT /*+LABEL('utilities.drop')*/ * FROM (SELECT STV_Describe_Index () OVER ()) x  WHERE name IN "
-                f"('{schema}.{relation}', '{relation}', '\"{schema}\".\"{relation}\"', "
-                f"'\"{relation}\"', '{schema}.\"{relation}\"', '\"{schema}\".{relation}')"
+            result = executeSQL(
+                query=f"""
+                SELECT 
+                    /*+LABEL('utilities.drop')*/ * 
+                FROM 
+                    (SELECT STV_Describe_Index () OVER ()) x  
+                WHERE name IN ('{schema}.{relation}',
+                               '{relation}',
+                               '\"{schema}\".\"{relation}\"',
+                               '\"{relation}\"',
+                               '{schema}.\"{relation}\"',
+                               '\"{schema}\".{relation}')""",
+                print_time_sql=False,
+                method="fetchrow",
             )
-            result = executeSQL(query, print_time_sql=False, method="fetchrow")
         elif not (end_conditions):
             method = "model"
             end_conditions = True
         if not (result):
             try:
-                query = f'SELECT /*+LABEL(\'utilities.drop\')*/ * FROM "{schema}"."{relation}" LIMIT 0;'
-                executeSQL(query, print_time_sql=False)
+                executeSQL(
+                    query=f"""
+                        SELECT 
+                            /*+LABEL(\'utilities.drop\')*/ * 
+                        FROM "{schema}"."{relation}" LIMIT 0;""",
+                    print_time_sql=False,
+                )
                 method = "text"
             except:
                 fail = True
@@ -390,10 +426,15 @@ bool
     if method == "model":
         model_type = kwds["model_type"] if "model_type" in kwds else None
         try:
-            query = "SELECT /*+LABEL('utilities.drop')*/ model_type FROM verticapy.models WHERE LOWER(model_name) = '{0}'".format(
-                quote_ident(name).lower()
+            result = executeSQL(
+                query=f"""
+                    SELECT 
+                        /*+LABEL('utilities.drop')*/ model_type 
+                    FROM verticapy.models 
+                    WHERE LOWER(model_name) = '{quote_ident(name).lower()}'""",
+                print_time_sql=False,
+                method="fetchfirstelem",
             )
-            result = executeSQL(query, print_time_sql=False, method="fetchfirstelem")
             is_in_verticapy_schema = True
             if not (model_type):
                 model_type = result
@@ -418,11 +459,16 @@ bool
             elif model_type == "CountVectorizer":
                 drop(name, method="text")
                 if is_in_verticapy_schema:
-                    query = (
-                        "SELECT /*+LABEL('utilities.drop')*/ value FROM verticapy.attr WHERE LOWER(model_name) = '{0}' "
-                        "AND attr_name = 'countvectorizer_table'"
-                    ).format(quote_ident(name).lower())
-                    res = executeSQL(query, print_time_sql=False, method="fetchrow")
+                    res = executeSQL(
+                        query=f"""
+                            SELECT 
+                                /*+LABEL('utilities.drop')*/ value 
+                            FROM verticapy.attr 
+                            WHERE LOWER(model_name) = '{quote_ident(name).lower()}' 
+                                AND attr_name = 'countvectorizer_table'""",
+                        print_time_sql=False,
+                        method="fetchrow",
+                    )
                     if res and res[0]:
                         drop(res[0], method="table")
             elif model_type == "KernelDensity":
@@ -434,15 +480,21 @@ bool
             elif model_type == "AutoDataPrep":
                 drop(name, method="table")
             if is_in_verticapy_schema:
-                sql = "DELETE /*+LABEL('utilities.drop')*/ FROM verticapy.models WHERE LOWER(model_name) = '{0}';".format(
-                    quote_ident(name).lower()
+                executeSQL(
+                    query=f"""
+                        DELETE /*+LABEL('utilities.drop')*/ 
+                        FROM verticapy.models 
+                        WHERE LOWER(model_name) = '{quote_ident(name).lower()}';""",
+                    title="Deleting vModel.",
                 )
-                executeSQL(sql, title="Deleting vModel.")
                 executeSQL("COMMIT;", title="Commit.")
-                sql = "DELETE /*+LABEL('utilities.drop')*/ FROM verticapy.attr WHERE LOWER(model_name) = '{0}';".format(
-                    quote_ident(name).lower()
+                executeSQL(
+                    query=f"""
+                        DELETE /*+LABEL('utilities.drop')*/ 
+                        FROM verticapy.attr 
+                        WHERE LOWER(model_name) = '{quote_ident(name).lower()}';""",
+                    title="Deleting vModel attributes.",
                 )
-                executeSQL(sql, title="Deleting vModel attributes.")
                 executeSQL("COMMIT;", title="Commit.")
         else:
             query = f"DROP MODEL {name};"
@@ -1555,11 +1607,13 @@ read_json : Ingests a JSON file into the Vertica database.
             file_header = get_header_name_csv(path_first_file_in_folder, sep)
         elif not (header_names) and not (dtype) and (compression != "UNCOMPRESSED"):
             raise ParameterError(
-                "The input file is compressed and parameters 'dtypes' and 'header_names' are not defined. It is impossible to read the file's header."
+                "The input file is compressed and parameters 'dtypes' and 'header_names'"
+                " are not defined. It is impossible to read the file's header."
             )
         elif not (header_names) and not (dtype) and not (ingest_local):
             raise ParameterError(
-                "The input file is in the Vertica server and parameters 'dtypes' and 'header_names' are not defined. It is impossible to read the file's header."
+                "The input file is in the Vertica server and parameters 'dtypes' and "
+                "'header_names' are not defined. It is impossible to read the file's header."
             )
         if (header_names == []) and (header):
             if not (dtype):

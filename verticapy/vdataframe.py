@@ -1199,11 +1199,7 @@ vColumns : vColumn
                         )
                         all_list += [tau_b]
                     elif method == "cov":
-                        all_list += [
-                            "COVAR_POP({0}{1}, {2}{3})".format(
-                                focus, cast_i, column, cast_j
-                            )
-                        ]
+                        all_list += [f"COVAR_POP({focus}{cast_i}, {column}{cast_j})"]
                 if method in ("spearman", "spearmand"):
                     fun = "DENSE_RANK" if method == "spearmand" else "RANK"
                     rank = [
@@ -2549,9 +2545,11 @@ vColumns : vColumn
                     if (len(query) != 1)
                     else query[0]
                 )
-                query = "WITH vdf_table AS (SELECT /*+LABEL('vDataframe.aggregate')*/ * FROM {}) {}".format(
-                    self.__genSQL__(), query
-                )
+                query = f"""
+                    WITH vdf_table AS 
+                        (SELECT 
+                            /*+LABEL('vDataframe.aggregate')*/ * 
+                         FROM {self.__genSQL__()}) {query}"""
                 if nb_precomputed == len(func) * len(columns):
                     result = executeSQL(query, print_time_sql=False, method="fetchall")
                 else:
@@ -3044,9 +3042,10 @@ vColumns : vColumn
                     den = " / (VARIANCE({0}) OVER ({1}))".format(columns[1], by)
                 else:
                     den = ""
-                expr = "(AVG({0} * {1}) OVER ({2}) - AVG({0}) OVER ({2}) * AVG({1}) OVER ({2})){3}".format(
-                    columns[0], columns[1], by, den
-                )
+                expr = f"""
+                    (AVG({columns[0]} * {columns[1]}) OVER ({by}) 
+                   - AVG({columns[0]}) OVER ({by}) 
+                   * AVG({columns[1]}) OVER ({by})){den}"""
             self.eval(name, expr)
         else:
             try:
@@ -3982,9 +3981,11 @@ vColumns : vColumn
         for column in self.get_columns():
             if (self[column].category() == "int") and not (self[column].isbool()):
                 is_cat = executeSQL(
-                    "SELECT /*+LABEL('vDataframe.catcol')*/ (APPROXIMATE_COUNT_DISTINCT({}) < {}) FROM {}".format(
-                        column, max_cardinality, self.__genSQL__()
-                    ),
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('vDataframe.catcol')*/ 
+                            (APPROXIMATE_COUNT_DISTINCT({column}) < {max_cardinality}) 
+                        FROM {self.__genSQL__()}""",
                     title="Looking at columns with low cardinality.",
                     method="fetchfirstelem",
                     sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -4307,7 +4308,10 @@ vColumns : vColumn
                             "was ignored."
                         ).format(col, self[col].category())
                     else:
-                        warning_message = f"vColumn '{col}' has a too high cardinality (> {max_cardinality}). This vColumn was ignored."
+                        warning_message = (
+                            f"vColumn '{col}' has a too high cardinality "
+                            f"(> {max_cardinality}). This vColumn was ignored."
+                        )
                     warnings.warn(warning_message, Warning)
         for col in remove_cols:
             columns_tmp.remove(col)
@@ -5281,19 +5285,17 @@ vColumns : vColumn
                         for fun in idx[1:]:
                             values[fun] += [self.__get_catalog_value__(column, fun)]
                 if col_to_compute:
-                    query = "SELECT /*+LABEL('vDataframe.describe')*/ SUMMARIZE_NUMCOL({}) OVER () FROM {}".format(
-                        ", ".join(
-                            [
-                                elem
-                                if not (self[elem].isbool())
-                                else "{}::int".format(elem)
-                                for elem in col_to_compute
-                            ]
-                        ),
-                        self.__genSQL__(),
-                    )
+                    cols_to_compute_str = [
+                        col if not (self[col].isbool()) else f"{col}::int"
+                        for col in col_to_compute
+                    ]
+                    cols_to_compute_str = ", ".join(cols_to_compute_str)
                     query_result = executeSQL(
-                        query,
+                        query=f"""
+                            SELECT 
+                                /*+LABEL('vDataframe.describe')*/ 
+                                SUMMARIZE_NUMCOL({cols_to_compute_str}) OVER () 
+                            FROM {self.__genSQL__()}""",
                         title=(
                             "Computing the descriptive statistics of all numerical "
                             "columns using SUMMARIZE_NUMCOL."
@@ -5374,9 +5376,12 @@ vColumns : vColumn
                 "AVG(LENGTH({}::varchar)) AS avg_length",
                 "STDDEV(LENGTH({}::varchar)) AS stddev_length",
                 "MIN(LENGTH({}::varchar))::int AS min_length",
-                "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.25)::int AS '25%_length'",
-                "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.5)::int AS '50%_length'",
-                "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.75)::int AS '75%_length'",
+                """APPROXIMATE_PERCENTILE(LENGTH({}::varchar) 
+                        USING PARAMETERS percentile = 0.25)::int AS '25%_length'""",
+                """APPROXIMATE_PERCENTILE(LENGTH({}::varchar)
+                        USING PARAMETERS percentile = 0.5)::int AS '50%_length'""",
+                """APPROXIMATE_PERCENTILE(LENGTH({}::varchar) 
+                        USING PARAMETERS percentile = 0.75)::int AS '75%_length'""",
                 "MAX(LENGTH({}::varchar))::int AS max_length",
             ]
             values = self.aggregate(
@@ -5483,9 +5488,12 @@ vColumns : vColumn
                         "AVG(LENGTH({}::varchar)) AS avg",
                         "STDDEV(LENGTH({}::varchar)) AS stddev",
                         "MIN(LENGTH({}::varchar))::int AS min",
-                        "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.25)::int AS 'approx_25%'",
-                        "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.5)::int AS 'approx_50%'",
-                        "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.75)::int AS 'approx_75%'",
+                        """APPROXIMATE_PERCENTILE(LENGTH({}::varchar) 
+                                USING PARAMETERS percentile = 0.25)::int AS 'approx_25%'""",
+                        """APPROXIMATE_PERCENTILE(LENGTH({}::varchar) 
+                                USING PARAMETERS percentile = 0.5)::int AS 'approx_50%'""",
+                        """APPROXIMATE_PERCENTILE(LENGTH({}::varchar) 
+                                USING PARAMETERS percentile = 0.75)::int AS 'approx_75%'""",
                         "MAX(LENGTH({}::varchar))::int AS max",
                         "MAX(LENGTH({}::varchar))::int - MIN(LENGTH({}::varchar))::int AS range",
                         "SUM(CASE WHEN LENGTH({}::varchar) = 0 THEN 1 ELSE 0 END) AS empty",
@@ -5696,34 +5704,51 @@ vColumns : vColumn
     --------
     vDataFrame.drop_duplicates : Filters the duplicated values.
         """
-        if isinstance(columns, str):
+        if not (columns):
+            columns = self.get_columns()
+        elif isinstance(columns, str):
             columns = [columns]
-        columns = self.get_columns() if not (columns) else self.format_colnames(columns)
-        query = "(SELECT *, ROW_NUMBER() OVER (PARTITION BY {}) AS duplicated_index FROM {}) duplicated_index_table WHERE duplicated_index > 1".format(
-            ", ".join(columns), self.__genSQL__()
-        )
-        total = executeSQL(
-            query="SELECT /*+LABEL('vDataframe.duplicated')*/ COUNT(*) FROM {}".format(
-                query
-            ),
-            title="Computing the number of duplicates.",
-            method="fetchfirstelem",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
-        )
+        columns = self.format_colnames(columns)
+        columns = ", ".join(columns)
+        main_table = f"""
+            (SELECT 
+                *, 
+                ROW_NUMBER() OVER (PARTITION BY {columns}) AS duplicated_index 
+             FROM {self.__genSQL__()}) duplicated_index_table 
+             WHERE duplicated_index > 1"""
         if count:
+            total = executeSQL(
+                query=f"""
+                    SELECT 
+                        /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
+                    FROM {main_table}""",
+                title="Computing the number of duplicates.",
+                method="fetchfirstelem",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            )
             return total
         result = util.to_tablesample(
-            "SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {} ORDER BY occurrence DESC LIMIT {}".format(
-                ", ".join(columns), query, ", ".join(columns), limit
-            ),
+            query=f"""
+                SELECT 
+                    {columns},
+                    MAX(duplicated_index) AS occurrence 
+                FROM {main_table} 
+                GROUP BY {columns} 
+                ORDER BY occurrence DESC LIMIT {limit}""",
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
             symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
         result.count = executeSQL(
-            query="SELECT /*+LABEL('vDataframe.duplicated')*/ COUNT(*) FROM (SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {}) t".format(
-                ", ".join(columns), query, ", ".join(columns)
-            ),
+            query=f"""
+                SELECT 
+                    /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
+                FROM 
+                    (SELECT 
+                        {columns}, 
+                        MAX(duplicated_index) AS occurrence 
+                     FROM {main_table} 
+                     GROUP BY {columns}) t""",
             title="Computing the number of distinct duplicates.",
             method="fetchfirstelem",
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -7975,7 +8000,9 @@ vColumns : vColumn
             )
             try:
                 util.drop(tmp_view_name, method="view")
-                query = f"CREATE VIEW {tmp_view_name} AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"
+                query = f"""
+                    CREATE VIEW {tmp_view_name} 
+                        AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"""
                 executeSQL(query, print_time_sql=False)
                 vdf = vDataFrame(tmp_view_name)
                 util.drop(tmp_lr0_name, method="model")
@@ -8156,7 +8183,10 @@ vColumns : vColumn
         return self.__vDataFrameSQL__(
             relation,
             "pivot",
-            f"[Pivot]: Pivot table using index = {index} & columns = {columns} & values = {values}",
+            (
+                f"[Pivot]: Pivot table using index = {index} & "
+                f"columns = {columns} & values = {values}"
+            ),
         )
 
     # ---#
@@ -8868,17 +8898,13 @@ vColumns : vColumn
                 for j in range(0, n):
                     result += [
                         executeSQL(
-                            query="SELECT /*+LABEL('vDataframe.regr')*/ {}({}{}, {}{}) FROM {}".format(
-                                method.upper(),
-                                columns[i],
-                                cast_i,
-                                columns[j],
-                                cast_j,
-                                self.__genSQL__(),
-                            ),
-                            title="Computing the {} aggregation, one at a time.".format(
-                                method.upper()
-                            ),
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vDataframe.regr')*/ 
+                                    {method.upper()}({columns[i]}{cast_i}, 
+                                                     {columns[j]}{cast_j}) 
+                                FROM {self.__genSQL__()}""",
+                            title=f"Computing the {method.upper()} aggregation, one at a time.",
                             method="fetchfirstelem",
                             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
                             symbol=self._VERTICAPY_VARIABLES_["symbol"],
