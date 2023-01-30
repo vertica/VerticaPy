@@ -304,7 +304,7 @@ Main Class for Vertica Model
                                                     USING PARAMETERS 
                                                     model_name = '{name}',
                                                     match_by_pos = 'true')"""
-            return sql
+            return clean_query(sql)
         else:
             raise FunctionError(f"Method 'deploySQL' for '{self.type}' doesn't exist.")
 
@@ -1955,7 +1955,7 @@ class BinaryClassifier(Classifier):
                         THEN NULL 
                     ELSE 0 
                 END)"""
-        return sql
+        return clean_query(sql)
 
     # ---#
     @check_dtypes
@@ -2410,7 +2410,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return roc_curve(
+        return mt.roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2507,6 +2507,10 @@ class MulticlassClassifier(Classifier):
                     sql = self.to_memmodel().predict_sql(X)
                 else:
                     sql = sql[1]
+        if isinstance(sql, str):
+            sql = clean_query(sql)
+        else:
+            sql = [clean_query(q) for q in sql]
         return sql
 
     # ---#
@@ -3434,44 +3438,44 @@ class Preprocessing(Unsupervised):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        X = [quote_ident(elem) for elem in X]
-        fun = self.VERTICA_TRANSFORM_FUNCTION_SQL
-        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
+        if not (X):
+            X = self.X
+        else:
+            X = [quote_ident(elem) for elem in X]
         if key_columns:
-            sql += ", key_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in key_columns])
-            )
+            key_columns = ", ".join([quote_ident(col) for col in key_columns])
         if exclude_columns:
-            sql += ", exclude_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in exclude_columns])
-            )
+            exclude_columns = ", ".join([quote_ident(col) for col in exclude_columns])
+        sql = f"""
+            {self.VERTICA_TRANSFORM_FUNCTION_SQL}({', '.join(X)} 
+               USING PARAMETERS 
+               model_name = '{self.name}',
+               match_by_pos = 'true'"""
+        if key_columns:
+            sql += f", key_columns = '{key_columns}'"
+        if exclude_columns:
+            sql += f", exclude_columns = '{exclude_columns}'"
         if self.type == "OneHotEncoder":
-            separator = (
-                "NULL"
-                if self.parameters["separator"] == None
-                else "'{}'".format(self.parameters["separator"])
-            )
-            null_column_name = (
-                "NULL"
-                if self.parameters["null_column_name"] == None
-                else "'{}'".format(self.parameters["null_column_name"])
-            )
-            sql += (
-                ", drop_first = {0}, ignore_null = {1}, separator = {2}, "
-                "column_naming = '{3}'"
-            ).format(
-                self.parameters["drop_first"],
-                self.parameters["ignore_null"],
-                separator,
-                self.parameters["column_naming"],
-            )
+            if self.parameters["separator"] == None:
+                separator = "null"
+            else:
+                separator = self.parameters["separator"].lower()
+            sql += f""", 
+                drop_first = '{str(self.parameters['drop_first']).lower()}',
+                ignore_null = '{str(self.parameters['ignore_null']).lower()}',
+                separator = '{separator}',
+                column_naming = '{self.parameters['column_naming']}'"""
             if self.parameters["column_naming"].lower() in (
                 "values",
                 "values_relaxed",
             ):
-                sql += ", null_column_name = {}".format(null_column_name)
+                if self.parameters["null_column_name"] == None:
+                    null_column_name = "null"
+                else:
+                    null_column_name = self.parameters["null_column_name"].lower()
+                sql += f", null_column_name = '{null_column_name}'"
         sql += ")"
-        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
+        return clean_query(sql)
 
     # ---#
     @check_dtypes
@@ -3722,23 +3726,27 @@ class Decomposition(Preprocessing):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        X = [quote_ident(elem) for elem in X]
-        fun = self.VERTICA_TRANSFORM_FUNCTION_SQL
-        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
-        if key_columns:
-            sql += ", key_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in key_columns])
-            )
-        if exclude_columns:
-            sql += ", exclude_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in exclude_columns])
-            )
-        if n_components:
-            sql += ", num_components = {}".format(n_components)
+        if not (X):
+            X = self.X
         else:
-            sql += ", cutoff = {}".format(cutoff)
+            X = [quote_ident(elem) for elem in X]
+        fun = self.VERTICA_TRANSFORM_FUNCTION_SQL
+        sql = f"""{self.VERTICA_TRANSFORM_FUNCTION_SQL}({', '.join(X)} 
+                                                        USING PARAMETERS
+                                                        model_name = '{self.name}',
+                                                        match_by_pos = 'true'"""
+        if key_columns:
+            key_columns = ", ".join([quote_ident(col) for col in key_columns])
+            sql += f", key_columns = '{key_columns}'"
+        if exclude_columns:
+            exclude_columns = ", ".join([quote_ident(col) for col in exclude_columns])
+            sql += f", exclude_columns = '{exclude_columns}'"
+        if n_components:
+            sql += f", num_components = {n_components}"
+        else:
+            sql += f", cutoff = {cutoff}"
         sql += ")"
-        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
+        return clean_query(sql)
 
     # ---#
     @check_dtypes

@@ -769,7 +769,7 @@ Attributes
             ) and self.category() == "vmap":
                 transformation = (
                     f"MAPTOSTRING({self.alias} USING PARAMETERS canonical_json=false)::{dtype}",
-                    f"MAPTOSTRING({{}} USING PARAMETERS canonical_json=false)::{dtype}"
+                    f"MAPTOSTRING({{}} USING PARAMETERS canonical_json=false)::{dtype}",
                 )
             elif dtype == "json":
                 if self.category() == "vmap":
@@ -4272,10 +4272,10 @@ Attributes
 	vDataFrame[].describe : Computes the vColumn descriptive statistics.
 		"""
         limit, where, topk_cat = "", "", ""
-        if (k >= 1):
+        if k >= 1:
             limit = f"LIMIT {k}"
             topk_cat = k
-        if (dropna):
+        if dropna:
             where = f" WHERE {self.alias} IS NOT NULL"
         alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
         result = executeSQL(
