@@ -339,7 +339,7 @@ def sql(line, cell="", local_ns=None):
             else:
                 result.to_csv(options["-o"])
 
-        # Displaying the information
+        # Displaying the time
 
         elapsed_time = round(time.time() - start_time, 3)
 

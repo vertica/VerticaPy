@@ -161,34 +161,31 @@ Attributes
             if self.isarray():
                 vertica_version(condition=[10, 0, 0])
                 if index_start < 0:
-                    index_start_str = str(index_start) + " + APPLY_COUNT_ELEMENTS({})"
+                    index_start_str = f"{index_start} + APPLY_COUNT_ELEMENTS({{}})"
                 else:
                     index_start_str = str(index_start)
                 if isinstance(index_stop, int):
                     if index_stop < 0:
-                        index_stop_str = str(index_stop) + " + APPLY_COUNT_ELEMENTS({})"
+                        index_stop_str = f"{index_stop} + APPLY_COUNT_ELEMENTS({{}})"
                     else:
                         index_stop_str = str(index_stop)
                 else:
                     index_stop_str = "1 + APPLY_COUNT_ELEMENTS({})"
-                elem_to_select = "{0}[{1}:{2}]".format(
-                    self.alias, index_start_str, index_stop_str
-                ).replace("{}", self.alias)
-                new_alias = quote_ident(
-                    self.alias[1:-1] + "." + str(index_start) + ":" + str(index_stop)
-                )
-                query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
-                    elem_to_select, new_alias, self.parent.__genSQL__(),
-                )
+                elem_to_select = f"{self.alias}[{index_start_str}:{index_stop_str}]"
+                elem_to_select = elem_to_select.format(self.alias)
+                new_alias = quote_ident(f"{self.alias[1:-1]}.{index_start}:{index_stop}")
+                query = f"""
+                    (SELECT 
+                        {elem_to_select} AS {new_alias} 
+                    FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
                 vcol = vDataFrameSQL(query)[new_alias]
                 vcol.transformations[-1] = (
                     new_alias,
                     self.ctype(),
                     self.category(),
                 )
-                vcol.init_transf = "{0}[{1}:{2}]".format(
-                    self.init_transf, index_start_str, index_stop_str
-                ).replace("{}", self.init_transf)
+                vcol.init_transf = f"{self.init_transf}[{index_start_str}:{index_stop_str}]"
+                vcol.init_transf = vcol.init_transf.format(self.init_transf)
                 return vcol
             else:
                 if index_start < 0:
@@ -213,13 +210,14 @@ Attributes
         elif isinstance(index, int):
             if self.isarray():
                 vertica_version(condition=[9, 3, 0])
-                elem_to_select = "{0}[{1}]".format(self.alias, index)
-                new_alias = quote_ident(self.alias[1:-1] + "." + str(index))
-                query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
-                    elem_to_select, new_alias, self.parent.__genSQL__(),
-                )
+                elem_to_select = f"{self.alias}[{index}]"
+                new_alias = quote_ident(f"{self.alias[1:-1]}.{index}")
+                query = f"""
+                    (SELECT 
+                        {elem_to_select} AS {new_alias} 
+                    FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
                 vcol = vDataFrameSQL(query)[new_alias]
-                vcol.init_transf = "{0}[{1}]".format(self.init_transf, index)
+                vcol.init_transf = f"{self.init_transf}[{index}]"
                 return vcol
             else:
                 cast = "::float" if self.category() == "float" else ""
@@ -241,16 +239,13 @@ Attributes
                 )
         elif isinstance(index, str):
             if self.category() == "vmap":
-                elem_to_select = "MAPLOOKUP({0}, '{1}')".format(
-                    self.alias, index.replace("'", "''")
-                )
-                init_transf = "MAPLOOKUP({0}, '{1}')".format(
-                    self.init_transf, index.replace("'", "''")
-                )
+                index_str = index.replace("'", "''")
+                elem_to_select = f"MAPLOOKUP({self.alias}, '{index_str}')"
+                init_transf = f"MAPLOOKUP({self.init_transf}, '{index_str}')"
             else:
                 vertica_version(condition=[10, 0, 0])
-                elem_to_select = self.alias + "." + quote_ident(index)
-                init_transf = self.init_transf + "." + quote_ident(index)
+                elem_to_select = f"{self.alias}.{quote_ident(index)}"
+                init_transf = f"{self.init_transf}.{quote_ident(index)}"
             query = f"""
                 (SELECT 
                     {elem_to_select} AS {quote_ident(index)} 
@@ -476,25 +471,18 @@ Attributes
 		"""
         if isinstance(func, str_sql):
             func = str(func)
+        func_apply = func.format(self.alias)
+        alias_sql_repr = self.alias.replace('"', "")
         try:
-            try:
-                ctype = get_data_types(
-                    "SELECT {} AS apply_test_feature FROM {} WHERE {} IS NOT NULL LIMIT 0".format(
-                        func.replace("{}", self.alias),
-                        self.parent.__genSQL__(),
-                        self.alias,
-                    ),
-                    "apply_test_feature",
-                )
-            except:
-                ctype = get_data_types(
-                    "SELECT {} AS apply_test_feature FROM {} WHERE {} IS NOT NULL LIMIT 0".format(
-                        func.replace("{}", self.alias),
-                        self.parent.__genSQL__(),
-                        self.alias,
-                    ),
-                    "apply_test_feature",
-                )
+            ctype = get_data_types(
+                expr=f"""
+                    SELECT 
+                        {func_apply} AS apply_test_feature 
+                    FROM {self.parent.__genSQL__()} 
+                    WHERE {self.alias} IS NOT NULL 
+                    LIMIT 0""",
+                column="apply_test_feature",
+            )
             category = get_category_from_vertica_type(ctype=ctype)
             all_cols, max_floor = self.parent.get_columns(), 0
             for column in all_cols:
@@ -512,6 +500,7 @@ Attributes
                     pass
             max_floor -= len(self.transformations)
             if copy_name:
+                copy_name_str = copy_name.replace('"', "")
                 self.add_copy(name=copy_name)
                 for k in range(max_floor):
                     self.parent[copy_name].transformations += [
@@ -519,27 +508,20 @@ Attributes
                     ]
                 self.parent[copy_name].transformations += [(func, ctype, category)]
                 self.parent[copy_name].catalog = self.catalog
-                self.parent.__add_to_history__(
-                    "[Apply]: The vColumn '{}' was transformed with the func 'x -> {}'.".format(
-                        copy_name.replace('"', ""), func.replace("{}", "x"),
-                    )
-                )
             else:
                 for k in range(max_floor):
                     self.transformations += [("{}", self.ctype(), self.category())]
                 self.transformations += [(func, ctype, category)]
                 self.parent.__update_catalog__(erase=True, columns=[self.alias])
-                self.parent.__add_to_history__(
-                    "[Apply]: The vColumn '{}' was transformed with the func 'x -> {}'.".format(
-                        self.alias.replace('"', ""), func.replace("{}", "x"),
-                    )
-                )
+            self.parent.__add_to_history__(
+                f"[Apply]: The vColumn '{alias_sql_repr}' was "
+                f"transformed with the func 'x -> {func_apply}'."
+            )
             return self.parent
         except Exception as e:
             raise QueryError(
-                "{}\nError when applying the func 'x -> {}' to '{}'".format(
-                    e, func.replace("{}", "x"), self.alias.replace('"', "")
-                )
+                f"{e}\nError when applying the func 'x -> {func_apply}' "
+                f"to '{alias_sql_repr}'"
             )
 
     # ---#
@@ -722,18 +704,16 @@ Attributes
                     if len(biggest_str) > 2 and (
                         (biggest_str[0] == "{" and biggest_str[-1] == "}")
                     ):
-                        transformation = (
-                            f"MAPJSONEXTRACTOR({ self.alias} USING PARAMETERS flatten_maps=false)",
-                            "MAPJSONEXTRACTOR({} USING PARAMETERS flatten_maps=false)",
-                        )
+                        transformation_2 = """MAPJSONEXTRACTOR({} 
+                                                    USING PARAMETERS flatten_maps=false)"""
                     else:
                         header_names = ""
                         if len(dtype) > 4 and dtype[:5] == "vmap(" and dtype[-1] == ")":
                             header_names = ", header_names='{0}'".format(dtype[5:-1])
-                        transformation = (
-                            f"MAPDELIMITEDEXTRACTOR({self.alias} USING PARAMETERS delimiter='{sep}'{header_names})",
-                            f"MAPDELIMITEDEXTRACTOR({{}} USING PARAMETERS delimiter='{sep}'{header_names})",
-                        )
+                        transformation_2 = f"""MAPDELIMITEDEXTRACTOR({{}} 
+                                                            USING PARAMETERS 
+                                                            delimiter='{sep}'
+                                                            {header_names})"""
                     dtype = "vmap"
                 elif dtype == "array":
                     if biggest_str.replace(" ", "").count(sep + sep) > 0:
@@ -748,47 +728,31 @@ Attributes
                         collection_close = f", collection_close='{biggest_str[-1]}'"
                     else:
                         collection_open, collection_close = "", ""
-                    transformation = (
-                        "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
-                            self.alias,
-                            sep,
-                            collection_open,
-                            collection_close,
-                            collection_null_element,
-                        ),
-                        "STRING_TO_ARRAY({0} USING PARAMETERS collection_delimiter='{1}'{2}{3}{4})".format(
-                            "{}",
-                            sep,
-                            collection_open,
-                            collection_close,
-                            collection_null_element,
-                        ),
-                    )
+                    transformation_2 = f"""
+                        STRING_TO_ARRAY({{}} 
+                                        USING PARAMETERS 
+                                        collection_delimiter='{sep}'
+                                        {collection_open}
+                                        {collection_close}
+                                        {collection_null_element})"""
             elif (
                 dtype[0:7] == "varchar" or dtype[0:4] == "char"
             ) and self.category() == "vmap":
-                transformation = (
-                    f"MAPTOSTRING({self.alias} USING PARAMETERS canonical_json=false)::{dtype}",
-                    f"MAPTOSTRING({{}} USING PARAMETERS canonical_json=false)::{dtype}",
-                )
+                transformation_2 = f"""MAPTOSTRING({{}} 
+                                                   USING PARAMETERS 
+                                                   canonical_json=false)::{dtype}"""
             elif dtype == "json":
                 if self.category() == "vmap":
-                    transformation = (
-                        f"MAPTOSTRING({self.alias} USING PARAMETERS canonical_json=true)",
-                        "MAPTOSTRING({} USING PARAMETERS canonical_json=true)",
+                    transformation_2 = (
+                        "MAPTOSTRING({} USING PARAMETERS canonical_json=true)"
                     )
                 else:
                     vertica_version(condition=[10, 1, 0])
-                    transformation = (
-                        "TO_JSON({0})".format(self.alias),
-                        "TO_JSON({})",
-                    )
+                    transformation_2 = "TO_JSON({})"
                 dtype = "varchar"
             else:
-                transformation = (
-                    f"{self.alias}::{dtype}",
-                    "{}::" + dtype,
-                )
+                transformation_2 = f"{{}}::{dtype}"
+            transformation = (transformation_2.format(self.alias), transformation_2)
             query = f"""
                 SELECT 
                     /*+LABEL('vColumn.astype')*/ 
@@ -806,9 +770,7 @@ Attributes
                 (transformation[1], dtype, get_category_from_vertica_type(ctype=dtype),)
             ]
             self.parent.__add_to_history__(
-                "[AsType]: The vColumn {} was converted to {}.".format(
-                    self.alias, dtype
-                )
+                f"[AsType]: The vColumn {self.alias} was converted to {dtype}."
             )
             return self.parent
         except Exception as e:
@@ -1227,9 +1189,9 @@ Attributes
             columns = self.parent[by].distinct()
             for idx, column in enumerate(columns):
                 param = {"color": colors[idx % len(colors)]}
-                ax = self.parent.search(
-                    "{} = '{}'".format(self.parent[by].alias, column)
-                )[self.alias].density(
+                ax = self.parent.search(f"{self.parent[by].alias} = '{column}'")[
+                    self.alias
+                ].density(
                     bandwidth=bandwidth,
                     kernel=kernel,
                     nbins=nbins,
@@ -1344,44 +1306,40 @@ Attributes
             else:
                 lp, rp = "", ""
             for category in cat:
-                tmp_query = """SELECT 
-                                    '{0}' AS 'index', 
-                                    COUNT({1}) AS count, 
-                                    100 * COUNT({1}) / {2} AS percent, 
-                                    AVG({3}{4}) AS mean, 
-                                    STDDEV({3}{4}) AS std, 
-                                    MIN({3}{4}) AS min, 
-                                    APPROXIMATE_PERCENTILE ({3}{4} 
-                                        USING PARAMETERS percentile = 0.1) AS 'approx_10%', 
-                                    APPROXIMATE_PERCENTILE ({3}{4} 
-                                        USING PARAMETERS percentile = 0.25) AS 'approx_25%', 
-                                    APPROXIMATE_PERCENTILE ({3}{4} 
-                                        USING PARAMETERS percentile = 0.5) AS 'approx_50%', 
-                                    APPROXIMATE_PERCENTILE ({3}{4} 
-                                        USING PARAMETERS percentile = 0.75) AS 'approx_75%', 
-                                    APPROXIMATE_PERCENTILE ({3}{4} 
-                                        USING PARAMETERS percentile = 0.9) AS 'approx_90%', 
-                                    MAX({3}{4}) AS max 
-                               FROM vdf_table""".format(
-                    category, self.alias, self.parent.shape()[0], numcol, cast,
-                )
-                tmp_query += (
-                    " WHERE {} IS NULL".format(self.alias)
-                    if (category in ("None", None))
-                    else " WHERE {} = '{}'".format(
-                        bin_spatial_to_str(self.category(), self.alias), category,
-                    )
-                )
+                tmp_query = f"""
+                    SELECT 
+                        '{category}' AS 'index', 
+                        COUNT({self.alias}) AS count, 
+                        100 * COUNT({self.alias}) / {self.parent.shape()[0]} AS percent, 
+                        AVG({numcol}{cast}) AS mean, 
+                        STDDEV({numcol}{cast}) AS std, 
+                        MIN({numcol}{cast}) AS min, 
+                        APPROXIMATE_PERCENTILE ({numcol}{cast} 
+                            USING PARAMETERS percentile = 0.1) AS 'approx_10%', 
+                        APPROXIMATE_PERCENTILE ({numcol}{cast} 
+                            USING PARAMETERS percentile = 0.25) AS 'approx_25%', 
+                        APPROXIMATE_PERCENTILE ({numcol}{cast} 
+                            USING PARAMETERS percentile = 0.5) AS 'approx_50%', 
+                        APPROXIMATE_PERCENTILE ({numcol}{cast} 
+                            USING PARAMETERS percentile = 0.75) AS 'approx_75%', 
+                        APPROXIMATE_PERCENTILE ({numcol}{cast} 
+                            USING PARAMETERS percentile = 0.9) AS 'approx_90%', 
+                        MAX({numcol}{cast}) AS max 
+                   FROM vdf_table"""
+                if category in ("None", None):
+                    tmp_query += f" WHERE {self.alias} IS NULL"
+                else:
+                    alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
+                    tmp_query += f" WHERE {alias_sql_repr} = '{category}'"
                 query += [lp + tmp_query + rp]
-            query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(
-                self.parent.__genSQL__(), " UNION ALL ".join(query)
-            )
-            title = "Describes the statics of {} partitioned by {}.".format(
-                numcol, self.alias
-            )
             values = to_tablesample(
-                query,
-                title=title,
+                query=f"""
+                    WITH vdf_table AS 
+                        (SELECT 
+                            * 
+                        FROM {self.parent.__genSQL__()}) 
+                        {' UNION ALL '.join(query)}""",
+                title=f"Describes the statics of {numcol} partitioned by {self.alias}.",
                 sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
                 symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             ).values
@@ -1390,27 +1348,34 @@ Attributes
             or not (is_numeric)
             or (method == "categorical")
         ):
-            query = """(SELECT 
-                            {0} || '', 
+            query = f"""(SELECT 
+                            {self.alias} || '', 
                             COUNT(*) 
                         FROM vdf_table 
-                        GROUP BY {0} 
+                        GROUP BY {self.alias} 
                         ORDER BY COUNT(*) DESC 
-                        LIMIT {1})""".format(
-                self.alias, max_cardinality
-            )
+                        LIMIT {max_cardinality})"""
             if distinct_count > max_cardinality:
-                query += (
-                    "UNION ALL (SELECT 'Others', SUM(count) FROM (SELECT COUNT(*) AS count"
-                    " FROM vdf_table WHERE {0} IS NOT NULL GROUP BY {0} ORDER BY COUNT(*)"
-                    " DESC OFFSET {1}) VERTICAPY_SUBTABLE) ORDER BY count DESC"
-                ).format(self.alias, max_cardinality + 1)
-            query = "WITH vdf_table AS (SELECT /*+LABEL('vColumn.describe')*/ * FROM {}) {}".format(
-                self.parent.__genSQL__(), query
-            )
+                query += f"""
+                    UNION ALL 
+                    (SELECT 
+                        'Others', SUM(count) 
+                     FROM 
+                        (SELECT 
+                            COUNT(*) AS count 
+                         FROM vdf_table 
+                         WHERE {self.alias} IS NOT NULL 
+                         GROUP BY {self.alias} 
+                         ORDER BY COUNT(*) DESC 
+                         OFFSET {max_cardinality + 1}) VERTICAPY_SUBTABLE) 
+                     ORDER BY count DESC"""
             query_result = executeSQL(
-                query=query,
-                title="Computing the descriptive statistics of {}.".format(self.alias),
+                query=f"""
+                    WITH vdf_table AS 
+                        (SELECT 
+                            /*+LABEL('vColumn.describe')*/ * 
+                         FROM {self.parent.__genSQL__()}) {query}""",
+                title=f"Computing the descriptive statistics of {self.alias}.",
                 method="fetchall",
                 sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
                 symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
@@ -1613,9 +1578,8 @@ Attributes
             while total < int(float(count / int(nbins))) * int(nbins):
                 nth_elems += [str(total)]
                 total += nb
-            where = "WHERE _verticapy_row_nb_ IN ({})".format(
-                ", ".join(["1"] + nth_elems + [str(count)])
-            )
+            possibilities = ", ".join(["1"] + nth_elems + [str(count)])
+            where = f"WHERE _verticapy_row_nb_ IN ({possibilities})"
             query = f"""
                 SELECT /*+LABEL('vColumn.discretize')*/ 
                     {self.alias} 
@@ -1663,9 +1627,11 @@ Attributes
             n = len(result)
             trans = "(CASE "
             for i in range(1, n):
-                trans += "WHEN {} BETWEEN {} AND {} THEN '[{};{}]' ".format(
-                    "{}", result[i - 1], result[i], result[i - 1], result[i]
-                )
+                trans += f"""
+                    WHEN {{}} 
+                        BETWEEN {result[i - 1]} 
+                        AND {result[i]} 
+                    THEN '[{result[i - 1]};{result[i]}]' """
             trans += " ELSE NULL END)"
             trans = (trans, "varchar", "text")
         if return_enum_trans:
@@ -1728,7 +1694,7 @@ Attributes
                 ORDER BY verticapy_agg DESC"""
         query_result = executeSQL(
             query=query,
-            title="Computing the distinct categories of {}.".format(self.alias),
+            title=f"Computing the distinct categories of {self.alias}.",
             method="fetchall",
             sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
             symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
@@ -1851,9 +1817,9 @@ Attributes
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
             self.parent.filter(
-                "ABS({} - {}) / {} < {}".format(
-                    self.alias, result["avg"][0], result["std"][0], threshold
-                )
+                f"""
+                    ABS({self.alias} - {result["avg"][0]}) 
+                  / {result["std"][0]} < {threshold}"""
             )
         else:
             p_alpha, p_1_alpha = (
@@ -1880,7 +1846,7 @@ Attributes
 	--------
 	vDataFrame.filter: Filters the data using the input expression.
 		"""
-        self.parent.filter("{} IS NOT NULL".format(self.alias))
+        self.parent.filter(f"{self.alias} IS NOT NULL")
         return self.parent
 
     # ---#
@@ -1943,7 +1909,7 @@ Attributes
                 FROM {self.parent.__genSQL__()} LIMIT 1"""
             p_alpha, p_1_alpha = executeSQL(
                 query=query,
-                title="Computing the quantiles of {0}.".format(self.alias),
+                title=f"Computing the quantiles of {self.alias}.",
                 method="fetchrow",
                 sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
                 symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
@@ -2114,9 +2080,7 @@ Attributes
                     new_column = "COALESCE({}, DECODE({}, {}, NULL))".format(
                         "{}",
                         by[0],
-                        ", ".join(
-                            ["{}, {}".format(elem[0], elem[1]) for elem in result]
-                        ),
+                        ", ".join([f"{elem[0]}, {elem[1]}" for elem in result]),
                     )
                     executeSQL(
                         query=f"""
@@ -2284,20 +2248,17 @@ Attributes
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
             all_new_features = []
-            prefix = (
-                self.alias.replace('"', "") + prefix_sep.replace('"', "_")
-                if not (prefix)
-                else prefix.replace('"', "_") + prefix_sep.replace('"', "_")
-            )
+            if not (prefix):
+                prefix = self.alias.replace('"', "") + prefix_sep.replace('"', "_")
+            else:
+                prefix = prefix.replace('"', "_") + prefix_sep.replace('"', "_")
             n = 1 if drop_first else 0
             for k in range(len(distinct_elements) - n):
-                name = (
-                    f'"{prefix}{k}"'
-                    if (use_numbers_as_suffix)
-                    else '"{}{}"'.format(
-                        prefix, str(distinct_elements[k]).replace('"', "_")
-                    )
-                )
+                distinct_elements_k = str(distinct_elements[k]).replace('"', "_")
+                if use_numbers_as_suffix:
+                    name = f'"{prefix}{k}"'
+                else:
+                    name = f'"{prefix}{distinct_elements_k}"'
                 assert not (self.parent.is_colname_in(name)), NameError(
                     "A vColumn has already the alias of one of "
                     f"the dummies ({name}).\nIt can be the result "
@@ -2308,22 +2269,18 @@ Attributes
                     "issue."
                 )
             for k in range(len(distinct_elements) - n):
-                name = (
-                    '"{}{}"'.format(prefix, k)
-                    if (use_numbers_as_suffix)
-                    else '"{}{}"'.format(
-                        prefix, str(distinct_elements[k]).replace('"', "_")
-                    )
-                )
+                distinct_elements_k = str(distinct_elements[k]).replace("'", "''")
+                if use_numbers_as_suffix:
+                    name = f'"{prefix}{k}"'
+                else:
+                    name = f'"{prefix}{distinct_elements_k}"'
                 name = (
                     name.replace(" ", "_")
                     .replace("/", "_")
                     .replace(",", "_")
                     .replace("'", "_")
                 )
-                expr = "DECODE({}, '{}', 1, 0)".format(
-                    "{}", str(distinct_elements[k]).replace("'", "''")
-                )
+                expr = f"DECODE({{}}, '{distinct_elements_k}', 1, 0)"
                 transformations = self.transformations + [(expr, "bool", "int")]
                 new_vColumn = vColumn(
                     name,
@@ -2490,15 +2447,15 @@ Attributes
         if offset < 0:
             offset = max(0, self.parent.shape()[0] - limit)
         title = f"Reads {self.alias}."
+        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
         tail = to_tablesample(
-            "SELECT {} AS {} FROM {}{} LIMIT {} OFFSET {}".format(
-                bin_spatial_to_str(self.category(), self.alias),
-                self.alias,
-                self.parent.__genSQL__(),
-                self.parent.__get_last_order_by__(),
-                limit,
-                offset,
-            ),
+            query=f"""
+                SELECT 
+                    {alias_sql_repr} AS {self.alias} 
+                FROM {self.parent.__genSQL__()}
+                {self.parent.__get_last_order_by__()} 
+                LIMIT {limit} 
+                OFFSET {offset}""",
             title=title,
             sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
             symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
@@ -2773,11 +2730,10 @@ Attributes
             expr = ["DECODE({}"]
             text_info = "\n"
             for k in range(len(distinct_elements)):
-                expr += [
-                    "'{}', {}".format(str(distinct_elements[k]).replace("'", "''"), k)
-                ]
-                text_info += "\t{} => {}".format(distinct_elements[k], k)
-            expr = ", ".join(expr) + ", {})".format(len(distinct_elements))
+                distinct_elements_k = str(distinct_elements[k]).replace("'", "''")
+                expr += [f"'{distinct_elements_k}', {k}"]
+                text_info += f"\t{distinct_elements[k]} => {k}"
+            expr = f"{', '.join(expr)}, {len(distinct_elements)})"
             self.transformations += [(expr, "int", "int")]
             self.parent.__update_catalog__(erase=True, columns=[self.alias])
             self.catalog["count"] = self.parent.shape()[0]
@@ -3176,9 +3132,13 @@ Attributes
                             ),
                         )
                         executeSQL(
-                            "SELECT /*+LABEL('vColumn.normalize')*/ {}, {} FROM {} LIMIT 1".format(
-                                avg, stddev, self.parent.__genSQL__()
-                            ),
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vColumn.normalize')*/ 
+                                    {avg},
+                                    {stddev} 
+                                FROM {self.parent.__genSQL__()} 
+                                LIMIT 1""",
                             print_time_sql=False,
                             sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
                                 "sql_push_ext"
@@ -3698,9 +3658,7 @@ Attributes
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
         prefix = "approx_" if approx else ""
-        return self.aggregate(func=[prefix + "{}%".format(x * 100)]).values[self.alias][
-            0
-        ]
+        return self.aggregate(func=[f"{prefix}{x * 100}%"]).values[self.alias][0]
 
     # ---#
     @check_dtypes
@@ -3790,9 +3748,7 @@ Attributes
         self.add_copy(new_name)
         parent = self.drop(add_history=False)
         parent.__add_to_history__(
-            f"[Rename]: The vColumn {old_name} was renamed '{new_name}'.".format(
-                old_name, new_name
-            )
+            f"[Rename]: The vColumn {old_name} was renamed '{new_name}'."
         )
         return parent
 
@@ -3818,7 +3774,7 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        return self.apply(func="ROUND({}, {})".format("{}", n))
+        return self.apply(func=f"ROUND({{}}, {n})")
 
     # ---#
     @save_verticapy_logs
@@ -3885,10 +3841,9 @@ Attributes
 	vDataFrame[].date_part : Extracts a specific TS field from the vColumn.
 		"""
         start_or_end = "START" if (start) else "END"
+        unit = unit.upper()
         return self.apply(
-            func="TIME_SLICE({}, {}, '{}', '{}')".format(
-                "{}", length, unit.upper(), start_or_end
-            )
+            func=f"TIME_SLICE({{}}, {length}, '{unit}', '{start_or_end}')"
         )
 
     # ---#
@@ -4037,9 +3992,8 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice   : Slices the vColumn.
 		"""
-        return self.apply(
-            func="REGEXP_COUNT({}, '{}') > 0".format("{}", pat.replace("'", "''"))
-        )
+        pat = pat.replace("'", "''")
+        return self.apply(func=f"REGEXP_COUNT({{}}, '{pat}') > 0")
 
     # ---#
     @check_dtypes
@@ -4070,9 +4024,8 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        return self.apply(
-            func="REGEXP_COUNT({}, '{}')".format("{}", pat.replace("'", "''"))
-        )
+        pat = pat.replace("'", "''")
+        return self.apply(func=f"REGEXP_COUNT({{}}, '{pat}')")
 
     # ---#
     @check_dtypes
@@ -4103,9 +4056,8 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        return self.apply(
-            func="REGEXP_SUBSTR({}, '{}')".format("{}", pat.replace("'", "''"))
-        )
+        pat = pat.replace("'", "''")
+        return self.apply(func=f"REGEXP_SUBSTR({{}}, '{pat}')")
 
     # ---#
     @check_dtypes
@@ -4138,11 +4090,9 @@ Attributes
 		vColumn.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        return self.apply(
-            func="REGEXP_REPLACE({}, '{}', '{}')".format(
-                "{}", to_replace.replace("'", "''"), value.replace("'", "''")
-            )
-        )
+        to_replace = to_replace.replace("'", "''")
+        value = value.replace("'", "''")
+        return self.apply(func=f"REGEXP_REPLACE({{}}, '{to_replace}', '{value}')")
 
     # ---#
     @check_dtypes
@@ -4175,7 +4125,7 @@ Attributes
 	vDataFrame[].str_replace  : Replaces the regular expression matches in each of the 
 		vColumn records by an input value.
 		"""
-        return self.apply(func="SUBSTR({}, {}, {})".format("{}", start, step))
+        return self.apply(func=f"SUBSTR({{}}, {start}, {step})")
 
     # ---#
     @check_dtypes
@@ -4201,9 +4151,9 @@ Attributes
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
         if self.isdate():
-            return self.apply(func="TIMESTAMPADD(SECOND, -({}), {})".format(x, "{}"))
+            return self.apply(func=f"TIMESTAMPADD(SECOND, -({x}), {{}})")
         else:
-            return self.apply(func="{} - ({})".format("{}", x))
+            return self.apply(func=f"{{}} - ({x})")
 
     # ---#
     @save_verticapy_logs

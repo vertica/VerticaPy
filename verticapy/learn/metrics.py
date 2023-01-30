@@ -904,8 +904,8 @@ tablesample
         )
         ppv = tp / (tp + fp) if (tp + fp != 0) else 0  # precision
         tpr = tp / (tp + fn) if (tp + fn != 0) else 0  # recall
-        tnr = tn / (tn + fp) if (tn + fp != 0) else 0
-        npv = tn / (tn + fn) if (tn + fn != 0) else 0
+        tnr = tn / (tn + fp) if (tn + fp != 0) else 0  # specificity
+        npv = tn / (tn + fn) if (tn + fn != 0) else 0  # negative predictive score
         f1 = 2 * (tpr * ppv) / (tpr + ppv) if (tpr + ppv != 0) else 0  # f1
         csi = tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0  # csi
         bm = tpr + tnr - 1  # informedness
@@ -915,7 +915,7 @@ tablesample
             / math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
             if (tp + fp != 0) and (tp + fn != 0) and (tn + fp != 0) and (tn + fn != 0)
             else 0
-        )
+        )  # matthews corr coef
         accuracy = (tp + tn) / (tp + tn + fp + fn)
         if estimator:
             auc_score, logloss, prc_auc_score = (

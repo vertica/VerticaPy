@@ -141,15 +141,17 @@ def hchart(line, cell="", local_ns=None):
     query = clean_query(query)
     query = replace_vars_in_query(query, locals()["local_ns"])
 
-    # Drawing the graphic and displaying the info
+    # Drawing the graphic
     start_time = time.time()
     chart = hchartSQL(query, options["-k"])
-    elapsed_time = time.time() - start_time
-    display(HTML("<div><b>Execution: </b> {0}s</div>".format(round(elapsed_time, 3))))
 
-    # export graphic
+    # Exporting the result
     if "-o" in options:
         chart.save_file(options["-o"])
+
+    # Displaying the time
+    elapsed_time = round(time.time() - start_time, 3)
+    display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
 
     return chart
 
