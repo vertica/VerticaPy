@@ -58,6 +58,7 @@ from verticapy.decorators import (
     check_dtypes,
     check_minimum_version,
 )
+import verticapy.learn.metrics as mt
 from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame, save_verticapy_logs
@@ -1083,6 +1084,75 @@ papprox_ma: int, optional
             )
         return result
 
+    # ---#
+    @check_dtypes
+    def score(self, method: str = "r2"):
+        """
+    ----------------------------------------------------------------------------------------
+    Computes the model score.
+
+    Parameters
+    ----------
+    method: str, optional
+        The method to use to compute the score.
+            aic    : Akaike’s Information Criterion
+            bic    : Bayesian Information Criterion
+            max    : Max Error
+            mae    : Mean Absolute Error
+            median : Median Absolute Error
+            mse    : Mean Squared Error
+            msle   : Mean Squared Log Error
+            r2     : R squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root Mean Squared Error
+            var    : Explained Variance 
+
+    Returns
+    -------
+    float
+        score
+        """
+        # Initialization
+        methods = list(mt.FUNCTIONS_REGRESSION_DICTIONNARY.keys())
+        methods += ["r2a", "rmse"]
+        method = str(method).lower()
+        if method in ["r2adj", "r2adjusted"]:
+            method = "r2a"
+        raise_error_if_not_in("method", method, methods)
+        adj, root = False, False
+        if method in ("r2a", "r2adj", "r2adjusted"):
+            method, adj = "r2", True
+        elif method == "rmse":
+            method, root = "mse", True
+        fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
+
+        # Table Formatting
+        test_relation = f"""
+            (SELECT 
+                {self.deploySQL()} AS prediction, 
+                VerticaPy_y_copy AS {self.y} 
+             FROM {self.transform_relation}) VERTICAPY_SUBTABLE"""
+        test_relation = (
+            test_relation.format(self.test_relation)
+            .replace("[VerticaPy_ts]", self.ts)
+            .replace("[VerticaPy_y]", self.y)
+            .replace(
+                "[VerticaPy_key_columns]",
+                ", " + ", ".join([self.ts] + self.exogenous),
+            )
+        )
+        for idx, elem in enumerate(self.exogenous):
+            test_relation = test_relation.replace(f"[X{idx}]", elem)
+        prediction = "prediction"
+        
+        # Scoring
+        arg = [self.y, prediction, test_relation]
+        if method in ("aic", "bic") or adj:
+            arg += [len(self.X)]
+        if root or adj:
+            arg += [True]
+        return fun(*arg)
+
 
 # ---#
 class VAR(Regressor):
@@ -1750,3 +1820,64 @@ solver: str, optional
                     )
                 )
         return result
+
+    # ---#
+    @check_dtypes
+    def score(self, method: str = "r2"):
+        """
+    ----------------------------------------------------------------------------------------
+    Computes the model score.
+
+    Parameters
+    ----------
+    method: str, optional
+        The method to use to compute the score.
+            aic    : Akaike’s Information Criterion
+            bic    : Bayesian Information Criterion
+            max    : Max Error
+            mae    : Mean Absolute Error
+            median : Median Absolute Error
+            mse    : Mean Squared Error
+            msle   : Mean Squared Log Error
+            r2     : R squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root Mean Squared Error
+            var    : Explained Variance 
+
+    Returns
+    -------
+    float
+        score
+        """
+        # Initialization
+        methods = list(mt.FUNCTIONS_REGRESSION_DICTIONNARY.keys())
+        methods += ["r2a", "rmse"]
+        method = str(method).lower()
+        if method in ["r2adj", "r2adjusted"]:
+            method = "r2a"
+        raise_error_if_not_in("method", method, methods)
+        adj, root = False, False
+        if method in ("r2a", "r2adj", "r2adjusted"):
+            method, adj = "r2", True
+        elif method == "rmse":
+            method, root = "mse", True
+        result = tablesample({"index": [method]})
+        fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
+
+        # Table Formatting
+        relation = self.transform_relation.replace(
+            "[VerticaPy_ts]", self.ts
+        ).format(self.test_relation)
+        for idx, elem in enumerate(self.X):
+            relation = relation.replace(f"[X{idx}]", elem)
+        
+        # Scoring
+        for idx, y in enumerate(self.X):
+            arg = [y, self.deploySQL()[idx], relation]
+            if method in ("aic", "bic") or adj:
+                arg += [len(self.X) * self.parameters["p"]]
+            if root or adj:
+                arg += [True]
+            result.values[y] = [fun(*arg)]
+        return result.transpose()
+        

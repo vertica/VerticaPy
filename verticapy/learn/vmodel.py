@@ -1282,7 +1282,8 @@ Main Class for Vertica Model
             func += "\tL = []\n"
             n = len(sv[0])
             func += f"\tfor i in range({n}):\n"
-            func += "\t\tL += [np.sum(X * right_singular_vectors[i] / singular_values[i], axis=1)]\n"
+            func += "\t\tL += [np.sum(X * right_singular_vectors[i] / "
+            func += "singular_values[i], axis=1)]\n"
             func += "\tresult = np.column_stack(L)\n"
             func += "\treturn result\n"
             return func
@@ -1391,7 +1392,8 @@ Main Class for Vertica Model
                     self.parameters["sample"]
                     * int(self.get_attr("accepted_row_count")["accepted_row_count"][0])
                 )
-                func += f"\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4][node_id][1])) / heuristic_length({psy})\n"
+                func += f"\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4]"
+                func += "[node_id][1])) / heuristic_length({psy})\n"
             elif self.type == "RandomForestClassifier":
                 func += "\t\t\treturn tree[4][node_id]\n"
             else:
@@ -1413,7 +1415,8 @@ Main Class for Vertica Model
             if self.type in ("XGBoostRegressor", "XGBoostClassifier"):
                 if self.type == "XGBoostRegressor":
                     avg = self.prior_
-                    func += f"\t\treturn {avg} + {self.parameters['learning_rate']} * np.sum(result)\n"
+                    func += f"\t\treturn {avg} + {self.parameters['learning_rate']} "
+                    func += "* np.sum(result)\n"
                 else:
                     if not (isinstance(self.prior_, list)):
                         func += "\t\tlogodds = np.array([{}, {}])\n".format(
@@ -1426,7 +1429,8 @@ Main Class for Vertica Model
                     func += "\t\t\tfor val in result:\n"
                     func += "\t\t\t\tall_classes_score[elem] += val[elem]\n"
                     func += "\t\t\tall_classes_score[elem] = 1 / (1 + np.exp( - "
-                    func += f"(logodds[idx] + {self.parameters['learning_rate']} * all_classes_score[elem])))\n"
+                    func += f"(logodds[idx] + {self.parameters['learning_rate']} * "
+                    func += "all_classes_score[elem])))\n"
                     func += "\t\tresult = [all_classes_score[elem] for elem in "
                     func += "all_classes_score]\n"
             elif self.type == "RandomForestRegressor":
@@ -1476,13 +1480,16 @@ Main Class for Vertica Model
     str / list
         SQL code
         """
+        if not X:
+            X = self.X
+        model = self.to_memmodel()
         if self.type in ("PCA", "SVD", "Normalizer", "MCA", "OneHotEncoder"):
-            return self.to_memmodel().transform_sql(self.X if not X else X)
+            return model.transform_sql(X)
         else:
             if return_proba:
-                return self.to_memmodel().predict_proba_sql(self.X if not X else X)
+                return model.predict_proba_sql(X)
             else:
-                return self.to_memmodel().predict_sql(self.X if not X else X)
+                return model.predict_sql(X)
 
 
 # ---#
@@ -1525,20 +1532,19 @@ class Supervised(vModel):
             does_model_exist(name=self.name, raise_error=True)
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
+        nb_lookup_table = {
+            "bernoulli": "bool",
+            "categorical": "varchar",
+            "multinomial": "int",
+            "gaussian": "float"
+        }
         if (self.type == "NaiveBayes") and (
             self.parameters["nbtype"]
-            in ("bernoulli", "categorical", "multinomial", "gaussian")
+            in nb_lookup_table
         ):
             new_types = {}
-            for elem in X:
-                if self.parameters["nbtype"] == "bernoulli":
-                    new_types[elem] = "bool"
-                elif self.parameters["nbtype"] == "categorical":
-                    new_types[elem] = "varchar"
-                elif self.parameters["nbtype"] == "multinomial":
-                    new_types[elem] = "int"
-                elif self.parameters["nbtype"] == "gaussian":
-                    new_types[elem] = "float"
+            for x in X:
+                new_types[x] = nb_lookup_table[x]
             if not (isinstance(input_relation, vDataFrame)):
                 input_relation = vDataFrameSQL(input_relation)
             else:
@@ -1552,9 +1558,10 @@ class Supervised(vModel):
             "XGBoostClassifier",
             "XGBoostRegressor",
         ) and isinstance(verticapy.OPTIONS["random_state"], int):
-            id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
-                ", ".join(X), id_column_name
-            )
+            id_column = f""", 
+                ROW_NUMBER() OVER 
+                (ORDER BY {', '.join(X)}) 
+                AS {id_column_name}"""
         tmp_view = False
         if isinstance(input_relation, vDataFrame) or (id_column):
             tmp_view = True
@@ -1565,9 +1572,12 @@ class Supervised(vModel):
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop(relation, method="view")
             executeSQL(
-                "CREATE VIEW {0} AS SELECT /*+LABEL('learn.vModel.fit')*/ *{1} FROM {2}".format(
-                    relation, id_column, self.input_relation
-                ),
+                query=f"""
+                    CREATE VIEW {relation} AS 
+                        SELECT 
+                            /*+LABEL('learn.vModel.fit')*/ 
+                            *{id_column} 
+                        FROM {self.input_relation}""",
                 title="Creating a temporary view to fit the model.",
             )
         else:
@@ -1594,11 +1604,16 @@ class Supervised(vModel):
             elif parameters["mtry"] == "'max'":
                 parameters["mtry"] = len(self.X)
         fun = self.VERTICA_FIT_FUNCTION_SQL
-        query = "SELECT /*+LABEL('learn.vModel.fit')*/ {}('{}', '{}', '{}', '{}' USING PARAMETERS "
-        query = query.format(fun, self.name, relation, self.y, ", ".join(self.X))
-        query += ", ".join(
-            ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
-        )
+        query = f"""
+            SELECT 
+                /*+LABEL('learn.vModel.fit')*/ 
+                {self.VERTICA_FIT_FUNCTION_SQL}
+                ('{self.name}', 
+                 '{relation}',
+                 '{self.y}',
+                 '{', '.join(self.X)}' 
+                 USING PARAMETERS 
+                 {', '.join([f"{p} = {parameters[p]}" for p in parameters])}"""
         if alpha != None:
             query += f", alpha = {alpha}"
         if self.type in (
@@ -1607,14 +1622,12 @@ class Supervised(vModel):
             "XGBoostClassifier",
             "XGBoostRegressor",
         ) and isinstance(verticapy.OPTIONS["random_state"], int):
-            query += ", seed={}, id_column='{}'".format(
-                verticapy.OPTIONS["random_state"], id_column_name
-            )
+            query += f""", 
+                seed={verticapy.OPTIONS['random_state']}, 
+                id_column='{id_column_name}'"""
         query += ")"
         try:
             executeSQL(query, title="Fitting the model.")
-        except:
-            raise
         finally:
             if tmp_view:
                 drop(relation, method="view")
@@ -1633,13 +1646,17 @@ class Supervised(vModel):
         ):
             if not (isinstance(input_relation, vDataFrame)):
                 classes = executeSQL(
-                    "SELECT /*+LABEL('learn.vModel.fit')*/ DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-                        self.y, input_relation, self.y
-                    ),
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('learn.vModel.fit')*/ 
+                            DISTINCT {self.y} 
+                        FROM {input_relation} 
+                        WHERE {self.y} IS NOT NULL 
+                        ORDER BY 1""",
                     method="fetchall",
                     print_time_sql=False,
                 )
-                self.classes_ = [item[0] for item in classes]
+                self.classes_ = [c[0] for c in classes]
             else:
                 self.classes_ = input_relation[self.y].distinct()
         if self.type in ("XGBoostClassifier", "XGBoostRegressor"):
@@ -1920,9 +1937,21 @@ class BinaryClassifier(Classifier):
         if isinstance(X, str):
             X = [X]
         X = self.X if not (X) else [quote_ident(elem) for elem in X]
-        sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', type = 'probability', match_by_pos = 'true')"
+        sql = f"""
+            {self.VERTICA_PREDICT_FUNCTION_SQL}
+            ({', '.join(X)} USING PARAMETERS
+                            model_name = '{self.name}',
+                            type = 'probability',
+                            match_by_pos = 'true')"""
         if cutoff <= 1 and cutoff >= 0:
-            sql = f"(CASE WHEN {sql} >= {cutoff} THEN 1 WHEN {sql} IS NULL THEN NULL ELSE 0 END)"
+            sql = f"""
+                (CASE 
+                    WHEN {sql} >= {cutoff} 
+                        THEN 1 
+                    WHEN {sql} IS NULL 
+                        THEN NULL 
+                    ELSE 0 
+                END)"""
         return sql
 
     # ---#
@@ -2709,10 +2738,9 @@ class MulticlassClassifier(Classifier):
         if isinstance(X, str):
             X = [X]
         assert pos_label is None or pos_label in self.classes_, ParameterError(
-            (
-                "Incorrect parameter 'pos_label'.\nThe class label "
-                "must be in [{0}]. Found '{1}'."
-            ).format("|".join(["{}".format(c) for c in self.classes_]), pos_label)
+            "Incorrect parameter 'pos_label'.\nThe class label "
+            f"must be in [{'|'.join([str(c) for c in self.classes_])}]. "
+            f"Found '{pos_label}'."
         )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
@@ -3097,66 +3125,33 @@ class Regressor(Supervised):
 	float
 		score
 		"""
+        # Initialization
         methods = list(mt.FUNCTIONS_REGRESSION_DICTIONNARY.keys())
         methods += ["r2a", "rmse"]
         method = str(method).lower()
         if method in ["r2adj", "r2adjusted"]:
             method = "r2a"
         raise_error_if_not_in("method", method, methods)
-
-        if self.type == "SARIMAX":
-            test_relation = f"""
-                (SELECT 
-                    {self.deploySQL()} AS prediction, 
-                    VerticaPy_y_copy AS {self.y} 
-                 FROM {self.transform_relation}) VERTICAPY_SUBTABLE"""
-            test_relation = (
-                test_relation.format(self.test_relation)
-                .replace("[VerticaPy_ts]", self.ts)
-                .replace("[VerticaPy_y]", self.y)
-                .replace(
-                    "[VerticaPy_key_columns]",
-                    ", " + ", ".join([self.ts] + self.exogenous),
-                )
-            )
-            for idx, elem in enumerate(self.exogenous):
-                test_relation = test_relation.replace(f"[X{idx}]", elem)
-            prediction = "prediction"
-        elif self.type == "VAR":
-            relation = self.transform_relation.replace(
-                "[VerticaPy_ts]", self.ts
-            ).format(self.test_relation)
-            for idx, elem in enumerate(self.X):
-                relation = relation.replace(f"[X{idx}]", elem)
-            result = tablesample({"index": [method]})
-        elif self.type == "KNeighborsRegressor":
-            test_relation, prediction = self.deploySQL(), "predict_neighbors"
-        elif self.type == "KernelDensity":
-            test_relation, prediction = self.map, self.deploySQL()
-        else:
-            test_relation, prediction = self.test_relation, self.deploySQL()
         adj, root = False, False
         if method in ("r2a", "r2adj", "r2adjusted"):
             method, adj = "r2", True
         elif method == "rmse":
             method, root = "mse", True
         fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
-        if self.type == "VAR":
-            for idx, y in enumerate(self.X):
-                arg = [y, self.deploySQL()[idx], relation]
-                if method in ("aic", "bic") or adj:
-                    arg += [len(self.X) * self.parameters["p"]]
-                if root or adj:
-                    arg += [True]
-                result.values[y] = [fun(*arg)]
-            return result.transpose()
+
+        # Scoring
+        if self.type == "KNeighborsRegressor":
+            test_relation, prediction = self.deploySQL(), "predict_neighbors"
+        elif self.type == "KernelDensity":
+            test_relation, prediction = self.map, self.deploySQL()
         else:
-            arg = [self.y, prediction, test_relation]
-            if method in ("aic", "bic") or adj:
-                arg += [len(self.X)]
-            if root or adj:
-                arg += [True]
-            return fun(*arg)
+            test_relation, prediction = self.test_relation, self.deploySQL()
+        arg = [self.y, prediction, test_relation]
+        if method in ("aic", "bic") or adj:
+            arg += [len(self.X)]
+        if root or adj:
+            arg += [True]
+        return fun(*arg)
 
 
 # ---#
