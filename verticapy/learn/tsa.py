@@ -716,7 +716,7 @@ papprox_ma: int, optional
         nlast: int = 0,
         limit: int = 1000,
         ax=None,
-        **style_kwds
+        **style_kwds,
     ):
         """
     ----------------------------------------------------------------------------------------
@@ -901,7 +901,7 @@ papprox_ma: int, optional
                 dynamic_forecast[0],
                 dynamic_forecast[1],
                 label="Dynamic Forecast",
-                **updated_dict(param3, style_kwds, 2)
+                **updated_dict(param3, style_kwds, 2),
             )
         if one_step:
             if confidence:
@@ -928,14 +928,14 @@ papprox_ma: int, optional
                 one_step_ahead[0][delta_limit:],
                 one_step_ahead[1][delta_limit:],
                 label="One-step ahead Forecast",
-                **updated_dict(param2, style_kwds, 1)
+                **updated_dict(param2, style_kwds, 1),
             )
         if observed:
             ax.plot(
                 true_value[0][delta_limit:],
                 true_value[1][delta_limit:],
                 label="Observed",
-                **updated_dict(param1, style_kwds, 0)
+                **updated_dict(param1, style_kwds, 0),
             )
         ax.set_title(
             "SARIMAX({},{},{})({},{},{})_{}".format(
@@ -1137,14 +1137,13 @@ papprox_ma: int, optional
             .replace("[VerticaPy_ts]", self.ts)
             .replace("[VerticaPy_y]", self.y)
             .replace(
-                "[VerticaPy_key_columns]",
-                ", " + ", ".join([self.ts] + self.exogenous),
+                "[VerticaPy_key_columns]", ", " + ", ".join([self.ts] + self.exogenous),
             )
         )
         for idx, elem in enumerate(self.exogenous):
             test_relation = test_relation.replace(f"[X{idx}]", elem)
         prediction = "prediction"
-        
+
         # Scoring
         arg = [self.y, prediction, test_relation]
         if method in ("aic", "bic") or adj:
@@ -1467,7 +1466,7 @@ solver: str, optional
         nlast: int = 0,
         limit: int = 1000,
         ax=None,
-        **style_kwds
+        **style_kwds,
     ):
         """
     ----------------------------------------------------------------------------------------
@@ -1665,7 +1664,7 @@ solver: str, optional
                 dynamic_forecast[0],
                 dynamic_forecast[1],
                 label="Dynamic Forecast",
-                **updated_dict(param3, style_kwds, 2)
+                **updated_dict(param3, style_kwds, 2),
             )
         if one_step:
             if confidence:
@@ -1692,14 +1691,14 @@ solver: str, optional
                 one_step_ahead[0][delta_limit:],
                 one_step_ahead[1][delta_limit:],
                 label="One-step ahead Forecast",
-                **updated_dict(param2, style_kwds, 1)
+                **updated_dict(param2, style_kwds, 1),
             )
         if observed:
             ax.plot(
                 true_value[0][delta_limit:],
                 true_value[1][delta_limit:],
                 label="Observed",
-                **updated_dict(param1, style_kwds, 0)
+                **updated_dict(param1, style_kwds, 0),
             )
         ax.set_title("VAR({}) [{}]".format(self.parameters["p"], y))
         ax.set_xlabel(ts)
@@ -1856,21 +1855,21 @@ solver: str, optional
         if method in ["r2adj", "r2adjusted"]:
             method = "r2a"
         raise_error_if_not_in("method", method, methods)
-        adj, root = False, False
+        adj, root, index = False, False, method
         if method in ("r2a", "r2adj", "r2adjusted"):
             method, adj = "r2", True
         elif method == "rmse":
             method, root = "mse", True
-        result = tablesample({"index": [method]})
+        result = tablesample({"index": [index]})
         fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
 
         # Table Formatting
-        relation = self.transform_relation.replace(
-            "[VerticaPy_ts]", self.ts
-        ).format(self.test_relation)
+        relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts).format(
+            self.test_relation
+        )
         for idx, elem in enumerate(self.X):
             relation = relation.replace(f"[X{idx}]", elem)
-        
+
         # Scoring
         for idx, y in enumerate(self.X):
             arg = [y, self.deploySQL()[idx], relation]
@@ -1880,4 +1879,3 @@ solver: str, optional
                 arg += [True]
             result.values[y] = [fun(*arg)]
         return result.transpose()
-        

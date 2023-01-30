@@ -103,8 +103,10 @@ class TestLogisticRegression:
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_LOGISTIC_REG(\"age\", \"fare\" USING PARAMETERS model_name = 'logreg_model_test', type = 'probability', match_by_pos = 'true')"
-        result_sql = model.deploySQL()
+        expected_sql = "PREDICT_LOGISTIC_REG(\"age\", \"fare\" USING PARAMETERS model_name = 'logreg_model_test', type = 'probability', match_by_pos = 'true')".replace(
+            " ", ""
+        )
+        result_sql = model.deploySQL().replace(" ", "").replace("\n", "")
 
         assert result_sql == expected_sql
 

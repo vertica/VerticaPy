@@ -1393,7 +1393,7 @@ Main Class for Vertica Model
                     * int(self.get_attr("accepted_row_count")["accepted_row_count"][0])
                 )
                 func += f"\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4]"
-                func += "[node_id][1])) / heuristic_length({psy})\n"
+                func += f"[node_id][1])) / heuristic_length({psy})\n"
             elif self.type == "RandomForestClassifier":
                 func += "\t\t\treturn tree[4][node_id]\n"
             else:
@@ -1536,11 +1536,10 @@ class Supervised(vModel):
             "bernoulli": "bool",
             "categorical": "varchar",
             "multinomial": "int",
-            "gaussian": "float"
+            "gaussian": "float",
         }
         if (self.type == "NaiveBayes") and (
-            self.parameters["nbtype"]
-            in nb_lookup_table
+            self.parameters["nbtype"] in nb_lookup_table
         ):
             new_types = {}
             for x in X:
@@ -2349,20 +2348,17 @@ class MulticlassClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
-        if pos_label:
-            return confusion_matrix(
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
+        elif pos_label:
+            return mt.confusion_matrix(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
                 pos_label=pos_label,
             )
         else:
-            return multilabel_confusion_matrix(
+            return mt.multilabel_confusion_matrix(
                 self.y, self.deploySQL(), self.test_relation, self.classes_
             )
 
@@ -2398,12 +2394,9 @@ class MulticlassClassifier(Classifier):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
-        if pos_label not in self.classes_:
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
+        elif pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
@@ -2459,59 +2452,57 @@ class MulticlassClassifier(Classifier):
 		"""
         if isinstance(X, str):
             X = [X]
-        X = [quote_ident(elem) for elem in X]
-        fun = self.VERTICA_PREDICT_FUNCTION_SQL
-        if allSQL:
-            if self.type == "NearestCentroid":
-                sql = self.to_memmodel().predict_proba_sql(self.X if not (X) else X)
-            else:
-                sql = (
-                    "{0}({1} USING PARAMETERS model_name = '{2}', class = '{3}', "
-                    "type = 'probability', match_by_pos = 'true')"
-                ).format(fun, ", ".join(self.X if not (X) else X), self.name, "{}")
-                sql = [
-                    sql,
-                    "{0}({1} USING PARAMETERS model_name = '{2}', match_by_pos = 'true')".format(
-                        fun, ", ".join(self.X if not (X) else X), self.name
-                    ),
-                ]
+        if not (X):
+            X = self.X
         else:
+            X = [quote_ident(x) for x in X]
+        fun = self.VERTICA_PREDICT_FUNCTION_SQL
+
+        if self.type == "NearestCentroid":
+            sql = self.to_memmodel().predict_proba_sql(X)
+        else:
+            sql = [
+                f"""
+                {fun}({', '.join(X)} 
+                      USING PARAMETERS 
+                      model_name = '{self.name}',
+                      class = '{{}}',
+                      type = 'probability',
+                      match_by_pos = 'true')""",
+                f"""
+                    {fun}({', '.join(X)} 
+                          USING PARAMETERS 
+                          model_name = '{self.name}',
+                          match_by_pos = 'true')""",
+            ]
+        if not (allSQL):
             if pos_label in self.classes_:
                 if self.type == "NearestCentroid":
-                    sql = self.to_memmodel().predict_proba_sql(
-                        self.X if not (X) else X
-                    )[get_match_index(pos_label, self.classes_, False)]
+                    sql = sql[get_match_index(pos_label, self.classes_, False)]
                 else:
-                    sql = (
-                        "{0}({1} USING PARAMETERS model_name = '{2}', class = '{3}', "
-                        "type = 'probability', match_by_pos = 'true')"
-                    ).format(
-                        fun, ", ".join(self.X if not (X) else X), self.name, pos_label,
-                    )
+                    sql = sql[0].format(pos_label)
             if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
+                sql = f"""
+                    (CASE 
+                        WHEN {sql} >= {cutoff} 
+                            THEN '{pos_label}' 
+                        WHEN {sql} IS NULL 
+                            THEN NULL 
+                        ELSE '{{}}' 
+                    END)"""
                 if len(self.classes_) > 2:
-                    sql = (
-                        "(CASE WHEN {0} >= {1} THEN '{2}' WHEN {0} IS NULL THEN NULL "
-                        "ELSE 'Non-{2}' END)"
-                    ).format(sql, cutoff, pos_label)
+                    sql = sql.format(f"Non-{pos_label}")
                 else:
-                    non_pos_label = (
-                        self.classes_[0]
-                        if (self.classes_[0] != pos_label)
-                        else self.classes_[1]
-                    )
-                    sql = (
-                        "(CASE WHEN {0} >= {1} THEN '{2}' WHEN {0} IS NULL THEN NULL "
-                        "ELSE '{3}' END)"
-                    ).format(sql, cutoff, pos_label, non_pos_label)
+                    if self.classes_[0] != pos_label:
+                        non_pos_label = self.classes_[0]
+                    else:
+                        non_pos_label = self.classes_[1]
+                    sql = sql.format(non_pos_label)
             elif pos_label not in self.classes_:
                 if self.type == "NearestCentroid":
-                    sql = self.to_memmodel().predict_sql(self.X if not (X) else X)
+                    sql = self.to_memmodel().predict_sql(X)
                 else:
-                    sql = (
-                        "{0}({1} USING PARAMETERS model_name = '{2}', "
-                        "match_by_pos = 'true')"
-                    ).format(fun, ", ".join(self.X if not (X) else X), self.name)
+                    sql = sql[1]
         return sql
 
     # ---#
@@ -2948,11 +2939,8 @@ class Regressor(Supervised):
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X]
-        name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
-        )
+        if not (name):
+            name = f"{self.type}_" + "".join(ch for ch in self.name if ch.isalnum())
         if inplace:
             return vdf.eval(name, self.deploySQL(X=X))
         else:
