@@ -172,8 +172,10 @@ Attributes
                 else:
                     index_stop_str = "1 + APPLY_COUNT_ELEMENTS({})"
                 elem_to_select = f"{self.alias}[{index_start_str}:{index_stop_str}]"
-                elem_to_select = elem_to_select.format(self.alias)
-                new_alias = quote_ident(f"{self.alias[1:-1]}.{index_start}:{index_stop}")
+                elem_to_select = elem_to_select.replace("{}", self.alias)
+                new_alias = quote_ident(
+                    f"{self.alias[1:-1]}.{index_start}:{index_stop}"
+                )
                 query = f"""
                     (SELECT 
                         {elem_to_select} AS {new_alias} 
@@ -184,8 +186,10 @@ Attributes
                     self.ctype(),
                     self.category(),
                 )
-                vcol.init_transf = f"{self.init_transf}[{index_start_str}:{index_stop_str}]"
-                vcol.init_transf = vcol.init_transf.format(self.init_transf)
+                vcol.init_transf = (
+                    f"{self.init_transf}[{index_start_str}:{index_stop_str}]"
+                )
+                vcol.init_transf = vcol.init_transf.replace("{}", self.init_transf)
                 return vcol
             else:
                 if index_start < 0:
@@ -471,7 +475,7 @@ Attributes
 		"""
         if isinstance(func, str_sql):
             func = str(func)
-        func_apply = func.format(self.alias)
+        func_apply = func.replace("{}", self.alias)
         alias_sql_repr = self.alias.replace('"', "")
         try:
             ctype = get_data_types(
@@ -709,7 +713,7 @@ Attributes
                     else:
                         header_names = ""
                         if len(dtype) > 4 and dtype[:5] == "vmap(" and dtype[-1] == ")":
-                            header_names = ", header_names='{0}'".format(dtype[5:-1])
+                            header_names = f", header_names='{dtype[5:-1]}'"
                         transformation_2 = f"""MAPDELIMITEDEXTRACTOR({{}} 
                                                             USING PARAMETERS 
                                                             delimiter='{sep}'
@@ -752,6 +756,7 @@ Attributes
                 dtype = "varchar"
             else:
                 transformation_2 = f"{{}}::{dtype}"
+            transformation_2 = clean_query(transformation_2)
             transformation = (transformation_2.format(self.alias), transformation_2)
             query = f"""
                 SELECT 

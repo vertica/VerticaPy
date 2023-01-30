@@ -380,42 +380,40 @@ class XGBoost_utils:
         list
             XGB Priors.
         """
-        condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + [
-            "{} IS NOT NULL".format(self.y)
-        ]
+        condition = [f"{x} IS NOT NULL" for x in self.X] + [f"{self.y} IS NOT NULL"]
         v = vertica_version()
         v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
+        query = f"""
+            SELECT 
+                /*+LABEL('learn.ensemble.XGBoost_utils.get_prior')*/ 
+                {{}}
+            FROM {self.input_relation} 
+            WHERE {' AND '.join(condition)}{{}}"""
         if self.type == "XGBoostRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
             prior_ = executeSQL(
-                "SELECT /*+LABEL('learn.ensemble.XGBoost_utils.get_prior')*/ AVG({}) FROM {} WHERE {}".format(
-                    self.y, self.input_relation, " AND ".join(condition)
-                ),
+                query=query.format(f"AVG({self.y})", ""),
                 method="fetchfirstelem",
                 print_time_sql=False,
             )
         elif not (v):
             prior_ = []
-            for elem in self.classes_:
+            for c in self.classes_:
                 avg = executeSQL(
-                    "SELECT /*+LABEL('learn.ensemble.XGBoost_utils.get_prior')*/ COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(
-                        self.input_relation, " AND ".join(condition), self.y, elem
-                    ),
+                    query=query.format("COUNT(*)", f" AND {self.y} = '{c}'"),
                     method="fetchfirstelem",
                     print_time_sql=False,
                 )
                 avg /= executeSQL(
-                    "SELECT /*+LABEL('learn.ensemble.XGBoost_utils.get_prior')*/ COUNT(*) FROM {} WHERE {}".format(
-                        self.input_relation, " AND ".join(condition)
-                    ),
+                    query=query.format("COUNT(*)", ""),
                     method="fetchfirstelem",
                     print_time_sql=False,
                 )
                 logodds = np.log(avg / (1 - avg))
                 prior_ += [logodds]
         else:
-            prior_ = [0.0 for elem in self.classes_]
+            prior_ = [0.0 for p in self.classes_]
         return prior_
 
 
