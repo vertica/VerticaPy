@@ -12,6 +12,7 @@
 # limitations under the License.
 
 # VerticaPy
+import verticapy as vp
 from verticapy.connect import *
 
 
@@ -22,7 +23,7 @@ class TestConnect:
         # read_dsn
         d = read_dsn(
             "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+            os.path.dirname(vp.__file__) + "/tests/verticaPy_test_tmp.conf",
         )
         assert int(d["port"]) > 0
         # new_auto_connection
@@ -34,7 +35,7 @@ class TestConnect:
         change_auto_connection("vp_test_config")
         # read_auto_connect
         read_auto_connect()
-        cur = verticapy.OPTIONS["connection"]["conn"].cursor()
+        cur = vp.OPTIONS["connection"]["conn"].cursor()
         cur.execute("SELECT 1;")
         result2 = cur.fetchone()
         assert result2 == [1]
@@ -45,13 +46,13 @@ class TestConnect:
             "SELECT client_label FROM v_monitor.sessions WHERE client_label LIKE 'verticapy%' LIMIT 1;"
         )
         label = current_cursor().fetchone()[0].split("-")
-        assert label[1] == verticapy.__version__
-        assert label[2] == str(verticapy.OPTIONS["identifier"])
+        assert label[1] == vp.__version__
+        assert label[2] == str(vp.OPTIONS["identifier"])
 
     def test_vertica_connection(self, base):
         cur = vertica_connection(
             "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+            os.path.dirname(vp.__file__) + "/tests/verticaPy_test_tmp.conf",
         ).cursor()
         cur.execute("SELECT 1;")
         result = cur.fetchone()

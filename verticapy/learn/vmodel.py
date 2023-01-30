@@ -66,6 +66,7 @@ from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
+import verticapy.learn.metrics as mt
 from verticapy.learn.metrics import *
 from verticapy.learn.tools import *
 from verticapy.learn.memmodel import *
@@ -298,8 +299,12 @@ Main Class for Vertica Model
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
             name = self.tree_name if self.type == "KernelDensity" else self.name
             X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
-            sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{name}', match_by_pos = 'true')"
-            return sql
+            sql = f"""
+                {self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} 
+                                                    USING PARAMETERS 
+                                                    model_name = '{name}',
+                                                    match_by_pos = 'true')"""
+            return clean_query(sql)
         else:
             raise FunctionError(f"Method 'deploySQL' for '{self.type}' doesn't exist.")
 
@@ -1281,7 +1286,8 @@ Main Class for Vertica Model
             func += "\tL = []\n"
             n = len(sv[0])
             func += f"\tfor i in range({n}):\n"
-            func += "\t\tL += [np.sum(X * right_singular_vectors[i] / singular_values[i], axis=1)]\n"
+            func += "\t\tL += [np.sum(X * right_singular_vectors[i] / "
+            func += "singular_values[i], axis=1)]\n"
             func += "\tresult = np.column_stack(L)\n"
             func += "\treturn result\n"
             return func
@@ -1390,7 +1396,8 @@ Main Class for Vertica Model
                     self.parameters["sample"]
                     * int(self.get_attr("accepted_row_count")["accepted_row_count"][0])
                 )
-                func += f"\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4][node_id][1])) / heuristic_length({psy})\n"
+                func += f"\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4]"
+                func += f"[node_id][1])) / heuristic_length({psy})\n"
             elif self.type == "RandomForestClassifier":
                 func += "\t\t\treturn tree[4][node_id]\n"
             else:
@@ -1412,7 +1419,8 @@ Main Class for Vertica Model
             if self.type in ("XGBoostRegressor", "XGBoostClassifier"):
                 if self.type == "XGBoostRegressor":
                     avg = self.prior_
-                    func += f"\t\treturn {avg} + {self.parameters['learning_rate']} * np.sum(result)\n"
+                    func += f"\t\treturn {avg} + {self.parameters['learning_rate']} "
+                    func += "* np.sum(result)\n"
                 else:
                     if not (isinstance(self.prior_, list)):
                         func += "\t\tlogodds = np.array([{}, {}])\n".format(
@@ -1425,7 +1433,8 @@ Main Class for Vertica Model
                     func += "\t\t\tfor val in result:\n"
                     func += "\t\t\t\tall_classes_score[elem] += val[elem]\n"
                     func += "\t\t\tall_classes_score[elem] = 1 / (1 + np.exp( - "
-                    func += f"(logodds[idx] + {self.parameters['learning_rate']} * all_classes_score[elem])))\n"
+                    func += f"(logodds[idx] + {self.parameters['learning_rate']} * "
+                    func += "all_classes_score[elem])))\n"
                     func += "\t\tresult = [all_classes_score[elem] for elem in "
                     func += "all_classes_score]\n"
             elif self.type == "RandomForestRegressor":
@@ -1475,13 +1484,16 @@ Main Class for Vertica Model
     str / list
         SQL code
         """
+        if not X:
+            X = self.X
+        model = self.to_memmodel()
         if self.type in ("PCA", "SVD", "Normalizer", "MCA", "OneHotEncoder"):
-            return self.to_memmodel().transform_sql(self.X if not X else X)
+            return model.transform_sql(X)
         else:
             if return_proba:
-                return self.to_memmodel().predict_proba_sql(self.X if not X else X)
+                return model.predict_proba_sql(X)
             else:
-                return self.to_memmodel().predict_sql(self.X if not X else X)
+                return model.predict_sql(X)
 
 
 # ---#
@@ -1524,20 +1536,18 @@ class Supervised(vModel):
             does_model_exist(name=self.name, raise_error=True)
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
+        nb_lookup_table = {
+            "bernoulli": "bool",
+            "categorical": "varchar",
+            "multinomial": "int",
+            "gaussian": "float",
+        }
         if (self.type == "NaiveBayes") and (
-            self.parameters["nbtype"]
-            in ("bernoulli", "categorical", "multinomial", "gaussian")
+            self.parameters["nbtype"] in nb_lookup_table
         ):
             new_types = {}
-            for elem in X:
-                if self.parameters["nbtype"] == "bernoulli":
-                    new_types[elem] = "bool"
-                elif self.parameters["nbtype"] == "categorical":
-                    new_types[elem] = "varchar"
-                elif self.parameters["nbtype"] == "multinomial":
-                    new_types[elem] = "int"
-                elif self.parameters["nbtype"] == "gaussian":
-                    new_types[elem] = "float"
+            for x in X:
+                new_types[x] = nb_lookup_table[self.parameters["nbtype"]]
             if not (isinstance(input_relation, vDataFrame)):
                 input_relation = vDataFrameSQL(input_relation)
             else:
@@ -1551,9 +1561,10 @@ class Supervised(vModel):
             "XGBoostClassifier",
             "XGBoostRegressor",
         ) and isinstance(verticapy.OPTIONS["random_state"], int):
-            id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
-                ", ".join(X), id_column_name
-            )
+            id_column = f""", 
+                ROW_NUMBER() OVER 
+                (ORDER BY {', '.join(X)}) 
+                AS {id_column_name}"""
         tmp_view = False
         if isinstance(input_relation, vDataFrame) or (id_column):
             tmp_view = True
@@ -1564,9 +1575,12 @@ class Supervised(vModel):
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop(relation, method="view")
             executeSQL(
-                "CREATE VIEW {0} AS SELECT /*+LABEL('learn.vModel.fit')*/ *{1} FROM {2}".format(
-                    relation, id_column, self.input_relation
-                ),
+                query=f"""
+                    CREATE VIEW {relation} AS 
+                        SELECT 
+                            /*+LABEL('learn.vModel.fit')*/ 
+                            *{id_column} 
+                        FROM {self.input_relation}""",
                 title="Creating a temporary view to fit the model.",
             )
         else:
@@ -1593,11 +1607,16 @@ class Supervised(vModel):
             elif parameters["mtry"] == "'max'":
                 parameters["mtry"] = len(self.X)
         fun = self.VERTICA_FIT_FUNCTION_SQL
-        query = "SELECT /*+LABEL('learn.vModel.fit')*/ {}('{}', '{}', '{}', '{}' USING PARAMETERS "
-        query = query.format(fun, self.name, relation, self.y, ", ".join(self.X))
-        query += ", ".join(
-            ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
-        )
+        query = f"""
+            SELECT 
+                /*+LABEL('learn.vModel.fit')*/ 
+                {self.VERTICA_FIT_FUNCTION_SQL}
+                ('{self.name}', 
+                 '{relation}',
+                 '{self.y}',
+                 '{', '.join(self.X)}' 
+                 USING PARAMETERS 
+                 {', '.join([f"{p} = {parameters[p]}" for p in parameters])}"""
         if alpha != None:
             query += f", alpha = {alpha}"
         if self.type in (
@@ -1606,14 +1625,12 @@ class Supervised(vModel):
             "XGBoostClassifier",
             "XGBoostRegressor",
         ) and isinstance(verticapy.OPTIONS["random_state"], int):
-            query += ", seed={}, id_column='{}'".format(
-                verticapy.OPTIONS["random_state"], id_column_name
-            )
+            query += f""", 
+                seed={verticapy.OPTIONS['random_state']}, 
+                id_column='{id_column_name}'"""
         query += ")"
         try:
             executeSQL(query, title="Fitting the model.")
-        except:
-            raise
         finally:
             if tmp_view:
                 drop(relation, method="view")
@@ -1632,13 +1649,17 @@ class Supervised(vModel):
         ):
             if not (isinstance(input_relation, vDataFrame)):
                 classes = executeSQL(
-                    "SELECT /*+LABEL('learn.vModel.fit')*/ DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-                        self.y, input_relation, self.y
-                    ),
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('learn.vModel.fit')*/ 
+                            DISTINCT {self.y} 
+                        FROM {input_relation} 
+                        WHERE {self.y} IS NOT NULL 
+                        ORDER BY 1""",
                     method="fetchall",
                     print_time_sql=False,
                 )
-                self.classes_ = [item[0] for item in classes]
+                self.classes_ = [c[0] for c in classes]
             else:
                 self.classes_ = input_relation[self.y].distinct()
         if self.type in ("XGBoostClassifier", "XGBoostRegressor"):
@@ -1724,7 +1745,7 @@ class Tree:
 		utilities.tablesample.
 		"""
         name = self.tree_name if self.type == "KernelDensity" else self.name
-        query = f"""SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS 
+        query = f"""SELECT * FROM (SELECT READ_TREE (USING PARAMETERS 
                                                      model_name = '{name}', 
                                                      tree_id = {tree_id}, 
                                                      format = 'tabular')) x ORDER BY node_id;"""
@@ -1865,7 +1886,7 @@ class BinaryClassifier(Classifier):
 		"""
         if cutoff > 1 or cutoff < 0:
             cutoff = self.score(method="best_cutoff")
-        return classification_report(
+        return mt.classification_report(
             self.y,
             [self.deploySQL(), self.deploySQL(cutoff)],
             self.test_relation,
@@ -1893,7 +1914,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return confusion_matrix(self.y, self.deploySQL(cutoff), self.test_relation,)
+        return mt.confusion_matrix(self.y, self.deploySQL(cutoff), self.test_relation,)
 
     # ---#
     @check_dtypes
@@ -1916,13 +1937,28 @@ class BinaryClassifier(Classifier):
 	str
 		the SQL code needed to deploy the model.
 		"""
-        if isinstance(X, str):
+        if not (X):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
-        X = self.X if not (X) else [quote_ident(elem) for elem in X]
-        sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', type = 'probability', match_by_pos = 'true')"
+        else:
+            X = [quote_ident(elem) for elem in X]
+        sql = f"""
+            {self.VERTICA_PREDICT_FUNCTION_SQL}
+            ({', '.join(X)} USING PARAMETERS
+                            model_name = '{self.name}',
+                            type = 'probability',
+                            match_by_pos = 'true')"""
         if cutoff <= 1 and cutoff >= 0:
-            sql = f"(CASE WHEN {sql} >= {cutoff} THEN 1 WHEN {sql} IS NULL THEN NULL ELSE 0 END)"
-        return sql
+            sql = f"""
+                (CASE 
+                    WHEN {sql} >= {cutoff} 
+                        THEN 1 
+                    WHEN {sql} IS NULL 
+                        THEN NULL 
+                    ELSE 0 
+                END)"""
+        return clean_query(sql)
 
     # ---#
     @check_dtypes
@@ -1946,7 +1982,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return lift_chart(
+        return mt.lift_chart(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -1977,7 +2013,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return prc_curve(
+        return mt.prc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2098,7 +2134,7 @@ class BinaryClassifier(Classifier):
         if pos_label in [0, "0", None]:
             if pos_label == None:
                 name_tmp = f"{name}_0"
-            vdf_return.eval(name_tmp, "1 - {0}".format(self.deploySQL(X=X)))
+            vdf_return.eval(name_tmp, f"1 - {self.deploySQL(X=X)}")
         if pos_label in [1, "1", None]:
             if pos_label == None:
                 name_tmp = f"{name}_1"
@@ -2128,7 +2164,7 @@ class BinaryClassifier(Classifier):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        return roc_curve(
+        return mt.roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2160,7 +2196,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return roc_curve(
+        return mt.roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2216,60 +2252,33 @@ class BinaryClassifier(Classifier):
 	float
 		score
 		"""
-        if method in ("accuracy", "acc"):
-            return accuracy_score(
-                self.y, self.deploySQL(cutoff), self.test_relation, pos_label=1
-            )
-        elif method == "aic":
-            return aic_bic(self.y, self.deploySQL(), self.test_relation, len(self.X))[0]
-        elif method == "bic":
-            return aic_bic(self.y, self.deploySQL(), self.test_relation, len(self.X))[1]
-        elif method == "prc_auc":
-            return prc_curve(
-                self.y, self.deploySQL(), self.test_relation, auc_prc=True, nbins=nbins,
-            )
-        elif method == "auc":
-            return roc_curve(
-                self.y, self.deploySQL(), self.test_relation, auc_roc=True, nbins=nbins,
-            )
-        elif method in ("best_cutoff", "best_threshold"):
-            return roc_curve(
-                self.y,
-                self.deploySQL(),
-                self.test_relation,
-                best_threshold=True,
-                nbins=nbins,
-            )
-        elif method in ("recall", "tpr"):
-            return recall_score(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("precision", "ppv"):
-            return precision_score(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("specificity", "tnr"):
-            return specificity_score(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("negative_predictive_value", "npv"):
-            return negative_predictive_score(
-                self.y, self.deploySQL(cutoff), self.test_relation
-            )
-        elif method in ("log_loss", "logloss"):
-            return log_loss(self.y, self.deploySQL(), self.test_relation)
-        elif method == "f1":
-            return f1_score(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method == "mcc":
-            return matthews_corrcoef(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("bm", "informedness"):
-            return informedness(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("mk", "markedness"):
-            return markedness(self.y, self.deploySQL(cutoff), self.test_relation)
-        elif method in ("csi", "critical_success_index"):
-            return critical_success_index(
-                self.y, self.deploySQL(cutoff), self.test_relation
-            )
+        method = str(method).lower()
+        raise_error_if_not_in("method", method, mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)
+        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
+        if method in (
+            "log_loss",
+            "logloss",
+            "aic",
+            "bic",
+            "prc_auc",
+            "auc",
+            "best_cutoff",
+            "best_threshold",
+        ):
+            args2 = self.deploySQL()
         else:
-            raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall"
-                "|precision|log_loss|negative_predictive_value|specificity|mcc|informedness"
-                "|markedness|critical_success_index|aic|bic"
-            )
+            args2 = self.deploySQL(cutoff)
+        args = [self.y, args2, self.test_relation]
+        kwds = {}
+        if method in ("accuracy", "acc"):
+            kwds["pos_label"] = 1
+        elif method in ("aic", "bic"):
+            args += [len(self.X)]
+        elif method in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
+            kwds["nbins"] = nbins
+            if method in ("best_cutoff", "best_threshold"):
+                kwds["best_threshold"] = True
+        return fun(*args, **kwds)
 
 
 # ---#
@@ -2312,11 +2321,11 @@ class MulticlassClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        if isinstance(labels, str):
-            labels = [labels]
         if not (labels):
             labels = self.classes_
-        return classification_report(
+        elif isinstance(labels, str):
+            labels = [labels]
+        return mt.classification_report(
             cutoff=cutoff, estimator=self, labels=labels, nbins=nbins,
         )
 
@@ -2346,20 +2355,17 @@ class MulticlassClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
-        if pos_label:
-            return confusion_matrix(
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
+        elif pos_label:
+            return mt.confusion_matrix(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
                 pos_label=pos_label,
             )
         else:
-            return multilabel_confusion_matrix(
+            return mt.multilabel_confusion_matrix(
                 self.y, self.deploySQL(), self.test_relation, self.classes_
             )
 
@@ -2395,12 +2401,9 @@ class MulticlassClassifier(Classifier):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
-        if pos_label not in self.classes_:
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
+        elif pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
@@ -2410,7 +2413,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return roc_curve(
+        return mt.roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2454,61 +2457,63 @@ class MulticlassClassifier(Classifier):
 	str / list
 		the SQL code needed to deploy the self.
 		"""
-        if isinstance(X, str):
+        if not (X):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
-        X = [quote_ident(elem) for elem in X]
-        fun = self.VERTICA_PREDICT_FUNCTION_SQL
-        if allSQL:
-            if self.type == "NearestCentroid":
-                sql = self.to_memmodel().predict_proba_sql(self.X if not (X) else X)
-            else:
-                sql = (
-                    "{0}({1} USING PARAMETERS model_name = '{2}', class = '{3}', "
-                    "type = 'probability', match_by_pos = 'true')"
-                ).format(fun, ", ".join(self.X if not (X) else X), self.name, "{}")
-                sql = [
-                    sql,
-                    "{0}({1} USING PARAMETERS model_name = '{2}', match_by_pos = 'true')".format(
-                        fun, ", ".join(self.X if not (X) else X), self.name
-                    ),
-                ]
         else:
+            X = [quote_ident(x) for x in X]
+        fun = self.VERTICA_PREDICT_FUNCTION_SQL
+
+        if self.type == "NearestCentroid":
+            sql = self.to_memmodel().predict_proba_sql(X)
+        else:
+            sql = [
+                f"""
+                {fun}({', '.join(X)} 
+                      USING PARAMETERS 
+                      model_name = '{self.name}',
+                      class = '{{}}',
+                      type = 'probability',
+                      match_by_pos = 'true')""",
+                f"""
+                    {fun}({', '.join(X)} 
+                          USING PARAMETERS 
+                          model_name = '{self.name}',
+                          match_by_pos = 'true')""",
+            ]
+        if not (allSQL):
             if pos_label in self.classes_:
                 if self.type == "NearestCentroid":
-                    sql = self.to_memmodel().predict_proba_sql(
-                        self.X if not (X) else X
-                    )[get_match_index(pos_label, self.classes_, False)]
+                    sql = sql[get_match_index(pos_label, self.classes_, False)]
                 else:
-                    sql = (
-                        "{0}({1} USING PARAMETERS model_name = '{2}', class = '{3}', "
-                        "type = 'probability', match_by_pos = 'true')"
-                    ).format(
-                        fun, ", ".join(self.X if not (X) else X), self.name, pos_label,
-                    )
+                    sql = sql[0].format(pos_label)
             if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
+                sql = f"""
+                    (CASE 
+                        WHEN {sql} >= {cutoff} 
+                            THEN '{pos_label}' 
+                        WHEN {sql} IS NULL 
+                            THEN NULL 
+                        ELSE '{{}}' 
+                    END)"""
                 if len(self.classes_) > 2:
-                    sql = (
-                        "(CASE WHEN {0} >= {1} THEN '{2}' WHEN {0} IS NULL THEN NULL "
-                        "ELSE 'Non-{2}' END)"
-                    ).format(sql, cutoff, pos_label)
+                    sql = sql.format(f"Non-{pos_label}")
                 else:
-                    non_pos_label = (
-                        self.classes_[0]
-                        if (self.classes_[0] != pos_label)
-                        else self.classes_[1]
-                    )
-                    sql = (
-                        "(CASE WHEN {0} >= {1} THEN '{2}' WHEN {0} IS NULL THEN NULL "
-                        "ELSE '{3}' END)"
-                    ).format(sql, cutoff, pos_label, non_pos_label)
+                    if self.classes_[0] != pos_label:
+                        non_pos_label = self.classes_[0]
+                    else:
+                        non_pos_label = self.classes_[1]
+                    sql = sql.format(non_pos_label)
             elif pos_label not in self.classes_:
                 if self.type == "NearestCentroid":
-                    sql = self.to_memmodel().predict_sql(self.X if not (X) else X)
+                    sql = self.to_memmodel().predict_sql(X)
                 else:
-                    sql = (
-                        "{0}({1} USING PARAMETERS model_name = '{2}', "
-                        "match_by_pos = 'true')"
-                    ).format(fun, ", ".join(self.X if not (X) else X), self.name)
+                    sql = sql[1]
+        if isinstance(sql, str):
+            sql = clean_query(sql)
+        else:
+            sql = [clean_query(q) for q in sql]
         return sql
 
     # ---#
@@ -2543,11 +2548,8 @@ class MulticlassClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
@@ -2558,7 +2560,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return lift_chart(
+        return mt.lift_chart(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2600,11 +2602,8 @@ class MulticlassClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
@@ -2615,7 +2614,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return prc_curve(
+        return mt.prc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2663,17 +2662,20 @@ class MulticlassClassifier(Classifier):
 		the input object.
 		"""
         # Inititalization
-        if isinstance(X, str):
+        if not (X):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
+        else:
+            X = [quote_ident(elem) for elem in X]
+        if not (name):
+            name = gen_name([self.type, self.name])
         assert 0 <= cutoff <= 1, ParameterError(
             "Incorrect parameter 'cutoff'.\nThe cutoff "
             "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
-        X = [quote_ident(elem) for elem in X]
-        if not (name):
-            name = gen_name([self.type, self.name])
 
         # In Place
         vdf_return = vdf if inplace else vdf.copy()
@@ -2732,17 +2734,19 @@ class MulticlassClassifier(Classifier):
         the input object.
         """
         # Inititalization
-        if isinstance(X, str):
+        if not (X):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
+        else:
+            X = [quote_ident(elem) for elem in X]
         assert pos_label is None or pos_label in self.classes_, ParameterError(
-            (
-                "Incorrect parameter 'pos_label'.\nThe class label "
-                "must be in [{0}]. Found '{1}'."
-            ).format("|".join(["{}".format(c) for c in self.classes_]), pos_label)
+            "Incorrect parameter 'pos_label'.\nThe class label "
+            f"must be in [{'|'.join([str(c) for c in self.classes_])}]. "
+            f"Found '{pos_label}'."
         )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
-        X = [quote_ident(elem) for elem in X]
         if not (name):
             name = gen_name([self.type, self.name])
 
@@ -2791,11 +2795,8 @@ class MulticlassClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
@@ -2806,7 +2807,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return roc_curve(
+        return mt.roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2865,11 +2866,11 @@ class MulticlassClassifier(Classifier):
 	float
 		score
 		"""
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        method = str(method).lower()
+        raise_error_if_not_in("method", method, mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)
+        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if (pos_label not in self.classes_) and (method != "accuracy"):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
@@ -2880,98 +2881,30 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
+        args = [self.y, self.deploySQL(pos_label, cutoff), self.test_relation]
+        kwds = {}
         if method in ("accuracy", "acc"):
-            return accuracy_score(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
-                pos_label,
-            )
-        elif method == "auc":
-            return auc(
+            args += [pos_label]
+        elif method in ("aic", "bic"):
+            args += [len(self.X)]
+        elif method in (
+            "auc",
+            "prc_auc",
+            "best_cutoff",
+            "best_threshold",
+            "log_loss",
+            "logloss",
+        ):
+            args = [
                 f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
-                nbins=nbins,
-            )
-        elif method == "aic":
-            return aic_bic(
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
-                len(self.X),
-            )[0]
-        elif method == "bic":
-            return aic_bic(
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
-                len(self.X),
-            )[1]
-        elif method == "prc_auc":
-            return prc_auc(
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
-                nbins=nbins,
-            )
-        elif method in ("best_cutoff", "best_threshold"):
-            return roc_curve(
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
-                best_threshold=True,
-                nbins=nbins,
-            )
-        elif method in ("recall", "tpr"):
-            return recall_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("precision", "ppv"):
-            return precision_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("specificity", "tnr"):
-            return specificity_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("negative_predictive_value", "npv"):
-            return negative_predictive_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("log_loss", "logloss"):
-            return log_loss(
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
-            )
-        elif method == "f1":
-            return f1_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method == "mcc":
-            return matthews_corrcoef(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("bm", "informedness"):
-            return informedness(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("mk", "markedness"):
-            return markedness(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        elif method in ("csi", "critical_success_index"):
-            return critical_success_index(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
-            )
-        else:
-            raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc"
-                "|best_cutoff|recall|precision|log_loss|negative_predictive_value"
-                "|specificity|mcc|informedness|markedness|critical_success_index"
-                "|aic|bic"
-            )
+            ]
+            if method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
+                kwds["nbins"] = nbins
+            if method in ("best_cutoff", "best_threshold"):
+                kwds["best_threshold"] = True
+        return fun(*args, **kwds)
 
 
 # ---#
@@ -3009,16 +2942,16 @@ class Regressor(Supervised):
 	vDataFrame
 		the input object.
 		"""
+        if not (X):
+            X = self.X
         if isinstance(X, str):
             X = [X]
+        else:
+            X = [quote_ident(elem) for elem in X]
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
-        X = [quote_ident(elem) for elem in X]
-        name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
-        )
+        if not (name):
+            name = f"{self.type}_" + "".join(ch for ch in self.name if ch.isalnum())
         if inplace:
             return vdf.eval(name, self.deploySQL(X=X))
         else:
@@ -3046,6 +2979,7 @@ class Regressor(Supervised):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
+        method = str(method).lower()
         raise_error_if_not_in("method", method, ["anova", "metrics", "details"])
         if method in ("anova", "details") and self.type in (
             "SARIMAX",
@@ -3053,16 +2987,16 @@ class Regressor(Supervised):
             "KernelDensity",
         ):
             raise ModelError(
-                "'{}' method is not available for {} models.".format(method, self.type)
+                f"'{method}' method is not available for {self.type} models."
             )
         prediction = self.deploySQL()
         if self.type == "SARIMAX":
             test_relation = self.transform_relation
-            test_relation = "(SELECT {} AS prediction, {} FROM {}) VERTICAPY_SUBTABLE".format(
-                self.deploySQL(),
-                "VerticaPy_y_copy AS {}".format(self.y),
-                test_relation,
-            )
+            test_relation = f"""
+                (SELECT 
+                    {self.deploySQL()} AS prediction, 
+                    VerticaPy_y_copy AS {self.y} 
+                FROM {test_relation}) VERTICAPY_SUBTABLE"""
             test_relation = (
                 test_relation.format(self.test_relation)
                 .replace("[VerticaPy_ts]", self.ts)
@@ -3073,7 +3007,7 @@ class Regressor(Supervised):
                 )
             )
             for idx, elem in enumerate(self.exogenous):
-                test_relation = test_relation.replace("[X{}]".format(idx), elem)
+                test_relation = test_relation.replace(f"[X{idx}]", elem)
             prediction = "prediction"
         elif self.type == "KNeighborsRegressor":
             test_relation = self.deploySQL()
@@ -3083,7 +3017,7 @@ class Regressor(Supervised):
                 "[VerticaPy_ts]", self.ts
             ).format(self.test_relation)
             for idx, elem in enumerate(self.X):
-                relation = relation.replace("[X{}]".format(idx), elem)
+                relation = relation.replace(f"[X{idx}]", elem)
             values = {
                 "index": [
                     "explained_variance",
@@ -3117,9 +3051,10 @@ class Regressor(Supervised):
             return anova_table(self.y, prediction, test_relation, len(self.X))
         elif method == "details":
             vdf = vDataFrameSQL(
-                "(SELECT {} FROM ".format(self.y)
-                + self.input_relation
-                + ") VERTICAPY_SUBTABLE"
+                f"""
+                    (SELECT 
+                        {self.y} 
+                    FROM {self.input_relation}) VERTICAPY_SUBTABLE"""
             )
             n = vdf[self.y].count()
             kurt = vdf[self.y].kurt()
@@ -3191,139 +3126,33 @@ class Regressor(Supervised):
 	float
 		score
 		"""
-        method = method.lower()
+        # Initialization
+        methods = list(mt.FUNCTIONS_REGRESSION_DICTIONNARY.keys())
+        methods += ["r2a", "rmse"]
+        method = str(method).lower()
+        if method in ["r2adj", "r2adjusted"]:
+            method = "r2a"
+        raise_error_if_not_in("method", method, methods)
+        adj, root = False, False
         if method in ("r2a", "r2adj", "r2adjusted"):
-            method = "r2"
-            adj = True
-        else:
-            adj = False
-        if method == "rmse":
-            method = "mse"
-            root = True
-        else:
-            root = False
-        if self.type == "SARIMAX":
-            test_relation = self.transform_relation
-            test_relation = "(SELECT {} AS prediction, {} FROM {}) VERTICAPY_SUBTABLE".format(
-                self.deploySQL(),
-                "VerticaPy_y_copy AS {}".format(self.y),
-                test_relation,
-            )
-            test_relation = (
-                test_relation.format(self.test_relation)
-                .replace("[VerticaPy_ts]", self.ts)
-                .replace("[VerticaPy_y]", self.y)
-                .replace(
-                    "[VerticaPy_key_columns]",
-                    ", " + ", ".join([self.ts] + self.exogenous),
-                )
-            )
-            for idx, elem in enumerate(self.exogenous):
-                test_relation = test_relation.replace(f"[X{idx}]", elem)
-            prediction = "prediction"
-        elif self.type == "VAR":
-            relation = self.transform_relation.replace(
-                "[VerticaPy_ts]", self.ts
-            ).format(self.test_relation)
-            for idx, elem in enumerate(self.X):
-                relation = relation.replace(f"[X{idx}]", elem)
-            if method == "mse" and root:
-                index = "rmse"
-            elif method == "r2" and adj:
-                index = "r2a"
-            else:
-                index = method
-            result = tablesample({"index": [index]})
-        elif self.type == "KNeighborsRegressor":
-            test_relation = self.deploySQL()
-            prediction = "predict_neighbors"
+            method, adj = "r2", True
+        elif method == "rmse":
+            method, root = "mse", True
+        fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
+
+        # Scoring
+        if self.type == "KNeighborsRegressor":
+            test_relation, prediction = self.deploySQL(), "predict_neighbors"
         elif self.type == "KernelDensity":
-            test_relation = self.map
-            prediction = self.deploySQL()
+            test_relation, prediction = self.map, self.deploySQL()
         else:
-            test_relation = self.test_relation
-            prediction = self.deploySQL()
-        if method == "aic":
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        aic_bic(y, self.deploySQL()[idx], relation, len(self.X),)[0]
-                    ]
-            else:
-                return aic_bic(self.y, prediction, test_relation, len(self.X))[0]
-        elif method == "bic":
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        aic_bic(y, self.deploySQL()[idx], relation, len(self.X))[1]
-                    ]
-            else:
-                return aic_bic(self.y, prediction, test_relation, len(self.X))[1]
-        elif method in ("r2", "rsquared"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        r2_score(
-                            y,
-                            self.deploySQL()[idx],
-                            relation,
-                            len(self.X) * self.parameters["p"],
-                            adj,
-                        )
-                    ]
-            else:
-                return r2_score(self.y, prediction, test_relation, len(self.X), adj)
-        elif method in ("mae", "mean_absolute_error"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        mean_absolute_error(y, self.deploySQL()[idx], relation,)
-                    ]
-            else:
-                return mean_absolute_error(self.y, prediction, test_relation,)
-        elif method in ("mse", "mean_squared_error"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        mean_squared_error(y, self.deploySQL()[idx], relation, root)
-                    ]
-            else:
-                return mean_squared_error(self.y, prediction, test_relation, root)
-        elif method in ("msle", "mean_squared_log_error"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        mean_squared_log_error(y, self.deploySQL()[idx], relation)
-                    ]
-            else:
-                return mean_squared_log_error(self.y, prediction, test_relation)
-        elif method in ("max", "max_error"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [max_error(y, self.deploySQL()[idx], relation)]
-            else:
-                return max_error(self.y, prediction, test_relation)
-        elif method in ("median", "median_absolute_error"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        median_absolute_error(y, self.deploySQL()[idx], relation)
-                    ]
-            else:
-                return median_absolute_error(self.y, prediction, test_relation)
-        elif method in ("var", "explained_variance"):
-            if self.type == "VAR":
-                for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        explained_variance(y, self.deploySQL()[idx], relation)
-                    ]
-            else:
-                return explained_variance(self.y, prediction, test_relation)
-        else:
-            raise ParameterError(
-                "The parameter 'method' must be in r2|mae|mse|msle|max|median|var"
-            )
-        return result.transpose()
+            test_relation, prediction = self.test_relation, self.deploySQL()
+        arg = [self.y, prediction, test_relation]
+        if method in ("aic", "bic") or adj:
+            arg += [len(self.X)]
+        if root or adj:
+            arg += [True]
+        return fun(*arg)
 
 
 # ---#
@@ -3614,44 +3443,44 @@ class Preprocessing(Unsupervised):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        X = [quote_ident(elem) for elem in X]
-        fun = self.VERTICA_TRANSFORM_FUNCTION_SQL
-        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
+        if not (X):
+            X = self.X
+        else:
+            X = [quote_ident(elem) for elem in X]
         if key_columns:
-            sql += ", key_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in key_columns])
-            )
+            key_columns = ", ".join([quote_ident(col) for col in key_columns])
         if exclude_columns:
-            sql += ", exclude_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in exclude_columns])
-            )
+            exclude_columns = ", ".join([quote_ident(col) for col in exclude_columns])
+        sql = f"""
+            {self.VERTICA_TRANSFORM_FUNCTION_SQL}({', '.join(X)} 
+               USING PARAMETERS 
+               model_name = '{self.name}',
+               match_by_pos = 'true'"""
+        if key_columns:
+            sql += f", key_columns = '{key_columns}'"
+        if exclude_columns:
+            sql += f", exclude_columns = '{exclude_columns}'"
         if self.type == "OneHotEncoder":
-            separator = (
-                "NULL"
-                if self.parameters["separator"] == None
-                else "'{}'".format(self.parameters["separator"])
-            )
-            null_column_name = (
-                "NULL"
-                if self.parameters["null_column_name"] == None
-                else "'{}'".format(self.parameters["null_column_name"])
-            )
-            sql += (
-                ", drop_first = {0}, ignore_null = {1}, separator = {2}, "
-                "column_naming = '{3}'"
-            ).format(
-                self.parameters["drop_first"],
-                self.parameters["ignore_null"],
-                separator,
-                self.parameters["column_naming"],
-            )
+            if self.parameters["separator"] == None:
+                separator = "null"
+            else:
+                separator = self.parameters["separator"].lower()
+            sql += f""", 
+                drop_first = '{str(self.parameters['drop_first']).lower()}',
+                ignore_null = '{str(self.parameters['ignore_null']).lower()}',
+                separator = '{separator}',
+                column_naming = '{self.parameters['column_naming']}'"""
             if self.parameters["column_naming"].lower() in (
                 "values",
                 "values_relaxed",
             ):
-                sql += ", null_column_name = {}".format(null_column_name)
+                if self.parameters["null_column_name"] == None:
+                    null_column_name = "null"
+                else:
+                    null_column_name = self.parameters["null_column_name"].lower()
+                sql += f", null_column_name = '{null_column_name}'"
         sql += ")"
-        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
+        return clean_query(sql)
 
     # ---#
     @check_dtypes
@@ -3685,15 +3514,21 @@ class Preprocessing(Unsupervised):
             key_columns = [key_columns]
         if isinstance(exclude_columns, str):
             exclude_columns = [exclude_columns]
-        if isinstance(X, str):
+        if not (X):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
+        else:
+            X = [quote_ident(x) for x in X]
         if self.type == "OneHotEncoder":
             raise ModelError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
-        X = self.X if not (X) else [quote_ident(x) for x in X]
-        fun = self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL
-        sql = f"{fun}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', match_by_pos = 'true'"
+        sql = f"""
+            {self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL}({', '.join(X)} 
+                                                          USING PARAMETERS 
+                                                          model_name = '{self.name}',
+                                                          match_by_pos = 'true'"""
         if key_columns:
             key_columns = ", ".join([quote_ident(kcol) for kcol in key_columns])
             sql += f", key_columns = '{key_columns}'"
@@ -3701,7 +3536,7 @@ class Preprocessing(Unsupervised):
             exclude_columns = ", ".join([quote_ident(ecol) for ecol in exclude_columns])
             sql += f", exclude_columns = '{exclude_columns}'"
         sql += ")"
-        return sql
+        return clean_query(sql)
 
     # ---#
     @check_dtypes
@@ -3902,23 +3737,27 @@ class Decomposition(Preprocessing):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        X = [quote_ident(elem) for elem in X]
-        fun = self.VERTICA_TRANSFORM_FUNCTION_SQL
-        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
-        if key_columns:
-            sql += ", key_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in key_columns])
-            )
-        if exclude_columns:
-            sql += ", exclude_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in exclude_columns])
-            )
-        if n_components:
-            sql += ", num_components = {}".format(n_components)
+        if not (X):
+            X = self.X
         else:
-            sql += ", cutoff = {}".format(cutoff)
+            X = [quote_ident(elem) for elem in X]
+        fun = self.VERTICA_TRANSFORM_FUNCTION_SQL
+        sql = f"""{self.VERTICA_TRANSFORM_FUNCTION_SQL}({', '.join(X)} 
+                                                        USING PARAMETERS
+                                                        model_name = '{self.name}',
+                                                        match_by_pos = 'true'"""
+        if key_columns:
+            key_columns = ", ".join([quote_ident(col) for col in key_columns])
+            sql += f", key_columns = '{key_columns}'"
+        if exclude_columns:
+            exclude_columns = ", ".join([quote_ident(col) for col in exclude_columns])
+            sql += f", exclude_columns = '{exclude_columns}'"
+        if n_components:
+            sql += f", num_components = {n_components}"
+        else:
+            sql += f", cutoff = {cutoff}"
         sql += ")"
-        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
+        return clean_query(sql)
 
     # ---#
     @check_dtypes
@@ -4117,41 +3956,40 @@ class Decomposition(Preprocessing):
             n_components = len(X)
         col_init_1 = [f"{X[idx]} AS col_init{idx}" for idx in range(len(X))]
         col_init_2 = [f"col_init{idx}" for idx in range(len(X))]
-        cols = ["col{}".format(idx + 1) for idx in range(n_components)]
-        query = """SELECT 
-                        {0}({1} USING PARAMETERS 
-                            model_name = '{2}', 
-                            key_columns = '{1}', 
-                            num_components = {3}) OVER () 
-                    FROM {4}""".format(
-            self.VERTICA_TRANSFORM_FUNCTION_SQL,
-            ", ".join(self.X),
-            self.name,
-            n_components,
-            input_relation,
-        )
-        query = (
-            f"SELECT {', '.join(col_init_1 + cols)} FROM ({query}) VERTICAPY_SUBTABLE"
-        )
-        query = """SELECT 
-                        {0}({1} USING PARAMETERS 
-                            model_name = '{2}', 
-                            key_columns = '{3}', 
-                            exclude_columns = '{3}', 
-                            num_components = {4}) OVER () 
-                   FROM ({5}) y""".format(
-            self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL,
-            ", ".join(col_init_2 + cols),
-            self.name,
-            ", ".join(col_init_2),
-            n_components,
-            query,
-        )
+        cols = [f"col{idx + 1}" for idx in range(n_components)]
+        query = f"""SELECT 
+                        {self.VERTICA_TRANSFORM_FUNCTION_SQL}
+                        ({', '.join(self.X)} 
+                            USING PARAMETERS 
+                            model_name = '{self.name}', 
+                            key_columns = '{', '.join(self.X)}', 
+                            num_components = {n_components}) OVER () 
+                    FROM {input_relation}"""
+        query = f"""
+            SELECT 
+                {', '.join(col_init_1 + cols)} 
+            FROM ({query}) VERTICAPY_SUBTABLE"""
+        query = f"""
+            SELECT 
+                {self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL}
+                ({', '.join(col_init_2 + cols)} 
+                    USING PARAMETERS 
+                    model_name = '{self.name}', 
+                    key_columns = '{', '.join(col_init_2)}', 
+                    exclude_columns = '{', '.join(col_init_2)}', 
+                    num_components = {n_components}) OVER () 
+            FROM ({query}) y"""
         p_distances = [
-            f"{method}(POWER(ABS(POWER({X[idx]}, {p}) - POWER(col_init{idx}, {p})), {1 / p})) AS {X[idx]}"
+            f"""{method}(POWER(ABS(POWER({X[idx]}, {p}) 
+                         - POWER(col_init{idx}, {p})), {1 / p})) 
+                         AS {X[idx]}"""
             for idx in range(len(X))
         ]
-        query = f"SELECT 'Score' AS 'index', {', '.join(p_distances)} FROM ({query}) z"
+        query = f"""
+            SELECT 
+                'Score' AS 'index', 
+                {', '.join(p_distances)} 
+            FROM ({query}) z"""
         return to_tablesample(query, title="Getting Model Score.").transpose()
 
     # ---#

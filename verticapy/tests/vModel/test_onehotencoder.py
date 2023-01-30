@@ -47,7 +47,7 @@ class TestOneHotEncoder:
         assert model_repr.__repr__() == "<OneHotEncoder>"
 
     def test_deploySQL(self, model):
-        expected_sql = "APPLY_ONE_HOT_ENCODER(\"pclass\", \"sex\", \"embarked\" USING PARAMETERS model_name = 'ohe_model_test', match_by_pos = 'true', drop_first = False, ignore_null = True, separator = '_', column_naming = 'indices')"
+        expected_sql = "APPLY_ONE_HOT_ENCODER(\"pclass\", \"sex\", \"embarked\" USING PARAMETERS model_name = 'ohe_model_test', match_by_pos = 'true', drop_first = 'false', ignore_null = 'true', separator = '_', column_naming = 'indices')"
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql

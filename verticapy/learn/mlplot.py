@@ -120,7 +120,7 @@ def logit_plot(
         min_logit, max_logit = min(x0 + x1), max(x0 + x1)
         step = (max_logit - min_logit) / 40.0
         x_logit = (
-            arange(min_logit - 5 * step, max_logit + 5 * step, step)
+            np.arange(min_logit - 5 * step, max_logit + 5 * step, step)
             if (step > 0)
             else [max_logit]
         )
@@ -172,12 +172,12 @@ def logit_plot(
         min_logit_y, max_logit_y = min(y0 + y1), max(y0 + y1)
         step_y = (max_logit_y - min_logit_y) / 40.0
         X_logit = (
-            arange(min_logit_x - 5 * step_x, max_logit_x + 5 * step_x, step_x)
+            np.arange(min_logit_x - 5 * step_x, max_logit_x + 5 * step_x, step_x)
             if (step_x > 0)
             else [max_logit_x]
         )
         Y_logit = (
-            arange(min_logit_y - 5 * step_y, max_logit_y + 5 * step_y, step_y)
+            np.arange(min_logit_y - 5 * step_y, max_logit_y + 5 * step_y, step_y)
             if (step_y > 0)
             else [max_logit_y]
         )
@@ -887,12 +887,12 @@ def regression_plot(
         min_reg_y, max_reg_y = min(y0), max(y0)
         step_y = (max_reg_y - min_reg_y) / 40.0
         X_reg = (
-            arange(min_reg_x - 5 * step_x, max_reg_x + 5 * step_x, step_x)
+            np.arange(min_reg_x - 5 * step_x, max_reg_x + 5 * step_x, step_x)
             if (step_x > 0)
             else [max_reg_x]
         )
         Y_reg = (
-            arange(min_reg_y - 5 * step_y, max_reg_y + 5 * step_y, step_y)
+            np.arange(min_reg_y - 5 * step_y, max_reg_y + 5 * step_y, step_y)
             if (step_y > 0)
             else [max_reg_y]
         )
@@ -1110,12 +1110,12 @@ def svm_classifier_plot(
         min_svm_y, max_svm_y = min(y0 + y1), max(y0 + y1)
         step_y = (max_svm_y - min_svm_y) / 40.0
         X_svm = (
-            arange(min_svm_x - 5 * step_x, max_svm_x + 5 * step_x, step_x)
+            np.arange(min_svm_x - 5 * step_x, max_svm_x + 5 * step_x, step_x)
             if (step_x > 0)
             else [max_svm_x]
         )
         Y_svm = (
-            arange(min_svm_y - 5 * step_y, max_svm_y + 5 * step_y, step_y)
+            np.arange(min_svm_y - 5 * step_y, max_svm_y + 5 * step_y, step_y)
             if (step_y > 0)
             else [max_svm_y]
         )

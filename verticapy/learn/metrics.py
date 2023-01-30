@@ -1507,21 +1507,25 @@ float
 # TOOLS
 #
 # ---#
-FUNCTIONS_DICTIONNARY = {
-    "r2": r2_score,
-    "rsquared": r2_score,
-    "mae": mean_absolute_error,
-    "mean_absolute_error": mean_absolute_error,
-    "mse": mean_squared_error,
-    "mean_squared_error": mean_squared_error,
-    "msle": mean_squared_log_error,
-    "mean_squared_log_error": mean_squared_log_error,
-    "max": max_error,
-    "max_error": max_error,
-    "median": median_absolute_error,
-    "median_absolute_error": median_absolute_error,
-    "var": explained_variance,
-    "explained_variance": explained_variance,
+def aic_score(
+    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
+):
+    return aic_bic(y_true=y_true, y_score=y_score, input_relation=input_relation, k=k)[
+        0
+    ]
+
+
+def bic_score(
+    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
+):
+    return aic_bic(y_true=y_true, y_score=y_score, input_relation=input_relation, k=k)[
+        1
+    ]
+
+
+FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
+    "aic": aic_score,
+    "bic": bic_score,
     "accuracy": accuracy_score,
     "acc": accuracy_score,
     "auc": auc,
@@ -1552,4 +1556,28 @@ FUNCTIONS_DICTIONNARY = {
     "prc": prc_curve,
     "lift_chart": lift_chart,
     "lift": lift_chart,
+}
+
+FUNCTIONS_REGRESSION_DICTIONNARY = {
+    "aic": aic_score,
+    "bic": bic_score,
+    "r2": r2_score,
+    "rsquared": r2_score,
+    "mae": mean_absolute_error,
+    "mean_absolute_error": mean_absolute_error,
+    "mse": mean_squared_error,
+    "mean_squared_error": mean_squared_error,
+    "msle": mean_squared_log_error,
+    "mean_squared_log_error": mean_squared_log_error,
+    "max": max_error,
+    "max_error": max_error,
+    "median": median_absolute_error,
+    "median_absolute_error": median_absolute_error,
+    "var": explained_variance,
+    "explained_variance": explained_variance,
+}
+
+FUNCTIONS_DICTIONNARY = {
+    **FUNCTIONS_CLASSIFICATION_DICTIONNARY,
+    **FUNCTIONS_REGRESSION_DICTIONNARY,
 }
