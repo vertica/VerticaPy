@@ -114,27 +114,27 @@ name: str
         Matplotlib axes object
         """
         raise_error_if_not_in("method", method, ["auto", "cos2", "contrib"])
-        x = self.components_["PC{}".format(dimensions[0])]
-        y = self.components_["PC{}".format(dimensions[1])]
-        n = len(self.cos2_["PC{}".format(dimensions[0])])
+        x = self.components_[f"PC{dimensions[0]}"]
+        y = self.components_[f"PC{dimensions[1]}"]
+        n = len(self.cos2_[f"PC{dimensions[0]}"])
         if method in ("cos2", "contrib"):
             if method == "cos2":
                 c = [
-                    self.cos2_["PC{}".format(dimensions[0])][i]
-                    + self.cos2_["PC{}".format(dimensions[1])][i]
+                    self.cos2_[f"PC{dimensions[0]}"][i]
+                    + self.cos2_[f"PC{dimensions[1]}"][i]
                     for i in range(n)
                 ]
             else:
                 sum_1, sum_2 = (
-                    sum(self.cos2_["PC{}".format(dimensions[0])]),
-                    sum(self.cos2_["PC{}".format(dimensions[1])]),
+                    sum(self.cos2_[f"PC{dimensions[0]}"]),
+                    sum(self.cos2_[f"PC{dimensions[1]}"]),
                 )
                 c = [
                     0.5
                     * 100
                     * (
-                        self.cos2_["PC{}".format(dimensions[0])][i] / sum_1
-                        + self.cos2_["PC{}".format(dimensions[1])][i] / sum_2
+                        self.cos2_[f"PC{dimensions[0]}"][i] / sum_1
+                        + self.cos2_[f"PC{dimensions[1]}"][i] / sum_2
                     )
                     for i in range(n)
                 ]
@@ -180,7 +180,7 @@ name: str
     ax
         Matplotlib axes object
         """
-        contrib = self.components_["PC{}".format(dimension)]
+        contrib = self.components_[f"PC{dimension}"]
         contrib = [elem ** 2 for elem in contrib]
         total = sum(contrib)
         contrib = [100 * elem / total for elem in contrib]
@@ -201,11 +201,11 @@ name: str
         ax.set_xticklabels(variables)
         ax.set_ylabel("Cos2 - Quality of Representation")
         ax.set_xlabel("")
-        ax.set_title("Contribution of variables to Dim {}".format(dimension))
+        ax.set_title(f"Contribution of variables to Dim {dimension}")
         ax.plot([1, n + 1], [1 / n * 100, 1 / n * 100], c="r", linestyle="--")
         for i in range(n):
             ax.text(
-                i + 1.5, contribution[i] + 1, "{}%".format(round(contribution[i], 1)),
+                i + 1.5, contribution[i] + 1, f"{round(contribution[i], 1)}%",
             )
         return ax
 
@@ -230,8 +230,8 @@ name: str
     ax
         Matplotlib axes object
         """
-        cos2_1 = self.cos2_["PC{}".format(dimensions[0])]
-        cos2_2 = self.cos2_["PC{}".format(dimensions[1])]
+        cos2_1 = self.cos2_[f"PC{dimensions[0]}"]
+        cos2_2 = self.cos2_[f"PC{dimensions[1]}"]
         n = len(cos2_1)
         quality = []
         for i in range(n):
@@ -246,7 +246,7 @@ name: str
         ax.set_ylabel("Cos2 - Quality of Representation")
         ax.set_xlabel("")
         ax.set_title(
-            "Cos2 of variables to Dim {}-{}".format(dimensions[0], dimensions[1])
+            f"Cos2 of variables to Dim {dimensions[0]}-{dimensions[1]}"
         )
         return ax
 
