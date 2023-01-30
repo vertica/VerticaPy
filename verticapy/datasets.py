@@ -111,7 +111,7 @@ vDataFrame
                 sql += [f"'{val}' AS \"{param}\""]
             else:
                 n = len(val)
-                val = ", ".join(["'" + str(elem) + "'" for elem in val])
+                val = ", ".join(["'" + str(v) + "'" for v in val])
                 sql += [f'(ARRAY[{val}])[RANDOMINT({n})] AS "{param}"']
 
         elif features_ranges[param]["type"] == float:
@@ -119,21 +119,26 @@ vDataFrame
             val = features_ranges[param]["range"]
             lower, upper = val[0], val[1]
             sql += [
-                f"({lower} + RANDOM() * ({upper} - {lower}))::FLOAT " f'AS "{param}"'
+                f"""({lower} + RANDOM() 
+                  * ({upper} - {lower}))::FLOAT AS "{param}" """
             ]
 
         elif features_ranges[param]["type"] == int:
 
             val = features_ranges[param]["range"]
             lower, upper = val[0], val[1]
-            sql += [f"({lower} + RANDOM() * ({upper} - {lower}))::INT " f'AS "{param}"']
+            sql += [
+                f"""({lower} + RANDOM() 
+                      * ({upper} - {lower}))::INT AS "{param}" """
+            ]
 
         elif features_ranges[param]["type"] == datetime.date:
 
             val = features_ranges[param]["range"]
             start_date, number_of_days = val[0], val[1]
             sql += [
-                f"('{start_date}'::DATE + RANDOMINT({number_of_days})) " f'AS "{param}"'
+                f"""('{start_date}'::DATE 
+                   + RANDOMINT({number_of_days})) AS "{param}" """
             ]
 
         elif features_ranges[param]["type"] == datetime.datetime:
@@ -141,8 +146,8 @@ vDataFrame
             val = features_ranges[param]["range"]
             start_date, number_of_days = val[0], val[1]
             sql += [
-                f"('{start_date}'::TIMESTAMP + {number_of_days} "
-                f'* RANDOM()) AS "{param}"'
+                f"""('{start_date}'::TIMESTAMP 
+                   + {number_of_days} * RANDOM()) AS "{param}" """
             ]
 
         elif features_ranges[param]["type"] == bool:
@@ -152,17 +157,17 @@ vDataFrame
         else:
 
             ptype = features_ranges[param]["type"]
-            raise ParameterError(f"Parameter {param}: Type {ptype}" "is not supported.")
+            raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
 
-    sql = ", ".join(sql)
-    sql = (
-        f"(SELECT {sql} FROM (SELECT tm FROM (SELECT '03-11-1993'"
-        "::TIMESTAMP + INTERVAL '1 second' AS t UNION ALL SELECT"
-        f" '03-11-1993'::TIMESTAMP + INTERVAL '{nrows} seconds' AS"
-        " t) x TIMESERIES tm AS '1 second' OVER(ORDER BY t)) y) z"
-    )
+    query = f"""
+        (SELECT {', '.join(sql)} FROM 
+            (SELECT tm FROM 
+                (SELECT '03-11-1993'::TIMESTAMP + INTERVAL '1 second' AS t 
+                 UNION ALL 
+                 SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{nrows} seconds' AS t) x 
+                TIMESERIES tm AS '1 second' OVER(ORDER BY t)) y) z"""
 
-    return vDataFrameSQL(sql)
+    return vDataFrameSQL(query)
 
 
 # ---#
@@ -208,24 +213,21 @@ vDataFrame
         nbins = 100
         if "nbins" in features_ranges[param]:
             nbins = features_ranges[param]["nbins"]
-        ts_table = (
-            f"(SELECT DAY(tm - '03-11-1993'::TIMESTAMP) AS tm FROM "
-            "(SELECT '03-11-1993'::TIMESTAMP AS t UNION ALL SELECT"
-            f" '03-11-1993'::TIMESTAMP + INTERVAL '{nbins} days' AS t)"
-            " x TIMESERIES tm AS '1 day' OVER(ORDER BY t)) y"
-        )
+        ts_table = f"""
+            (SELECT 
+                DAY(tm - '03-11-1993'::TIMESTAMP) AS tm 
+             FROM 
+                (SELECT '03-11-1993'::TIMESTAMP AS t 
+                 UNION ALL 
+                 SELECT '03-11-1993'::TIMESTAMP 
+                        + INTERVAL '{nbins} days' AS t) x 
+            TIMESERIES tm AS '1 day' OVER(ORDER BY t)) y"""
 
         if features_ranges[param]["type"] == str:
             val = features_ranges[param]["values"]
             if isinstance(val, str):
                 val = [val]
-            val = " UNION ALL ".join(
-                [
-                    f"""(SELECT '{elem}' 
-                                          AS \"{param}\")"""
-                    for elem in val
-                ]
-            )
+            val = " UNION ALL ".join([f"""(SELECT '{v}' AS "{param}")""" for v in val])
             sql += [f"({val}) x{idx}"]
 
         elif features_ranges[param]["type"] == float:
@@ -233,8 +235,10 @@ vDataFrame
             lower, upper = val[0], val[1]
             h = (upper - lower) / nbins
             sql += [
-                f'(SELECT ({lower} + {h} * tm)::FLOAT AS "{param}" '
-                f"FROM {ts_table}) x{idx}"
+                f"""
+                (SELECT 
+                    ({lower} + {h} * tm)::FLOAT AS "{param}" 
+                 FROM {ts_table}) x{idx}"""
             ]
 
         elif features_ranges[param]["type"] == int:
@@ -242,8 +246,10 @@ vDataFrame
             lower, upper = val[0], val[1]
             h = (upper - lower) / nbins
             sql += [
-                f'(SELECT ({lower} + {h} * tm)::INT AS "{param}" '
-                f"FROM {ts_table}) x{idx}"
+                f"""
+                (SELECT 
+                    ({lower} + {h} * tm)::INT AS "{param}" 
+                 FROM {ts_table}) x{idx}"""
             ]
 
         elif features_ranges[param]["type"] == datetime.date:
@@ -251,8 +257,10 @@ vDataFrame
             start_date, number_of_days = val[0], val[1]
             h = number_of_days / nbins
             sql += [
-                f"(SELECT ('{start_date}'::DATE + {h} * tm)::DATE"
-                f' AS "{param}" FROM {ts_table}) x{idx}'
+                f"""
+                (SELECT 
+                    ('{start_date}'::DATE + {h} * tm)::DATE AS "{param}" 
+                 FROM {ts_table}) x{idx}"""
             ]
 
         elif features_ranges[param]["type"] == datetime.datetime:
@@ -260,25 +268,28 @@ vDataFrame
             start_date, number_of_days = val[0], val[1]
             h = number_of_days / nbins
             sql += [
-                f"(SELECT ('{start_date}'::DATE + {h} * tm)::TIMESTAMP "
-                f'AS "{param}" FROM {ts_table}) x{idx}'
+                f"""
+                    (SELECT 
+                        ('{start_date}'::DATE + {h} * tm)::TIMESTAMP 
+                            AS "{param}" 
+                     FROM {ts_table}) x{idx}"""
             ]
 
         elif features_ranges[param]["type"] == bool:
             sql += [
-                f'((SELECT False AS "{param}") UNION ALL '
-                f'(SELECT True AS "{param}")) x{idx}'
+                f"""
+                ((SELECT False AS "{param}") 
+                 UNION ALL
+                (SELECT True AS "{param}")) x{idx}"""
             ]
 
         else:
             ptype = features_ranges[param]["type"]
-            raise ParameterError(
-                f"Parameter {param}: Type {ptype} " "is not supported."
-            )
+            raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
 
-    sql = "(SELECT * FROM {0}) x".format(" CROSS JOIN ".join(sql))
+    query = f"(SELECT * FROM {' CROSS JOIN '.join(sql)}) x"
 
-    return vDataFrameSQL(sql)
+    return vDataFrameSQL(query)
 
 
 # ---#
@@ -305,18 +316,19 @@ def load_dataset(
             path = os.path.dirname(verticapy.__file__)
             if dataset_name in ("laliga",):
                 path += f"/data/{dataset_name}/*.json"
-                query = "COPY {0}.{1} FROM {2} PARSER FJsonParser();".format(
-                    schema, name, "{}"
-                )
+                query = f"COPY {schema}.{name} FROM {{}} PARSER FJsonParser();"
             else:
                 path += f"/data/{dataset_name}.csv"
                 if not (copy_cols):
                     copy_cols = [quote_ident(col) for col in dtype]
-                copy_cols = "(" + ", ".join(copy_cols) + ")"
-                query = (
-                    "COPY {0}.{1}{2} FROM {3} DELIMITER ',' NULL '' "
-                    "ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;"
-                ).format(schema, name, copy_cols, "{}")
+                query = f"""
+                    COPY
+                        {schema}.{name}({', '.join(copy_cols)})
+                    FROM {{}} DELIMITER ','
+                              NULL ''
+                              ENCLOSED BY '\"'
+                              ESCAPE AS '\\'
+                              SKIP 1;"""
 
             cur = current_cursor()
 
@@ -337,7 +349,7 @@ def load_dataset(
 
         except:
 
-            drop(schema + "." + name, method="table")
+            drop(f"{schema}.{name}", method="table")
             raise
 
     return vdf
@@ -369,9 +381,9 @@ vDataFrame
     the airline passengers vDataFrame.
     """
     return load_dataset(
-        schema,
-        name,
-        {"date": "Date", "passengers": "Integer"},
+        schema=schema,
+        name=name,
+        dtype={"date": "Date", "passengers": "Integer"},
         dataset_name="airline_passengers",
     )
 
@@ -400,9 +412,9 @@ vDataFrame
 	the amazon vDataFrame.
 	"""
     return load_dataset(
-        schema,
-        name,
-        {"date": "Date", "state": "Varchar(32)", "number": "Integer"},
+        schema=schema,
+        name=name,
+        dtype={"date": "Date", "state": "Varchar(32)", "number": "Integer"},
         dataset_name="amazon",
     )
 
@@ -430,10 +442,14 @@ vDataFrame
     the Cities vDataFrame.
     """
     return load_dataset(
-        schema,
-        name,
-        {"city": "Varchar(82)", "geometry": "Geometry"},
-        ["city", "gx FILLER LONG VARCHAR(65000)", "geometry AS ST_GeomFromText(gx)",],
+        schema=schema,
+        name=name,
+        dtype={"city": "Varchar(82)", "geometry": "Geometry"},
+        copy_cols=[
+            "city",
+            "gx FILLER LONG VARCHAR(65000)",
+            "geometry AS ST_GeomFromText(gx)",
+        ],
         dataset_name="cities",
     )
 
@@ -462,9 +478,9 @@ vDataFrame
     the amazon vDataFrame.
     """
     return load_dataset(
-        schema,
-        name,
-        {
+        schema=schema,
+        name=name,
+        dtype={
             "date": "Date",
             "Gold": "Float",
             "Oil": "Float",
@@ -501,9 +517,9 @@ vDataFrame
     the gapminder vDataFrame.
     """
     return load_dataset(
-        schema,
-        name,
-        {
+        schema=schema,
+        name=name,
+        dtype={
             "country": "Varchar(96)",
             "year": "Integer",
             "pop": "Integer",
@@ -539,16 +555,16 @@ vDataFrame
 	the iris vDataFrame.
 	"""
     return load_dataset(
-        schema,
-        name,
-        {
+        schema=schema,
+        name=name,
+        dtype={
             "SepalLengthCm": "Numeric(5,2)",
             "SepalWidthCm": "Numeric(5,2)",
             "PetalLengthCm": "Numeric(5,2)",
             "PetalWidthCm": "Numeric(5,2)",
             "Species": "Varchar(30)",
         },
-        [
+        copy_cols=[
             "Id FILLER Integer",
             "SepalLengthCm",
             "SepalWidthCm",
@@ -583,22 +599,46 @@ vDataFrame
     the LaLiga vDataFrame.
     """
     return load_dataset(
-        schema,
-        name,
-        {
+        schema=schema,
+        name=name,
+        dtype={
             "away_score": "int",
-            "away_team": 'Row("away_team_gender" varchar, "away_team_group" varchar, "away_team_id" int, "away_team_name" varchar, "country" Row("id" int, "name" varchar), "managers" Array[Row("country" Row("id" int, "name" varchar), "dob" date, "id" int, "name" varchar, "nickname" varchar)])',
-            "competition": 'Row("competition_id" int, "competition_name" varchar, "country_name" varchar)',
+            "away_team": """Row("away_team_gender" varchar,
+                                "away_team_group" varchar,
+                                "away_team_id" int,
+                                "away_team_name" varchar,
+                                "country" Row("id" int, "name" varchar), 
+                                "managers" Array[Row("country" Row("id" int, 
+                                                                   "name" varchar), 
+                                                     "dob" date, 
+                                                     "id" int,
+                                                     "name" varchar, 
+                                                     "nickname" varchar)])""",
+            "competition": """Row("competition_id" int, 
+                                  "competition_name" varchar,
+                                  "country_name" varchar)""",
             "competition_stage": 'Row("id" int, "name" varchar)',
             "home_score": "int",
-            "home_team": 'Row("country" Row("id" int, "name" varchar), "home_team_gender" varchar, "home_team_group" varchar, "home_team_id" int, "home_team_name" varchar, "managers" Array[Row("country" Row("id" int, "name" varchar), "dob" date, "id" int, "name" varchar, "nickname" varchar)])',
+            "home_team": """Row("country" Row("id" int, "name" varchar), 
+                                "home_team_gender" varchar, 
+                                "home_team_group" varchar, 
+                                "home_team_id" int, 
+                                "home_team_name" varchar, 
+                                "managers" Array[Row("country" Row("id" int,
+                                                                   "name" varchar), 
+                                                     "dob" date, 
+                                                     "id" int, 
+                                                     "name" varchar, 
+                                                     "nickname" varchar)])""",
             "kick_off": "time",
             "last_updated": "date",
             "match_date": "date",
             "match_id": "int",
             "match_status": "varchar",
             "match_week": "int",
-            "metadata": 'Row("data_version" date, "shot_fidelity_version" int, "xy_fidelity_version" int)',
+            "metadata": """Row("data_version" date, 
+                               "shot_fidelity_version" int, 
+                               "xy_fidelity_version" int)""",
             "season": 'Row("season_id" int, "season_name" varchar)',
         },
         dataset_name="laliga",
@@ -628,9 +668,9 @@ vDataFrame
 	the market vDataFrame.
 	"""
     return load_dataset(
-        schema,
-        name,
-        {"Form": "Varchar(32)", "Name": "Varchar(32)", "Price": "Float"},
+        schema=schema,
+        name=name,
+        dtype={"Form": "Varchar(32)", "Name": "Varchar(32)", "Price": "Float"},
         dataset_name="market",
     )
 
@@ -659,9 +699,9 @@ vDataFrame
     the pop growth vDataFrame.
     """
     return load_dataset(
-        schema,
-        name,
-        {
+        schema=schema,
+        name=name,
+        dtype={
             "year": "Int",
             "continent": "Varchar(100)",
             "country": "Varchar(100)",
@@ -698,9 +738,9 @@ vDataFrame
 	the smart meters vDataFrame.
 	"""
     return load_dataset(
-        schema,
-        name,
-        {"time": "Timestamp", "val": "Numeric(11,7)", "id": "Integer"},
+        schema=schema,
+        name=name,
+        dtype={"time": "Timestamp", "val": "Numeric(11,7)", "id": "Integer"},
         dataset_name="smart_meters",
     )
 
@@ -729,9 +769,9 @@ vDataFrame
 	the titanic vDataFrame.
 	"""
     return load_dataset(
-        schema,
-        name,
-        {
+        schema=schema,
+        name=name,
+        dtype={
             "pclass": "Integer",
             "survived": "Integer",
             "name": "Varchar(164)",
@@ -775,9 +815,9 @@ vDataFrame
 	the winequality vDataFrame.
 	"""
     return load_dataset(
-        schema,
-        name,
-        {
+        schema=schema,
+        name=name,
+        dtype={
             "fixed_acidity": "Numeric(6,3)",
             "volatile_acidity": "Numeric(7,4)",
             "citric_acid": "Numeric(6,3)",
@@ -821,15 +861,15 @@ vDataFrame
     the World vDataFrame.
     """
     return load_dataset(
-        schema,
-        name,
-        {
+        schema=schema,
+        name=name,
+        dtype={
             "pop_est": "Int",
             "continent": "Varchar(32)",
             "country": "Varchar(82)",
             "geometry": "Geometry",
         },
-        [
+        copy_cols=[
             "pop_est",
             "continent",
             "country",
@@ -859,7 +899,7 @@ def load_dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
         [9, "Car", "Male", 2, "Expensive", "Med"],
         [10, "Car", "Female", 2, "Expensive", "Hig"],
     ]
-    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
+    input_relation = f"{quote_ident(schema)}.{quote_ident(table_name)}"
 
     drop(name=input_relation, method="table")
     create_table(
@@ -895,7 +935,7 @@ def load_dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
         [9, 2, "Male", 2, "Expensive", "Med"],
         [10, 2, "Female", 2, "Expensive", "Hig"],
     ]
-    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
+    input_relation = f"{quote_ident(schema)}.{quote_ident(table_name)}"
 
     drop(name=input_relation, method="table")
     create_table(
@@ -931,7 +971,7 @@ def load_dataset_num(table_name: str = "dataset_num", schema: str = "public"):
         [9, 6.8, 2.8, 4.8, 1.4],
         [10, 7.0, 3.2, 4.7, 1.4],
     ]
-    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
+    input_relation = f"{quote_ident(schema)}.{quote_ident(table_name)}"
 
     drop(name=input_relation, method="table")
     create_table(

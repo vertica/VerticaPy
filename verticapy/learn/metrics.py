@@ -111,16 +111,24 @@ Returns
 float or tuple of floats
     score(s)
     """
-    relation = (
-        input_relation
-        if isinstance(input_relation, str)
-        else input_relation.__genSQL__()
-    )
-    query = "SELECT /*+LABEL('learn.metrics.compute_metric_query')*/ {0} FROM {1} WHERE {2} IS NOT NULL AND {3} IS NOT NULL;".format(
-        metric.format(y_true, y_score), relation, y_true, y_score
-    )
+    if isinstance(input_relation, str):
+        relation = input_relation
+    else:
+        relation = input_relation.__genSQL__()
+    if fetchfirstelem:
+        method = "fetchfirstelem"
+    else:
+        method = "fetchrow"
     return executeSQL(
-        query, title=title, method="fetchfirstelem" if fetchfirstelem else "fetchrow",
+        query=f"""
+            SELECT 
+                /*+LABEL('learn.metrics.compute_metric_query')*/ 
+                {metric.format(y_true, y_score)} 
+            FROM {relation} 
+            WHERE {y_true} IS NOT NULL 
+              AND {y_score} IS NOT NULL;""",
+        title=title,
+        method=method,
     )
 
 
@@ -158,7 +166,7 @@ tuple
     """
 
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{0}".format(pos_label)
+    non_pos_label = 0 if (pos_label == 1) else f"Non-{pos_label}"
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
         matrix.values[non_pos_label][1],
@@ -249,33 +257,32 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    relation = (
-        input_relation
-        if isinstance(input_relation, str)
-        else input_relation.__genSQL__()
-    )
-    query = """SELECT /*+LABEL('learn.metrics.anova_table')*/
-                  COUNT(*), 
-                  AVG({0}) 
-               FROM {2} 
-               WHERE {0} IS NOT NULL 
-                 AND {1} IS NOT NULL;""".format(
-        y_true, y_score, relation
-    )
+    if isinstance(input_relation, str):
+        relation = input_relation
+    else:
+        relation = input_relation.__genSQL__()
     n, avg = executeSQL(
-        query, title="Computing n and the average of y.", method="fetchrow"
+        query=f"""
+        SELECT /*+LABEL('learn.metrics.anova_table')*/
+            COUNT(*), 
+            AVG({y_true}) 
+        FROM {relation} 
+        WHERE {y_true} IS NOT NULL 
+          AND {y_score} IS NOT NULL;""",
+        title="Computing n and the average of y.",
+        method="fetchrow",
     )[0:2]
-    query = """SELECT /*+LABEL('learn.metrics.anova_table')*/
-                  SUM(POWER({0} - {2}, 2)), 
-                  SUM(POWER({1} - {0}, 2)), 
-                  SUM(POWER({1} - {2}, 2)) 
-                FROM {3} 
-                WHERE {0} IS NOT NULL 
-                  AND {1} IS NOT NULL;""".format(
-        y_score, y_true, avg, relation
-    )
     SSR, SSE, SST = executeSQL(
-        query, title="Computing SSR, SSE, SST.", method="fetchrow"
+        query=f"""
+            SELECT /*+LABEL('learn.metrics.anova_table')*/
+                SUM(POWER({y_score} - {avg}, 2)), 
+                SUM(POWER({y_true} - {y_score}, 2)), 
+                SUM(POWER({y_true} - {avg}, 2)) 
+            FROM {relation} 
+            WHERE {y_score} IS NOT NULL 
+              AND {y_true} IS NOT NULL;""",
+        title="Computing SSR, SSE, SST.",
+        method="fetchrow",
     )[0:3]
     dfr, dfe, dft = k, n - 1 - k, n - 1
     MSR, MSE = SSR / dfr, SSE / dfe
@@ -536,9 +543,8 @@ Returns
 float
     score
     """
-    metric = (
-        "APPROXIMATE_PERCENTILE(ABS({0} - {1}) USING PARAMETERS percentile = {2})"
-    ).format("{0}", "{1}", q)
+    metric = f"""APPROXIMATE_PERCENTILE(ABS({{0}} - {{1}}) 
+                                        USING PARAMETERS percentile = {q})"""
     return compute_metric_query(
         metric, y_true, y_score, input_relation, "Computing the Quantile Error."
     )
@@ -586,13 +592,12 @@ float
         "Computing the R2 Score.",
     )
     if adj and k > 0:
-        query = """SELECT /*+LABEL('learn.metrics.r2_score')*/ COUNT(*) FROM {0} 
-                   WHERE {1} IS NOT NULL 
-                     AND {2} IS NOT NULL;""".format(
-            input_relation, y_true, y_score
-        )
         n = executeSQL(
-            query,
+            query=f"""
+                SELECT /*+LABEL('learn.metrics.r2_score')*/ COUNT(*) 
+                FROM {input_relation} 
+                WHERE {y_true} IS NOT NULL 
+                  AND {y_score} IS NOT NULL;""",
             title="Computing the table number of elements.",
             method="fetchfirstelem",
         )
@@ -629,23 +634,20 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    relation = (
-        input_relation
-        if isinstance(input_relation, str)
-        else input_relation.__genSQL__()
-    )
-    query = """SELECT /*+LABEL('learn.metrics.regression_report')*/
-                    1 - VARIANCE({0} - {1}) / VARIANCE({0}), 
-                    MAX(ABS({0} - {1})),
-                    APPROXIMATE_MEDIAN(ABS({0} - {1})), 
-                    AVG(ABS({0} - {1})),
-                    AVG(POW({0} - {1}, 2)), 
+    if isinstance(input_relation, str):
+        relation = input_relation
+    else:
+        relation = input_relation.__genSQL__()
+    query = f"""SELECT /*+LABEL('learn.metrics.regression_report')*/
+                    1 - VARIANCE({y_true} - {y_score}) / VARIANCE({y_true}), 
+                    MAX(ABS({y_true} - {y_score})),
+                    APPROXIMATE_MEDIAN(ABS({y_true} - {y_score})), 
+                    AVG(ABS({y_true} - {y_score})),
+                    AVG(POW({y_true} - {y_score}, 2)), 
                     COUNT(*) 
-                FROM {2} 
-                WHERE {0} IS NOT NULL 
-                  AND {1} IS NOT NULL;""".format(
-        y_true, y_score, relation
-    )
+                FROM {relation} 
+                WHERE {y_true} IS NOT NULL 
+                  AND {y_score} IS NOT NULL;"""
     r2 = r2_score(y_true, y_score, input_relation)
     values = {
         "index": [
@@ -862,9 +864,9 @@ tablesample
             "cutoff",
         ]
     }
-    for idx, elem in enumerate(labels):
-        pos_label = elem
-        non_pos_label = 0 if (elem == 1) else "Non-{0}".format(elem)
+    for idx, l in enumerate(labels):
+        pos_label = l
+        non_pos_label = 0 if (l == 1) else f"Non-{l}"
         if estimator:
             if not (cutoff):
                 current_cutoff = estimator.score(
@@ -883,9 +885,9 @@ tablesample
                 matrix = estimator.confusion_matrix(pos_label)
         else:
             y_s, y_p, y_t = (
-                y_score[0].format(elem),
+                y_score[0].format(l),
                 y_score[1],
-                "DECODE({0}, '{1}', 1, 0)".format(y_true, elem),
+                f"DECODE({y_true}, '{l}', 1, 0)",
             )
             matrix = confusion_matrix(y_true, y_p, input_relation, pos_label)
         if non_pos_label in matrix.values and pos_label in matrix.values:
@@ -924,7 +926,7 @@ tablesample
         else:
             auc_score = auc(y_t, y_s, input_relation, 1)
             prc_auc_score = prc_auc(y_t, y_s, input_relation, 1)
-            y_p = "DECODE({0}, '{1}', 1, 0)".format(y_p, elem)
+            y_p = f"DECODE({y_p}, '{l}', 1, 0)"
             logloss = log_loss(y_t, y_s, input_relation, 1)
             if not (cutoff):
                 current_cutoff = roc_curve(
@@ -937,8 +939,9 @@ tablesample
                     current_cutoff = cutoff[idx]
             else:
                 current_cutoff = cutoff
-        elem = "value" if (len(labels) == 1) else elem
-        values[elem] = [
+        if len(labels) == 1:
+            l = "value"
+        values[l] = [
             auc_score,
             prc_auc_score,
             accuracy,
@@ -990,26 +993,28 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    relation = (
-        input_relation
-        if isinstance(input_relation, str)
-        else input_relation.__genSQL__()
+    if isinstance(input_relation, str):
+        relation = input_relation
+    else:
+        relation = input_relation.__genSQL__()
+    result = to_tablesample(
+        query=f"""
+        SELECT 
+            CONFUSION_MATRIX(obs, response 
+            USING PARAMETERS num_classes = 2) OVER() 
+        FROM 
+            (SELECT 
+                DECODE({y_true}, '{pos_label}', 
+                       1, NULL, NULL, 0) AS obs, 
+                DECODE({y_score}, '{pos_label}', 
+                       1, NULL, NULL, 0) AS response 
+             FROM {relation}) VERTICAPY_SUBTABLE;""",
+        title="Computing Confusion matrix.",
     )
-    query = """SELECT 
-                    CONFUSION_MATRIX(obs, response 
-                    USING PARAMETERS num_classes = 2) OVER() 
-                FROM 
-                    (SELECT 
-                        DECODE({0}, '{1}', 1, NULL, NULL, 0) AS obs, 
-                        DECODE({2}, '{3}', 1, NULL, NULL, 0) AS response 
-                     FROM {4}) VERTICAPY_SUBTABLE;""".format(
-        y_true, pos_label, y_score, pos_label, relation
-    )
-    result = to_tablesample(query, title="Computing Confusion matrix.")
     if pos_label in [1, "1"]:
         labels = [0, 1]
     else:
-        labels = ["Non-{0}".format(pos_label), pos_label]
+        labels = [f"Non-{pos_label}", pos_label]
     del result.values["comment"]
     result = result.transpose()
     result.values["actual_class"] = labels
@@ -1168,10 +1173,12 @@ Returns
 float
 	score
 	"""
-    metric = (
-        "AVG(CASE WHEN {0} = '{1}' THEN - LOG({2}::float + 1e-90)"
-        " ELSE - LOG(1 - {3}::float + 1e-90) END)"
-    ).format("{0}", pos_label, "{1}", "{1}")
+    metric = """
+        AVG(CASE 
+                WHEN {{0}} = '{pos_label}' 
+                    THEN - LOG({{1}}::float + 1e-90) 
+                ELSE - LOG(1 - {{1}}::float + 1e-90) 
+            END)"""
     return compute_metric_query(
         metric, y_true, y_score, input_relation, "Computing the Log Loss."
     )
@@ -1285,25 +1292,23 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
+    if isinstance(input_relation, str):
+        relation = input_relation
+    else:
+        relation = input_relation.__genSQL__()
     num_classes = str(len(labels))
-    query = """SELECT 
-                  CONFUSION_MATRIX(obs, response 
-                  USING PARAMETERS num_classes = {0}) OVER() 
-               FROM (SELECT DECODE({1}""".format(
-        num_classes, y_true
-    )
-    for idx, item in enumerate(labels):
-        query += ", '{0}', {1}".format(item, idx)
-    query += ") AS obs, DECODE({0}".format(y_score)
-    for idx, item in enumerate(labels):
-        query += ", '{0}', {1}".format(item, idx)
-    relation = (
-        input_relation
-        if isinstance(input_relation, str)
-        else input_relation.__genSQL__()
-    )
-    query += ") AS response FROM {0}) VERTICAPY_SUBTABLE;".format(relation)
-    result = to_tablesample(query, title="Computing Confusion Matrix.")
+    query = f"""
+        SELECT 
+          CONFUSION_MATRIX(obs, response 
+          USING PARAMETERS num_classes = {num_classes}) OVER() 
+       FROM (SELECT DECODE({y_true}"""
+    for idx, l in enumerate(labels):
+        query += f", '{l}', {idx}"
+    query += f") AS obs, DECODE({y_score}"
+    for idx, l in enumerate(labels):
+        query += f", '{l}', {idx}"
+    query += f") AS response FROM {relation}) VERTICAPY_SUBTABLE;"
+    result = to_tablesample(query=query, title="Computing Confusion Matrix.")
     del result.values["comment"]
     result = result.transpose()
     result.values["actual_class"] = labels

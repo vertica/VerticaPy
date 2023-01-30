@@ -113,7 +113,7 @@ def hchart(line, cell="", local_ns=None):
 
         elif verticapy.OPTIONS["print_info"]:
             warning_message = (
-                f"\u26A0 Warning : The option '{option}' doesn't " "exist - skipping."
+                f"\u26A0 Warning : The option '{option}' doesn't exist - skipping."
             )
             warnings.warn(warning_message, Warning)
 

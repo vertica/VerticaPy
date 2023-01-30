@@ -346,7 +346,9 @@ def get_category_from_vertica_type(ctype: str = ""):
 # ---#
 def get_dblink_fun(query: str, symbol: str = "$"):
     assert symbol in vp.OPTIONS["external_connection"], ConnectionError(
-        f"External Query detected but no corresponding Connection Identifier Database is defined (Using the symbol '{symbol}'). Use the function connect.set_external_connection to set one with the correct symbol."
+        f"External Query detected but no corresponding Connection Identifier "
+        f"Database is defined (Using the symbol '{symbol}'). Use the "
+        "function connect.set_external_connection to set one with the correct symbol."
     )
     return "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ()".format(
         vp.OPTIONS["external_connection"][symbol]["cid"].replace("'", "''"),
