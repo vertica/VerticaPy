@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -49,6 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.learn.vmodel import *
@@ -56,7 +61,7 @@ from verticapy.learn.vmodel import *
 # ---#
 class MCA(Decomposition):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a MCA (multiple correspondence analysis) object using the Vertica 
 PCA algorithm on the data. It uses the property that the MCA is a PCA 
 applied to a complete disjunctive table. The input relation is transformed 
@@ -68,23 +73,25 @@ name: str
     Name of the the model. The model will be stored in the database.
     """
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(self, name: str):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="MCA", path="learn.decomposition", json_dict={"name": name,},
-        )
-        # -#
-        version(condition=[9, 1, 0])
-        check_types([("name", name, [str], False)])
         self.type, self.name = "MCA", name
-        self.set_params({})
+        self.VERTICA_FIT_FUNCTION_SQL = "PCA"
+        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "DECOMPOSITION"
+        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
+        self.parameters = {}
 
     # ---#
+    @check_dtypes
     def plot_var(
         self, dimensions: tuple = (1, 2), method: str = "auto", ax=None, **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the MCA (multiple correspondence analysis) graph.
 
     Parameters
@@ -106,12 +113,7 @@ name: str
     ax
         Matplotlib axes object
         """
-        check_types(
-            [
-                ("dimensions", dimensions, [tuple]),
-                ("method", method, ["auto", "cos2", "contrib"]),
-            ]
-        )
+        raise_error_if_not_in("method", method, ["auto", "cos2", "contrib"])
         x = self.components_["PC{}".format(dimensions[0])]
         y = self.components_["PC{}".format(dimensions[1])]
         n = len(self.cos2_["PC{}".format(dimensions[0])])
@@ -161,7 +163,7 @@ name: str
     # ---#
     def plot_contrib(self, dimension: int = 1, ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws a decomposition contribution plot of the input dimension.
 
     Parameters
@@ -203,14 +205,14 @@ name: str
         ax.plot([1, n + 1], [1 / n * 100, 1 / n * 100], c="r", linestyle="--")
         for i in range(n):
             ax.text(
-                i + 1.5, contribution[i] + 1, "{}%".format(round(contribution[i], 1))
+                i + 1.5, contribution[i] + 1, "{}%".format(round(contribution[i], 1)),
             )
         return ax
 
     # ---#
     def plot_cos2(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws a MCA (multiple correspondence analysis) cos2 plot of 
     the two input dimensions.
 
@@ -252,7 +254,7 @@ name: str
 # ---#
 class PCA(Decomposition):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a PCA (Principal Component Analysis) object using the Vertica PCA
 algorithm on the data.
  
@@ -274,6 +276,9 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -281,30 +286,24 @@ method: str, optional
         scale: bool = False,
         method: str = "lapack",
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="PCA",
-            path="learn.decomposition",
-            json_dict={
-                "name": name,
-                "n_components": n_components,
-                "scale": scale,
-                "method": method,
-            },
-        )
-        # -#
-        version(condition=[9, 1, 0])
-        check_types([("name", name, [str], False)])
+        raise_error_if_not_in("method", str(method).lower(), ["lapack"])
         self.type, self.name = "PCA", name
-        self.set_params(
-            {"n_components": n_components, "scale": scale, "method": method.lower()}
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "PCA"
+        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
+        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "DECOMPOSITION"
+        self.parameters = {
+            "n_components": n_components,
+            "scale": scale,
+            "method": str(method).lower(),
+        }
 
 
 # ---#
 class SVD(Decomposition):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates an SVD (Singular Value Decomposition) object using the Vertica SVD
 algorithm on the data.
  
@@ -323,15 +322,18 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(self, name: str, n_components: int = 0, method: str = "lapack"):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="SVD",
-            path="learn.decomposition",
-            json_dict={"name": name, "n_components": n_components, "method": method,},
-        )
-        # -#
-        version(condition=[9, 1, 0])
-        check_types([("name", name, [str], False)])
+        raise_error_if_not_in("method", str(method).lower(), ["lapack"])
         self.type, self.name = "SVD", name
-        self.set_params({"n_components": n_components, "method": method.lower()})
+        self.VERTICA_FIT_FUNCTION_SQL = "SVD"
+        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_SVD"
+        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_SVD"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "DECOMPOSITION"
+        self.parameters = {
+            "n_components": n_components,
+            "method": str(method).lower(),
+        }

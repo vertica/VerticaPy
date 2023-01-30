@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -120,7 +120,7 @@ class TestvDFFilterSample:
         # testing vDataFrame.isin
         assert amazon_vd.isin(
             {"state": ["SERGIPE", "TOCANTINS"], "number": [0, 0]}
-        ).shape() == (90, 3)
+        ).shape() == (90, 3,)
 
         # testing vDataFrame[].isin
         assert amazon_vd["state"].isin(

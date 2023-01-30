@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -49,6 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.toolbox import *
 from verticapy.utilities import *
 
@@ -60,11 +65,12 @@ from typing import Union
 
 #
 # ---#
+@check_dtypes
 def does_model_exist(
     name: str, raise_error: bool = False, return_model_type: bool = False
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Checks if the model already exists.
 
 Parameters
@@ -84,7 +90,6 @@ int
     2 if the model exists and is not native.
     """
     # -#
-    check_types([("name", name, [str])])
     model_type = None
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], model_name[1:-1]
@@ -125,9 +130,11 @@ int
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def load_model(name: str, input_relation: str = "", test_relation: str = ""):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Loads a Vertica model and returns the associated object.
 
 Parameters
@@ -147,24 +154,6 @@ Returns
 model
     The model.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="load_model",
-        path="learn.tools",
-        json_dict={
-            "name": name,
-            "input_relation": input_relation,
-            "test_relation": test_relation,
-        },
-    )
-    # -#
-    check_types(
-        [
-            ("name", name, [str]),
-            ("test_relation", test_relation, [str]),
-            ("input_relation", input_relation, [str]),
-        ]
-    )
     does_exist = does_model_exist(name=name, raise_error=False)
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
@@ -257,8 +246,8 @@ model
                 model_save["ignore_special"],
                 model_save["max_text_size"],
             )
-            model.vocabulary_ = model_save["vocabulary"]
-            model.stop_words_ = model_save["stop_words"]
+            model.stop_words_ = model.compute_stop_words()
+            model.vocabulary_ = model.compute_vocabulary()
         elif model_save["type"] == "SARIMAX":
             from verticapy.learn.tsa import SARIMAX
 
@@ -323,15 +312,14 @@ model
         model_type = does_model_exist(
             name=name, raise_error=False, return_model_type=True
         )
-        if model_type.lower() == "kmeans":
+        if model_type.lower() in ("kmeans", "kprototypes",):
             info = executeSQL(
-                "SELECT /*+LABEL('learn.tools.load_model')*/ GET_MODEL_SUMMARY (USING PARAMETERS model_name = '"
-                + name
-                + "')",
+                f"SELECT /*+LABEL('learn.tools.load_model')*/ GET_MODEL_SUMMARY (USING PARAMETERS model_name = '{name}')",
                 method="fetchfirstelem",
                 print_time_sql=False,
             ).replace("\n", " ")
-            info = "kmeans(" + info.split("kmeans(")[1]
+            mtype = model_type.lower() + "("
+            info = mtype + info.split(mtype)[1]
         elif model_type.lower() == "normalize_fit":
             from verticapy.learn.preprocessing import Normalizer
 
@@ -547,16 +535,26 @@ model
                 class_weights,
                 int(parameters_dict["max_iterations"]),
             )
-        elif model_type == "kmeans":
-            from verticapy.learn.cluster import KMeans
+        elif model_type in ("kmeans", "kprototypes"):
+            from verticapy.learn.cluster import KMeans, KPrototypes
 
-            model = KMeans(
-                name,
-                int(info.split(",")[-1]),
-                parameters_dict["init_method"],
-                int(parameters_dict["max_iterations"]),
-                float(parameters_dict["epsilon"]),
-            )
+            if model_type == "kmeans":
+                model = KMeans(
+                    name,
+                    int(info.split(",")[-1]),
+                    parameters_dict["init_method"],
+                    int(parameters_dict["max_iterations"]),
+                    float(parameters_dict["epsilon"]),
+                )
+            else:
+                model = KPrototypes(
+                    name,
+                    int(info.split(",")[-1]),
+                    parameters_dict["init_method"],
+                    int(parameters_dict["max_iterations"]),
+                    float(parameters_dict["epsilon"]),
+                    float(parameters_dict["gamma"]),
+                )
             model.cluster_centers_ = model.get_attr("centers")
             result = model.get_attr("metrics").values["metrics"][0]
             values = {
@@ -636,6 +634,7 @@ model
         model.test_relation = test_relation if (test_relation) else model.input_relation
         if model_type not in (
             "kmeans",
+            "kprototypes",
             "pca",
             "svd",
             "one_hot_encoder_fit",
@@ -674,7 +673,7 @@ model
         ):
             model.coef_ = model.get_attr("details")
         if model_type in ("xgb_classifier", "xgb_regressor"):
-            v = version()
+            v = vertica_version()
             v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
             if v:
                 model.set_params(
@@ -691,203 +690,17 @@ model
 
 
 # ---#
-def get_model_category(model_type: str):
-    if model_type in ["LogisticRegression", "LinearSVC"]:
-        return ("classifier", "binary")
-    elif model_type in [
-        "NaiveBayes",
-        "RandomForestClassifier",
-        "KNeighborsClassifier",
-        "NearestCentroid",
-        "XGBoostClassifier",
-    ]:
-        return ("classifier", "multiclass")
-    elif model_type in [
-        "LinearRegression",
-        "LinearSVR",
-        "RandomForestRegressor",
-        "KNeighborsRegressor",
-        "XGBoostRegressor",
-    ]:
-        return ("regressor", "")
-    elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans"]:
-        return ("unsupervised", "clustering")
-    elif model_type in ["PCA", "SVD", "MCA"]:
-        return ("unsupervised", "decomposition")
-    elif model_type in ["Normalizer", "OneHotEncoder"]:
-        return ("unsupervised", "preprocessing")
-    elif model_type in ["LocalOutlierFactor"]:
-        return ("unsupervised", "anomaly_detection")
-    else:
-        return ("", "")
-
-
-# ---#
-def get_model_init_params(model_type: str):
-    if model_type == "LogisticRegression":
-        return {
-            "penalty": "L2",
-            "tol": 1e-4,
-            "C": 1,
-            "max_iter": 100,
-            "solver": "CGD",
-            "l1_ratio": 0.5,
-        }
-    elif model_type == "KernelDensity":
-        return {
-            "bandwidth": 1,
-            "kernel": "gaussian",
-            "p": 2,
-            "max_leaf_nodes": 1e9,
-            "max_depth": 5,
-            "min_samples_leaf": 1,
-            "nbins": 5,
-            "xlim": [],
-        }
-    elif model_type == "LinearRegression":
-        return {
-            "penalty": "None",
-            "tol": 1e-4,
-            "C": 1,
-            "max_iter": 100,
-            "solver": "Newton",
-            "l1_ratio": 0.5,
-        }
-    elif model_type == "SARIMAX":
-        return {
-            "penalty": "None",
-            "tol": 1e-4,
-            "C": 1,
-            "max_iter": 100,
-            "solver": "Newton",
-            "l1_ratio": 0.5,
-            "p": 1,
-            "d": 0,
-            "q": 0,
-            "P": 0,
-            "D": 0,
-            "Q": 0,
-            "s": 0,
-            "max_pik": 100,
-            "papprox_ma": 200,
-        }
-    elif model_type == "VAR":
-        return {
-            "penalty": "None",
-            "tol": 1e-4,
-            "C": 1,
-            "max_iter": 100,
-            "solver": "Newton",
-            "l1_ratio": 0.5,
-            "p": 1,
-        }
-    elif model_type in ("IsolationForest",):
-        return {
-            "n_estimators": 100,
-            "max_depth": 10,
-            "nbins": 32,
-            "sample": 0.632,
-            "col_sample_by_tree": 1.0,
-        }
-    elif model_type in ("RandomForestClassifier", "RandomForestRegressor"):
-        return {
-            "n_estimators": 10,
-            "max_features": "auto",
-            "max_leaf_nodes": 1e9,
-            "sample": 0.632,
-            "max_depth": 5,
-            "min_samples_leaf": 1,
-            "min_info_gain": 0.0,
-            "nbins": 32,
-        }
-    elif model_type in ("XGBoostClassifier", "XGBoostRegressor"):
-        return {
-            "max_ntree": 10,
-            "max_depth": 5,
-            "nbins": 32,
-            "split_proposal_method": "global",
-            "tol": 0.001,
-            "learning_rate": 0.1,
-            "min_split_loss": 0.0,
-            "weight_reg": 0.0,
-            "sample": 1.0,
-            "col_sample_by_tree": 1.0,
-            "col_sample_by_node": 1.0,
-        }
-    elif model_type in ("SVD"):
-        return {"n_components": 0, "method": "lapack"}
-    elif model_type in ("PCA"):
-        return {"n_components": 0, "scale": False, "method": "lapack"}
-    elif model_type in ("MCA"):
-        return {}
-    elif model_type == "OneHotEncoder":
-        return {
-            "extra_levels": {},
-            "drop_first": True,
-            "ignore_null": True,
-            "separator": "_",
-            "column_naming": "indices",
-            "null_column_name": "null",
-        }
-    elif model_type in ("Normalizer"):
-        return {"method": "zscore"}
-    elif model_type == "LinearSVR":
-        return {
-            "C": 1.0,
-            "tol": 1e-4,
-            "fit_intercept": True,
-            "intercept_scaling": 1.0,
-            "intercept_mode": "regularized",
-            "acceptable_error_margin": 0.1,
-            "max_iter": 100,
-        }
-    elif model_type == "LinearSVC":
-        return {
-            "C": 1.0,
-            "tol": 1e-4,
-            "fit_intercept": True,
-            "intercept_scaling": 1.0,
-            "intercept_mode": "regularized",
-            "class_weight": [1, 1],
-            "max_iter": 100,
-        }
-    elif model_type == "NaiveBayes":
-        return {
-            "alpha": 1.0,
-            "nbtype": "auto",
-        }
-    elif model_type == "KMeans":
-        return {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 1e-4}
-    elif model_type in ("BisectingKMeans"):
-        return {
-            "n_cluster": 8,
-            "bisection_iterations": 1,
-            "split_method": "sum_squares",
-            "min_divisible_cluster_size": 2,
-            "distance_method": "euclidean",
-            "init": "kmeanspp",
-            "max_iter": 300,
-            "tol": 1e-4,
-        }
-    elif model_type in ("KNeighborsClassifier", "KNeighborsRegressor"):
-        return {
-            "n_neighbors": 5,
-            "p": 2,
-        }
-    elif model_type == "NearestCentroid":
-        return {
-            "p": 2,
-        }
-    elif model_type == "DBSCAN":
-        return {"eps": 0.5, "min_samples": 5, "p": 2}
-
-
-# ---#
 # This piece of code was taken from
 # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
-def matrix_rotation(Phi: list, gamma: float = 1.0, q: int = 20, tol: float = 1e-6):
+@check_dtypes
+def matrix_rotation(
+    Phi: Union[list, np.ndarray],
+    gamma: Union[int, float] = 1.0,
+    q: int = 20,
+    tol: float = 1e-6,
+):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
 PCA matrix.
 
@@ -910,14 +723,6 @@ Returns
 model
     The model.
     """
-    check_types(
-        [
-            ("Phi", Phi, [list]),
-            ("gamma", gamma, [int, float]),
-            ("q", q, [int, float]),
-            ("tol", tol, [int, float]),
-        ]
-    )
     Phi = np.array(Phi)
     p, k = Phi.shape
     R = eye(k)

@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -49,6 +49,11 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -61,7 +66,7 @@ from typing import Union
 # ---#
 class Pipeline:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a Pipeline object. Sequentially apply a list of transforms and a 
 final estimator. The intermediate steps must implement a transform method.
 
@@ -72,17 +77,9 @@ steps: list
     in the order in which they are chained, with the last object an estimator.
 	"""
 
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(self, steps: list):
-        # Saving information to the query profile table
-        try:
-            model_steps = [item[1].type for item in steps]
-        except:
-            model_steps = []
-        save_to_query_profile(
-            name="Pipeline", path="learn.pipeline", json_dict={"steps": model_steps,},
-        )
-        # -#
-        check_types([("steps", steps, [list])])
         self.type = "Pipeline"
         self.steps = []
         for idx, elem in enumerate(steps):
@@ -126,7 +123,7 @@ steps: list
     # ---#
     def drop(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Drops the model from the Vertica database.
         """
         for step in self.steps:
@@ -141,7 +138,7 @@ steps: list
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -166,7 +163,7 @@ steps: list
             vdf = vDataFrameSQL(relation=input_relation)
         else:
             vdf = input_relation
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -192,7 +189,7 @@ steps: list
     # ---#
     def get_params(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the models Parameters.
 
     Returns
@@ -207,10 +204,10 @@ steps: list
 
     # ---#
     def predict(
-        self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator"
+        self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies the model on a vDataFrame.
 
     Parameters
@@ -260,7 +257,7 @@ steps: list
     # ---#
     def report(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes a regression/classification report using multiple metrics to evaluate 
     the model depending on its type. 
 
@@ -278,7 +275,7 @@ steps: list
     # ---#
     def score(self, method: str = ""):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the model score.
 
     Parameters
@@ -302,7 +299,7 @@ steps: list
     # ---#
     def transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies the model on a vDataFrame.
 
     Parameters
@@ -342,7 +339,7 @@ steps: list
     # ---#
     def inverse_transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies the inverse model transformation on a vDataFrame.
 
     Parameters
@@ -385,7 +382,7 @@ steps: list
     # ---#
     def set_params(self, parameters: dict = {}):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Sets the parameters of the model.
 
     Parameters
@@ -408,7 +405,7 @@ steps: list
         return_str: bool = False,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the Python code needed to deploy the pipeline without using 
     built-in Vertica functions.
 
@@ -417,11 +414,12 @@ steps: list
     name: str, optional
         Function Name.
     return_proba: bool, optional
-        If set to True and the model is a classifier, the function will return 
-        the model probabilities.
+        If set to True and the model is a classifier, the function 
+        returns the model probabilities.
     return_distance_clusters: bool, optional
-        If set to True and the model type is KMeans or NearestCentroids, the 
-        function will return the model clusters distances.
+        If set to True and the model type is KPrototypes / KMeans 
+        or NearestCentroids, the function returns the model clusters 
+        distances.
     return_str: bool, optional
         If set to True, the function str will be returned.
 

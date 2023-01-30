@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -34,7 +34,7 @@ class TestConnect:
         change_auto_connection("vp_test_config")
         # read_auto_connect
         read_auto_connect()
-        cur = verticapy.options["connection"]["conn"].cursor()
+        cur = verticapy.OPTIONS["connection"]["conn"].cursor()
         cur.execute("SELECT 1;")
         result2 = cur.fetchone()
         assert result2 == [1]
@@ -46,7 +46,7 @@ class TestConnect:
         )
         label = current_cursor().fetchone()[0].split("-")
         assert label[1] == verticapy.__version__
-        assert label[2] == str(verticapy.options["identifier"])
+        assert label[2] == str(verticapy.OPTIONS["identifier"])
 
     def test_vertica_connection(self, base):
         cur = vertica_connection(

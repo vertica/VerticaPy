@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -59,30 +59,27 @@ from matplotlib.lines import Line2D
 import numpy as np
 
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.plot import gen_colors
 
 # ---#
+@check_dtypes
 def logit_plot(
     X: list,
     y: str,
     input_relation: str,
     coefficients: list,
-    max_nb_points=50,
+    max_nb_points: int = 50,
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("X", X, [list]),
-            ("y", y, [str]),
-            ("input_relation", input_relation, [str]),
-            ("coefficients", coefficients, [list]),
-            ("max_nb_points", max_nb_points, [int, float]),
-        ]
-    )
     param0 = {
         "marker": "o",
         "s": 50,
@@ -253,22 +250,15 @@ def logit_plot(
 
 
 # ---#
+@check_dtypes
 def lof_plot(
     input_relation: str,
     columns: list,
     lof: str,
-    tablesample: float = -1,
+    tablesample: Union[int, float] = -1,
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("input_relation", input_relation, [str]),
-            ("columns", columns, [list]),
-            ("lof", lof, [str]),
-            ("tablesample", tablesample, [int, float]),
-        ]
-    )
     tablesample = (
         "TABLESAMPLE({})".format(tablesample)
         if (tablesample > 0 and tablesample < 100)
@@ -408,6 +398,7 @@ def lof_plot(
 
 
 # ---#
+@check_dtypes
 def plot_importance(
     coeff_importances: dict,
     coeff_sign: dict = {},
@@ -415,13 +406,6 @@ def plot_importance(
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("coeff_importances", coeff_importances, [dict]),
-            ("coeff_sign", coeff_sign, [dict]),
-            ("print_legend", print_legend, [bool]),
-        ]
-    )
     coefficients, importances, signs = [], [], []
     for coeff in coeff_importances:
         coefficients += [coeff]
@@ -645,7 +629,12 @@ def plot_bubble_ml(
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
-        param = {"alpha": 0.8, "marker": "o", "color": colors[0], "edgecolors": "black"}
+        param = {
+            "alpha": 0.8,
+            "marker": "o",
+            "color": colors[0],
+            "edgecolors": "black",
+        }
         if s:
             size = s
         else:
@@ -658,7 +647,7 @@ def plot_bubble_ml(
         )
     if reverse[1]:
         ax.set_ylim(
-            max(y) + 0.1 * (1 + max(y) - min(y)), min(y) - 0.1 * (1 + max(y) - min(y))
+            max(y) + 0.1 * (1 + max(y) - min(y)), min(y) - 0.1 * (1 + max(y) - min(y)),
         )
     if plt_text:
         ax.set_xlabel(x_label, loc="right")
@@ -746,7 +735,7 @@ def plot_pca_circle(
     ax.add_patch(circle1)
     for i in range(n):
         ax.arrow(
-            0, 0, x[i], y[i], head_width=0.05, color="black", length_includes_head=True
+            0, 0, x[i], y[i], head_width=0.05, color="black", length_includes_head=True,
         )
         ax.text(x[i], y[i], variable_names[i])
     ax.plot([-1.1, 1.1], [0.0, 0.0], linestyle="--", color="black")
@@ -843,6 +832,7 @@ def plot_var(
 
 
 # ---#
+@check_dtypes
 def regression_plot(
     X: list,
     y: str,
@@ -852,15 +842,6 @@ def regression_plot(
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("X", X, [list]),
-            ("y", y, [str]),
-            ("input_relation", input_relation, [str]),
-            ("coefficients", coefficients, [list]),
-            ("max_nb_points", max_nb_points, [int, float]),
-        ]
-    )
     param = {
         "marker": "o",
         "color": gen_colors()[0],
@@ -936,6 +917,7 @@ def regression_plot(
 
 
 # ---#
+@check_dtypes
 def regression_tree_plot(
     X: list,
     y: str,
@@ -944,14 +926,6 @@ def regression_tree_plot(
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("X", X, [list]),
-            ("y", y, [str]),
-            ("input_relation", input_relation, [str]),
-            ("max_nb_points", max_nb_points, [int, float]),
-        ]
-    )
     query = "SELECT /*+LABEL('learn.mlplot.regression_tree_plot')*/ {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
         X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
     )
@@ -988,6 +962,7 @@ def regression_tree_plot(
 
 
 # ---#
+@check_dtypes
 def svm_classifier_plot(
     X: list,
     y: str,
@@ -997,15 +972,6 @@ def svm_classifier_plot(
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("X", X, [list]),
-            ("y", y, [str]),
-            ("input_relation", input_relation, [str]),
-            ("coefficients", coefficients, [list]),
-            ("max_nb_points", max_nb_points, [int, float]),
-        ]
-    )
     param0 = {
         "marker": "o",
         "color": gen_colors()[0],
@@ -1039,7 +1005,7 @@ def svm_classifier_plot(
             else:
                 x1 += [float(item[0])]
         x_svm, y_svm = (
-            [-coefficients[0] / coefficients[1], -coefficients[0] / coefficients[1]],
+            [-coefficients[0] / coefficients[1], -coefficients[0] / coefficients[1],],
             [-1, 1],
         )
         ax.plot(x_svm, y_svm, alpha=1, color="black")
@@ -1186,6 +1152,7 @@ def svm_classifier_plot(
 
 
 # ---#
+@check_dtypes
 def voronoi_plot(
     clusters: list,
     columns: list,
@@ -1195,14 +1162,6 @@ def voronoi_plot(
     ax=None,
     **style_kwds,
 ):
-    check_types(
-        [
-            ("clusters", clusters, [list]),
-            ("columns", columns, [list]),
-            ("input_relation", input_relation, [str]),
-            ("max_nb_points", max_nb_points, [int]),
-        ]
-    )
     from scipy.spatial import voronoi_plot_2d, Voronoi
 
     min_x, max_x, min_y, max_y = (

@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -166,6 +166,17 @@ class TestRFC:
         assert f_imp["importance"] == [75.76, 15.15, 9.09, 0.0]
         assert f_imp["sign"] == [1, 1, 1, 0]
         plt.close("all")
+
+    def test_get_score(self, model):
+        fim = model.get_score()
+
+        assert fim["predictor_name"] == ["gender", "owned cars", "cost", "income"]
+        assert fim["importance_value"] == [
+            pytest.approx(0.0909090909090909),
+            pytest.approx(0.151515151515152),
+            pytest.approx(0.757575757575758),
+            pytest.approx(0.0),
+        ]
 
     def test_lift_chart(self, model):
         lift_ch = model.lift_chart(pos_label="Bus", nbins=1000)
@@ -430,10 +441,10 @@ class TestRFC:
         )
         assert model.score(
             cutoff=0.9, method="npv", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.1, method="npv", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.9, method="prc_auc", pos_label="Train"
         ) == pytest.approx(1.0)
@@ -462,7 +473,7 @@ class TestRFC:
         current_cursor().execute("DROP MODEL IF EXISTS rfc_from_vDF")
         model_test = RandomForestClassifier("rfc_from_vDF",)
         model_test.fit(
-            rfc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation"
+            rfc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation",
         )
 
         current_cursor().execute(

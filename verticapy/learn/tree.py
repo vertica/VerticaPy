@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -49,8 +49,13 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.vmodel import *
-from verticapy.utilities import save_to_query_profile
+from verticapy.utilities import save_verticapy_logs
 
 # Standard Python Modules
 from typing import Union
@@ -123,224 +128,202 @@ def get_tree_list_of_arrays(
 # ---#
 class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     A DecisionTreeClassifier made of a single tree.
 
     Parameters
     ----------
     name: str
-            Name of the the model. The model will be stored in the DB.
-    max_features: str/int, optional
-            The number of randomly chosen features from which to pick the best
+        Name of the the model. The model will be stored in the DB.
+    max_features: str / int, optional
+        The number of randomly chosen features from which to pick the best
         feature to split on a given tree node. It can be an integer or one
         of the two following methods.
-                    auto : square root of the total number of predictors.
-                    max  : number of predictors.
-    max_leaf_nodes: int, optional
-            The maximum number of leaf nodes a tree in the forest can have, an
+            auto : square root of the total number of predictors.
+            max  : number of predictors.
+    max_leaf_nodes: int / float, optional
+        The maximum number of leaf nodes a tree in the forest can have, an
         integer between 1 and 1e9, inclusive.
     max_depth: int, optional
-            The maximum depth for growing each tree, an integer between 1 and 100,
+        The maximum depth for growing each tree, an integer between 1 and 100,
         inclusive.
     min_samples_leaf: int, optional
-            The minimum number of samples each branch must have after splitting a
+        The minimum number of samples each branch must have after splitting a
         node, an integer between 1 and 1e6, inclusive. A split that causes
         fewer remaining samples is discarded.
-    min_info_gain: float, optional
-            The minimum threshold for including a split, a float between 0.0 and
+    min_info_gain: int / float, optional
+        The minimum threshold for including a split, a float between 0.0 and
         1.0, inclusive. A split with information gain less than this threshold
         is discarded.
     nbins: int, optional
-            The number of bins to use for continuous features, an integer between 2
+        The number of bins to use for continuous features, an integer between 2
         and 1000, inclusive.
     """
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
-        max_features: Union[int, str] = "auto",
-        max_leaf_nodes: int = 1e9,
+        max_features: Union[str, int] = "auto",
+        max_leaf_nodes: Union[int, float] = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
-        min_info_gain: float = 0.0,
+        min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="DecisionTreeClassifier",
-            path="learn.tree",
-            json_dict={
-                "name": name,
-                "max_features": max_features,
-                "max_leaf_nodes": max_leaf_nodes,
-                "max_depth": max_depth,
-                "min_samples_leaf": min_samples_leaf,
-                "min_info_gain": min_info_gain,
-                "nbins": nbins,
-            },
-        )
-        # -#
-        version(condition=[8, 1, 1])
-        check_types([("name", name, [str])])
+        if isinstance(max_features, str):
+            raise_error_if_not_in("max_features", max_features.lower(), ["auto", "max"])
+            max_features = max_features.lower()
         self.type, self.name = "RandomForestClassifier", name
-        self.set_params(
-            {
-                "n_estimators": 1,
-                "max_features": max_features,
-                "max_leaf_nodes": max_leaf_nodes,
-                "sample": 1.0,
-                "max_depth": max_depth,
-                "min_samples_leaf": min_samples_leaf,
-                "min_info_gain": min_info_gain,
-                "nbins": nbins,
-            }
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.parameters = {
+            "n_estimators": 1,
+            "max_features": max_features,
+            "max_leaf_nodes": max_leaf_nodes,
+            "sample": 1.0,
+            "max_depth": max_depth,
+            "min_samples_leaf": min_samples_leaf,
+            "min_info_gain": min_info_gain,
+            "nbins": nbins,
+        }
 
 
 # ---#
 class DecisionTreeRegressor(Regressor, Tree):
     """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     A DecisionTreeRegressor made of a single tree.
 
     Parameters
     ----------
     name: str
-            Name of the the model. The model will be stored in the DB.
-    max_features: str/int, optional
-            The number of randomly chosen features from which to pick the best
+        Name of the the model. The model will be stored in the DB.
+    max_features: str / int, optional
+        The number of randomly chosen features from which to pick the best
         feature to split on a given tree node. It can be an integer or one
         of the two following methods.
-                    auto : square root of the total number of predictors.
-                    max  : number of predictors.
-    max_leaf_nodes: int, optional
-            The maximum number of leaf nodes a tree in the forest can have, an
+            auto : square root of the total number of predictors.
+            max  : number of predictors.
+    max_leaf_nodes: int / float, optional
+        The maximum number of leaf nodes a tree in the forest can have, an
         integer between 1 and 1e9, inclusive.
     max_depth: int, optional
-            The maximum depth for growing each tree, an integer between 1 and 100,
+        The maximum depth for growing each tree, an integer between 1 and 100,
         inclusive.
     min_samples_leaf: int, optional
-            The minimum number of samples each branch must have after splitting
+        The minimum number of samples each branch must have after splitting
         a node, an integer between 1 and 1e6, inclusive. A split that causes
         fewer remaining samples is discarded.
-    min_info_gain: float, optional
-            The minimum threshold for including a split, a float between 0.0 and
+    min_info_gain: int / float, optional
+        The minimum threshold for including a split, a float between 0.0 and
         1.0, inclusive. A split with information gain less than this threshold
         is discarded.
     nbins: int, optional
-            The number of bins to use for continuous features, an integer between 2
+        The number of bins to use for continuous features, an integer between 2
         and 1000, inclusive.
     """
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
         max_features: Union[int, str] = "auto",
-        max_leaf_nodes: int = 1e9,
+        max_leaf_nodes: Union[int, float] = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
-        min_info_gain: float = 0.0,
+        min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="DecisionTreeRegressor",
-            path="learn.tree",
-            json_dict={
-                "name": name,
-                "max_features": max_features,
-                "max_leaf_nodes": max_leaf_nodes,
-                "max_depth": max_depth,
-                "min_samples_leaf": min_samples_leaf,
-                "min_info_gain": min_info_gain,
-                "nbins": nbins,
-            },
-        )
-        # -#
-        version(condition=[9, 0, 1])
-        check_types([("name", name, [str])])
+        if isinstance(max_features, str):
+            raise_error_if_not_in("max_features", max_features.lower(), ["auto", "max"])
+            max_features = max_features.lower()
         self.type, self.name = "RandomForestRegressor", name
-        self.set_params(
-            {
-                "n_estimators": 1,
-                "max_features": max_features,
-                "max_leaf_nodes": max_leaf_nodes,
-                "sample": 1.0,
-                "max_depth": max_depth,
-                "min_samples_leaf": min_samples_leaf,
-                "min_info_gain": min_info_gain,
-                "nbins": nbins,
-            }
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.parameters = {
+            "n_estimators": 1,
+            "max_features": max_features,
+            "max_leaf_nodes": max_leaf_nodes,
+            "sample": 1.0,
+            "max_depth": max_depth,
+            "min_samples_leaf": min_samples_leaf,
+            "min_info_gain": min_info_gain,
+            "nbins": nbins,
+        }
 
 
 # ---#
 class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     A classifier that overfits the training data. These models are typically
     used as a control to compare with your other models.
 
     Parameters
     ----------
     name: str
-            Name of the the model. The model will be stored in the DB.
+        Name of the the model. The model will be stored in the DB.
     """
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(self, name: str):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="DummyTreeClassifier", path="learn.tree", json_dict={"name": name,},
-        )
-        # -#
-        version(condition=[8, 1, 1])
-        check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
-        self.set_params(
-            {
-                "n_estimators": 1,
-                "max_features": "max",
-                "max_leaf_nodes": 1e9,
-                "sample": 1.0,
-                "max_depth": 100,
-                "min_samples_leaf": 1,
-                "min_info_gain": 0.0,
-                "nbins": 1000,
-            }
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.parameters = {
+            "n_estimators": 1,
+            "max_features": "max",
+            "max_leaf_nodes": 1e9,
+            "sample": 1.0,
+            "max_depth": 100,
+            "min_samples_leaf": 1,
+            "min_info_gain": 0.0,
+            "nbins": 1000,
+        }
 
 
 # ---#
 class DummyTreeRegressor(Regressor, Tree):
     """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     A regressor that overfits the training data. These models are typically
     used as a control to compare with your other models.
 
     Parameters
     ----------
     name: str
-            Name of the the model. The model will be stored in the DB.
+        Name of the the model. The model will be stored in the DB.
     """
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(self, name: str):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="DummyTreeRegressor", path="learn.tree", json_dict={"name": name,},
-        )
-        # -#
-        version(condition=[9, 0, 1])
-        check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
-        self.set_params(
-            {
-                "n_estimators": 1,
-                "max_features": "max",
-                "max_leaf_nodes": 1e9,
-                "sample": 1.0,
-                "max_depth": 100,
-                "min_samples_leaf": 1,
-                "min_info_gain": 0.0,
-                "nbins": 1000,
-            }
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.parameters = {
+            "n_estimators": 1,
+            "max_features": "max",
+            "max_leaf_nodes": 1e9,
+            "sample": 1.0,
+            "max_depth": 100,
+            "min_samples_leaf": 1,
+            "min_info_gain": 0.0,
+            "nbins": 1000,
+        }

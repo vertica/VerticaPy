@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -475,7 +475,10 @@ def animated_bubble_plot(
         fig = ax.get_figure()
     count = vdf.shape()[0]
     if columns[2] != 1:
-        max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
+        max_size, min_size = (
+            float(vdf[columns[2]].max()),
+            float(vdf[columns[2]].min()),
+        )
     where = (
         " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
     )
@@ -881,7 +884,7 @@ def bar2D(
         if unique[1] != 2:
             columns = [columns[1], columns[0]]
     all_columns = vdf.pivot_table(
-        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False
+        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
     ).values
     all_columns = [[column] + all_columns[column] for column in all_columns]
     n = len(all_columns)
@@ -1570,7 +1573,7 @@ def bubble(
                 "edgecolors": "black",
             }
             im = ax.scatter(
-                column1, column2, c=column3, s=size, **updated_dict(param, style_kwds)
+                column1, column2, c=column3, s=size, **updated_dict(param, style_kwds),
             )
         if columns[2] != 1:
             if catcol:
@@ -1981,7 +1984,9 @@ def compute_plot_variables(
                 vdf.alias, vdf.alias
             )
             query_result = executeSQL(
-                query=query, title="Computing the histogram interval", method="fetchrow"
+                query=query,
+                title="Computing the histogram interval",
+                method="fetchrow",
             )
             h = float(query_result[0]) / nbins
         min_date = vdf.min()
@@ -2063,43 +2068,50 @@ def gen_cmap(color: str = "", reverse: bool = False):
 
 # ---#
 def gen_colors():
-    if not (verticapy.options["colors"]) or not (
-        isinstance(verticapy.options["colors"], list)
+    if not (verticapy.OPTIONS["colors"]) or not (
+        isinstance(verticapy.OPTIONS["colors"], list)
     ):
-        if verticapy.options["color_style"] == "sunset":
+        if verticapy.OPTIONS["color_style"] == "sunset":
             colors = ["#36688D", "#F3CD05", "#F49F05", "#F18904", "#BDA589"]
-        elif verticapy.options["color_style"] == "rgb":
+        elif verticapy.OPTIONS["color_style"] == "rgb":
             colors = ["red", "green", "blue", "orange", "yellow", "gray"]
-        elif verticapy.options["color_style"] == "retro":
+        elif verticapy.OPTIONS["color_style"] == "retro":
             colors = ["#A7414A", "#282726", "#6A8A82", "#A37C27", "#563838"]
-        elif verticapy.options["color_style"] == "shimbg":
+        elif verticapy.OPTIONS["color_style"] == "shimbg":
             colors = ["#0444BF", "#0584F2", "#0AAFF1", "#EDF259", "#A79674"]
-        elif verticapy.options["color_style"] == "swamp":
+        elif verticapy.OPTIONS["color_style"] == "swamp":
             colors = ["#6465A5", "#6975A6", "#F3E96B", "#F28A30", "#F05837"]
-        elif verticapy.options["color_style"] == "med":
+        elif verticapy.OPTIONS["color_style"] == "med":
             colors = ["#ABA6BF", "#595775", "#583E2E", "#F1E0D6", "#BF9887"]
-        elif verticapy.options["color_style"] == "orchid":
+        elif verticapy.OPTIONS["color_style"] == "orchid":
             colors = ["#192E5B", "#1D65A6", "#72A2C0", "#00743F", "#F2A104"]
-        elif verticapy.options["color_style"] == "magenta":
+        elif verticapy.OPTIONS["color_style"] == "magenta":
             colors = ["#DAA2DA", "#DBB4DA", "#DE8CF0", "#BED905", "#93A806"]
-        elif verticapy.options["color_style"] == "orange":
+        elif verticapy.OPTIONS["color_style"] == "orange":
             colors = ["#A3586D", "#5C4A72", "#F3B05A", "#F4874B", "#F46A4E"]
-        elif verticapy.options["color_style"] == "vintage":
+        elif verticapy.OPTIONS["color_style"] == "vintage":
             colors = ["#80ADD7", "#0ABDA0", "#EBF2EA", "#D4DCA9", "#BF9D7A"]
-        elif verticapy.options["color_style"] == "vivid":
+        elif verticapy.OPTIONS["color_style"] == "vivid":
             colors = ["#C0334D", "#D6618F", "#F3D4A0", "#F1931B", "#8F715B"]
-        elif verticapy.options["color_style"] == "berries":
+        elif verticapy.OPTIONS["color_style"] == "berries":
             colors = ["#BB1924", "#EE6C81", "#F092A5", "#777CA8", "#AFBADC"]
-        elif verticapy.options["color_style"] == "refreshing":
+        elif verticapy.OPTIONS["color_style"] == "refreshing":
             colors = ["#003D73", "#0878A4", "#1ECFD6", "#EDD170", "#C05640"]
-        elif verticapy.options["color_style"] == "summer":
+        elif verticapy.OPTIONS["color_style"] == "summer":
             colors = ["#728CA3", "#73C0F4", "#E6EFF3", "#F3E4C6", "#8F4F06"]
-        elif verticapy.options["color_style"] == "tropical":
+        elif verticapy.OPTIONS["color_style"] == "tropical":
             colors = ["#7B8937", "#6B7436", "#F4D9C1", "#D72F01", "#F09E8C"]
-        elif verticapy.options["color_style"] == "india":
+        elif verticapy.OPTIONS["color_style"] == "india":
             colors = ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625"]
         else:
-            colors = ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"]
+            colors = [
+                "#FE5016",
+                "#263133",
+                "#0073E7",
+                "#FDE159",
+                "#33C180",
+                "#FF454F",
+            ]
         all_colors = [item for item in plt_colors.cnames]
         shuffle(all_colors)
         for c in all_colors:
@@ -2107,7 +2119,7 @@ def gen_colors():
                 colors += [c]
         return colors
     else:
-        return verticapy.options["colors"]
+        return verticapy.OPTIONS["colors"]
 
 
 # ---#
@@ -2276,7 +2288,7 @@ def hist2D(
 ):
     colors = gen_colors()
     all_columns = vdf.pivot_table(
-        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False
+        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
     ).values
     all_columns = [[column] + all_columns[column] for column in all_columns]
     n, m = len(all_columns), len(all_columns[0])
@@ -2707,7 +2719,7 @@ def range_curve(
             ax.plot(X, elem[1], label=label, **updated_dict(param, style_kwds, i))
         if (not (without_scatter) or len(X) < 20) and plot_median:
             ax.scatter(
-                X, elem[1], c="white", marker="o", s=60, edgecolors="black", zorder=3
+                X, elem[1], c="white", marker="o", s=60, edgecolors="black", zorder=3,
             )
     ax.set_xlabel(param_name)
     ax.set_ylabel(score_name)
@@ -3021,7 +3033,11 @@ def pie(
         handles, labels = ax.get_legend_handles_labels()
         labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
         ax.legend(
-            handles, labels, title=vdf.alias, loc="center left", bbox_to_anchor=[1, 0.5]
+            handles,
+            labels,
+            title=vdf.alias,
+            loc="center left",
+            bbox_to_anchor=[1, 0.5],
         )
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -3388,7 +3404,9 @@ def scatter_matrix(
     n = len(columns)
     fig, axes = (
         plt.subplots(
-            nrows=n, ncols=n, figsize=(min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500))
+            nrows=n,
+            ncols=n,
+            figsize=(min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)),
         )
         if isnotebook()
         else plt.subplots(
@@ -3746,7 +3764,11 @@ def scatter3D(
                     method="fetchall",
                 )
                 query_result = [item for sublist in query_result for item in sublist]
-            all_columns, all_scatter, all_categories = [query_result], [], query_result
+            all_columns, all_scatter, all_categories = (
+                [query_result],
+                [],
+                query_result,
+            )
             if not (ax):
                 if isnotebook():
                     plt.figure(figsize=(8, 6))
@@ -3882,7 +3904,7 @@ def spider(
         )
     colors = gen_colors()
     all_columns = vdf.pivot_table(
-        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False
+        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
     ).values
     all_cat = [category for category in all_columns]
     n = len(all_columns)
@@ -3967,7 +3989,7 @@ def ts_plot(
         )
         query += " ORDER BY {}, {}".format(order_by, vdf.alias)
         query_result = executeSQL(
-            query=query, title="Selecting points to draw the curve", method="fetchall"
+            query=query, title="Selecting points to draw the curve", method="fetchall",
         )
         order_by_values = [item[0] for item in query_result]
         try:

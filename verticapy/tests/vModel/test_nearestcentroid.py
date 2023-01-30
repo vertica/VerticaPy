@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -135,10 +135,10 @@ class TestNearestCentroid:
         titanic["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare"])[1]
         titanic = model.predict(titanic, name="prediction_vertica_sql", cutoff=0.5)
         titanic = model.predict_proba(
-            titanic, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0]
+            titanic, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0],
         )
         titanic = model.predict_proba(
-            titanic, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1]
+            titanic, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1],
         )
         score = titanic.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         print(titanic[["prediction_sql", "prediction_vertica_sql"]])
@@ -228,7 +228,7 @@ class TestNearestCentroid:
         assert model.score(method="logloss") == pytest.approx(0.282873255537287)
         assert model.score(method="mcc") == pytest.approx(0.28558718217018486)
         assert model.score(method="mk") == pytest.approx(0.32381858202668545)
-        assert model.score(method="npv") == pytest.approx(0.636734693877551)
+        assert model.score(method="npv") == pytest.approx(0.6870838881491345)
         assert model.score(method="prc_auc") == pytest.approx(0.5442487908406839)
         assert model.score(method="precision") == pytest.approx(0.636734693877551)
         assert model.score(method="specificity") == pytest.approx(0.8528925619834711)
@@ -244,7 +244,7 @@ class TestNearestCentroid:
         )
         assert model.to_python(return_str=False, return_distance_clusters=True)(
             [[5.006, 3.418]]
-        )[0][0] in (pytest.approx(32.519389961314424), pytest.approx(45.6436412237776))
+        )[0][0] in (pytest.approx(32.519389961314424), pytest.approx(45.6436412237776),)
 
     def test_to_sql(self, model):
         current_cursor().execute("SELECT {}::int".format(model.to_sql([3.0, 11.0])))

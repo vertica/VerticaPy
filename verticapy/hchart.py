@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -48,7 +48,7 @@
 # ---#
 # Jupyter Modules
 from IPython.core.magic import needs_local_scope
-from IPython.core.display import HTML, display
+from IPython.display import HTML, display
 
 # Standard Python Modules
 import re, time, warnings
@@ -65,19 +65,14 @@ from verticapy import (
     clean_query,
     replace_vars_in_query,
     get_magic_options,
-    save_to_query_profile,
+    save_verticapy_logs,
 )
 from verticapy.highchart import hchartSQL
 
 # ---#
+@save_verticapy_logs
 @needs_local_scope
 def hchart(line, cell="", local_ns=None):
-
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="hchart_magic", path="hchart", json_dict={"line": line, "cell": cell,},
-    )
-    # -#
 
     # Initialization
     query = "" if (not (cell) and (line)) else cell
@@ -116,7 +111,7 @@ def hchart(line, cell="", local_ns=None):
                     raise ParameterError("Duplicate option '-k'.")
                 options["-k"] = all_options_dict[option]
 
-        elif verticapy.options["print_info"]:
+        elif verticapy.OPTIONS["print_info"]:
             warning_message = (
                 f"\u26A0 Warning : The option '{option}' doesn't " "exist - skipping."
             )

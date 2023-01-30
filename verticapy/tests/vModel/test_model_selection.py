@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -208,7 +208,7 @@ class TestModelSelection:
     def test_grid_search_cv(self, winequality_vd):
         result = grid_search_cv(
             LogisticRegression("model_test"),
-            {"solver": ["Newton", "BFGS", "CGD"], "tol": [0.1, 0.01]},
+            {"solver": ["newton", "bfgs"], "tol": [0.1, 0.01]},
             winequality_vd,
             ["residual_sugar", "alcohol"],
             "good",
@@ -216,7 +216,7 @@ class TestModelSelection:
             cv=3,
         )
         assert len(result.values) == 6
-        assert len(result["parameters"]) == 6
+        assert len(result["parameters"]) == 4
 
     def test_lift_chart(self, winequality_vd):
         model = LogisticRegression("model_test")

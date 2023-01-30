@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -158,7 +158,6 @@ class TestElasticNet:
     def test_get_params(self, model):
         assert model.get_params() == {
             "solver": "cgd",
-            "penalty": "enet",
             "max_iter": 100,
             "l1_ratio": 0.5,
             "C": 1,

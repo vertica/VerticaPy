@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -49,13 +49,18 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.vmodel import *
-from verticapy.utilities import save_to_query_profile
+from verticapy.utilities import save_verticapy_logs
 
 # ---#
 class NaiveBayes(MulticlassClassifier):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a NaiveBayes object using the Vertica Naive Bayes algorithm on 
 the data. It is a "probabilistic classifier" based on applying Bayes' 
 theorem with strong (naïve) independence assumptions between the features.
@@ -84,27 +89,21 @@ nbtype: str, optional
      - gaussian    : Casts the variables to float.
 	"""
 
-    def __init__(self, name: str, alpha: float = 1.0, nbtype: str = "auto"):
-
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="NaiveBayes",
-            path="learn.naive_bayes",
-            json_dict={"name": name, "alpha": alpha, "nbtype": nbtype,},
-        )
-        # -#
-
-        nbtype_vals = ["auto", "bernoulli", "categorical", "multinomial", "gaussian"]
-        check_types(
-            [
-                ("name", name, [str]),
-                ("alpha", alpha, [int, float]),
-                ("nbtype", nbtype, nbtype_vals),
-            ]
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
+    def __init__(self, name: str, alpha: Union[int, float] = 1.0, nbtype: str = "auto"):
+        raise_error_if_not_in(
+            "nbtype",
+            str(nbtype).lower(),
+            ["auto", "bernoulli", "categorical", "multinomial", "gaussian"],
         )
         self.type, self.name = "NaiveBayes", name
-        self.set_params({"alpha": alpha, "nbtype": nbtype})
-        version(condition=[8, 0, 0])
+        self.VERTICA_FIT_FUNCTION_SQL = "NAIVE_BAYES"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_NAIVE_BAYES"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
 
     # ---#
     def get_var_info(self):

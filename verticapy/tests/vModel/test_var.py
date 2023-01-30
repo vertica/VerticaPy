@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -121,7 +121,7 @@ class TestVAR:
         assert model.get_params() == {
             "max_iter": 1000,
             "p": 1,
-            "solver": "Newton",
+            "solver": "newton",
             "tol": 0.0001,
         }
 

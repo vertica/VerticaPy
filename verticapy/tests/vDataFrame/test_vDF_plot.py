@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -476,7 +476,9 @@ class TestvDFPlot:
         assert isinstance(result, Highchart)
         # area_range
         result = amazon_vd.hchart(
-            x="date", y=["MIN(number)", "AVG(number)", "MAX(number)"], kind="area_range"
+            x="date",
+            y=["MIN(number)", "AVG(number)", "MAX(number)"],
+            kind="area_range",
         )
         assert isinstance(result, Highchart)
         # area_ts
@@ -523,15 +525,15 @@ class TestvDFPlot:
         )
         assert isinstance(result, Highchart)
         result = titanic_vd.hchart(
-            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="bar", drilldown=True
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="bar", drilldown=True,
         )
         assert isinstance(result, Highchart)
         result = titanic_vd.hchart(
-            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="hist", drilldown=True
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="hist", drilldown=True,
         )
         assert isinstance(result, Highchart)
         result = titanic_vd.hchart(
-            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="pie", drilldown=True
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="pie", drilldown=True,
         )
         assert isinstance(result, Highchart)
         # bubble or scatter

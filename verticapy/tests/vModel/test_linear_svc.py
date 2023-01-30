@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -356,9 +356,9 @@ class TestLinearSVC:
         )
         assert model.score(cutoff=0.3, method="mk") == pytest.approx(-0.607429718875502)
         assert model.score(cutoff=0.7, method="npv") == pytest.approx(
-            0.8260869565217391
+            0.6176772867420349
         )
-        assert model.score(cutoff=0.3, method="npv") == pytest.approx(0.392570281124498)
+        assert model.score(cutoff=0.3, method="npv") == pytest.approx(0.0)
         assert model.score(cutoff=0.7, method="prc_auc") == pytest.approx(
             0.5976470350144453
         )

@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -143,7 +143,12 @@ class TestDecisionTreeRegressor:
 
         m_att_details = model.get_attr(attr_name="details")
 
-        assert m_att_details["predictor"] == ["gender", "owned cars", "cost", "income"]
+        assert m_att_details["predictor"] == [
+            "gender",
+            "owned cars",
+            "cost",
+            "income",
+        ]
         assert m_att_details["type"] == [
             "char or varchar",
             "int",
@@ -161,10 +166,8 @@ class TestDecisionTreeRegressor:
 
     def test_get_params(self, model):
         assert model.get_params() == {
-            "n_estimators": 1,
             "max_features": 4,
             "max_leaf_nodes": 100,
-            "sample": 1.0,
             "max_depth": 6,
             "min_samples_leaf": 1,
             "min_info_gain": 0,
@@ -264,7 +267,10 @@ class TestDecisionTreeRegressor:
             pytest.approx(0.0),
             pytest.approx(6.9),
         ]
-        assert reg_rep_anova["MS"][:-1] == [pytest.approx(1.725), pytest.approx(0.0)]
+        assert reg_rep_anova["MS"][:-1] == [
+            pytest.approx(1.725),
+            pytest.approx(0.0),
+        ]
 
     def test_score(self, model):
         # method = "max"

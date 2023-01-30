@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,7 +32,7 @@ class TestDatasets:
                 "age": {"type": int, "range": [20, 40]},
                 "distance": {"type": float, "range": [1000, 4000]},
                 "date": {"type": datetime.date, "range": ["1993-11-03", 365]},
-                "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365]},
+                "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365],},
             }
         )
         assert result["name"].mode() == "Badr"

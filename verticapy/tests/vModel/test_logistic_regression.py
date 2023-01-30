@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -382,11 +382,9 @@ class TestLogisticRegression:
         assert model.score(cutoff=0.3, method="mk") == pytest.approx(
             0.22877846790890288
         )
-        assert model.score(cutoff=0.7, method="npv") == pytest.approx(
-            0.6964285714285714
-        )
+        assert model.score(cutoff=0.7, method="npv") == pytest.approx(0.625531914893617)
         assert model.score(cutoff=0.3, method="npv") == pytest.approx(
-            0.4311594202898551
+            0.7976190476190477
         )
         assert model.score(cutoff=0.7, method="prc_auc") == pytest.approx(
             0.5979751713359676

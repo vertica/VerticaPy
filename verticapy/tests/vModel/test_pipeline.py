@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -19,7 +19,7 @@ from verticapy import drop, set_option, tablesample
 from verticapy.connect import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import LinearRegression, LogisticRegression
-from verticapy.learn.preprocessing import StandardScaler, MinMaxScaler
+from verticapy.learn.preprocessing import Normalizer, MinMaxScaler
 from verticapy.learn.pipeline import Pipeline
 
 set_option("print_info", False)
@@ -36,13 +36,13 @@ def winequality_vd():
 def model(winequality_vd):
     model_class = Pipeline(
         [
-            ("NormalizerWine", StandardScaler("std_model_test",)),
+            ("NormalizerWine", Normalizer("std_model_test",)),
             ("LinearRegressionWine", LinearRegression("linreg_model_test",)),
         ]
     )
     model_class.drop()
     model_class.fit(
-        "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality"
+        "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality",
     )
     yield model_class
     model_class.drop()
@@ -56,7 +56,7 @@ class TestPipeline:
     def test_drop(self, winequality_vd):
         model_class = Pipeline(
             [
-                ("NormalizerWine", StandardScaler("std_model_test_drop",),),
+                ("NormalizerWine", Normalizer("std_model_test_drop",),),
                 ("LinearRegressionWine", LinearRegression("linreg_model_test_drop",),),
             ]
         )
@@ -77,7 +77,6 @@ class TestPipeline:
             "LinearRegressionWine": {
                 "fit_intercept": True,
                 "max_iter": 100,
-                "penalty": "none",
                 "solver": "newton",
                 "tol": 1e-06,
             },
@@ -139,7 +138,7 @@ class TestPipeline:
 
         model_class = Pipeline(
             [
-                ("NormalizerWine", StandardScaler("logstd_model_test"),),
+                ("NormalizerWine", Normalizer("logstd_model_test"),),
                 ("LogisticRegressionWine", LogisticRegression("logreg_model_test"),),
             ]
         )
@@ -188,7 +187,7 @@ class TestPipeline:
     def test_transform(self, winequality_vd, model):
         model_class = Pipeline(
             [
-                ("NormalizerWine", StandardScaler("logstd_model_test"),),
+                ("NormalizerWine", Normalizer("logstd_model_test"),),
                 ("NormalizerWine", MinMaxScaler("logmm_model_test"),),
             ]
         )
@@ -205,7 +204,7 @@ class TestPipeline:
     def test_inverse_transform(self, winequality_vd, model):
         model_class = Pipeline(
             [
-                ("NormalizerWine", StandardScaler("logstd_model_test"),),
+                ("NormalizerWine", Normalizer("logstd_model_test"),),
                 ("NormalizerWine", MinMaxScaler("logmm_model_test"),),
             ]
         )
@@ -224,7 +223,7 @@ class TestPipeline:
     def test_model_from_vDF(self, winequality_vd):
         model_test = Pipeline(
             [
-                ("NormalizerWine", StandardScaler("std_model_test_vdf",),),
+                ("NormalizerWine", Normalizer("std_model_test_vdf",),),
                 ("LinearRegressionWine", LinearRegression("linreg_model_test_vdf",),),
             ]
         )

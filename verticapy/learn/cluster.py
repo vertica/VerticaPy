@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -53,6 +53,11 @@ import os
 
 # VerticaPy Modules
 import vertica_python, verticapy
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
@@ -64,7 +69,7 @@ from verticapy.learn.tools import *
 # ---#
 class BisectingKMeans(Clustering, Tree):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a BisectingKMeans object using the Vertica bisecting k-means 
 algorithm on the data. k-means clustering is a method of vector quantization, 
 originally from signal processing, that aims to partition n observations into 
@@ -97,7 +102,7 @@ min_divisible_cluster_size: int, optional
 distance_method: str, optional
     The measure for distance between two data points. Only Euclidean distance 
     is supported at this time.
-init: str/list, optional
+init: str / list, optional
     The method to use to find the initial KMeans cluster centers.
         kmeanspp : Uses the KMeans++ method to initialize the centers.
         pseudo   : Uses "pseudo center" approach used by Spark, bisects given 
@@ -111,6 +116,9 @@ tol: float, optional
     'tol' from the previous iteration.
     """
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -119,47 +127,41 @@ tol: float, optional
         split_method: str = "sum_squares",
         min_divisible_cluster_size: int = 2,
         distance_method: str = "euclidean",
-        init: str = "kmeanspp",
+        init: Union[str, list] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="BisectingKMeans",
-            path="learn.cluster",
-            json_dict={
-                "name": name,
-                "n_cluster": n_cluster,
-                "bisection_iterations": bisection_iterations,
-                "split_method": split_method,
-                "min_divisible_cluster_size": min_divisible_cluster_size,
-                "distance_method": distance_method,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-            },
+        raise_error_if_not_in(
+            "split_method", str(split_method).lower(), ["size", "sum_squares"]
         )
-        # -#
-        check_types([("name", name, [str])])
+        raise_error_if_not_in(
+            "distance_method", str(distance_method).lower(), ["euclidean"]
+        )
+        if isinstance(init, str):
+            raise_error_if_not_in(
+                "init", init.lower(), ["kmeanspp", "pseudo", "random"]
+            )
+            init = init.lower()
         self.type, self.name = "BisectingKMeans", name
-        self.set_params(
-            {
-                "n_cluster": n_cluster,
-                "bisection_iterations": bisection_iterations,
-                "split_method": split_method,
-                "min_divisible_cluster_size": min_divisible_cluster_size,
-                "distance_method": distance_method,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-            }
-        )
-        version(condition=[9, 3, 1])
+        self.VERTICA_FIT_FUNCTION_SQL = "BISECTING_KMEANS"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_BISECTING_KMEANS"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.parameters = {
+            "n_cluster": n_cluster,
+            "bisection_iterations": bisection_iterations,
+            "split_method": str(split_method).lower(),
+            "min_divisible_cluster_size": min_divisible_cluster_size,
+            "distance_method": str(distance_method).lower(),
+            "init": init,
+            "max_iter": max_iter,
+            "tol": tol,
+        }
 
     # ---#
     def get_tree(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns a table containing information about the BK-tree.
         """
         return self.cluster_centers_
@@ -168,7 +170,7 @@ tol: float, optional
 # ---#
 class DBSCAN(vModel):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 [Beta Version]
 Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin 
 Ester, Hans-Peter Kriegel, Jörg Sander, and Xiaowei Xu. This object uses 
@@ -199,37 +201,36 @@ p: int, optional
 	The p of the p-distance (distance metric used during the model computation).
 	"""
 
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="DBSCAN",
-            path="learn.cluster",
-            json_dict={"name": name, "eps": eps, "min_samples": min_samples, "p": p,},
-        )
-        # -#
-        check_types([("name", name, [str])])
         self.type, self.name = "DBSCAN", name
-        self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
+        self.VERTICA_FIT_FUNCTION_SQL = ""
+        self.VERTICA_PREDICT_FUNCTION_SQL = ""
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
 
     # ---#
+    @check_dtypes
     def fit(
         self,
-        input_relation: (str, vDataFrame),
-        X: list = [],
-        key_columns: list = [],
+        input_relation: Union[str, vDataFrame],
+        X: Union[str, list] = [],
+        key_columns: Union[str, list] = [],
         index: str = "",
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str/vDataFrame
+	input_relation: str / vDataFrame
 		Training relation.
-	X: list, optional
+	X: str / list, optional
 		List of the predictors. If empty, all the numerical vcolumns will be used.
-	key_columns: list, optional
+	key_columns: str / list, optional
 		Columns not used during the algorithm computation but which will be used
 		to create the final relation.
 	index: str, optional
@@ -245,15 +246,7 @@ p: int, optional
             key_columns = [key_columns]
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame]),
-                ("X", X, [list]),
-                ("key_columns", key_columns, [list]),
-                ("index", index, [str]),
-            ]
-        )
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -269,10 +262,8 @@ p: int, optional
         self.key_columns = [quote_ident(column) for column in key_columns]
         self.input_relation = input_relation
         schema, relation = schema_relation(input_relation)
-        name_main, name_dbscan_clusters = (
-            gen_tmp_name(name="main"),
-            gen_tmp_name(name="clusters"),
-        )
+        name_main = gen_tmp_name(name="main")
+        name_dbscan_clusters = gen_tmp_name(name="clusters")
         try:
             if not (index):
                 index = "id"
@@ -322,7 +313,7 @@ p: int, optional
                      FROM ({1}) distance_table""".format(
                 self.parameters["eps"], sql
             )
-            if isinstance(verticapy.options["random_state"], int):
+            if isinstance(verticapy.OPTIONS["random_state"], int):
                 order_by = "ORDER BY node_id, nn_id"
             else:
                 order_by = ""
@@ -443,7 +434,7 @@ p: int, optional
     # ---#
     def predict(self):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Creates a vDataFrame of the model.
 
 	Returns
@@ -457,7 +448,7 @@ p: int, optional
 # ---#
 class KMeans(Clustering):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a KMeans object using the Vertica k-means algorithm on the data. 
 k-means clustering is a method of vector quantization, originally from signal 
 processing, that aims to partition n observations into k clusters in which 
@@ -471,10 +462,10 @@ name: str
 	Name of the the model. The model will be stored in the database.
 n_cluster: int, optional
 	Number of clusters
-init: str/list, optional
+init: str / list, optional
 	The method to use to find the initial cluster centers.
 		kmeanspp : Uses the KMeans++ method to initialize the centers.
-		random   : The initial centers.
+		random   : The centers are initialized randomly.
 	It can be also a list with the initial cluster centers to use.
 max_iter: int, optional
 	The maximum number of iterations the algorithm performs.
@@ -484,45 +475,38 @@ tol: float, optional
 	previous iteration.
 	"""
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_cluster: int = 8,
-        init: str = "kmeanspp",
+        init: Union[str, list] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="KMeans",
-            path="learn.cluster",
-            json_dict={
-                "name": name,
-                "n_cluster": n_cluster,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-            },
-        )
-        # -#
-        check_types([("name", name, [str])])
+        if isinstance(init, str):
+            raise_error_if_not_in("init", init.lower(), ["kmeanspp", "random"])
+            init = init.lower()
         self.type, self.name = "KMeans", name
-        self.set_params(
-            {
-                "n_cluster": n_cluster,
-                "init": init.lower() if isinstance(init, str) else init,
-                "max_iter": max_iter,
-                "tol": tol,
-            }
-        )
-        version(condition=[8, 0, 0])
+        self.VERTICA_FIT_FUNCTION_SQL = "KMEANS"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KMEANS"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.parameters = {
+            "n_cluster": n_cluster,
+            "init": init,
+            "max_iter": max_iter,
+            "tol": tol,
+        }
 
     # ---#
     def plot_voronoi(
-        self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds
+        self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the Voronoi Graph of the model.
 
     Parameters
@@ -559,3 +543,61 @@ tol: float, optional
             )
         else:
             raise Exception("Voronoi Plots are only available in 2D")
+
+
+# ---#
+class KPrototypes(Clustering):
+    """
+----------------------------------------------------------------------------------------
+Creates a KPrototypes object by using the Vertica k-prototypes algorithm on 
+the data. The algorithm combines the k-means and k-modes algorithms in order
+to handle both numerical and categorical data.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model is stored in the database.
+n_cluster: int, optional
+    Number of clusters.
+init: str / list, optional
+    The method used to find the initial cluster centers.
+        random   : The centers are initialized randomly.
+    You can also provide a list of initial cluster centers.
+max_iter: int, optional
+    The maximum number of iterations the algorithm performs.
+tol: float, optional
+    Determines whether the algorithm has converged. The algorithm is considered 
+    converged when no center moves more than a distance of 'tol' from the 
+    previous iteration.
+gamma: float, optional
+    Weighting factor for categorical columns. It determines the relative 
+    importance of numerical and categorical attributes.
+    """
+
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        n_cluster: int = 8,
+        init: Union[str, list] = "random",
+        max_iter: int = 300,
+        tol: float = 1e-4,
+        gamma: float = 1.0,
+    ):
+        if isinstance(init, str):
+            raise_error_if_not_in("init", init.lower(), ["random"])
+            init = init.lower()
+        self.type, self.name = "KPrototypes", name
+        self.VERTICA_FIT_FUNCTION_SQL = "KPROTOTYPES"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KPROTOTYPES"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.parameters = {
+            "n_cluster": n_cluster,
+            "init": init,
+            "max_iter": max_iter,
+            "tol": tol,
+            "gamma": gamma,
+        }

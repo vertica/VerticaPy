@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -435,7 +435,7 @@ class Test_memModel:
         model = memModel(
             "BisectingKMeans",
             {
-                "clusters": [[0.5, 0.6], [1, 2], [100, 200], [10, 700], [-100, -200]],
+                "clusters": [[0.5, 0.6], [1, 2], [100, 200], [10, 700], [-100, -200],],
                 "p": 2,
                 "left_child": [1, 3, None, None, None],
                 "right_child": [2, 4, None, None, None],
@@ -945,9 +945,9 @@ class Test_memModel:
                     },
                     {
                         "type": "categorical",
-                        "C": {"female": 0.407843137254902, "male": 0.592156862745098},
-                        "Q": {"female": 0.416666666666667, "male": 0.583333333333333},
-                        "S": {"female": 0.406666666666667, "male": 0.593333333333333},
+                        "C": {"female": 0.407843137254902, "male": 0.592156862745098,},
+                        "Q": {"female": 0.416666666666667, "male": 0.583333333333333,},
+                        "S": {"female": 0.406666666666667, "male": 0.593333333333333,},
                     },
                 ],
                 "classes": ["C", "Q", "S"],

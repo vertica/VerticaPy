@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -55,6 +55,11 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.errors import *
 
 # Other Modules
@@ -76,14 +81,8 @@ def all_comb(X: list):
 
 
 # ---#
-def arange(start: float, stop: float, step: float):
-    check_types(
-        [
-            ("start", start, [int, float]),
-            ("stop", stop, [int, float]),
-            ("step", step, [int, float]),
-        ]
-    )
+@check_dtypes
+def arange(start: Union[int, float], stop: Union[int, float], step: Union[int, float]):
     if step < 0:
         raise ParameterError("Parameter 'step' must be greater than 0")
     L_final = []
@@ -106,50 +105,6 @@ def bin_spatial_to_str(
         return f"ST_AsText({column})"
     else:
         return column
-
-
-# ---#
-def check_types(types_list: list = []):
-    for elem in types_list:
-        list_check = False
-        for sub_elem in elem[2]:
-            if not (isinstance(sub_elem, type)):
-                list_check = True
-        if list_check:
-            if not (isinstance(elem[1], str)) and (elem[1] != None):
-                warning_message = (
-                    "Parameter '{0}' must be of type {1}, found type {2}"
-                ).format(elem[0], str, type(elem[1]))
-                warnings.warn(warning_message, Warning)
-            if (elem[1] != None) and (
-                elem[1].lower() not in elem[2] and elem[1] not in elem[2]
-            ):
-                warning_message = "Parameter '{0}' must be in [{1}], found '{2}'".format(
-                    elem[0], "|".join(elem[2]), elem[1]
-                )
-                warnings.warn(warning_message, Warning)
-        else:
-            all_types = elem[2] + [type(None)]
-            if str in all_types:
-                all_types += [str_sql]
-            if not (isinstance(elem[1], tuple(all_types))):
-                if (
-                    (list in elem[2])
-                    and isinstance(elem[1], Iterable)
-                    and not (isinstance(elem[1], (dict, str)))
-                ):
-                    pass
-                elif len(elem[2]) == 1:
-                    warning_message = "Parameter '{0}' must be of type {1}, found type {2}".format(
-                        elem[0], elem[2][0], type(elem[1])
-                    )
-                    warnings.warn(warning_message, Warning)
-                else:
-                    warning_message = (
-                        "Parameter '{0}' type must be one of the following"
-                        " {1}, found type {2}"
-                    ).format(elem[0], elem[2], type(elem[1]))
-                    warnings.warn(warning_message, Warning)
 
 
 # ---#
@@ -197,6 +152,7 @@ def erase_space_start_end_in_list_values(L: list):
 
 
 # ---#
+@check_dtypes
 def executeSQL(
     query: str,
     title: str = "",
@@ -207,21 +163,10 @@ def executeSQL(
     sql_push_ext: bool = False,
     symbol: str = "$",
 ):
-    check_types(
-        [
-            ("query", query, [str]),
-            ("title", title, [str]),
-            (
-                "method",
-                method,
-                ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"],
-            ),
-            ("path", path, [str]),
-            ("print_time_sql", print_time_sql, [bool]),
-            ("sql_push_ext", sql_push_ext, [bool]),
-            ("symbol", symbol, [str]),
-        ]
+    raise_error_if_not_in(
+        "method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"],
     )
+
     from verticapy.connect import current_cursor
 
     # Cleaning the query
@@ -236,7 +181,7 @@ def executeSQL(
     query = clean_query(query)
 
     cursor = current_cursor()
-    if verticapy.options["sql_on"] and print_time_sql:
+    if verticapy.OPTIONS["sql_on"] and print_time_sql:
         print_query(query, title)
     start_time = time.time()
     if data:
@@ -247,7 +192,7 @@ def executeSQL(
     else:
         cursor.execute(query)
     elapsed_time = time.time() - start_time
-    if verticapy.options["time_on"] and print_time_sql:
+    if verticapy.OPTIONS["time_on"] and print_time_sql:
         print_time(elapsed_time)
     if method == "fetchrow":
         return cursor.fetchone()
@@ -377,8 +322,8 @@ def get_category_from_python_type(expr):
 
 
 # ---#
+@check_dtypes
 def get_category_from_vertica_type(ctype: str = ""):
-    check_types([("ctype", ctype, [str])])
     ctype = ctype.lower().strip()
     if ctype != "":
         if (ctype[0:5] == "array") or (ctype[0:3] == "row") or (ctype[0:3] == "set"):
@@ -421,13 +366,13 @@ def get_category_from_vertica_type(ctype: str = ""):
 
 # ---#
 def get_dblink_fun(query: str, symbol: str = "$"):
-    assert symbol in verticapy.options["external_connection"], ConnectionError(
+    assert symbol in verticapy.OPTIONS["external_connection"], ConnectionError(
         f"External Query detected but no corresponding Connection Identifier Database is defined (Using the symbol '{symbol}'). Use the function connect.set_external_connection to set one with the correct symbol."
     )
     return "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ()".format(
-        verticapy.options["external_connection"][symbol]["cid"].replace("'", "''"),
+        verticapy.OPTIONS["external_connection"][symbol]["cid"].replace("'", "''"),
         query.replace("'", "''"),
-        verticapy.options["external_connection"][symbol]["rowset"],
+        verticapy.OPTIONS["external_connection"][symbol]["rowset"],
     )
 
 
@@ -585,7 +530,7 @@ def get_magic_options(line: str):
 
 # ---#
 def get_random_function(rand_int=None):
-    random_state = verticapy.options["random_state"]
+    random_state = verticapy.OPTIONS["random_state"]
     if isinstance(rand_int, int):
         if isinstance(random_state, int):
             random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
@@ -879,13 +824,13 @@ def print_query(query: str, title: str = ""):
     screen_columns = shutil.get_terminal_size().columns
     query_print = indentSQL(query)
     if isnotebook():
-        from IPython.core.display import HTML, display
+        from IPython.display import HTML, display
 
-        display(HTML("<h4>{}</h4>".format(title)))
+        display(HTML(f"<h4>{title}</h4>"))
         query_print = query_print.replace("\n", " <br>").replace("  ", " &emsp; ")
         display(HTML(query_print))
     else:
-        print("$ {} $\n".format(title))
+        print(f"$ {title} $\n")
         print(query_print)
         print("-" * int(screen_columns) + "\n")
 
@@ -993,7 +938,7 @@ def print_table(
                     color = "#999999"
                 else:
                     if isinstance(val, bool) and (
-                        verticapy.options["mode"] in ("full", None)
+                        verticapy.OPTIONS["mode"] in ("full", None)
                     ):
                         val = (
                             "<center>&#9989;</center>"
@@ -1005,7 +950,7 @@ def print_table(
                 if (
                     (j == 0)
                     or (i == 0)
-                    or (verticapy.options["mode"] not in ("full", None))
+                    or (verticapy.OPTIONS["mode"] not in ("full", None))
                 ):
                     html_table += " #FFFFFF; "
                 elif val == "[null]":
@@ -1013,7 +958,7 @@ def print_table(
                 else:
                     html_table += " #FAFAFA; "
                 html_table += "color: {}; white-space:nowrap; ".format(color)
-                if verticapy.options["mode"] in ("full", None):
+                if verticapy.OPTIONS["mode"] in ("full", None):
                     if (j == 0) or (i == 0):
                         html_table += "border: 1px solid #AAAAAA; "
                     else:
@@ -1039,7 +984,7 @@ def print_table(
                     if j != 0:
                         type_val, category, missing_values = "", "", ""
                         if data_columns[j][0] in dtype and (
-                            verticapy.options["mode"] in ("full", None)
+                            verticapy.OPTIONS["mode"] in ("full", None)
                         ):
                             if dtype[data_columns[j][0]] != "undefined":
                                 type_val = dtype[data_columns[j][0]].capitalize()
@@ -1095,7 +1040,7 @@ def print_table(
                     else:
                         ctype, missing_values, category = "", "", ""
                     if (i == 0) and (j == 0):
-                        if dtype and (verticapy.options["mode"] in ("full", None)):
+                        if dtype and (verticapy.OPTIONS["mode"] in ("full", None)):
                             val = verticapy.gen_verticapy_logo_html(size="45px")
                         else:
                             val = ""
@@ -1109,7 +1054,7 @@ def print_table(
                     )
                 elif cell_width[j] > 240:
                     background = "#EEEEEE" if val == "[null]" else "#FAFAFA"
-                    if verticapy.options["mode"] not in ("full", None):
+                    if verticapy.OPTIONS["mode"] not in ("full", None):
                         background = "#FFFFFF"
                     html_table += (
                         '><input style="background-color: {0}; border: none; '
@@ -1131,7 +1076,7 @@ def print_table(
 def print_time(elapsed_time: float):
     screen_columns = shutil.get_terminal_size().columns
     if isnotebook():
-        from IPython.core.display import HTML, display
+        from IPython.display import HTML, display
 
         display(
             HTML("<div><b>Execution: </b> {0}s</div>".format(round(elapsed_time, 3)))
@@ -1144,7 +1089,7 @@ def print_time(elapsed_time: float):
 # ---#
 def quote_ident(column: str):
     """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the specified string argument in the format that is required in
     order to use that string as an identifier in an SQL statement.
 
@@ -1176,7 +1121,7 @@ def replace_external_queries_in_query(query: str):
         "update ",
     )
     nb_external_queries = 0
-    for s in verticapy.options["external_connection"]:
+    for s in verticapy.OPTIONS["external_connection"]:
         external_queries = re.findall(f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", query)
         for external_query in external_queries:
             if external_query.strip().lower().startswith(sql_keyword):
@@ -1236,8 +1181,8 @@ def replace_vars_in_query(query: str, locals_dict: dict):
                         val = val[int(v[s[0] + 1 : s[1] + 1])]
                 fail = False
             except Exception as e:
-                warning_message = "Failed to replace variables in the query.\nError: {0}".format(
-                    e
+                warning_message = (
+                    f"Failed to replace variables in the query.\nError: {e}"
                 )
                 warnings.warn(warning_message, Warning)
                 fail = True
@@ -1245,7 +1190,7 @@ def replace_vars_in_query(query: str, locals_dict: dict):
             if isinstance(val, vDataFrame):
                 val = val.__genSQL__()
             elif isinstance(val, tablesample):
-                val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
+                val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
             elif isinstance(val, pd.DataFrame):
                 val = pandas_to_vertica(val).__genSQL__()
             elif isinstance(val, list):
@@ -1277,7 +1222,7 @@ def schema_relation(relation):
     from verticapy import vDataFrame
 
     if isinstance(relation, vDataFrame):
-        schema, relation = verticapy.options["temp_schema"], ""
+        schema, relation = verticapy.OPTIONS["temp_schema"], ""
     else:
         quote_nb = relation.count('"')
         if quote_nb not in (0, 2, 4):
@@ -1359,7 +1304,7 @@ class str_sql:
             isinstance(x, vColumn) and x.isarray()
         ):
             return str_sql(
-                "ARRAY_CAT({}, {})".format(self.init_transf, x.init_transf), "complex"
+                "ARRAY_CAT({}, {})".format(self.init_transf, x.init_transf), "complex",
             )
         val = format_magic(x)
         op = (
@@ -1377,7 +1322,7 @@ class str_sql:
             isinstance(x, vColumn) and x.isarray()
         ):
             return str_sql(
-                "ARRAY_CAT({}, {})".format(x.init_transf, self.init_transf), "complex"
+                "ARRAY_CAT({}, {})".format(x.init_transf, self.init_transf), "complex",
             )
         val = format_magic(x)
         op = (
@@ -1463,7 +1408,7 @@ class str_sql:
         if order_by:
             order_by = "ORDER BY {}".format(order_by)
         return str_sql(
-            "{} OVER ({} {})".format(self.init_transf, by, order_by), self.category()
+            "{} OVER ({} {})".format(self.init_transf, by, order_by), self.category(),
         )
 
     # ---#
@@ -1619,7 +1564,7 @@ class str_sql:
 # ---#
 def erase_prefix_in_name(name: str, prefix: list = []):
     """
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of prefixes from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1647,7 +1592,7 @@ name
 # ---#
 def erase_suffix_in_name(name: str, suffix: list = []):
     """
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of suffixes from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1675,7 +1620,7 @@ name
 # ---#
 def erase_word_in_name(name: str, word: list = []):
     """
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of words from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1707,7 +1652,7 @@ def erase_in_name(
     order: list = ["p", "s", "w"],
 ):
     """
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of suffixes and prefixes from the input name and 
 returns it. When there is a match, the other elements of the list are ignored.
 
@@ -1755,7 +1700,7 @@ def is_similar_name(
     order: list = ["p", "s", "w"],
 ):
     """
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of suffixes, prefixes and words from the input name 
 and returns it.
 
@@ -1786,10 +1731,10 @@ bool
     True if the two names are similar, false otherwise.
     """
     n1 = erase_in_name(
-        name=name1, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order
+        name=name1, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order,
     )
     n2 = erase_in_name(
-        name=name2, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order
+        name=name2, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order,
     )
     return n1 == n2
 
@@ -1804,7 +1749,7 @@ def belong_to_group(
     order: list = ["p", "s", "w"],
 ):
     """
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Excludes the input lists of suffixes, prefixes and words from the input name 
 and looks if it belongs to a specific group.
 
@@ -1855,7 +1800,7 @@ def group_similar_names(
     order: list = ["p", "s", "w"],
 ):
     """
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Creates similar group using the input column names.
 
 Parameters
@@ -1900,7 +1845,7 @@ dict
 # ---#
 def gen_coalesce(group_dict: dict):
     """
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 Generates the SQL statement to merge the groups together.
 
 Parameters

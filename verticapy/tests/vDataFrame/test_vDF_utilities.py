@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -570,7 +570,15 @@ class TestvDFUtilities:
     def test_vDF_numcol(self, titanic_vd):
         result = [elem.replace('"', "") for elem in titanic_vd.numcol()]
         result.sort()
-        assert result == ["age", "body", "fare", "parch", "pclass", "sibsp", "survived"]
+        assert result == [
+            "age",
+            "body",
+            "fare",
+            "parch",
+            "pclass",
+            "sibsp",
+            "survived",
+        ]
 
     def test_vDF_tail(self, titanic_vd):
         # testing vDataFrame[].tail
@@ -608,8 +616,8 @@ class TestvDFUtilities:
         assert result.get_columns()[0].replace('"', "") == "pclass"
         assert result.get_columns()[1].replace('"', "") == "sex"
 
-    def test_vDF_version(self, titanic_vd):
-        result = titanic_vd.version()
+    def test_vDF_vertica_version(self, titanic_vd):
+        result = titanic_vd.vertica_version()
         assert 3 <= len(result) <= 4
         assert 6 < result[0] < 20
         assert 0 <= result[1] < 5

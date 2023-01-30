@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -131,6 +131,17 @@ class TestRFR:
         assert fim["sign"] == [1, 1, 1, 0]
         plt.close("all")
 
+    def test_get_score(self, model):
+        fim = model.get_score()
+
+        assert fim["predictor_name"] == ["gender", "owned cars", "cost", "income"]
+        assert fim["importance_value"] == [
+            pytest.approx(0.0434782608695652),
+            pytest.approx(0.072463768115942),
+            pytest.approx(0.884057971014493),
+            pytest.approx(0.0),
+        ]
+
     def test_get_attr(self, model):
         m_att = model.get_attr()
 
@@ -152,7 +163,12 @@ class TestRFR:
 
         m_att_details = model.get_attr(attr_name="details")
 
-        assert m_att_details["predictor"] == ["gender", "owned cars", "cost", "income"]
+        assert m_att_details["predictor"] == [
+            "gender",
+            "owned cars",
+            "cost",
+            "income",
+        ]
         assert m_att_details["type"] == [
             "char or varchar",
             "int",
@@ -282,7 +298,10 @@ class TestRFR:
             pytest.approx(0.0),
             pytest.approx(6.9),
         ]
-        assert reg_rep_anova["MS"][:-1] == [pytest.approx(1.725), pytest.approx(0.0)]
+        assert reg_rep_anova["MS"][:-1] == [
+            pytest.approx(1.725),
+            pytest.approx(0.0),
+        ]
 
     def test_score(self, model):
         # method = "max"

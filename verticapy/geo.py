@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -53,6 +53,11 @@ import warnings
 
 # VerticaPy Modules
 import verticapy, vertica_python
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.toolbox import *
 from verticapy.utilities import *
 import verticapy.stats as st
@@ -60,6 +65,8 @@ from verticapy.datasets import gen_meshgrid
 from verticapy import vDataFrame
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def create_index(
     vdf: vDataFrame,
     gid: str,
@@ -68,9 +75,9 @@ def create_index(
     overwrite: bool = False,
     max_mem_mb: int = 256,
     skip_nonindexable_polygons: bool = False,
-):
+) -> tablesample:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a spatial index on a set of polygons to speed up spatial 
 intersection with a set of points.
 
@@ -107,67 +114,32 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="create_index",
-        path="geo",
-        json_dict={
-            "vdf": vdf,
-            "gid": gid,
-            "g": g,
-            "index": index,
-            "overwrite": overwrite,
-            "max_mem_mb": max_mem_mb,
-            "skip_nonindexable_polygons": skip_nonindexable_polygons,
-        },
-    )
-    # -#
-    check_types(
-        [
-            ("vdf", vdf, [vDataFrame]),
-            ("gid", gid, [str]),
-            ("index", index, [str]),
-            ("g", g, [str]),
-            ("overwrite", overwrite, [bool]),
-            ("max_mem_mb", max_mem_mb, [int]),
-            ("skip_nonindexable_polygons", skip_nonindexable_polygons, [bool]),
-        ]
-    )
-    vdf.are_namecols_in([gid, g])
-    gid, g = vdf.format_colnames([gid, g])
-
-    query = """SELECT 
-                    STV_Create_Index({0}, {1} 
+    gid, g = vdf.format_colnames(gid, g)
+    query = f"""SELECT 
+                    STV_Create_Index({gid}, {g} 
                                      USING PARAMETERS 
-                                        index='{2}', 
-                                        overwrite={3} , 
-                                        max_mem_mb={4}, 
-                                        skip_nonindexable_polygons={5}) 
+                                        index='{index}', 
+                                        overwrite={overwrite} , 
+                                        max_mem_mb={max_mem_mb}, 
+                                        skip_nonindexable_polygons={skip_nonindexable_polygons}) 
                                         OVER() 
-                FROM {6}""".format(
-        gid,
-        g,
-        index,
-        overwrite,
-        max_mem_mb,
-        skip_nonindexable_polygons,
-        vdf.__genSQL__(),
-    )
-
+                FROM {vdf.__genSQL__()}"""
     return to_tablesample(query)
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def coordinate_converter(
     vdf: vDataFrame,
     x: str,
     y: str,
     x0: float = 0.0,
-    earth_radius: float = 6371,
+    earth_radius: Union[int, float] = 6371,
     reverse: bool = False,
-):
+) -> vDataFrame:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Converts between geographic coordinates (latitude and longitude) and 
 Euclidean coordinates (x,y).
 
@@ -181,7 +153,7 @@ y: str
     vColumn used as the ordinate (latitude).
 x0: float, optional
     The initial abscissa.
-earth_radius: float, optional
+earth_radius: int / float, optional
     Earth radius in km.
 reverse: bool, optional
     If set to True, the Euclidean coordinates are converted to latitude 
@@ -192,31 +164,7 @@ Returns
 vDataFrame
     result of the transformation.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="coordinate_converter",
-        path="geo",
-        json_dict={
-            "vdf": vdf,
-            "x": x,
-            "y": y,
-            "x0": x0,
-            "earth_radius": earth_radius,
-            "reverse": reverse,
-        },
-    )
-    # -#
-    check_types(
-        [
-            ("vdf", vdf, [vDataFrame]),
-            ("x", x, [str]),
-            ("y", y, [str]),
-            ("x0", x0, [int, float]),
-            ("earth_radius", earth_radius, [int, float]),
-            ("reverse", reverse, [bool]),
-        ]
-    )
-    vdf.are_namecols_in([x, y])
+    x, y = vdf.format_colnames(x, y)
 
     result = vdf.copy()
 
@@ -236,9 +184,11 @@ vDataFrame
 
 
 # ---#
-def describe_index(name: str = "", list_polygons: bool = False):
+@check_dtypes
+@save_verticapy_logs
+def describe_index(name: str = "", list_polygons: bool = False) -> tablesample:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Retrieves information about an index that contains a set of polygons. If 
 you do not pass any parameters, this function returns all defined indexes.
 
@@ -257,14 +207,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="describe_index",
-        path="geo",
-        json_dict={"name": name, "list_polygons": list_polygons,},
-    )
-    # -#
-    check_types([("name", name, [str]), ("list_polygons", list_polygons, [bool])])
 
     if not (name):
         query = f"SELECT STV_Describe_Index () OVER ()"
@@ -283,11 +225,13 @@ tablesample
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def intersect(
     vdf: vDataFrame, index: str, gid: str, g: str = "", x: str = "", y: str = ""
-):
+) -> vDataFrame:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Spatially intersects a point or points with a set of polygons.
 
 Parameters
@@ -312,31 +256,12 @@ Returns
 vDataFrame
     object containing the result of the intersection.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="intersect",
-        path="geo",
-        json_dict={"vdf": vdf, "index": index, "gid": gid, "g": g, "x": x, "y": y,},
-    )
-    # -#
-    check_types(
-        [
-            ("vdf", vdf, [vDataFrame]),
-            ("gid", gid, [str]),
-            ("g", g, [str]),
-            ("x", x, [str]),
-            ("y", y, [str]),
-            ("index", index, [str]),
-        ]
-    )
-    vdf.are_namecols_in([gid])
+    x, y, gid, g = vdf.format_colnames(x, y, gid, g)
 
     table = vdf.__genSQL__()
 
     if g:
 
-        vdf.are_namecols_in(g)
-        g = vdf.format_colnames(g)
         query = (
             f"(SELECT STV_Intersect({gid}, {g} USING PARAMETERS"
             f" index='{index}') OVER (PARTITION BEST) AS "
@@ -345,8 +270,6 @@ vDataFrame
 
     elif x and y:
 
-        vdf.are_namecols_in([x, y])
-        x, y = vdf.format_colnames([x, y])
         query = (
             f"(SELECT STV_Intersect({gid}, {x}, {y} USING PARAMETERS"
             f" index='{index}') OVER (PARTITION BEST) AS "
@@ -361,9 +284,11 @@ vDataFrame
 
 
 # ---#
-def rename_index(source: str, dest: str, overwrite: bool = False):
+@check_dtypes
+@save_verticapy_logs
+def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Renames a spatial index.
 
 Parameters
@@ -381,20 +306,6 @@ Returns
 bool
     True if the index was renamed, False otherwise.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="rename_index",
-        path="geo",
-        json_dict={"source": source, "dest": dest, "overwrite": overwrite,},
-    )
-    # -#
-    check_types(
-        [
-            ("source", source, [str]),
-            ("dest", dest, [str]),
-            ("overwrite", overwrite, [bool]),
-        ]
-    )
 
     query = (
         f"SELECT /*+LABEL(rename_index)*/ STV_Rename_Index (USING PARAMETERS source = '{source}'"
@@ -414,9 +325,11 @@ bool
 
 
 # ---#
-def split_polygon_n(p: str, nbins: int = 100):
+@check_dtypes
+@save_verticapy_logs
+def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Splits a polygon into (nbins ** 2) smaller polygons of approximately equal
 total area. This process is inexact, and the split polygons have 
 approximated edges; greater values for nbins produces more accurate and 
@@ -436,13 +349,6 @@ Returns
 vDataFrame
     output vDataFrame that includes the new polygons.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="split_polygon_n", path="geo", json_dict={"p": p, "nbins": nbins,},
-    )
-    # -#
-    check_types([("p", p, [str]), ("nbins", nbins, [int])])
-
     sql = """SELECT /*+LABEL(split_polygon_n)*/
                 MIN(ST_X(point)), 
                 MAX(ST_X(point)), 

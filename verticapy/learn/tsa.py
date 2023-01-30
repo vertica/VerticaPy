@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -53,9 +53,14 @@ import math, warnings
 from typing import Union
 
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
-from verticapy import vDataFrame, save_to_query_profile
+from verticapy import vDataFrame, save_verticapy_logs
 from verticapy.plot import gen_colors
 from verticapy.learn.tools import *
 
@@ -66,7 +71,7 @@ import matplotlib.pyplot as plt
 # ---#
 class SARIMAX(Regressor):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 [Beta Version]
 Creates an SARIMAX object using the Vertica Linear Regression algorithm on 
 the data.
@@ -96,14 +101,17 @@ max_iter: int, optional
     achieving the specified accuracy result.
 solver: str, optional
     The optimizer method to use to train the model. 
-        Newton : Newton Method
-        BFGS   : Broyden Fletcher Goldfarb Shanno
+        newton : Newton Method
+        bfgs   : Broyden Fletcher Goldfarb Shanno
 max_pik: int, optional
     Number of inverse MA coefficient used to approximate the MA.
 papprox_ma: int, optional
     the p of the AR(p) used to approximate the MA coefficients.
     """
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -116,71 +124,41 @@ papprox_ma: int, optional
         s: int = 0,
         tol: float = 1e-4,
         max_iter: int = 1000,
-        solver: str = "Newton",
+        solver: str = "newton",
         max_pik: int = 100,
         papprox_ma: int = 200,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="SARIMAX",
-            path="learn.tsa",
-            json_dict={
-                "name": name,
-                "p": p,
-                "d": d,
-                "q": q,
-                "P": P,
-                "D": D,
-                "Q": Q,
-                "s": s,
-                "tol": tol,
-                "max_iter": max_iter,
-                "solver": solver,
-                "max_pik": max_pik,
-                "papprox_ma": papprox_ma,
-            },
-        )
-        # -#
-        check_types([("name", name, [str])])
-        self.type, self.name = "SARIMAX", name
-        self.set_params(
-            {
-                "p": p,
-                "d": d,
-                "q": q,
-                "P": P,
-                "D": D,
-                "Q": Q,
-                "s": s,
-                "tol": tol,
-                "max_iter": max_iter,
-                "solver": solver,
-                "max_pik": max_pik,
-                "papprox_ma": papprox_ma,
-            }
-        )
-        if self.parameters["s"] == 0:
-            assert (
-                self.parameters["D"] == 0
-                and self.parameters["P"] == 0
-                and self.parameters["Q"] == 0
-            ), ParameterError(
+        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
+        if s == 0:
+            assert (D, P, Q) == (0, 0, 0), ParameterError(
                 "In case of non-seasonality (s = 0), all the parameters P, D or Q must be equal to 0."
             )
         else:
-            assert (
-                self.parameters["D"] > 0
-                or self.parameters["P"] > 0
-                or self.parameters["Q"] > 0
-            ), ParameterError(
+            assert D > 0 or P > 0 or Q > 0, ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
-        version(condition=[8, 0, 0])
+        self.type, self.name = "SARIMAX", name
+        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.parameters = {
+            "p": p,
+            "d": d,
+            "q": q,
+            "P": P,
+            "D": D,
+            "Q": Q,
+            "s": s,
+            "tol": tol,
+            "max_iter": max_iter,
+            "solver": str(solver).lower(),
+            "max_pik": max_pik,
+            "papprox_ma": papprox_ma,
+        }
 
     # ---#
     def deploySQL(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Returns
@@ -194,7 +172,8 @@ papprox_ma: int, optional
         ):
             for i in range(0, self.parameters["d"] + 1):
                 for k in range(
-                    0, max((self.parameters["D"] + 1) * min(1, self.parameters["s"]), 1)
+                    0,
+                    max((self.parameters["D"] + 1) * min(1, self.parameters["s"]), 1),
                 ):
                     if (k, i) != (0, 0):
                         comb_i_d = (
@@ -216,7 +195,7 @@ papprox_ma: int, optional
     # ---#
     def fpredict(self, L: list):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the prediction.
 
     Parameters
@@ -304,7 +283,8 @@ papprox_ma: int, optional
                     j += 1
             for i in range(0, self.parameters["d"] + 1):
                 for k in range(
-                    0, max((self.parameters["D"] + 1) * min(1, self.parameters["s"]), 1)
+                    0,
+                    max((self.parameters["D"] + 1) * min(1, self.parameters["s"]), 1),
                 ):
                     if (k, i) != (0, 0):
                         comb_i_d = (
@@ -328,16 +308,17 @@ papprox_ma: int, optional
             return None
 
     # ---#
+    @check_dtypes
     def fit(
         self,
-        input_relation: Union[vDataFrame, str],
+        input_relation: Union[str, vDataFrame],
         y: str,
         ts: str,
         X: list = [],
-        test_relation: Union[vDataFrame, str] = "",
+        test_relation: Union[str, vDataFrame] = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -358,16 +339,8 @@ papprox_ma: int, optional
     object
         model
         """
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame]),
-                ("y", y, [str]),
-                ("test_relation", test_relation, [str, vDataFrame]),
-                ("ts", ts, [str]),
-            ]
-        )
         # Initialization
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -634,7 +607,7 @@ papprox_ma: int, optional
                         thetaq[self.parameters["s"] * j - 1]
                     ]
                     self.deploy_predict_ += " + {} * MA{}".format(
-                        thetaq[self.parameters["s"] * j - 1], self.parameters["s"] * j
+                        thetaq[self.parameters["s"] * j - 1], self.parameters["s"] * j,
                     )
             for j in range(0, self.parameters["max_pik"]):
                 piq_tmp = 0
@@ -727,6 +700,7 @@ papprox_ma: int, optional
         return self
 
     # ---#
+    @check_dtypes
     def plot(
         self,
         vdf: vDataFrame = None,
@@ -744,7 +718,7 @@ papprox_ma: int, optional
         **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the SARIMAX model.
 
     Parameters
@@ -785,17 +759,6 @@ papprox_ma: int, optional
         """
         if not (vdf):
             vdf = vDataFrameSQL(relation=self.input_relation)
-        check_types(
-            [
-                ("limit", limit, [int, float]),
-                ("nlead", nlead, [int, float]),
-                ("dynamic", dynamic, [bool]),
-                ("observed", observed, [bool]),
-                ("one_step", one_step, [bool]),
-                ("confidence", confidence, [bool]),
-                ("vdf", vdf, [vDataFrame]),
-            ],
-        )
         delta_limit, limit = (
             limit,
             max(
@@ -828,8 +791,8 @@ papprox_ma: int, optional
             vdf=vdf, y=y, ts=ts, X=X, nlead=0, name="_verticapy_prediction_"
         )
         error_eps = 1.96 * math.sqrt(self.score(method="mse"))
-        print_info = verticapy.options["print_info"]
-        verticapy.options["print_info"] = False
+        print_info = verticapy.OPTIONS["print_info"]
+        verticapy.OPTIONS["print_info"] = False
         try:
             result = (
                 result.select([ts, y, "_verticapy_prediction_"])
@@ -839,9 +802,9 @@ papprox_ma: int, optional
                 .values
             )
         except:
-            verticapy.options["print_info"] = print_info
+            verticapy.OPTIONS["print_info"] = print_info
             raise
-        verticapy.options["print_info"] = print_info
+        verticapy.OPTIONS["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -929,7 +892,7 @@ papprox_ma: int, optional
             )
             if confidence:
                 ax.fill_between(
-                    dynamic_forecast[0], lower_d, upper_d, alpha=0.08, color="#555555"
+                    dynamic_forecast[0], lower_d, upper_d, alpha=0.08, color="#555555",
                 )
                 ax.plot(dynamic_forecast[0], lower_d, alpha=0.08, color="#000000")
                 ax.plot(dynamic_forecast[0], upper_d, alpha=0.08, color="#000000")
@@ -995,6 +958,7 @@ papprox_ma: int, optional
         return ax
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: vDataFrame,
@@ -1005,7 +969,7 @@ papprox_ma: int, optional
         name: str = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -1028,24 +992,13 @@ papprox_ma: int, optional
     vDataFrame
         object including the prediction.
         """
-        check_types(
-            [
-                ("name", name, [str]),
-                ("y", y, [str]),
-                ("ts", ts, [str]),
-                ("X", X, [list]),
-                ("nlead", nlead, [int, float]),
-                ("vdf", vdf, [vDataFrame]),
-            ],
-        )
         if not (y):
             y = self.y
         if not (ts):
             ts = self.ts
         if not (X):
             X = self.exogenous
-        vdf.are_namecols_in([y, ts])
-        y, ts = vdf.format_colnames([y, ts])
+        y, ts = vdf.format_colnames(y, ts)
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -1134,7 +1087,7 @@ papprox_ma: int, optional
 # ---#
 class VAR(Regressor):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 [Beta Version]
 Creates an VAR object using the Vertica Linear Regression algorithm on the 
 data.
@@ -1156,6 +1109,9 @@ solver: str, optional
         BFGS   : Broyden Fletcher Goldfarb Shanno
     """
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -1164,31 +1120,22 @@ solver: str, optional
         max_iter: int = 1000,
         solver: str = "Newton",
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="VAR",
-            path="learn.tsa",
-            json_dict={
-                "name": name,
-                "p": p,
-                "tol": tol,
-                "max_iter": max_iter,
-                "solver": solver,
-            },
-        )
-        # -#
-        check_types([("name", name, [str])])
+        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
         self.type, self.name = "VAR", name
         assert p > 0, ParameterError(
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
-        self.set_params({"p": p, "tol": tol, "max_iter": max_iter, "solver": solver})
-        version(condition=[8, 0, 0])
+        self.parameters = {
+            "p": p,
+            "tol": tol,
+            "max_iter": max_iter,
+            "solver": str(solver).lower(),
+        }
 
     # ---#
     def deploySQL(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Returns
@@ -1213,22 +1160,23 @@ solver: str, optional
         return sql
 
     # ---#
+    @check_dtypes
     def features_importance(
-        self, X_idx: int = 0, ax=None, show: bool = True, **style_kwds
+        self, X_idx: Union[int, str] = 0, show: bool = True, ax=None, **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the model's features importance.
 
     Parameters
     ----------
-    X_idx: int/str, optional
+    X_idx: int / str, optional
         Index of the main vector vcolumn used to draw the features importance.
         It can also be the name of a predictor vcolumn.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
     show: bool
         If set to True, draw the features importance.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -1237,7 +1185,6 @@ solver: str, optional
     ax
         Matplotlib axes object
         """
-        check_types([("X_idx", X_idx, [int, float, str]), ("show", show, [bool])])
         if isinstance(X_idx, str):
             X_idx = quote_ident(X_idx).lower()
             for idx, elem in enumerate(self.X):
@@ -1285,15 +1232,16 @@ solver: str, optional
         return tablesample(values=importances).transpose()
 
     # ---#
+    @check_dtypes
     def fit(
         self,
-        input_relation: Union[vDataFrame, str],
+        input_relation: Union[str, vDataFrame],
         X: list,
         ts: str,
-        test_relation: Union[vDataFrame, str] = "",
+        test_relation: Union[str, vDataFrame] = "",
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -1312,16 +1260,8 @@ solver: str, optional
     object
         self
         """
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame]),
-                ("X", X, [list]),
-                ("ts", ts, [str]),
-                ("test_relation", test_relation, [str, vDataFrame]),
-            ]
-        )
         # Initialization
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -1407,7 +1347,7 @@ solver: str, optional
     # ---#
     def fpredict(self, L: list):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Computes the prediction.
 
     Parameters
@@ -1448,7 +1388,7 @@ solver: str, optional
         vdf: vDataFrame = None,
         X: list = [],
         ts: str = "",
-        X_idx: int = 0,
+        X_idx: Union[str, int] = 0,
         dynamic: bool = False,
         one_step: bool = True,
         observed: bool = True,
@@ -1460,7 +1400,7 @@ solver: str, optional
         **style_kwds
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the VAR model.
 
     Parameters
@@ -1502,18 +1442,6 @@ solver: str, optional
         """
         if not (vdf):
             vdf = vDataFrameSQL(relation=self.input_relation)
-        check_types(
-            [
-                ("limit", limit, [int, float]),
-                ("nlead", nlead, [int, float]),
-                ("X_idx", X_idx, [int, float, str]),
-                ("dynamic", dynamic, [bool]),
-                ("observed", observed, [bool]),
-                ("one_step", one_step, [bool]),
-                ("confidence", confidence, [bool]),
-                ("vdf", vdf, [vDataFrame]),
-            ],
-        )
         delta_limit, limit = (
             limit,
             max(max(limit, self.parameters["p"] + 1 + nlast), 200),
@@ -1553,8 +1481,8 @@ solver: str, optional
         )
         y, prediction = X[X_idx], "_verticapy_prediction_{}_".format(X_idx)
         error_eps = 1.96 * math.sqrt(self.score(method="mse").values["mse"][X_idx])
-        print_info = verticapy.options["print_info"]
-        verticapy.options["print_info"] = False
+        print_info = verticapy.OPTIONS["print_info"]
+        verticapy.OPTIONS["print_info"] = False
         try:
             result = (
                 result_all.select([ts, y, prediction])
@@ -1564,9 +1492,9 @@ solver: str, optional
                 .values
             )
         except:
-            verticapy.options["print_info"] = print_info
+            verticapy.OPTIONS["print_info"] = print_info
             raise
-        verticapy.options["print_info"] = print_info
+        verticapy.OPTIONS["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1583,16 +1511,16 @@ solver: str, optional
             ],
         )
         if dynamic:
-            print_info = verticapy.options["print_info"]
-            verticapy.options["print_info"] = False
+            print_info = verticapy.OPTIONS["print_info"]
+            verticapy.OPTIONS["print_info"] = False
             try:
                 result = (
                     result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
                 )
             except:
-                verticapy.options["print_info"] = print_info
+                verticapy.OPTIONS["print_info"] = print_info
                 raise
-            verticapy.options["print_info"] = print_info
+            verticapy.OPTIONS["print_info"] = print_info
             columns = [elem for elem in result]
             if isinstance(result[columns[0]][0], str):
                 result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1659,7 +1587,7 @@ solver: str, optional
             )
             if confidence:
                 ax.fill_between(
-                    dynamic_forecast[0], lower_d, upper_d, alpha=0.08, color="#555555"
+                    dynamic_forecast[0], lower_d, upper_d, alpha=0.08, color="#555555",
                 )
                 ax.plot(dynamic_forecast[0], lower_d, alpha=0.08, color="#000000")
                 ax.plot(dynamic_forecast[0], upper_d, alpha=0.08, color="#000000")
@@ -1715,6 +1643,7 @@ solver: str, optional
         return ax
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: vDataFrame,
@@ -1724,7 +1653,7 @@ solver: str, optional
         name: list = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -1745,22 +1674,11 @@ solver: str, optional
     vDataFrame
         object including the prediction.
         """
-        check_types(
-            [
-                ("name", name, [list]),
-                ("ts", ts, [str]),
-                ("nlead", nlead, [int, float]),
-                ("X", X, [list]),
-                ("vdf", vdf, [vDataFrame]),
-            ],
-        )
         if not (ts):
             ts = self.ts
         if not (X):
             X = self.X
-        vdf.are_namecols_in(X + [ts])
-        X = vdf.format_colnames(X)
-        ts = vdf.format_colnames(ts)
+        X, ts = vdf.format_colnames(X, ts)
         all_pred, names = [], []
         transform_relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts)
         for idx, elem in enumerate(X):
@@ -1800,7 +1718,9 @@ solver: str, optional
                 new_line,
             )
             query = "SELECT /*+LABEL('learn.tsa.VAR.predict')*/ {} FROM {} ORDER BY {} DESC LIMIT 1".format(
-                ", ".join(self.deploySQL()), transform_relation.format(relation_tmp), ts
+                ", ".join(self.deploySQL()),
+                transform_relation.format(relation_tmp),
+                ts,
             )
             prediction = executeSQL(query, method="fetchrow", print_time_sql=False)
             for idx, elem in enumerate(X):

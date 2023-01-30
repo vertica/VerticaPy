@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -53,6 +53,11 @@ import os, datetime
 
 # VerticaPy Modules
 import verticapy, vertica_python
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
@@ -60,9 +65,12 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 
 # ---#
+@check_minimum_version
+@check_dtypes
+@save_verticapy_logs
 def gen_dataset(features_ranges: dict, nrows: int = 1000):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Generates a dataset using the input parameters.
 
 Parameters
@@ -92,17 +100,6 @@ Returns
 vDataFrame
     Generated dataset.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="gen_dataset",
-        path="datasets",
-        json_dict={"features_ranges": features_ranges, "nrows": nrows,},
-    )
-    # -#
-
-    version(condition=[9, 3, 0])
-    check_types([("features_ranges", features_ranges, [dict]), ("nrows", nrows, [int])])
-
     sql = []
 
     for param in features_ranges:
@@ -169,9 +166,11 @@ vDataFrame
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def gen_meshgrid(features_ranges: dict):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Generates a dataset using regular steps.
 
 Parameters
@@ -202,16 +201,6 @@ Returns
 vDataFrame
     generated dataset.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="gen_meshgrid",
-        path="datasets",
-        json_dict={"features_ranges": features_ranges,},
-    )
-    # -#
-
-    check_types([("features_ranges", features_ranges, [dict])])
-
     sql = []
 
     for idx, param in enumerate(features_ranges):
@@ -293,21 +282,13 @@ vDataFrame
 
 
 # ---#
+@check_dtypes
 def load_dataset(
-    schema: str, name: str, dtype: dict, copy_cols: list = [], dataset_name: str = ""
+    schema: str, name: str, dtype: dict, copy_cols: list = [], dataset_name: str = "",
 ):
     """
     General Function to ingest a dataset
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="load_" + dataset_name,
-        path="datasets",
-        json_dict={"schema": schema, "name": name,},
-    )
-    # -#
-
-    check_types([("schema", schema, [str]), ("name", name, [str])])
 
     try:
 
@@ -365,9 +346,10 @@ def load_dataset(
 #
 #
 # ---#
+@save_verticapy_logs
 def load_airline_passengers(schema: str = "public", name: str = "airline_passengers"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the airline passengers dataset into the Vertica database. 
 This dataset is ideal for time series and regression models. If a table 
 with the same name and schema already exists, this function will create 
@@ -395,9 +377,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_amazon(schema: str = "public", name: str = "amazon"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the amazon dataset into the Vertica database. This dataset is ideal
 for time series and regression models. If a table with the same name and 
 schema already exists, this function will create a vDataFrame from the 
@@ -425,9 +408,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_cities(schema: str = "public", name: str = "cities"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the Cities dataset into the Vertica database. This dataset is ideal
 for geospatial models. If a table with the same name and schema already 
 exists, this function will create a vDataFrame from the input relation.
@@ -449,15 +433,16 @@ vDataFrame
         schema,
         name,
         {"city": "Varchar(82)", "geometry": "Geometry"},
-        ["city", "gx FILLER LONG VARCHAR(65000)", "geometry AS ST_GeomFromText(gx)"],
+        ["city", "gx FILLER LONG VARCHAR(65000)", "geometry AS ST_GeomFromText(gx)",],
         dataset_name="cities",
     )
 
 
 # ---#
+@save_verticapy_logs
 def load_commodities(schema: str = "public", name: str = "commodities"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the commodities dataset into the Vertica database. This dataset is
 ideal for time series and regression models. If a table with the same name 
 and schema already exists, this function will create a vDataFrame from the 
@@ -493,9 +478,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_gapminder(schema: str = "public", name: str = "gapminder"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the gapminder dataset into the Vertica database. This dataset is 
 ideal for time series and regression models. If a table with the same name 
 and schema already exists, this function will create a vDataFrame from the 
@@ -530,9 +516,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_iris(schema: str = "public", name: str = "iris"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the iris dataset into the Vertica database. This dataset is ideal 
 for classification and clustering models. If a table with the same name and 
 schema already exists, this function will create a vDataFrame from the input 
@@ -574,9 +561,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_laliga(schema: str = "public", name: str = "laliga"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the La-Liga dataset into the Vertica database. This dataset is ideal
 to test complex data types. If a table with the same name and schema already 
 exists, this function will create a vDataFrame from the input relation.
@@ -618,9 +606,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_market(schema: str = "public", name: str = "market"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the market dataset into the Vertica database. This dataset is ideal
 for data exploration. If a table with the same name and schema already 
 exists, this function will create a vDataFrame from the input relation.
@@ -647,9 +636,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_pop_growth(schema: str = "public", name: str = "pop_growth"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the population growth dataset into the Vertica database. This 
 dataset is ideal for time series and geospatial models. If a table with 
 the same name and schema already exists, this function will create a 
@@ -685,9 +675,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_smart_meters(schema: str = "public", name: str = "smart_meters"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the smart meters dataset into the Vertica database. This dataset is 
 ideal for time series and regression models. If a table with the same name 
 and schema already exists, this function will create a vDataFrame from the 
@@ -715,9 +706,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_titanic(schema: str = "public", name: str = "titanic"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the titanic dataset into the Vertica database. This dataset is 
 ideal for classification models. If a table with the same name and schema 
 already exists, this function will create a vDataFrame from the input 
@@ -760,9 +752,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_winequality(schema: str = "public", name: str = "winequality"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the winequality dataset into the Vertica database. This dataset is 
 ideal for regression and classification models. If a table with the same 
 name and schema already exists, this function will create a vDataFrame from 
@@ -805,9 +798,10 @@ vDataFrame
 
 
 # ---#
+@save_verticapy_logs
 def load_world(schema: str = "public", name: str = "world"):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Ingests the World dataset into the Vertica database. This dataset is ideal 
 for ideal for geospatial models. If a table with the same name and schema 
 already exists, this function will create a vDataFrame from the input 

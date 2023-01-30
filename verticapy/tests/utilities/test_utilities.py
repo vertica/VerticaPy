@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -482,8 +482,8 @@ class TestUtilities:
         drop("public.variants", method="table")
         path = os.path.dirname(verticapy.__file__) + "/tests/utilities/variants.avro"
         result = read_avro(path, table_name="variants", schema="public",)
-        assert result.shape() == (719, 34)
-        assert result["end"].avg() == pytest.approx(16074223.659249)
+        assert result.shape() == (731, 34)
+        assert result["end"].avg() == pytest.approx(16074719.005472)
         drop("public.variants", method="table")
 
     def test_read_json(self, laliga_vd):
@@ -497,7 +497,7 @@ class TestUtilities:
         assert result.shape() == (891, 15)
         assert drop("public.titanic_verticapy_test_json", method="table")
         result = read_json(
-            path + "titanic-passengers.json", table_name="titanic_verticapy_test_json"
+            path + "titanic-passengers.json", table_name="titanic_verticapy_test_json",
         )
         assert result.shape() == (891, 15)
         assert drop("v_temp_schema.titanic_verticapy_test_json", method="table")
@@ -645,7 +645,7 @@ class TestUtilities:
         assert result.shape() == (1234, 14)
         # insert
         result = read_csv(
-            path, table_name="titanic_verticapy_test_csv", schema="public", insert=True
+            path, table_name="titanic_verticapy_test_csv", schema="public", insert=True,
         )
         assert result.shape() == (2468, 14)
         drop("public.titanic_verticapy_test_csv", method="table")
@@ -684,7 +684,7 @@ class TestUtilities:
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # genSQL
         result = read_csv(
-            path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True
+            path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True,
         )
         assert result[0][0:50] == 'CREATE TABLE "public"."titanic_verticapy_test_csv"'
         assert result[1][0:42] == 'COPY "public"."titanic_verticapy_test_csv"'
@@ -861,7 +861,7 @@ class TestUtilities:
         assert (
             q2
             == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "verticapy_id": "'
-            + str(verticapy.options["identifier"])
+            + str(verticapy.OPTIONS["identifier"])
             + '", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
         )
         current_cursor().execute(
@@ -944,11 +944,11 @@ class TestUtilities:
     def test_set_option(self):
         pass
 
-    def test_version(self):
-        result = version()
-        assert result[0] < 20
+    def test_vertica_version(self):
+        result = vertica_version()
+        assert result[0] < 99
         try:
-            version([99, 1, 1])
+            vertica_version([99, 1, 1])
             fail = False
         except:
             fail = True

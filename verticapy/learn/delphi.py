@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -54,6 +54,11 @@ import numpy as np
 from typing import Union
 
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -67,14 +72,13 @@ from verticapy.learn.neighbors import *
 from verticapy.learn.svm import *
 from verticapy.learn.mlplot import plot_bubble_ml
 from verticapy.learn.vmodel import *
-from verticapy.learn.tools import get_model_category
 
 
 class vAuto(vModel):
     # ---#
     def set_params(self, parameters: dict = {}):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Sets the parameters of the model.
 
     Parameters
@@ -90,7 +94,7 @@ class vAuto(vModel):
 
 class AutoDataPrep(vAuto):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Automatically find relations between the different features to preprocess
 the data according to each column type.
 
@@ -164,6 +168,8 @@ final_relation_: vDataFrame
     """
 
     # ---#
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str = "",
@@ -181,50 +187,16 @@ final_relation_: vDataFrame
         identify_ts: bool = True,
         save: bool = True,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="AutoDataPrep",
-            path="learn.delphi",
-            json_dict={
-                "name": name,
-                "cat_method": cat_method,
-                "num_method": num_method,
-                "nbins": nbins,
-                "outliers_threshold": outliers_threshold,
-                "na_method": na_method,
-                "cat_topk": cat_topk,
-                "rule": rule,
-                "normalize": normalize,
-                "normalize_min_cat": normalize_min_cat,
-                "apply_pca": apply_pca,
-                "id_method": id_method,
-                "identify_ts": identify_ts,
-                "save": save,
-            },
+        raise_error_if_not_in("cat_method", cat_method, ["label", "ooe"])
+        raise_error_if_not_in(
+            "num_method", num_method, ["same_freq", "same_width", "none"]
         )
-        # -#
-        check_types(
-            [
-                ("name", name, [str]),
-                ("cat_method", cat_method, ["label", "ooe"]),
-                ("num_method", num_method, ["same_freq", "same_width", "none"]),
-                ("nbins", nbins, [int, float]),
-                ("outliers_threshold", outliers_threshold, [int, float]),
-                ("na_method", na_method, ["auto", "drop"]),
-                ("cat_topk", cat_topk, [int, float]),
-                ("rule", rule, [str, datetime.timedelta]),
-                ("normalize", normalize, [bool]),
-                ("id_method", id_method, ["none", "drop"]),
-                ("apply_pca", apply_pca, [bool]),
-                ("normalize_min_cat", normalize_min_cat, [int, float]),
-                ("identify_ts", identify_ts, [bool]),
-                ("save", save, [bool]),
-            ]
-        )
+        raise_error_if_not_in("na_method", na_method, ["auto", "drop"])
+        raise_error_if_not_in("id_method", id_method, ["none", "drop"])
         self.type, self.name = "AutoDataPrep", name
         if not (self.name):
             self.name = gen_tmp_name(
-                schema=verticapy.options["temp_schema"], name="autodataprep"
+                schema=verticapy.OPTIONS["temp_schema"], name="autodataprep"
             )
         self.parameters = {
             "cat_method": cat_method,
@@ -251,7 +223,7 @@ final_relation_: vDataFrame
         by: list = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -271,12 +243,12 @@ final_relation_: vDataFrame
     object
         the cleaned relation
         """
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
-        current_print_info = verticapy.options["print_info"]
-        verticapy.options["print_info"] = False
+        current_print_info = verticapy.OPTIONS["print_info"]
+        verticapy.OPTIONS["print_info"] = False
         assert not (by) or (ts), ParameterError(
             "Parameter 'by' must be empty if 'ts' is not defined."
         )
@@ -301,8 +273,7 @@ final_relation_: vDataFrame
                 ts = ts_tmp
             if nb_date == 1 and nb_others == 1:
                 by = [cat_tmp]
-        vdf.are_namecols_in(X)
-        X = vdf.format_colnames(X)
+        X, ts, by = vdf.format_colnames(X, ts, by)
         X_diff = vdf.get_columns(exclude_columns=X)
         columns_to_drop = []
         n = vdf.shape()[0]
@@ -396,9 +367,6 @@ final_relation_: vDataFrame
         if columns_to_drop:
             vdf.drop(columns_to_drop)
         if ts:
-            vdf.are_namecols_in([ts] + by)
-            ts = vdf.format_colnames(ts)
-            by = vdf.format_colnames(by)
             if self.parameters["rule"] == "auto":
                 vdf_tmp = vdf[[ts] + by]
                 by_tmp = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
@@ -407,9 +375,7 @@ final_relation_: vDataFrame
                 ] = f"({ts}::timestamp - (LAG({ts}) OVER ({by_tmp}ORDER BY {ts}))::timestamp) / '00:00:01'"
                 vdf_tmp = vdf_tmp.groupby(["verticapy_time_delta"], ["COUNT(*) AS cnt"])
                 rule = executeSQL(
-                    "SELECT /*+LABEL('learn.delphi.AutoDataPrep.fit')*/ verticapy_time_delta FROM {} ORDER BY cnt DESC LIMIT 1".format(
-                        vdf_tmp.__genSQL__()
-                    ),
+                    f"SELECT /*+LABEL('learn.delphi.AutoDataPrep.fit')*/ verticapy_time_delta FROM { vdf_tmp.__genSQL__()} ORDER BY cnt DESC LIMIT 1",
                     method="fetchfirstelem",
                     print_time_sql=False,
                 )
@@ -442,13 +408,13 @@ final_relation_: vDataFrame
         if self.parameters["save"]:
             vdf.to_db(name=self.name, relation_type="table", inplace=True)
         self.final_relation_ = vdf
-        verticapy.options["print_info"] = current_print_info
+        verticapy.OPTIONS["print_info"] = current_print_info
         return self.final_relation_
 
 
 class AutoClustering(vAuto):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Automatically creates k different groups with which to generalize the data.
 
 Parameters
@@ -458,9 +424,10 @@ name: str
 n_cluster: int, optional
     Number of clusters. If empty, an optimal number of clusters will be
     determined using multiple k-means models.
-init: str/list, optional
+init: str / list, optional
     The method for finding the initial cluster centers.
         kmeanspp : Uses the k-means++ method to initialize the centers.
+                   [Only available when use_kprototype is set to False]
         random   : Randomly subsamples the data to find initial centers.
     Alternatively, you can specify a list with the initial custer centers.
 max_iter: int, optional
@@ -469,6 +436,12 @@ tol: float, optional
     Determines whether the algorithm has converged. The algorithm is considered 
     converged after no center has moved more than a distance of 'tol' from the 
     previous iteration.
+use_kprototype: bool, optional
+    If set to True, the function uses the k-prototypes algorithm instead of
+    k-means. k-prototypes can handle categorical features.
+gamma: float, optional
+    [Only if use_kprototype is set to True] Weighting factor for categorical columns. 
+    It determines the relative importance of numerical and categorical attributes.
 preprocess_data: bool, optional
     If True, the data will be preprocessed.
 preprocess_dict: dict, optional
@@ -486,13 +459,17 @@ model_: object
     """
 
     # ---#
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_cluster: int = None,
-        init: str = "kmeanspp",
+        init: Union[str, list] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
+        use_kprototype: bool = False,
+        gamma: float = 1.0,
         preprocess_data: bool = True,
         preprocess_dict: dict = {
             "identify_ts": False,
@@ -502,40 +479,14 @@ model_: object
         },
         print_info: bool = True,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="AutoClustering",
-            path="learn.delphi",
-            json_dict={
-                "name": name,
-                "n_cluster": n_cluster,
-                "init": init,
-                "max_iter": max_iter,
-                "tol": tol,
-                "print_info": print_info,
-                "preprocess_data": preprocess_data,
-                "preprocess_dict": preprocess_dict,
-            },
-        )
-        # -#
-        check_types(
-            [
-                ("name", name, [str]),
-                ("n_cluster", n_cluster, [int]),
-                ("init", init, [str, list]),
-                ("max_iter", max_iter, [int]),
-                ("tol", tol, [float]),
-                ("preprocess_data", preprocess_data, [bool]),
-                ("preprocess_dict", preprocess_dict, [dict]),
-                ("print_info", print_info, [bool]),
-            ]
-        )
         self.type, self.name = "AutoClustering", name
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,
             "max_iter": max_iter,
             "tol": tol,
+            "use_kprototype": use_kprototype,
+            "gamma": gamma,
             "print_info": print_info,
             "preprocess_data": preprocess_data,
             "preprocess_dict": preprocess_dict,
@@ -544,7 +495,7 @@ model_: object
     # ---#
     def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -559,7 +510,7 @@ model_: object
     object
         clustering model
         """
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -584,32 +535,44 @@ model_: object
                 init=self.parameters["init"],
                 max_iter=self.parameters["max_iter"],
                 tol=self.parameters["tol"],
+                use_kprototype=self.parameters["use_kprototype"],
+                gamma=self.parameters["gamma"],
                 elbow_score_stop=0.9,
                 tqdm=self.parameters["print_info"],
             )
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mBuilding the Final Model\033[0m\033[0m\n")
-        if verticapy.options["tqdm"] and self.parameters["print_info"]:
+        if verticapy.OPTIONS["tqdm"] and self.parameters["print_info"]:
             from tqdm.auto import tqdm
 
             loop = tqdm(range(1))
         else:
             loop = range(1)
         for i in loop:
-            self.model_ = KMeans(
-                self.name,
-                n_cluster=self.parameters["n_cluster"],
-                init=self.parameters["init"],
-                max_iter=self.parameters["max_iter"],
-                tol=self.parameters["tol"],
-            )
+            if self.parameters["use_kprototype"]:
+                self.model_ = KPrototypes(
+                    self.name,
+                    n_cluster=self.parameters["n_cluster"],
+                    init=self.parameters["init"],
+                    max_iter=self.parameters["max_iter"],
+                    tol=self.parameters["tol"],
+                    gamma=self.parameters["gamma"],
+                )
+            else:
+                self.model_ = KMeans(
+                    self.name,
+                    n_cluster=self.parameters["n_cluster"],
+                    init=self.parameters["init"],
+                    max_iter=self.parameters["max_iter"],
+                    tol=self.parameters["tol"],
+                )
             self.model_.fit(input_relation, X=X)
         return self.model_
 
 
 class AutoML(vAuto):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Tests multiple models to find those that maximize the input score.
 
 Parameters
@@ -705,6 +668,8 @@ model_grid_ : tablesample
     """
 
     # ---#
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -726,55 +691,17 @@ model_grid_ : tablesample
         preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="AutoML",
-            path="learn.delphi",
-            json_dict={
-                "name": name,
-                "estimator": estimator,
-                "estimator_type": estimator_type,
-                "metric": metric,
-                "cv": cv,
-                "pos_label": pos_label,
-                "cutoff": cutoff,
-                "nbins": nbins,
-                "lmax": lmax,
-                "optimized_grid": optimized_grid,
-                "print_info": print_info,
-                "stepwise": stepwise,
-                "stepwise_criterion": stepwise_criterion,
-                "stepwise_direction": stepwise_direction,
-                "stepwise_max_steps": stepwise_max_steps,
-                "stepwise_x_order": stepwise_x_order,
-                "preprocess_data": preprocess_data,
-                "preprocess_dict": preprocess_dict,
-            },
+        raise_error_if_not_in(
+            "estimator_type", estimator_type, ["auto", "regressor", "binary", "multi"],
         )
-        # -#
-        check_types(
-            [
-                ("name", name, [str]),
-                ("estimator_type", estimator_type, [str]),
-                ("metric", metric, [str]),
-                ("cv", cv, [int]),
-                ("pos_label", pos_label, [int, float, str]),
-                ("cutoff", cutoff, [int, float]),
-                ("nbins", nbins, [int]),
-                ("optimized_grid", optimized_grid, [int]),
-                ("print_info", print_info, [bool]),
-                ("stepwise", stepwise, [bool]),
-                ("stepwise_criterion", stepwise_criterion, ["aic", "bic"]),
-                ("stepwise_direction", stepwise_direction, ["forward", "backward"]),
-                ("stepwise_max_steps", stepwise_max_steps, [int, float]),
-                (
-                    "stepwise_x_order",
-                    stepwise_x_order,
-                    ["pearson", "spearman", "random", "none"],
-                ),
-                ("preprocess_data", preprocess_data, [bool]),
-                ("preprocess_dict", preprocess_dict, [dict]),
-            ]
+        raise_error_if_not_in("stepwise_criterion", stepwise_criterion, ["aic", "bic"])
+        raise_error_if_not_in(
+            "stepwise_direction", stepwise_direction, ["forward", "backward"]
+        )
+        raise_error_if_not_in(
+            "stepwise_x_order",
+            stepwise_x_order,
+            ["pearson", "spearman", "random", "none"],
         )
         assert optimized_grid in [0, 1, 2], ParameterError(
             "Optimized Grid must be an integer between 0 and 2."
@@ -803,7 +730,7 @@ model_grid_ : tablesample
     # ---#
     def fit(self, input_relation: Union[str, vDataFrame], X: list = [], y: str = ""):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -819,7 +746,7 @@ model_grid_ : tablesample
     object
         model grid
         """
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -835,10 +762,10 @@ model_grid_ : tablesample
             else:
                 X = input_relation.get_columns(exclude_columns=exclude_columns)
         if isinstance(self.parameters["estimator"], str):
-            v = version()
+            v = vertica_version()
             self.parameters["estimator"] = self.parameters["estimator"].lower()
-            check_types(
-                [("estimator", self.parameters["estimator"], ["native", "all", "fast"])]
+            raise_error_if_not_in(
+                "estimator", self.parameters["estimator"], ["native", "all", "fast"]
             )
             modeltype = None
             estimator_method = self.parameters["estimator"]
@@ -950,23 +877,18 @@ model_grid_ : tablesample
                         LinearSVR,
                     ),
                 ), ParameterError(
-                    "estimator must be a list of VerticaPy estimators. Found {}.".format(
-                        type(elem)
-                    )
+                    f"estimator must be a list of VerticaPy estimators. Found {elem}."
                 )
         if self.parameters["estimator_type"] == "auto":
             self.parameters["estimator_type"] = self.parameters["estimator"][0].type
         for elem in self.parameters["estimator"]:
-            cat = get_model_category(elem.type)
             assert (
                 self.parameters["estimator_type"] in ("binary", "multi")
-                and cat[0] == "classifier"
+                and elem.MODEL_SUBTYPE == "CLASSIFIER"
                 or self.parameters["estimator_type"] == "regressor"
-                and cat[0] == "regressor"
+                and elem.MODEL_SUBTYPE == "REGRESSOR"
             ), ParameterError(
-                "Incorrect list for parameter 'estimator'. Expected type '{}', found type '{}'.".format(
-                    self.parameters["estimator_type"], cat[0]
-                )
+                f"Incorrect list for parameter 'estimator'. Expected type '{self.parameters['estimator_type']}', found type '{elem.MODEL_SUBTYPE}'."
             )
         if (
             self.parameters["estimator_type"] == "regressor"
@@ -1000,7 +922,7 @@ model_grid_ : tablesample
             self.preprocess_ = None
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoML\033[0m\033[0m\n")
-        if verticapy.options["tqdm"] and self.parameters["print_info"]:
+        if verticapy.OPTIONS["tqdm"] and self.parameters["print_info"]:
             from tqdm.auto import tqdm
 
             loop = tqdm(self.parameters["estimator"])
@@ -1104,6 +1026,8 @@ model_grid_ : tablesample
         else:
             best_model.fit(input_relation, X, y)
         self.best_model_ = best_model
+        self.VERTICA_FIT_FUNCTION_SQL = best_model.VERTICA_FIT_FUNCTION_SQL
+        self.VERTICA_PREDICT_FUNCTION_SQL = best_model.VERTICA_PREDICT_FUNCTION_SQL
         self.model_grid_ = result
         self.parameters["reverse"] = not (reverse)
         if self.preprocess_ != None:
@@ -1114,7 +1038,7 @@ model_grid_ : tablesample
     # ---#
     def plot(self, mltype: str = "champion", ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the AutoML plot.
 
     Parameters

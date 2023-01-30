@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -135,7 +135,12 @@ class TestDummyTreeRegressor:
 
         m_att_details = model.get_attr(attr_name="details")
 
-        assert m_att_details["predictor"] == ["gender", "owned cars", "cost", "income"]
+        assert m_att_details["predictor"] == [
+            "gender",
+            "owned cars",
+            "cost",
+            "income",
+        ]
         assert m_att_details["type"] == [
             "char or varchar",
             "int",
@@ -152,16 +157,7 @@ class TestDummyTreeRegressor:
         )
 
     def test_get_params(self, model):
-        assert model.get_params() == {
-            "n_estimators": 1,
-            "max_features": "max",
-            "max_leaf_nodes": 1000000000,
-            "sample": 1.0,
-            "max_depth": 100,
-            "min_samples_leaf": 1,
-            "min_info_gain": 0,
-            "nbins": 1000,
-        }
+        assert model.get_params() == {}
 
     def test_to_python(self, model):
         current_cursor().execute(
@@ -256,7 +252,10 @@ class TestDummyTreeRegressor:
             pytest.approx(0.0),
             pytest.approx(6.9),
         ]
-        assert reg_rep_anova["MS"][:-1] == [pytest.approx(1.725), pytest.approx(0.0)]
+        assert reg_rep_anova["MS"][:-1] == [
+            pytest.approx(1.725),
+            pytest.approx(0.0),
+        ]
 
     def test_score(self, model):
         # method = "max"
@@ -283,9 +282,7 @@ class TestDummyTreeRegressor:
         assert model.score(method="bic") == pytest.approx(-float("inf"), abs=1e-6)
 
     def test_set_params(self, model):
-        # Nothing will change as Dummy Trees have no parameters
-        model.set_params({"max_features": 100})
-        assert model.get_params()["max_features"] == "max"
+        model.set_params({})
 
     def test_model_from_vDF(self, tr_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS tr_from_vDF")

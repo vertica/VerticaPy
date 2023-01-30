@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -308,10 +308,8 @@ class TestDecisionTreeClassifier:
         params = model.get_params()
 
         assert params == {
-            "n_estimators": 1,
             "max_features": 4,
             "max_leaf_nodes": 100,
-            "sample": 1.0,
             "max_depth": 6,
             "min_samples_leaf": 1,
             "min_info_gain": 0,
@@ -426,10 +424,10 @@ class TestDecisionTreeClassifier:
         )
         assert model.score(
             cutoff=0.9, method="npv", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.1, method="npv", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.9, method="prc_auc", pos_label="Train"
         ) == pytest.approx(1.0)
@@ -458,7 +456,7 @@ class TestDecisionTreeClassifier:
         current_cursor().execute("DROP MODEL IF EXISTS tc_from_vDF")
         model_test = DecisionTreeClassifier("tc_from_vDF",)
         model_test.fit(
-            dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation"
+            dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation",
         )
 
         current_cursor().execute(

@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -19,7 +19,12 @@ import datetime
 
 # VerticaPy
 from verticapy import drop, errors, set_option
-from verticapy.datasets import load_amazon, load_iris, load_smart_meters, load_titanic
+from verticapy.datasets import (
+    load_amazon,
+    load_iris,
+    load_smart_meters,
+    load_titanic,
+)
 
 set_option("print_info", False)
 
@@ -807,7 +812,7 @@ class TestvDFFeatureEngineering:
         # method = "ilike"
         titanic_copy = titanic_vd.copy()
         titanic_copy.regexp(
-            column="name", pattern="mrs.", method="ilike", occurrence=1, name="name2"
+            column="name", pattern="mrs.", method="ilike", occurrence=1, name="name2",
         )
 
         assert titanic_copy["name2"].sum() == 185
@@ -831,7 +836,7 @@ class TestvDFFeatureEngineering:
         # method = "not_ilike"
         titanic_copy = titanic_vd.copy()
         titanic_copy.regexp(
-            column="name", pattern="mrs.", method="not_ilike", position=2, name="name2"
+            column="name", pattern="mrs.", method="not_ilike", position=2, name="name2",
         )
 
         assert titanic_copy["name2"].sum() == 1049
@@ -839,7 +844,7 @@ class TestvDFFeatureEngineering:
         # method = "not_like"
         titanic_copy = titanic_vd.copy()
         titanic_copy.regexp(
-            column="name", pattern="Mrs.", method="not_like", position=2, name="name2"
+            column="name", pattern="Mrs.", method="not_like", position=2, name="name2",
         )
 
         assert titanic_copy["name2"].sum() == 1049
@@ -861,7 +866,7 @@ class TestvDFFeatureEngineering:
         # method = "substr"
         titanic_copy = titanic_vd.copy()
         titanic_copy.regexp(
-            column="name", pattern="[^,]+", method="substr", occurrence=2, name="name2"
+            column="name", pattern="[^,]+", method="substr", occurrence=2, name="name2",
         )
         titanic_copy.sort(["name2"])
 

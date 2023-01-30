@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -53,17 +53,25 @@ import random
 from typing import Union
 
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.learn.vmodel import *
 
 # ---#
+@check_minimum_version
+@check_dtypes
+@save_verticapy_logs
 def Balance(
     name: str, input_relation: str, y: str, method: str = "hybrid", ratio: float = 0.5,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a view with an equal distribution of the input data based on the 
 response_column.
  
@@ -92,33 +100,8 @@ Returns
 vDataFrame
 	vDataFrame of the created view
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="Balance",
-        path="learn.preprocessing",
-        json_dict={
-            "name": name,
-            "input_relation": input_relation,
-            "y": y,
-            "method": method,
-            "ratio": ratio,
-        },
-    )
-    # -#
-    check_types(
-        [
-            ("name", name, [str]),
-            ("input_relation", input_relation, [str]),
-            ("y", y, [str]),
-            ("method", method, ["hybrid", "over", "under"]),
-            ("ratio", ratio, [float]),
-        ]
-    )
-    version(condition=[8, 1, 1])
-    method = method.lower()
-    sql = "SELECT /*+LABEL('learn.preprocessing.Balance')*/ BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
-        name, input_relation, y, method, ratio
-    )
+    raise_error_if_not_in("method", method, ["hybrid", "over", "under"])
+    sql = f"SELECT /*+LABEL('learn.preprocessing.Balance')*/ BALANCE('{name}', '{input_relation}', '{y}', '{method}_sampling' USING PARAMETERS sampling_ratio = {ratio})"
     executeSQL(sql, "Computing the Balanced Relation.")
     return vDataFrame(name)
 
@@ -126,7 +109,7 @@ vDataFrame
 # ---#
 class CountVectorizer(vModel):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a Text Index which will count the occurences of each word in the 
 data.
  
@@ -151,6 +134,8 @@ max_text_size: int, optional
 	columns during the fitting.
 	"""
 
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -161,38 +146,60 @@ max_text_size: int, optional
         ignore_special: bool = True,
         max_text_size: int = 2000,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="CountVectorizer",
-            path="learn.preprocessing",
-            json_dict={
-                "name": name,
-                "lowercase": lowercase,
-                "max_df": max_df,
-                "min_df": min_df,
-                "max_features": max_features,
-                "ignore_special": ignore_special,
-                "max_text_size": max_text_size,
-            },
-        )
-        # -#
-        check_types([("name", name, [str])])
         self.type, self.name = "CountVectorizer", name
-        self.set_params(
-            {
-                "lowercase": lowercase,
-                "max_df": max_df,
-                "min_df": min_df,
-                "max_features": max_features,
-                "ignore_special": ignore_special,
-                "max_text_size": max_text_size,
-            }
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "PREPROCESSING"
+        self.parameters = {
+            "lowercase": lowercase,
+            "max_df": max_df,
+            "min_df": min_df,
+            "max_features": max_features,
+            "ignore_special": ignore_special,
+            "max_text_size": max_text_size,
+        }
+
+    # ---#
+    def compute_stop_words(self):
+        """
+    ----------------------------------------------------------------------------------------
+    Computes the CountVectorizer Stop Words. It will affect the result to the
+    stop_words_ attribute.
+        """
+        stop_words = """SELECT /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/
+                            token 
+                        FROM 
+                            (SELECT 
+                                token, 
+                                cnt / SUM(cnt) OVER () AS df, 
+                                rnk 
+                            FROM 
+                                (SELECT 
+                                    token, 
+                                    COUNT(*) AS cnt, 
+                                    RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
+                                 FROM {0} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
+                                 WHERE not(df BETWEEN {1} AND {2})""".format(
+            self.name, self.parameters["min_df"], self.parameters["max_df"]
         )
+        if self.parameters["max_features"] > 0:
+            stop_words += " OR (rnk > {})".format(self.parameters["max_features"])
+        res = executeSQL(stop_words, print_time_sql=False, method="fetchall")
+        self.stop_words_ = [item[0] for item in res]
+
+    # ---#
+    def compute_vocabulary(self):
+        """
+    ----------------------------------------------------------------------------------------
+    Computes the CountVectorizer Vocabulary. It will affect the result to the
+    vocabulary_ attribute.
+        """
+        res = executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
+        self.vocabulary_ = [item[0] for item in res]
 
     # ---#
     def deploySQL(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Returns
@@ -220,16 +227,17 @@ max_text_size: int, optional
         return sql.format(", ".join(self.X), self.name)
 
     # ---#
-    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
+    @check_dtypes
+    def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str/vDataFrame
+	input_relation: str / vDataFrame
 		Training relation.
-	X: list
+	X: str / list
 		List of the predictors. If empty, all the columns will be used.
 
 	Returns
@@ -239,10 +247,7 @@ max_text_size: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
-        )
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -275,7 +280,7 @@ max_text_size: int, optional
             else "LOWER({})".format(" || ".join(self.X))
         )
         if self.parameters["ignore_special"]:
-            text = "REGEXP_REPLACE({}, '[^a-zA-Z0-9\\s]+', '')".format(text)
+            text = f"REGEXP_REPLACE({text}, '[^a-zA-Z0-9\\s]+', '')"
         sql = "INSERT /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/ INTO {}(text) SELECT {} FROM {}".format(
             tmp_name, text, self.input_relation
         )
@@ -284,28 +289,8 @@ max_text_size: int, optional
             self.name, tmp_name
         )
         executeSQL(sql, "Computing the CountVectorizer [Step 2].")
-        stop_words = """SELECT /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/
-                            token 
-                        FROM 
-                            (SELECT 
-                                token, 
-                                cnt / SUM(cnt) OVER () AS df, 
-                                rnk 
-                            FROM 
-                                (SELECT 
-                                    token, 
-                                    COUNT(*) AS cnt, 
-                                    RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
-                                 FROM {0} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
-                                 WHERE not(df BETWEEN {1} AND {2})""".format(
-            self.name, self.parameters["min_df"], self.parameters["max_df"]
-        )
-        if self.parameters["max_features"] > 0:
-            stop_words += " OR (rnk > {})".format(self.parameters["max_features"])
-        res = executeSQL(stop_words, print_time_sql=False, method="fetchall")
-        self.stop_words_ = [item[0] for item in res]
-        res = executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
-        self.vocabulary_ = [item[0] for item in res]
+        self.compute_stop_words()
+        self.compute_vocabulary()
         self.countvectorizer_table = tmp_name
         model_save = {
             "type": "CountVectorizer",
@@ -318,8 +303,6 @@ max_text_size: int, optional
             "max_features": self.parameters["max_features"],
             "ignore_special": self.parameters["ignore_special"],
             "max_text_size": self.parameters["max_text_size"],
-            "vocabulary": self.vocabulary_,
-            "stop_words": self.stop_words_,
         }
         insert_verticapy_schema(
             model_name=self.name, model_type="CountVectorizer", model_save=model_save,
@@ -329,7 +312,7 @@ max_text_size: int, optional
     # ---#
     def transform(self):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Creates a vDataFrame of the model.
 
 	Returns
@@ -345,7 +328,7 @@ max_text_size: int, optional
 # ---#
 class Normalizer(Preprocessing):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a Vertica Normalizer object.
  
 Parameters
@@ -362,18 +345,20 @@ method: str, optional
 		(x - min) / (max - min)
 	"""
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(self, name: str, method: str = "zscore"):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="Normalizer",
-            path="learn.preprocessing",
-            json_dict={"name": name, "method": method,},
+        raise_error_if_not_in(
+            "method", str(method).lower(), ["zscore", "robust_zscore", "minmax"]
         )
-        # -#
-        check_types([("name", name, [str])])
         self.type, self.name = "Normalizer", name
-        self.set_params({"method": method})
-        version(condition=[8, 1, 0])
+        self.VERTICA_FIT_FUNCTION_SQL = "NORMALIZE_FIT"
+        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_NORMALIZE"
+        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "REVERSE_NORMALIZE"
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "PREPROCESSING"
+        self.parameters = {"method": str(method).lower()}
 
 
 # ---#
@@ -403,7 +388,7 @@ class MinMaxScaler(Normalizer):
 # ---#
 class OneHotEncoder(Preprocessing):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a Vertica One Hot Encoder object.
  
 Parameters
@@ -435,6 +420,9 @@ null_column_name: str, optional
     ignore_null is set to false and column_naming is set to values or values_relaxed.
 	"""
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -445,45 +433,22 @@ null_column_name: str, optional
         column_naming: str = "indices",
         null_column_name: str = "null",
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="OneHotEncoder",
-            path="learn.preprocessing",
-            json_dict={
-                "name": name,
-                "extra_levels": extra_levels,
-                "drop_first": drop_first,
-                "ignore_null": ignore_null,
-                "separator": separator,
-                "column_naming": column_naming,
-                "null_column_name": null_column_name,
-            },
-        )
-        # -#
-        check_types(
-            [
-                ("name", name, [str]),
-                ("extra_levels", extra_levels, [dict]),
-                ("drop_first", drop_first, [bool]),
-                ("ignore_null", ignore_null, [bool]),
-                ("separator", separator, [str]),
-                (
-                    "column_naming",
-                    column_naming,
-                    ["indices", "values", "values_relaxed"],
-                ),
-                ("null_column_name", null_column_name, [str]),
-            ]
+        raise_error_if_not_in(
+            "column_naming",
+            str(column_naming).lower(),
+            ["indices", "values", "values_relaxed"],
         )
         self.type, self.name = "OneHotEncoder", name
-        self.set_params(
-            {
-                "extra_levels": extra_levels,
-                "drop_first": drop_first,
-                "ignore_null": ignore_null,
-                "separator": separator,
-                "column_naming": column_naming,
-                "null_column_name": null_column_name,
-            }
-        )
-        version(condition=[9, 0, 0])
+        self.VERTICA_FIT_FUNCTION_SQL = "ONE_HOT_ENCODER_FIT"
+        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_ONE_HOT_ENCODER"
+        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = ""
+        self.MODEL_TYPE = "UNSUPERVISED"
+        self.MODEL_SUBTYPE = "PREPROCESSING"
+        self.parameters = {
+            "extra_levels": extra_levels,
+            "drop_first": drop_first,
+            "ignore_null": ignore_null,
+            "separator": separator,
+            "column_naming": str(column_naming).lower(),
+            "null_column_name": null_column_name,
+        }

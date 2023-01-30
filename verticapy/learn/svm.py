@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -49,13 +49,18 @@
 # Modules
 #
 # VerticaPy Modules
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy.learn.vmodel import *
-from verticapy.utilities import save_to_query_profile
+from verticapy.utilities import save_verticapy_logs
 
 # ---#
 class LinearSVC(BinaryClassifier):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a LinearSVC object using the Vertica Support Vector Machine (SVM) 
 algorithm on the data. Given a set of training examples, each marked as 
 belonging to one or the other of two categories, an SVM training algorithm 
@@ -84,7 +89,7 @@ intercept_mode: str, optional
 						regularization on it.
 		unregularized : Fits the intercept but does not include 
 						it in regularization. 
-class_weight: list, optional
+class_weight: str / list, optional
 	Specifies how to determine weights of the two classes. It can 
 	be a list of 2 elements or one of the following method:
 		auto : Weights each class according to the number of samples.
@@ -93,6 +98,9 @@ max_iter: int, optional
 	The maximum number of iterations that the algorithm performs.
 	"""
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -101,45 +109,37 @@ max_iter: int, optional
         fit_intercept: bool = True,
         intercept_scaling: float = 1.0,
         intercept_mode: str = "regularized",
-        class_weight: list = [1, 1],
+        class_weight: Union[str, list] = [1, 1],
         max_iter: int = 100,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="LinearSVC",
-            path="learn.svm",
-            json_dict={
-                "name": name,
-                "tol": tol,
-                "C": C,
-                "fit_intercept": fit_intercept,
-                "intercept_scaling": intercept_scaling,
-                "intercept_mode": intercept_mode,
-                "class_weight": class_weight,
-                "max_iter": max_iter,
-            },
+        raise_error_if_not_in(
+            "intercept_mode",
+            str(intercept_mode).lower(),
+            ["regularized", "unregularized"],
         )
-        # -#
-        version(condition=[8, 1, 0])
-        check_types([("name", name, [str])])
+        if isinstance(class_weight, str):
+            raise_error_if_not_in("class_weight", class_weight, ["auto", "none"])
+            class_weight = str(class_weight).lower()
         self.type, self.name = "LinearSVC", name
-        self.set_params(
-            {
-                "tol": tol,
-                "C": C,
-                "fit_intercept": fit_intercept,
-                "intercept_scaling": intercept_scaling,
-                "intercept_mode": intercept_mode,
-                "class_weight": class_weight,
-                "max_iter": max_iter,
-            }
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "SVM_CLASSIFIER"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_CLASSIFIER"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.parameters = {
+            "tol": tol,
+            "C": C,
+            "fit_intercept": fit_intercept,
+            "intercept_scaling": intercept_scaling,
+            "intercept_mode": str(intercept_mode).lower(),
+            "class_weight": class_weight,
+            "max_iter": max_iter,
+        }
 
 
 # ---#
 class LinearSVR(Regressor):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Creates a LinearSVR object using the Vertica SVM (Support Vector Machine) 
 algorithm. This algorithm finds the hyperplane used to approximate 
 distribution of the data..
@@ -194,6 +194,9 @@ test_relation: str
 	attribute of the object.
 	"""
 
+    @check_minimum_version
+    @check_dtypes
+    @save_verticapy_logs
     def __init__(
         self,
         name: str,
@@ -205,33 +208,22 @@ test_relation: str
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
-        # Saving information to the query profile table
-        save_to_query_profile(
-            name="LinearSVR",
-            path="learn.svm",
-            json_dict={
-                "name": name,
-                "tol": tol,
-                "C": C,
-                "fit_intercept": fit_intercept,
-                "intercept_scaling": intercept_scaling,
-                "intercept_mode": intercept_mode,
-                "acceptable_error_margin": acceptable_error_margin,
-                "max_iter": max_iter,
-            },
+        raise_error_if_not_in(
+            "intercept_mode",
+            str(intercept_mode).lower(),
+            ["regularized", "unregularized"],
         )
-        # -#
-        version(condition=[8, 1, 1])
-        check_types([("name", name, [str])])
         self.type, self.name = "LinearSVR", name
-        self.set_params(
-            {
-                "tol": tol,
-                "C": C,
-                "fit_intercept": fit_intercept,
-                "intercept_scaling": intercept_scaling,
-                "intercept_mode": intercept_mode,
-                "acceptable_error_margin": acceptable_error_margin,
-                "max_iter": max_iter,
-            }
-        )
+        self.VERTICA_FIT_FUNCTION_SQL = "SVM_REGRESSOR"
+        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_REGRESSOR"
+        self.MODEL_TYPE = "SUPERVISED"
+        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.parameters = {
+            "tol": tol,
+            "C": C,
+            "fit_intercept": fit_intercept,
+            "intercept_scaling": intercept_scaling,
+            "intercept_mode": str(intercept_mode).lower(),
+            "acceptable_error_margin": acceptable_error_margin,
+            "max_iter": max_iter,
+        }

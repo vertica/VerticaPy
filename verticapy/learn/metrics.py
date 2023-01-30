@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -58,6 +58,11 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy import *
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
@@ -67,6 +72,7 @@ from verticapy.toolbox import *
 # Function used to simplify the code
 #
 # ---#
+@check_dtypes
 def compute_metric_query(
     metric: str,
     y_true: str,
@@ -76,7 +82,7 @@ def compute_metric_query(
     fetchfirstelem: bool = True,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 A helper function that uses a specified metric to generate and score a query.
 
 Parameters
@@ -105,16 +111,6 @@ Returns
 float or tuple of floats
     score(s)
     """
-    check_types(
-        [
-            ("metric", metric, [str]),
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("title", title, [str]),
-            ("fetchfirstelem", fetchfirstelem, [bool]),
-        ]
-    )
     relation = (
         input_relation
         if isinstance(input_relation, str)
@@ -124,7 +120,7 @@ float or tuple of floats
         metric.format(y_true, y_score), relation, y_true, y_score
     )
     return executeSQL(
-        query, title=title, method="fetchfirstelem" if fetchfirstelem else "fetchrow"
+        query, title=title, method="fetchfirstelem" if fetchfirstelem else "fetchrow",
     )
 
 
@@ -136,7 +132,7 @@ def compute_tn_fn_fp_tp(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 A helper function that computes the confusion matrix for the specified 
 'pos_label' class and returns its values as a tuple of the following: 
 true negatives, false negatives, false positives, and true positives.
@@ -147,11 +143,11 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: int / float / str, optional
     To compute the Confusion Matrix, one of the response column classes must 
     be the positive one. The parameter 'pos_label' represents this class.
 
@@ -176,11 +172,13 @@ tuple
 # Regression
 #
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def aic_bic(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the AIC (Akaike’s Information Criterion) & BIC (Bayesian Information 
 Criterion).
 
@@ -190,7 +188,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -202,19 +200,6 @@ Returns
 tuple of floats
     (AIC, BIC)
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="aic_bic",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "k": k,
-        },
-    )
-    # -#
-    check_types([("k", k, [int])])
     rss, n = compute_metric_query(
         "SUM(POWER({0} - {1}, 2)), COUNT(*)",
         y_true,
@@ -236,11 +221,13 @@ tuple of floats
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def anova_table(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Anova Table.
 
 Parameters
@@ -249,7 +236,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -262,26 +249,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="anova_table",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "k": k,
-        },
-    )
-    # -#
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("k", k, [int]),
-        ]
-    )
     relation = (
         input_relation
         if isinstance(input_relation, str)
@@ -332,11 +299,12 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def explained_variance(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Explained Variance.
 
 Parameters
@@ -345,7 +313,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -355,17 +323,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="explained_variance",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-        },
-    )
-    # -#
     return compute_metric_query(
         "1 - VARIANCE({1} - {0}) / VARIANCE({0})",
         y_true,
@@ -376,9 +333,10 @@ float
 
 
 # ---#
+@save_verticapy_logs
 def max_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Max Error.
 
 Parameters
@@ -387,7 +345,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -397,17 +355,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="max_error",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-        },
-    )
-    # -#
     return compute_metric_query(
         "MAX(ABS({0} - {1}))::FLOAT",
         y_true,
@@ -418,11 +365,12 @@ float
 
 
 # ---#
+@save_verticapy_logs
 def mean_absolute_error(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Mean Absolute Error.
 
 Parameters
@@ -431,7 +379,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -441,17 +389,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="mean_absolute_error",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-        },
-    )
-    # -#
     return compute_metric_query(
         "AVG(ABS({0} - {1}))",
         y_true,
@@ -462,6 +399,8 @@ float
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def mean_squared_error(
     y_true: str,
     y_score: str,
@@ -469,7 +408,7 @@ def mean_squared_error(
     root: bool = False,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Mean Squared Error.
 
 Parameters
@@ -478,7 +417,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -490,21 +429,8 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="mean_squared_error",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "root": root,
-        },
-    )
-    # -#
-    check_types([("root", root, [bool])])
     result = compute_metric_query(
-        "MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE."
+        "MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE.",
     )
     if root:
         return math.sqrt(result)
@@ -512,11 +438,12 @@ float
 
 
 # ---#
+@save_verticapy_logs
 def mean_squared_log_error(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Mean Squared Log Error.
 
 Parameters
@@ -525,7 +452,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -535,17 +462,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="mean_squared_log_error",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-        },
-    )
-    # -#
     return compute_metric_query(
         "AVG(POW(LOG({0} + 1) - LOG({1} + 1), 2))",
         y_true,
@@ -556,11 +472,12 @@ float
 
 
 # ---#
+@save_verticapy_logs
 def median_absolute_error(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Median Absolute Error.
 
 Parameters
@@ -569,7 +486,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -579,17 +496,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="median_absolute_error",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-        },
-    )
-    # -#
     return compute_metric_query(
         "APPROXIMATE_MEDIAN(ABS({0} - {1}))",
         y_true,
@@ -600,22 +506,27 @@ float
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def quantile_error(
-    q: float, y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
+    q: Union[int, float],
+    y_true: str,
+    y_score: str,
+    input_relation: Union[str, vDataFrame],
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the input Quantile of the Error.
 
 Parameters
 ----------
-q: float
+q: int / float
     Input Quantile
 y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -625,19 +536,6 @@ Returns
 float
     score
     """
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="quantile_error",
-        path="learn.metrics",
-        json_dict={
-            "q": q,
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-        },
-    )
-    # -#
-    check_types([("q", q, [int, float])])
     metric = (
         "APPROXIMATE_PERCENTILE(ABS({0} - {1}) USING PARAMETERS percentile = {2})"
     ).format("{0}", "{1}", q)
@@ -647,6 +545,8 @@ float
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def r2_score(
     y_true: str,
     y_score: str,
@@ -655,7 +555,7 @@ def r2_score(
     adj: bool = True,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the R2 Score.
 
 Parameters
@@ -664,7 +564,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -678,20 +578,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="r2_score",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "k": k,
-            "adj": adj,
-        },
-    )
-    # -#
-    check_types([("k", k, [int]), ("adj", adj, [bool])])
     result = compute_metric_query(
         "RSQUARED({0}, {1}) OVER()",
         y_true,
@@ -715,11 +601,13 @@ float
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def regression_report(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes a regression report using multiple metrics (r2, mse, max error...). 
 
 Parameters
@@ -728,7 +616,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -741,26 +629,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="regression_report",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "k": k,
-        },
-    )
-    # -#
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("k", k, [int]),
-        ]
-    )
     relation = (
         input_relation
         if isinstance(input_relation, str)
@@ -825,14 +693,16 @@ tablesample
 # Classification
 #
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def accuracy_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = None,
+    pos_label: Union[str, int, float] = None,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Accuracy Score.
 
 Parameters
@@ -841,11 +711,11 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: int / float / str, optional
 	Label to use to identify the positive class. If pos_label is NULL then the
 	global accuracy will be computed.
 
@@ -854,25 +724,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="accuracy_score",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
     if pos_label != None:
         tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
         acc = (tp + tn) / (tp + tn + fn + fp)
@@ -897,6 +748,7 @@ float
 
 
 # ---#
+@save_verticapy_logs
 def auc(
     y_true: str,
     y_score: str,
@@ -905,7 +757,7 @@ def auc(
     nbins: int = 10000,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the ROC AUC (Area Under Curve).
 
 Parameters
@@ -933,36 +785,25 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="auc",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-            "nbins": nbins,
-        },
-    )
-    # -#
     return roc_curve(
         y_true, y_score, input_relation, pos_label, nbins=nbins, auc_roc=True
     )
 
 
 # ---#
+@check_dtypes
+@save_verticapy_logs
 def classification_report(
     y_true: str = "",
     y_score: list = [],
     input_relation: Union[str, vDataFrame] = "",
     labels: list = [],
-    cutoff: (float, list) = [],
+    cutoff: Union[int, float, list] = [],
     estimator=None,
     nbins: int = 10000,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes a classification report using multiple metrics (AUC, accuracy, PRC 
 AUC, F1...). It will consider each category as positive and switch to the 
 next one during the computation.
@@ -973,13 +814,13 @@ y_true: str, optional
 	Response column.
 y_score: list, optional
 	List containing the probability and the prediction.
-input_relation: str/vDataFrame, optional
+input_relation: str / vDataFrame, optional
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
 labels: list, optional
 	List of the response column categories to use.
-cutoff: float/list, optional
+cutoff: int / float / list, optional
 	Cutoff for which the tested category will be accepted as prediction. 
 	For multiclass classification, the list will represent the the classes 
     threshold. If it is empty, the best cutoff will be used.
@@ -999,31 +840,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="classification_report",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "labels": labels,
-            "cutoff": cutoff,
-            "estimator": estimator,
-            "nbins": nbins,
-        },
-    )
-    # -#
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [list]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("labels", labels, [list]),
-            ("cutoff", cutoff, [int, float, list]),
-            ("nbins", nbins, [int]),
-        ]
-    )
     if estimator:
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes != 2) else [estimator.classes_[1]]
@@ -1140,14 +956,17 @@ tablesample
 
 
 # ---#
+@check_minimum_version
+@check_dtypes
+@save_verticapy_logs
 def confusion_matrix(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    pos_label: Union[str, int, float] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Confusion Matrix.
 
 Parameters
@@ -1156,11 +975,11 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: str / int / float, optional
 	To compute the one dimension Confusion Matrix, one of the response column 
 	class must be the positive one. The parameter 'pos_label' represents 
 	this class.
@@ -1171,26 +990,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="confusion_matrix",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    version(condition=[8, 0, 0])
     relation = (
         input_relation
         if isinstance(input_relation, str)
@@ -1224,6 +1023,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def critical_success_index(
     y_true: str,
     y_score: str,
@@ -1231,7 +1031,7 @@ def critical_success_index(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Critical Success Index.
 
 Parameters
@@ -1253,24 +1053,13 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="critical_success_index",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     csi = tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0
     return csi
 
 
 # ---#
+@save_verticapy_logs
 def f1_score(
     y_true: str,
     y_score: str,
@@ -1278,7 +1067,7 @@ def f1_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the F1 Score.
 
 Parameters
@@ -1300,18 +1089,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="f1_score",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     recall = tp / (tp + fn) if (tp + fn != 0) else 0
     precision = tp / (tp + fp) if (tp + fp != 0) else 0
@@ -1324,6 +1101,7 @@ float
 
 
 # ---#
+@save_verticapy_logs
 def informedness(
     y_true: str,
     y_score: str,
@@ -1331,7 +1109,7 @@ def informedness(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Informedness.
 
 Parameters
@@ -1353,18 +1131,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="informedness",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     tpr = tp / (tp + fn) if (tp + fn != 0) else 0
     tnr = tn / (tn + fp) if (tn + fp != 0) else 0
@@ -1372,6 +1138,7 @@ float
 
 
 # ---#
+@save_verticapy_logs
 def log_loss(
     y_true: str,
     y_score: str,
@@ -1379,7 +1146,7 @@ def log_loss(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Log Loss.
 
 Parameters
@@ -1401,18 +1168,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="log_loss",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
     metric = (
         "AVG(CASE WHEN {0} = '{1}' THEN - LOG({2}::float + 1e-90)"
         " ELSE - LOG(1 - {3}::float + 1e-90) END)"
@@ -1423,6 +1178,7 @@ float
 
 
 # ---#
+@save_verticapy_logs
 def markedness(
     y_true: str,
     y_score: str,
@@ -1430,7 +1186,7 @@ def markedness(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Markedness.
 
 Parameters
@@ -1452,18 +1208,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="markedness",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     ppv = tp / (tp + fp) if (tp + fp != 0) else 0
     npv = tn / (tn + fn) if (tn + fn != 0) else 0
@@ -1471,6 +1215,7 @@ float
 
 
 # ---#
+@save_verticapy_logs
 def matthews_corrcoef(
     y_true: str,
     y_score: str,
@@ -1478,7 +1223,7 @@ def matthews_corrcoef(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Matthews Correlation Coefficient.
 
 Parameters
@@ -1501,18 +1246,6 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="matthews_corrcoef",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     mcc = (
         (tp * tn - fp * fn) / math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
@@ -1523,11 +1256,14 @@ float
 
 
 # ---#
+@check_minimum_version
+@check_dtypes
+@save_verticapy_logs
 def multilabel_confusion_matrix(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], labels: list,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Multi Label Confusion Matrix.
 
 Parameters
@@ -1536,7 +1272,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str/vDataFrame
+input_relation: str / vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -1549,27 +1285,6 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="multilabel_confusion_matrix",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "labels": labels,
-        },
-    )
-    # -#
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("labels", labels, [list]),
-        ]
-    )
-    version(condition=[8, 0, 0])
     num_classes = str(len(labels))
     query = """SELECT 
                   CONFUSION_MATRIX(obs, response 
@@ -1602,6 +1317,7 @@ tablesample
 
 
 # ---#
+@save_verticapy_logs
 def negative_predictive_score(
     y_true: str,
     y_score: str,
@@ -1609,7 +1325,7 @@ def negative_predictive_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Negative Predictive Score.
 
 Parameters
@@ -1631,24 +1347,13 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="negative_predictive_score",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     npv = tn / (tn + fn) if (tn + fn != 0) else 0
     return npv
 
 
 # ---#
+@save_verticapy_logs
 def prc_auc(
     y_true: str,
     y_score: str,
@@ -1657,7 +1362,7 @@ def prc_auc(
     nbins: int = 10000,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the area under the curve (AUC) of a Precision-Recall (PRC) curve.
 
 Parameters
@@ -1685,25 +1390,13 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="prc_auc",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-            "nbins": nbins,
-        },
-    )
-    # -#
     return prc_curve(
         y_true, y_score, input_relation, pos_label, nbins=nbins, auc_prc=True
     )
 
 
 # ---#
+@save_verticapy_logs
 def precision_score(
     y_true: str,
     y_score: str,
@@ -1711,7 +1404,7 @@ def precision_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Precision Score.
 
 Parameters
@@ -1733,24 +1426,13 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="precision_score",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     precision = tp / (tp + fp) if (tp + fp != 0) else 0
     return precision
 
 
 # ---#
+@save_verticapy_logs
 def recall_score(
     y_true: str,
     y_score: str,
@@ -1758,7 +1440,7 @@ def recall_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Recall Score.
 
 Parameters
@@ -1780,24 +1462,13 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="recall_score",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     recall = tp / (tp + fn) if (tp + fn != 0) else 0
     return recall
 
 
 # ---#
+@save_verticapy_logs
 def specificity_score(
     y_true: str,
     y_score: str,
@@ -1805,7 +1476,7 @@ def specificity_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Computes the Specificity Score.
 
 Parameters
@@ -1827,18 +1498,58 @@ Returns
 float
 	score
 	"""
-    # Saving information to the query profile table
-    save_to_query_profile(
-        name="specificity_score",
-        path="learn.metrics",
-        json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-        },
-    )
-    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     tnr = tn / (tn + fp) if (tn + fp != 0) else 0
     return tnr
+
+
+#
+# TOOLS
+#
+# ---#
+FUNCTIONS_DICTIONNARY = {
+    "r2": r2_score,
+    "rsquared": r2_score,
+    "mae": mean_absolute_error,
+    "mean_absolute_error": mean_absolute_error,
+    "mse": mean_squared_error,
+    "mean_squared_error": mean_squared_error,
+    "msle": mean_squared_log_error,
+    "mean_squared_log_error": mean_squared_log_error,
+    "max": max_error,
+    "max_error": max_error,
+    "median": median_absolute_error,
+    "median_absolute_error": median_absolute_error,
+    "var": explained_variance,
+    "explained_variance": explained_variance,
+    "accuracy": accuracy_score,
+    "acc": accuracy_score,
+    "auc": auc,
+    "prc_auc": prc_auc,
+    "best_cutoff": roc_curve,
+    "best_threshold": roc_curve,
+    "recall": recall_score,
+    "tpr": recall_score,
+    "precision": precision_score,
+    "ppv": precision_score,
+    "specificity": specificity_score,
+    "tnr": specificity_score,
+    "negative_predictive_value": negative_predictive_score,
+    "npv": negative_predictive_score,
+    "log_loss": log_loss,
+    "logloss": log_loss,
+    "f1": f1_score,
+    "mcc": matthews_corrcoef,
+    "bm": informedness,
+    "informedness": informedness,
+    "mk": markedness,
+    "markedness": markedness,
+    "csi": critical_success_index,
+    "critical_success_index": critical_success_index,
+    "roc_curve": roc_curve,
+    "roc": roc_curve,
+    "prc_curve": prc_curve,
+    "prc": prc_curve,
+    "lift_chart": lift_chart,
+    "lift": lift_chart,
+}

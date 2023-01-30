@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -48,7 +48,7 @@ class TestStats:
     def test_adfuller(self, amazon_vd):
         # testing without trend
         result = st.adfuller(
-            amazon_vd, column="number", ts="date", by=["state"], p=40, with_trend=False
+            amazon_vd, column="number", ts="date", by=["state"], p=40, with_trend=False,
         )
         assert result["value"][0] == pytest.approx(-0.4059507552046538, 1e-2)
         assert result["value"][1] == pytest.approx(0.684795156687264, 1e-2)
@@ -56,7 +56,7 @@ class TestStats:
 
         # testing with trend
         result = st.adfuller(
-            amazon_vd, column="number", ts="date", by=["state"], p=40, with_trend=True
+            amazon_vd, column="number", ts="date", by=["state"], p=40, with_trend=True,
         )
         assert result["value"][0] == pytest.approx(-0.4081159118011171, 1e-2)
         assert result["value"][1] == pytest.approx(0.683205052234998, 1e-2)
@@ -165,7 +165,7 @@ class TestStats:
     def test_ljungbox(self, amazon_vd):
         # testing Ljung–Box
         result = st.ljungbox(
-            amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=False
+            amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=False,
         )
         assert result["Serial Correlation"][-1] == True
         assert result["p_value"][-1] == pytest.approx(0.0)
@@ -175,7 +175,7 @@ class TestStats:
 
         # testing Box-Pierce
         result = st.ljungbox(
-            amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=True
+            amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=True,
         )
         assert result["Serial Correlation"][-1] == True
         assert result["p_value"][-1] == pytest.approx(0.0)
@@ -195,7 +195,7 @@ class TestStats:
 
     def test_seasonal_decompose(self, airline_vd):
         result = st.seasonal_decompose(
-            airline_vd, "Passengers", "date", period=12, mult=True, polynomial_order=-1
+            airline_vd, "Passengers", "date", period=12, mult=True, polynomial_order=-1,
         )
         assert result["passengers_trend"].avg() == pytest.approx(266.398518668831)
         assert result["passengers_seasonal"].avg() == pytest.approx(1.0)

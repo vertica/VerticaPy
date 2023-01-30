@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -135,22 +135,14 @@ def hchart_from_vdf(
 ):
     if not (x):
         x = vdf.numcol()
-    x = vdf.format_colnames(x)
+    x, y, z, c = vdf.format_colnames(x, y, z, c, raise_error=False)
     if drilldown:
         if not (z):
             z = "COUNT(*)"
         if kind == "hist":
             kind = "column"
-        check_types([("y", y, [str, list])])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
-        vdf.are_namecols_in(x)
-        if isinstance(y, str):
-            vdf.are_namecols_in(y)
-            y = vdf.format_colnames(y)
-        else:
-            vdf.are_namecols_in(y)
-            y = vdf.format_colnames(y)[0]
         query = [
             "SELECT {}, {} FROM {} GROUP BY 1 LIMIT {}".format(
                 x, z, vdf.__genSQL__(), limit
@@ -166,7 +158,6 @@ def hchart_from_vdf(
             y = "COUNT(*)"
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
-        vdf.are_namecols_in(x)
         unique = vdf[x].nunique()
         is_num = vdf[x].isnum()
         order_by = " ORDER BY 2 DESC "
@@ -222,16 +213,8 @@ def hchart_from_vdf(
         else:
             if not (z):
                 z = "COUNT(*)"
-            check_types([("y", y, [str, list])])
             if isinstance(x, Iterable) and not (isinstance(x, str)):
                 x = x[0]
-            vdf.are_namecols_in(x)
-            if isinstance(y, str):
-                vdf.are_namecols_in(y)
-                y = vdf.format_colnames(y)
-            else:
-                vdf.are_namecols_in(y)
-                y = vdf.format_colnames(y)[0]
             # y
             unique = vdf[y].nunique()
             is_num = vdf[y].isnum()
@@ -267,21 +250,12 @@ def hchart_from_vdf(
             limit,
         )
     elif kind in ("area", "area_ts", "line", "spline"):
-        check_types([("y", y, [str, list])])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         if isinstance(y, Iterable) and not (isinstance(y, str)) and kind == "area_ts":
             y = y[0]
-        vdf.are_namecols_in(x)
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         if not (z):
-            if not (aggregate):
-                if isinstance(y, str):
-                    vdf.are_namecols_in(y)
-                    y = vdf.format_colnames(y)
-                else:
-                    vdf.are_namecols_in(y)
-                    y = vdf.format_colnames(y)
             if not (isinstance(y, str)):
                 y = ", ".join(y)
                 kind = "multi_" + kind
@@ -296,20 +270,6 @@ def hchart_from_vdf(
                 limit,
             )
         else:
-            check_types([("y", y, [str, list])])
-            check_types([("z", z, [str, list])])
-            if isinstance(y, str):
-                vdf.are_namecols_in(y)
-                y = vdf.format_colnames(y)
-            else:
-                vdf.are_namecols_in(y)
-                y = vdf.format_colnames(y)[0]
-            if isinstance(z, str):
-                vdf.are_namecols_in(z)
-                z = vdf.format_colnames(z)
-            else:
-                vdf.are_namecols_in(z)
-                z = vdf.format_colnames(z)[0]
             # z
             unique = vdf[z].nunique()
             is_num = vdf[z].isnum()
@@ -331,13 +291,6 @@ def hchart_from_vdf(
                 x, cast, y, z, vdf.__genSQL__(), max(int(limit / unique), 1), z_copy,
             )
     elif kind in ("scatter", "bubble"):
-        check_types([("y", y, [str, list])])
-        if isinstance(y, str):
-            vdf.are_namecols_in(y)
-            y = vdf.format_colnames(y)
-        else:
-            vdf.are_namecols_in(y)
-            y = vdf.format_colnames(y)[0]
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         cast = "::timestamp" if (vdf[x].isdate()) else ""
@@ -347,40 +300,12 @@ def hchart_from_vdf(
                 " IS NOT NULL AND {2} IS NOT NULL LIMIT {4}"
             ).format(x, cast, y, vdf.__genSQL__(), limit)
         elif not (c) and (z):
-            check_types([("z", z, [str, list])])
-            try:
-                z = (
-                    vdf.format_colnames(z)
-                    if (isinstance(z, str))
-                    else vdf.format_colnames(z)[0]
-                )
-            except:
-                pass
             query = (
                 "SELECT {0}{1}, {2}, {3} FROM {4} "
                 "WHERE {0} IS NOT NULL AND {2} IS NOT NULL "
                 "AND {3} IS NOT NULL LIMIT {5}"
             ).format(x, cast, y, z, vdf.__genSQL__(), limit)
         else:
-            if z:
-                check_types([("z", z, [str, list])])
-                try:
-                    z = (
-                        vdf.format_colnames(z)
-                        if (isinstance(z, str))
-                        else vdf.format_colnames(z)[0]
-                    )
-                except:
-                    pass
-            check_types([("c", c, [str, list])])
-            try:
-                c = (
-                    vdf.format_colnames(c)
-                    if (isinstance(c, str))
-                    else vdf.format_colnames(c)[0]
-                )
-            except:
-                pass
             # c
             unique = vdf[c].nunique()
             is_num = vdf[c].isnum()
@@ -410,10 +335,8 @@ def hchart_from_vdf(
                 c_copy,
             )
     elif kind == "area_range":
-        check_types([("y", y, [str, list])])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
-        vdf.are_namecols_in(x)
         order_by = " ORDER BY 1 " if (vdf[x].isdate() or vdf[x].isnum()) else ""
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         query = "SELECT {0}{1}, {2} FROM {3}{4}{5} LIMIT {6}".format(
@@ -428,12 +351,10 @@ def hchart_from_vdf(
     elif kind == "spider":
         if not (y):
             y = "COUNT(*)"
-        check_types([("y", y, [str, list])])
         if isinstance(y, str):
             y = [y]
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
-        vdf.are_namecols_in(x)
         # x
         unique = vdf[x].nunique()
         is_num = vdf[x].isnum()
@@ -478,7 +399,6 @@ def hchart_from_vdf(
     elif kind == "candlestick":
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
-        vdf.are_namecols_in(x)
         if aggregate:
             if isinstance(y, Iterable) and not (isinstance(y, str)) and len(y) == 1:
                 y = y[0]
@@ -494,7 +414,6 @@ def hchart_from_vdf(
 		                	FROM {4} GROUP BY 1 ORDER BY 1"""
                 query = query.format(x, y, 1 - alpha, alpha, vdf.__genSQL__())
             else:
-                check_types([("y", y, [list])])
                 query = "SELECT {}::timestamp, {} FROM {} GROUP BY 1 ORDER BY 1".format(
                     x, ", ".join(y), vdf.__genSQL__()
                 )
@@ -559,9 +478,7 @@ def hchart_from_vdf(
         return negative_bar(query=query, options=options, width=width, height=height)
     elif kind == "spider":
         return spider(query=query, options=options, width=width, height=height)
-    elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmand"):
-        check_types([("x", x, [list])])
-        x = vdf.format_colnames(x)
+    elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmand",):
         data = vdf.corr(method=kind, show=False, columns=x)
         narrow_data = get_narrow_tablesample(data, use_number_as_category=True)
         for idx, elem in enumerate(narrow_data[0]):
@@ -1044,8 +961,11 @@ def heatmap(
                 all_subcategories[i] = "None"
         chart.set_dict_options(
             {
-                "xAxis": {"categories": all_categories, "title": {"text": names[0]}},
-                "yAxis": {"categories": all_subcategories, "title": {"text": names[1]}},
+                "xAxis": {"categories": all_categories, "title": {"text": names[0]},},
+                "yAxis": {
+                    "categories": all_subcategories,
+                    "title": {"text": names[1]},
+                },
             }
         )
     chart.set_options(
@@ -1125,7 +1045,7 @@ def line(
                     "marker": {
                         "radius": 5,
                         "states": {
-                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)"}
+                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)",}
                         },
                     },
                     "states": {"hover": {"marker": {"enabled": False}}},
@@ -1257,7 +1177,11 @@ def negative_bar(query: str, options: dict = {}, width: int = 600, height: int =
         "title": {"text": ""},
         "subtitle": {"text": ""},
         "xAxis": [
-            {"categories": all_subcategories, "reversed": False, "labels": {"step": 1}},
+            {
+                "categories": all_subcategories,
+                "reversed": False,
+                "labels": {"step": 1},
+            },
             {
                 "opposite": True,
                 "reversed": False,

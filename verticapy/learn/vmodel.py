@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -49,12 +49,17 @@
 # Modules
 #
 # Standard Python Modules
-import os, warnings
+import os, warnings, typing, copy
 import numpy as np
 from typing import Union
 
 # VerticaPy Modules
 import verticapy
+from verticapy.decorators import (
+    save_verticapy_logs,
+    check_dtypes,
+    check_minimum_version,
+)
 from verticapy import vDataFrame
 from verticapy.learn.mlplot import *
 from verticapy.learn.model_selection import *
@@ -78,14 +83,14 @@ from verticapy.learn.memmodel import *
 # ---#
 class vModel:
     """
----------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Main Class for Vertica Model
 	"""
 
     # ---#
     def __repr__(self):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the model Representation.
 		"""
         try:
@@ -103,35 +108,24 @@ Main Class for Vertica Model
             ):
                 name = self.tree_name if self.type == "KernelDensity" else self.name
                 try:
-                    version(condition=[9, 0, 0])
-                    res = executeSQL(
-                        "SELECT /*+LABEL('learn.vModel.__repr__')*/ GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
-                            name
-                        ),
-                        title="Summarizing the model.",
-                        method="fetchfirstelem",
-                    )
+                    vertica_version(condition=[9, 0, 0])
+                    func = f"GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{name}')"
                 except:
-                    res = executeSQL(
-                        "SELECT /*+LABEL('learn.vModel.__repr__')*/ SUMMARIZE_MODEL('{}')".format(
-                            name
-                        ),
-                        title="Summarizing the model.",
-                        method="fetchfirstelem",
-                    )
+                    func = f"SUMMARIZE_MODEL('{name}')"
+                res = executeSQL(
+                    f"SELECT /*+LABEL('learn.vModel.__repr__')*/ {func}",
+                    title="Summarizing the model.",
+                    method="fetchfirstelem",
+                )
                 return res
             elif self.type == "AutoML":
                 rep = self.best_model_.__repr__()
             elif self.type == "AutoDataPrep":
                 rep = self.final_relation_.__repr__()
             elif self.type == "DBSCAN":
-                rep = "=======\ndetails\n=======\nNumber of Clusters: {}\nNumber of Outliers: {}".format(
-                    self.n_cluster_, self.n_noise_
-                )
+                rep = f"=======\ndetails\n=======\nNumber of Clusters: {self.n_cluster_}\nNumber of Outliers: {self.n_noise_}"
             elif self.type == "LocalOutlierFactor":
-                rep = "=======\ndetails\n=======\nNumber of Errors: {}".format(
-                    self.n_errors_
-                )
+                rep = f"=======\ndetails\n=======\nNumber of Errors: {self.n_errors_}"
             elif self.type == "NearestCentroid":
                 rep = "=======\ndetails\n=======\n" + self.centroids_.__repr__()
             elif self.type == "VAR":
@@ -139,40 +133,36 @@ Main Class for Vertica Model
                 for idx, elem in enumerate(self.X):
                     rep += "\n\n # " + str(elem) + "\n\n" + self.coef_[idx].__repr__()
                 rep += "\n\n===============\nAdditional Info\n==============="
-                rep += "\nInput Relation : {}".format(self.input_relation)
-                rep += "\nX : {}".format(", ".join(self.X))
-                rep += "\nts : {}".format(self.ts)
+                rep += f"\nInput Relation : {self.input_relation}"
+                rep += f"\nX : {', '.join(self.X)}"
+                rep += f"\nts : {self.ts}"
             elif self.type == "SARIMAX":
                 rep = "=======\ndetails\n======="
                 rep += "\n\n# Coefficients\n\n" + self.coef_.__repr__()
                 if self.ma_piq_:
                     rep += "\n\n# MA PIQ\n\n" + self.ma_piq_.__repr__()
                 rep += "\n\n===============\nAdditional Info\n==============="
-                rep += "\nInput Relation : {}".format(self.input_relation)
-                rep += "\ny : {}".format(self.y)
-                rep += "\nts : {}".format(self.ts)
+                rep += f"\nInput Relation : {self.input_relation}"
+                rep += f"\ny : {self.y}"
+                rep += f"\nts : {self.ts}"
                 if self.exogenous:
-                    rep += "\nExogenous Variables : {}".format(
-                        ", ".join(self.exogenous)
-                    )
+                    rep += f"\nExogenous Variables : {', '.join(self.exogenous)}"
                 if self.ma_avg_:
-                    rep += "\nMA AVG : {}".format(self.ma_avg_)
+                    rep += f"\nMA AVG : {self.ma_avg_}"
             elif self.type == "CountVectorizer":
                 rep = "=======\ndetails\n======="
                 if self.vocabulary_:
                     voc = [str(elem) for elem in self.vocabulary_]
                     if len(voc) > 100:
-                        voc = voc[0:100] + [
-                            "... ({} more)".format(len(self.vocabulary_) - 100)
-                        ]
+                        voc = voc[0:100] + [f"... ({len(self.vocabulary_) - 100} more)"]
                     rep += "\n\n# Vocabulary\n\n" + ", ".join(voc)
                 if self.stop_words_:
                     rep += "\n\n# Stop Words\n\n" + ", ".join(
                         [str(elem) for elem in self.stop_words_]
                     )
                 rep += "\n\n===============\nAdditional Info\n==============="
-                rep += "\nInput Relation : {}".format(self.input_relation)
-                rep += "\nX : {}".format(", ".join(self.X))
+                rep += f"\nInput Relation : {self.input_relation}"
+                rep += f"\nX : {', '.join(self.X)}"
             if self.type in (
                 "DBSCAN",
                 "NearestCentroid",
@@ -181,19 +171,20 @@ Main Class for Vertica Model
                 "KNeighborsClassifier",
             ):
                 rep += "\n\n===============\nAdditional Info\n==============="
-                rep += "\nInput Relation : {}".format(self.input_relation)
-                rep += "\nX : {}".format(", ".join(self.X))
+                rep += f"\nInput Relation : {self.input_relation}"
+                rep += f"\nX : {', '.join(self.X)}"
             if self.type in (
                 "NearestCentroid",
                 "KNeighborsRegressor",
                 "KNeighborsClassifier",
             ):
-                rep += "\ny : {}".format(self.y)
+                rep += f"\ny : {self.y}"
             return rep
         except:
-            return "<{}>".format(self.type)
+            return f"<{self.type}>"
 
     # ---#
+    @check_dtypes
     def contour(
         self,
         nbins: int = 100,
@@ -202,7 +193,7 @@ Main Class for Vertica Model
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the model's contour plot. Only available for regressors, binary 
     classifiers, and for models of exactly two predictors.
 
@@ -260,12 +251,17 @@ Main Class for Vertica Model
             return vDataFrameSQL(self.input_relation).contour(
                 self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
             )
-        elif self.type in ("KMeans", "BisectingKMeans", "IsolationForest",):
+        elif self.type in (
+            "KMeans",
+            "BisectingKMeans",
+            "KPrototypes",
+            "IsolationForest",
+        ):
             cbar_title = "cluster"
             if self.type == "IsolationForest":
                 cbar_title = "anomaly_score"
             return vDataFrameSQL(self.input_relation).contour(
-                self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds
+                self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds,
             )
         else:
             return vDataFrameSQL(self.input_relation).contour(
@@ -278,14 +274,15 @@ Main Class for Vertica Model
             )
 
     # ---#
-    def deploySQL(self, X: list = []):
+    @check_dtypes
+    def deploySQL(self, X: Union[str, list] = []):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the SQL code needed to deploy the model. 
 
 	Parameters
 	----------
-	X: list, optional
+	X: str / list, optional
 		List of the columns used to deploy the model. If empty, the model
 		predictors will be used.
 
@@ -294,38 +291,33 @@ Main Class for Vertica Model
 	str
 		the SQL code needed to deploy the model.
 		"""
-        if self.type == "AutoML":
-            return self.best_model_.deploySQL(X)
         if isinstance(X, str):
             X = [X]
+        if self.type == "AutoML":
+            return self.best_model_.deploySQL(X)
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
             name = self.tree_name if self.type == "KernelDensity" else self.name
-            check_types([("X", X, [list])])
-            X = [quote_ident(elem) for elem in X]
-            fun = self.get_model_fun()[1]
-            sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(
-                fun, ", ".join(self.X if not (X) else X), name
-            )
+            X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
+            sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{name}', match_by_pos = 'true')"
             return sql
         else:
-            raise FunctionError(
-                "Method 'deploySQL' for '{}' doesn't exist.".format(self.type)
-            )
+            raise FunctionError(f"Method 'deploySQL' for '{self.type}' doesn't exist.")
 
     # ---#
     def drop(self):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Drops the model from the Vertica database.
 		"""
         drop(self.name, method="model", model_type=self.type)
 
     # ---#
+    @check_dtypes
     def features_importance(
         self, ax=None, tree_id: int = None, show: bool = True, **style_kwds
     ):
         """
-		---------------------------------------------------------------------------
+		----------------------------------------------------------------------------------------
 		Computes the model's features importance.
 
         Parameters
@@ -361,23 +353,29 @@ Main Class for Vertica Model
             "RandomForestClassifier",
             "RandomForestRegressor",
             "KernelDensity",
+            "XGBoostClassifier",
+            "XGBoostRegressor",
         ):
-            check_types([("tree_id", tree_id, [int])])
             name = self.tree_name if self.type == "KernelDensity" else self.name
-            version(condition=[9, 1, 1])
-            tree_id = "" if not (tree_id) else ", tree_id={}".format(tree_id)
-            query = """SELECT /*+LABEL('learn.vModel.features_importance')*/
+            if self.type in ("XGBoostClassifier", "XGBoostRegressor",):
+                vertica_version(condition=[12, 0, 3])
+                fname = "XGB_PREDICTOR_IMPORTANCE"
+                var = "avg_gain"
+            else:
+                vertica_version(condition=[9, 1, 1])
+                fname = "RF_PREDICTOR_IMPORTANCE"
+                var = "importance_value"
+            tree_id = "" if tree_id is None else f", tree_id={tree_id}"
+            query = f"""SELECT /*+LABEL('learn.vModel.features_importance')*/
                             predictor_name AS predictor, 
-                            ROUND(100 * importance_value / SUM(importance_value) 
+                            ROUND(100 * ABS({var}) / SUM(ABS({var}))
                                 OVER (), 2)::float AS importance, 
-                            SIGN(importance_value)::int AS sign 
+                            SIGN({var})::int AS sign 
                         FROM 
-                            (SELECT RF_PREDICTOR_IMPORTANCE ( 
-                                    USING PARAMETERS model_name = '{0}'{1})) 
+                            (SELECT {fname} ( 
+                                    USING PARAMETERS model_name = '{name}'{tree_id})) 
                                     VERTICAPY_SUBTABLE 
-                        ORDER BY 2 DESC;""".format(
-                name, tree_id
-            )
+                        ORDER BY 2 DESC;"""
             print_legend = False
         elif self.type in (
             "LinearRegression",
@@ -386,7 +384,7 @@ Main Class for Vertica Model
             "LinearSVR",
         ):
             relation = self.input_relation
-            version(condition=[8, 1, 1])
+            vertica_version(condition=[8, 1, 1])
             query = """SELECT /*+LABEL('learn.vModel.features_importance')*/
                             predictor, 
                             ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, 
@@ -409,7 +407,9 @@ Main Class for Vertica Model
             print_legend = True
         else:
             raise FunctionError(
-                "Method 'features_importance' for '{}' doesn't exist.".format(self.type)
+                "Method 'features_importance' for '{0}' doesn't exist.".format(
+                    self.type
+                )
             )
         result = executeSQL(
             query, title="Computing Features Importance.", method="fetchall"
@@ -432,9 +432,10 @@ Main Class for Vertica Model
         return tablesample(values=importances).transpose()
 
     # ---#
+    @check_dtypes
     def get_attr(self, attr_name: str = ""):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the model attribute.
 
 	Parameters
@@ -460,7 +461,7 @@ Main Class for Vertica Model
             "CountVectorizer",
         ):
             name = self.tree_name if self.type == "KernelDensity" else self.name
-            version(condition=[8, 1, 1])
+            vertica_version(condition=[8, 1, 1])
             result = to_tablesample(
                 query=(
                     "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS "
@@ -605,74 +606,9 @@ Main Class for Vertica Model
             )
 
     # ---#
-    def get_model_fun(self):
-        """
-	---------------------------------------------------------------------------
-	Returns the Vertica functions associated with the model.
-
-	Returns
-	-------
-	tuple
-		(FIT, PREDICT, INVERSE)
-		"""
-        if self.type == "AutoML":
-            return self.best_model_.get_model_fun()
-
-        if self.type in ("LinearRegression", "SARIMAX"):
-            return ("LINEAR_REG", "PREDICT_LINEAR_REG", "")
-
-        elif self.type == "LogisticRegression":
-            return ("LOGISTIC_REG", "PREDICT_LOGISTIC_REG", "")
-
-        elif self.type == "LinearSVC":
-            return ("SVM_CLASSIFIER", "PREDICT_SVM_CLASSIFIER", "")
-
-        elif self.type == "LinearSVR":
-            return ("SVM_REGRESSOR", "PREDICT_SVM_REGRESSOR", "")
-
-        elif self.type == "IsolationForest":
-            return ("IFOREST", "APPLY_IFOREST", "")
-
-        elif self.type in ("RandomForestRegressor", "KernelDensity"):
-            return ("RF_REGRESSOR", "PREDICT_RF_REGRESSOR", "")
-
-        elif self.type == "RandomForestClassifier":
-            return ("RF_CLASSIFIER", "PREDICT_RF_CLASSIFIER", "")
-
-        elif self.type == "XGBoostRegressor":
-            return ("XGB_REGRESSOR", "PREDICT_XGB_REGRESSOR", "")
-
-        elif self.type == "XGBoostClassifier":
-            return ("XGB_CLASSIFIER", "PREDICT_XGB_CLASSIFIER", "")
-
-        elif self.type == "NaiveBayes":
-            return ("NAIVE_BAYES", "PREDICT_NAIVE_BAYES", "")
-
-        elif self.type == "KMeans":
-            return ("KMEANS", "APPLY_KMEANS", "")
-
-        elif self.type == "BisectingKMeans":
-            return ("BISECTING_KMEANS", "APPLY_BISECTING_KMEANS", "")
-
-        elif self.type in ("PCA", "MCA"):
-            return ("PCA", "APPLY_PCA", "APPLY_INVERSE_PCA")
-
-        elif self.type == "SVD":
-            return ("SVD", "APPLY_SVD", "APPLY_INVERSE_SVD")
-
-        elif self.type == "Normalizer":
-            return ("NORMALIZE_FIT", "APPLY_NORMALIZE", "REVERSE_NORMALIZE")
-
-        elif self.type == "OneHotEncoder":
-            return ("ONE_HOT_ENCODER_FIT", "APPLY_ONE_HOT_ENCODER", "")
-
-        else:
-            return ("", "", "")
-
-    # ---#
     def get_params(self):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the parameters of the model.
 
 	Returns
@@ -680,12 +616,18 @@ Main Class for Vertica Model
 	dict
 		model parameters
 		"""
-        return self.parameters
+        all_init_params = list(typing.get_type_hints(self.__init__).keys())
+        parameters = copy.deepcopy(self.parameters)
+        parameters_keys = list(parameters.keys())
+        for p in parameters_keys:
+            if p not in all_init_params:
+                del parameters[p]
+        return parameters
 
     # ---#
     def get_vertica_param_dict(self):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the Vertica parameters dict to use when fitting the
     model. As some model's parameters names are not the same in
     Vertica. It is important to map them.
@@ -697,51 +639,26 @@ Main Class for Vertica Model
         """
 
         def map_to_vertica_param_name(param: str):
-
-            if param.lower() == "class_weights":
-                return "class_weight"
-
-            elif param.lower() == "solver":
-                return "optimizer"
-
-            elif param.lower() == "tol":
-                return "epsilon"
-
-            elif param.lower() == "max_iter":
-                return "max_iterations"
-
-            elif param.lower() == "penalty":
-                return "regularization"
-
-            elif param.lower() == "C":
-                return "lambda"
-
-            elif param.lower() == "l1_ratio":
-                return "alpha"
-
-            elif param.lower() == "n_estimators":
-                return "ntree"
-
-            elif param.lower() == "max_features":
-                return "mtry"
-
-            elif param.lower() == "sample":
-                return "sampling_size"
-
-            elif param.lower() == "max_leaf_nodes":
-                return "max_breadth"
-
-            elif param.lower() == "min_samples_leaf":
-                return "min_leaf_size"
-
-            elif param.lower() == "n_components":
-                return "num_components"
-
-            elif param.lower() == "init":
-                return "init_method"
-
-            else:
-                return param
+            param = param.lower()
+            options = {
+                "class_weights": "class_weight",
+                "solver": "optimizer",
+                "tol": "epsilon",
+                "max_iter": "max_iterations",
+                "penalty": "regularization",
+                "C": "lambda",
+                "l1_ratio": "alpha",
+                "n_estimators": "ntree",
+                "max_features": "mtry",
+                "sample": "sampling_size",
+                "max_leaf_nodes": "max_breadth",
+                "min_samples_leaf": "min_leaf_size",
+                "n_components": "num_components",
+                "init": "init_method",
+            }
+            if param in options:
+                return options[param]
+            return param
 
         parameters = {}
 
@@ -776,16 +693,16 @@ Main Class for Vertica Model
 
             elif param == "class_weight":
                 if isinstance(self.parameters[param], Iterable):
-                    parameters["class_weights"] = "'{}'".format(
-                        ", ".join([str(item) for item in self.parameters[param]])
-                    )
+                    parameters[
+                        "class_weights"
+                    ] = f"'{', '.join([str(p) for p in self.parameters[param]])}'"
                 else:
-                    parameters["class_weights"] = "'{}'".format(self.parameters[param])
+                    parameters["class_weights"] = f"'{self.parameters[param]}'"
 
             elif isinstance(self.parameters[param], (str, dict)):
-                parameters[map_to_vertica_param_name(param)] = "'{}'".format(
-                    self.parameters[param]
-                )
+                parameters[
+                    map_to_vertica_param_name(param)
+                ] = f"'{self.parameters[param]}'"
 
             else:
                 parameters[map_to_vertica_param_name(param)] = self.parameters[param]
@@ -793,9 +710,10 @@ Main Class for Vertica Model
         return parameters
 
     # ---#
+    @check_dtypes
     def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model.
 
 	Parameters
@@ -812,7 +730,6 @@ Main Class for Vertica Model
     ax
         Matplotlib axes object
 		"""
-        check_types([("max_nb_points", max_nb_points, [int, float])])
         if self.type in (
             "LinearRegression",
             "LogisticRegression",
@@ -850,11 +767,27 @@ Main Class for Vertica Model
                     ax=ax,
                     **style_kwds,
                 )
-        elif self.type in ("KMeans", "BisectingKMeans", "DBSCAN", "IsolationForest",):
-            if self.type in ("KMeans", "BisectingKMeans",):
+        elif self.type in (
+            "KMeans",
+            "BisectingKMeans",
+            "KPrototypes",
+            "DBSCAN",
+            "IsolationForest",
+        ):
+            if self.type in ("KMeans", "BisectingKMeans", "KPrototypes",):
+                if self.type == "KPrototypes":
+                    if any(
+                        [
+                            ("char" in self.cluster_centers_.dtype[key].lower())
+                            for key in self.cluster_centers_.dtype
+                        ]
+                    ):
+                        raise TypeError(
+                            "KPrototypes' plots with categorical inputs is not yet supported."
+                        )
                 vdf = vDataFrameSQL(self.input_relation)
-                self.predict(vdf, name="kmeans_cluster")
-                catcol = "kmeans_cluster"
+                catcol = "{0}_cluster".format(self.type.lower())
+                self.predict(vdf, name=catcol)
             elif self.type == "DBSCAN":
                 vdf = vDataFrameSQL(self.name)
                 catcol = "dbscan_cluster"
@@ -898,14 +831,13 @@ Main Class for Vertica Model
                 **style_kwds,
             )
         else:
-            raise FunctionError(
-                "Method 'plot' for '{}' doesn't exist.".format(self.type)
-            )
+            raise FunctionError(f"Method 'plot' for '{self.type}' doesn't exist.")
 
     # ---#
+    @check_dtypes
     def set_params(self, parameters: dict = {}):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Sets the parameters of the model.
 
 	Parameters
@@ -913,1299 +845,25 @@ Main Class for Vertica Model
 	parameters: dict, optional
 		New parameters.
 		"""
-        if not (hasattr(self, "parameters")):
-            self.parameters = {}
-        model_parameters = {}
-        default_parameters = get_model_init_params(self.type)
-        if self.type in ("LinearRegression", "LogisticRegression", "SARIMAX", "VAR"):
-            if "fit_intercept" in parameters:
-                check_types([("fit_intercept", parameters["fit_intercept"], [bool])])
-                if version()[0] >= 12:
-                    model_parameters["fit_intercept"] = parameters["fit_intercept"]
-            if "solver" in parameters:
-                check_types([("solver", parameters["solver"], [str])])
-                assert str(parameters["solver"]).lower() in [
-                    "newton",
-                    "bfgs",
-                    "cgd",
-                ], ParameterError(
-                    "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | "
-                    "BFGS | CGD), found '{0}'.".format(parameters["solver"])
-                )
-                model_parameters["solver"] = parameters["solver"]
-            elif "solver" not in self.parameters:
-                model_parameters["solver"] = default_parameters["solver"]
-            else:
-                model_parameters["solver"] = self.parameters["solver"]
-            if "penalty" in parameters and self.type in (
-                "LinearRegression",
-                "LogisticRegression",
-            ):
-                check_types([("penalty", parameters["penalty"], [str])])
-                assert str(parameters["penalty"]).lower() in [
-                    "none",
-                    "l1",
-                    "l2",
-                    "enet",
-                ], ParameterError(
-                    "Incorrect parameter 'penalty'.\nThe regularization must be in "
-                    "(None | L1 | L2 | ENet), found '{0}'.".format(
-                        parameters["penalty"]
-                    )
-                )
-                model_parameters["penalty"] = parameters["penalty"]
-            elif (
-                self.type in ("LinearRegression", "LogisticRegression")
-                and "penalty" not in self.parameters
-            ):
-                model_parameters["penalty"] = default_parameters["penalty"]
-            elif self.type in ("LinearRegression", "LogisticRegression"):
-                model_parameters["penalty"] = self.parameters["penalty"]
-            if "max_iter" in parameters:
-                check_types([("max_iter", parameters["max_iter"], [int, float])])
-                assert 0 <= parameters["max_iter"], ParameterError(
-                    "Incorrect parameter 'max_iter'.\nThe maximum number of "
-                    "iterations must be positive."
-                )
-                model_parameters["max_iter"] = parameters["max_iter"]
-            elif "max_iter" not in self.parameters:
-                model_parameters["max_iter"] = default_parameters["max_iter"]
-            else:
-                model_parameters["max_iter"] = self.parameters["max_iter"]
-            if "l1_ratio" in parameters and self.type in (
-                "LinearRegression",
-                "LogisticRegression",
-            ):
-                check_types([("l1_ratio", parameters["l1_ratio"], [int, float])])
-                assert 0 <= parameters["l1_ratio"] <= 1, ParameterError(
-                    "Incorrect parameter 'l1_ratio'.\nThe ENet Mixture must be "
-                    "between 0 and 1."
-                )
-                model_parameters["l1_ratio"] = parameters["l1_ratio"]
-            elif (
-                self.type in ("LinearRegression", "LogisticRegression")
-                and "l1_ratio" not in self.parameters
-            ):
-                model_parameters["l1_ratio"] = default_parameters["l1_ratio"]
-            elif self.type in ("LinearRegression", "LogisticRegression"):
-                model_parameters["l1_ratio"] = self.parameters["l1_ratio"]
-            if "C" in parameters and self.type in (
-                "LinearRegression",
-                "LogisticRegression",
-            ):
-                check_types([("C", parameters["C"], [int, float])])
-                assert 0 <= parameters["C"], ParameterError(
-                    "Incorrect parameter 'C'.\nThe regularization parameter value must "
-                    "be positive."
-                )
-                model_parameters["C"] = parameters["C"]
-            elif (
-                self.type in ("LinearRegression", "LogisticRegression")
-                and "C" not in self.parameters
-            ):
-                model_parameters["C"] = default_parameters["C"]
-            elif self.type in ("LinearRegression", "LogisticRegression"):
-                model_parameters["C"] = self.parameters["C"]
-            if "tol" in parameters:
-                check_types([("tol", parameters["tol"], [int, float])])
-                assert 0 <= parameters["tol"], ParameterError(
-                    "Incorrect parameter 'tol'.\nThe tolerance parameter value must "
-                    "be positive."
-                )
-                model_parameters["tol"] = parameters["tol"]
-            elif "tol" not in self.parameters:
-                model_parameters["tol"] = default_parameters["tol"]
-            else:
-                model_parameters["tol"] = self.parameters["tol"]
-            if "p" in parameters and self.type in ("SARIMAX", "VAR"):
-                check_types([("p", parameters["p"], [int, float])])
-                assert 0 <= parameters["p"], ParameterError(
-                    "Incorrect parameter 'p'.\nThe order of the AR part must be positive."
-                )
-                model_parameters["p"] = parameters["p"]
-            elif self.type in ("SARIMAX", "VAR") and "p" not in self.parameters:
-                model_parameters["p"] = default_parameters["p"]
-            elif self.type in ("SARIMAX", "VAR"):
-                model_parameters["p"] = self.parameters["p"]
-            if "q" in parameters and self.type == "SARIMAX":
-                check_types([("q", parameters["q"], [int, float])])
-                assert 0 <= parameters["q"], ParameterError(
-                    "Incorrect parameter 'q'.\nThe order of the MA part must be positive."
-                )
-                model_parameters["q"] = parameters["q"]
-            elif self.type == "SARIMAX" and "q" not in self.parameters:
-                model_parameters["q"] = default_parameters["q"]
-            elif self.type == "SARIMAX":
-                model_parameters["q"] = self.parameters["q"]
-            if "d" in parameters and self.type == "SARIMAX":
-                check_types([("d", parameters["d"], [int, float])])
-                assert 0 <= parameters["d"], ParameterError(
-                    "Incorrect parameter 'd'.\nThe order of the I part must be positive."
-                )
-                model_parameters["d"] = parameters["d"]
-            elif self.type == "SARIMAX" and "d" not in self.parameters:
-                model_parameters["d"] = default_parameters["d"]
-            elif self.type == "SARIMAX":
-                model_parameters["d"] = self.parameters["d"]
-            if "P" in parameters and self.type == "SARIMAX":
-                check_types([("P", parameters["P"], [int, float])])
-                assert 0 <= parameters["P"], ParameterError(
-                    "Incorrect parameter 'P'.\nThe seasonal order of the AR part must "
-                    "be positive."
-                )
-                model_parameters["P"] = parameters["P"]
-            elif self.type == "SARIMAX" and "P" not in self.parameters:
-                model_parameters["P"] = default_parameters["P"]
-            elif self.type == "SARIMAX":
-                model_parameters["P"] = self.parameters["P"]
-            if "Q" in parameters and self.type == "SARIMAX":
-                check_types([("Q", parameters["Q"], [int, float])])
-                assert 0 <= parameters["Q"], ParameterError(
-                    "Incorrect parameter 'Q'.\nThe seasonal order of the MA part must "
-                    "be positive."
-                )
-                model_parameters["Q"] = parameters["Q"]
-            elif self.type == "SARIMAX" and "Q" not in self.parameters:
-                model_parameters["Q"] = default_parameters["Q"]
-            elif self.type == "SARIMAX":
-                model_parameters["Q"] = self.parameters["Q"]
-            if "D" in parameters and self.type == "SARIMAX":
-                check_types([("D", parameters["D"], [int, float])])
-                assert 0 <= parameters["D"], ParameterError(
-                    "Incorrect parameter 'D'.\nThe seasonal order of the I part must "
-                    "be positive."
-                )
-                model_parameters["D"] = parameters["D"]
-            elif self.type == "SARIMAX" and "D" not in self.parameters:
-                model_parameters["D"] = default_parameters["D"]
-            elif self.type == "SARIMAX":
-                model_parameters["D"] = self.parameters["D"]
-            if "s" in parameters and self.type == "SARIMAX":
-                check_types([("s", parameters["s"], [int, float])])
-                assert 0 <= parameters["s"], ParameterError(
-                    "Incorrect parameter 's'.\nThe Span of the seasonality must be "
-                    "positive."
-                )
-                model_parameters["s"] = parameters["s"]
-            elif self.type == "SARIMAX" and "s" not in self.parameters:
-                model_parameters["s"] = default_parameters["s"]
-            elif self.type == "SARIMAX":
-                model_parameters["s"] = self.parameters["s"]
-            if "max_pik" in parameters and self.type == "SARIMAX":
-                check_types([("max_pik", parameters["max_pik"], [int, float])])
-                assert 0 <= parameters["max_pik"], ParameterError(
-                    "Incorrect parameter 'max_pik'.\nThe Maximum number of inverse MA "
-                    "coefficients took during the computation must be positive."
-                )
-                model_parameters["max_pik"] = parameters["max_pik"]
-            elif self.type == "SARIMAX" and "max_pik" not in self.parameters:
-                model_parameters["max_pik"] = default_parameters["max_pik"]
-            elif self.type == "SARIMAX":
-                model_parameters["max_pik"] = self.parameters["max_pik"]
-            if "papprox_ma" in parameters and self.type == "SARIMAX":
-                check_types([("papprox_ma", parameters["papprox_ma"], [int, float])])
-                assert 0 <= parameters["papprox_ma"], ParameterError(
-                    "Incorrect parameter 'papprox_ma'.\nThe Maximum number of AR(P) used "
-                    "to approximate the MA during the computation must be positive."
-                )
-                model_parameters["papprox_ma"] = parameters["papprox_ma"]
-            elif self.type == "SARIMAX" and "papprox_ma" not in self.parameters:
-                model_parameters["papprox_ma"] = default_parameters["papprox_ma"]
-            elif self.type == "SARIMAX":
-                model_parameters["papprox_ma"] = self.parameters["papprox_ma"]
-        elif self.type == "KernelDensity":
-            if "bandwidth" in parameters:
-                check_types([("bandwidth", parameters["bandwidth"], [int, float])])
-                assert 0 <= parameters["bandwidth"], ParameterError(
-                    "Incorrect parameter 'bandwidth'.\nThe bandwidth must be positive."
-                )
-                model_parameters["bandwidth"] = parameters["bandwidth"]
-            elif "bandwidth" not in self.parameters:
-                model_parameters["bandwidth"] = default_parameters["bandwidth"]
-            else:
-                model_parameters["bandwidth"] = self.parameters["bandwidth"]
-            if "kernel" in parameters:
-                check_types(
-                    [
-                        (
-                            "kernel",
-                            parameters["kernel"],
-                            ["gaussian", "logistic", "sigmoid", "silverman"],
-                        )
-                    ]
-                )
-                assert parameters["kernel"] in [
-                    "gaussian",
-                    "logistic",
-                    "sigmoid",
-                    "silverman",
-                ], ParameterError(
-                    "Incorrect parameter 'kernel'.\nThe parameter 'kernel' must "
-                    "be in [gaussian|logistic|sigmoid|silverman], found '{}'.".format(
-                        kernel
-                    )
-                )
-                model_parameters["kernel"] = parameters["kernel"]
-            elif "kernel" not in self.parameters:
-                model_parameters["kernel"] = default_parameters["kernel"]
-            else:
-                model_parameters["kernel"] = self.parameters["kernel"]
-            if "max_leaf_nodes" in parameters:
-                check_types(
-                    [
-                        (
-                            "max_leaf_nodes",
-                            parameters["max_leaf_nodes"],
-                            [int, float],
-                            False,
-                        )
-                    ]
-                )
-                assert 1 <= parameters["max_leaf_nodes"] <= 1e9, ParameterError(
-                    "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of "
-                    "leaf nodes must be between 1 and 1e9, inclusive."
-                )
-                model_parameters["max_leaf_nodes"] = parameters["max_leaf_nodes"]
-            elif "max_leaf_nodes" not in self.parameters:
-                model_parameters["max_leaf_nodes"] = default_parameters[
-                    "max_leaf_nodes"
-                ]
-            else:
-                model_parameters["max_leaf_nodes"] = self.parameters["max_leaf_nodes"]
-            if "max_depth" in parameters:
-                check_types([("max_depth", parameters["max_depth"], [int])])
-                assert 1 <= parameters["max_depth"] <= 100, ParameterError(
-                    "Incorrect parameter 'max_depth'.\nThe maximum depth for growing "
-                    "each tree must be between 1 and 100, inclusive."
-                )
-                model_parameters["max_depth"] = parameters["max_depth"]
-            elif "max_depth" not in self.parameters:
-                model_parameters["max_depth"] = default_parameters["max_depth"]
-            else:
-                model_parameters["max_depth"] = self.parameters["max_depth"]
-            if "min_samples_leaf" in parameters:
-                check_types(
-                    [
-                        (
-                            "min_samples_leaf",
-                            parameters["min_samples_leaf"],
-                            [int, float],
-                            False,
-                        )
-                    ]
-                )
-                assert 1 <= parameters["min_samples_leaf"] <= 1e6, ParameterError(
-                    "Incorrect parameter 'min_samples_leaf'.\nThe minimum number "
-                    "of samples each branch must have after splitting a node "
-                    "must be between 1 and 1e6, inclusive."
-                )
-                model_parameters["min_samples_leaf"] = parameters["min_samples_leaf"]
-            elif "min_samples_leaf" not in self.parameters:
-                model_parameters["min_samples_leaf"] = default_parameters[
-                    "min_samples_leaf"
-                ]
-            else:
-                model_parameters["min_samples_leaf"] = self.parameters[
-                    "min_samples_leaf"
-                ]
-            if "nbins" in parameters:
-                check_types([("nbins", parameters["nbins"], [int, float])])
-                assert 2 <= parameters["nbins"], ParameterError(
-                    "Incorrect parameter 'nbins'.\nThe number of bins to use for "
-                    "continuous features must be greater than 2."
-                )
-                model_parameters["nbins"] = parameters["nbins"]
-            elif "nbins" not in self.parameters:
-                model_parameters["nbins"] = default_parameters["nbins"]
-            else:
-                model_parameters["nbins"] = self.parameters["nbins"]
-            if "p" in parameters:
-                check_types([("p", parameters["p"], [int, float])])
-                assert 0 < parameters["p"], ParameterError(
-                    "Incorrect parameter 'p'.\nThe p of the p-distance must be "
-                    "strictly positive."
-                )
-                model_parameters["p"] = parameters["p"]
-            elif "p" not in self.parameters:
-                model_parameters["p"] = default_parameters["p"]
-            else:
-                model_parameters["p"] = self.parameters["p"]
-            if "xlim" in parameters:
-                check_types([("xlim", parameters["xlim"], [list])])
-                model_parameters["xlim"] = parameters["xlim"]
-            elif "xlim" not in self.parameters:
-                model_parameters["xlim"] = default_parameters["xlim"]
-            else:
-                model_parameters["xlim"] = self.parameters["xlim"]
-        elif self.type in (
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "IsolationForest",
-        ):
-            if "n_estimators" in parameters:
-                check_types([("n_estimators", parameters["n_estimators"], [int])])
-                assert 0 <= parameters["n_estimators"] <= 1000, ParameterError(
-                    "Incorrect parameter 'n_estimators'.\nThe number of trees must "
-                    "be lesser than 1000."
-                )
-                model_parameters["n_estimators"] = parameters["n_estimators"]
-            elif "n_estimators" not in self.parameters:
-                model_parameters["n_estimators"] = default_parameters["n_estimators"]
-            else:
-                model_parameters["n_estimators"] = self.parameters["n_estimators"]
-            if "sample" in parameters:
-                check_types([("sample", parameters["sample"], [int, float])])
-                assert 0 <= parameters["sample"] <= 1, ParameterError(
-                    "Incorrect parameter 'sample'.\nThe portion of the input data "
-                    "set that is randomly picked for training each tree must be "
-                    "between 0.0 and 1.0, inclusive."
-                )
-                model_parameters["sample"] = parameters["sample"]
-            elif "sample" not in self.parameters:
-                model_parameters["sample"] = default_parameters["sample"]
-            else:
-                model_parameters["sample"] = self.parameters["sample"]
-            if "max_depth" in parameters:
-                check_types([("max_depth", parameters["max_depth"], [int])])
-                assert 1 <= parameters["max_depth"] <= 100, ParameterError(
-                    "Incorrect parameter 'max_depth'.\nThe maximum depth for "
-                    "growing each tree must be between 1 and 100, inclusive."
-                )
-                model_parameters["max_depth"] = parameters["max_depth"]
-            elif "max_depth" not in self.parameters:
-                model_parameters["max_depth"] = default_parameters["max_depth"]
-            else:
-                model_parameters["max_depth"] = self.parameters["max_depth"]
-            if "nbins" in parameters:
-                check_types([("nbins", parameters["nbins"], [int, float])])
-                assert 2 <= parameters["nbins"] <= 1000, ParameterError(
-                    "Incorrect parameter 'nbins'.\nThe number of bins to use for "
-                    "continuous features must be between 2 and 1000, inclusive."
-                )
-                model_parameters["nbins"] = parameters["nbins"]
-            elif "nbins" not in self.parameters:
-                model_parameters["nbins"] = default_parameters["nbins"]
-            else:
-                model_parameters["nbins"] = self.parameters["nbins"]
-            if self.type in ("RandomForestClassifier", "RandomForestRegressor",):
-                if "max_features" in parameters:
-                    check_types(
-                        [
-                            (
-                                "max_features",
-                                parameters["max_features"],
-                                [int, float, str],
-                                False,
-                            )
-                        ]
-                    )
-                    if isinstance(parameters["max_features"], str):
-                        assert str(parameters["max_features"]).lower() in [
-                            "max",
-                            "auto",
-                        ], ParameterError(
-                            "Incorrect parameter 'init'.\nThe maximum number of features "
-                            "to test must be in (max | auto) or an integer, found '{}'.".format(
-                                parameters["max_features"]
-                            )
-                        )
-                    model_parameters["max_features"] = parameters["max_features"]
-                elif "max_features" not in self.parameters:
-                    model_parameters["max_features"] = default_parameters[
-                        "max_features"
-                    ]
-                else:
-                    model_parameters["max_features"] = self.parameters["max_features"]
-                if "max_leaf_nodes" in parameters:
-                    check_types(
-                        [
-                            (
-                                "max_leaf_nodes",
-                                parameters["max_leaf_nodes"],
-                                [int, float],
-                                False,
-                            )
-                        ]
-                    )
-                    assert 1 <= parameters["max_leaf_nodes"] <= 1e9, ParameterError(
-                        "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of "
-                        "leaf nodes must be between 1 and 1e9, inclusive."
-                    )
-                    model_parameters["max_leaf_nodes"] = parameters["max_leaf_nodes"]
-                elif "max_leaf_nodes" not in self.parameters:
-                    model_parameters["max_leaf_nodes"] = default_parameters[
-                        "max_leaf_nodes"
-                    ]
-                else:
-                    model_parameters["max_leaf_nodes"] = self.parameters[
-                        "max_leaf_nodes"
-                    ]
-                if "min_samples_leaf" in parameters:
-                    check_types(
-                        [
-                            (
-                                "min_samples_leaf",
-                                parameters["min_samples_leaf"],
-                                [int, float],
-                                False,
-                            )
-                        ]
-                    )
-                    assert 1 <= parameters["min_samples_leaf"] <= 1e6, ParameterError(
-                        "Incorrect parameter 'min_samples_leaf'.\nThe minimum number "
-                        "of samples each branch must have after splitting a node must "
-                        "be between 1 and 1e6, inclusive."
-                    )
-                    model_parameters["min_samples_leaf"] = parameters[
-                        "min_samples_leaf"
-                    ]
-                elif "min_samples_leaf" not in self.parameters:
-                    model_parameters["min_samples_leaf"] = default_parameters[
-                        "min_samples_leaf"
-                    ]
-                else:
-                    model_parameters["min_samples_leaf"] = self.parameters[
-                        "min_samples_leaf"
-                    ]
-                if "min_info_gain" in parameters:
-                    check_types(
-                        [
-                            (
-                                "min_info_gain",
-                                parameters["min_info_gain"],
-                                [int, float],
-                                False,
-                            )
-                        ]
-                    )
-                    assert 0 <= parameters["min_info_gain"] <= 1, ParameterError(
-                        "Incorrect parameter 'min_info_gain'.\nThe minimum threshold "
-                        "for including a split must be between 0.0 and 1.0, inclusive."
-                    )
-                    model_parameters["min_info_gain"] = parameters["min_info_gain"]
-                elif "min_info_gain" not in self.parameters:
-                    model_parameters["min_info_gain"] = default_parameters[
-                        "min_info_gain"
-                    ]
-                else:
-                    model_parameters["min_info_gain"] = self.parameters["min_info_gain"]
-            else:
-                if "col_sample_by_tree" in parameters:
-                    check_types(
-                        [
-                            (
-                                "col_sample_by_tree",
-                                parameters["col_sample_by_tree"],
-                                [int, float],
-                            )
-                        ]
-                    )
-                    assert 0 < parameters["col_sample_by_tree"] <= 1, ParameterError(
-                        "Incorrect parameter 'col_sample_by_tree'.\nThe parameter "
-                        "'col_sample_by_tree' must be between 0.0 and 1.0."
-                    )
-                    model_parameters["col_sample_by_tree"] = parameters[
-                        "col_sample_by_tree"
-                    ]
-                elif "col_sample_by_tree" not in self.parameters:
-                    model_parameters["col_sample_by_tree"] = default_parameters[
-                        "col_sample_by_tree"
-                    ]
-                else:
-                    model_parameters["col_sample_by_tree"] = self.parameters[
-                        "col_sample_by_tree"
-                    ]
-        elif self.type in ("XGBoostClassifier", "XGBoostRegressor"):
-            if "max_ntree" in parameters:
-                check_types([("max_ntree", parameters["max_ntree"], [int])])
-                assert 0 <= parameters["max_ntree"] <= 1000, ParameterError(
-                    "Incorrect parameter 'max_ntree'.\nThe maximum number of "
-                    "trees must be lesser than 1000."
-                )
-                model_parameters["max_ntree"] = parameters["max_ntree"]
-            elif "max_ntree" not in self.parameters:
-                model_parameters["max_ntree"] = default_parameters["max_ntree"]
-            else:
-                model_parameters["max_ntree"] = self.parameters["max_ntree"]
-            if "split_proposal_method" in parameters:
-                assert str(parameters["split_proposal_method"]).lower() in [
-                    "global",
-                ], ParameterError(
-                    "Incorrect parameter 'split_proposal_method'.\nThe Split "
-                    "Proposal Method must be in (global), found '{}'.".format(
-                        parameters["split_proposal_method"]
-                    )
-                )
-                model_parameters["split_proposal_method"] = parameters[
-                    "split_proposal_method"
-                ]
-            elif "split_proposal_method" not in self.parameters:
-                model_parameters["split_proposal_method"] = default_parameters[
-                    "split_proposal_method"
-                ]
-            else:
-                model_parameters["split_proposal_method"] = self.parameters[
-                    "split_proposal_method"
-                ]
-            if "tol" in parameters:
-                check_types([("tol", parameters["tol"], [int, float])])
-                assert 0 < parameters["tol"] <= 1, ParameterError(
-                    "Incorrect parameter 'tol'.\nThe tolerance must be between 0 and 1."
-                )
-                model_parameters["tol"] = parameters["tol"]
-            elif "tol" not in self.parameters:
-                model_parameters["tol"] = default_parameters["tol"]
-            else:
-                model_parameters["tol"] = self.parameters["tol"]
-            if "learning_rate" in parameters:
-                check_types(
-                    [("learning_rate", parameters["learning_rate"], [int, float])]
-                )
-                assert 0 < parameters["learning_rate"] <= 1, ParameterError(
-                    "Incorrect parameter 'learning_rate'.\nThe Learning Rate"
-                    " must be between 0 and 1."
-                )
-                model_parameters["learning_rate"] = parameters["learning_rate"]
-            elif "learning_rate" not in self.parameters:
-                model_parameters["learning_rate"] = default_parameters["learning_rate"]
-            else:
-                model_parameters["learning_rate"] = self.parameters["learning_rate"]
-            if "min_split_loss" in parameters:
-                check_types(
-                    [("min_split_loss", parameters["min_split_loss"], [int, float])]
-                )
-                assert 0 <= parameters["min_split_loss"] <= 1000, ParameterError(
-                    "Incorrect parameter 'min_split_loss'.\nThe Minimum "
-                    "Split Loss must be must be lesser than 1000."
-                )
-                model_parameters["min_split_loss"] = parameters["min_split_loss"]
-            elif "min_split_loss" not in self.parameters:
-                model_parameters["min_split_loss"] = default_parameters[
-                    "min_split_loss"
-                ]
-            else:
-                model_parameters["min_split_loss"] = self.parameters["min_split_loss"]
-            if "weight_reg" in parameters:
-                check_types([("weight_reg", parameters["weight_reg"], [int, float])])
-                assert 0 <= parameters["weight_reg"] <= 1000, ParameterError(
-                    "Incorrect parameter 'weight_reg'.\nThe Weight must be "
-                    "lesser than 1000."
-                )
-                model_parameters["weight_reg"] = parameters["weight_reg"]
-            elif "weight_reg" not in self.parameters:
-                model_parameters["weight_reg"] = default_parameters["weight_reg"]
-            else:
-                model_parameters["weight_reg"] = self.parameters["weight_reg"]
-            if "sample" in parameters:
-                check_types([("sample", parameters["sample"], [int, float])])
-                assert 0 < parameters["sample"] <= 1, ParameterError(
-                    "Incorrect parameter 'sample'.\nThe portion of the input "
-                    "data set that is randomly picked for training each tree "
-                    "must be between 0.0 and 1.0."
-                )
-                model_parameters["sample"] = parameters["sample"]
-            elif "sample" not in self.parameters:
-                model_parameters["sample"] = default_parameters["sample"]
-            else:
-                model_parameters["sample"] = self.parameters["sample"]
-            v = version()
-            v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-            if v:
-                if "col_sample_by_tree" in parameters:
-                    check_types(
-                        [
-                            (
-                                "col_sample_by_tree",
-                                parameters["col_sample_by_tree"],
-                                [int, float],
-                            )
-                        ]
-                    )
-                    assert 0 < parameters["col_sample_by_tree"] <= 1, ParameterError(
-                        "Incorrect parameter 'col_sample_by_tree'.\nThe parameter "
-                        "'col_sample_by_tree' must be between 0.0 and 1.0."
-                    )
-                    model_parameters["col_sample_by_tree"] = parameters[
-                        "col_sample_by_tree"
-                    ]
-                elif "col_sample_by_tree" not in self.parameters:
-                    model_parameters["col_sample_by_tree"] = default_parameters[
-                        "col_sample_by_tree"
-                    ]
-                else:
-                    model_parameters["col_sample_by_tree"] = self.parameters[
-                        "col_sample_by_tree"
-                    ]
-                if "col_sample_by_node" in parameters:
-                    check_types(
-                        [
-                            (
-                                "col_sample_by_node",
-                                parameters["col_sample_by_node"],
-                                [int, float],
-                            )
-                        ]
-                    )
-                    assert 0 < parameters["col_sample_by_node"] <= 1, ParameterError(
-                        "Incorrect parameter 'col_sample_by_node'.\nThe parameter "
-                        "'col_sample_by_node' must be between 0.0 and 1.0."
-                    )
-                    model_parameters["col_sample_by_node"] = parameters[
-                        "col_sample_by_node"
-                    ]
-                elif "col_sample_by_tree" not in self.parameters:
-                    model_parameters["col_sample_by_node"] = default_parameters[
-                        "col_sample_by_node"
-                    ]
-                else:
-                    model_parameters["col_sample_by_node"] = self.parameters[
-                        "col_sample_by_node"
-                    ]
-            if "max_depth" in parameters:
-                check_types([("max_depth", parameters["max_depth"], [int])])
-                assert 1 <= parameters["max_depth"] <= 20, ParameterError(
-                    "Incorrect parameter 'max_depth'.\nThe maximum depth for growing"
-                    " each tree must be between 1 and 20, inclusive."
-                )
-                model_parameters["max_depth"] = parameters["max_depth"]
-            elif "max_depth" not in self.parameters:
-                model_parameters["max_depth"] = default_parameters["max_depth"]
-            else:
-                model_parameters["max_depth"] = self.parameters["max_depth"]
-            if "nbins" in parameters:
-                check_types([("nbins", parameters["nbins"], [int, float])])
-                assert 2 <= parameters["nbins"] <= 1000, ParameterError(
-                    "Incorrect parameter 'nbins'.\nThe number of bins to use "
-                    "for continuous features must be between 2 and 1000, "
-                    "inclusive."
-                )
-                model_parameters["nbins"] = parameters["nbins"]
-            elif "nbins" not in self.parameters:
-                model_parameters["nbins"] = default_parameters["nbins"]
-            else:
-                model_parameters["nbins"] = self.parameters["nbins"]
-        elif self.type == "NaiveBayes":
-            if "alpha" in parameters:
-                check_types([("alpha", parameters["alpha"], [int, float])])
-                assert 0 <= parameters["alpha"], ParameterError(
-                    "Incorrect parameter 'alpha'.\nThe smoothing factor "
-                    "must be positive."
-                )
-                model_parameters["alpha"] = parameters["alpha"]
-            elif "alpha" not in self.parameters:
-                model_parameters["alpha"] = default_parameters["alpha"]
-            else:
-                model_parameters["alpha"] = self.parameters["alpha"]
-            if "nbtype" in parameters:
-                check_types([("nbtype", parameters["nbtype"], [str])])
-                if isinstance(parameters["nbtype"], str):
-                    assert str(parameters["nbtype"]).lower() in [
-                        "bernoulli",
-                        "categorical",
-                        "multinomial",
-                        "gaussian",
-                        "auto",
-                    ], ParameterError(
-                        "Incorrect parameter 'nbtype'.\nThe Naive Bayes "
-                        "type must be in (bernoulli | categorical | "
-                        "multinomial | gaussian | auto), found '{}'.".format(
-                            parameters["init"]
-                        )
-                    )
-                model_parameters["nbtype"] = parameters["nbtype"]
-            elif "nbtype" not in self.parameters:
-                model_parameters["nbtype"] = default_parameters["nbtype"]
-            else:
-                model_parameters["nbtype"] = self.parameters["nbtype"]
-        elif self.type in ("KMeans", "BisectingKMeans"):
-            if "max_iter" in parameters:
-                check_types([("max_iter", parameters["max_iter"], [int, float])])
-                assert 0 <= parameters["max_iter"], ParameterError(
-                    "Incorrect parameter 'max_iter'.\nThe maximum number "
-                    "of iterations must be positive."
-                )
-                model_parameters["max_iter"] = parameters["max_iter"]
-            elif "max_iter" not in self.parameters:
-                model_parameters["max_iter"] = default_parameters["max_iter"]
-            else:
-                model_parameters["max_iter"] = self.parameters["max_iter"]
-            if "tol" in parameters:
-                check_types([("tol", parameters["tol"], [int, float])])
-                assert 0 <= parameters["tol"], ParameterError(
-                    "Incorrect parameter 'tol'.\nThe tolerance parameter "
-                    "value must be positive."
-                )
-                model_parameters["tol"] = parameters["tol"]
-            elif "tol" not in self.parameters:
-                model_parameters["tol"] = default_parameters["tol"]
-            else:
-                model_parameters["tol"] = self.parameters["tol"]
-            if "n_cluster" in parameters:
-                check_types([("n_cluster", parameters["n_cluster"], [int, float])])
-                assert 1 <= parameters["n_cluster"] <= 10000, ParameterError(
-                    "Incorrect parameter 'n_cluster'.\nThe number of "
-                    "clusters must be between 1 and 10000, inclusive."
-                )
-                model_parameters["n_cluster"] = parameters["n_cluster"]
-            elif "n_cluster" not in self.parameters:
-                model_parameters["n_cluster"] = default_parameters["n_cluster"]
-            else:
-                model_parameters["n_cluster"] = self.parameters["n_cluster"]
-            if "init" in parameters:
-                check_types([("init", parameters["init"], [str, list])])
-                if isinstance(parameters["init"], str):
-                    if self.type == "BisectingKMeans":
-                        assert str(parameters["init"]).lower() in [
-                            "random",
-                            "kmeanspp",
-                            "pseudo",
-                        ], ParameterError(
-                            "Incorrect parameter 'init'.\nThe initialization "
-                            "method of the clusters must be in (random | "
-                            "kmeanspp | pseudo) or a list of the initial "
-                            "clusters position, found '{}'.".format(parameters["init"])
-                        )
-                    else:
-                        assert str(parameters["init"]).lower() in [
-                            "random",
-                            "kmeanspp",
-                        ], ParameterError(
-                            "Incorrect parameter 'init'.\nThe initialization"
-                            " method of the clusters must be in (random | "
-                            "kmeanspp) or a list of the initial clusters "
-                            "position, found '{}'.".format(parameters["init"])
-                        )
-                model_parameters["init"] = parameters["init"]
-            elif "init" not in self.parameters:
-                model_parameters["init"] = default_parameters["init"]
-            else:
-                model_parameters["init"] = self.parameters["init"]
-            if "bisection_iterations" in parameters:
-                check_types(
-                    [
-                        (
-                            "bisection_iterations",
-                            parameters["bisection_iterations"],
-                            [int, float],
-                            False,
-                        )
-                    ]
-                )
-                assert (
-                    1 <= parameters["bisection_iterations"] <= 1000000
-                ), ParameterError(
-                    "Incorrect parameter 'bisection_iterations'."
-                    "\nThe number of iterations the bisecting "
-                    "k-means algorithm performs for each bisection "
-                    "step must be between 1 and 1e6, inclusive."
-                )
-                model_parameters["bisection_iterations"] = parameters[
-                    "bisection_iterations"
-                ]
-            elif (
-                self.type == "BisectingKMeans"
-                and "bisection_iterations" not in self.parameters
-            ):
-                model_parameters["bisection_iterations"] = default_parameters[
-                    "bisection_iterations"
-                ]
-            elif self.type == "BisectingKMeans":
-                model_parameters["bisection_iterationss"] = self.parameters[
-                    "bisection_iterations"
-                ]
-            if "split_method" in parameters:
-                check_types([("split_method", parameters["split_method"], [str])])
-                assert str(parameters["split_method"]).lower() in [
-                    "size",
-                    "sum_squares",
-                ], ParameterError(
-                    "Incorrect parameter 'split_method'.\nThe split method"
-                    " must be in (size | sum_squares), found '{}'.".format(
-                        parameters["split_method"]
-                    )
-                )
-                model_parameters["split_method"] = parameters["split_method"]
-            elif (
-                self.type == "BisectingKMeans" and "split_method" not in self.parameters
-            ):
-                model_parameters["split_method"] = default_parameters["split_method"]
-            elif self.type == "BisectingKMeans":
-                model_parameters["split_method"] = self.parameters["split_method"]
-            if "min_divisible_cluster_size" in parameters:
-                check_types(
-                    [
-                        (
-                            "min_divisible_cluster_size",
-                            parameters["min_divisible_cluster_size"],
-                            [int, float],
-                            False,
-                        )
-                    ]
-                )
-                assert 2 <= parameters["min_divisible_cluster_size"], ParameterError(
-                    "Incorrect parameter 'min_divisible_cluster_size'.\n"
-                    "The minimum number of points of a divisible cluster "
-                    "must be greater than or equal to 2."
-                )
-                model_parameters["min_divisible_cluster_size"] = parameters[
-                    "min_divisible_cluster_size"
-                ]
-            elif (
-                self.type == "BisectingKMeans"
-                and "min_divisible_cluster_size" not in self.parameters
-            ):
-                model_parameters["min_divisible_cluster_size"] = default_parameters[
-                    "min_divisible_cluster_size"
-                ]
-            elif self.type == "BisectingKMeans":
-                model_parameters["min_divisible_cluster_size"] = self.parameters[
-                    "min_divisible_cluster_size"
-                ]
-            if "distance_method" in parameters:
-                check_types([("distance_method", parameters["distance_method"], [str])])
-                assert str(parameters["distance_method"]).lower() in [
-                    "euclidean"
-                ], ParameterError(
-                    "Incorrect parameter 'distance_method'.\nThe distance "
-                    "method must be in (euclidean), found '{}'.".format(
-                        parameters["distance_method"]
-                    )
-                )
-                model_parameters["distance_method"] = parameters["distance_method"]
-            elif (
-                self.type == "BisectingKMeans"
-                and "distance_method" not in self.parameters
-            ):
-                model_parameters["distance_method"] = default_parameters[
-                    "distance_method"
-                ]
-            elif self.type == "BisectingKMeans":
-                model_parameters["distance_method"] = self.parameters["distance_method"]
-        elif self.type in ("LinearSVC", "LinearSVR"):
-            if "tol" in parameters:
-                check_types([("tol", parameters["tol"], [int, float])])
-                assert 0 <= parameters["tol"], ParameterError(
-                    "Incorrect parameter 'tol'.\nThe tolerance parameter "
-                    "value must be positive."
-                )
-                model_parameters["tol"] = parameters["tol"]
-            elif "tol" not in self.parameters:
-                model_parameters["tol"] = default_parameters["tol"]
-            else:
-                model_parameters["tol"] = self.parameters["tol"]
-            if "C" in parameters:
-                check_types([("C", parameters["C"], [int, float])])
-                assert 0 <= parameters["C"], ParameterError(
-                    "Incorrect parameter 'C'.\nThe weight for misclassification "
-                    "cost must be positive."
-                )
-                model_parameters["C"] = parameters["C"]
-            elif "C" not in self.parameters:
-                model_parameters["C"] = default_parameters["C"]
-            else:
-                model_parameters["C"] = self.parameters["C"]
-            if "max_iter" in parameters:
-                check_types([("max_iter", parameters["max_iter"], [int, float])])
-                assert 0 <= parameters["max_iter"], ParameterError(
-                    "Incorrect parameter 'max_iter'.\nThe maximum number "
-                    "of iterations must be positive."
-                )
-                model_parameters["max_iter"] = parameters["max_iter"]
-            elif "max_iter" not in self.parameters:
-                model_parameters["max_iter"] = default_parameters["max_iter"]
-            else:
-                model_parameters["max_iter"] = self.parameters["max_iter"]
-            if "fit_intercept" in parameters:
-                check_types([("fit_intercept", parameters["fit_intercept"], [bool])])
-                model_parameters["fit_intercept"] = parameters["fit_intercept"]
-            elif "fit_intercept" not in self.parameters:
-                model_parameters["fit_intercept"] = default_parameters["fit_intercept"]
-            else:
-                model_parameters["fit_intercept"] = self.parameters["fit_intercept"]
-            if "intercept_scaling" in parameters:
-                check_types(
-                    [
-                        (
-                            "intercept_scaling",
-                            parameters["intercept_scaling"],
-                            [float],
-                            False,
-                        )
-                    ]
-                )
-                assert 0 <= parameters["intercept_scaling"], ParameterError(
-                    "Incorrect parameter 'intercept_scaling'.\nThe Intercept "
-                    "Scaling parameter value must be positive."
-                )
-                model_parameters["intercept_scaling"] = parameters["intercept_scaling"]
-            elif "intercept_scaling" not in self.parameters:
-                model_parameters["intercept_scaling"] = default_parameters[
-                    "intercept_scaling"
-                ]
-            else:
-                model_parameters["intercept_scaling"] = self.parameters[
-                    "intercept_scaling"
-                ]
-            if "intercept_mode" in parameters:
-                check_types([("intercept_mode", parameters["intercept_mode"], [str])])
-                assert str(parameters["intercept_mode"]).lower() in [
-                    "regularized",
-                    "unregularized",
-                ], ParameterError(
-                    "Incorrect parameter 'intercept_mode'.\nThe Intercept Mode "
-                    "must be in (size | sum_squares), found '{}'.".format(
-                        parameters["intercept_mode"]
-                    )
-                )
-                model_parameters["intercept_mode"] = parameters["intercept_mode"]
-            elif "intercept_mode" not in self.parameters:
-                model_parameters["intercept_mode"] = default_parameters[
-                    "intercept_mode"
-                ]
-            else:
-                model_parameters["intercept_mode"] = self.parameters["intercept_mode"]
-            if ("class_weight" in parameters) and self.type == "LinearSVC":
-                check_types(
-                    [("class_weight", parameters["class_weight"], [list, tuple])]
-                )
-                model_parameters["class_weight"] = parameters["class_weight"]
-            elif self.type == "LinearSVC" and "class_weight" not in self.parameters:
-                model_parameters["class_weight"] = default_parameters["class_weight"]
-            elif self.type == "LinearSVC":
-                model_parameters["class_weight"] = self.parameters["class_weight"]
-            if ("acceptable_error_margin" in parameters) and self.type == "LinearSVR":
-                check_types(
-                    [
-                        (
-                            "acceptable_error_margin",
-                            parameters["acceptable_error_margin"],
-                            [int, float],
-                            False,
-                        )
-                    ]
-                )
-                assert 0 <= parameters["acceptable_error_margin"], ParameterError(
-                    "Incorrect parameter 'acceptable_error_margin'.\nThe Acceptable "
-                    "Error Margin parameter value must be positive."
-                )
-                model_parameters["acceptable_error_margin"] = parameters[
-                    "acceptable_error_margin"
-                ]
-            elif (
-                self.type == "LinearSVR"
-                and "acceptable_error_margin" not in self.parameters
-            ):
-                model_parameters["acceptable_error_margin"] = default_parameters[
-                    "acceptable_error_margin"
-                ]
-            elif self.type == "LinearSVR":
-                model_parameters["acceptable_error_margin"] = self.parameters[
-                    "acceptable_error_margin"
-                ]
-        elif self.type in ("PCA", "SVD", "MCA"):
-            if ("scale" in parameters) and self.type == "PCA":
-                check_types([("scale", parameters["scale"], [bool])])
-                model_parameters["scale"] = parameters["scale"]
-            elif self.type == "PCA" and "scale" not in self.parameters:
-                model_parameters["scale"] = default_parameters["scale"]
-            elif self.type == "PCA":
-                model_parameters["scale"] = self.parameters["scale"]
-            if self.type in ("PCA", "SVD"):
-                if "method" in parameters:
-                    check_types([("method", parameters["method"], [str])])
-                    assert str(parameters["method"]).lower() in [
-                        "lapack"
-                    ], ParameterError(
-                        "Incorrect parameter 'method'.\nThe decomposition method "
-                        "must be in (lapack), found '{}'.".format(parameters["method"])
-                    )
-                    model_parameters["method"] = parameters["method"]
-                elif "method" not in self.parameters:
-                    model_parameters["method"] = default_parameters["method"]
-                else:
-                    model_parameters["method"] = self.parameters["method"]
-                if "n_components" in parameters:
-                    check_types(
-                        [("n_components", parameters["n_components"], [int, float])]
-                    )
-                    assert 0 <= parameters["n_components"], ParameterError(
-                        "Incorrect parameter 'n_components'.\nThe number of "
-                        "components must be positive. If it is equal to 0, all "
-                        "the components will be considered."
-                    )
-                    model_parameters["n_components"] = parameters["n_components"]
-                elif "n_components" not in self.parameters:
-                    model_parameters["n_components"] = default_parameters[
-                        "n_components"
-                    ]
-                else:
-                    model_parameters["n_components"] = self.parameters["n_components"]
-        elif self.type == "OneHotEncoder":
-            if "extra_levels" in parameters:
-                check_types([("extra_levels", parameters["extra_levels"], [dict])])
-                model_parameters["extra_levels"] = parameters["extra_levels"]
-            elif "extra_levels" not in self.parameters:
-                model_parameters["extra_levels"] = default_parameters["extra_levels"]
-            else:
-                model_parameters["extra_levels"] = self.parameters["extra_levels"]
-            if "drop_first" in parameters:
-                check_types([("drop_first", parameters["drop_first"], [bool])])
-                model_parameters["drop_first"] = parameters["drop_first"]
-            elif "drop_first" not in self.parameters:
-                model_parameters["drop_first"] = default_parameters["drop_first"]
-            else:
-                model_parameters["drop_first"] = self.parameters["drop_first"]
-            if "ignore_null" in parameters:
-                check_types([("ignore_null", parameters["ignore_null"], [bool])])
-                model_parameters["ignore_null"] = parameters["ignore_null"]
-            elif "ignore_null" not in self.parameters:
-                model_parameters["ignore_null"] = default_parameters["ignore_null"]
-            else:
-                model_parameters["ignore_null"] = self.parameters["ignore_null"]
-            if "separator" in parameters:
-                check_types([("separator", parameters["separator"], [str])])
-                model_parameters["separator"] = parameters["separator"]
-            elif "separator" not in self.parameters:
-                model_parameters["separator"] = default_parameters["separator"]
-            else:
-                model_parameters["separator"] = self.parameters["separator"]
-            if "null_column_name" in parameters:
-                check_types(
-                    [("null_column_name", parameters["null_column_name"], [str])]
-                )
-                model_parameters["null_column_name"] = parameters["null_column_name"]
-            elif "null_column_name" not in self.parameters:
-                model_parameters["null_column_name"] = default_parameters[
-                    "null_column_name"
-                ]
-            else:
-                model_parameters["null_column_name"] = self.parameters[
-                    "null_column_name"
-                ]
-            if "column_naming" in parameters:
-                check_types([("column_naming", parameters["column_naming"], [str])])
-                assert str(parameters["column_naming"]).lower() in [
-                    "indices",
-                    "values",
-                    "values_relaxed",
-                ], ParameterError(
-                    "Incorrect parameter 'column_naming'.\nThe column_naming "
-                    "method must be in (indices | values | values_relaxed), "
-                    "found '{}'.".format(parameters["column_naming"])
-                )
-                model_parameters["column_naming"] = parameters["column_naming"]
-            elif "column_naming" not in self.parameters:
-                model_parameters["column_naming"] = default_parameters["column_naming"]
-            else:
-                model_parameters["column_naming"] = self.parameters["column_naming"]
-        elif self.type == "Normalizer":
-            if "method" in parameters:
-                check_types([("method", parameters["method"], [str])])
-                assert str(parameters["method"]).lower() in [
-                    "zscore",
-                    "robust_zscore",
-                    "minmax",
-                ], ParameterError(
-                    "Incorrect parameter 'method'.\nThe normalization method must "
-                    "be in (zscore | robust_zscore | minmax), found '{}'.".format(
-                        parameters["method"]
-                    )
-                )
-                model_parameters["method"] = parameters["method"]
-            elif "method" not in self.parameters:
-                model_parameters["method"] = default_parameters["method"]
-            else:
-                model_parameters["method"] = self.parameters["method"]
-        elif self.type == "DBSCAN":
-            if "eps" in parameters:
-                check_types([("eps", parameters["eps"], [int, float])])
-                assert 0 < parameters["eps"], ParameterError(
-                    "Incorrect parameter 'eps'.\nThe radius of a neighborhood must "
-                    "be strictly positive."
-                )
-                model_parameters["eps"] = parameters["eps"]
-            elif "eps" not in self.parameters:
-                model_parameters["eps"] = default_parameters["eps"]
-            else:
-                model_parameters["eps"] = self.parameters["eps"]
-            if "p" in parameters:
-                check_types([("p", parameters["p"], [int, float])])
-                assert 0 < parameters["p"], ParameterError(
-                    "Incorrect parameter 'p'.\nThe p of the p-distance must be "
-                    "strictly positive."
-                )
-                model_parameters["p"] = parameters["p"]
-            elif "p" not in self.parameters:
-                model_parameters["p"] = default_parameters["p"]
-            else:
-                model_parameters["p"] = self.parameters["p"]
-            if "min_samples" in parameters:
-                check_types([("min_samples", parameters["min_samples"], [int, float])])
-                assert 0 < parameters["min_samples"], ParameterError(
-                    "Incorrect parameter 'min_samples'.\nThe minimum number of "
-                    "points required to form a dense region must be strictly "
-                    "positive."
-                )
-                model_parameters["min_samples"] = parameters["min_samples"]
-            elif "min_samples" not in self.parameters:
-                model_parameters["min_samples"] = default_parameters["min_samples"]
-            else:
-                model_parameters["min_samples"] = self.parameters["min_samples"]
-        elif self.type in (
-            "NearestCentroid",
-            "KNeighborsClassifier",
-            "KNeighborsRegressor",
-            "LocalOutlierFactor",
-        ):
-            if "p" in parameters:
-                check_types([("p", parameters["p"], [int, float])])
-                assert 0 < parameters["p"], ParameterError(
-                    "Incorrect parameter 'p'.\nThe p of the p-distance must be "
-                    "strictly positive."
-                )
-                model_parameters["p"] = parameters["p"]
-            elif "p" not in self.parameters:
-                model_parameters["p"] = default_parameters["p"]
-            else:
-                model_parameters["p"] = self.parameters["p"]
-            if ("n_neighbors" in parameters) and (self.type != "NearestCentroid"):
-                check_types([("n_neighbors", parameters["n_neighbors"], [int, float])])
-                assert 0 < parameters["n_neighbors"], ParameterError(
-                    "Incorrect parameter 'n_neighbors'.\nThe number of neighbors "
-                    "must be strictly positive."
-                )
-                model_parameters["n_neighbors"] = parameters["n_neighbors"]
-            elif (
-                self.type != "NearestCentroid" and "n_neighbors" not in self.parameters
-            ):
-                model_parameters["n_neighbors"] = default_parameters["n_neighbors"]
-            elif self.type != "NearestCentroid":
-                model_parameters["n_neighbors"] = self.parameters["n_neighbors"]
-        elif self.type == "CountVectorizer":
-            if "max_df" in parameters:
-                check_types([("max_df", parameters["max_df"], [int, float])])
-                assert 0 <= parameters["max_df"] <= 1, ParameterError(
-                    "Incorrect parameter 'max_df'.\nIt must be between 0 and 1, "
-                    "inclusive."
-                )
-                model_parameters["max_df"] = parameters["max_df"]
-            elif "max_df" not in self.parameters:
-                model_parameters["max_df"] = default_parameters["max_df"]
-            else:
-                model_parameters["max_df"] = self.parameters["max_df"]
-            if "min_df" in parameters:
-                check_types([("min_df", parameters["min_df"], [int, float])])
-                assert 0 <= parameters["min_df"] <= 1, ParameterError(
-                    "Incorrect parameter 'min_df'.\nIt must be between 0 and 1, "
-                    "inclusive."
-                )
-                model_parameters["min_df"] = parameters["min_df"]
-            elif "min_df" not in self.parameters:
-                model_parameters["min_df"] = default_parameters["min_df"]
-            else:
-                model_parameters["min_df"] = self.parameters["min_df"]
-            if "lowercase" in parameters:
-                check_types([("lowercase", parameters["lowercase"], [bool])])
-                model_parameters["lowercase"] = parameters["lowercase"]
-            elif "lowercase" not in self.parameters:
-                model_parameters["lowercase"] = default_parameters["lowercase"]
-            else:
-                model_parameters["lowercase"] = self.parameters["lowercase"]
-            if "ignore_special" in parameters:
-                check_types([("ignore_special", parameters["ignore_special"], [bool])])
-                model_parameters["ignore_special"] = parameters["ignore_special"]
-            elif "ignore_special" not in self.parameters:
-                model_parameters["ignore_special"] = default_parameters[
-                    "ignore_special"
-                ]
-            else:
-                model_parameters["ignore_special"] = self.parameters["ignore_special"]
-            if "max_text_size" in parameters:
-                check_types(
-                    [
-                        (
-                            "max_text_size",
-                            parameters["max_text_size"],
-                            [int, float],
-                            False,
-                        )
-                    ]
-                )
-                assert 0 < parameters["max_text_size"], ParameterError(
-                    "Incorrect parameter 'max_text_size'.\nThe maximum text size "
-                    "must be positive."
-                )
-                model_parameters["max_text_size"] = parameters["max_text_size"]
-            elif "max_text_size" not in self.parameters:
-                model_parameters["max_text_size"] = default_parameters["max_text_size"]
-            else:
-                model_parameters["max_text_size"] = self.parameters["max_text_size"]
-            if "max_features" in parameters:
-                check_types(
-                    [("max_features", parameters["max_features"], [int, float])]
-                )
-                model_parameters["max_features"] = parameters["max_features"]
-            elif "max_features" not in self.parameters:
-                model_parameters["max_features"] = default_parameters["max_features"]
-            else:
-                model_parameters["max_features"] = self.parameters["max_features"]
-        from verticapy.learn.linear_model import (
-            Lasso,
-            Ridge,
-            LinearRegression,
-            LogisticRegression,
-        )
-        from verticapy.learn.tree import (
-            DecisionTreeClassifier,
-            DecisionTreeRegressor,
-            DummyTreeClassifier,
-            DummyTreeRegressor,
-        )
-
-        if isinstance(self, LogisticRegression):
-            if model_parameters["penalty"] in ("none", "l1", "l2"):
-                if "l1_ratio" in model_parameters:
-                    del model_parameters["l1_ratio"]
-            if model_parameters["penalty"] == "none":
-                if "C" in model_parameters:
-                    del model_parameters["C"]
-        elif isinstance(self, Lasso):
-            model_parameters["penalty"] = "l1"
-            if "l1_ratio" in model_parameters:
-                del model_parameters["l1_ratio"]
-        elif isinstance(self, Ridge):
-            model_parameters["penalty"] = "l2"
-            if "l1_ratio" in model_parameters:
-                del model_parameters["l1_ratio"]
-        elif isinstance(self, LinearRegression):
-            model_parameters["penalty"] = "none"
-            if "l1_ratio" in model_parameters:
-                del model_parameters["l1_ratio"]
-            if "C" in model_parameters:
-                del model_parameters["C"]
-        elif isinstance(
-            self,
-            (
-                DecisionTreeClassifier,
-                DecisionTreeRegressor,
-                DummyTreeClassifier,
-                DummyTreeRegressor,
-            ),
-        ):
-            model_parameters["n_estimators"] = 1
-            model_parameters["sample"] = 1.0
-            if isinstance(self, (DummyTreeClassifier, DummyTreeRegressor)):
-                model_parameters["max_features"] = "max"
-                model_parameters["max_leaf_nodes"] = 1e9
-                model_parameters["max_depth"] = 100
-                model_parameters["min_samples_leaf"] = 1
-                model_parameters["min_info_gain"] = 0.0
-        self.parameters = model_parameters
+        all_init_params = list(typing.get_type_hints(self.__init__).keys())
+        new_parameters = copy.deepcopy(self.parameters)
+        new_parameters_keys = list(new_parameters.keys())
+        for p in new_parameters_keys:
+            if p not in all_init_params:
+                del new_parameters[p]
+        for p in parameters:
+            if p not in all_init_params:
+                warning_message = (
+                    f"parameter 'parameters' got an unexpected keyword argument '{p}'"
+                )
+                warnings.warn(warning_message, Warning)
+            new_parameters[p] = parameters[p]
+        self.__init__(name=self.name, **new_parameters)
 
     # ---#
     def to_memmodel(self, **kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Converts a specified Vertica model to a memModel model.
 
     Returns
@@ -2241,8 +899,14 @@ Main Class for Vertica Model
                 ],
                 "p": 2,
             }
-        elif self.type == "KMeans":
+        elif self.type in ("KMeans", "KPrototypes"):
             attributes = {"clusters": self.cluster_centers_.to_numpy(), "p": 2}
+            if self.type == "KPrototypes":
+                attributes["gamma"] = self.parameters["gamma"]
+                attributes["is_categorical"] = [
+                    ("char" in self.cluster_centers_.dtype[key].lower())
+                    for key in self.cluster_centers_.dtype
+                ]
         elif self.type == "NearestCentroid":
             attributes = {
                 "clusters": self.centroids_.to_numpy()[:, 0:-1],
@@ -2407,7 +1071,7 @@ Main Class for Vertica Model
                     attributes["logodds"] = self.prior_.copy()
         else:
             raise ModelError(
-                "Model type '{}' can not be converted to memModel.".format(self.type)
+                f"Model type '{self.type}' can not be converted to memModel."
             )
         return memModel(model_type=self.type, attributes=attributes)
 
@@ -2420,7 +1084,7 @@ Main Class for Vertica Model
         return_str: bool = False,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the Python code needed to deploy the model without using built-in
     Vertica functions.
 
@@ -2429,11 +1093,12 @@ Main Class for Vertica Model
     name: str, optional
         Function Name.
     return_proba: bool, optional
-        If set to True and the model is a classifier, the function will 
-        return the model probabilities.
+        If set to True and the model is a classifier, the function
+        returns the model probabilities.
     return_distance_clusters: bool, optional
-        If set to True and the model type is KMeans or NearestCentroid, the 
-        function will return the model clusters distances.
+        If set to True and the model type is KMeans or NearestCentroid, 
+        the function returns the model clusters distances. If the model
+        is KPrototypes, the function returns the dissimilarity function.
     return_str: bool, optional
         If set to True, the function str will be returned.
 
@@ -2455,7 +1120,7 @@ Main Class for Vertica Model
             all_vars = {}
             exec(func, {}, all_vars)
             return all_vars[name]
-        func = "def {}(X):\n\timport numpy as np\n\t".format(name)
+        func = f"def {name}(X):\n\timport numpy as np\n\t"
         if self.type in (
             "LinearRegression",
             "LinearSVR",
@@ -2482,9 +1147,9 @@ Main Class for Vertica Model
         elif self.type == "BisectingKMeans":
             bktree = self.get_attr("BKTree")
             cluster = [elem[1:-7] for elem in bktree.to_list()]
-            func += "centroids = np.array({})\n".format(cluster)
-            func += "\tright_child = {}\n".format(bktree["right_child"])
-            func += "\tleft_child = {}\n".format(bktree["left_child"])
+            func += f"centroids = np.array({cluster})\n"
+            func += f"\tright_child = {bktree['right_child']}\n"
+            func += f"\tleft_child = {bktree['left_child']}\n"
             func += "\tdef predict_tree(right_child, left_child, row, node_id, centroids):\n"
             func += "\t\tif left_child[node_id] == right_child[node_id] == None:\n"
             func += "\t\t\treturn int(node_id)\n"
@@ -2502,7 +1167,40 @@ Main Class for Vertica Model
             )
             func += "\treturn np.apply_along_axis(predict_tree_final, 1, X)\n"
             return func
-        elif self.type in ("NearestCentroid", "KMeans"):
+        elif self.type in ("KPrototypes",):
+            centroids = self.cluster_centers_.to_list()
+            func += f"centroids = np.array({centroids})\n\n"
+            func += "\tdef compute_distance_row(X):\n"
+            func += "\t\tresult = []\n"
+            func += "\t\tfor centroid in centroids:\n"
+            func += "\t\t\tdistance_num, distance_cat = 0, 0\n"
+            func += "\t\t\tfor idx in range(len(X)):\n"
+            func += "\t\t\t\tval, centroid_val = X[idx], centroid[idx]\n"
+            func += "\t\t\t\ttry:\n"
+            func += "\t\t\t\t\tval = float(val)\n"
+            func += "\t\t\t\t\tcentroid_val = float(centroid_val)\n"
+            func += "\t\t\t\texcept:\n"
+            func += "\t\t\t\t\tpass\n"
+            func += (
+                "\t\t\t\tif isinstance(centroid_val, str) or centroid_val == None:\n"
+            )
+            func += "\t\t\t\t\tdistance_cat += abs(int(val == centroid_val) - 1)\n"
+            func += "\t\t\t\telse:\n"
+            func += "\t\t\t\t\tdistance_num += (val - centroid_val) ** 2\n"
+            func += "\t\t\tdistance_final = distance_num + {0} * distance_cat\n".format(
+                self.parameters["gamma"]
+            )
+            func += "\t\t\tresult += [distance_final]\n"
+            func += "\t\treturn result\n\n"
+            func += "\tresult = np.apply_along_axis(compute_distance_row, 1, X)\n\n"
+            if return_proba:
+                func += "\treturn 1 / (result + 1e-99) / np.sum(1 / (result + 1e-99), axis=1)[:, None]\n"
+            elif not (return_distance_clusters):
+                func += "\treturn np.argmin(result, axis=1)\n"
+            else:
+                func += "\treturn result\n"
+            return func
+        elif self.type in ("NearestCentroid", "KMeans",):
             centroids = (
                 self.centroids_.to_list()
                 if self.type == "NearestCentroid"
@@ -2516,8 +1214,7 @@ Main Class for Vertica Model
                 func += "\tclasses = np.array({})\n".format(self.classes_)
             func += "\tresult = []\n"
             func += "\tfor centroid in centroids:\n"
-            func += "\t\tresult += [np.sum((np.array(centroid) - X) ** {}, axis=1) ** (1 / {})]\n".format(
-                self.parameters["p"] if self.type == "NearestCentroid" else 2,
+            func += "\t\tresult += [np.sum((np.array(centroid) - X) ** {0}, axis=1) ** (1 / {0})]\n".format(
                 self.parameters["p"] if self.type == "NearestCentroid" else 2,
             )
             func += "\tresult = np.column_stack(result)\n"
@@ -2546,12 +1243,12 @@ Main Class for Vertica Model
             attr = self.get_attr("principal_components")
             n = len(attr["PC1"])
             for i in range(1, n + 1):
-                pca += [attr["PC{}".format(i)]]
-            func += "avg_values = np.array({})\n".format(avg)
-            func += "\tpca_values = np.array({})\n".format(pca)
+                pca += [attr[f"PC{i}"]]
+            func += f"avg_values = np.array({avg})\n"
+            func += f"\tpca_values = np.array({pca})\n"
             func += "\tresult = (X - avg_values)\n"
             func += "\tL = []\n"
-            func += "\tfor i in range({}):\n".format(n)
+            func += f"\tfor i in range({n}):\n"
             func += "\t\tL += [np.sum(result * pca_values[i], axis=1)]\n"
             func += "\tresult = np.column_stack(L)\n"
             func += "\treturn result\n"
@@ -2577,13 +1274,13 @@ Main Class for Vertica Model
             attr = self.get_attr("right_singular_vectors")
             n = len(attr["vector1"])
             for i in range(1, n + 1):
-                sv += [attr["vector{}".format(i)]]
+                sv += [attr[f"vector{i}"]]
             value = self.get_attr("singular_values")["value"]
-            func += "singular_values = np.array({})\n".format(value)
-            func += "\tright_singular_vectors = np.array({})\n".format(sv)
+            func += f"singular_values = np.array({value})\n"
+            func += f"\tright_singular_vectors = np.array({sv})\n"
             func += "\tL = []\n"
             n = len(sv[0])
-            func += "\tfor i in range({}):\n".format(n)
+            func += f"\tfor i in range({n}):\n"
             func += "\t\tL += [np.sum(X * right_singular_vectors[i] / singular_values[i], axis=1)]\n"
             func += "\tresult = np.column_stack(L)\n"
             func += "\treturn result\n"
@@ -2591,9 +1288,9 @@ Main Class for Vertica Model
         elif self.type == "NaiveBayes":
             var_info_simplified = self.get_var_info()
             prior = self.get_attr("prior").values["probability"]
-            func += "var_info_simplified = {}\n".format(var_info_simplified)
-            func += "\tprior = np.array({})\n".format(prior)
-            func += "\tclasses = {}\n".format(self.classes_)
+            func += f"var_info_simplified = {var_info_simplified}\n"
+            func += f"\tprior = np.array({prior})\n"
+            func += f"\tclasses = {self.classes_}\n"
             func += "\tdef naive_bayes_score_row(X):\n"
             func += "\t\tresult = []\n"
             func += "\t\tfor c in classes:\n"
@@ -2636,7 +1333,7 @@ Main Class for Vertica Model
                 category_level += [details["category_level"][pos[0] : pos[-1] + 1]]
             if self.parameters["drop_first"]:
                 category_level = [elem[1:] for elem in category_level]
-            func += "category_level = {}\n\t".format(category_level)
+            func += f"category_level = {category_level}\n\t"
             func += "def ooe_row(X):\n\t"
             func += "\tresult = []\n\t"
             func += "\tfor idx, elem in enumerate(X):\n\t\t"
@@ -2664,10 +1361,10 @@ Main Class for Vertica Model
                 n = self.parameters["n_estimators"]
             else:
                 n = self.get_attr("tree_count")["tree_count"][0]
-            func += "n = {}\n".format(n)
+            func += f"n = {n}\n"
             if self.type in ("XGBoostClassifier", "RandomForestClassifier"):
                 func += "\tclasses = np.array({})\n".format(
-                    [str(elem) for elem in self.classes_]
+                    [str(c) for c in self.classes_]
                 )
             func += "\ttree_list = []\n"
             for i in range(n):
@@ -2693,9 +1390,7 @@ Main Class for Vertica Model
                     self.parameters["sample"]
                     * int(self.get_attr("accepted_row_count")["accepted_row_count"][0])
                 )
-                func += "\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4][node_id][1])) / heuristic_length({})\n".format(
-                    psy
-                )
+                func += f"\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4][node_id][1])) / heuristic_length({psy})\n"
             elif self.type == "RandomForestClassifier":
                 func += "\t\t\treturn tree[4][node_id]\n"
             else:
@@ -2717,9 +1412,7 @@ Main Class for Vertica Model
             if self.type in ("XGBoostRegressor", "XGBoostClassifier"):
                 if self.type == "XGBoostRegressor":
                     avg = self.prior_
-                    func += "\t\treturn {} + {} * np.sum(result)\n".format(
-                        avg, self.parameters["learning_rate"]
-                    )
+                    func += f"\t\treturn {avg} + {self.parameters['learning_rate']} * np.sum(result)\n"
                 else:
                     if not (isinstance(self.prior_, list)):
                         func += "\t\tlogodds = np.array([{}, {}])\n".format(
@@ -2727,14 +1420,12 @@ Main Class for Vertica Model
                             np.log(self.prior_ / (1 - self.prior_)),
                         )
                     else:
-                        func += "\t\tlogodds = np.array({})\n".format(self.prior_)
+                        func += f"\t\tlogodds = np.array({self.prior_})\n"
                     func += "\t\tfor idx, elem in enumerate(all_classes_score):\n"
                     func += "\t\t\tfor val in result:\n"
                     func += "\t\t\t\tall_classes_score[elem] += val[elem]\n"
                     func += "\t\t\tall_classes_score[elem] = 1 / (1 + np.exp( - "
-                    func += "(logodds[idx] + {} * all_classes_score[elem])))\n".format(
-                        self.parameters["learning_rate"]
-                    )
+                    func += f"(logodds[idx] + {self.parameters['learning_rate']} * all_classes_score[elem])))\n"
                     func += "\t\tresult = [all_classes_score[elem] for elem in "
                     func += "all_classes_score]\n"
             elif self.type == "RandomForestRegressor":
@@ -2760,15 +1451,14 @@ Main Class for Vertica Model
             return func
         else:
             raise ModelError(
-                "Function to_python not yet available for model type '{}'.".format(
-                    self.type
-                )
+                f"Function to_python not yet available for model type '{self.type}'."
             )
 
     # ---#
+    @check_dtypes
     def to_sql(self, X: list = [], return_proba: bool = False):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model without using built-in 
     Vertica functions.
 
@@ -2798,26 +1488,27 @@ Main Class for Vertica Model
 class Supervised(vModel):
 
     # ---#
+    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
-        X: list,
+        X: Union[str, list],
         y: str,
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str/vDataFrame
+	input_relation: str / vDataFrame
 		Training relation.
-	X: list
+	X: str / list
 		List of the predictors.
 	y: str
 		Response column.
-	test_relation: str/vDataFrame, optional
+	test_relation: str / vDataFrame, optional
 		Relation used to test the model.
 
 	Returns
@@ -2827,15 +1518,7 @@ class Supervised(vModel):
 		"""
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame]),
-                ("X", X, [list]),
-                ("y", y, [str]),
-                ("test_relation", test_relation, [str, vDataFrame]),
-            ]
-        )
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -2867,7 +1550,7 @@ class Supervised(vModel):
             "RandomForestRegressor",
             "XGBoostClassifier",
             "XGBoostRegressor",
-        ) and isinstance(verticapy.options["random_state"], int):
+        ) and isinstance(verticapy.OPTIONS["random_state"], int):
             id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
                 ", ".join(X), id_column_name
             )
@@ -2909,32 +1592,31 @@ class Supervised(vModel):
                 parameters["mtry"] = int(len(self.X) / 3 + 1)
             elif parameters["mtry"] == "'max'":
                 parameters["mtry"] = len(self.X)
-        fun = self.get_model_fun()[0]
+        fun = self.VERTICA_FIT_FUNCTION_SQL
         query = "SELECT /*+LABEL('learn.vModel.fit')*/ {}('{}', '{}', '{}', '{}' USING PARAMETERS "
         query = query.format(fun, self.name, relation, self.y, ", ".join(self.X))
         query += ", ".join(
             ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
         )
         if alpha != None:
-            query += ", alpha = {}".format(alpha)
+            query += f", alpha = {alpha}"
         if self.type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
             "XGBoostClassifier",
             "XGBoostRegressor",
-        ) and isinstance(verticapy.options["random_state"], int):
+        ) and isinstance(verticapy.OPTIONS["random_state"], int):
             query += ", seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], id_column_name
+                verticapy.OPTIONS["random_state"], id_column_name
             )
         query += ")"
         try:
             executeSQL(query, title="Fitting the model.")
-            if tmp_view:
-                drop(relation, method="view")
         except:
+            raise
+        finally:
             if tmp_view:
                 drop(relation, method="view")
-            raise
         if self.type in (
             "LinearSVC",
             "LinearSVR",
@@ -2943,7 +1625,11 @@ class Supervised(vModel):
             "SARIMAX",
         ):
             self.coef_ = self.get_attr("details")
-        elif self.type in ("RandomForestClassifier", "NaiveBayes", "XGBoostClassifier"):
+        elif self.type in (
+            "RandomForestClassifier",
+            "NaiveBayes",
+            "XGBoostClassifier",
+        ):
             if not (isinstance(input_relation, vDataFrame)):
                 classes = executeSQL(
                     "SELECT /*+LABEL('learn.vModel.fit')*/ DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
@@ -2964,6 +1650,7 @@ class Supervised(vModel):
 class Tree:
 
     # ---#
+    @check_dtypes
     def to_graphviz(
         self,
         tree_id: int = 0,
@@ -2976,7 +1663,7 @@ class Tree:
         leaf_style: dict = {},
     ):
         """
-        ---------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------
         Returns the code for a Graphviz tree.
 
         Parameters
@@ -3018,9 +1705,11 @@ class Tree:
         )
 
     # ---#
+    @check_minimum_version
+    @check_dtypes
     def get_tree(self, tree_id: int = 0):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns a table with all the input tree information.
 
 	Parameters
@@ -3034,19 +1723,16 @@ class Tree:
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        check_types([("tree_id", tree_id, [int, float])])
-        version(condition=[9, 1, 1])
         name = self.tree_name if self.type == "KernelDensity" else self.name
-        query = """SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS 
-                                        model_name = '{0}', 
-                                        tree_id = {1}, 
-                                        format = 'tabular')) x ORDER BY node_id;""".format(
-            name, tree_id
-        )
+        query = f"""SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS 
+                                                     model_name = '{name}', 
+                                                     tree_id = {tree_id}, 
+                                                     format = 'tabular')) x ORDER BY node_id;"""
         result = to_tablesample(query=query, title="Reading Tree.")
         return result
 
     # ---#
+    @check_dtypes
     def plot_tree(
         self,
         pic_path: str = "",
@@ -3060,7 +1746,7 @@ class Tree:
         leaf_style: dict = {},
     ):
         """
-        ---------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------
         Draws the input tree. Requires the graphviz module.
 
         Parameters
@@ -3104,6 +1790,40 @@ class Tree:
             pic_path=pic_path,
         )
 
+    # ---#
+    @check_dtypes
+    def get_score(
+        self, tree_id: int = None,
+    ):
+        """
+        ----------------------------------------------------------------------------------------
+        Returns the feature importance metrics for the input tree.
+
+        Parameters
+        ----------
+        tree_id: int, optional
+            Unique tree identifier, an integer in the range [0, n_estimators - 1].
+            If tree_id is undefined, all the trees in the model are used to compute 
+            the metrics.
+
+        Returns
+        -------
+        tablesample
+            An object containing the result. For more information, see
+            utilities.tablesample.
+        """
+        name = self.tree_name if self.type == "KernelDensity" else self.name
+        if self.type in ("XGBoostClassifier", "XGBoostRegressor",):
+            vertica_version(condition=[12, 0, 3])
+            fname = "XGB_PREDICTOR_IMPORTANCE"
+        else:
+            vertica_version(condition=[9, 1, 1])
+            fname = "RF_PREDICTOR_IMPORTANCE"
+        tree_id = "" if tree_id is None else f", tree_id={tree_id}"
+        query = f"SELECT {fname} (USING PARAMETERS model_name = '{name}'{tree_id})"
+        result = to_tablesample(query=query, title="Reading Tree.")
+        return result
+
 
 # ---#
 class Classifier(Supervised):
@@ -3116,17 +1836,18 @@ class BinaryClassifier(Classifier):
     classes_ = [0, 1]
 
     # ---#
+    @check_dtypes
     def classification_report(
-        self, cutoff: float = 0.5, nbins: int = 10000,
+        self, cutoff: Union[int, float] = 0.5, nbins: int = 10000,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
 	(AUC, accuracy, PRC AUC, F1...). 
 
 	Parameters
 	----------
-	cutoff: float, optional
+	cutoff: int / float, optional
 		Probability cutoff.
     nbins: int, optional
         [Used to compute ROC AUC, PRC AUC and the best cutoff]
@@ -3142,7 +1863,6 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        check_types([("cutoff", cutoff, [int, float]), ("nbins", nbins, [int])])
         if cutoff > 1 or cutoff < 0:
             cutoff = self.score(method="best_cutoff")
         return classification_report(
@@ -3156,14 +1876,15 @@ class BinaryClassifier(Classifier):
     report = classification_report
 
     # ---#
-    def confusion_matrix(self, cutoff: float = 0.5):
+    @check_dtypes
+    def confusion_matrix(self, cutoff: Union[int, float] = 0.5):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes the model confusion matrix.
 
 	Parameters
 	----------
-	cutoff: float, optional
+	cutoff: int / float, optional
 		Probability cutoff.
 
 	Returns
@@ -3172,21 +1893,21 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        check_types([("cutoff", cutoff, [int, float])])
         return confusion_matrix(self.y, self.deploySQL(cutoff), self.test_relation,)
 
     # ---#
-    def deploySQL(self, cutoff: float = -1, X: list = []):
+    @check_dtypes
+    def deploySQL(self, cutoff: Union[int, float] = -1, X: Union[str, list] = []):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the SQL code needed to deploy the model. 
 
 	Parameters
 	----------
-	cutoff: float, optional
+	cutoff: int / float, optional
 		Probability cutoff. If this number is not between 0 and 1, the method 
 		will return the probability to be of class 1.
-	X: list, optional
+	X: str / list, optional
 		List of the columns used to deploy the model. If empty, the model
 		predictors will be used.
 
@@ -3197,20 +1918,17 @@ class BinaryClassifier(Classifier):
 		"""
         if isinstance(X, str):
             X = [X]
-        check_types([("cutoff", cutoff, [int, float]), ("X", X, [list])])
-        X = [quote_ident(elem) for elem in X]
-        fun = self.get_model_fun()[1]
-        sql = "{0}({1} USING PARAMETERS model_name = '{2}', type = 'probability', match_by_pos = 'true')"
+        X = self.X if not (X) else [quote_ident(elem) for elem in X]
+        sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', type = 'probability', match_by_pos = 'true')"
         if cutoff <= 1 and cutoff >= 0:
-            sql = "(CASE WHEN {0} >= {1} THEN 1 WHEN {0} IS NULL THEN NULL ELSE 0 END)".format(
-                sql, cutoff
-            )
-        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
+            sql = f"(CASE WHEN {sql} >= {cutoff} THEN 1 WHEN {sql} IS NULL THEN NULL ELSE 0 END)"
+        return sql
 
     # ---#
+    @check_dtypes
     def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model Lift Chart.
 
     Parameters
@@ -3238,9 +1956,10 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def prc_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model PRC curve.
 
     Parameters
@@ -3268,26 +1987,27 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
-        X: list = [],
+        X: Union[str, list] = [],
         name: str = "",
-        cutoff: float = 0.5,
+        cutoff: Union[int, float] = 0.5,
         inplace: bool = True,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
 	----------
-	vdf: str/vDataFrame
+	vdf: str / vDataFrame
 		Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
         incorrect.
-	X: list, optional
+	X: str / list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
 	name: str, optional
@@ -3305,15 +2025,6 @@ class BinaryClassifier(Classifier):
         # Inititalization
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("name", name, [str]),
-                ("cutoff", cutoff, [int, float]),
-                ("X", X, [list]),
-                ("vdf", vdf, [str, vDataFrame]),
-                ("inplace", inplace, [bool]),
-            ],
-        )
         assert 0 <= cutoff <= 1, ParameterError(
             "Incorrect parameter 'cutoff'.\nThe cutoff "
             "must be between 0 and 1, inclusive."
@@ -3331,31 +2042,32 @@ class BinaryClassifier(Classifier):
         return vdf_return.eval(name, self.deploySQL(cutoff=cutoff, X=X))
 
     # ---#
+    @check_dtypes
     def predict_proba(
         self,
         vdf: Union[str, vDataFrame],
-        X: list = [],
+        X: Union[str, list] = [],
         name: str = "",
-        pos_label: Union[int, str, float] = None,
+        pos_label: Union[str, int, float] = None,
         inplace: bool = True,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the model's probabilities using the input relation.
 
     Parameters
     ----------
-    vdf: str/vDataFrame
+    vdf: str / vDataFrame
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, 
         "(SELECT 1) x" is correct whereas, "(SELECT 1)" and "SELECT 1" are 
         incorrect.
-    X: list, optional
+    X: str / list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
         Name of the added vcolumn. If empty, a name will be generated.
-    pos_label: int/float/str, optional
+    pos_label: int / float / str, optional
         Class label. For binary classification, this can be either 1 or 0.
     inplace: bool, optional
         If set to True, the prediction will be added to the vDataFrame.
@@ -3368,15 +2080,6 @@ class BinaryClassifier(Classifier):
         # Inititalization
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("name", name, [str]),
-                ("X", X, [list]),
-                ("vdf", vdf, [str, vDataFrame]),
-                ("inplace", inplace, [bool]),
-                ("pos_label", pos_label, [int, str, float]),
-            ],
-        )
         assert pos_label in [1, 0, "0", "1", None], ParameterError(
             "Incorrect parameter 'pos_label'.\nThe class label "
             "can only be 1 or 0 in case of Binary Classification."
@@ -3404,9 +2107,10 @@ class BinaryClassifier(Classifier):
         return vdf_return
 
     # ---#
+    @check_dtypes
     def cutoff_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the model Cutoff curve.
 
     Parameters
@@ -3435,9 +2139,10 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def roc_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model ROC curve.
 
     Parameters
@@ -3465,9 +2170,15 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
-    def score(self, method: str = "accuracy", cutoff: float = 0.5, nbins: int = 10000):
+    @check_dtypes
+    def score(
+        self,
+        method: str = "accuracy",
+        cutoff: Union[int, float] = 0.5,
+        nbins: int = 10000,
+    ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes the model score.
 
 	Parameters
@@ -3490,7 +2201,7 @@ class BinaryClassifier(Classifier):
 			precision   : Precision = tp / (tp + fp)
 			recall	    : Recall = tp / (tp + fn)
 			specificity : Specificity = tn / (tn + fp)
-	cutoff: float, optional
+	cutoff: int / float, optional
 		Cutoff for which the tested category will be accepted as a prediction.
     nbins: int, optional
         [Only when method is set to auc|prc_auc|best_cutoff] 
@@ -3505,13 +2216,6 @@ class BinaryClassifier(Classifier):
 	float
 		score
 		"""
-        check_types(
-            [
-                ("cutoff", cutoff, [int, float]),
-                ("method", method, [str]),
-                ("nbins", nbins, [int]),
-            ]
-        )
         if method in ("accuracy", "acc"):
             return accuracy_score(
                 self.y, self.deploySQL(cutoff), self.test_relation, pos_label=1
@@ -3522,11 +2226,11 @@ class BinaryClassifier(Classifier):
             return aic_bic(self.y, self.deploySQL(), self.test_relation, len(self.X))[1]
         elif method == "prc_auc":
             return prc_curve(
-                self.y, self.deploySQL(), self.test_relation, auc_prc=True, nbins=nbins
+                self.y, self.deploySQL(), self.test_relation, auc_prc=True, nbins=nbins,
             )
         elif method == "auc":
             return roc_curve(
-                self.y, self.deploySQL(), self.test_relation, auc_roc=True, nbins=nbins
+                self.y, self.deploySQL(), self.test_relation, auc_roc=True, nbins=nbins,
             )
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
@@ -3543,7 +2247,9 @@ class BinaryClassifier(Classifier):
         elif method in ("specificity", "tnr"):
             return specificity_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("negative_predictive_value", "npv"):
-            return precision_score(self.y, self.deploySQL(cutoff), self.test_relation)
+            return negative_predictive_score(
+                self.y, self.deploySQL(cutoff), self.test_relation
+            )
         elif method in ("log_loss", "logloss"):
             return log_loss(self.y, self.deploySQL(), self.test_relation)
         elif method == "f1":
@@ -3570,23 +2276,27 @@ class BinaryClassifier(Classifier):
 class MulticlassClassifier(Classifier):
 
     # ---#
+    @check_dtypes
     def classification_report(
-        self, cutoff: Union[float, list] = [], labels: list = [], nbins: int = 10000,
+        self,
+        cutoff: Union[int, float, list] = [],
+        labels: Union[str, list] = [],
+        nbins: int = 10000,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
 	(AUC, accuracy, PRC AUC, F1...). For multiclass classification, it will consider 
     each category as positive and switch to the next one during the computation.
 
 	Parameters
 	----------
-	cutoff: float/list, optional
+	cutoff: int / float / list, optional
 		Cutoff for which the tested category will be accepted as a prediction.
 		For multiclass classification, each tested category becomes 
 		the positives and the others are merged into the negatives. The list will 
 		represent the classes threshold. If it is empty, the best cutoff will be used.
-	labels: list, optional
+	labels: str / list, optional
 		List of the different labels to be used during the computation.
     nbins: int, optional
         [Used to compute ROC AUC, PRC AUC and the best cutoff]
@@ -3604,13 +2314,6 @@ class MulticlassClassifier(Classifier):
 		"""
         if isinstance(labels, str):
             labels = [labels]
-        check_types(
-            [
-                ("cutoff", cutoff, [int, float, list]),
-                ("labels", labels, [list]),
-                ("nbins", nbins, [int]),
-            ]
-        )
         if not (labels):
             labels = self.classes_
         return classification_report(
@@ -3620,19 +2323,20 @@ class MulticlassClassifier(Classifier):
     report = classification_report
 
     # ---#
+    @check_dtypes
     def confusion_matrix(
-        self, pos_label: Union[int, float, str] = None, cutoff: float = -1
+        self, pos_label: Union[int, float, str] = None, cutoff: Union[int, float] = -1,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes the model confusion matrix.
 
 	Parameters
 	----------
-	pos_label: int/float/str, optional
+	pos_label: int / float / str, optional
 		Label to consider as positive. All the other classes will be merged and
 		considered as negative for multiclass classification.
-	cutoff: float, optional
+	cutoff: int / float, optional
 		Cutoff for which the tested category will be accepted as a prediction.If the 
 		cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
 
@@ -3642,7 +2346,6 @@ class MulticlassClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        check_types([("cutoff", cutoff, [int, float])])
         pos_label = (
             self.classes_[1]
             if (pos_label == None and len(self.classes_) == 2)
@@ -3661,6 +2364,7 @@ class MulticlassClassifier(Classifier):
             )
 
     # ---#
+    @check_dtypes
     def cutoff_curve(
         self,
         pos_label: Union[int, float, str] = None,
@@ -3669,7 +2373,7 @@ class MulticlassClassifier(Classifier):
         **style_kwds,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws the model Cutoff curve.
 
     Parameters
@@ -3718,29 +2422,30 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def deploySQL(
         self,
         pos_label: Union[int, float, str] = None,
-        cutoff: float = -1,
+        cutoff: Union[int, float] = -1,
         allSQL: bool = False,
-        X: list = [],
+        X: Union[str, list] = [],
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Returns the SQL code needed to deploy the model. 
 
 	Parameters
 	----------
-	pos_label: int/float/str, optional
+	pos_label: int / float / str, optional
 		Label to consider as positive. All the other classes will be merged and
 		considered as negative for multiclass classification.
-	cutoff: float, optional
+	cutoff: int / float, optional
 		Cutoff for which the tested category will be accepted as a prediction.If 
 		the cutoff is not between 0 and 1, a probability will be returned.
 	allSQL: bool, optional
 		If set to True, the output will be a list of the different SQL codes 
 		needed to deploy the different categories score.
-	X: list, optional
+	X: str / list, optional
 		List of the columns used to deploy the model. If empty, the model
 		predictors will be used.
 
@@ -3751,15 +2456,8 @@ class MulticlassClassifier(Classifier):
 		"""
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("cutoff", cutoff, [int, float]),
-                ("allSQL", allSQL, [bool]),
-                ("X", X, [list]),
-            ]
-        )
         X = [quote_ident(elem) for elem in X]
-        fun = self.get_model_fun()[1]
+        fun = self.VERTICA_PREDICT_FUNCTION_SQL
         if allSQL:
             if self.type == "NearestCentroid":
                 sql = self.to_memmodel().predict_proba_sql(self.X if not (X) else X)
@@ -3785,7 +2483,7 @@ class MulticlassClassifier(Classifier):
                         "{0}({1} USING PARAMETERS model_name = '{2}', class = '{3}', "
                         "type = 'probability', match_by_pos = 'true')"
                     ).format(
-                        fun, ", ".join(self.X if not (X) else X), self.name, pos_label
+                        fun, ", ".join(self.X if not (X) else X), self.name, pos_label,
                     )
             if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
                 if len(self.classes_) > 2:
@@ -3814,6 +2512,7 @@ class MulticlassClassifier(Classifier):
         return sql
 
     # ---#
+    @check_dtypes
     def lift_chart(
         self,
         pos_label: Union[int, float, str] = None,
@@ -3822,7 +2521,7 @@ class MulticlassClassifier(Classifier):
         **style_kwds,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model Lift Chart.
 
 	Parameters
@@ -3870,6 +2569,7 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def prc_curve(
         self,
         pos_label: Union[int, float, str] = None,
@@ -3878,7 +2578,7 @@ class MulticlassClassifier(Classifier):
         **style_kwds,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model PRC curve.
 
 	Parameters
@@ -3926,31 +2626,32 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
-        X: list = [],
+        X: Union[str, list] = [],
         name: str = "",
-        cutoff: float = 0.5,
+        cutoff: Union[int, float] = 0.5,
         inplace: bool = True,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
 	----------
-	vdf: str/vDataFrame
+	vdf: str / vDataFrame
 		Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
         incorrect.
-	X: list, optional
+	X: str / list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
 	name: str, optional
 		Name of the added vcolumn. If empty, a name will be generated.
-	cutoff: float, optional
+	cutoff: int / float, optional
 		Cutoff for which the tested category will be accepted as a prediction.
 		This parameter is only used for binary classification.
 	inplace: bool, optional
@@ -3964,14 +2665,6 @@ class MulticlassClassifier(Classifier):
         # Inititalization
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("name", name, [str]),
-                ("cutoff", cutoff, [int, float]),
-                ("X", X, [list]),
-                ("vdf", vdf, [str, vDataFrame]),
-            ],
-        )
         assert 0 <= cutoff <= 1, ParameterError(
             "Incorrect parameter 'cutoff'.\nThe cutoff "
             "must be between 0 and 1, inclusive."
@@ -4000,32 +2693,33 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def predict_proba(
         self,
         vdf: Union[str, vDataFrame],
-        X: list = [],
+        X: Union[str, list] = [],
         name: str = "",
         pos_label: Union[int, str, float] = None,
         inplace: bool = True,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the model's probabilities using the input relation.
 
     Parameters
     ----------
-    vdf: str/vDataFrame
+    vdf: str / vDataFrame
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
         incorrect.
-    X: list, optional
+    X: str / list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
         Name of the additional prediction vColumn. If unspecified, a name is 
 	    generated based on the model and class names.
-    pos_label: int/float/str, optional
+    pos_label: int / float / str, optional
         Class label, the class for which the probability is calculated. 
 	    If name is specified and pos_label is unspecified, the probability 
         column names use the following format: name_class1, name_class2, etc.
@@ -4040,15 +2734,6 @@ class MulticlassClassifier(Classifier):
         # Inititalization
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("name", name, [str]),
-                ("X", X, [list]),
-                ("vdf", vdf, [str, vDataFrame]),
-                ("inplace", inplace, [bool]),
-                ("pos_label", pos_label, [int, float, str]),
-            ],
-        )
         assert pos_label is None or pos_label in self.classes_, ParameterError(
             (
                 "Incorrect parameter 'pos_label'.\nThe class label "
@@ -4075,6 +2760,7 @@ class MulticlassClassifier(Classifier):
         return vdf_return
 
     # ---#
+    @check_dtypes
     def roc_curve(
         self,
         pos_label: Union[int, float, str] = None,
@@ -4083,7 +2769,7 @@ class MulticlassClassifier(Classifier):
         **style_kwds,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Draws the model ROC curve.
 
 	Parameters
@@ -4131,23 +2817,24 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
+    @check_dtypes
     def score(
         self,
         method: str = "accuracy",
         pos_label: Union[int, float, str] = None,
-        cutoff: float = 0.5,
+        cutoff: Union[int, float] = 0.5,
         nbins: int = 10000,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes the model score.
 
 	Parameters
 	----------
-	pos_label: int/float/str, optional
+	pos_label: int / float / str, optional
 		Label to consider as positive. All the other classes will be merged and
 		considered as negative for multiclass classification.
-	cutoff: float, optional
+	cutoff: int / float, optional
 		Cutoff for which the tested category will be accepted as a prediction.
 	method: str, optional
 		The method to use to compute the score.
@@ -4178,13 +2865,6 @@ class MulticlassClassifier(Classifier):
 	float
 		score
 		"""
-        check_types(
-            [
-                ("cutoff", cutoff, [int, float]),
-                ("method", method, [str]),
-                ("nbins", nbins, [int]),
-            ]
-        )
         pos_label = (
             self.classes_[1]
             if (pos_label == None and len(self.classes_) == 2)
@@ -4202,39 +2882,42 @@ class MulticlassClassifier(Classifier):
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         if method in ("accuracy", "acc"):
             return accuracy_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation, pos_label
+                self.y,
+                self.deploySQL(pos_label, cutoff),
+                self.test_relation,
+                pos_label,
             )
         elif method == "auc":
             return auc(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
                 nbins=nbins,
             )
         elif method == "aic":
             return aic_bic(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
                 len(self.X),
             )[0]
         elif method == "bic":
             return aic_bic(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
                 len(self.X),
             )[1]
         elif method == "prc_auc":
             return prc_auc(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
                 nbins=nbins,
             )
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
                 best_threshold=True,
@@ -4253,12 +2936,12 @@ class MulticlassClassifier(Classifier):
                 self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("negative_predictive_value", "npv"):
-            return precision_score(
+            return negative_predictive_score(
                 self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("log_loss", "logloss"):
             return log_loss(
-                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 deploySQL_str,
                 self.test_relation,
             )
@@ -4295,24 +2978,25 @@ class MulticlassClassifier(Classifier):
 class Regressor(Supervised):
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
-        X: list = [],
+        X: Union[str, list] = [],
         name: str = "",
         inplace: bool = True,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
 	----------
-	vdf: str/vDataFrame
+	vdf: str / vDataFrame
 		Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
         is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-	X: list, optional
+	X: str / list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
 	name: str, optional
@@ -4327,9 +3011,6 @@ class Regressor(Supervised):
 		"""
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [("name", name, [str]), ("X", X, [list]), ("vdf", vdf, [str, vDataFrame]),],
-        )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X]
@@ -4344,9 +3025,10 @@ class Regressor(Supervised):
             return vdf.copy().eval(name, self.deploySQL(X=X))
 
     # ---#
+    @check_dtypes
     def regression_report(self, method: str = "metrics"):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes a regression report using multiple metrics to evaluate the model
 	(r2, mse, max error...). 
 
@@ -4364,7 +3046,7 @@ class Regressor(Supervised):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        check_types([("method", method, ["anova", "metrics", "details"])])
+        raise_error_if_not_in("method", method, ["anova", "metrics", "details"])
         if method in ("anova", "details") and self.type in (
             "SARIMAX",
             "VAR",
@@ -4377,7 +3059,9 @@ class Regressor(Supervised):
         if self.type == "SARIMAX":
             test_relation = self.transform_relation
             test_relation = "(SELECT {} AS prediction, {} FROM {}) VERTICAPY_SUBTABLE".format(
-                self.deploySQL(), "VerticaPy_y_copy AS {}".format(self.y), test_relation
+                self.deploySQL(),
+                "VerticaPy_y_copy AS {}".format(self.y),
+                test_relation,
             )
             test_relation = (
                 test_relation.format(self.test_relation)
@@ -4480,9 +3164,10 @@ class Regressor(Supervised):
     report = regression_report
 
     # ---#
+    @check_dtypes
     def score(self, method: str = "r2"):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Computes the model score.
 
 	Parameters
@@ -4506,7 +3191,6 @@ class Regressor(Supervised):
 	float
 		score
 		"""
-        check_types([("method", method, [str])])
         method = method.lower()
         if method in ("r2a", "r2adj", "r2adjusted"):
             method = "r2"
@@ -4521,7 +3205,9 @@ class Regressor(Supervised):
         if self.type == "SARIMAX":
             test_relation = self.transform_relation
             test_relation = "(SELECT {} AS prediction, {} FROM {}) VERTICAPY_SUBTABLE".format(
-                self.deploySQL(), "VerticaPy_y_copy AS {}".format(self.y), test_relation
+                self.deploySQL(),
+                "VerticaPy_y_copy AS {}".format(self.y),
+                test_relation,
             )
             test_relation = (
                 test_relation.format(self.test_relation)
@@ -4533,14 +3219,14 @@ class Regressor(Supervised):
                 )
             )
             for idx, elem in enumerate(self.exogenous):
-                test_relation = test_relation.replace("[X{}]".format(idx), elem)
+                test_relation = test_relation.replace(f"[X{idx}]", elem)
             prediction = "prediction"
         elif self.type == "VAR":
             relation = self.transform_relation.replace(
                 "[VerticaPy_ts]", self.ts
             ).format(self.test_relation)
             for idx, elem in enumerate(self.X):
-                relation = relation.replace("[X{}]".format(idx), elem)
+                relation = relation.replace(f"[X{idx}]", elem)
             if method == "mse" and root:
                 index = "rmse"
             elif method == "r2" and adj:
@@ -4644,16 +3330,17 @@ class Regressor(Supervised):
 class Unsupervised(vModel):
 
     # ---#
-    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
+    @check_dtypes
+    def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str/vDataFrame
+	input_relation: str / vDataFrame
 		Training relation.
-	X: list, optional
+	X: str / list, optional
 		List of the predictors. If empty, all the numerical columns will be used.
 
 	Returns
@@ -4663,16 +3350,13 @@ class Unsupervised(vModel):
 		"""
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
-        )
-        if verticapy.options["overwrite_model"]:
+        if verticapy.OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
         if self.type in ("BisectingKMeans", "IsolationForest") and isinstance(
-            verticapy.options["random_state"], int
+            verticapy.OPTIONS["random_state"], int
         ):
             id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
                 ", ".join([quote_ident(column) for column in X]), id_column_name
@@ -4706,7 +3390,9 @@ class Unsupervised(vModel):
                 ),
                 title="Creating a temporary view to fit the model.",
             )
-            if not (X):
+            if not (X) and (self.type == "KPrototypes"):
+                X = input_relation.get_columns()
+            elif not (X):
                 X = input_relation.numcol()
         else:
             self.input_relation = input_relation
@@ -4717,30 +3403,31 @@ class Unsupervised(vModel):
         parameters = self.get_vertica_param_dict()
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
-        fun = self.get_model_fun()[0] if self.type != "MCA" else "PCA"
+        fun = self.VERTICA_FIT_FUNCTION_SQL if self.type != "MCA" else "PCA"
         query = "SELECT /*+LABEL('learn.vModel.fit')*/ {}('{}', '{}', '{}'".format(
             fun, self.name, relation, ", ".join(self.X)
         )
-        if self.type in ("BisectingKMeans", "KMeans"):
-            query += ", {}".format(parameters["n_cluster"])
+        if self.type in ("BisectingKMeans", "KMeans", "KPrototypes",):
+            query += ", {0}".format(parameters["n_cluster"])
         elif self.type == "Normalizer":
-            query += ", {}".format(parameters["method"])
+            query += ", {0}".format(parameters["method"])
             del parameters["method"]
         if self.type not in ("Normalizer", "MCA"):
             query += " USING PARAMETERS "
         if (
             "init_method" in parameters
             and not (isinstance(parameters["init_method"], str))
-            and self.type in ("KMeans", "BisectingKMeans")
+            and self.type in ("KMeans", "BisectingKMeans", "KPrototypes",)
         ):
             name_init = gen_tmp_name(
-                schema=schema_relation(self.name)[0], name="kmeans_init"
+                schema=schema_relation(self.name)[0],
+                name="{0}_init".format(self.type.lower()),
             )
             del parameters["init_method"]
             drop(name_init, method="table")
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
                 raise ParameterError(
-                    "'init' must be a list of 'n_cluster' = {} points".format(
+                    "'init' must be a list of 'n_cluster' = {0} points".format(
                         self.parameters["n_cluster"]
                     )
                 )
@@ -4748,7 +3435,7 @@ class Unsupervised(vModel):
                 for item in self.parameters["init"]:
                     if len(X) != len(item):
                         raise ParameterError(
-                            "Each points of 'init' must be of size len(X) = {}".format(
+                            "Each points of 'init' must be of size len(X) = {0}".format(
                                 len(self.X)
                             )
                         )
@@ -4756,87 +3443,92 @@ class Unsupervised(vModel):
                 for i in range(len(self.parameters["init"])):
                     line = []
                     for j in range(len(self.parameters["init"][0])):
-                        line += [str(self.parameters["init"][i][j]) + " AS " + X[j]]
+                        val = self.parameters["init"][i][j]
+                        if isinstance(val, str):
+                            val = "'" + val.replace("'", "''") + "'"
+                        line += [str(val) + " AS " + X[j]]
                     line = ",".join(line)
                     if i == 0:
                         query0 += ["SELECT /*+LABEL('learn.vModel.fit')*/ " + line]
                     else:
                         query0 += ["SELECT " + line]
                 query0 = " UNION ".join(query0)
-                query0 = "CREATE TABLE {} AS {}".format(name_init, query0)
+                query0 = f"CREATE TABLE {name_init} AS {query0}"
                 executeSQL(query0, print_time_sql=False)
-                query += "initial_centers_table = '{}', ".format(name_init)
+                query += f"initial_centers_table = '{name_init}', "
         elif "init_method" in parameters:
             del parameters["init_method"]
-            query += "init_method = '{}', ".format(self.parameters["init"])
+            query += "init_method = '{0}', ".format(self.parameters["init"])
         query += ", ".join(
-            ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
+            ["{0} = {1}".format(elem, parameters[elem]) for elem in parameters]
         )
         if self.type == "BisectingKMeans" and isinstance(
-            verticapy.options["random_state"], int
+            verticapy.OPTIONS["random_state"], int
         ):
-            query += ", kmeans_seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], id_column_name
+            query += ", kmeans_seed={0}, id_column='{1}'".format(
+                verticapy.OPTIONS["random_state"], id_column_name
             )
         elif self.type == "IsolationForest" and isinstance(
-            verticapy.options["random_state"], int
+            verticapy.OPTIONS["random_state"], int
         ):
-            query += ", seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], id_column_name
+            query += ", seed={0}, id_column='{1}'".format(
+                verticapy.OPTIONS["random_state"], id_column_name
             )
         query += ")"
         try:
             executeSQL(query, "Fitting the model.")
-            if tmp_view:
-                drop(relation, method="view")
         except:
+            if (
+                "init_method" in parameters
+                and not (isinstance(parameters["init_method"], str))
+                and self.type in ("KMeans", "BisectingKMeans", "KPrototypes",)
+            ):
+                drop(name_init, method="table")
+            raise
+        finally:
             if tmp_view:
                 drop(relation, method="view")
-            if (
-                "init_method" in parameters
-                and not (isinstance(parameters["init_method"], str))
-                and self.type in ("KMeans", "BisectingKMeans")
+        if self.type in ("KMeans", "BisectingKMeans", "KPrototypes",):
+            if "init_method" in parameters and not (
+                isinstance(parameters["init_method"], str)
             ):
-                drop("{}".format(name_init), method="table")
-            raise
-        if self.type == "KMeans":
-            if (
-                "init_method" in parameters
-                and not (isinstance(parameters["init_method"], str))
-                and self.type in ("KMeans", "BisectingKMeans")
-            ):
-                drop("{}".format(name_init), method="table")
-            self.cluster_centers_ = self.get_attr("centers")
-            result = self.get_attr("metrics").values["metrics"][0]
-            values = {
-                "index": [
-                    "Between-Cluster Sum of Squares",
-                    "Total Sum of Squares",
-                    "Total Within-Cluster Sum of Squares",
-                    "Between-Cluster SS / Total SS",
-                    "converged",
+                drop(name_init, method="table")
+            if self.type in ("KMeans", "KPrototypes",):
+                self.cluster_centers_ = self.get_attr("centers")
+                result = self.get_attr("metrics").values["metrics"][0]
+                values = {
+                    "index": [
+                        "Between-Cluster Sum of Squares",
+                        "Total Sum of Squares",
+                        "Total Within-Cluster Sum of Squares",
+                        "Between-Cluster SS / Total SS",
+                        "converged",
+                    ]
+                }
+                values["value"] = [
+                    float(
+                        result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[
+                            0
+                        ]
+                    ),
+                    float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
+                    float(
+                        result.split("Total Within-Cluster Sum of Squares: ")[1].split(
+                            "\n"
+                        )[0]
+                    ),
+                    float(
+                        result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[
+                            0
+                        ]
+                    )
+                    / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
+                    result.split("Converged: ")[1].split("\n")[0] == "True",
                 ]
-            }
-            values["value"] = [
-                float(
-                    result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
-                ),
-                float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-                float(
-                    result.split("Total Within-Cluster Sum of Squares: ")[1].split(
-                        "\n"
-                    )[0]
-                ),
-                float(
-                    result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
-                )
-                / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-                result.split("Converged: ")[1].split("\n")[0] == "True",
-            ]
-            self.metrics_ = tablesample(values)
-        elif self.type == "BisectingKMeans":
-            self.metrics_ = self.get_attr("Metrics")
-            self.cluster_centers_ = self.get_attr("BKTree")
+                self.metrics_ = tablesample(values)
+            elif self.type == "BisectingKMeans":
+                self.metrics_ = self.get_attr("Metrics")
+                self.cluster_centers_ = self.get_attr("BKTree")
         elif self.type in ("PCA", "MCA"):
             self.components_ = self.get_attr("principal_components")
             if self.type == "MCA":
@@ -4858,38 +3550,27 @@ class Unsupervised(vModel):
         elif self.type == "Normalizer":
             self.param_ = self.get_attr("details")
         elif self.type == "OneHotEncoder":
+            query = f"""SELECT 
+                            category_name, 
+                            category_level::varchar, 
+                            category_level_index 
+                        FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                        model_name = '{self.name}', 
+                                        attr_name = 'integer_categories')) 
+                                        VERTICAPY_SUBTABLE"""
             try:
                 self.param_ = to_tablesample(
-                    query="""SELECT 
-                                category_name, 
-                                category_level::varchar, 
-                                category_level_index 
-                             FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                                model_name = '{0}', 
-                                                attr_name = 'integer_categories')) 
-                                                VERTICAPY_SUBTABLE 
-                             UNION ALL 
-                             SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                        model_name = '{0}', 
-                                        attr_name = 'varchar_categories')""".format(
-                        self.name,
-                    ),
+                    query=f"""{query}
+                              UNION ALL 
+                              SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                        model_name = '{self.name}', 
+                                        attr_name = 'varchar_categories')""",
                     title="Getting Model Attributes.",
                 )
             except:
                 try:
                     self.param_ = to_tablesample(
-                        query="""SELECT 
-                                    category_name, 
-                                    category_level::varchar, 
-                                    category_level_index 
-                                 FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                                model_name = '{0}', 
-                                                attr_name = 'integer_categories')) 
-                                                VERTICAPY_SUBTABLE""".format(
-                            self.name
-                        ),
-                        title="Getting Model Attributes.",
+                        query=query, title="Getting Model Attributes.",
                     )
                 except:
                     self.param_ = self.get_attr("varchar_categories")
@@ -4900,21 +3581,25 @@ class Unsupervised(vModel):
 class Preprocessing(Unsupervised):
 
     # ---#
+    @check_dtypes
     def deploySQL(
-        self, key_columns: list = [], exclude_columns: list = [], X: list = []
+        self,
+        key_columns: Union[str, list] = [],
+        exclude_columns: Union[str, list] = [],
+        X: Union[str, list] = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
 
     Parameters
     ----------
-    key_columns: list, optional
+    key_columns: str / list, optional
         Predictors used during the algorithm computation which will be deployed
         with the principal components.
-    exclude_columns: list, optional
+    exclude_columns: str / list, optional
         Columns to exclude from the prediction.
-    X: list, optional
+    X: str / list, optional
         List of the columns used to deploy the self. If empty, the model
         predictors will be used.
 
@@ -4929,15 +3614,8 @@ class Preprocessing(Unsupervised):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("key_columns", key_columns, [list]),
-                ("exclude_columns", exclude_columns, [list]),
-                ("X", X, [list]),
-            ]
-        )
         X = [quote_ident(elem) for elem in X]
-        fun = self.get_model_fun()[1]
+        fun = self.VERTICA_TRANSFORM_FUNCTION_SQL
         sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
         if key_columns:
             sql += ", key_columns = '{}'".format(
@@ -4967,27 +3645,34 @@ class Preprocessing(Unsupervised):
                 separator,
                 self.parameters["column_naming"],
             )
-            if self.parameters["column_naming"].lower() in ("values", "values_relaxed"):
+            if self.parameters["column_naming"].lower() in (
+                "values",
+                "values_relaxed",
+            ):
                 sql += ", null_column_name = {}".format(null_column_name)
         sql += ")"
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
+    @check_dtypes
     def deployInverseSQL(
-        self, key_columns: list = [], exclude_columns: list = [], X: list = []
-    ):
+        self,
+        key_columns: Union[str, list] = [],
+        exclude_columns: Union[str, list] = [],
+        X: Union[str, list] = [],
+    ) -> str:
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the inverse model. 
 
     Parameters
     ----------
-    key_columns: list, optional
+    key_columns: str / list, optional
         Predictors used during the algorithm computation which will be deployed
         with the principal components.
-    exclude_columns: list, optional
+    exclude_columns: str / list, optional
         Columns to exclude from the prediction.
-    X: list, optional
+    X: str / list, optional
         List of the columns used to deploy the inverse model. If empty, the model
         predictors will be used.
 
@@ -5006,25 +3691,23 @@ class Preprocessing(Unsupervised):
             raise ModelError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
-        check_types([("key_columns", key_columns, [list]), ("X", X, [list])])
-        X = [quote_ident(elem) for elem in X]
-        fun = self.get_model_fun()[2]
-        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
+        X = self.X if not (X) else [quote_ident(x) for x in X]
+        fun = self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL
+        sql = f"{fun}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', match_by_pos = 'true'"
         if key_columns:
-            sql += ", key_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in key_columns])
-            )
+            key_columns = ", ".join([quote_ident(kcol) for kcol in key_columns])
+            sql += f", key_columns = '{key_columns}'"
         if exclude_columns:
-            sql += ", exclude_columns = '{}'".format(
-                ", ".join([quote_ident(item) for item in exclude_columns])
-            )
+            exclude_columns = ", ".join([quote_ident(ecol) for ecol in exclude_columns])
+            sql += f", exclude_columns = '{exclude_columns}'"
         sql += ")"
-        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
+        return sql
 
     # ---#
+    @check_dtypes
     def get_names(self, inverse: bool = False, X: list = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the Transformation output names.
 
     Parameters
@@ -5093,18 +3776,19 @@ class Preprocessing(Unsupervised):
             return X
 
     # ---#
-    def inverse_transform(self, vdf: Union[str, vDataFrame], X: list = []):
+    @check_dtypes
+    def inverse_transform(self, vdf: Union[str, vDataFrame], X: Union[str, list] = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies the Inverse Model on a vDataFrame.
 
     Parameters
     ----------
-    vdf: str/vDataFrame
+    vdf: str / vDataFrame
         input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: list, optional
+    X: str / list, optional
         List of the input vcolumns.
 
     Returns
@@ -5118,37 +3802,36 @@ class Preprocessing(Unsupervised):
             raise ModelError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
-        check_types([("X", X, [list])])
         if not (vdf):
             vdf = self.input_relation
         if not (X):
             X = self.get_names()
-        check_types([("vdf", vdf, [str, vDataFrame])])
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
-        main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-            self.deployInverseSQL(exclude_columns, exclude_columns, all_columns),
-            relation,
+        inverse_sql = self.deployInverseSQL(
+            exclude_columns, exclude_columns, all_columns
         )
+        main_relation = f"(SELECT {inverse_sql} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrameSQL(main_relation, "Inverse Transformation")
 
     # ---#
-    def transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
+    @check_dtypes
+    def transform(self, vdf: Union[str, vDataFrame] = None, X: Union[str, list] = []):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies the model on a vDataFrame.
 
     Parameters
     ----------
-    vdf: str/vDataFrame, optional
+    vdf: str / vDataFrame, optional
         Input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: list, optional
+    X: str / list, optional
         List of the input vcolumns.
 
     Returns
@@ -5158,15 +3841,12 @@ class Preprocessing(Unsupervised):
         """
         if isinstance(X, str):
             X = [X]
-        check_types([("X", X, [list])])
         if not (vdf):
             vdf = self.input_relation
         if not (X):
             X = self.X
-        check_types([("vdf", vdf, [str, vDataFrame])])
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
-        vdf.are_namecols_in(X)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
@@ -5181,16 +3861,17 @@ class Preprocessing(Unsupervised):
 class Decomposition(Preprocessing):
 
     # ---#
+    @check_dtypes
     def deploySQL(
         self,
         n_components: int = 0,
-        cutoff: float = 1,
-        key_columns: list = [],
-        exclude_columns: list = [],
-        X: list = [],
+        cutoff: Union[int, float] = 1,
+        key_columns: Union[str, list] = [],
+        exclude_columns: Union[str, list] = [],
+        X: Union[str, list] = [],
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
 
     Parameters
@@ -5198,15 +3879,15 @@ class Decomposition(Preprocessing):
     n_components: int, optional
         Number of components to return. If set to 0, all the components will be
         deployed.
-    cutoff: float, optional
+    cutoff: int / float, optional
         Specifies the minimum accumulated explained variance. Components are taken 
         until the accumulated explained variance reaches this value.
-    key_columns: list, optional
+    key_columns: str / list, optional
         Predictors used during the algorithm computation which will be deployed
         with the principal components.
-    exclude_columns: list, optional
+    exclude_columns: str / list, optional
         Columns to exclude from the prediction.
-    X: list, optional
+    X: str / list, optional
         List of the columns used to deploy the self. If empty, the model
         predictors will be used.
 
@@ -5221,17 +3902,8 @@ class Decomposition(Preprocessing):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("n_components", n_components, [int, float]),
-                ("cutoff", cutoff, [int, float]),
-                ("key_columns", key_columns, [list]),
-                ("exclude_columns", exclude_columns, [list]),
-                ("X", X, [list]),
-            ]
-        )
         X = [quote_ident(elem) for elem in X]
-        fun = self.get_model_fun()[1]
+        fun = self.VERTICA_TRANSFORM_FUNCTION_SQL
         sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
         if key_columns:
             sql += ", key_columns = '{}'".format(
@@ -5249,9 +3921,10 @@ class Decomposition(Preprocessing):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
+    @check_dtypes
     def plot(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws a decomposition scatter plot.
     Parameters
     ----------
@@ -5266,7 +3939,6 @@ class Decomposition(Preprocessing):
     ax
         Matplotlib axes object
         """
-        check_types([("dimensions", dimensions, [tuple])])
         vdf = vDataFrameSQL(self.input_relation)
         ax = self.transform(vdf).scatter(
             columns=["col{}".format(dimensions[0]), "col{}".format(dimensions[1])],
@@ -5298,9 +3970,10 @@ class Decomposition(Preprocessing):
         return ax
 
     # ---#
+    @check_dtypes
     def plot_circle(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws a decomposition circle.
 
     Parameters
@@ -5317,13 +3990,12 @@ class Decomposition(Preprocessing):
     ax
         Matplotlib axes object
         """
-        check_types([("dimensions", dimensions, [tuple])])
         if self.type == "SVD":
-            x = self.singular_values_["vector{}".format(dimensions[0])]
-            y = self.singular_values_["vector{}".format(dimensions[1])]
+            x = self.singular_values_[f"vector{dimensions[0]}"]
+            y = self.singular_values_[f"vector{dimensions[1]}"]
         else:
-            x = self.components_["PC{}".format(dimensions[0])]
-            y = self.components_["PC{}".format(dimensions[1])]
+            x = self.components_[f"PC{dimensions[0]}"]
+            y = self.components_[f"PC{dimensions[1]}"]
         explained_variance = self.explained_variance_["explained_variance"]
         return plot_pca_circle(
             x,
@@ -5341,7 +4013,7 @@ class Decomposition(Preprocessing):
     # ---#
     def plot_scree(self, ax=None, **style_kwds):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Draws a decomposition scree plot.
 
     Parameters
@@ -5393,18 +4065,23 @@ class Decomposition(Preprocessing):
         return ax
 
     # ---#
+    @check_dtypes
     def score(
-        self, X: list = [], input_relation: str = "", method: str = "avg", p: int = 2
+        self,
+        X: Union[str, list] = [],
+        input_relation: str = "",
+        method: str = "avg",
+        p: int = 2,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Returns the decomposition score on a dataset for each transformed column. It
     is the average / median of the p-distance between the real column and its 
     result after applying the decomposition model and its inverse.  
 
     Parameters
     ----------
-    X: list, optional
+    X: str / list, optional
         List of the columns used to deploy the self. If empty, the model
         predictors will be used.
     input_relation: str, optional
@@ -5422,17 +4099,9 @@ class Decomposition(Preprocessing):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
+        raise_error_if_not_in("method", str(method).lower(), ["avg", "median"])
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("X", X, [list]),
-                ("input_relation", input_relation, [str]),
-                ("method", str(method).lower(), ["avg", "median"]),
-                ("p", p, [int, float]),
-            ]
-        )
-        fun = self.get_model_fun()
         if not (X):
             X = self.X
         if not (input_relation):
@@ -5446,8 +4115,8 @@ class Decomposition(Preprocessing):
                 n_components = len(X)
         else:
             n_components = len(X)
-        col_init_1 = ["{} AS col_init{}".format(X[idx], idx) for idx in range(len(X))]
-        col_init_2 = ["col_init{}".format(idx) for idx in range(len(X))]
+        col_init_1 = [f"{X[idx]} AS col_init{idx}" for idx in range(len(X))]
+        col_init_2 = [f"col_init{idx}" for idx in range(len(X))]
         cols = ["col{}".format(idx + 1) for idx in range(n_components)]
         query = """SELECT 
                         {0}({1} USING PARAMETERS 
@@ -5455,10 +4124,14 @@ class Decomposition(Preprocessing):
                             key_columns = '{1}', 
                             num_components = {3}) OVER () 
                     FROM {4}""".format(
-            fun[1], ", ".join(self.X), self.name, n_components, input_relation,
+            self.VERTICA_TRANSFORM_FUNCTION_SQL,
+            ", ".join(self.X),
+            self.name,
+            n_components,
+            input_relation,
         )
-        query = "SELECT {0} FROM ({1}) VERTICAPY_SUBTABLE".format(
-            ", ".join(col_init_1 + cols), query
+        query = (
+            f"SELECT {', '.join(col_init_1 + cols)} FROM ({query}) VERTICAPY_SUBTABLE"
         )
         query = """SELECT 
                         {0}({1} USING PARAMETERS 
@@ -5467,53 +4140,45 @@ class Decomposition(Preprocessing):
                             exclude_columns = '{3}', 
                             num_components = {4}) OVER () 
                    FROM ({5}) y""".format(
-            fun[2],
+            self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL,
             ", ".join(col_init_2 + cols),
             self.name,
             ", ".join(col_init_2),
             n_components,
             query,
         )
-        query = "SELECT 'Score' AS 'index', {} FROM ({}) z".format(
-            ", ".join(
-                [
-                    (
-                        "{0}(POWER(ABS(POWER({1}, {2}) - "
-                        "POWER({3}, {2})), {4})) AS {1}"
-                    ).format(
-                        method, X[idx], p, "col_init{}".format(idx), float(1 / p),
-                    )
-                    for idx in range(len(X))
-                ]
-            ),
-            query,
-        )
+        p_distances = [
+            f"{method}(POWER(ABS(POWER({X[idx]}, {p}) - POWER(col_init{idx}, {p})), {1 / p})) AS {X[idx]}"
+            for idx in range(len(X))
+        ]
+        query = f"SELECT 'Score' AS 'index', {', '.join(p_distances)} FROM ({query}) z"
         return to_tablesample(query, title="Getting Model Score.").transpose()
 
     # ---#
+    @check_dtypes
     def transform(
         self,
         vdf: Union[str, vDataFrame] = None,
-        X: list = [],
+        X: Union[str, list] = [],
         n_components: int = 0,
-        cutoff: float = 1,
+        cutoff: Union[int, float] = 1,
     ):
         """
-    ---------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------
     Applies the model on a vDataFrame.
 
     Parameters
     ----------
-    vdf: str/vDataFrame, optional
+    vdf: str / vDataFrame, optional
         Input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: list, optional
+    X: str / list, optional
         List of the input vcolumns.
     n_components: int, optional
         Number of components to return. If set to 0, all the components will 
         be deployed.
-    cutoff: float, optional
+    cutoff: int / float, optional
         Specifies the minimum accumulated explained variance. Components are 
         taken until the accumulated explained variance reaches this value.
 
@@ -5524,21 +4189,12 @@ class Decomposition(Preprocessing):
         """
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [
-                ("n_components", n_components, [int, float]),
-                ("cutoff", cutoff, [int, float]),
-                ("X", X, [list]),
-            ]
-        )
         if not (vdf):
             vdf = self.input_relation
         if not (X):
             X = self.X
-        check_types([("vdf", vdf, [str, vDataFrame])])
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
-        vdf.are_namecols_in(X)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
@@ -5556,24 +4212,25 @@ class Decomposition(Preprocessing):
 class Clustering(Unsupervised):
 
     # ---#
+    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
-        X: list = [],
+        X: Union[str, list] = [],
         name: str = "",
         inplace: bool = True,
     ):
         """
-	---------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
 	----------
-	vdf: str/vDataFrame
+	vdf: str / vDataFrame
 		Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
         is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-	X: list, optional
+	X: str / list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
 	name: str, optional
@@ -5588,17 +4245,11 @@ class Clustering(Unsupervised):
 		"""
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [("name", name, [str]), ("X", X, [list]), ("vdf", vdf, [str, vDataFrame]),],
-        )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X]
-        name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
-        )
+        if not (name):
+            name = self.type + "_" + "".join(ch for ch in self.name if ch.isalnum())
         if inplace:
             return vdf.eval(name, self.deploySQL(X=X))
         else:

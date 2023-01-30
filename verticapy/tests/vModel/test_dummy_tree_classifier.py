@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -298,17 +298,7 @@ class TestDummyTreeClassifier:
 
     def test_get_params(self, model):
         params = model.get_params()
-
-        assert params == {
-            "n_estimators": 1,
-            "max_features": "max",
-            "max_leaf_nodes": 1e9,
-            "sample": 1.0,
-            "max_depth": 100,
-            "min_samples_leaf": 1,
-            "min_info_gain": 0,
-            "nbins": 1000,
-        }
+        assert params == {}
 
     def test_prc_curve(self, model):
         prc = model.prc_curve(pos_label="Car", nbins=1000)
@@ -419,10 +409,10 @@ class TestDummyTreeClassifier:
         )
         assert model.score(
             cutoff=0.9, method="npv", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.1, method="npv", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.9, method="prc_auc", pos_label="Train"
         ) == pytest.approx(1.0)
@@ -443,15 +433,13 @@ class TestDummyTreeClassifier:
         ) == pytest.approx(1.0)
 
     def test_set_params(self, model):
-        model.set_params({"nbins": 100})
-        # Nothing will change as Dummy Trees have no parameters
-        assert model.get_params()["nbins"] == 100
+        model.set_params({})
 
     def test_model_from_vDF(self, dtc_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS tc_from_vDF")
         model_test = DummyTreeClassifier("tc_from_vDF",)
         model_test.fit(
-            dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation"
+            dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation",
         )
 
         current_cursor().execute(

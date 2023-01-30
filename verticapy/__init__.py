@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -46,7 +46,10 @@
 # data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.12.0"
+# External Modules IMPORT
+import uuid
+
+__version__ = "0.13.0"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = (
@@ -56,28 +59,58 @@ __description__ = (
 __url__ = "https://github.com/vertica/verticapy/"
 __license__ = "Apache License, Version 2.0"
 
-# Logo
-from verticapy.logo import *
+MINIMUM_VERSION = {
+    "Balance": [8, 1, 1],
+    "BernoulliNB": [8, 0, 0],
+    "BisectingKMeans": [9, 3, 1],
+    "CategoricalNB": [8, 0, 0],
+    "confusion_matrix": [8, 0, 0],
+    "DecisionTreeClassifier": [8, 1, 1],
+    "DecisionTreeRegressor": [9, 0, 1],
+    "DummyTreeClassifier": [8, 1, 1],
+    "DummyTreeRegressor": [9, 0, 1],
+    "edit_distance": [10, 1, 0],
+    "ElasticNet": [8, 0, 0],
+    "GaussianNB": [8, 0, 0],
+    "gen_dataset": [9, 3, 0],
+    "get_tree": [9, 1, 1],
+    "IsolationForest": [12, 0, 0],
+    "jaro_distance": [12, 0, 2],
+    "jaro_winkler_distance": [12, 0, 2],
+    "Lasso": [8, 0, 0],
+    "lift_chart": [8, 0, 0],
+    "LinearRegression": [8, 0, 0],
+    "LinearSVC": [8, 1, 0],
+    "LinearSVR": [8, 1, 1],
+    "LogisticRegression": [8, 0, 0],
+    "KMeans": [8, 0, 0],
+    "KPrototypes": [12, 0, 3],
+    "MCA": [9, 1, 0],
+    "MinMaxScaler": [8, 1, 0],
+    "multilabel_confusion_matrix": [8, 0, 0],
+    "MultinomialNB": [8, 0, 0],
+    "NaiveBayes": [8, 0, 0],
+    "Normalizer": [8, 1, 0],
+    "OneHotEncoder": [9, 0, 0],
+    "PCA": [9, 1, 0],
+    "prc_curve": [9, 1, 0],
+    "RandomForestClassifier": [8, 1, 1],
+    "RandomForestRegressor": [9, 0, 1],
+    "read_file": [11, 1, 1],
+    "Ridge": [8, 0, 0],
+    "RobustScaler": [8, 1, 0],
+    "roc_curve": [8, 0, 0],
+    "SARIMAX": [8, 0, 0],
+    "soundex": [10, 1, 0],
+    "soundex_matches": [10, 1, 0],
+    "StandardScaler": [8, 1, 0],
+    "SVD": [9, 1, 0],
+    "VAR": [8, 0, 0],
+    "XGBoostClassifier": [10, 1, 0],
+    "XGBoostRegressor": [10, 1, 0],
+}
 
-# vDataFrame
-from verticapy.vdataframe import *
-
-# Utilities
-from verticapy.utilities import *
-
-# Connect
-from verticapy.connect import *
-
-# SQL Functions
-import verticapy.stats
-
-# Learn
-import verticapy.learn
-
-# Other Modules
-import uuid
-
-verticapy.options = {
+OPTIONS = {
     "cache": True,
     "colors": [],
     "color_style": "default",
@@ -101,3 +134,23 @@ verticapy.options = {
     "tqdm": True,
     "vertica_version": None,
 }
+
+# VerticaPy Modules IMPORT
+
+# Logo
+from verticapy.logo import *
+
+# vDataFrame
+from verticapy.vdataframe import *
+
+# Utilities
+from verticapy.utilities import *
+
+# Connect
+from verticapy.connect import *
+
+# SQL Functions
+import verticapy.stats
+
+# Learn
+import verticapy.learn
