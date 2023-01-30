@@ -28,6 +28,7 @@ from verticapy import (
     vDataFrame,
     drop,
     set_option,
+    clean_query
 )
 from verticapy.connect import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_cl
@@ -160,7 +161,7 @@ class TestXGBC:
                               match_by_pos = 'true')"""
         result_sql = model.deploySQL()
 
-        assert result_sql == expected_sql
+        assert result_sql == clean_query(expected_sql)
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS xgbc_model_test_drop")
