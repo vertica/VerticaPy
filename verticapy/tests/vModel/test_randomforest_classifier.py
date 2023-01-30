@@ -134,8 +134,8 @@ class TestRFC:
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = 'PREDICT_RF_CLASSIFIER("Gender", "owned cars", "cost", "income" USING PARAMETERS model_name = \'rfc_model_test\', match_by_pos = \'true\')'
-        result_sql = model.deploySQL()
+        expected_sql = 'PREDICT_RF_CLASSIFIER("Gender", "owned cars", "cost", "income" USING PARAMETERS model_name = \'rfc_model_test\', match_by_pos = \'true\')'.replace(" ", "")
+        result_sql = model.deploySQL().replace(" ", "").replace("\n", "")
 
         assert result_sql == expected_sql
 

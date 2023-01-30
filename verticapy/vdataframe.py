@@ -2841,42 +2841,46 @@ vColumns : vColumn
                 if func == "kurtosis":
                     self.eval(
                         name,
-                        "AVG(POWER(({0} - {1}) / NULLIFZERO({2}), 4)) OVER ({3}) * POWER({4}, 2) * ({4} + 1) / NULLIFZERO(({4} - 1) * ({4} - 2) * ({4} - 3)) - 3 * POWER({4} - 1, 2) / NULLIFZERO(({4} - 2) * ({4} - 3))".format(
-                            columns[0], mean_name, std_name, by, count_name,
-                        ),
+                        f"""AVG(POWER(({columns[0]} - {mean_name}) 
+                          / NULLIFZERO({std_name}), 4)) OVER ({by}) 
+                          * POWER({count_name}, 2) 
+                          * ({count_name} + 1) 
+                          / NULLIFZERO(({count_name} - 1) 
+                          * ({count_name} - 2) 
+                          * ({count_name} - 3)) 
+                          - 3 * POWER({count_name} - 1, 2) 
+                          / NULLIFZERO(({count_name} - 2) 
+                          * ({count_name} - 3))""",
                     )
                 elif func == "skewness":
                     self.eval(
                         name,
-                        "AVG(POWER(({0} - {1}) / NULLIFZERO({2}), 3)) OVER ({3}) * POWER({4}, 2) / NULLIFZERO(({4} - 1) * ({4} - 2))".format(
-                            columns[0], mean_name, std_name, by, count_name,
-                        ),
+                        f"""AVG(POWER(({columns[0]} - {mean_name}) 
+                         / NULLIFZERO({std_name}), 3)) OVER ({by}) 
+                         * POWER({count_name}, 2) 
+                         / NULLIFZERO(({count_name} - 1) 
+                         * ({count_name} - 2))""",
                     )
                 elif func == "jb":
                     self.eval(
                         name,
-                        (
-                            "{0} / 6 * (POWER(AVG(POWER(({1} - {2}) / NULLIFZERO({3}), 3)) "
-                            "OVER ({4}) * POWER({0}, 2) / NULLIFZERO(({0} - 1) * ({0} - 2)), "
-                            "2) + POWER(AVG(POWER(({1} - {2}) / NULLIFZERO({3}), 4)) OVER "
-                            "({4}) * POWER({0}, 2) * ({0} + 1) / NULLIFZERO(({0} - 1) * "
-                            "({0} - 2) * ({0} - 3)) - 3 * POWER({0} - 1, 2) / NULLIFZERO(({0} "
-                            "- 2) * ({0} - 3)), 2) / 4)"
-                        ).format(count_name, columns[0], mean_name, std_name, by),
+                        f"""{count_name} / 6 * (POWER(AVG(POWER(({columns[0]} 
+                          - {mean_name}) / NULLIFZERO({std_name}), 3)) OVER ({by}) 
+                          * POWER({count_name}, 2) / NULLIFZERO(({count_name} - 1) 
+                          * ({count_name} - 2)), 2) + POWER(AVG(POWER(({columns[0]} 
+                          - {mean_name}) / NULLIFZERO({std_name}), 4)) OVER ({by}) 
+                          * POWER({count_name}, 2) * ({count_name} + 1) 
+                          / NULLIFZERO(({count_name} - 1) * ({count_name} - 2) 
+                          * ({count_name} - 3)) - 3 * POWER({count_name} - 1, 2) 
+                          / NULLIFZERO(({count_name} - 2) * ({count_name} - 3)), 2) / 4)""",
                     )
                 elif func == "aad":
                     self.eval(
-                        name,
-                        "AVG(ABS({0} - {1})) OVER ({2})".format(
-                            columns[0], mean_name, by
-                        ),
+                        name, f"AVG(ABS({columns[0]} - {mean_name})) OVER ({by})",
                     )
                 elif func == "mad":
                     self.eval(
-                        name,
-                        "AVG(ABS({0} - {1})) OVER ({2})".format(
-                            columns[0], median_name, by
-                        ),
+                        name, f"AVG(ABS({columns[0]} - {median_name})) OVER ({by})",
                     )
             elif func == "top":
                 self.eval(
@@ -4174,18 +4178,25 @@ vColumns : vColumn
                     sql += "ELSE NULL END)::{} AS {}".format(ctype, split_predictor)
                 else:
                     sql = split_predictor
-                sql = "SELECT /*+LABEL('vDataframe.chaid')*/ {}, {}, (cnt / SUM(cnt) OVER (PARTITION BY {}))::float AS proba FROM (SELECT {}, {}, COUNT(*) AS cnt FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1, 2) x ORDER BY 1;".format(
-                    split_predictor,
-                    response,
-                    split_predictor,
-                    sql,
-                    response,
-                    self.__genSQL__(),
-                    split_predictor,
-                    response,
-                )
                 result = executeSQL(
-                    sql,
+                    query=f"""
+                    SELECT 
+                        /*+LABEL('vDataframe.chaid')*/ 
+                        {split_predictor}, 
+                        {response}, 
+                        (cnt / SUM(cnt) 
+                            OVER (PARTITION BY {split_predictor}))::float 
+                            AS proba 
+                    FROM 
+                        (SELECT 
+                            {sql}, 
+                            {response}, 
+                            COUNT(*) AS cnt 
+                         FROM {self.__genSQL__()} 
+                         WHERE {split_predictor} IS NOT NULL 
+                           AND {response} IS NOT NULL 
+                         GROUP BY 1, 2) x 
+                    ORDER BY 1;""",
                     title="Computing the CHAID tree probability.",
                     method="fetchall",
                     sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -8575,7 +8586,8 @@ vColumns : vColumn
         ), f"Method '{method}' can not be used if parameter 'rating' is empty."
         if rating:
             assert isinstance(rating, str) or len(rating) == 3, ParameterError(
-                f"Parameter 'rating' must be of type str or composed of exactly 3 elements: (r_vdf, r_item_id, r_name)."
+                "Parameter 'rating' must be of type str or composed of "
+                "exactly 3 elements: (r_vdf, r_item_id, r_name)."
             )
             assert (
                 method != "count"
@@ -9041,110 +9053,93 @@ vColumns : vColumn
             else self.__get_sort_syntax__(order_by)
         )
         func = get_verticapy_function(func.lower(), method="vertica")
-        windows_frame = " OVER ({}{} {} BETWEEN {} AND {})".format(
-            by,
-            order_by,
-            method.upper(),
-            "{} {}".format(window[0], rule[0]),
-            "{} {}".format(window[1], rule[1]),
-        )
+        windows_frame = f""" 
+            OVER ({by}{order_by} 
+            {method.upper()} 
+            BETWEEN {window[0]} {rule[0]} 
+            AND {window[1]} {rule[1]})"""
         all_cols = [
             elem.replace('"', "").lower()
             for elem in self._VERTICAPY_VARIABLES_["columns"]
         ]
         if func in ("kurtosis", "skewness", "aad", "prod", "jb"):
             if func in ("skewness", "kurtosis", "aad", "jb"):
-                mean_name = "{}_mean_{}".format(
-                    columns[0].replace('"', ""), random.randint(0, 10000000)
-                ).lower()
-                std_name = "{}_std_{}".format(
-                    columns[0].replace('"', ""), random.randint(0, 10000000)
-                ).lower()
-                count_name = "{}_count_{}".format(
-                    columns[0].replace('"', ""), random.randint(0, 10000000)
-                ).lower()
-                self.eval(mean_name, "AVG({}){}".format(columns[0], windows_frame))
+                columns_0_str = columns[0].replace('"', "").lower()
+                random_int = random.randint(0, 10000000)
+                mean_name = f"{columns_0_str}_mean_{random_int}"
+                std_name = f"{columns_0_str}_std_{random_int}"
+                count_name = f"{columns_0_str}_count_{random_int}"
+                self.eval(mean_name, f"AVG({columns[0]}){windows_frame}")
                 if func != "aad":
-                    self.eval(
-                        std_name, "STDDEV({}){}".format(columns[0], windows_frame)
-                    )
-                    self.eval(
-                        count_name, "COUNT({}){}".format(columns[0], windows_frame)
-                    )
+                    self.eval(std_name, f"STDDEV({columns[0]}){windows_frame}")
+                    self.eval(count_name, f"COUNT({columns[0]}){windows_frame}")
                 if func == "kurtosis":
-                    expr = "AVG(POWER(({} - {}) / NULLIFZERO({}), 4))# * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3))".format(
-                        columns[0],
-                        mean_name,
-                        std_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                    )
+                    expr = f"""
+                        AVG(POWER(({columns[0]} - {mean_name}) 
+                      / NULLIFZERO({std_name}), 4))# 
+                      * POWER({count_name}, 2) 
+                      * ({count_name} + 1) 
+                      / NULLIFZERO(
+                         ({count_name} - 1) 
+                        * ({count_name} - 2) 
+                        * ({count_name} - 3)) 
+                      - 3 * POWER({count_name} - 1, 2) 
+                      / NULLIFZERO(
+                         ({count_name} - 2) 
+                        * ({count_name} - 3))"""
                 elif func == "skewness":
-                    expr = "AVG(POWER(({} - {}) / NULLIFZERO({}), 3))# * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2))".format(
-                        columns[0],
-                        mean_name,
-                        std_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                    )
+                    expr = f"""
+                        AVG(POWER(({columns[0]} - {mean_name}) 
+                      / NULLIFZERO({std_name}), 3))# 
+                      * POWER({count_name}, 2) 
+                      / NULLIFZERO(({count_name} - 1) 
+                        * ({count_name} - 2))"""
                 elif func == "jb":
-                    expr = "{} / 6 * (POWER(AVG(POWER(({} - {}) / NULLIFZERO({}), 3))# * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2)), 2) + POWER(AVG(POWER(({} - {}) / NULLIFZERO({}), 4))# * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3)), 2) / 4)".format(
-                        count_name,
-                        columns[0],
-                        mean_name,
-                        std_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        columns[0],
-                        mean_name,
-                        std_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                        count_name,
-                    )
+                    expr = f"""
+                        {count_name} / 6 * (POWER(AVG(POWER((
+                            {columns[0]} - {mean_name}) 
+                          / NULLIFZERO({std_name}), 3))# 
+                          * POWER({count_name}, 2) 
+                          / NULLIFZERO(({count_name} - 1) 
+                          * ({count_name} - 2)), 2) 
+                          + POWER(AVG(POWER(({columns[0]} 
+                          - {mean_name}) / NULLIFZERO({std_name}), 4))# 
+                          * POWER({count_name}, 2) * ({count_name} + 1) 
+                          / NULLIFZERO(({count_name} - 1) 
+                          * ({count_name} - 2) * ({count_name} - 3)) 
+                          - 3 * POWER({count_name} - 1, 2) 
+                          / NULLIFZERO(({count_name} - 2) 
+                          * ({count_name} - 3)), 2) / 4)"""
                 elif func == "aad":
-                    expr = "AVG(ABS({} - {}))#".format(columns[0], mean_name)
+                    expr = f"AVG(ABS({columns[0]} - {mean_name}))#"
             else:
-                expr = "DECODE(ABS(MOD(SUM(CASE WHEN {} < 0 THEN 1 ELSE 0 END)#, 2)), 0, 1, -1) * POWER(10, SUM(LOG(ABS({})))#)".format(
-                    columns[0], columns[0]
-                )
+                expr = f"""
+                    DECODE(ABS(MOD(SUM(CASE WHEN {columns[0]} < 0 
+                           THEN 1 ELSE 0 END)#, 2)), 0, 1, -1) 
+                  * POWER(10, SUM(LOG(ABS({columns[0]})))#)"""
         elif func in ("corr", "cov", "beta"):
             if columns[1] == columns[0]:
                 if func == "cov":
-                    expr = "VARIANCE({})#".format(columns[0])
+                    expr = f"VARIANCE({columns[0]})#"
                 else:
                     expr = "1"
             else:
                 if func == "corr":
-                    den = " / (STDDEV({})# * STDDEV({})#)".format(
-                        columns[0], columns[1]
-                    )
+                    den = f" / (STDDEV({columns[0]})# * STDDEV({columns[1]})#)"
                 elif func == "beta":
                     den = " / (VARIANCE({})#)".format(columns[1])
                 else:
                     den = ""
-                expr = "(AVG({} * {})# - AVG({})# * AVG({})#) {}".format(
-                    columns[0], columns[1], columns[0], columns[1], den
-                )
+                expr = f"""
+                    (AVG({columns[0]} * {columns[1]})# 
+                  - AVG({columns[0]})# * AVG({columns[1]})#) 
+                    {den}"""
         elif func == "range":
-            expr = "MAX({})# - MIN({})#".format(columns[0], columns[0])
+            expr = f"MAX({columns[0]})# - MIN({columns[0]})#"
         elif func == "sem":
-            expr = "STDDEV({})# / SQRT(COUNT({})#)".format(columns[0], columns[0])
+            expr = f"STDDEV({columns[0]})# / SQRT(COUNT({columns[0]})#)"
         else:
-            expr = "{}({})#".format(func.upper(), columns[0])
+            expr = f"{func.upper()}({columns[0]})#"
         expr = expr.replace("#", windows_frame)
         self.eval(name=name, expr=expr)
         if func in ("kurtosis", "skewness", "jb"):

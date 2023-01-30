@@ -154,11 +154,11 @@ class TestXGBC:
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = (
-            'PREDICT_XGB_CLASSIFIER(Gender, "owned cars", cost, income '
-            "USING PARAMETERS model_name = 'xgbc_model_test', match_by_pos = 'true')"
-        )
-        result_sql = model.deploySQL()
+        expected_sql = """PREDICT_XGB_CLASSIFIER(Gender, "owned cars", cost, income 
+                              USING PARAMETERS 
+                              model_name = 'xgbc_model_test', 
+                              match_by_pos = 'true')""".replace(" ", "").replace("\n", "")
+        result_sql = model.deploySQL().replace(" ", "").replace("\n", "")
 
         assert result_sql == expected_sql
 

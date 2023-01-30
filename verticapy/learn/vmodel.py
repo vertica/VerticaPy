@@ -299,7 +299,11 @@ Main Class for Vertica Model
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
             name = self.tree_name if self.type == "KernelDensity" else self.name
             X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
-            sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{name}', match_by_pos = 'true')"
+            sql = f"""
+                {self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} 
+                                                    USING PARAMETERS 
+                                                    model_name = '{name}',
+                                                    match_by_pos = 'true')"""
             return sql
         else:
             raise FunctionError(f"Method 'deploySQL' for '{self.type}' doesn't exist.")
@@ -1543,7 +1547,7 @@ class Supervised(vModel):
         ):
             new_types = {}
             for x in X:
-                new_types[x] = nb_lookup_table[x]
+                new_types[x] = nb_lookup_table[self.parameters["nbtype"]]
             if not (isinstance(input_relation, vDataFrame)):
                 input_relation = vDataFrameSQL(input_relation)
             else:
