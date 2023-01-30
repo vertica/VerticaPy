@@ -202,13 +202,13 @@ Attributes
                     limit = f" LIMIT {limit}"
                 else:
                     limit = ""
-                query = "(SELECT {0} FROM {1}{2} OFFSET {3}{4}) VERTICAPY_SUBTABLE".format(
-                    self.alias,
-                    self.parent.__genSQL__(),
-                    self.parent.__get_last_order_by__(),
-                    index_start,
-                    limit,
-                )
+                query = f"""
+                    (SELECT 
+                        {self.alias} 
+                    FROM {self.parent.__genSQL__()}
+                    {self.parent.__get_last_order_by__()} 
+                    OFFSET {index_start}
+                    {limit}) VERTICAPY_SUBTABLE"""
                 return vDataFrameSQL(query)
         elif isinstance(index, int):
             if self.isarray():
@@ -225,15 +225,15 @@ Attributes
                 cast = "::float" if self.category() == "float" else ""
                 if index < 0:
                     index += self.parent.shape()[0]
-                query = "SELECT /*+LABEL('vColumn.__getitem__')*/ {}{} FROM {}{} OFFSET {} LIMIT 1".format(
-                    self.alias,
-                    cast,
-                    self.parent.__genSQL__(),
-                    self.parent.__get_last_order_by__(),
-                    index,
-                )
                 return executeSQL(
-                    query=query,
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('vColumn.__getitem__')*/ 
+                            {self.alias}{cast} 
+                        FROM {self.parent.__genSQL__()}
+                        {self.parent.__get_last_order_by__()} 
+                        OFFSET {index} 
+                        LIMIT 1""",
                     title="Getting the vColumn element.",
                     method="fetchfirstelem",
                     sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -251,9 +251,10 @@ Attributes
                 vertica_version(condition=[10, 0, 0])
                 elem_to_select = self.alias + "." + quote_ident(index)
                 init_transf = self.init_transf + "." + quote_ident(index)
-            query = "(SELECT {0} AS {1} FROM {2}) VERTICAPY_SUBTABLE".format(
-                elem_to_select, quote_ident(index), self.parent.__genSQL__(),
-            )
+            query = f"""
+                (SELECT 
+                    {elem_to_select} AS {quote_ident(index)} 
+                FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
             vcol = vDataFrameSQL(query)[index]
             vcol.init_transf = init_transf
             return vcol
@@ -768,14 +769,12 @@ Attributes
             ) and self.category() == "vmap":
                 transformation = (
                     f"MAPTOSTRING({self.alias} USING PARAMETERS canonical_json=false)::{dtype}",
-                    "MAPTOSTRING({} USING PARAMETERS canonical_json=false)::" + dtype,
+                    f"MAPTOSTRING({{}} USING PARAMETERS canonical_json=false)::{dtype}"
                 )
             elif dtype == "json":
                 if self.category() == "vmap":
                     transformation = (
-                        "MAPTOSTRING({0} USING PARAMETERS canonical_json=true)".format(
-                            self.alias
-                        ),
+                        f"MAPTOSTRING({self.alias} USING PARAMETERS canonical_json=true)",
                         "MAPTOSTRING({} USING PARAMETERS canonical_json=true)",
                     )
                 else:
@@ -790,9 +789,13 @@ Attributes
                     f"{self.alias}::{dtype}",
                     "{}::" + dtype,
                 )
-            query = "SELECT /*+LABEL('vColumn.astype')*/ {0} AS {1} FROM {2} WHERE {1} IS NOT NULL LIMIT 20".format(
-                transformation[0], self.alias, self.parent.__genSQL__()
-            )
+            query = f"""
+                SELECT 
+                    /*+LABEL('vColumn.astype')*/ 
+                    {transformation[0]} AS {self.alias} 
+                FROM {self.parent.__genSQL__()} 
+                WHERE {self.alias} IS NOT NULL 
+                LIMIT 20"""
             executeSQL(
                 query,
                 title="Testing the Type casting.",
@@ -1523,10 +1526,12 @@ Attributes
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
             tmp_model_name = gen_tmp_name(schema=schema, name="model")
             assert nbins >= 2, ParameterError(
-                "Parameter 'nbins' must be greater or equals to 2 in case of discretization using the method 'smart'."
+                "Parameter 'nbins' must be greater or equals to 2 in case "
+                "of discretization using the method 'smart'."
             )
             assert response, ParameterError(
-                "Parameter 'response' can not be empty in case of discretization using the method 'smart'."
+                "Parameter 'response' can not be empty in case of "
+                "discretization using the method 'smart'."
             )
             response = self.parent.format_colnames(response)
             drop(tmp_view_name, method="view")
@@ -1575,7 +1580,8 @@ Attributes
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
             assert k >= 2, ParameterError(
-                "Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'"
+                "Parameter 'k' must be greater or equals to 2 in "
+                "case of discretization using the method 'topk'"
             )
             distinct = self.topk(k).values["index"]
             trans = (
@@ -1614,9 +1620,10 @@ Attributes
                 SELECT /*+LABEL('vColumn.discretize')*/ 
                     {self.alias} 
                 FROM (SELECT 
-                    {self.alias}, 
-                    ROW_NUMBER() OVER (ORDER BY {self.alias}) AS _verticapy_row_nb_ 
-                FROM {self.parent.__genSQL__()} WHERE {self.alias} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
+                        {self.alias}, 
+                        ROW_NUMBER() OVER (ORDER BY {self.alias}) AS _verticapy_row_nb_ 
+                      FROM {self.parent.__genSQL__()} 
+                      WHERE {self.alias} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
             result = executeSQL(
                 query=query,
                 title="Computing the equal frequency histogram bins.",
@@ -2696,7 +2703,9 @@ Attributes
                 END AS woe, 
                 CASE 
                     WHEN non_events = 0 OR events = 0 THEN 0 
-                    ELSE (pt_non_events - pt_events) * ZEROIFNULL(LN(pt_non_events / NULLIFZERO(pt_events))) 
+                    ELSE (pt_non_events - pt_events) 
+                        * ZEROIFNULL(LN(pt_non_events 
+                        / NULLIFZERO(pt_events))) 
                 END AS iv 
             FROM ({query}) x ORDER BY ord"""
         title = f"Computing WOE & IV of {self.alias} (response = {y})."
@@ -3281,9 +3290,13 @@ Attributes
                             ),
                         )
                         executeSQL(
-                            "SELECT /*+LABEL('vColumn.normalize')*/ {}, {} FROM {} LIMIT 1".format(
-                                cmax, cmin, self.parent.__genSQL__()
-                            ),
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vColumn.normalize')*/ 
+                                    {cmax}, 
+                                    {cmin} 
+                                FROM {self.parent.__genSQL__()} 
+                                LIMIT 1""",
                             print_time_sql=False,
                             sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
                                 "sql_push_ext"
@@ -3978,12 +3991,14 @@ Attributes
         pre_comp = self.parent.__get_catalog_value__(self.alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return pre_comp
+        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
         store_usage = executeSQL(
-            "SELECT /*+LABEL('vColumn.storage_usage')*/ ZEROIFNULL(SUM(LENGTH({}::varchar))) FROM {}".format(
-                bin_spatial_to_str(self.category(), self.alias),
-                self.parent.__genSQL__(),
-            ),
-            title="Computing the Store Usage of the vColumn {}.".format(self.alias),
+            query=f"""
+                SELECT 
+                    /*+LABEL('vColumn.storage_usage')*/ 
+                    ZEROIFNULL(SUM(LENGTH({alias_sql_repr}::varchar))) 
+                FROM {self.parent.__genSQL__()}""",
+            title=f"Computing the Store Usage of the vColumn {self.alias}.",
             method="fetchfirstelem",
             sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
             symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
@@ -4256,21 +4271,26 @@ Attributes
 	--------
 	vDataFrame[].describe : Computes the vColumn descriptive statistics.
 		"""
-        topk = "" if (k < 1) else "LIMIT {}".format(k)
-        dropna = " WHERE {} IS NOT NULL".format(self.alias) if (dropna) else ""
-        query = "SELECT /*+LABEL('vColumn.topk')*/ {0} AS {1}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {2} AS percent FROM {3}{4} GROUP BY {0} ORDER BY _verticapy_cnt_ DESC {5}".format(
-            bin_spatial_to_str(self.category(), self.alias),
-            self.alias,
-            self.parent.shape()[0],
-            self.parent.__genSQL__(),
-            dropna,
-            topk,
-        )
+        limit, where, topk_cat = "", "", ""
+        if (k >= 1):
+            limit = f"LIMIT {k}"
+            topk_cat = k
+        if (dropna):
+            where = f" WHERE {self.alias} IS NOT NULL"
+        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
         result = executeSQL(
-            query,
-            title="Computing the top{} categories of {}.".format(
-                k if k > 0 else "", self.alias
-            ),
+            query=f"""
+            SELECT 
+                /*+LABEL('vColumn.topk')*/
+                {alias_sql_repr} AS {self.alias},
+                COUNT(*) AS _verticapy_cnt_,
+                100 * COUNT(*) / {self.parent.shape()[0]} AS percent
+            FROM {self.parent.__genSQL__()}
+            {where} 
+            GROUP BY {alias_sql_repr} 
+            ORDER BY _verticapy_cnt_ DESC
+            {limit}""",
+            title=f"Computing the top{topk_cat} categories of {self.alias}.",
             method="fetchall",
             sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
             symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],

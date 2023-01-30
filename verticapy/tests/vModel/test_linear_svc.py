@@ -105,7 +105,7 @@ class TestLinearSVC:
         expected_sql = "PREDICT_SVM_CLASSIFIER(\"age\", \"fare\" USING PARAMETERS model_name = 'lsvc_model_test', type = 'probability', match_by_pos = 'true')".replace(
             " ", ""
         )
-        result_sql = model.deploySQL().replace(" ", "").replace("\n", "")
+        result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
 

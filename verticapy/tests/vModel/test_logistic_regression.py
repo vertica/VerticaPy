@@ -106,7 +106,7 @@ class TestLogisticRegression:
         expected_sql = "PREDICT_LOGISTIC_REG(\"age\", \"fare\" USING PARAMETERS model_name = 'logreg_model_test', type = 'probability', match_by_pos = 'true')".replace(
             " ", ""
         )
-        result_sql = model.deploySQL().replace(" ", "").replace("\n", "")
+        result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
 
