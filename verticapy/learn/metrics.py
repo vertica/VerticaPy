@@ -1173,7 +1173,7 @@ Returns
 float
 	score
 	"""
-    metric = """
+    metric = f"""
         AVG(CASE 
                 WHEN {{0}} = '{pos_label}' 
                     THEN - LOG({{1}}::float + 1e-90) 
