@@ -245,7 +245,7 @@ def sql_from_nb(
                     {1 / np.sqrt(2 * np.pi * prob[c]['sigma_sq'])} 
                   * EXP(- POWER({x} - {prob[c]['mu']}, 2) 
                   / {2 * prob[c]['sigma_sq']})"""
-            sub_result += [prob]
+            sub_result += [clean_query(prob)]
         result += [" * ".join(sub_result) + f" * {prior[idx]}"]
     return result
 
@@ -723,11 +723,12 @@ def sql_from_binary_tree(
                 X,
                 prob_ID,
             )
-            return f"""
+            query = f"""
                 (CASE 
                     WHEN {X[feature[node_id]]} {op} {q}{threshold[node_id]}{q} 
                     THEN {y0} ELSE {y1} 
                 END)"""
+            return clean_query(query)
 
     if return_proba:
         n = max([len(l) if l != None else 0 for l in value])
@@ -1898,7 +1899,7 @@ def sql_from_one_hot_encoder(
                 elif val == None:
                     val = "NULL"
                 sql_tmp_feature = f"(CASE WHEN {X[i]} = {val} THEN 1 ELSE 0 END)"
-                X_i = X[i].replace('"', "")
+                X_i = str(X[i]).replace('"', "")
                 if column_naming == "indices":
                     sql_tmp_feature += f' AS "{X_i}_{j}"'
                 elif column_naming in ("values", "values_relaxed"):
