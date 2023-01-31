@@ -2738,7 +2738,7 @@ attributes: dict
                     sql += [" AND ".join(list_tmp)]
                 sql = sql[1:]
                 sql.reverse()
-                sql_final = f"""
+                result = f"""
                     CASE 
                         WHEN {' OR '.join([f"{x} IS NULL" for x in X])} 
                         THEN NULL"""
@@ -2748,13 +2748,12 @@ attributes: dict
                         class_i_str = f"'{class_i}'"
                     else:
                         class_i_str = class_i
-                    sql_final += f" WHEN {sql[i]} THEN {class_i_str}"
+                    result += f" WHEN {sql[i]} THEN {class_i_str}"
                 if isinstance(classes[0], str):
                     classes_0 = f"'{classes[0]}'"
                 else:
                     classes_0 = classes[0]
-                sql_final += f" ELSE {classes_0} END"
-                result = sql_final
+                result += f" ELSE {classes_0} END"
         elif self.model_type_ == "CHAID":
             return sql_from_chaid_tree(
                 X, self.attributes_["tree"], self.attributes_["classes"], False
@@ -2765,8 +2764,6 @@ attributes: dict
             )
         if isinstance(result, str):
             result = clean_query(result.replace("\xa0", " "))
-        else:
-            result = [clean_query(x) for x in result]
         return result
 
     # ---#
