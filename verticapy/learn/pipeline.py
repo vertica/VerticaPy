@@ -448,8 +448,7 @@ steps: list
                 return_proba=return_proba,
                 return_distance_clusters=return_distance_clusters,
                 return_str=True,
-            )
-            str_representation = str_representation.replace("\n", "\n\t")
+            ).replace("\n", "\n\t")
             str_representation += "\n"
             final_function = f"{step[0]}({final_function})"
         str_representation += f"\treturn {final_function}"

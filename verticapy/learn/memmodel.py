@@ -1287,7 +1287,7 @@ def sql_from_bisecting_kmeans(
                 THEN NULL 
             ELSE {predict_tree(right_child, left_child, 0, clusters_distance)} 
         END)"""
-    return sql_final
+    return clean_query(sql_final)
 
 
 # ---#
@@ -1411,11 +1411,12 @@ def sql_from_clusters(
             (CASE 
                 WHEN {clusters_distance[i]} = 0 
                     THEN 1.0 
-                ELSE 1 / ({clusters_distance[i]}) / ({sum_distance})
+                ELSE 1 / ({clusters_distance[i]}) 
+                      / ({sum_distance})
             END)"""
             for i in range(len(clusters_distance))
         ]
-        return proba
+        return [clean_query(p) for p in proba]
 
     sql = []
     k = len(clusters_distance)
@@ -1426,7 +1427,7 @@ def sql_from_clusters(
         sql += [" AND ".join(list_tmp)]
     sql = sql[1:]
     sql.reverse()
-    is_null_x = " OR ".join([f"{elem} IS NULL" for elem in X])
+    is_null_x = " OR ".join([f"{x} IS NULL" for x in X])
     sql_final = f"CASE WHEN {is_null_x} THEN NULL"
     for i in range(k - 1):
         if not classes:
@@ -1609,7 +1610,7 @@ def sql_from_clusters_kprotypes(
             END)"""
             for i in range(len(clusters_distance))
         ]
-        return proba
+        return [clean_query(p) for p in proba]
 
     sql = []
     k = len(clusters_distance)
@@ -2763,7 +2764,9 @@ attributes: dict
                 f"Method 'predict_sql' is not available for model type '{self.model_type_}'"
             )
         if isinstance(result, str):
-            result = result.replace("\xa0", " ")
+            result = clean_query(result.replace("\xa0", " "))
+        else:
+            result = [clean_query(x) for x in result]
         return result
 
     # ---#
@@ -2986,7 +2989,7 @@ attributes: dict
                                 * ({' + '.join([p[i] for p in all_probas])})))))"""
                 ]
             sum_result = f"({' + '.join(result)})"
-            result = [f"{x} / {sum_result}" for x in result]
+            result = [clean_query(f"{x} / {sum_result}") for x in result]
         elif self.model_type_ == "CHAID":
             return sql_from_chaid_tree(
                 X, self.attributes_["tree"], self.attributes_["classes"], True
