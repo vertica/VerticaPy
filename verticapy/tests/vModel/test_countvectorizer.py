@@ -19,6 +19,7 @@ from verticapy import (
     drop,
     set_option,
     create_verticapy_schema,
+    clean_query,
 )
 from verticapy.connect import current_cursor
 from verticapy.datasets import load_titanic
@@ -96,7 +97,7 @@ class TestCountVectorizer:
         )
         result_sql = model.deploySQL()
 
-        assert result_sql == expected_sql
+        assert result_sql == clean_query(expected_sql)
 
     def test_drop(self, titanic_vd):
         model_test = CountVectorizer("model_test_drop")
