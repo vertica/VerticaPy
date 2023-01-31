@@ -2074,23 +2074,13 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    query = "SELECT /*+LABEL('learn.model_selection.lift_chart')*/ LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
-    query = query.format(
-        nbins,
-        y_true,
-        pos_label,
-        y_score,
-        input_relation
-        if isinstance(input_relation, str)
-        else input_relation.__genSQL__(),
-    )
-    query_result = executeSQL(
-        query, title="Computing the Lift Table.", method="fetchall"
-    )
-    decision_boundary, positive_prediction_ratio, lift = (
-        [item[0] for item in query_result],
-        [item[1] for item in query_result],
-        [item[2] for item in query_result],
+    decision_boundary, positive_prediction_ratio, lift = compute_function_metrics(
+        y_true=y_true,
+        y_score=y_score,
+        input_relation=input_relation,
+        pos_label=pos_label,
+        nbins=nbins,
+        fun_sql_name="lift_table",
     )
     decision_boundary.reverse()
     if not (ax):
@@ -2314,37 +2304,15 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    if nbins < 0:
-        nbins = 999999
-    query = "SELECT /*+LABEL('learn.model_selection.prc_curve')*/ PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
-    query = query.format(
-        nbins,
-        y_true,
-        pos_label,
-        y_score,
-        input_relation
-        if isinstance(input_relation, str)
-        else input_relation.__genSQL__(),
+    threshold, recall, precision = compute_function_metrics(
+        y_true=y_true,
+        y_score=y_score,
+        input_relation=input_relation,
+        pos_label=pos_label,
+        nbins=nbins,
+        fun_sql_name="prc",
     )
-    query_result = executeSQL(
-        query, title="Computing the PRC table.", method="fetchall"
-    )
-    threshold, recall, precision = (
-        [0] + [item[0] for item in query_result] + [1],
-        [1] + [item[1] for item in query_result] + [0],
-        [0] + [item[2] for item in query_result] + [1],
-    )
-    auc = 0
-    for i in range(len(recall) - 1):
-        if recall[i + 1] - recall[i] != 0.0:
-            a = (precision[i + 1] - precision[i]) / (recall[i + 1] - recall[i])
-            b = precision[i + 1] - a * recall[i + 1]
-            auc = (
-                auc
-                + a * (recall[i + 1] * recall[i + 1] - recall[i] * recall[i]) / 2
-                + b * (recall[i + 1] - recall[i])
-            )
-    auc = -auc
+    auc = compute_area(recall, precision)
     if auc_prc:
         return auc
     if not (ax):
@@ -2368,7 +2336,7 @@ tablesample
     ax.text(
         0.995,
         0,
-        "AUC = " + str(round(auc, 4) * 100) + "%",
+        f"AUC = {round(auc, 4) * 100}%",
         verticalalignment="bottom",
         horizontalalignment="right",
         fontsize=11.5,
@@ -2416,21 +2384,29 @@ y: str
     Response Column.
 metric: str, optional
     Metric used to do the model evaluation.
-        auto: logloss for classification & rmse for regression.
+        auto: logloss for classification & rmse for 
+              regression.
     For Classification:
         accuracy    : Accuracy
         auc         : Area Under the Curve (ROC)
-        bm          : Informedness = tpr + tnr - 1
-        csi         : Critical Success Index = tp / (tp + fn + fp)
+        bm          : Informedness 
+                      = tpr + tnr - 1
+        csi         : Critical Success Index 
+                      = tp / (tp + fn + fp)
         f1          : F1 Score 
         logloss     : Log Loss
         mcc         : Matthews Correlation Coefficient 
-        mk          : Markedness = ppv + npv - 1
-        npv         : Negative Predictive Value = tn / (tn + fn)
+        mk          : Markedness 
+                      = ppv + npv - 1
+        npv         : Negative Predictive Value 
+                      = tn / (tn + fn)
         prc_auc     : Area Under the Curve (PRC)
-        precision   : Precision = tp / (tp + fp)
-        recall      : Recall = tp / (tp + fn)
-        specificity : Specificity = tn / (tn + fp)
+        precision   : Precision 
+                      = tp / (tp + fp)
+        recall      : Recall 
+                      = tp / (tp + fn)
+        specificity : Specificity 
+                      = tn / (tn + fp)
     For Regression:
         max    : Max error
         mae    : Mean absolute error
@@ -2444,17 +2420,22 @@ metric: str, optional
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
-    The main class to be considered as positive (classification only).
+    The main class to be considered as positive 
+    (classification only).
 cutoff: float, optional
     The model cutoff (classification only).
 training_score: bool, optional
-    If set to True, the training score will be computed with the validation score.
+    If set to True, the training score will be 
+    computed with the validation score.
 comb_limit: int, optional
-    Maximum number of features combinations used to train the model.
+    Maximum number of features combinations used 
+    to train the model.
 skip_error: bool, optional
-    If set to True and an error occurs, it will be displayed and not raised.
+    If set to True and an error occurs, it will be 
+    displayed and not raised.
 print_info: bool, optional
-    If set to True, prints the model information at each step.
+    If set to True, prints the model information at 
+    each step.
 
 Returns
 -------
@@ -2520,10 +2501,14 @@ tablesample
                     ]
                     if print_info:
                         print(
-                            f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Features: {config}; \033[91mTest_score: {current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score: {current_cv[1][keys[1]][cv]}\033[0m; \033[94mTime: {current_cv[0][keys[2]][cv]}\033[0m;"
+                            f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; "
+                            f"Features: {config}; \033[91mTest_score: "
+                            f"{current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score:"
+                            f" {current_cv[1][keys[1]][cv]}\033[0m; \033[94mTime:"
+                            f" {current_cv[0][keys[2]][cv]}\033[0m;"
                         )
                 else:
-                    keys = [elem for elem in current_cv.values]
+                    keys = [v for v in current_cv.values]
                     data += [
                         (
                             config,
@@ -2534,7 +2519,10 @@ tablesample
                     ]
                     if print_info:
                         print(
-                            f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Features: {config}; \033[91mTest_score: {current_cv[keys[1]][cv]}\033[0m; \033[94mTime:{current_cv[keys[2]][cv]}\033[0m;"
+                            f"Model: {str(estimator.__class__).split('.')[-1][:-2]};"
+                            f" Features: {config}; \033[91mTest_score: "
+                            f"{current_cv[keys[1]][cv]}\033[0m; \033[94mTime:"
+                            f"{current_cv[keys[2]][cv]}\033[0m;"
                         )
             except Exception as e:
                 if skip_error and skip_error != "no_print":
@@ -2562,12 +2550,12 @@ tablesample
     if training_score:
         result = tablesample(
             {
-                "features": [elem[0] for elem in data],
-                "avg_score": [elem[1] for elem in data],
-                "avg_train_score": [elem[2] for elem in data],
-                "avg_time": [elem[3] for elem in data],
-                "score_std": [elem[4] for elem in data],
-                "score_train_std": [elem[5] for elem in data],
+                "features": [d[0] for d in data],
+                "avg_score": [d[1] for d in data],
+                "avg_train_score": [d[2] for d in data],
+                "avg_time": [d[3] for d in data],
+                "score_std": [d[4] for d in data],
+                "score_train_std": [d[5] for d in data],
             }
         )
         if print_info and (
@@ -2575,15 +2563,19 @@ tablesample
         ):
             print("\033[1mRandomized Features Search Selected Model\033[0m")
             print(
-                f"{str(estimator.__class__).split('.')[-1][:-2]}; Features: {result['features'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
+                f"{str(estimator.__class__).split('.')[-1][:-2]}; Features:"
+                f" {result['features'][0]}; \033[91mTest_score: "
+                f"{result['avg_score'][0]}\033[0m; \033[92mTrain_score: "
+                f"{result['avg_train_score'][0]}\033[0m; \033[94mTime: "
+                f"{result['avg_time'][0]}\033[0m;"
             )
     else:
         result = tablesample(
             {
-                "features": [elem[0] for elem in data],
-                "avg_score": [elem[1] for elem in data],
-                "avg_time": [elem[2] for elem in data],
-                "score_std": [elem[3] for elem in data],
+                "features": [d[0] for d in data],
+                "avg_score": [d[1] for d in data],
+                "avg_time": [d[2] for d in data],
+                "score_std": [d[3] for d in data],
             }
         )
         if print_info and (
@@ -2591,7 +2583,10 @@ tablesample
         ):
             print("\033[1mRandomized Features Search Selected Model\033[0m")
             print(
-                f"{str(estimator.__class__).split('.')[-1][:-2]}; Features: {result['features'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
+                f"{str(estimator.__class__).split('.')[-1][:-2]}; Features:"
+                f" {result['features'][0]}; \033[91mTest_score: "
+                f"{result['avg_score'][0]}\033[0m; \033[94mTime: "
+                f"{result['avg_time'][0]}\033[0m;"
             )
     return result
 
@@ -2750,45 +2745,15 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    if nbins < 0:
-        nbins = 999999
-    query = "SELECT /*+LABEL('learn.model_selection.roc_curve')*/ decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
-    query = query.format(
-        nbins,
-        y_true,
-        pos_label,
-        y_score,
-        input_relation
-        if isinstance(input_relation, str)
-        else input_relation.__genSQL__(),
+    threshold, false_positive, true_positive = compute_function_metrics(
+        y_true=y_true,
+        y_score=y_score,
+        input_relation=input_relation,
+        pos_label=pos_label,
+        nbins=nbins,
+        fun_sql_name="roc",
     )
-    query_result = executeSQL(
-        query, title="Computing the ROC Table.", method="fetchall"
-    )
-    threshold, false_positive, true_positive = (
-        [item[0] for item in query_result],
-        [item[1] for item in query_result],
-        [item[2] for item in query_result],
-    )
-    auc = 0
-    for i in range(len(false_positive) - 1):
-        if false_positive[i + 1] - false_positive[i] != 0.0:
-            a = (true_positive[i + 1] - true_positive[i]) / (
-                false_positive[i + 1] - false_positive[i]
-            )
-            b = true_positive[i + 1] - a * false_positive[i + 1]
-            auc = (
-                auc
-                + a
-                * (
-                    false_positive[i + 1] * false_positive[i + 1]
-                    - false_positive[i] * false_positive[i]
-                )
-                / 2
-                + b * (false_positive[i + 1] - false_positive[i])
-            )
-    auc = -auc
-    auc = min(auc, 1.0)
+    auc = compute_area(false_positive, true_positive)
     if auc_roc:
         return auc
     if best_threshold:
@@ -2844,7 +2809,7 @@ tablesample
         ax.text(
             0.995,
             0,
-            "AUC = " + str(round(auc, 4) * 100) + "%",
+            f"AUC = {round(auc, 4) * 100}%",
             verticalalignment="bottom",
             horizontalalignment="right",
             fontsize=11.5,
@@ -3222,3 +3187,60 @@ tablesample
     )
     range_curve(X, Y, param_name, metric, ax, ["train", "test"], **style_kwds)
     return result
+
+
+#
+#
+# Functions to use to simplify the coding.
+#
+# ---#
+def compute_function_metrics(
+    y_true: str,
+    y_score: str,
+    input_relation: Union[str, vDataFrame],
+    pos_label: Union[int, float, str] = 1,
+    nbins: int = 30,
+    fun_sql_name: str = "",
+):
+    if fun_sql_name == "lift_table":
+        label = "lift_curve"
+    else:
+        label = f"{fun_sql_name}_curve"
+    if nbins < 0:
+        nbins = 999999
+    if isinstance(input_relation, str):
+        table = input_relation
+    else:
+        table = input_relation.__genSQL__()
+    query_result = executeSQL(
+        query=f"""
+            SELECT
+                /*+LABEL('learn.model_selection.{label}')*/ 
+                {fun_sql_name.upper()}(obs, prob USING PARAMETERS num_bins = {nbins}) OVER() 
+             FROM 
+                (SELECT 
+                    (CASE WHEN {y_true} = '{pos_label}' THEN 1 ELSE 0 END) AS obs, 
+                    {y_score}::float AS prob 
+                 FROM {table}) AS prediction_output""",
+        title=f"Computing the {label.upper()}.",
+        method="fetchall",
+    )
+    return (
+        [item[0] for item in query_result],
+        [item[1] for item in query_result],
+        [item[2] for item in query_result],
+    )
+
+
+def compute_area(X: list, Y: list):
+    auc = 0
+    for i in range(len(Y) - 1):
+        if Y[i + 1] - Y[i] != 0.0:
+            a = (X[i + 1] - X[i]) / (Y[i + 1] - Y[i])
+            b = X[i + 1] - a * Y[i + 1]
+            auc = (
+                auc
+                + a * (Y[i + 1] * Y[i + 1] - Y[i] * Y[i]) / 2
+                + b * (Y[i + 1] - Y[i])
+            )
+    return min(-auc, 1.0)

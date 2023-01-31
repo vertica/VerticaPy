@@ -1972,7 +1972,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return mt.lift_chart(
+        return lift_chart(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2003,7 +2003,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return mt.prc_curve(
+        return prc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2154,7 +2154,7 @@ class BinaryClassifier(Classifier):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        return mt.roc_curve(
+        return roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2186,7 +2186,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return mt.roc_curve(
+        return roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2403,7 +2403,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return mt.roc_curve(
+        return roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2550,7 +2550,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return mt.lift_chart(
+        return lift_chart(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2604,7 +2604,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return mt.prc_curve(
+        return prc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2797,7 +2797,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return mt.roc_curve(
+        return roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
