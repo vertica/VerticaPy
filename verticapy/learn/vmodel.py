@@ -1214,7 +1214,7 @@ Main Class for Vertica Model
                 p = self.parameters["p"]
             else:
                 p = 2
-            func += "\t\tresult += [np.sum((np.array(centroid) - X) ** {0}, axis=1) ** (1 / {0})]\n"
+            func += f"\t\tresult += [np.sum((np.array(centroid) - X) ** {p}, axis=1) ** (1 / {p})]\n"
             func += "\tresult = np.column_stack(result)\n"
             if (
                 self.type == "NearestCentroid"

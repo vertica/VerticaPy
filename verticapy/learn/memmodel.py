@@ -915,11 +915,9 @@ def binary_tree_to_graphviz(
                 )
                 for j in range(len(value[i])):
                     if percent:
-                        val = round(value[i][j] * 100, round_pred)
+                        val = str(round(value[i][j] * 100, round_pred)) + "%"
                     else:
-                        percent = round(value[i][j], round_pred)
-                    if percent:
-                        val = str(val) + "%"
+                        val = round(value[i][j], round_pred)
                     label += f'<tr><td port="port{j}" border="1" align="left">'
                     label += f" {prefix_pred}({classes_[j]}): {val} </td></tr>"
                 label += "</table>>"
