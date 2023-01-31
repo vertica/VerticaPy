@@ -145,12 +145,18 @@ p: int, optional
             self.test_relation = self.input_relation
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
-        query = "SELECT {0}, {1} FROM {2} WHERE {1} IS NOT NULL GROUP BY {1} ORDER BY {1} ASC".format(
-            ", ".join([f"{func}({column}) AS {column}" for column in self.X]),
-            self.y,
-            self.input_relation,
+        X_str = ", ".join([f"{func}({column}) AS {column}" for column in self.X])
+        self.centroids_ = to_tablesample(
+            query=f"""
+            SELECT 
+                {X_str}, 
+                {self.y} 
+            FROM {self.input_relation} 
+            WHERE {self.y} IS NOT NULL 
+            GROUP BY {self.y} 
+            ORDER BY {self.y} ASC""",
+            title="Getting Model Centroids.",
         )
-        self.centroids_ = to_tablesample(query=query, title="Getting Model Centroids.",)
         self.classes_ = self.centroids_.values[y]
         model_save = {
             "type": "NearestCentroid",
@@ -235,57 +241,68 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        X = [quote_ident(x) for x in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
         if not (key_columns) and key_columns != None:
             key_columns = [self.y]
-        sql = [
-            "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
-            for i in range(len(self.X))
-        ]
-        sql = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
-        sql = "ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY {})".format(
-            ", ".join(["x.{}".format(item) for item in X]), sql
-        )
-        sql = "SELECT {}{}, {} AS ordered_distance, y.{} AS predict_neighbors, row_id FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM {} WHERE {}) x CROSS JOIN (SELECT * FROM {} WHERE {}) y".format(
-            ", ".join(["x.{}".format(item) for item in X]),
-            ", " + ", ".join(["x." + quote_ident(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-            sql,
-            self.y,
-            test_relation,
-            " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
-            self.input_relation,
-            " AND ".join(["{} IS NOT NULL".format(item) for item in self.X]),
-        )
-        sql = "(SELECT row_id, {}{}, predict_neighbors, COUNT(*) / {} AS proba_predict FROM ({}) z WHERE ordered_distance <= {} GROUP BY {}{}, row_id, predict_neighbors) kneighbors_table".format(
-            ", ".join(X),
-            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-            self.parameters["n_neighbors"],
-            sql,
-            self.parameters["n_neighbors"],
-            ", ".join(X),
-            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-        )
-        if predict:
-            sql = "(SELECT {}{}, predict_neighbors FROM (SELECT {}{}, predict_neighbors, ROW_NUMBER() OVER (PARTITION BY {} ORDER BY proba_predict DESC) AS order_prediction FROM {}) VERTICAPY_SUBTABLE WHERE order_prediction = 1) predict_neighbors_table".format(
-                ", ".join(X),
-                ", " + ", ".join([quote_ident(elem) for elem in key_columns])
-                if (key_columns)
-                else "",
-                ", ".join(X),
-                ", " + ", ".join([quote_ident(elem) for elem in key_columns])
-                if (key_columns)
-                else "",
-                ", ".join(X),
-                sql,
+        p = self.parameters["p"]
+        n_neighbors = self.parameters["n_neighbors"]
+        X_str = ", ".join([f"x.{x}" for x in X])
+        if key_columns:
+            key_columns_str = ", " + ", ".join(
+                ["x." + quote_ident(x) for x in key_columns]
             )
+        else:
+            key_columns_str = ""
+        sql = [f"POWER(ABS(x.{X[i]} - y.{self.X[i]}), {p})" for i in range(len(self.X))]
+        sql = f"""
+            SELECT 
+                {X_str}{key_columns_str}, 
+                ROW_NUMBER() OVER(PARTITION BY 
+                                  {X_str}, row_id 
+                                  ORDER BY POWER({' + '.join(sql)}, 1 / {p})) 
+                                  AS ordered_distance, 
+                y.{self.y} AS predict_neighbors, 
+                row_id 
+            FROM 
+                (SELECT 
+                    *, 
+                    ROW_NUMBER() OVER() AS row_id 
+                 FROM {test_relation} 
+                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in X])}) x 
+                 CROSS JOIN 
+                (SELECT * FROM {self.input_relation} 
+                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in self.X])}) y"""
+
+        if key_columns:
+            key_columns_str = ", " + ", ".join([quote_ident(x) for x in key_columns])
+
+        sql = f"""
+            (SELECT 
+                row_id, 
+                {", ".join(X)}{key_columns_str}, 
+                predict_neighbors, 
+                COUNT(*) / {n_neighbors} AS proba_predict 
+             FROM ({sql}) z 
+             WHERE ordered_distance <= {n_neighbors} 
+             GROUP BY {", ".join(X)}{key_columns_str}, 
+                      row_id, 
+                      predict_neighbors) kneighbors_table"""
+        if predict:
+            sql = f"""
+                (SELECT 
+                    {", ".join(X)}{key_columns_str}, 
+                    predict_neighbors 
+                 FROM 
+                    (SELECT 
+                        {", ".join(X)}{key_columns_str}, 
+                        predict_neighbors, 
+                        ROW_NUMBER() OVER (PARTITION BY {", ".join(X)} 
+                                           ORDER BY proba_predict DESC) 
+                                           AS order_prediction 
+                     FROM {sql}) VERTICAPY_SUBTABLE 
+                     WHERE order_prediction = 1) predict_neighbors_table"""
         return sql
 
     # ---#
@@ -336,13 +353,17 @@ p: int, optional
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
         classes = executeSQL(
-            "SELECT /*+LABEL('learn.neighbors.KNeighborsClassifier.fit')*/ DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(
-                self.y, self.input_relation, self.y, self.y
-            ),
+            query=f"""
+                SELECT 
+                    /*+LABEL('learn.neighbors.KNeighborsClassifier.fit')*/ 
+                    DISTINCT {self.y} 
+                FROM {self.input_relation} 
+                WHERE {self.y} IS NOT NULL 
+                ORDER BY {self.y} ASC""",
             method="fetchall",
             print_time_sql=False,
         )
-        self.classes_ = [item[0] for item in classes]
+        self.classes_ = [c[0] for c in classes]
         model_save = {
             "type": "KNeighborsClassifier",
             "input_relation": self.input_relation,
@@ -420,18 +441,13 @@ p: int, optional
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
-            pos_label
-        )
+        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
         return roc_curve(
             self.y,
             "proba_predict",
@@ -472,20 +488,20 @@ p: int, optional
             else pos_label
         )
         if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
-            input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
-                pos_label
+            input_relation = (
+                self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
             )
-            y_score = "(CASE WHEN proba_predict > {} THEN 1 ELSE 0 END)".format(cutoff)
-            y_true = "DECODE({}, '{}', 1, 0)".format(self.y, pos_label)
+            y_score = f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
+            y_true = f"DECODE({self.y}, '{pos_label}', 1, 0)"
             result = confusion_matrix(y_true, y_score, input_relation)
             if pos_label == 1:
                 return result
             else:
                 return tablesample(
                     values={
-                        "index": ["Non-{}".format(pos_label), "{}".format(pos_label),],
-                        "Non-{}".format(pos_label): result.values[0],
-                        "{}".format(pos_label): result.values[1],
+                        "index": [f"Non-{pos_label}", str(pos_label),],
+                        f"Non-{pos_label}": result.values[0],
+                        str(pos_label): result.values[1],
                     },
                 )
         else:
@@ -521,18 +537,13 @@ p: int, optional
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
-            pos_label
-        )
+        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
         return lift_chart(
             self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
@@ -562,18 +573,13 @@ p: int, optional
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
-            pos_label
-        )
+        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
         return prc_curve(
             self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
@@ -714,12 +720,13 @@ p: int, optional
         assert pos_label is None or pos_label in self.classes_, ParameterError(
             (
                 "Incorrect parameter 'pos_label'.\nThe class label "
-                "must be in [{0}]. Found '{1}'."
-            ).format("|".join([str(c) for c in self.classes_]), pos_label)
+                f"must be in [{'|'.join([str(c) for c in self.classes_])}]. "
+                f"Found '{pos_label}'."
+            )
         )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
-        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        X = [quote_ident(x) for x in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if not (name):
             name = gen_name([self.type, self.name])
@@ -731,28 +738,32 @@ p: int, optional
         # Generating the probabilities
         if pos_label == None:
             predict = [
-                (
-                    "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{0}', "
-                    "proba_predict, NULL))) AS {1}"
-                ).format(elem, gen_name([name, elem]))
-                for elem in self.classes_
+                f"""ZEROIFNULL(AVG(DECODE(predict_neighbors, 
+                                          '{c}', 
+                                          proba_predict, 
+                                          NULL))) AS {gen_name([name, c])}"""
+                for c in self.classes_
             ]
         else:
             predict = [
-                (
-                    "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{0}', "
-                    "proba_predict, NULL))) AS {1}"
-                ).format(pos_label, name)
+                f"""ZEROIFNULL(AVG(DECODE(predict_neighbors, 
+                                          '{pos_label}', 
+                                          proba_predict, 
+                                          NULL))) AS {name}"""
             ]
-        sql = "(SELECT {0}{1}, {2} FROM {3} GROUP BY {4}) VERTICAPY_SUBTABLE".format(
-            ", ".join(X),
-            ", " + ", ".join(key_columns) if key_columns else "",
-            ", ".join(predict),
-            self.deploySQL(
-                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-            ),
-            ", ".join(X + key_columns),
+        if key_columns:
+            key_columns_str = ", " + ", ".join(key_columns)
+        else:
+            key_columns_str = ""
+        table = self.deploySQL(
+            X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
         )
+        sql = f"""
+            (SELECT 
+                {", ".join(X)}{key_columns_str}, 
+                {", ".join(predict)} 
+             FROM {table} 
+             GROUP BY {", ".join(X + key_columns)}) VERTICAPY_SUBTABLE"""
 
         # Result
         if inplace:

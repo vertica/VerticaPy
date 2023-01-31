@@ -3235,19 +3235,20 @@ def compute_function_metrics(
         query=f"""
             SELECT
                 {', '.join(X)}
-            (SELECT
-                /*+LABEL('learn.model_selection.{label}')*/ 
-                {fun_sql_name.upper()}(
-                        obs, prob 
-                        USING PARAMETERS 
-                        num_bins = {nbins}) OVER() 
-             FROM 
-                (SELECT 
-                    (CASE 
-                        WHEN {y_true} = '{pos_label}' 
-                        THEN 1 ELSE 0 END) AS obs, 
-                    {y_score}::float AS prob 
-                 FROM {table}) AS prediction_output) x""",
+            FROM
+                (SELECT
+                    /*+LABEL('learn.model_selection.{label}')*/ 
+                    {fun_sql_name.upper()}(
+                            obs, prob 
+                            USING PARAMETERS 
+                            num_bins = {nbins}) OVER() 
+                 FROM 
+                    (SELECT 
+                        (CASE 
+                            WHEN {y_true} = '{pos_label}' 
+                            THEN 1 ELSE 0 END) AS obs, 
+                        {y_score}::float AS prob 
+                     FROM {table}) AS prediction_output) x""",
         title=f"Computing the {label.upper()}.",
         method="fetchall",
     )
