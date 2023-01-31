@@ -308,10 +308,10 @@ fit_intercept: bool, optional
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
-        raise_error_if_not_in(
-            "penalty", str(penalty).lower(), ["none", "l1", "l2", "enet"]
-        )
-        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs", "cgd"])
+        penalty = str(penalty).lower()
+        solver = str(solver).lower()
+        raise_error_if_not_in("penalty", penalty, ["none", "l1", "l2", "enet"])
+        raise_error_if_not_in("solver", solver, ["newton", "bfgs", "cgd"])
         self.type, self.name = "LogisticRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LOGISTIC_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LOGISTIC_REG"
@@ -323,23 +323,21 @@ fit_intercept: bool, optional
                 "versions greater or equal to 12."
             )
         self.parameters = {
-            "penalty": str(penalty).lower(),
+            "penalty": penalty,
             "tol": tol,
             "C": C,
             "max_iter": max_iter,
-            "solver": str(solver).lower(),
+            "solver": solver,
             "l1_ratio": l1_ratio,
             "fit_intercept": fit_intercept,
         }
         if str(penalty).lower() == "none":
             del self.parameters["l1_ratio"]
             del self.parameters["C"]
-            raise_error_if_not_in("solver", str(solver).lower(), ["bfgs", "newton"])
+            raise_error_if_not_in("solver", solver, ["bfgs", "newton"])
         elif str(penalty).lower() in ("l1", "l2"):
             del self.parameters["l1_ratio"]
-            raise_error_if_not_in(
-                "solver", str(solver).lower(), ["bfgs", "newton", "cgd"]
-            )
+            raise_error_if_not_in("solver", solver, ["bfgs", "newton", "cgd"])
 
 
 # ---#

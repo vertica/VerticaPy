@@ -147,9 +147,15 @@ parameters passed to the function are of an expected data type.
                 elif not (isinstance(var, type(None))) and not (isinstance(var, dt)):
                     dt_var = type(var)
                     if single_type:
-                        warning_message = f"Parameter '{var_name}' must be of type <{dt_str_list}>, found type <{dt_var}>."
+                        warning_message = (
+                            f"Parameter '{var_name}' must be of type"
+                            f" <{dt_str_list}>, found type <{dt_var}>."
+                        )
                     else:
-                        warning_message = f"Parameter '{var_name}' type must be one of the following: <{dt_str_list}>, found type <{dt_var}>."
+                        warning_message = (
+                            f"Parameter '{var_name}' type must be one  of the "
+                            f"following: <{dt_str_list}>, found type <{dt_var}>."
+                        )
                     warning_message = (
                         warning_message.replace("<class '", "")
                         .replace("'>", "")

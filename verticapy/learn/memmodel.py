@@ -1280,11 +1280,14 @@ def sql_from_bisecting_kmeans(
                 predict_tree(right_child, left_child, right_node, clusters_distance),
             )
 
-    sql_final = "(CASE WHEN {} THEN NULL ELSE {} END)".format(
-        " OR ".join(["{} IS NULL".format(elem) for elem in X]),
-        predict_tree(right_child, left_child, 0, clusters_distance),
-    )
-    return sql_final
+    is_null_x = " OR ".join([f"{x} IS NULL" for x in X])
+    sql_final = f"""
+        (CASE 
+            WHEN {is_null_x} 
+                THEN NULL 
+            ELSE {predict_tree(right_child, left_child, 0, clusters_distance)} 
+        END)"""
+    return clean_query(sql_final)
 
 
 # ---#
@@ -1387,7 +1390,7 @@ def sql_from_clusters(
     for i in range(len(classes)):
         val = classes[i]
         if isinstance(val, str):
-            val = "'{0}'".format(classes[i])
+            val = f"'{classes[i]}'"
         elif val == None:
             val = "NULL"
         classes_tmp += [val]
@@ -1395,7 +1398,7 @@ def sql_from_clusters(
     for c in clusters:
         list_tmp = []
         for idx, col in enumerate(X):
-            list_tmp += ["POWER({0} - {1}, {2})".format((X[idx]), c[idx], p)]
+            list_tmp += [f"POWER({X[idx]} - {c[idx]}, {p})"]
         clusters_distance += ["POWER(" + " + ".join(list_tmp) + f", 1 / {p})"]
 
     if return_distance_clusters:
@@ -1404,32 +1407,39 @@ def sql_from_clusters(
     if return_proba:
         sum_distance = " + ".join([f"1 / ({d})" for d in clusters_distance])
         proba = [
-            "(CASE WHEN {0} = 0 THEN 1.0 ELSE 1 / ({1}) / ({2}) END)".format(
-                clusters_distance[i], clusters_distance[i], sum_distance
-            )
+            f"""
+            (CASE 
+                WHEN {clusters_distance[i]} = 0 
+                    THEN 1.0 
+                ELSE 1 / ({clusters_distance[i]}) 
+                      / ({sum_distance})
+            END)"""
             for i in range(len(clusters_distance))
         ]
-        return proba
+        return [clean_query(p) for p in proba]
 
     sql = []
     k = len(clusters_distance)
     for i in range(k):
         list_tmp = []
         for j in range(i):
-            list_tmp += [
-                "{0} <= {1}".format(clusters_distance[i], clusters_distance[j])
-            ]
+            list_tmp += [f"{clusters_distance[i]} <= {clusters_distance[j]}"]
         sql += [" AND ".join(list_tmp)]
     sql = sql[1:]
     sql.reverse()
-    sql_final = "CASE WHEN {0} THEN NULL".format(
-        " OR ".join([f"{elem} IS NULL" for elem in X])
-    )
+    is_null_x = " OR ".join([f"{x} IS NULL" for x in X])
+    sql_final = f"CASE WHEN {is_null_x} THEN NULL"
     for i in range(k - 1):
-        sql_final += " WHEN {0} THEN {1}".format(
-            sql[i], k - i - 1 if not classes else classes_tmp[k - i - 1]
-        )
-    sql_final += " ELSE {0} END".format(0 if not classes else classes_tmp[0])
+        if not classes:
+            c = k - i - 1
+        else:
+            c = classes_tmp[k - i - 1]
+        sql_final += f" WHEN {sql[i]} THEN {c}"
+    if not classes:
+        c = 0
+    else:
+        c = classes_tmp[0]
+    sql_final += f" ELSE {c} END"
 
     return sql_final
 
@@ -1573,20 +1583,16 @@ def sql_from_clusters_kprotypes(
                     )
                 ]
             else:
-                clusters_distance_num += [
-                    "POWER({0} - {1}, {2})".format((X[idx]), c[idx], p)
-                ]
+                clusters_distance_num += [f"POWER({X[idx]} - {c[idx]}, {p})"]
         final_cluster_distance = ""
         if clusters_distance_num:
             final_cluster_distance += (
-                "POWER(" + " + ".join(clusters_distance_num) + f", 1 / {p})"
+                f"POWER({' + '.join(clusters_distance_num)}, 1 / {p})"
             )
         if clusters_distance_cat:
             if clusters_distance_num:
                 final_cluster_distance += " + "
-            final_cluster_distance += (
-                f"{gamma} * (" + " + ".join(clusters_distance_cat) + ")"
-            )
+            final_cluster_distance += f"{gamma} * ({' + '.join(clusters_distance_cat)})"
         clusters_distance += [final_cluster_distance]
 
     if return_distance_clusters:
@@ -1595,29 +1601,30 @@ def sql_from_clusters_kprotypes(
     if return_proba:
         sum_distance = " + ".join([f"1 / ({d})" for d in clusters_distance])
         proba = [
-            "(CASE WHEN {0} = 0 THEN 1.0 ELSE 1 / ({1}) / ({2}) END)".format(
-                clusters_distance[i], clusters_distance[i], sum_distance
-            )
+            f"""
+            (CASE 
+                WHEN {clusters_distance[i]} = 0 
+                    THEN 1.0 
+                ELSE 1 / ({clusters_distance[i]}) 
+                      / ({sum_distance}) 
+            END)"""
             for i in range(len(clusters_distance))
         ]
-        return proba
+        return [clean_query(p) for p in proba]
 
     sql = []
     k = len(clusters_distance)
     for i in range(k):
         list_tmp = []
         for j in range(i):
-            list_tmp += [
-                "{0} <= {1}".format(clusters_distance[i], clusters_distance[j])
-            ]
+            list_tmp += [f"{clusters_distance[i]} <= {clusters_distance[j]}"]
         sql += [" AND ".join(list_tmp)]
     sql = sql[1:]
     sql.reverse()
-    sql_final = "CASE WHEN {0} THEN NULL".format(
-        " OR ".join([f"{elem} IS NULL" for elem in X])
-    )
+    is_null_x = " OR ".join([f"{x} IS NULL" for x in X])
+    sql_final = f"CASE WHEN {is_null_x} THEN NULL"
     for i in range(k - 1):
-        sql_final += " WHEN {0} THEN {1}".format(sql[i], k - i - 1)
+        sql_final += f" WHEN {sql[i]} THEN {k - i - 1}"
     sql_final += " ELSE 0 END"
     return sql_final
 
@@ -1688,9 +1695,7 @@ def sql_from_pca(
         sql_tmp = []
         for j in range(len(X)):
             sql_tmp += [
-                "({} - {}) * {}".format(
-                    (X[j]), mean[j], [pc[i] for pc in principal_components][j]
-                )
+                f"({X[j]} - {mean[j]}) * {[pc[i] for pc in principal_components][j]}"
             ]
         sql += [" + ".join(sql_tmp)]
     return sql
@@ -1760,9 +1765,7 @@ def sql_from_svd(
     for i in range(len(X)):
         sql_tmp = []
         for j in range(len(X)):
-            sql_tmp += [
-                "{} * {} / {}".format((X[j]), [pc[i] for pc in vectors][j], values[i])
-            ]
+            sql_tmp += [f"{X[j]} * {[pc[i] for pc in vectors][j]} / {values[i]}"]
         sql += [" + ".join(sql_tmp)]
     return sql
 
@@ -1836,13 +1839,8 @@ def sql_from_normalizer(
     )
     sql = []
     for i in range(len(X)):
-        sql += [
-            "({} - {}) / {}".format(
-                X[i],
-                values[i][0],
-                values[i][1] - values[i][0] if method == "minmax" else values[i][1],
-            )
-        ]
+        den = values[i][1] - values[i][0] if method == "minmax" else values[i][1]
+        sql += [f"({X[i]} - {values[i][0]}) / {den}"]
     return sql
 
 
@@ -1935,12 +1933,10 @@ def sql_from_one_hot_encoder(
             if not (drop_first) or j > 0:
                 val = categories[i][j]
                 if isinstance(val, str):
-                    val = "'{}'".format(val)
+                    val = f"'{val}'"
                 elif val == None:
                     val = "NULL"
-                sql_tmp_feature = "(CASE WHEN {} = {} THEN 1 ELSE 0 END)".format(
-                    X[i], val
-                )
+                sql_tmp_feature = f"(CASE WHEN {X[i]} = {val} THEN 1 ELSE 0 END)"
                 if column_naming == "indices":
                     sql_tmp_feature += ' AS "{}_{}"'.format((X[i].replace('"', "")), j)
                 elif column_naming in ("values", "values_relaxed"):
@@ -2252,7 +2248,8 @@ attributes: dict
             represent += "\n\nclasses = {0}".format(attributes_["classes"])
         elif model_type == "OneHotEncoder":
             assert "categories" in attributes, ParameterError(
-                "OneHotEncoder's attributes must include a list with all the feature categories for the 'categories' parameter."
+                "OneHotEncoder's attributes must include a list with all "
+                "the feature categories for the 'categories' parameter."
             )
             attributes_["categories"] = attributes["categories"].copy()
             if "drop_first" not in attributes:
@@ -2609,9 +2606,7 @@ attributes: dict
             )
         else:
             raise FunctionError(
-                "Method 'predict' is not available for model type '{}'.".format(
-                    self.model_type_
-                )
+                f"Method 'predict' is not available for model type '{self.model_type_}'."
             )
 
     # ---#
@@ -2728,47 +2723,47 @@ attributes: dict
                 result_proba = self.predict_proba_sql(X)
             m = len(classes)
             if m == 2:
-                result = "(CASE WHEN {} > 0.5 THEN {} ELSE {} END)".format(
-                    result_proba[1], classes[1], classes[0]
-                )
+                result = f"""
+                    (CASE 
+                        WHEN {result_proba[1]} > 0.5 
+                            THEN {classes[1]} 
+                        ELSE {classes[0]} 
+                    END)"""
             else:
                 sql = []
                 for i in range(m):
                     list_tmp = []
                     for j in range(i):
-                        list_tmp += [
-                            "{} >= {}".format(result_proba[i], result_proba[j])
-                        ]
+                        list_tmp += [f"{result_proba[i]} >= {result_proba[j]}"]
                     sql += [" AND ".join(list_tmp)]
                 sql = sql[1:]
                 sql.reverse()
-                sql_final = "CASE WHEN {} THEN NULL".format(
-                    " OR ".join(["{} IS NULL".format(elem) for elem in X])
-                )
+                result = f"""
+                    CASE 
+                        WHEN {' OR '.join([f"{x} IS NULL" for x in X])} 
+                        THEN NULL"""
                 for i in range(m - 1):
                     class_i = classes[m - i - 1]
-                    sql_final += " WHEN {} THEN {}".format(
-                        sql[i],
-                        "'{}'".format(class_i) if isinstance(class_i, str) else class_i,
-                    )
-                sql_final += " ELSE {} END".format(
-                    "'{}'".format(classes[0])
-                    if isinstance(classes[0], str)
-                    else classes[0]
-                )
-                result = sql_final
+                    if isinstance(class_i, str):
+                        class_i_str = f"'{class_i}'"
+                    else:
+                        class_i_str = class_i
+                    result += f" WHEN {sql[i]} THEN {class_i_str}"
+                if isinstance(classes[0], str):
+                    classes_0 = f"'{classes[0]}'"
+                else:
+                    classes_0 = classes[0]
+                result += f" ELSE {classes_0} END"
         elif self.model_type_ == "CHAID":
             return sql_from_chaid_tree(
                 X, self.attributes_["tree"], self.attributes_["classes"], False
             )
         else:
             raise FunctionError(
-                "Method 'predict_sql' is not available for model type '{}'.".format(
-                    self.model_type_
-                )
+                f"Method 'predict_sql' is not available for model type '{self.model_type_}'"
             )
         if isinstance(result, str):
-            result = result.replace("\xa0", " ")
+            result = clean_query(result.replace("\xa0", " "))
         return result
 
     # ---#
@@ -2862,9 +2857,8 @@ attributes: dict
             )
         else:
             raise FunctionError(
-                "Method 'predict_proba' is not available for model type '{}'.".format(
-                    self.model_type_
-                )
+                "Method 'predict_proba' is not available "
+                f"for model type '{self.model_type_}'."
             )
 
     # ---#
@@ -2890,7 +2884,7 @@ attributes: dict
                 self.attributes_["intercept"],
                 self.model_type_,
             )
-            result = ["1 - ({})".format(result), result]
+            result = [f"1 - ({result})", result]
         elif self.model_type_ == "NaiveBayes":
             result = sql_from_nb(
                 X,
@@ -2974,9 +2968,7 @@ attributes: dict
             result = [trees[i].predict_proba_sql(X) for i in range(n)]
             classes_proba = []
             for i in range(m):
-                classes_proba += [
-                    "(" + " + ".join([val[i] for val in result]) + ") / {}".format(n)
-                ]
+                classes_proba += [f"({' + '.join([val[i] for val in result])}) / {n}"]
             result = classes_proba
         elif self.model_type_ == "XGBoostClassifier":
             result, n, m = (
@@ -2989,24 +2981,20 @@ attributes: dict
             ]
             for i in range(m):
                 result += [
-                    "(1 / (1 + EXP(- ({} + {} * (".format(
-                        self.attributes_["logodds"][i],
-                        self.attributes_["learning_rate"],
-                    )
-                    + " + ".join([c[i] for c in all_probas])
-                    + ")))))"
+                    f"""(1 / (1 + EXP(- ({ self.attributes_['logodds'][i]} 
+                                + {self.attributes_['learning_rate']} 
+                                * ({' + '.join([p[i] for p in all_probas])})))))"""
                 ]
-            sum_result = "(" + " + ".join(result) + ")"
-            result = [item + " / {}".format(sum_result) for item in result]
+            sum_result = f"({' + '.join(result)})"
+            result = [clean_query(f"{x} / {sum_result}") for x in result]
         elif self.model_type_ == "CHAID":
             return sql_from_chaid_tree(
                 X, self.attributes_["tree"], self.attributes_["classes"], True
             )
         else:
             raise FunctionError(
-                "Method 'predict_proba_sql' is not available for model type '{}'.".format(
-                    self.model_type_
-                )
+                "Method 'predict_proba_sql' is not available "
+                f"for model type '{self.model_type_}'."
             )
         return [r.replace("\xa0", " ") for r in result]
 
@@ -3152,9 +3140,7 @@ attributes: dict
             )
         else:
             raise FunctionError(
-                "Method 'to_graphviz' does not exist for model type '{}'.".format(
-                    self.model_type_
-                )
+                f"Method 'to_graphviz' does not exist for model type '{self.model_type_}'."
             )
 
     # ---#
@@ -3202,9 +3188,7 @@ attributes: dict
             )
         else:
             raise FunctionError(
-                "Method 'transform' is not available for model type '{}'.".format(
-                    self.model_type_
-                )
+                f"Method 'transform' is not available for model type '{self.model_type_}'."
             )
 
     # ---#

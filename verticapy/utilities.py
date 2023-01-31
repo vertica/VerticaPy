@@ -1907,21 +1907,16 @@ vDataFrame
     )
     result = result.replace("UNKNOWN", unknown)
     result = "create" + "create".join(result.split("create")[1:])
+    relation = format_schema_table(schema, table_name)
     if temporary_local_table:
-        create_statement = "CREATE LOCAL TEMPORARY TABLE {0}".format(
-            quote_ident(table_name)
-        )
+        create_statement = f"CREATE LOCAL TEMPORARY TABLE {quote_ident(table_name)}"
     else:
         if not (schema):
             schema = "public"
         if temporary_table:
-            create_statement = "CREATE TEMPORARY TABLE {0}".format(
-                format_schema_table(schema, table_name)
-            )
+            create_statement = f"CREATE TEMPORARY TABLE {relation}"
         else:
-            create_statement = "CREATE TABLE {0}".format(
-                format_schema_table(schema, table_name)
-            )
+            create_statement = f"CREATE TABLE {relation}"
     result = result.replace(
         'create table "x_verticapy"."y_verticapy"', create_statement
     )
@@ -1931,9 +1926,7 @@ vDataFrame
             result[0] += " ON COMMIT PRESERVE ROWS;"
         else:
             result[0] += ";"
-        result[1] = "copy" + result[1].replace(
-            '"x_verticapy"."y_verticapy"', format_schema_table(schema, table_name),
-        )
+        result[1] = "copy" + result[1].replace('"x_verticapy"."y_verticapy"', relation,)
     else:
         if temporary_local_table:
             end = result.split(")")[-1]

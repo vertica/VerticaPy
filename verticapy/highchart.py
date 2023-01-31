@@ -757,9 +757,7 @@ def boxplot(
         data = []
         for elem in categories:
             data += [
-                vdf.search("{} = '{}'".format(by, elem), usecols=[columns[0], by])[
-                    columns[0]
-                ]
+                vdf.search(f"{by} = '{elem}'", usecols=[columns[0], by])[columns[0]]
                 .agg(func=aggregations)
                 .values[columns[0]]
             ]

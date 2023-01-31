@@ -268,66 +268,67 @@ p: int, optional
             if not (index):
                 index = "id"
                 drop(f"v_temp_schema.{name_main}", method="table")
-                sql = """CREATE LOCAL TEMPORARY TABLE {0} 
-                         ON COMMIT PRESERVE ROWS AS 
-                         SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
-                            ROW_NUMBER() OVER() AS id, 
-                            {1} 
-                         FROM {2} 
-                         WHERE {3}""".format(
-                    name_main,
-                    ", ".join(X + key_columns),
-                    self.input_relation,
-                    " AND ".join([f"{item} IS NOT NULL" for item in X]),
+                executeSQL(
+                    query=f"""
+                    CREATE LOCAL TEMPORARY TABLE {name_main} 
+                    ON COMMIT PRESERVE ROWS AS 
+                    SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
+                        ROW_NUMBER() OVER() AS id, 
+                        {', '.join(X + key_columns)} 
+                    FROM {self.input_relation} 
+                    WHERE {' AND '.join([f"{item} IS NOT NULL" for item in X])}""",
+                    title="Computing the DBSCAN Table [Step 0]",
                 )
-                executeSQL(sql, title="Computing the DBSCAN Table [Step 0]")
             else:
                 executeSQL(
-                    "SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/ {0} FROM {1} LIMIT 10".format(
-                        ", ".join(X + key_columns + [index]), self.input_relation
-                    ),
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('learn.cluster.DBSCAN.fit')*/ 
+                            {', '.join(X + key_columns + [index])} 
+                        FROM {self.input_relation} 
+                        LIMIT 10""",
                     print_time_sql=False,
                 )
                 name_main = self.input_relation
-            sql = [
-                "POWER(ABS(x.{0} - y.{0}), {1})".format(X[i], self.parameters["p"])
+            distance = [
+                f"POWER(ABS(x.{X[i]} - y.{X[i]}), {self.parameters['p']})"
                 for i in range(len(X))
             ]
-            distance = "POWER({0}, 1 / {1})".format(
-                " + ".join(sql), self.parameters["p"]
-            )
-            sql = """SELECT 
-                        x.{0} AS node_id, 
-                        y.{0} AS nn_id, 
-                        {1} AS distance 
-                     FROM {2} AS x 
-                     CROSS JOIN {2} AS y""".format(
-                index, distance, name_main
-            )
-            sql = """SELECT 
-                        node_id, 
-                        nn_id, 
-                        SUM(CASE WHEN distance <= {0} THEN 1 ELSE 0 END) 
-                            OVER (PARTITION BY node_id) AS density, 
-                        distance 
-                     FROM ({1}) distance_table""".format(
-                self.parameters["eps"], sql
-            )
+            distance = f"POWER({' + '.join(distance)}, 1 / {self.parameters['p']})"
+            table = f"""
+                SELECT 
+                    node_id, 
+                    nn_id, 
+                    SUM(CASE 
+                          WHEN distance <= {self.parameters['eps']} 
+                            THEN 1 
+                          ELSE 0 
+                        END) 
+                        OVER (PARTITION BY node_id) AS density, 
+                    distance 
+                FROM (SELECT 
+                          x.{index} AS node_id, 
+                          y.{index} AS nn_id, 
+                          {distance} AS distance 
+                      FROM 
+                      {name_main} AS x 
+                      CROSS JOIN 
+                      {name_main} AS y) distance_table"""
             if isinstance(verticapy.OPTIONS["random_state"], int):
                 order_by = "ORDER BY node_id, nn_id"
             else:
                 order_by = ""
-            sql = """SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
+            graph = executeSQL(
+                query=f"""
+                    SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
                         node_id, 
                         nn_id 
-                     FROM ({0}) VERTICAPY_SUBTABLE 
-                     WHERE density > {1} 
-                        AND distance < {2} 
-                        AND node_id != nn_id {3}""".format(
-                sql, self.parameters["min_samples"], self.parameters["eps"], order_by,
-            )
-            graph = executeSQL(
-                sql, title="Computing the DBSCAN Table [Step 1]", method="fetchall"
+                    FROM ({table}) VERTICAPY_SUBTABLE 
+                    WHERE density > {self.parameters['min_samples']} 
+                      AND distance < {self.parameters['eps']} 
+                      AND node_id != nn_id {order_by}""",
+                title="Computing the DBSCAN Table [Step 1]",
+                method="fetchall",
             )
             main_nodes = list(
                 dict.fromkeys([elem[0] for elem in graph] + [elem[1] for elem in graph])
@@ -350,71 +351,63 @@ p: int, optional
                         clusters[node] = clusters[node_neighbor]
                 del graph[0]
             try:
-                f = open("{}.csv".format(name_dbscan_clusters), "w")
-                for elem in clusters:
-                    f.write("{}, {}\n".format(elem, clusters[elem]))
+                f = open(f"{name_dbscan_clusters}.csv", "w")
+                for c in clusters:
+                    f.write(f"{c}, {clusters[c]}\n")
                 f.close()
-                drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
+                drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")
                 executeSQL(
-                    (
-                        f"CREATE LOCAL TEMPORARY TABLE {name_dbscan_clusters}"
-                        "(node_id int, cluster int) ON COMMIT PRESERVE ROWS"
-                    ),
+                    query=f"""
+                    CREATE LOCAL TEMPORARY TABLE {name_dbscan_clusters}
+                    (node_id int, cluster int) 
+                    ON COMMIT PRESERVE ROWS""",
                     print_time_sql=False,
                 )
+                query = f"""
+                    COPY v_temp_schema.{name_dbscan_clusters}(node_id, cluster) 
+                    FROM {{}} 
+                         DELIMITER ',' 
+                         ESCAPE AS '\\';"""
                 if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
                     executeSQL(
-                        (
-                            f"COPY v_temp_schema.{name_dbscan_clusters}(node_id, cluster)"
-                            " FROM STDIN DELIMITER ',' ESCAPE AS '\\';"
-                        ),
+                        query=query.format("STDIN"),
                         method="copy",
                         print_time_sql=False,
                         path=f"./{name_dbscan_clusters}.csv",
                     )
                 else:
                     executeSQL(
-                        """COPY v_temp_schema.{0}(node_id, cluster) 
-                           FROM LOCAL './{0}.csv' DELIMITER ',' ESCAPE AS '\\';""".format(
-                            name_dbscan_clusters
-                        ),
+                        query=query.format(f"LOCAL './{name_dbscan_clusters}.csv'"),
                         print_time_sql=False,
                     )
                 executeSQL("COMMIT;", print_time_sql=False)
+            finally:
                 os.remove(f"{name_dbscan_clusters}.csv")
-            except:
-                os.remove(f"{name_dbscan_clusters}.csv")
-                raise
             self.n_cluster_ = i
             executeSQL(
-                """CREATE TABLE {0} AS 
-                   SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
-                        {1}, 
-                        COALESCE(cluster, -1) AS dbscan_cluster 
-                   FROM v_temp_schema.{2} AS x 
-                   LEFT JOIN v_temp_schema.{3} AS y 
-                   ON x.{4} = y.node_id""".format(
-                    self.name,
-                    ", ".join(self.X + self.key_columns),
-                    name_main,
-                    name_dbscan_clusters,
-                    index,
-                ),
+                query=f"""
+                    CREATE TABLE {self.name} AS 
+                       SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
+                            {', '.join(self.X + self.key_columns)}, 
+                            COALESCE(cluster, -1) AS dbscan_cluster 
+                       FROM v_temp_schema.{name_main} AS x 
+                       LEFT JOIN v_temp_schema.{name_dbscan_clusters} AS y 
+                       ON x.{index} = y.node_id""",
                 title="Computing the DBSCAN Table [Step 2]",
             )
             self.n_noise_ = executeSQL(
-                "SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/ COUNT(*) FROM {0} WHERE dbscan_cluster = -1".format(
-                    self.name
-                ),
+                query=f"""
+                    SELECT 
+                        /*+LABEL('learn.cluster.DBSCAN.fit')*/ 
+                        COUNT(*) 
+                    FROM {self.name} 
+                    WHERE dbscan_cluster = -1""",
                 method="fetchfirstelem",
                 print_time_sql=False,
             )
-        except:
+        finally:
             drop(f"v_temp_schema.{name_main}", method="table")
             drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")
-            raise
-        drop(f"v_temp_schema.{name_main}", method="table")
-        drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")
         model_save = {
             "type": "DBSCAN",
             "input_relation": self.input_relation,
@@ -528,10 +521,16 @@ tol: float, optional
         if len(self.X) == 2:
             from verticapy.learn.mlplot import voronoi_plot
 
-            query = "SELECT /*+LABEL('learn.cluster.KMeans.plot_voronoi')*/ GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
-                self.name
+            clusters = executeSQL(
+                query=f"""
+                SELECT 
+                    /*+LABEL('learn.cluster.KMeans.plot_voronoi')*/ 
+                    GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                        model_name = '{self.name}', 
+                                        attr_name = 'centers')""",
+                print_time_sql=False,
+                method="fetchall",
             )
-            clusters = executeSQL(query, print_time_sql=False, method="fetchall")
             return voronoi_plot(
                 clusters=clusters,
                 columns=self.X,

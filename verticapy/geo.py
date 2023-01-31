@@ -55,10 +55,10 @@ from typing import Union
 # VerticaPy Modules
 import verticapy.stats as st
 import verticapy.datasets as vp_datasets
-from verticapy.decorators import save_verticapy_logs, check_dtypes
 from verticapy.vdataframe import vDataFrame
-from verticapy.toolbox import executeSQL
+from verticapy.decorators import save_verticapy_logs, check_dtypes
 from verticapy.utilities import tablesample, to_tablesample, vDataFrameSQL
+from verticapy.toolbox import executeSQL
 
 # ---#
 @check_dtypes
@@ -258,31 +258,23 @@ vDataFrame
     """
     x, y, gid, g = vdf.format_colnames(x, y, gid, g)
 
-    table = vdf.__genSQL__()
-
     if g:
-
-        query = f"""
-            (SELECT 
-                STV_Intersect({gid}, {g} 
-                USING PARAMETERS
-                    index='{index}') 
-                OVER (PARTITION BEST) AS (point_id, polygon_gid) 
-            FROM {table}) x"""
+        params = f"{gid}, {g}"
 
     elif x and y:
-
-        query = f"""
-            (SELECT 
-                STV_Intersect({gid}, {x}, {y} 
-                USING PARAMETERS 
-                    index='{index}') 
-                OVER (PARTITION BEST) AS (point_id, polygon_gid) 
-            FROM {table}) x"""
+        params = f"{gid}, {x}, {y}"
 
     else:
 
         raise ParameterError("Either 'x' and 'y' or 'g' must not be empty.")
+
+    query = f"""
+        (SELECT 
+            STV_Intersect({params} 
+            USING PARAMETERS 
+                index='{index}') 
+            OVER (PARTITION BEST) AS (point_id, polygon_gid) 
+        FROM {vdf.__genSQL__()}) x"""
 
     return vDataFrameSQL(query)
 
@@ -311,18 +303,19 @@ bool
     True if the index was renamed, False otherwise.
     """
 
-    query = f"""
-        SELECT /*+LABEL(rename_index)*/ 
-            STV_Rename_Index(
-            USING PARAMETERS 
-                source = '{source}', 
-                dest = '{dest}', 
-                overwrite = {overwrite}) 
-            OVER ();"""
-
     try:
 
-        executeSQL(query, "Renaming Index.")
+        executeSQL(
+            query=f"""
+                SELECT /*+LABEL(rename_index)*/ 
+                    STV_Rename_Index(
+                    USING PARAMETERS 
+                        source = '{source}', 
+                        dest = '{dest}', 
+                        overwrite = {overwrite}) 
+                    OVER ();""",
+            title="Renaming Index.",
+        )
 
     except Exception as e:
 

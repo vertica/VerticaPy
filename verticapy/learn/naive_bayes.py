@@ -119,20 +119,20 @@ nbtype: str, optional
             if vdf[elem].isbool():
                 var_info[elem]["type"] = "bernoulli"
                 for c in self.classes_:
-                    var_info[elem][c] = self.get_attr("bernoulli.{}".format(c))[
-                        "probability"
-                    ][bernoulli_incr]
+                    var_info[elem][c] = self.get_attr(f"bernoulli.{c}")["probability"][
+                        bernoulli_incr
+                    ]
                 bernoulli_incr += 1
             elif vdf[elem].category() == "int":
                 var_info[elem]["type"] = "multinomial"
                 for c in self.classes_:
-                    multinomial = self.get_attr("multinomial.{}".format(c))
+                    multinomial = self.get_attr(f"multinomial.{c}")
                     var_info[elem][c] = multinomial["probability"][multinomial_incr]
                 multinomial_incr += 1
             elif vdf[elem].isnum():
                 var_info[elem]["type"] = "gaussian"
                 for c in self.classes_:
-                    gaussian = self.get_attr("gaussian.{}".format(c))
+                    gaussian = self.get_attr(f"gaussian.{c}")
                     var_info[elem][c] = {
                         "mu": gaussian["mu"][gaussian_incr],
                         "sigma_sq": gaussian["sigma_sq"][gaussian_incr],

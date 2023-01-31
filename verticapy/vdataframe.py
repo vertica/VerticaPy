@@ -6154,8 +6154,10 @@ vColumns : vColumn
                 conj = "s were " if count > 1 else " was "
                 if vp.OPTIONS["print_info"] and "print_info" not in kwds:
                     print(f"{count} element{conj}filtered.")
+                conditions_clean = clean_query(conditions)
                 self.__add_to_history__(
-                    f"[Filter]: {count} element{conj}filtered using the filter '{conditions}'"
+                    f"[Filter]: {count} element{conj}filtered using "
+                    f"the filter '{conditions_clean}'"
                 )
             else:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
