@@ -101,8 +101,18 @@ vDataFrame
 	vDataFrame of the created view
 	"""
     raise_error_if_not_in("method", method, ["hybrid", "over", "under"])
-    sql = f"SELECT /*+LABEL('learn.preprocessing.Balance')*/ BALANCE('{name}', '{input_relation}', '{y}', '{method}_sampling' USING PARAMETERS sampling_ratio = {ratio})"
-    executeSQL(sql, "Computing the Balanced Relation.")
+    executeSQL(
+        query=f"""
+            SELECT 
+                /*+LABEL('learn.preprocessing.Balance')*/ 
+                BALANCE('{name}', 
+                        '{input_relation}', 
+                        '{y}', 
+                        '{method}_sampling' 
+                        USING PARAMETERS 
+                        sampling_ratio = {ratio})""",
+        title="Computing the Balanced Relation.",
+    )
     return vDataFrame(name)
 
 
@@ -165,25 +175,10 @@ max_text_size: int, optional
     Computes the CountVectorizer Stop Words. It will affect the result to the
     stop_words_ attribute.
         """
-        stop_words = """SELECT /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/
-                            token 
-                        FROM 
-                            (SELECT 
-                                token, 
-                                cnt / SUM(cnt) OVER () AS df, 
-                                rnk 
-                            FROM 
-                                (SELECT 
-                                    token, 
-                                    COUNT(*) AS cnt, 
-                                    RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
-                                 FROM {0} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
-                                 WHERE not(df BETWEEN {1} AND {2})""".format(
-            self.name, self.parameters["min_df"], self.parameters["max_df"]
-        )
+        query = self.deploySQL(return_main_table=True)
         if self.parameters["max_features"] > 0:
-            stop_words += " OR (rnk > {})".format(self.parameters["max_features"])
-        res = executeSQL(stop_words, print_time_sql=False, method="fetchall")
+            query += f" OR (rnk > {self.parameters['max_features']})"
+        res = executeSQL(query=query, print_time_sql=False, method="fetchall")
         self.stop_words_ = [item[0] for item in res]
 
     # ---#
@@ -197,7 +192,8 @@ max_text_size: int, optional
         self.vocabulary_ = [item[0] for item in res]
 
     # ---#
-    def deploySQL(self):
+    @check_dtypes
+    def deploySQL(self, return_main_table: bool = False):
         """
     ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
@@ -207,24 +203,26 @@ max_text_size: int, optional
     str/list
         the SQL code needed to deploy the model.
         """
-        sql = """SELECT 
-                    * 
-                 FROM (SELECT 
-                          token, 
-                          cnt / SUM(cnt) OVER () AS df, 
-                          cnt, 
-                          rnk 
-                 FROM (SELECT 
-                          token, 
-                          COUNT(*) AS cnt, 
-                          RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
-                       FROM {0} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
-                       WHERE (df BETWEEN {1} AND {2})""".format(
-            self.name, self.parameters["min_df"], self.parameters["max_df"]
-        )
+        query = f"""
+            SELECT 
+                * 
+            FROM (SELECT 
+                      token, 
+                      cnt / SUM(cnt) OVER () AS df, 
+                      cnt, 
+                      rnk 
+                  FROM (SELECT 
+                            token, 
+                            COUNT(*) AS cnt, 
+                            RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
+                        FROM {self.name} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
+                        WHERE (df BETWEEN {self.parameters['min_df']} 
+                                  AND {self.parameters['max_df']})"""
+        if return_main_table:
+            return query
         if self.parameters["max_features"] > 0:
-            sql += " AND (rnk <= {})".format(self.parameters["max_features"])
-        return sql.format(", ".join(self.X), self.name)
+            query += f" AND (rnk <= {self.parameters['max_features']})"
+        return query
 
     # ---#
     @check_dtypes
@@ -267,28 +265,34 @@ max_text_size: int, optional
             self.drop()
         except:
             pass
-        sql = """CREATE TABLE {0}(id identity(2000) primary key, 
-                                  text varchar({1})) 
-                 ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"""
         executeSQL(
-            sql.format(tmp_name, self.parameters["max_text_size"]),
+            query=f"""
+                CREATE TABLE {tmp_name}
+                (id identity(2000) primary key, 
+                 text varchar({self.parameters['max_text_size']})) 
+                ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;""",
             title="Computing the CountVectorizer [Step 0].",
         )
-        text = (
-            " || ".join(self.X)
-            if not (self.parameters["lowercase"])
-            else "LOWER({})".format(" || ".join(self.X))
-        )
+        if not (self.parameters["lowercase"]):
+            text = " || ".join(self.X)
+        else:
+            text = f"LOWER({' || '.join(self.X)})"
         if self.parameters["ignore_special"]:
             text = f"REGEXP_REPLACE({text}, '[^a-zA-Z0-9\\s]+', '')"
-        sql = "INSERT /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/ INTO {}(text) SELECT {} FROM {}".format(
-            tmp_name, text, self.input_relation
+        executeSQL(
+            query=f"""
+                INSERT 
+                    /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/ 
+                INTO {tmp_name}(text) 
+                SELECT {text} FROM {self.input_relation}""",
+            title="Computing the CountVectorizer [Step 1].",
         )
-        executeSQL(sql, "Computing the CountVectorizer [Step 1].")
-        sql = "CREATE TEXT INDEX {} ON {}(id, text) stemmer NONE;".format(
-            self.name, tmp_name
+        executeSQL(
+            query=f"""
+                CREATE TEXT INDEX {self.name} 
+                ON {tmp_name}(id, text) stemmer NONE;""",
+            title="Computing the CountVectorizer [Step 2].",
         )
-        executeSQL(sql, "Computing the CountVectorizer [Step 2].")
         self.compute_stop_words()
         self.compute_vocabulary()
         self.countvectorizer_table = tmp_name
@@ -320,9 +324,7 @@ max_text_size: int, optional
 	vDataFrame
  		object result of the model transformation.
 		"""
-        return vDataFrameSQL(
-            "({}) VERTICAPY_SUBTABLE".format(self.deploySQL()), self.name,
-        )
+        return vDataFrameSQL(f"({self.deploySQL()}) VERTICAPY_SUBTABLE", self.name,)
 
 
 # ---#

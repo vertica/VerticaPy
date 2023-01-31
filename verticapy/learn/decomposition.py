@@ -157,7 +157,7 @@ name: str
             dimensions,
             method,
             ax,
-            **style_kwds
+            **style_kwds,
         )
 
     # ---#
@@ -245,9 +245,7 @@ name: str
         )
         ax.set_ylabel("Cos2 - Quality of Representation")
         ax.set_xlabel("")
-        ax.set_title(
-            f"Cos2 of variables to Dim {dimensions[0]}-{dimensions[1]}"
-        )
+        ax.set_title(f"Cos2 of variables to Dim {dimensions[0]}-{dimensions[1]}")
         return ax
 
 
