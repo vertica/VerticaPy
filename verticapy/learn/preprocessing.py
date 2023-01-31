@@ -177,7 +177,8 @@ max_text_size: int, optional
         """
         query = self.deploySQL(return_main_table=True)
         query = query.format(
-            "/*+LABEL('learn.preprocessing.CountVectorizer.compute_stop_words')*/ token"
+            "/*+LABEL('learn.preprocessing.CountVectorizer.compute_stop_words')*/ token",
+            "not"
         )
         if self.parameters["max_features"] > 0:
             query += f" OR (rnk > {self.parameters['max_features']})"
@@ -219,14 +220,13 @@ max_text_size: int, optional
                             COUNT(*) AS cnt, 
                             RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
                         FROM {self.name} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
-                        WHERE (df BETWEEN {self.parameters['min_df']} 
-                                  AND {self.parameters['max_df']})"""
-        query = clean_query(query)
+                        WHERE {{}}(df BETWEEN {self.parameters['min_df']} 
+                                   AND {self.parameters['max_df']})"""
         if return_main_table:
             return query
         if self.parameters["max_features"] > 0:
             query += f" AND (rnk <= {self.parameters['max_features']})"
-        return query.format("*")
+        return clean_query(query.format("*", ""))
 
     # ---#
     @check_dtypes
