@@ -505,9 +505,12 @@ p: int, optional
                     },
                 )
         else:
-            input_relation = "(SELECT *, ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY proba_predict DESC) AS pos FROM {}) neighbors_table WHERE pos = 1".format(
-                ", ".join(self.X), self.deploySQL()
-            )
+            input_relation = f"""
+                (SELECT 
+                    *, 
+                    ROW_NUMBER() OVER(PARTITION BY {", ".join(self.X)}, row_id 
+                                      ORDER BY proba_predict DESC) AS pos 
+                 FROM {self.deploySQL()}) neighbors_table WHERE pos = 1"""
             return multilabel_confusion_matrix(
                 self.y, "predict_neighbors", input_relation, self.classes_
             )
@@ -636,6 +639,10 @@ p: int, optional
             key_columns_arg = None
         else:
             key_columns_arg = key_columns
+        if key_columns:
+            key_columns_str = ", " + ", ".join(key_columns)
+        else:
+            key_columns_str = ""
         if not (name):
             name = gen_name([self.type, self.name])
 
@@ -644,32 +651,31 @@ p: int, optional
             and self.classes_[0] in [0, "0"]
             and self.classes_[1] in [1, "1"]
         ):
-            sql = (
-                "(SELECT {0}{1}, (CASE WHEN proba_predict > {2} THEN '{3}' ELSE '{4}' END)"
-                " AS {5} FROM {6} WHERE predict_neighbors = '{3}') VERTICAPY_SUBTABLE"
-            ).format(
-                ", ".join(X),
-                ", " + ", ".join(key_columns) if key_columns else "",
-                cutoff,
-                self.classes_[1],
-                self.classes_[0],
-                name,
-                self.deploySQL(
-                    X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-                ),
+            table = self.deploySQL(
+                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
             )
+            sql = f"""
+                (SELECT 
+                    {", ".join(X)}{key_columns_str}, 
+                    (CASE 
+                        WHEN proba_predict > {cutoff} 
+                            THEN '{self.classes_[1]}' 
+                        ELSE '{self.classes_[0]}' 
+                     END) AS {name} 
+                 FROM {table} 
+                 WHERE predict_neighbors = '{self.classes_[1]}') VERTICAPY_SUBTABLE"""
         else:
-            sql = "(SELECT {0}{1}, predict_neighbors AS {2} FROM {3}) VERTICAPY_SUBTABLE".format(
-                ", ".join(X),
-                ", " + ", ".join(key_columns) if key_columns else "",
-                name,
-                self.deploySQL(
-                    X=X,
-                    test_relation=vdf.__genSQL__(),
-                    key_columns=key_columns_arg,
-                    predict=True,
-                ),
+            table = self.deploySQL(
+                X=X,
+                test_relation=vdf.__genSQL__(),
+                key_columns=key_columns_arg,
+                predict=True,
             )
+            sql = f"""
+                (SELECT 
+                    {", ".join(X)}{key_columns_str}, 
+                    predict_neighbors AS {name} 
+                 FROM {table}) VERTICAPY_SUBTABLE"""
         if inplace:
             return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
         else:
@@ -805,9 +811,7 @@ p: int, optional
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
-            pos_label
-        )
+        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
         return roc_curve(
             self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
@@ -863,12 +867,14 @@ p: int, optional
         """
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
-        input_relation = "(SELECT * FROM {0} WHERE predict_neighbors = '{1}') final_centroids_relation".format(
-            self.deploySQL(), pos_label
-        )
-        y_score = "(CASE WHEN proba_predict > {} THEN 1 ELSE 0 END)".format(cutoff)
+        input_relation = f"""
+            (SELECT 
+                * 
+             FROM {self.deploySQL()} 
+             WHERE predict_neighbors = '{pos_label}') final_centroids_relation"""
+        y_score = f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
         y_proba = "proba_predict"
-        y_true = "DECODE({}, '{}', 1, 0)".format(self.y, pos_label)
+        y_true = f"DECODE({self.y}, '{pos_label}', 1, 0)"
         if (pos_label not in self.classes_) and (method != "accuracy"):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
@@ -1074,23 +1080,25 @@ xlim: list, optional
                 elif isinstance(x, (list)):
                     N = vdf.shape()[0]
                     L = []
-                    for elem in x:
+                    for xj in x:
                         distance = []
                         for i in range(len(columns)):
                             distance += [
-                                "POWER({0} - {1}, {2})".format(columns[i], elem[i], p)
+                                f"POWER({columns[i]} - {xj[i]}, {p})"
                             ]
                         distance = " + ".join(distance)
-                        distance = "POWER({0}, {1})".format(distance, 1.0 / p)
+                        distance = f"POWER({distance}, {1.0 / p})"
                         fkernel_tmp = fkernel.format(f"{distance} / {h}")
                         L += [f"SUM({fkernel_tmp}) / ({h} * {N})"]
-                    query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ {0} FROM {1}".format(
-                        ", ".join(L), vdf.__genSQL__()
-                    )
+                    query = f"""
+                        SELECT 
+                            /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
+                            {", ".join(L)} 
+                        FROM {vdf.__genSQL__()}"""
                     result = executeSQL(
                         query, title="Computing the KDE", method="fetchrow"
                     )
-                    return [elem for elem in result]
+                    return [x for x in result]
                 else:
                     return 0
 
@@ -1137,31 +1145,36 @@ xlim: list, optional
             self.parameters["nbins"],
             self.parameters["p"],
         )
+        name_str = self.name.replace('"', "")
         if self.verticapy_store:
-            query = """CREATE TABLE {0}_KernelDensity_Map AS    
-                            SELECT /*+LABEL('learn.neighbors.KernelDensity.fit')*/
-                                {1}, 0.0::float AS KDE 
-                            FROM {2} 
-                            LIMIT 0""".format(
-                self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
+            executeSQL(
+                query=f"""CREATE TABLE {name_str}_KernelDensity_Map AS    
+                            SELECT 
+                                /*+LABEL('learn.neighbors.KernelDensity.fit')*/
+                                {", ".join(X)}, 0.0::float AS KDE 
+                            FROM {vdf.__genSQL__()} 
+                            LIMIT 0""",
+                print_time_sql=False,
             )
-            executeSQL(query, print_time_sql=False)
             r, idx = 0, 0
             while r < len(y):
                 values = []
                 m = min(r + 100, len(y))
                 for i in range(r, m):
                     values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
-                query = "INSERT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ INTO {0}_KernelDensity_Map ({1}, KDE) {2}".format(
-                    self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
+                executeSQL(
+                    query=f"""
+                    INSERT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
+                    INTO {name_str}_KernelDensity_Map 
+                    ({", ".join(X)}, KDE) {" UNION ".join(values)}""",
+                    title=f"Computing the KDE [Step {idx}].",
                 )
-                executeSQL(query, f"Computing the KDE [Step {idx}].")
                 executeSQL("COMMIT;", print_time_sql=False)
                 r += 100
                 idx += 1
             self.X, self.input_relation = X, input_relation
-            self.map = "{0}_KernelDensity_Map".format(self.name.replace('"', ""))
-            self.tree_name = "{0}_KernelDensity_Tree".format(self.name.replace('"', ""))
+            self.map = f"{name_str}_KernelDensity_Map"
+            self.tree_name = f"{name_str}_KernelDensity_Tree"
             self.y = "KDE"
 
             from verticapy.learn.tree import DecisionTreeRegressor
@@ -1219,13 +1232,15 @@ xlim: list, optional
         """
         if len(self.X) == 1:
             if self.verticapy_store:
-                query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.plot')*/ {}, KDE FROM {} ORDER BY 1".format(
-                    self.X[0], self.map
-                )
+                query = f"""
+                    SELECT 
+                        /*+LABEL('learn.neighbors.KernelDensity.plot')*/ 
+                        {self.X[0]}, KDE 
+                    FROM {self.map} ORDER BY 1"""
                 result = executeSQL(query, method="fetchall", print_time_sql=False)
-                x, y = [elem[0] for elem in result], [elem[1] for elem in result]
+                x, y = [v[0] for v in result], [v[1] for v in result]
             else:
-                x, y = [elem[0] for elem in self.verticapy_x], self.verticapy_y
+                x, y = [v[0] for v in self.verticapy_x], self.verticapy_y
             if not (ax):
                 fig, ax = plt.subplots()
                 if isnotebook():
@@ -1248,19 +1263,24 @@ xlim: list, optional
         elif len(self.X) == 2:
             n = self.parameters["nbins"]
             if self.verticapy_store:
-                query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.plot')*/ {}, {}, KDE FROM {} ORDER BY 1, 2".format(
-                    self.X[0], self.X[1], self.map,
-                )
+                query = f"""
+                    SELECT 
+                        /*+LABEL('learn.neighbors.KernelDensity.plot')*/ 
+                        {self.X[0]}, 
+                        {self.X[1]}, 
+                        KDE 
+                    FROM {self.map} 
+                    ORDER BY 1, 2"""
                 result = executeSQL(query, method="fetchall", print_time_sql=False)
                 x, y, z = (
-                    [elem[0] for elem in result],
-                    [elem[1] for elem in result],
-                    [elem[2] for elem in result],
+                    [v[0] for v in result],
+                    [v[1] for v in result],
+                    [v[2] for v in result],
                 )
             else:
                 x, y, z = (
-                    [elem[0] for elem in self.verticapy_x],
-                    [elem[1] for elem in self.verticapy_x],
+                    [v[0] for v in self.verticapy_x],
+                    [v[1] for v in self.verticapy_x],
                     self.verticapy_y,
                 )
             result, idx = [], 0
@@ -1279,7 +1299,7 @@ xlim: list, optional
                 "interpolation": "bilinear",
             }
             extent = [min(x), max(x), min(y), max(y)]
-            extent = [float(elem) for elem in extent]
+            extent = [float(v) for v in extent]
             im = ax.imshow(result, extent=extent, **updated_dict(param, style_kwds))
             fig.colorbar(im, ax=ax)
             ax.set_ylabel(self.X[1])
@@ -1359,35 +1379,45 @@ p: int, optional
             test_relation = self.test_relation
         if not (key_columns) and key_columns != None:
             key_columns = [self.y]
+        p = self.parameters["p"]
+        X_str = ", ".join([f"x.{x}" for x in X])
+        if (key_columns):
+            key_columns_str = ", " + ", ".join(["x." + quote_ident(x) for x in key_columns])
+        else:
+            key_columns_str = ""
         sql = [
-            "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
+            f"POWER(ABS(x.{X[i]} - y.{self.X[i]}), {p})"
             for i in range(len(self.X))
         ]
-        sql = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
-        sql = "ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY {})".format(
-            ", ".join([f"x.{item}" for item in X]), sql
-        )
-        sql = "SELECT {}{}, {} AS ordered_distance, y.{} AS predict_neighbors, row_id FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM {} WHERE {}) x CROSS JOIN (SELECT * FROM {} WHERE {}) y".format(
-            ", ".join([f"x.{item}" for item in X]),
-            ", " + ", ".join(["x." + quote_ident(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-            sql,
-            self.y,
-            test_relation,
-            " AND ".join([f"{item} IS NOT NULL" for item in X]),
-            self.input_relation,
-            " AND ".join([f"{item} IS NOT NULL" for item in self.X]),
-        )
+        sql = f"""
+            SELECT 
+                {X_str}{key_columns_str}, 
+                ROW_NUMBER() OVER(PARTITION BY {X_str}, row_id 
+                                  ORDER BY POWER({' + '.join(sql)}, 1 / {p})) 
+                                  AS ordered_distance, 
+                y.{self.y} AS predict_neighbors, 
+                row_id 
+            FROM
+                (SELECT 
+                    *, 
+                    ROW_NUMBER() OVER() AS row_id 
+                 FROM {test_relation} 
+                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in X])}) x 
+                 CROSS JOIN 
+                 (SELECT 
+                    * 
+                 FROM {self.input_relation} 
+                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in self.X])}) y"""
+        
         sql = "(SELECT {}{}, AVG(predict_neighbors) AS predict_neighbors FROM ({}) z WHERE ordered_distance <= {} GROUP BY {}{}, row_id) knr_table".format(
             ", ".join(X),
-            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
+            ", " + ", ".join([quote_ident(x) for x in key_columns])
             if (key_columns)
             else "",
             sql,
             self.parameters["n_neighbors"],
             ", ".join(X),
-            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
+            ", " + ", ".join([quote_ident(x) for x in key_columns])
             if (key_columns)
             else "",
         )
@@ -1499,20 +1529,20 @@ p: int, optional
             key_columns_arg = None
         else:
             key_columns_arg = key_columns
-        name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
+        if not (name):
+            name = f"{self.type}_" + "".join(ch for ch in self.name if ch.isalnum())
+        if key_columns:
+            key_columns_str = ", ".join(key_columns)
+        else:
+            key_columns_str = ""
+        table = self.deploySQL(
+            X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
         )
-        sql = "(SELECT {}{}, {} AS {} FROM {}) VERTICAPY_SUBTABLE".format(
-            ", ".join(X),
-            ", " + ", ".join(key_columns) if key_columns else "",
-            "predict_neighbors",
-            name,
-            self.deploySQL(
-                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-            ),
-        )
+        sql = f"""
+            (SELECT 
+                {", ".join(X)}{key_columns_str}, 
+                predict_neighbors AS {name} 
+             FROM {table}) VERTICAPY_SUBTABLE"""
         if inplace:
             return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
         else:

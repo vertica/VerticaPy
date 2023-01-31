@@ -3229,6 +3229,8 @@ def compute_function_metrics(
         table = input_relation.__genSQL__()
     if fun_sql_name == "roc":
         X = ["decision_boundary", "false_positive_rate", "true_positive_rate"]
+    elif fun_sql_name == "prc":
+        X = ["decision_boundary", "recall", "precision"]
     else:
         X = ["*"]
     query_result = executeSQL(
