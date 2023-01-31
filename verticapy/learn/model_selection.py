@@ -3230,7 +3230,7 @@ def compute_function_metrics(
     if fun_sql_name == "roc":
         X = ["decision_boundary", "false_positive_rate", "true_positive_rate"]
     else:
-        X ["*"]
+        X = ["*"]
     query_result = executeSQL(
         query=f"""
             SELECT
