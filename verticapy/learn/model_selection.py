@@ -2322,7 +2322,7 @@ tablesample
         nbins=nbins,
         fun_sql_name="prc",
     )
-    auc = compute_area(recall, precision)
+    auc = compute_area(precision, recall)
     if auc_prc:
         return auc
     if not (ax):
@@ -2763,7 +2763,7 @@ tablesample
         nbins=nbins,
         fun_sql_name="roc",
     )
-    auc = compute_area(false_positive, true_positive)
+    auc = compute_area(true_positive, false_positive)
     if auc_roc:
         return auc
     if best_threshold:
