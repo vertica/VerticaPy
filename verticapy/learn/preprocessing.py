@@ -178,7 +178,7 @@ max_text_size: int, optional
         query = self.deploySQL(return_main_table=True)
         query = query.format(
             "/*+LABEL('learn.preprocessing.CountVectorizer.compute_stop_words')*/ token",
-            "not"
+            "not",
         )
         if self.parameters["max_features"] > 0:
             query += f" OR (rnk > {self.parameters['max_features']})"

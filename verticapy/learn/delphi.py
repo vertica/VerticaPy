@@ -260,15 +260,15 @@ final_relation_: vDataFrame
             X = vdf.get_columns()
         if not (ts) and self.parameters["identify_ts"]:
             nb_date, nb_num, nb_others = 0, 0, 0
-            for elem in X:
-                if vdf[elem].isnum() and not (vdf[elem].isbool()):
+            for x in X:
+                if vdf[x].isnum() and not (vdf[x].isbool()):
                     nb_num += 1
-                elif vdf[elem].isdate():
+                elif vdf[x].isdate():
                     nb_date += 1
-                    ts_tmp = elem
+                    ts_tmp = x
                 else:
                     nb_others += 1
-                    cat_tmp = elem
+                    cat_tmp = x
             if nb_date == 1 and nb_others <= 1:
                 ts = ts_tmp
             if nb_date == 1 and nb_others == 1:
@@ -277,26 +277,26 @@ final_relation_: vDataFrame
         X_diff = vdf.get_columns(exclude_columns=X)
         columns_to_drop = []
         n = vdf.shape()[0]
-        for elem in X:
+        for x in X:
             is_id = (
-                not (vdf[elem].isnum())
-                and not (vdf[elem].isdate())
-                and 0.9 * n <= vdf[elem].nunique()
+                not (vdf[x].isnum())
+                and not (vdf[x].isdate())
+                and 0.9 * n <= vdf[x].nunique()
             )
             if (
                 self.parameters["id_method"] == "drop"
                 and is_id
-                and (not (by) or elem not in by)
+                and (not (by) or x not in by)
             ):
-                columns_to_drop += [elem]
-                X_diff += [elem]
-            elif not (is_id) and (not (by) or elem not in by):
-                if not (vdf[elem].isdate()):
-                    if vdf[elem].isnum():
+                columns_to_drop += [x]
+                X_diff += [x]
+            elif not (is_id) and (not (by) or x not in by):
+                if not (vdf[x].isdate()):
+                    if vdf[x].isnum():
                         if (self.parameters["outliers_threshold"]) and self.parameters[
                             "outliers_threshold"
                         ] > 0:
-                            vdf[elem].fill_outliers(
+                            vdf[x].fill_outliers(
                                 method="null",
                                 threshold=self.parameters["outliers_threshold"],
                             )
@@ -306,76 +306,85 @@ final_relation_: vDataFrame
                             and (
                                 self.parameters["normalize_min_cat"] < 2
                                 or (
-                                    vdf[elem].nunique()
+                                    vdf[x].nunique()
                                     > self.parameters["normalize_min_cat"]
                                 )
                             )
                         ):
-                            vdf[elem].normalize(method="zscore")
+                            vdf[x].normalize(method="zscore")
                         if self.parameters["na_method"] == "auto":
-                            vdf[elem].fillna(method="mean")
+                            vdf[x].fillna(method="mean")
                         else:
-                            vdf[elem].dropna()
+                            vdf[x].dropna()
                     if (
-                        vdf[elem].isnum()
+                        vdf[x].isnum()
                         and not (ts)
                         and self.parameters["num_method"] in ("same_width", "same_freq")
                     ):
-                        vdf[elem].discretize(
+                        vdf[x].discretize(
                             method=self.parameters["num_method"],
                             nbins=self.parameters["nbins"],
                         )
-                    elif vdf[elem].nunique() > self.parameters["cat_topk"] and not (
-                        vdf[elem].isnum()
+                    elif vdf[x].nunique() > self.parameters["cat_topk"] and not (
+                        vdf[x].isnum()
                     ):
                         if self.parameters["na_method"] == "auto":
-                            vdf[elem].fillna("NULL")
+                            vdf[x].fillna("NULL")
                         else:
-                            vdf[elem].dropna()
-                        vdf[elem].discretize(
-                            method="topk", k=self.parameters["cat_topk"]
-                        )
+                            vdf[x].dropna()
+                        vdf[x].discretize(method="topk", k=self.parameters["cat_topk"])
                     if (
-                        self.parameters["cat_method"] == "ooe"
-                        and not (vdf[elem].isnum())
+                        self.parameters["cat_method"] == "ooe" and not (vdf[x].isnum())
                     ) or (
-                        vdf[elem].isnum()
+                        vdf[x].isnum()
                         and not (ts)
                         and self.parameters["num_method"] in ("same_width", "same_freq")
                     ):
-                        vdf[elem].get_dummies(drop_first=False)
-                        columns_to_drop += [elem]
+                        vdf[x].get_dummies(drop_first=False)
+                        columns_to_drop += [x]
                     elif (
                         self.parameters["cat_method"] == "label"
-                        and not (vdf[elem].isnum())
+                        and not (vdf[x].isnum())
                     ) or (
-                        vdf[elem].isnum()
+                        vdf[x].isnum()
                         and not (ts)
                         and self.parameters["num_method"] in ("same_width", "same_freq")
                     ):
-                        vdf[elem].label_encode()
+                        vdf[x].label_encode()
                 elif not (ts):
-                    vdf[elem.replace('"', "") + "_year"] = f"YEAR({elem})"
-                    vdf[elem.replace('"', "") + "_dayofweek"] = f"DAYOFWEEK({elem})"
-                    vdf[elem.replace('"', "") + "_month"] = f"MONTH({elem})"
-                    vdf[elem.replace('"', "") + "_hour"] = f"HOUR({elem})"
-                    vdf[elem.replace('"', "") + "_quarter"] = f"QUARTER({elem})"
+                    vdf[x.replace('"', "") + "_year"] = f"YEAR({x})"
+                    vdf[x.replace('"', "") + "_dayofweek"] = f"DAYOFWEEK({x})"
+                    vdf[x.replace('"', "") + "_month"] = f"MONTH({x})"
+                    vdf[x.replace('"', "") + "_hour"] = f"HOUR({x})"
+                    vdf[x.replace('"', "") + "_quarter"] = f"QUARTER({x})"
                     vdf[
-                        elem.replace('"', "") + "_trend"
-                    ] = f"({elem}::timestamp - MIN({elem}::timestamp) OVER ()) / '1 second'::interval"
-                    columns_to_drop += [elem]
+                        x.replace('"', "") + "_trend"
+                    ] = f"({x}::timestamp - MIN({x}::timestamp) OVER ()) / '1 second'::interval"
+                    columns_to_drop += [x]
         if columns_to_drop:
             vdf.drop(columns_to_drop)
         if ts:
             if self.parameters["rule"] == "auto":
                 vdf_tmp = vdf[[ts] + by]
-                by_tmp = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
+                if by:
+                    by_tmp = f"PARTITION BY {', '.join(by)} "
+                else:
+                    by_tmp = ""
                 vdf_tmp[
                     "verticapy_time_delta"
-                ] = f"({ts}::timestamp - (LAG({ts}) OVER ({by_tmp}ORDER BY {ts}))::timestamp) / '00:00:01'"
+                ] = f"""
+                    ({ts}::timestamp 
+                  - (LAG({ts}) OVER ({by_tmp}ORDER BY {ts}))::timestamp) 
+                  / '00:00:01'"""
                 vdf_tmp = vdf_tmp.groupby(["verticapy_time_delta"], ["COUNT(*) AS cnt"])
                 rule = executeSQL(
-                    f"SELECT /*+LABEL('learn.delphi.AutoDataPrep.fit')*/ verticapy_time_delta FROM { vdf_tmp.__genSQL__()} ORDER BY cnt DESC LIMIT 1",
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('learn.delphi.AutoDataPrep.fit')*/
+                            verticapy_time_delta 
+                        FROM {vdf_tmp.__genSQL__()} 
+                        ORDER BY cnt DESC 
+                        LIMIT 1""",
                     method="fetchfirstelem",
                     print_time_sql=False,
                 )

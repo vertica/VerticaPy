@@ -82,22 +82,22 @@ steps: list
     def __init__(self, steps: list):
         self.type = "Pipeline"
         self.steps = []
-        for idx, elem in enumerate(steps):
-            if len(elem) != 2:
+        for idx, s in enumerate(steps):
+            if len(s) != 2:
                 raise ParameterError(
                     "The steps of the Pipeline must be composed of 2 elements "
-                    "(name, transform). Found {}.".format(len(elem))
+                    f"(name, transform). Found {len(s)}."
                 )
-            elif not (isinstance(elem[0], str)):
+            elif not (isinstance(s[0], str)):
                 raise ParameterError(
                     "The steps 'name' of the Pipeline must be of "
-                    "type str. Found {}.".format(type(elem[0]))
+                    f"type str. Found {type(s[0])}."
                 )
             else:
                 try:
                     if idx < len(steps) - 1:
-                        elem[1].transform
-                    elem[1].fit
+                        s[1].transform
+                    s[1].fit
                 except:
                     if idx < len(steps) - 1:
                         raise ParameterError(
@@ -109,7 +109,7 @@ steps: list
                             "The last estimator of the Pipeline must have a "
                             "'fit' method."
                         )
-            self.steps += [elem]
+            self.steps += [s]
 
     # ---#
     def __getitem__(self, index):
@@ -439,21 +439,18 @@ steps: list
             _locals = locals()
             exec(func, globals(), _locals)
             return _locals[name]
-        str_representation = "def {}(X):\n".format(name)
+        str_representation = f"def {name}(X):\n"
         final_function = "X"
         for idx, step in enumerate(self.steps):
-            str_representation += (
-                "\t"
-                + step[1]
-                .to_python(
-                    name=step[0],
-                    return_proba=return_proba,
-                    return_distance_clusters=return_distance_clusters,
-                    return_str=True,
-                )
-                .replace("\n", "\n\t")
-                + "\n"
+            str_representation += "\t"
+            str_representation += step[1].to_python(
+                name=step[0],
+                return_proba=return_proba,
+                return_distance_clusters=return_distance_clusters,
+                return_str=True,
             )
-            final_function = step[0] + "({})".format(final_function)
-        str_representation += "\treturn {}".format(final_function)
+            str_representation = str_representation.replace("\n", "\n\t")
+            str_representation += "\n"
+            final_function = f"{step[0]}({final_function})"
+        str_representation += f"\treturn {final_function}"
         return str_representation

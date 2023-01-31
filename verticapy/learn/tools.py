@@ -94,15 +94,24 @@ int
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], model_name[1:-1]
     result = executeSQL(
-        "SELECT /*+LABEL('learn.tools.does_model_exist')*/ * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1",
+        query="""
+            SELECT
+                /*+LABEL('learn.tools.does_model_exist')*/ * 
+            FROM columns 
+            WHERE table_schema = 'verticapy' 
+              AND table_name = 'models' LIMIT 1""",
         method="fetchrow",
         print_time_sql=False,
     )
     if result:
         result = executeSQL(
-            "SELECT /*+LABEL('learn.tools.does_model_exist')*/ model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(
-                quote_ident(name)
-            ),
+            query=f"""
+                SELECT 
+                    /*+LABEL('learn.tools.does_model_exist')*/ 
+                    model_type
+                FROM verticapy.models
+                WHERE LOWER(model_name) = LOWER('{quote_ident(name)}') 
+                LIMIT 1""",
             method="fetchrow",
             print_time_sql=False,
         )
@@ -111,9 +120,14 @@ int
             result = 2
     if not (result):
         result = executeSQL(
-            "SELECT /*+LABEL('learn.tools.does_model_exist')*/ model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(
-                model_name, schema
-            ),
+            query=f"""
+                SELECT 
+                    /*+LABEL('learn.tools.does_model_exist')*/ 
+                    model_type 
+                FROM MODELS 
+                WHERE LOWER(model_name) = LOWER('{model_name}') 
+                  AND LOWER(schema_name) = LOWER('{schema}') 
+                LIMIT 1""",
             method="fetchrow",
             print_time_sql=False,
         )
@@ -160,23 +174,25 @@ model
     assert does_exist, NameError(f"The model '{name}' doesn't exist.")
     if does_exist == 2:
         result = executeSQL(
-            "SELECT /*+LABEL('learn.tools.load_model')*/ attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = LOWER('{}')".format(
-                quote_ident(name.lower())
-            ),
+            query=f"""
+                SELECT 
+                    /*+LABEL('learn.tools.load_model')*/ 
+                    attr_name,
+                    value 
+                FROM verticapy.attr
+                WHERE LOWER(model_name) 
+                    = LOWER('{quote_ident(name.lower())}')""",
             method="fetchall",
             print_time_sql=False,
         )
         model_save = {}
-        for elem in result:
+        for val in result:
             ldic = {}
             try:
-                exec("result_tmp = {0}".format(elem[1]), globals(), ldic)
+                exec(f"result_tmp = {val[1]}", globals(), ldic)
             except:
-                exec(
-                    "result_tmp = '{0}'".format(elem[1].replace("'", "''")),
-                    globals(),
-                    ldic,
-                )
+                val1 = val[1].replace("'", "''")
+                exec(f"result_tmp = '{val1}'", globals(), ldic)
             result_tmp = ldic["result_tmp"]
             try:
                 result_tmp = float(result_tmp)
@@ -184,7 +200,7 @@ model
                 pass
             if result_tmp == None:
                 result_tmp = "None"
-            model_save[elem[0]] = result_tmp
+            model_save[val[0]] = result_tmp
         if model_save["type"] == "NearestCentroid":
             from verticapy.learn.neighbors import NearestCentroid
 
@@ -289,7 +305,7 @@ model
             model.transform_relation = model_save["transform_relation"]
             model.coef_ = []
             for i in range(len(model_save["X"])):
-                model.coef_ += [tablesample(model_save["coef_{}".format(i)])]
+                model.coef_ += [tablesample(model_save[f"coef_{i}"])]
             model.ts = model_save["ts"]
             model.deploy_predict_ = model_save["deploy_predict"]
             model.X = model_save["X"]
@@ -618,9 +634,23 @@ model
             model = OneHotEncoder(name)
             try:
                 model.param_ = to_tablesample(
-                    query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
-                        model.name, model.name
-                    ),
+                    query=f"""
+                        SELECT 
+                            category_name, 
+                            category_level::varchar, 
+                            category_level_index 
+                        FROM 
+                            (SELECT 
+                                GET_MODEL_ATTRIBUTE(
+                                    USING PARAMETERS
+                                    model_name = '{model.name}',
+                                    attr_name = 'integer_categories')) VERTICAPY_SUBTABLE 
+                            UNION ALL 
+                             SELECT 
+                                GET_MODEL_ATTRIBUTE(
+                                    USING PARAMETERS 
+                                    model_name = '{model.name}',
+                                    attr_name = 'varchar_categories')""",
                 )
             except:
                 try:
@@ -654,9 +684,13 @@ model
         if model_type in ("naive_bayes", "rf_classifier", "xgb_classifier"):
             try:
                 classes = executeSQL(
-                    "SELECT /*+LABEL('learn.tools.load_model')*/ DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-                        model.y, model.input_relation, model.y
-                    ),
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('learn.tools.load_model')*/ 
+                            DISTINCT {model.y} 
+                            FROM {model.input_relation} 
+                            WHERE {model.y} IS NOT NULL 
+                            ORDER BY 1""",
                     method="fetchall",
                     print_time_sql=False,
                 )
