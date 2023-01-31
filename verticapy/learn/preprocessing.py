@@ -176,6 +176,9 @@ max_text_size: int, optional
     stop_words_ attribute.
         """
         query = self.deploySQL(return_main_table=True)
+        query = query.format(
+            "/*+LABEL('learn.preprocessing.CountVectorizer.compute_stop_words')*/ token"
+        )
         if self.parameters["max_features"] > 0:
             query += f" OR (rnk > {self.parameters['max_features']})"
         res = executeSQL(query=query, print_time_sql=False, method="fetchall")
@@ -205,7 +208,7 @@ max_text_size: int, optional
         """
         query = f"""
             SELECT 
-                * 
+                {{}} 
             FROM (SELECT 
                       token, 
                       cnt / SUM(cnt) OVER () AS df, 
@@ -218,11 +221,12 @@ max_text_size: int, optional
                         FROM {self.name} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
                         WHERE (df BETWEEN {self.parameters['min_df']} 
                                   AND {self.parameters['max_df']})"""
+        query = clean_query(query)
         if return_main_table:
             return query
         if self.parameters["max_features"] > 0:
             query += f" AND (rnk <= {self.parameters['max_features']})"
-        return query
+        return query.format("*")
 
     # ---#
     @check_dtypes
