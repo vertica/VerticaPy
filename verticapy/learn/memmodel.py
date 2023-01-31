@@ -232,25 +232,21 @@ def sql_from_nb(
         for idx2, x in enumerate(X):
             prob = attributes[idx2]
             if prob["type"] == "multinomial":
-                prob = "POWER({}, {})".format(prob[c], x)
+                prob = f"POWER({prob[c]}, {x})"
             elif prob["type"] == "bernoulli":
-                prob = "(CASE WHEN {} THEN {} ELSE {} END)".format(
-                    x, prob[c], 1 - prob[c]
-                )
+                prob = f"(CASE WHEN {x} THEN {prob[c]} ELSE {1 - prob[c]} END)"
             elif prob["type"] == "categorical":
-                prob_res = "DECODE({}".format(x)
+                prob_res = f"DECODE({x}"
                 for cat in prob[str(c)]:
-                    prob_res += ", '{}', {}".format(cat, prob[str(c)][cat])
+                    prob_res += f", '{cat}', {prob[str(c)][cat]}"
                 prob = prob_res + ")"
             else:
-                prob = "{} * EXP(- POWER({} - {}, 2) / {})".format(
-                    1 / np.sqrt(2 * np.pi * prob[c]["sigma_sq"]),
-                    x,
-                    prob[c]["mu"],
-                    2 * prob[c]["sigma_sq"],
-                )
+                prob = f"""
+                    {1 / np.sqrt(2 * np.pi * prob[c]['sigma_sq'])} 
+                  * EXP(- POWER({x} - {prob[c]['mu']}, 2) 
+                  / {2 * prob[c]['sigma_sq']})"""
             sub_result += [prob]
-        result += [" * ".join(sub_result) + " * {}".format(prior[idx])]
+        result += [" * ".join(sub_result) + f" * {prior[idx]}"]
     return result
 
 
@@ -347,25 +343,21 @@ def sql_from_chaid_tree(
             elif isinstance(classes, Iterable) and len(classes) > 0:
                 res = classes[np.argmax(tree["prediction"])]
                 if isinstance(res, str):
-                    res = "'{}'".format(res)
+                    res = f"'{res}'"
                 return res
             else:
                 return np.argmax(tree["prediction"])
         else:
             res = "(CASE "
             for c in tree["children"]:
+                x = X[tree["split_predictor_idx"]]
+                y = predict_tree(X, tree["children"][c], classes, prob_ID)
                 if tree["split_is_numerical"]:
-                    res += "WHEN {} <= {} THEN {} ".format(
-                        X[tree["split_predictor_idx"]],
-                        float(c),
-                        predict_tree(X, tree["children"][c], classes, prob_ID),
-                    )
+                    th = float(c)
+                    res += f"WHEN {x} <= {th} THEN {y} "
                 else:
-                    res += "WHEN {} = '{}' THEN {} ".format(
-                        X[tree["split_predictor_idx"]],
-                        c,
-                        predict_tree(X, tree["children"][c], classes, prob_ID),
-                    )
+                    th = c
+                    res += f"WHEN {x} = '{th}' THEN {y} "
             return res + "ELSE NULL END)"
 
     if return_proba:
@@ -451,7 +443,7 @@ def chaid_to_graphviz(
     if tree["is_leaf"]:
         color = ""
         if isinstance(tree["prediction"], float):
-            label = '"{}"'.format(tree["prediction"])
+            label = f'"{tree["prediction"]}"'
         else:
             if not (leaf_style):
                 leaf_style = {"shape": "none"}
@@ -463,9 +455,10 @@ def chaid_to_graphviz(
             color = classes_color[(np.argmax(tree["prediction"])) % len(classes_color)]
             label = (
                 '<<table border="0" cellspacing="0"> '
-                '<tr><td port="port1" border="1" bgcolor="{}">'
-                "<b> prediction: {} </b></td></tr>"
-            ).format(color, classes_[np.argmax(tree["prediction"])])
+                f'<tr><td port="port1" border="1" bgcolor="{color}">'
+                f"<b> prediction: {classes_[np.argmax(tree['prediction'])]}"
+                " </b></td></tr>"
+            )
             for j in range(len(tree["prediction"])):
                 val = (
                     round(tree["prediction"][j] * 100, round_pred)
@@ -474,29 +467,20 @@ def chaid_to_graphviz(
                 )
                 if percent:
                     val = str(val) + "%"
-                label += (
-                    '<tr><td port="port{}" border="1" align="left"> '
-                    "prob({}): {} </td></tr>"
-                ).format(j, classes_[j], val)
+                label += f'<tr><td port="port{j}" border="1" align="left"> '
+                label += f"prob({classes_[j]}): {val} </td></tr>"
             label += "</table>>"
-        return "{} [label={}{}]".format(tree["node_id"], label, flat_dict(leaf_style))
+        return f"{tree['node_id']} [label={label}{flat_dict(leaf_style)}]"
     else:
         res = ""
         for c in tree["children"]:
             q = "=" if isinstance(c, str) else "<="
             not_q = "!=" if isinstance(c, str) else ">"
-            res += '\n{} [label="{}"{}]'.format(
-                tree["node_id"],
-                tree["split_predictor"].replace('"', '\\"'),
-                flat_dict(node_style),
-            )
+            split_predictor = tree["split_predictor"].replace('"', '\\"')
+            res += f'\n{tree["node_id"]} [label="{split_predictor}"{flat_dict(node_style)}]'
             if tree["children"][c]["is_leaf"] or tree["children"][c]["children"]:
-                res += '\n{} -> {} [label="{}"{}]'.format(
-                    tree["node_id"],
-                    tree["children"][c]["node_id"],
-                    "{} {}".format(q, c),
-                    flat_dict(arrow_style),
-                )
+                res += f'\n{tree["node_id"]} -> {tree["children"][c]["node_id"]}'
+                res += f'[label="{q} {c}"{flat_dict(arrow_style)}]'
             res += chaid_to_graphviz(
                 tree=tree["children"][c],
                 classes=classes,
@@ -719,33 +703,31 @@ def sql_from_binary_tree(
             else:
                 op = "<"
                 q = ""
-            return "(CASE WHEN {} {} {}{}{} THEN {} ELSE {} END)".format(
-                X[feature[node_id]],
-                op,
-                q,
-                threshold[node_id],
-                q,
-                predict_tree(
-                    children_left,
-                    children_right,
-                    feature,
-                    threshold,
-                    value,
-                    children_left[node_id],
-                    X,
-                    prob_ID,
-                ),
-                predict_tree(
-                    children_left,
-                    children_right,
-                    feature,
-                    threshold,
-                    value,
-                    children_right[node_id],
-                    X,
-                    prob_ID,
-                ),
+            y0 = predict_tree(
+                children_left,
+                children_right,
+                feature,
+                threshold,
+                value,
+                children_left[node_id],
+                X,
+                prob_ID,
             )
+            y1 = predict_tree(
+                children_left,
+                children_right,
+                feature,
+                threshold,
+                value,
+                children_right[node_id],
+                X,
+                prob_ID,
+            )
+            return f"""
+                (CASE 
+                    WHEN {X[feature[node_id]]} {op} {q}{threshold[node_id]}{q} 
+                    THEN {y0} ELSE {y1} 
+                END)"""
 
     if return_proba:
         n = max([len(l) if l != None else 0 for l in value])
@@ -864,30 +846,20 @@ def binary_tree_to_graphviz(
     n, res = len(children_left), "digraph Tree{" + position
     for i in range(n):
         if children_left[i] != children_right[i]:
-            name = (
-                feature_names[feature[i]].replace('"', '\\"')
-                if feature_names
-                else "X{}".format(feature[i])
-            )
+            if feature_names:
+                name = feature_names[feature[i]].replace('"', '\\"')
+            else:
+                name = f"X{feature[i]}"
             q = "=" if isinstance(threshold[i], str) else "<="
             not_q = "!=" if isinstance(threshold[i], str) else ">"
-            res += '\n{} [label="{}"{}]'.format(i, name, flat_dict(node_style))
-            res += '\n{} -> {} [label="{}"{}]'.format(
-                i,
-                children_left[i],
-                "{} {}".format(q, threshold[i]),
-                flat_dict(arrow_style),
-            )
-            res += '\n{} -> {} [label="{}"{}]'.format(
-                i,
-                children_right[i],
-                "{} {}".format(not_q, threshold[i]),
-                flat_dict(arrow_style),
-            )
+            res += f'\n{i} [label="{name}"{flat_dict(node_style)}]'
+            res += f'\n{i} -> {children_left[i]} [label="{q} {threshold[i]}"'
+            res += f"{flat_dict(arrow_style)}]\n{i} -> {children_right[i]} "
+            res += f'[label="{not_q} {threshold[i]}"{flat_dict(arrow_style)}]'
         else:
             color = ""
             if isinstance(value[i], float):
-                label = '"{}"'.format(value[i])
+                label = f'"{value[i]}"'
             elif (
                 isinstance(value[i], list)
                 and (len(value[i]) == 2)
@@ -919,12 +891,14 @@ def binary_tree_to_graphviz(
                         + str(hex(rgb[2]))[2:]
                     )
                 label = (
-                    '<<table border="0" cellspacing="0"> <tr><td port="port1" border="1" '
-                    'bgcolor="{}"><b> leaf </b></td></tr><tr><td port="port0" border="1" align="left"> '
-                    'leaf_path_length: {} </td></tr><tr><td port="port1" border="1" align="left"> '
-                    'training_row_count: {} </td></tr><tr><td port="port2" border="1" align="left" bgcolor="{}"> '
-                    "anomaly_score: {} </td></tr></table>>"
-                ).format(color, value[i][0], value[i][1], color_anomaly, anomaly_score)
+                    '<<table border="0" cellspacing="0"> <tr><td port="port1"'
+                    f' border="1" bgcolor="{color}"><b> leaf </b></td></tr><tr><td '
+                    f'port="port0" border="1" align="left"> leaf_path_length: '
+                    f'{value[i][0]} </td></tr><tr><td port="port1" border="1" '
+                    f'align="left"> training_row_count: {value[i][1]} </td></tr>'
+                    f'<tr><td port="port2" border="1" align="left" bgcolor="{color_anomaly}">'
+                    f" anomaly_score: {anomaly_score} </td></tr></table>>"
+                )
             else:
                 if not (leaf_style):
                     leaf_style = {"shape": "none"}
@@ -936,21 +910,20 @@ def binary_tree_to_graphviz(
                 color = classes_color[(np.argmax(value[i])) % len(classes_color)]
                 label = (
                     '<<table border="0" cellspacing="0"> <tr><td port="port1" border="1" '
-                    'bgcolor="{}"><b> prediction: {} </b></td></tr>'
-                ).format(color, classes_[np.argmax(value[i])])
+                    f'bgcolor="{color}"><b> prediction: {classes_[np.argmax(value[i])]} '
+                    "</b></td></tr>"
+                )
                 for j in range(len(value[i])):
-                    val = (
-                        round(value[i][j] * 100, round_pred)
-                        if percent
-                        else round(value[i][j], round_pred)
-                    )
+                    if percent:
+                        val = round(value[i][j] * 100, round_pred)
+                    else:
+                        percent = round(value[i][j], round_pred)
                     if percent:
                         val = str(val) + "%"
-                    label += '<tr><td port="port{}" border="1" align="left"> {}({}): {} </td></tr>'.format(
-                        j, prefix_pred, classes_[j], val
-                    )
+                    label += f'<tr><td port="port{j}" border="1" align="left">'
+                    label += f" {prefix_pred}({classes_[j]}): {val} </td></tr>"
                 label += "</table>>"
-            res += "\n{} [label={}{}]".format(i, label, flat_dict(leaf_style))
+            res += f"\n{i} [label={label}{flat_dict(leaf_style)}]"
     return res + "\n}"
 
 
@@ -1127,9 +1100,8 @@ def bisecting_kmeans_to_graphviz(
                 f'border="1" bgcolor="{color}"><b> cluster_id: {i} </b></td></tr>'
             )
             if len(cluster_size) == n:
-                label += '<tr><td port="port2" border="1" align="left"> size: {} </td></tr>'.format(
-                    cluster_size[i]
-                )
+                label += '<tr><td port="port2" border="1" align="left">'
+                label += f" size: {cluster_size[i]} </td></tr>"
             if len(cluster_score) == n:
                 val = (
                     round(cluster_score[i] * 100, round_score)
@@ -1138,26 +1110,19 @@ def bisecting_kmeans_to_graphviz(
                 )
                 if percent:
                     val = str(val) + "%"
-                label += '<tr><td port="port3" border="1" align="left"> score: {} </td></tr>'.format(
-                    val
-                )
+                label += '<tr><td port="port3" border="1" align="left"> '
+                label += f"score: {val} </td></tr>"
             label += "</table>>"
         else:
-            label = '"{}"'.format(i)
-        res += "\n{} [label={}{}]".format(
-            i,
-            label,
-            flat_dict(node_style)
-            if children_left[i] != children_right[i]
-            else flat_dict(leaf_style),
-        )
+            label = f'"{i}"'
         if children_left[i] != children_right[i]:
-            res += '\n{} -> {} [label=""{}]'.format(
-                i, children_left[i], flat_dict(arrow_style)
-            )
-            res += '\n{} -> {} [label=""{}]'.format(
-                i, children_right[i], flat_dict(arrow_style)
-            )
+            flat_dict_str = flat_dict(node_style)
+        else:
+            flat_dict_str = flat_dict(leaf_style)
+        res += f"\n{i} [label={label}{flat_dict_str}]"
+        if children_left[i] != children_right[i]:
+            res += f'\n{i} -> {children_left[i]} [label=""{flat_dict(arrow_style)}]'
+            res += f'\n{i} -> {children_right[i]} [label=""{flat_dict(arrow_style)}]'
     return res + "\n}"
 
 
@@ -1260,8 +1225,8 @@ def sql_from_bisecting_kmeans(
     for c in clusters:
         list_tmp = []
         for idx, col in enumerate(X):
-            list_tmp += ["POWER({} - {}, {})".format((X[idx]), c[idx], p)]
-        clusters_distance += ["POWER(" + " + ".join(list_tmp) + ", 1/{})".format(p)]
+            list_tmp += [f"POWER({X[idx]} - {c[idx]}, {p})"]
+        clusters_distance += [f"POWER({' + '.join(list_tmp)}, 1/{p})"]
     if return_distance_clusters:
         return clusters_distance
 
@@ -1273,12 +1238,11 @@ def sql_from_bisecting_kmeans(
         else:
             right_node = int(right_child[node_id])
             left_node = int(left_child[node_id])
-            return "(CASE WHEN {} < {} THEN {} ELSE {} END)".format(
-                clusters_distance[left_node],
-                clusters_distance[right_node],
-                predict_tree(right_child, left_child, left_node, clusters_distance),
-                predict_tree(right_child, left_child, right_node, clusters_distance),
-            )
+            x = clusters_distance[left_node]
+            th = clusters_distance[right_node]
+            y0 = predict_tree(right_child, left_child, left_node, clusters_distance)
+            y1 = predict_tree(right_child, left_child, right_node, clusters_distance)
+            return f"(CASE WHEN {x} < {th} THEN {y0} ELSE {y1} END)"
 
     is_null_x = " OR ".join([f"{x} IS NULL" for x in X])
     sql_final = f"""
@@ -1561,7 +1525,8 @@ def sql_from_clusters_kprotypes(
     """
 
     assert not (return_distance_clusters) or not (return_proba), ParameterError(
-        "Parameters 'return_distance_clusters' and 'return_proba' cannot both be set to True."
+        "Parameters 'return_distance_clusters' and 'return_proba' cannot "
+        "both be set to True."
     )
 
     if not (is_categorical):
@@ -1569,7 +1534,8 @@ def sql_from_clusters_kprotypes(
 
     for c in clusters:
         assert len(X) == len(c) == len(is_categorical), ParameterError(
-            "The length of parameter 'X' must be the same as the length of each cluster AND the categorical vector."
+            "The length of parameter 'X' must be the same as the length "
+            "of each cluster AND the categorical vector."
         )
 
     clusters_distance = []
@@ -1577,11 +1543,8 @@ def sql_from_clusters_kprotypes(
         clusters_distance_num, clusters_distance_cat = [], []
         for idx, col in enumerate(X):
             if is_categorical[idx]:
-                clusters_distance_cat += [
-                    "ABS(({0} = '{1}')::int - 1)".format(
-                        (X[idx]), str(c[idx]).replace("'", "''")
-                    )
-                ]
+                c_i = str(c[idx]).replace("'", "''")
+                clusters_distance_cat += [f"ABS(({X[idx]} = '{c_i}')::int - 1)"]
             else:
                 clusters_distance_num += [f"POWER({X[idx]} - {c[idx]}, {p})"]
         final_cluster_distance = ""
@@ -1937,13 +1900,15 @@ def sql_from_one_hot_encoder(
                 elif val == None:
                     val = "NULL"
                 sql_tmp_feature = f"(CASE WHEN {X[i]} = {val} THEN 1 ELSE 0 END)"
+                X_i = X[i].replace('"', "")
                 if column_naming == "indices":
-                    sql_tmp_feature += ' AS "{}_{}"'.format((X[i].replace('"', "")), j)
+                    sql_tmp_feature += f' AS "{X_i}_{j}"'
                 elif column_naming in ("values", "values_relaxed"):
-                    sql_tmp_feature += ' AS "{}_{}"'.format(
-                        (X[i].replace('"', "")),
-                        categories[i][j] if categories[i][j] != None else "NULL",
-                    )
+                    if categories[i][j] != None:
+                        categories_i_j = categories[i][j]
+                    else:
+                        categories_i_j = "NULL"
+                    sql_tmp_feature += f' AS "{X_i}_{categories_i_j}"'
                 sql_tmp += [sql_tmp_feature]
         sql += [sql_tmp]
     return sql
@@ -1968,102 +1933,123 @@ model_type: str
 attributes: dict
     Dictionary which includes all the model's attributes.
         For BisectingKMeans: 
-                           {"clusters": List of the model's cluster centers.
-                            "left_child": List of the model's left children IDs.
-                            "right_child": List of the model's right children IDs.
-                            "p": The p corresponding to the one of the p-distances.}
+            {"clusters": List of the model's cluster centers.
+             "left_child": List of the model's left children IDs.
+             "right_child": List of the model's right children IDs.
+             "p": The p corresponding to the one of the p-distances.}
         For BinaryTreeClassifier, BinaryTreeRegressor, BinaryTreeAnomaly:
-                            {children_left:  A list of node IDs, where children_left[i] is the node id 
-                                             of the left child of node i.
-                             children_right: A list of node IDs, where children_right[i] is the node id 
-                                             of the right child of node i.
-                             feature: A list of features, where feature[i] is the feature to split on, 
-                                      for the internal node i.
-                             threshold: threshold[i] is the threshold for the internal node i.
-                             value: Contains the constant prediction value of each node.
-                             classes: [Only for Classifier] The classes for the binary tree model.}
-                             psy: [Only for Anomaly Detection] Sampling size used to compute the 
-                                        the Isolation Forest Score.
-        For CHAID:         {"tree": CHAID tree. This tree can be generated using the vDataFrame.chaid method.
-                            "classes": The classes for the CHAID model.}
-        For KMeans:        {"clusters": List of the model's cluster centers.
-                            "p": The p corresponding to the one of the p-distances.}
-        For KPrototypes:   {"clusters": List of the model's cluster centers.
-                            "p": The p corresponding to one of the p-distances.
-                            "gamma": Weighting factor for categorical columns.
-                            "is_categorical": List of booleans to indicate whether X[idx] is a categorical 
-                                              variable or not.}
-        For LinearSVC, LinearSVR, LinearSVC, LinearRegression, LogisticRegression: 
-                           {"coefficients": List of the model's coefficients.
-                            "intercept": Intercept or constant value.}¨
-        For NaiveBayes:     {classes: The classes for the naive bayes model.
-                             prior: The model probabilities of each class.
-                             attributes: List of the model's attributes. Each feature is represented 
-                                         by a dictionary, the contents of which differs for each 
-                                         distribution type.
-                                            For 'gaussian':
-                                              Key 'type' must have the value 'gaussian'.
-                                              Each of the model's classes must include a dictionary with two keys:
-                                                sigma_sq: Square root of the standard deviation.
-                                                mu: Average.
-                                              Example: {'type': 'gaussian', 
-                                                        'C': {'mu': 63.9878308300395, 'sigma_sq': 7281.87598377196}, 
-                                                        'Q': {'mu': 13.0217386792453, 'sigma_sq': 211.626862330204}, 
-                                                        'S': {'mu': 27.6928120412844, 'sigma_sq': 1428.57067393938}}
-                                            For 'multinomial':
-                                              Key 'type' must have the value 'multinomial'.
-                                              Each of the model's classes must be represented by a key with its probability
-                                              as the value.
-                                              Example: {'type': 'multinomial', 
-                                                        'C': 0.771666666666667, 
-                                                        'Q': 0.910714285714286, 
-                                                        'S': 0.878216123499142}
-                                            For 'bernoulli':
-                                              Key 'type' must have the value 'bernoulli'.
-                                              Each of the model's classes must be represented by a key with its probability
-                                              as the value.
-                                              Example: {'type': 'bernoulli', 
-                                                        'C': 0.537254901960784, 
-                                                        'Q': 0.277777777777778, 
-                                                        'S': 0.324942791762014}
-                                            For 'categorical':
-                                              Key 'type' must have the value 'categorical'.
-                                              Each of the model's classes must include a dictionary with all the feature
-                                              categories.
-                                              Example: {'type': 'categorical', 
-                                                        'C': {'female': 0.407843137254902, 'male': 0.592156862745098}, 
-                                                        'Q': {'female': 0.416666666666667, 'male': 0.583333333333333}, 
-                                                        'S': {'female': 0.311212814645309, 'male': 0.688787185354691}}}
+            {children_left:  A list of node IDs, where children_left[i] is 
+                             the node id of the left child of node i.
+             children_right: A list of node IDs, where children_right[i] is 
+                             the node id of the right child of node i.
+             feature: A list of features, where feature[i] is the feature to 
+                      split on, for the internal node i.
+             threshold: threshold[i] is the threshold for the internal node i.
+             value: Contains the constant prediction value of each node.
+             classes: [Only for Classifier] 
+                      The classes for the binary tree model.}
+             psy: [Only for Anomaly Detection] 
+                  Sampling size used to compute the the Isolation Forest Score.
+        For CHAID:         
+            {"tree": CHAID tree. This tree can be generated using the 
+                     vDataFrame.chaid method.
+             "classes": The classes for the CHAID model.}
+        For KMeans:        
+            {"clusters": List of the model's cluster centers.
+             "p": The p corresponding to the one of the p-distances.}
+        For KPrototypes:   
+            {"clusters": List of the model's cluster centers.
+             "p": The p corresponding to one of the p-distances.
+             "gamma": Weighting factor for categorical columns.
+             "is_categorical": List of booleans to indicate whether 
+                               X[idx] is a categorical variable or not.}
+        For LinearSVC, LinearSVR, LinearSVC, 
+            LinearRegression, LogisticRegression: 
+            {"coefficients": List of the model's coefficients.
+             "intercept": Intercept or constant value.}
+        For NaiveBayes:     
+            {classes: The classes for the naive bayes model.
+             prior: The model probabilities of each class.
+             attributes: 
+                List of the model's attributes. Each feature is represented 
+                by a dictionary, the contents of which differs for each 
+                distribution type.
+                For 'gaussian':
+                  Key 'type' must have the value 'gaussian'.
+                  Each of the model's classes must include a dictionary with 
+                  two keys:
+                    sigma_sq: Square root of the standard deviation.
+                    mu: Average.
+                  Example: {'type': 'gaussian', 
+                            'C': {'mu': 63.9878308300395, 
+                                  'sigma_sq': 7281.87598377196}, 
+                            'Q': {'mu': 13.0217386792453, 
+                                  'sigma_sq': 211.626862330204}, 
+                            'S': {'mu': 27.6928120412844, 
+                                  'sigma_sq': 1428.57067393938}}
+                For 'multinomial':
+                  Key 'type' must have the value 'multinomial'.
+                  Each of the model's classes must be represented by a key with its 
+                  probability as the value.
+                  Example: {'type': 'multinomial', 
+                            'C': 0.771666666666667, 
+                            'Q': 0.910714285714286, 
+                            'S': 0.878216123499142}
+                For 'bernoulli':
+                  Key 'type' must have the value 'bernoulli'.
+                  Each of the model's classes must be represented by a key with its 
+                  probability as the value.
+                  Example: {'type': 'bernoulli', 
+                            'C': 0.537254901960784, 
+                            'Q': 0.277777777777778, 
+                            'S': 0.324942791762014}
+                For 'categorical':
+                  Key 'type' must have the value 'categorical'.
+                  Each of the model's classes must include a dictionary with all 
+                  the feature categories.
+                  Example: {'type': 'categorical', 
+                            'C': {'female': 0.407843137254902, 
+                                  'male': 0.592156862745098}, 
+                            'Q': {'female': 0.416666666666667, 
+                                  'male': 0.583333333333333}, 
+                            'S': {'female': 0.311212814645309, 
+                                  'male': 0.688787185354691}}}
         For NearestCentroid:
-                           {"clusters": List of the model's cluster centers.
-                            "p": The p corresponding to the one of the p-distances.
-                            "classes": Represents the classes of the nearest centroids.}
-        For Normalizer:    {"values": List of tuples including the model's attributes.
-                                The required tuple depends on the specified method: 
-                                    'zscore': (mean, std)
-                                    'robust_zscore': (median, mad)
-                                    'minmax': (min, max)
-                            "method": The model's category, one of the following: 'zscore', 
-                                      'robust_zscore', or 'minmax'.}
-        For OneHotEncoder: {"categories": List of the different feature categories.
-                            "drop_first": Boolean, whether the first category
-                                          should be dropped.
-                            "column_naming": Appends categorical levels to column names 
-                                             according to the specified method. 
-                                             It can be set to 'indices' or 'values'.}
-        For PCA:           {"principal_components": Matrix of the principal components.
-                            "mean": List of the input predictors average.}
-        For RandomForestClassifier, RandomForestRegressor, XGBoostClassifier, XGBoostRegressor, IsolationForest:
-                            {trees: list of memModels of type 'BinaryTreeRegressor' or 
-                                    'BinaryTreeClassifier' or 'BinaryTreeAnomaly'
-                             learning_rate: [Only for XGBoostClassifier and XGBoostRegressor]
-                                            Learning rate.
-                             mean: [Only for XGBoostRegressor]
-                                   Average of the response column.
-                             logodds: [Only for XGBoostClassifier]
-                                   List of the logodds of the response classes.}
-        For SVD:           {"vectors": Matrix of the right singular vectors.
-                            "values": List of the singular values.}
+            {"clusters": List of the model's cluster centers.
+             "p": The p corresponding to the one of the p-distances.
+             "classes": Represents the classes of the nearest centroids.}
+        For Normalizer:    
+            {"values": List of tuples including the model's attributes.
+                The required tuple depends on the specified method: 
+                    'zscore': (mean, std)
+                    'robust_zscore': (median, mad)
+                    'minmax': (min, max)
+             "method": The model's category, one of the following: 'zscore', 
+                      'robust_zscore', or 'minmax'.}
+        For OneHotEncoder: 
+            {"categories": List of the different feature categories.
+             "drop_first": Boolean, whether the first category
+                           should be dropped.
+             "column_naming": Appends categorical levels to column names 
+                             according to the specified method. 
+                             It can be set to 'indices' or 'values'.}
+        For PCA:           
+            {"principal_components": Matrix of the principal components.
+             "mean": List of the input predictors average.}
+        For RandomForestClassifier, RandomForestRegressor, 
+            XGBoostClassifier, XGBoostRegressor, IsolationForest:
+            {trees: list of memModels of type 'BinaryTreeRegressor' or 
+                    'BinaryTreeClassifier' or 'BinaryTreeAnomaly'
+             learning_rate: [Only for XGBoostClassifier 
+                                  and XGBoostRegressor]
+                            Learning rate.
+             mean: [Only for XGBoostRegressor]
+                   Average of the response column.
+             logodds: [Only for XGBoostClassifier]
+                   List of the logodds of the response classes.}
+        For SVD:           
+            {"vectors": Matrix of the right singular vectors.
+             "values": List of the singular values.}
     """
 
     #
@@ -2109,7 +2095,8 @@ attributes: dict
                 or "classes" not in attributes
             ):
                 raise ParameterError(
-                    f"{model_type}'s attributes must include at least the following lists: attributes, prior, classes."
+                    f"{model_type}'s attributes must include at least the following "
+                    "lists: attributes, prior, classes."
                 )
             attributes_["prior"] = np.copy(attributes["prior"])
             attributes_["classes"] = np.copy(attributes["classes"])
@@ -2124,14 +2111,11 @@ attributes: dict
                     "multinomial",
                     "gaussian",
                 ), ParameterError(
-                    "All the elements of the 'attributes' key must be dictionaries including a 'type' key with a value in (categorical, bernoulli, multinomial, gaussian)."
+                    "All the elements of the 'attributes' key must be dictionaries "
+                    "including a 'type' key with a value in (categorical, bernoulli,"
+                    " multinomial, gaussian)."
                 )
                 attributes_["attributes"] += [att.copy()]
-            represent = "<{0}>\n\nclasses = {1}".format(
-                model_type, attributes_["classes"]
-            )
-            represent += "\n\nprior = {0}".format(attributes_["prior"])
-            represent += "\n\nattributes =\n{0}".format(attributes_["attributes"])
         elif model_type in (
             "RandomForestRegressor",
             "XGBoostRegressor",
@@ -2141,7 +2125,8 @@ attributes: dict
         ):
             if "trees" not in attributes:
                 raise ParameterError(
-                    f"{model_type}'s attributes must include a list of memModels representing each tree."
+                    f"{model_type}'s attributes must include a list of memModels "
+                    "representing each tree."
                 )
             attributes_["trees"] = []
             for tree in attributes["trees"]:
@@ -2150,45 +2135,36 @@ attributes: dict
                 )
                 if model_type in ("RandomForestClassifier", "XGBoostClassifier"):
                     assert tree.model_type_ == "BinaryTreeClassifier", ParameterError(
-                        "Each tree of the model must be a BinaryTreeClassifier, found '{0}'.".format(
-                            tree.model_type_
-                        )
+                        "Each tree of the model must be a BinaryTreeClassifier"
+                        f", found '{tree.model_type_}'."
                     )
                 elif model_type == "IsolationForest":
                     assert tree.model_type_ == "BinaryTreeAnomaly", ParameterError(
-                        "Each tree of the model must be a BinaryTreeAnomaly, found '{0}'.".format(
-                            tree.model_type_
-                        )
+                        "Each tree of the model must be a BinaryTreeAnomaly"
+                        f", found '{tree.model_type_}'."
                     )
                 else:
                     assert tree.model_type_ == "BinaryTreeRegressor", ParameterError(
-                        "Each tree of the model must be a BinaryTreeRegressor, found '{0}'.".format(
-                            tree.model_type_
-                        )
+                        "Each tree of the model must be a BinaryTreeRegressor"
+                        f", found '{tree.model_type_}'."
                     )
                 attributes_["trees"] += [tree]
-            represent = "<{0}>\n\nntrees = {1}".format(
-                model_type, len(attributes_["trees"])
-            )
             if model_type == "XGBoostRegressor":
                 if "learning_rate" not in attributes or "mean" not in attributes:
                     raise ParameterError(
-                        f"{model_type}'s attributes must include the response average and the learning rate."
+                        f"{model_type}'s attributes must include the response "
+                        "average and the learning rate."
                     )
                 attributes_["mean"] = float(attributes["mean"])
-                represent += "\n\nmean = {0}".format(attributes_["mean"])
             if model_type == "XGBoostClassifier":
                 if "learning_rate" not in attributes or "logodds" not in attributes:
                     raise ParameterError(
-                        f"{model_type}'s attributes must include the response classes logodds and the learning rate."
+                        f"{model_type}'s attributes must include the response "
+                        "classes logodds and the learning rate."
                     )
                 attributes_["logodds"] = np.copy(attributes["logodds"])
-                represent += "\n\nlogodds = {}".format(attributes_["logodds"])
             if model_type in ("XGBoostRegressor", "XGBoostClassifier"):
                 attributes_["learning_rate"] = float(attributes["learning_rate"])
-                represent += "\n\nlearning_rate = {0}".format(
-                    attributes_["learning_rate"]
-                )
         elif model_type in (
             "BinaryTreeClassifier",
             "BinaryTreeRegressor",
@@ -2202,7 +2178,8 @@ attributes: dict
                 or "value" not in attributes
             ):
                 raise ParameterError(
-                    f"{model_type}'s attributes must include at least the following lists: children_left, children_right, feature, threshold, value."
+                    f"{model_type}'s attributes must include at least the following "
+                    "lists: children_left, children_right, feature, threshold, value."
                 )
             for elem in (
                 "children_left",
@@ -2215,37 +2192,25 @@ attributes: dict
                     attributes_[elem] = attributes[elem].copy()
                 else:
                     attributes_[elem] = np.copy(attributes[elem])
-            represent = "<{0}>\n\nchildren_left = {1}\n\nchildren_right = {2}\n\nfeature = {3}\n\nthreshold = {4}\n\nvalue =\n{5}".format(
-                model_type,
-                attributes_["children_left"],
-                attributes_["children_right"],
-                attributes_["feature"],
-                attributes_["threshold"],
-                attributes_["value"],
-            )
             if model_type == "BinaryTreeClassifier":
                 if "classes" not in attributes:
                     attributes_["classes"] = []
                 else:
                     attributes_["classes"] = np.copy(attributes["classes"])
-                represent += "\n\nclasses = {0}".format(attributes_["classes"])
             if model_type == "BinaryTreeAnomaly":
                 assert "psy" in attributes, ParameterError(
                     "BinaryTreeAnomaly's must include the sampling size 'psy'."
                 )
                 attributes_["psy"] = int(attributes["psy"])
-                represent += "\n\npsy = {0}".format(attributes_["psy"])
         elif model_type == "CHAID":
             assert "tree" in attributes, ParameterError(
                 f"{model_type}'s attributes must include at least the CHAID tree."
             )
             attributes_["tree"] = dict(attributes["tree"])
-            represent = "<{0}>\n\ntree = {1}".format(model_type, attributes_["tree"])
             if "classes" not in attributes:
                 attributes_["classes"] = []
             else:
                 attributes_["classes"] = np.copy(attributes["classes"])
-            represent += "\n\nclasses = {0}".format(attributes_["classes"])
         elif model_type == "OneHotEncoder":
             assert "categories" in attributes, ParameterError(
                 "OneHotEncoder's attributes must include a list with all "
@@ -2265,12 +2230,6 @@ attributes: dict
                     "column_naming", attributes["column_naming"], ["indices", "values"],
                 )
                 attributes_["column_naming"] = attributes["column_naming"]
-            represent = "<{0}>\n\ncategories = {1}\n\ndrop_first = {2}\n\ncolumn_naming = '{3}'".format(
-                model_type,
-                attributes_["categories"],
-                attributes_["drop_first"],
-                attributes_["column_naming"],
-            )
         elif model_type in (
             "LinearSVR",
             "LinearSVC",
@@ -2283,9 +2242,6 @@ attributes: dict
                 )
             attributes_["coefficients"] = np.copy(attributes["coefficients"])
             attributes_["intercept"] = float(attributes["intercept"])
-            represent = "<{0}>\n\ncoefficients = {1}\n\nintercept = {2}".format(
-                model_type, attributes_["coefficients"], attributes_["intercept"]
-            )
         elif model_type == "BisectingKMeans":
             if (
                 "clusters" not in attributes
@@ -2293,7 +2249,9 @@ attributes: dict
                 or "right_child" not in attributes
             ):
                 raise ParameterError(
-                    "BisectingKMeans's attributes must include three lists: one with all the 'clusters' centers, one with all the cluster's right children, and one with all the cluster's left children."
+                    "BisectingKMeans's attributes must include three lists: one with "
+                    "all the 'clusters' centers, one with all the cluster's right "
+                    "children, and one with all the cluster's left children."
                 )
             attributes_["clusters"] = np.copy(attributes["clusters"])
             attributes_["left_child"] = np.copy(attributes["left_child"])
@@ -2302,13 +2260,6 @@ attributes: dict
                 attributes_["p"] = 2
             else:
                 attributes_["p"] = int(attributes["p"])
-            represent = "<{0}>\n\nclusters =\n{1}\n\nleft_child = {2}\n\nright_child = {3}\n\np = {4}".format(
-                model_type,
-                attributes_["clusters"],
-                attributes_["left_child"],
-                attributes_["right_child"],
-                attributes_["p"],
-            )
             if "cluster_size" not in attributes:
                 attributes_["cluster_size"] = []
             else:
@@ -2327,9 +2278,6 @@ attributes: dict
                 attributes_["p"] = 2
             else:
                 attributes_["p"] = int(attributes["p"])
-            represent = "<{0}>\n\nclusters =\n{1}\n\np = {2}".format(
-                model_type, attributes_["clusters"], attributes_["p"]
-            )
             if model_type == "KPrototypes":
                 if "gamma" not in attributes:
                     attributes_["gamma"] = 1.0
@@ -2339,54 +2287,44 @@ attributes: dict
                     attributes_["is_categorical"] = []
                 else:
                     attributes_["is_categorical"] = attributes["is_categorical"]
-                represent += "\n\ngamma = {0}\n\nis_categorical = {1}".format(
-                    attributes_["gamma"], attributes_["is_categorical"]
-                )
             if model_type == "NearestCentroid":
                 if "classes" not in attributes:
                     attributes_["classes"] = None
                 else:
                     attributes_["classes"] = [c for c in attributes["classes"]]
-                represent += "\n\nclasses = {0}".format(attributes_["classes"])
         elif model_type == "PCA":
             if "principal_components" not in attributes or "mean" not in attributes:
                 raise ParameterError(
-                    "PCA's attributes must include two lists: one with all the principal components and one with all the averages of each input feature."
+                    "PCA's attributes must include two lists: one with all the principal "
+                    "components and one with all the averages of each input feature."
                 )
             attributes_["principal_components"] = np.copy(
                 attributes["principal_components"]
             )
             attributes_["mean"] = np.copy(attributes["mean"])
-            represent = "<{0}>\n\nprincipal_components = \n{1}\n\nmean = {2}".format(
-                model_type, attributes_["principal_components"], attributes_["mean"]
-            )
         elif model_type == "SVD":
             if "vectors" not in attributes or "values" not in attributes:
                 raise ParameterError(
-                    "SVD's attributes must include 2 lists: one with all the right singular vectors and one with the singular values of each input feature."
+                    "SVD's attributes must include 2 lists: one with all the right singular "
+                    "vectors and one with the singular values of each input feature."
                 )
             attributes_["vectors"] = np.copy(attributes["vectors"])
             attributes_["values"] = np.copy(attributes["values"])
-            represent = "<{0}>\n\nvectors = \n{1}\n\nvalues = {2}".format(
-                model_type, attributes_["vectors"], attributes_["values"]
-            )
         elif model_type == "Normalizer":
             assert "values" in attributes and "method" in attributes, ParameterError(
-                "Normalizer's attributes must include a list including the model's aggregations and a string representing the model's method."
+                "Normalizer's attributes must include a list including the model's "
+                "aggregations and a string representing the model's method."
             )
             raise_error_if_not_in(
                 "method", attributes["method"], ["minmax", "zscore", "robust_zscore"],
             )
             attributes_["values"] = np.copy(attributes["values"])
             attributes_["method"] = attributes["method"]
-            represent = "<{0}>\n\nvalues =\n{1}\n\nmethod = '{2}'".format(
-                model_type, attributes_["values"], attributes_["method"]
-            )
         else:
             raise ParameterError(f"Model type '{model_type}' is not yet available.")
         self.attributes_ = attributes_
         self.model_type_ = model_type
-        self.represent_ = represent
+        self.represent_ = f"<{model_type}>\n\nattributes = {attributes_}"
 
     # ---#
     def __repr__(self):
@@ -2638,7 +2576,7 @@ attributes: dict
                 self.model_type_,
             )
             if self.model_type_ in ("LinearSVC", "LogisticRegression"):
-                result = "(({}) > 0.5)::int".format(result)
+                result = f"(({result}) > 0.5)::int"
         elif self.model_type_ == "KMeans":
             result = sql_from_clusters(
                 X, self.attributes_["clusters"], p=self.attributes_["p"]
@@ -2694,17 +2632,12 @@ attributes: dict
         ):
             result = [str(tree.predict_sql(X)) for tree in self.attributes_["trees"]]
             if self.model_type_ in ("RandomForestRegressor", "IsolationForest"):
-                result = "(" + " + ".join(result) + ") / {}".format(len(result))
+                result = f"({' + '.join(result)}) / {len(result)}"
                 if self.model_type_ == "IsolationForest":
                     result = f"POWER(2, - ({result}))"
             else:
-                result = (
-                    "("
-                    + " + ".join(result)
-                    + ") * {} + {}".format(
-                        self.attributes_["learning_rate"], self.attributes_["mean"]
-                    )
-                )
+                result = f"({' + '.join(result)}) * {self.attributes_['learning_rate']}"
+                result += f" + {self.attributes_['mean']}"
         elif self.model_type_ in (
             "RandomForestClassifier",
             "XGBoostClassifier",
