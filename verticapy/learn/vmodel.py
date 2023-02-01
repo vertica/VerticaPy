@@ -390,31 +390,28 @@ Main Class for Vertica Model
         ):
             relation = self.input_relation
             vertica_version(condition=[8, 1, 1])
-            query = """SELECT /*+LABEL('learn.vModel.features_importance')*/
-                            predictor, 
-                            ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, 
-                            sign 
-                        FROM (SELECT 
-                                stat.predictor AS predictor, 
-                                ABS(coefficient * (max - min))::float AS importance, 
-                                SIGN(coefficient)::int AS sign 
-                              FROM (SELECT 
-                                        LOWER("column") AS predictor, 
-                                        min, 
-                                        max 
-                                    FROM (SELECT 
-                                            SUMMARIZE_NUMCOL({0}) OVER() 
-                                          FROM {1}) VERTICAPY_SUBTABLE) stat 
-                                          NATURAL JOIN ({2}) coeff) importance_t 
-                                          ORDER BY 2 DESC;""".format(
-                ", ".join(self.X), relation, self.coef_.to_sql()
-            )
+            query = f"""
+                SELECT /*+LABEL('learn.vModel.features_importance')*/
+                    predictor, 
+                    ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, 
+                    sign 
+                FROM (SELECT 
+                        stat.predictor AS predictor, 
+                        ABS(coefficient * (max - min))::float AS importance, 
+                        SIGN(coefficient)::int AS sign 
+                      FROM (SELECT 
+                                LOWER("column") AS predictor, 
+                                min, 
+                                max 
+                            FROM (SELECT 
+                                    SUMMARIZE_NUMCOL({', '.join(self.X)}) OVER() 
+                                  FROM {relation}) VERTICAPY_SUBTABLE) stat 
+                                  NATURAL JOIN ({self.coef_.to_sql()}) coeff) importance_t 
+                                  ORDER BY 2 DESC;"""
             print_legend = True
         else:
             raise FunctionError(
-                "Method 'features_importance' for '{0}' doesn't exist.".format(
-                    self.type
-                )
+                f"Method 'features_importance' for '{self.type}' doesn't exist."
             )
         result = executeSQL(
             query, title="Computing Features Importance.", method="fetchall"
@@ -467,13 +464,15 @@ Main Class for Vertica Model
         ):
             name = self.tree_name if self.type == "KernelDensity" else self.name
             vertica_version(condition=[8, 1, 1])
+            if attr_name:
+                attr_name_str = f", attr_name = '{attr_name}'"
+            else:
+                attr_name_str = ""
             result = to_tablesample(
-                query=(
-                    "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS "
-                    "model_name = '{0}'{1})"
-                ).format(
-                    name, ", attr_name = '{}'".format(attr_name) if attr_name else "",
-                ),
+                query=f"""
+                    SELECT 
+                        GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                            model_name = '{name}'{attr_name_str})""",
                 title="Getting Model Attributes.",
             )
             return result
@@ -606,9 +605,7 @@ Main Class for Vertica Model
             else:
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         else:
-            raise FunctionError(
-                "Method 'get_attr' for '{0}' doesn't exist.".format(self.type)
-            )
+            raise FunctionError(f"Method 'get_attr' for '{self.type}' doesn't exist.")
 
     # ---#
     def get_params(self):
@@ -791,7 +788,7 @@ Main Class for Vertica Model
                             "KPrototypes' plots with categorical inputs is not yet supported."
                         )
                 vdf = vDataFrameSQL(self.input_relation)
-                catcol = "{0}_cluster".format(self.type.lower())
+                catcol = f"{self.type.lower()}_cluster"
                 self.predict(vdf, name=catcol)
             elif self.type == "DBSCAN":
                 vdf = vDataFrameSQL(self.name)
@@ -815,16 +812,12 @@ Main Class for Vertica Model
                 **style_kwds,
             )
         elif self.type == "LocalOutlierFactor":
-            query = "SELECT /*+LABEL('learn.vModel.plot')*/ COUNT(*) FROM {}".format(
-                self.name
+            cnt = executeSQL(
+                query=f"SELECT /*+LABEL('learn.vModel.plot')*/ COUNT(*) FROM {self.name}",
+                method="fetchfirstelem",
+                print_time_sql=False,
             )
-            tablesample = 100 * min(
-                float(
-                    max_nb_points
-                    / executeSQL(query, method="fetchfirstelem", print_time_sql=False)
-                ),
-                1,
-            )
+            tablesample = 100 * min(float(max_nb_points / cnt), 1)
             return lof_plot(self.name, self.X, "lof_score", 100, ax=ax, **style_kwds)
         elif self.type in ("RandomForestRegressor", "XGBoostRegressor"):
             return regression_tree_plot(
@@ -1132,13 +1125,12 @@ Main Class for Vertica Model
             "LogisticRegression",
             "LinearSVC",
         ):
-            result = "{} + np.sum(np.array({}) * np.array(X), axis=1)".format(
-                self.coef_["coefficient"][0], self.coef_["coefficient"][1:]
-            )
+            a, b = self.coef_["coefficient"][0], self.coef_["coefficient"][1:]
+            x = f"{a} + np.sum(np.array({b}) * np.array(X), axis=1)"
             if self.type in ("LogisticRegression", "LinearSVC"):
-                func += f"result = 1 / (1 + np.exp(- ({result})))"
+                func += f"result = 1 / (1 + np.exp(- ({x})))"
             else:
-                func += "result =  " + result
+                func += f"result =  {x}"
             if return_proba and self.type in ("LogisticRegression", "LinearSVC"):
                 func += "\n\treturn np.column_stack((1 - result, result))"
             elif not (return_proba) and self.type in (
@@ -1192,9 +1184,8 @@ Main Class for Vertica Model
             func += "\t\t\t\t\tdistance_cat += abs(int(val == centroid_val) - 1)\n"
             func += "\t\t\t\telse:\n"
             func += "\t\t\t\t\tdistance_num += (val - centroid_val) ** 2\n"
-            func += "\t\t\tdistance_final = distance_num + {0} * distance_cat\n".format(
-                self.parameters["gamma"]
-            )
+            gamma = self.parameters["gamma"]
+            func += f"\t\t\tdistance_final = distance_num + {gamma} * distance_cat\n"
             func += "\t\t\tresult += [distance_final]\n"
             func += "\t\treturn result\n\n"
             func += "\tresult = np.apply_along_axis(compute_distance_row, 1, X)\n\n"
@@ -1214,14 +1205,16 @@ Main Class for Vertica Model
             if self.type == "NearestCentroid":
                 for center in centroids:
                     del center[-1]
-            func += "centroids = np.array({})\n".format(centroids)
+            func += f"centroids = np.array({centroids})\n"
             if self.type == "NearestCentroid":
-                func += "\tclasses = np.array({})\n".format(self.classes_)
+                func += f"\tclasses = np.array({self.classes_})\n"
             func += "\tresult = []\n"
             func += "\tfor centroid in centroids:\n"
-            func += "\t\tresult += [np.sum((np.array(centroid) - X) ** {0}, axis=1) ** (1 / {0})]\n".format(
-                self.parameters["p"] if self.type == "NearestCentroid" else 2,
-            )
+            if self.type == "NearestCentroid":
+                p = self.parameters["p"]
+            else:
+                p = 2
+            func += f"\t\tresult += [np.sum((np.array(centroid) - X) ** {p}, axis=1) ** (1 / {p})]\n"
             func += "\tresult = np.column_stack(result)\n"
             if (
                 self.type == "NearestCentroid"
@@ -1262,16 +1255,16 @@ Main Class for Vertica Model
             details = self.get_attr("details")
             sql = []
             if "min" in details.values:
-                func += "min_values = np.array({})\n".format(details["min"])
-                func += "\tmax_values = np.array({})\n".format(details["max"])
+                func += f"min_values = np.array({details['min']})\n"
+                func += f"\tmax_values = np.array({details['max']})\n"
                 func += "\treturn (X - min_values) / (max_values - min_values)\n"
             elif "median" in details.values:
-                func += "median_values = np.array({})\n".format(details["median"])
-                func += "\tmad_values = np.array({})\n".format(details["mad"])
+                func += f"median_values = np.array({details['median']})\n"
+                func += f"\tmad_values = np.array({details['mad']})\n"
                 func += "\treturn (X - median_values) / mad_values\n"
             else:
-                func += "avg_values = np.array({})\n".format(details["avg"])
-                func += "\tstd_values = np.array({})\n".format(details["std_dev"])
+                func += f"avg_values = np.array({details['avg']})\n"
+                func += f"\tstd_values = np.array({details['std_dev']})\n"
                 func += "\treturn (X - avg_values) / std_values\n"
             return func
         elif self.type == "SVD":
@@ -1369,15 +1362,13 @@ Main Class for Vertica Model
                 n = self.get_attr("tree_count")["tree_count"][0]
             func += f"n = {n}\n"
             if self.type in ("XGBoostClassifier", "RandomForestClassifier"):
-                func += "\tclasses = np.array({})\n".format(
-                    [str(c) for c in self.classes_]
-                )
+                classes_str = [str(c) for c in self.classes_]
+                func += f"\tclasses = np.array({classes_str})\n"
             func += "\ttree_list = []\n"
             for i in range(n):
                 tree = self.get_tree(i)
-                func += "\ttree_list += [{}]\n".format(
-                    get_tree_list_of_arrays(tree, self.X, self.type)
-                )
+                tree_list = get_tree_list_of_arrays(tree, self.X, self.type)
+                func += f"\ttree_list += [{tree_list}]\n"
             if self.type == "IsolationForest":
                 func += "\tdef heuristic_length(i):\n"
                 func += "\t\tGAMMA = 0.5772156649\n"
@@ -1423,10 +1414,9 @@ Main Class for Vertica Model
                     func += "* np.sum(result)\n"
                 else:
                     if not (isinstance(self.prior_, list)):
-                        func += "\t\tlogodds = np.array([{}, {}])\n".format(
-                            np.log((1 - self.prior_) / self.prior_),
-                            np.log(self.prior_ / (1 - self.prior_)),
-                        )
+                        a = np.log((1 - self.prior_) / self.prior_)
+                        b = np.log(self.prior_ / (1 - self.prior_))
+                        func += f"\t\tlogodds = np.array([{a}, {b}])\n"
                     else:
                         func += f"\t\tlogodds = np.array({self.prior_})\n"
                     func += "\t\tfor idx, elem in enumerate(all_classes_score):\n"
@@ -1982,7 +1972,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return mt.lift_chart(
+        return lift_chart(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2013,7 +2003,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return mt.prc_curve(
+        return prc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2164,7 +2154,7 @@ class BinaryClassifier(Classifier):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        return mt.roc_curve(
+        return roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2196,7 +2186,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return mt.roc_curve(
+        return roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2413,7 +2403,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return mt.roc_curve(
+        return roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2560,7 +2550,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return mt.lift_chart(
+        return lift_chart(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2614,7 +2604,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return mt.prc_curve(
+        return prc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2807,7 +2797,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return mt.roc_curve(
+        return roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -3187,9 +3177,8 @@ class Unsupervised(vModel):
         if self.type in ("BisectingKMeans", "IsolationForest") and isinstance(
             verticapy.OPTIONS["random_state"], int
         ):
-            id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
-                ", ".join([quote_ident(column) for column in X]), id_column_name
-            )
+            X_str = ", ".join([quote_ident(x) for x in X])
+            id_column = f", ROW_NUMBER() OVER (ORDER BY {X_str}) AS {id_column_name}"
         if isinstance(input_relation, str) and self.type == "MCA":
             input_relation = vDataFrameSQL(input_relation)
         tmp_view = False
@@ -3214,9 +3203,12 @@ class Unsupervised(vModel):
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop(relation, method="view")
             executeSQL(
-                "CREATE VIEW {0} AS SELECT /*+LABEL('learn.vModel.fit')*/ *{1} FROM {2}".format(
-                    relation, id_column, self.input_relation
-                ),
+                query=f"""
+                    CREATE VIEW {relation} AS 
+                        SELECT 
+                            /*+LABEL('learn.vModel.fit')*/ *
+                            {id_column} 
+                        FROM {self.input_relation}""",
                 title="Creating a temporary view to fit the model.",
             )
             if not (X) and (self.type == "KPrototypes"):
@@ -3233,13 +3225,14 @@ class Unsupervised(vModel):
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
         fun = self.VERTICA_FIT_FUNCTION_SQL if self.type != "MCA" else "PCA"
-        query = "SELECT /*+LABEL('learn.vModel.fit')*/ {}('{}', '{}', '{}'".format(
-            fun, self.name, relation, ", ".join(self.X)
-        )
+        query = f"""
+            SELECT 
+                /*+LABEL('learn.vModel.fit')*/ 
+                {fun}('{self.name}', '{relation}', '{', '.join(self.X)}'"""
         if self.type in ("BisectingKMeans", "KMeans", "KPrototypes",):
-            query += ", {0}".format(parameters["n_cluster"])
+            query += f", {parameters['n_cluster']}"
         elif self.type == "Normalizer":
-            query += ", {0}".format(parameters["method"])
+            query += f", {parameters['method']}"
             del parameters["method"]
         if self.type not in ("Normalizer", "MCA"):
             query += " USING PARAMETERS "
@@ -3249,24 +3242,19 @@ class Unsupervised(vModel):
             and self.type in ("KMeans", "BisectingKMeans", "KPrototypes",)
         ):
             name_init = gen_tmp_name(
-                schema=schema_relation(self.name)[0],
-                name="{0}_init".format(self.type.lower()),
+                schema=schema_relation(self.name)[0], name=f"{self.type.lower()}_init",
             )
             del parameters["init_method"]
             drop(name_init, method="table")
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
                 raise ParameterError(
-                    "'init' must be a list of 'n_cluster' = {0} points".format(
-                        self.parameters["n_cluster"]
-                    )
+                    f"'init' must be a list of 'n_cluster' = {self.parameters['n_cluster']} points"
                 )
             else:
                 for item in self.parameters["init"]:
                     if len(X) != len(item):
                         raise ParameterError(
-                            "Each points of 'init' must be of size len(X) = {0}".format(
-                                len(self.X)
-                            )
+                            f"Each points of 'init' must be of size len(X) = {len(self.X)}"
                         )
                 query0 = []
                 for i in range(len(self.parameters["init"])):
@@ -3287,22 +3275,18 @@ class Unsupervised(vModel):
                 query += f"initial_centers_table = '{name_init}', "
         elif "init_method" in parameters:
             del parameters["init_method"]
-            query += "init_method = '{0}', ".format(self.parameters["init"])
-        query += ", ".join(
-            ["{0} = {1}".format(elem, parameters[elem]) for elem in parameters]
-        )
+            query += f"init_method = '{self.parameters['init']}', "
+        query += ", ".join([f"{p} = {parameters[p]}" for p in parameters])
         if self.type == "BisectingKMeans" and isinstance(
             verticapy.OPTIONS["random_state"], int
         ):
-            query += ", kmeans_seed={0}, id_column='{1}'".format(
-                verticapy.OPTIONS["random_state"], id_column_name
-            )
+            query += f", kmeans_seed={verticapy.OPTIONS['random_state']}"
+            query += f", id_column='{id_column_name}'"
         elif self.type == "IsolationForest" and isinstance(
             verticapy.OPTIONS["random_state"], int
         ):
-            query += ", seed={0}, id_column='{1}'".format(
-                verticapy.OPTIONS["random_state"], id_column_name
-            )
+            query += f", seed={verticapy.OPTIONS['random_state']}"
+            query += f", id_column='{id_column_name}'"
         query += ")"
         try:
             executeSQL(query, "Fitting the model.")
@@ -3584,27 +3568,19 @@ class Preprocessing(Unsupervised):
                             or self.param_["category_level"][i] != None
                         ):
                             if self.parameters["column_naming"] == "indices":
-                                names += [
-                                    '"'
-                                    + quote_ident(column)[1:-1]
-                                    + "{}{}".format(
-                                        self.parameters["separator"],
-                                        self.param_["category_level_index"][i],
-                                    )
-                                    + '"'
-                                ]
+                                name = f'"{quote_ident(column)[1:-1]}{self.parameters["separator"]}'
+                                name += f'{self.param_["category_level_index"][i]}"'
+                                names += [name]
                             else:
-                                names += [
-                                    '"'
-                                    + quote_ident(column)[1:-1]
-                                    + "{}{}".format(
-                                        self.parameters["separator"],
-                                        self.param_["category_level"][i].lower()
-                                        if self.param_["category_level"][i] != None
-                                        else self.parameters["null_column_name"],
-                                    )
-                                    + '"'
-                                ]
+                                if self.param_["category_level"][i] != None:
+                                    category_level = self.param_["category_level"][
+                                        i
+                                    ].lower()
+                                else:
+                                    category_level = self.parameters["null_column_name"]
+                                name = f'"{quote_ident(column)[1:-1]}{self.parameters["separator"]}'
+                                name += f'{category_level}"'
+                                names += [name]
                         k += 1
             return names
         else:
@@ -3686,9 +3662,8 @@ class Preprocessing(Unsupervised):
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
-        main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-            self.deploySQL(exclude_columns, exclude_columns, all_columns), relation
-        )
+        columns = self.deploySQL(exclude_columns, exclude_columns, all_columns)
+        main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrameSQL(main_relation, "Inverse Transformation")
 
 
@@ -3780,32 +3755,18 @@ class Decomposition(Preprocessing):
         """
         vdf = vDataFrameSQL(self.input_relation)
         ax = self.transform(vdf).scatter(
-            columns=["col{}".format(dimensions[0]), "col{}".format(dimensions[1])],
+            columns=[f"col{dimensions[0]}", f"col{dimensions[1]}"],
             max_nb_points=100000,
             ax=ax,
             **style_kwds,
         )
         explained_variance = self.explained_variance_["explained_variance"]
-        ax.set_xlabel(
-            "Dim{} {}".format(
-                dimensions[0],
-                ""
-                if not (explained_variance[dimensions[0] - 1])
-                else "({}%)".format(
-                    round(explained_variance[dimensions[0] - 1] * 100, 1)
-                ),
-            )
-        )
-        ax.set_ylabel(
-            "Dim{} {}".format(
-                dimensions[1],
-                ""
-                if not (explained_variance[dimensions[1] - 1])
-                else "({}%)".format(
-                    round(explained_variance[dimensions[1] - 1] * 100, 1)
-                ),
-            )
-        )
+        if not (explained_variance[dimensions[0] - 1]):
+            dimensions_1 = ""
+        else:
+            dimensions_1 = f"({round(explained_variance[dimensions[0] - 1] * 100, 1)}%)"
+        ax.set_xlabel(f"Dim{dimensions[0]} {dimensions_1}")
+        ax.set_ylabel(f"Dim{dimensions[0]} {dimensions_1}")
         return ax
 
     # ---#
@@ -3896,10 +3857,9 @@ class Decomposition(Preprocessing):
         ax.set_ylabel('"percentage_explained_variance"')
         ax.set_xlabel('"dimensions"')
         for i in range(n):
+            text_str = f"{round(explained_variance[i], 1)}%"
             ax.text(
-                i + 1.5,
-                explained_variance[i] + 1,
-                "{}%".format(round(explained_variance[i], 1)),
+                i + 1.5, explained_variance[i] + 1, text_str,
             )
         return ax
 
@@ -4037,12 +3997,10 @@ class Decomposition(Preprocessing):
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
-        main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-            self.deploySQL(
-                n_components, cutoff, exclude_columns, exclude_columns, all_columns
-            ),
-            relation,
+        columns = self.deploySQL(
+            n_components, cutoff, exclude_columns, exclude_columns, all_columns
         )
+        main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrameSQL(main_relation, "Inverse Transformation")
 
 

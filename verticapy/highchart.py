@@ -136,6 +136,7 @@ def hchart_from_vdf(
     if not (x):
         x = vdf.numcol()
     x, y, z, c = vdf.format_colnames(x, y, z, c, raise_error=False)
+    groupby = " GROUP BY 1 " if (aggregate) else ""
     if drilldown:
         if not (z):
             z = "COUNT(*)"
@@ -144,12 +145,19 @@ def hchart_from_vdf(
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         query = [
-            "SELECT {}, {} FROM {} GROUP BY 1 LIMIT {}".format(
-                x, z, vdf.__genSQL__(), limit
-            ),
-            "SELECT {}, {}, {} FROM {} GROUP BY 1, 2 LIMIT {}".format(
-                x, y, z, vdf.__genSQL__(), limit
-            ),
+            f"""SELECT 
+                    {x},
+                    {z}
+                FROM {vdf.__genSQL__()} 
+                GROUP BY 1
+                LIMIT {limit}""",
+            f"""SELECT 
+                    {x},
+                    {y},
+                    {z}
+                FROM {vdf.__genSQL__()}
+                GROUP BY 1, 2
+                LIMIT {limit}""",
         ]
     elif (kind in ("pie_half", "pie", "donut", "pie3d", "donut3d")) or (
         kind in ("bar", "hist") and not (z)
@@ -165,16 +173,22 @@ def hchart_from_vdf(
             if not (aggregate):
                 limit = min(limit, max_cardinality)
             elif is_num:
-                order_by = " ORDER BY MIN({}) DESC ".format(x)
-                x = vdf[x].discretize(h=h, return_enum_trans=True)[0].replace(
-                    "{}", x
-                ) + " AS {}".format(x)
-            else:
-                query = "SELECT /*+LABEL('highchart.hchart_from_vdf')*/ {}, {} FROM {} GROUP BY 1 ORDER BY 2 DESC LIMIT {}".format(
-                    x, y, vdf.__genSQL__(), max_cardinality
+                order_by = f" ORDER BY MIN({x}) DESC "
+                x = (
+                    vdf[x].discretize(h=h, return_enum_trans=True)[0].replace("{}", x)
+                    + f" AS {x}"
                 )
+            else:
                 result = executeSQL(
-                    query,
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('highchart.hchart_from_vdf')*/ 
+                            {x},
+                            {y} 
+                        FROM {vdf.__genSQL__()}
+                        GROUP BY 1
+                        ORDER BY 2 DESC
+                        LIMIT {max_cardinality}""",
                     title=(
                         "Selecting the categories and their respective aggregations "
                         "to draw the chart."
@@ -182,20 +196,21 @@ def hchart_from_vdf(
                     method="fetchall",
                 )
                 result = [elem[0] for elem in result]
-                result = [
-                    "NULL" if elem == None else "'{}'".format(elem) for elem in result
-                ]
-                x = "(CASE WHEN {} IN ({}) THEN {} ELSE 'Others' END) AS {}".format(
-                    x, ", ".join(result), x, x
-                )
-        query = "SELECT {}, {} FROM {}{}{}LIMIT {}".format(
-            x,
-            y,
-            vdf.__genSQL__(),
-            " GROUP BY 1" if (aggregate) else "",
-            order_by,
-            limit,
-        )
+                result = ["NULL" if elem == None else f"'{elem}'" for elem in result]
+                x = f"""
+                    (CASE 
+                        WHEN {x} IN ({", ".join(result)}) 
+                            THEN {x} 
+                        ELSE 'Others'
+                     END) AS {x}"""
+        query = f"""
+            SELECT 
+                {x},
+                {y}
+            FROM {vdf.__genSQL__()}
+            {groupby}
+            {order_by}
+            LIMIT {limit}"""
     elif kind in (
         "bar",
         "hist",
@@ -220,35 +235,50 @@ def hchart_from_vdf(
             is_num = vdf[y].isnum()
             if unique > max_cardinality:
                 if is_num:
-                    where = " WHERE {} IS NOT NULL ".format(y)
-                    y = vdf[y].discretize(h=h, return_enum_trans=True)[0].replace(
-                        "{}", y
-                    ) + " AS {}".format(y)
+                    where = f" WHERE {y} IS NOT NULL "
+                    y = (
+                        vdf[y]
+                        .discretize(h=h, return_enum_trans=True)[0]
+                        .replace("{}", y)
+                        + f" AS {y}"
+                    )
                 else:
-                    y = vdf[y].discretize(
-                        k=max_cardinality, method="topk", return_enum_trans=True
-                    )[0].replace("{}", y) + " AS {}".format(y)
+                    y = (
+                        vdf[y]
+                        .discretize(
+                            k=max_cardinality, method="topk", return_enum_trans=True
+                        )[0]
+                        .replace("{}", y)
+                        + f" AS {y}"
+                    )
         # x
         unique = vdf[x].nunique()
         is_num = vdf[x].isnum()
         if unique > max_cardinality:
             if is_num:
-                x = vdf[x].discretize(h=h, return_enum_trans=True)[0].replace(
-                    "{}", x
-                ) + " AS {}".format(x)
+                x = (
+                    vdf[x].discretize(h=h, return_enum_trans=True)[0].replace("{}", x)
+                    + f" AS {x}"
+                )
             else:
-                x = vdf[x].discretize(
-                    k=max_cardinality, method="topk", return_enum_trans=True
-                )[0].replace("{}", x) + " AS {}".format(x)
-        query = "SELECT {}, {}, {} FROM {} {}{}LIMIT {}".format(
-            x,
-            y,
-            z,
-            vdf.__genSQL__(),
-            where,
-            " GROUP BY 1, 2 " if (aggregate) else "",
-            limit,
-        )
+                x = (
+                    vdf[x]
+                    .discretize(
+                        k=max_cardinality, method="topk", return_enum_trans=True
+                    )[0]
+                    .replace("{}", x)
+                    + f" AS {x}"
+                )
+        groupby = " GROUP BY 1, 2 " if (aggregate) else ""
+        query = f"""
+            SELECT
+                {x},
+                {y},
+                {z} 
+            FROM {vdf.__genSQL__()}
+            {where}
+            {groupby}
+            LIMIT {limit}"""
     elif kind in ("area", "area_ts", "line", "spline"):
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
@@ -259,16 +289,16 @@ def hchart_from_vdf(
             if not (isinstance(y, str)):
                 y = ", ".join(y)
                 kind = "multi_" + kind
-            query = "SELECT {}{}, {} FROM {} WHERE {} IS NOT NULL{}{} LIMIT {}".format(
-                x,
-                cast,
-                y,
-                vdf.__genSQL__(),
-                x,
-                " GROUP BY 1 " if (aggregate) else "",
-                " ORDER BY 1 " if (vdf[x].isdate() or vdf[x].isnum()) else "",
-                limit,
-            )
+            order_by = " ORDER BY 1 " if (vdf[x].isdate() or vdf[x].isnum()) else ""
+            query = f"""
+                SELECT 
+                    {x}{cast},
+                    {y}
+                FROM {vdf.__genSQL__()}
+                WHERE {x} IS NOT NULL
+                {groupby}
+                {order_by}
+                LIMIT {limit}"""
         else:
             # z
             unique = vdf[z].nunique()
@@ -276,35 +306,56 @@ def hchart_from_vdf(
             z_copy = z
             if unique > max_cardinality:
                 if is_num:
-                    z = vdf[z].discretize(h=h, return_enum_trans=True)[0].replace(
-                        "{}", z
-                    ) + " AS {}".format(z)
+                    z = (
+                        vdf[z]
+                        .discretize(h=h, return_enum_trans=True)[0]
+                        .replace("{}", z)
+                        + f" AS {z}"
+                    )
                 else:
-                    z = vdf[z].discretize(
-                        k=max_cardinality, method="topk", return_enum_trans=True
-                    )[0].replace("{}", z) + " AS {0}".format(z)
-            query = (
-                "SELECT {0}{1}, {2}, {3} FROM {4} "
-                "WHERE {0} IS NOT NULL AND {2} IS NOT NULL "
-                "LIMIT {5} OVER (PARTITION BY {6} ORDER BY {0} DESC)"
-            ).format(
-                x, cast, y, z, vdf.__genSQL__(), max(int(limit / unique), 1), z_copy,
-            )
+                    z = (
+                        vdf[z]
+                        .discretize(
+                            k=max_cardinality, method="topk", return_enum_trans=True
+                        )[0]
+                        .replace("{}", z)
+                        + f" AS {z}"
+                    )
+            query = f"""
+                SELECT 
+                    {x}{cast},
+                    {y},
+                    {z}
+                FROM {vdf.__genSQL__()}
+                WHERE {x} IS NOT NULL
+                  AND {y} IS NOT NULL
+                LIMIT {max(int(limit / unique), 1)} 
+                    OVER (PARTITION BY {z_copy} 
+                          ORDER BY {x} DESC)"""
     elif kind in ("scatter", "bubble"):
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         if not (z) and not (c) and (kind == "scatter"):
-            query = (
-                "SELECT {0}{1}, {2} FROM {3} WHERE {0}"
-                " IS NOT NULL AND {2} IS NOT NULL LIMIT {4}"
-            ).format(x, cast, y, vdf.__genSQL__(), limit)
+            query = f"""
+                SELECT 
+                    {x}{cast},
+                    {y} 
+                FROM {vdf.__genSQL__()} 
+                WHERE {x} IS NOT NULL 
+                  AND {y} IS NOT NULL 
+                LIMIT {limit}"""
         elif not (c) and (z):
-            query = (
-                "SELECT {0}{1}, {2}, {3} FROM {4} "
-                "WHERE {0} IS NOT NULL AND {2} IS NOT NULL "
-                "AND {3} IS NOT NULL LIMIT {5}"
-            ).format(x, cast, y, z, vdf.__genSQL__(), limit)
+            query = f"""
+                SELECT 
+                    {x}{cast},
+                    {y},
+                    {z}
+                FROM {vdf.__genSQL__()}
+                WHERE {x} IS NOT NULL 
+                  AND {y} IS NOT NULL 
+                  AND {z} IS NOT NULL 
+                LIMIT {limit}"""
         else:
             # c
             unique = vdf[c].nunique()
@@ -312,42 +363,52 @@ def hchart_from_vdf(
             c_copy = c
             if unique > max_cardinality:
                 if is_num:
-                    c = vdf[c].discretize(h=h, return_enum_trans=True)[0].replace(
-                        "{}", c
-                    ) + " AS {}".format(c)
+                    c = (
+                        vdf[c]
+                        .discretize(h=h, return_enum_trans=True)[0]
+                        .replace("{}", c)
+                        + f" AS {c}"
+                    )
                 else:
-                    c = vdf[c].discretize(
-                        k=max_cardinality, method="topk", return_enum_trans=True
-                    )[0].replace("{}", c) + " AS {}".format(c)
-            query = (
-                "SELECT {0}{1}, {2}{3}, {4} FROM {5} "
-                "WHERE {0} IS NOT NULL AND {2} IS NOT "
-                "NULL{6}LIMIT {7} OVER (PARTITION BY {8} ORDER BY {8})"
-            ).format(
-                x,
-                cast,
-                y,
-                ", " + str(z) if z else "",
-                c,
-                vdf.__genSQL__(),
-                " AND {} IS NOT NULL ".format(z) if z else " ",
-                max(int(limit / unique), 1),
-                c_copy,
-            )
+                    c = (
+                        vdf[c]
+                        .discretize(
+                            k=max_cardinality, method="topk", return_enum_trans=True
+                        )[0]
+                        .replace("{}", c)
+                        + f" AS {c}"
+                    )
+            if z:
+                z_str = f", {z}"
+                z_is_not_null = f" AND {z} IS NOT NULL "
+            else:
+                z_str = ""
+                z_is_not_null = ""
+            query = f"""
+                SELECT 
+                    {x}{cast},
+                    {y}{z_str},
+                    {c} 
+                FROM {vdf.__genSQL__()} 
+                WHERE {x} IS NOT NULL 
+                  AND {y} IS NOT NULL
+                  {z_is_not_null}
+                LIMIT {max(int(limit / unique), 1)} 
+                    OVER (PARTITION BY {c_copy} 
+                          ORDER BY {c_copy})"""
     elif kind == "area_range":
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         order_by = " ORDER BY 1 " if (vdf[x].isdate() or vdf[x].isnum()) else ""
         cast = "::timestamp" if (vdf[x].isdate()) else ""
-        query = "SELECT {0}{1}, {2} FROM {3}{4}{5} LIMIT {6}".format(
-            x,
-            cast,
-            ", ".join(y),
-            vdf.__genSQL__(),
-            " GROUP BY 1 " if (aggregate) else "",
-            order_by,
-            limit,
-        )
+        query = f"""
+            SELECT
+                {x}{cast},
+                {", ".join(y)}
+            FROM {vdf.__genSQL__()}
+            {groupby}
+            {order_by}
+            LIMIT {limit}"""
     elif kind == "spider":
         if not (y):
             y = "COUNT(*)"
@@ -360,42 +421,52 @@ def hchart_from_vdf(
         is_num = vdf[x].isnum()
         if unique > max_cardinality:
             if is_num:
-                x = vdf[x].discretize(h=h, return_enum_trans=True)[0].replace(
-                    "{}", x
-                ) + " AS {}".format(x)
+                x = (
+                    vdf[x].discretize(h=h, return_enum_trans=True)[0].replace("{}", x)
+                    + f" AS {x}"
+                )
             else:
                 if len(y) == 1:
-                    query = (
-                        "SELECT /*+LABEL('highchart.hchart_from_vdf')*/ {0}, {1} FROM {2} "
-                        "GROUP BY 1 ORDER BY 2 DESC LIMIT {3}"
-                    ).format(x, y[0], vdf.__genSQL__(), max_cardinality)
                     result = executeSQL(
-                        query,
+                        query=f"""
+                            SELECT 
+                                /*+LABEL('highchart.hchart_from_vdf')*/ 
+                                {x}, 
+                                {y[0]} 
+                            FROM {vdf.__genSQL__()} 
+                            GROUP BY 1 
+                            ORDER BY 2 DESC 
+                            LIMIT {max_cardinality}""",
                         title=(
                             "Selecting the categories and their "
                             "respective aggregations to draw the chart."
                         ),
                         method="fetchall",
                     )
-                    result = [elem[0] for elem in result]
-                    result = [
-                        "NULL" if elem == None else "'{}'".format(elem)
-                        for elem in result
-                    ]
-                    x = "(CASE WHEN {} IN ({}) THEN {} ELSE 'Others' END) AS {}".format(
-                        x, ", ".join(result), x, x
-                    )
+                    result = [q[0] for q in result]
+                    result = ["NULL" if q == None else f"'{q}'" for q in result]
+                    x = f"""
+                        (CASE 
+                            WHEN {x} IN ({", ".join(result)}) 
+                                THEN {x} 
+                            ELSE 'Others' 
+                         END) AS {x}"""
                 else:
-                    x = vdf[x].discretize(
-                        k=max_cardinality, method="topk", return_enum_trans=True
-                    )[0].replace("{}", x) + " AS {}".format(x)
-        query = "SELECT {}, {} FROM {}{} LIMIT {}".format(
-            x,
-            ", ".join(y),
-            vdf.__genSQL__(),
-            " GROUP BY 1 " if (aggregate) else "",
-            limit,
-        )
+                    x = (
+                        vdf[x]
+                        .discretize(
+                            k=max_cardinality, method="topk", return_enum_trans=True
+                        )[0]
+                        .replace("{}", x)
+                        + f" AS {x}"
+                    )
+        query = f"""
+            SELECT 
+                {x}, 
+                {", ".join(y)} 
+            FROM {vdf.__genSQL__()}
+            {groupby} 
+            LIMIT {limit}"""
     elif kind == "candlestick":
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
@@ -403,24 +474,34 @@ def hchart_from_vdf(
             if isinstance(y, Iterable) and not (isinstance(y, str)) and len(y) == 1:
                 y = y[0]
             if isinstance(y, str):
-                query = """SELECT {0}::timestamp, 
-			                      APPROXIMATE_PERCENTILE({1} 
-                                    USING PARAMETERS percentile = {2}) AS open,
-			                      MAX({1}) AS high,
-			                      MIN({1}) AS low,
-			                      APPROXIMATE_PERCENTILE({1} 
-                                    USING PARAMETERS percentile = {3}) AS close,
-			                      SUM({1}) AS volume
-		                	FROM {4} GROUP BY 1 ORDER BY 1"""
-                query = query.format(x, y, 1 - alpha, alpha, vdf.__genSQL__())
+                query = f"""
+                    SELECT 
+                        {x}::timestamp, 
+                        APPROXIMATE_PERCENTILE({y} 
+                          USING PARAMETERS percentile = {1 - alpha}) AS open,
+                        MAX({y}) AS high,
+                        MIN({y}) AS low,
+                        APPROXIMATE_PERCENTILE({y} 
+                          USING PARAMETERS percentile = {alpha}) AS close,
+                        SUM({y}) AS volume
+                	FROM {vdf.__genSQL__()} 
+                    GROUP BY 1 
+                    ORDER BY 1"""
             else:
-                query = "SELECT {}::timestamp, {} FROM {} GROUP BY 1 ORDER BY 1".format(
-                    x, ", ".join(y), vdf.__genSQL__()
-                )
+                query = f"""
+                    SELECT 
+                        {x}::timestamp, 
+                        {", ".join(y)} 
+                    FROM {vdf.__genSQL__()} 
+                    GROUP BY 1 
+                    ORDER BY 1"""
         else:
-            query = "SELECT {}::timestamp, {} FROM {} ORDER BY 1".format(
-                x, ", ".join(y), vdf.__genSQL__()
-            )
+            query = f"""
+                SELECT 
+                    {x}::timestamp, 
+                    {', '.join(y)} 
+                FROM {vdf.__genSQL__()} 
+                ORDER BY 1"""
     if drilldown:
         return drilldown_chart(
             query=query, options=options, width=width, height=height, chart_type=kind,
@@ -535,14 +616,15 @@ def hchartSQL(
 ):
     aggregate, stock = False, False
     data = executeSQL(
-        "SELECT /*+LABEL('highchart.hchartSQL')*/ * FROM ({}) VERTICAPY_SUBTABLE LIMIT 0".format(
-            query
-        ),
+        query=f"""
+            SELECT 
+                /*+LABEL('highchart.hchartSQL')*/ * 
+            FROM ({query}) VERTICAPY_SUBTABLE LIMIT 0""",
         method="fetchall",
         print_time_sql=False,
     )
     names = [desc[0] for desc in current_cursor().description]
-    vdf = vDataFrameSQL("({}) VERTICAPY_SUBTABLE".format(query))
+    vdf = vDataFrameSQL(f"({query}) VERTICAPY_SUBTABLE")
     allnum = vdf.numcol()
     if kind == "auto":
         if len(names) == 1:
@@ -601,7 +683,7 @@ def hchartSQL(
         if vdf[names[0]].isdate():
             stock = True
         if len(names) < 2:
-            raise ValueError("{} Plots need at least 2 columns.".format(kind))
+            raise ValueError(f"{kind} Plots need at least 2 columns.")
         x, y, z, c = names[0], names[1:], None, None
         if kind == "candlestick":
             aggregate = True

@@ -359,7 +359,7 @@ papprox_ma: int, optional
         self.y, self.ts, self.deploy_predict_ = quote_ident(y), quote_ident(ts), ""
         self.coef_ = tablesample({"predictor": [], "coefficient": []})
         self.ma_avg_, self.ma_piq_ = None, None
-        X, schema = [quote_ident(elem) for elem in X], schema_relation(self.name)[0]
+        X, schema = [quote_ident(x) for x in X], schema_relation(self.name)[0]
         self.X, self.exogenous = [], X
         relation = (
             "(SELECT *, [VerticaPy_y] AS VerticaPy_y_copy FROM {}) VERTICAPY_SUBTABLE "

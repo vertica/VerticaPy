@@ -443,12 +443,16 @@ steps: list
         final_function = "X"
         for idx, step in enumerate(self.steps):
             str_representation += "\t"
-            str_representation += step[1].to_python(
-                name=step[0],
-                return_proba=return_proba,
-                return_distance_clusters=return_distance_clusters,
-                return_str=True,
-            ).replace("\n", "\n\t")
+            str_representation += (
+                step[1]
+                .to_python(
+                    name=step[0],
+                    return_proba=return_proba,
+                    return_distance_clusters=return_distance_clusters,
+                    return_str=True,
+                )
+                .replace("\n", "\n\t")
+            )
             str_representation += "\n"
             final_function = f"{step[0]}({final_function})"
         str_representation += f"\treturn {final_function}"

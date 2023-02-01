@@ -145,12 +145,18 @@ p: int, optional
             self.test_relation = self.input_relation
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
-        query = "SELECT {0}, {1} FROM {2} WHERE {1} IS NOT NULL GROUP BY {1} ORDER BY {1} ASC".format(
-            ", ".join([f"{func}({column}) AS {column}" for column in self.X]),
-            self.y,
-            self.input_relation,
+        X_str = ", ".join([f"{func}({column}) AS {column}" for column in self.X])
+        self.centroids_ = to_tablesample(
+            query=f"""
+            SELECT 
+                {X_str}, 
+                {self.y} 
+            FROM {self.input_relation} 
+            WHERE {self.y} IS NOT NULL 
+            GROUP BY {self.y} 
+            ORDER BY {self.y} ASC""",
+            title="Getting Model Centroids.",
         )
-        self.centroids_ = to_tablesample(query=query, title="Getting Model Centroids.",)
         self.classes_ = self.centroids_.values[y]
         model_save = {
             "type": "NearestCentroid",
@@ -235,58 +241,69 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        X = [quote_ident(x) for x in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
         if not (key_columns) and key_columns != None:
             key_columns = [self.y]
-        sql = [
-            "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
-            for i in range(len(self.X))
-        ]
-        sql = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
-        sql = "ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY {})".format(
-            ", ".join(["x.{}".format(item) for item in X]), sql
-        )
-        sql = "SELECT {}{}, {} AS ordered_distance, y.{} AS predict_neighbors, row_id FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM {} WHERE {}) x CROSS JOIN (SELECT * FROM {} WHERE {}) y".format(
-            ", ".join(["x.{}".format(item) for item in X]),
-            ", " + ", ".join(["x." + quote_ident(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-            sql,
-            self.y,
-            test_relation,
-            " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
-            self.input_relation,
-            " AND ".join(["{} IS NOT NULL".format(item) for item in self.X]),
-        )
-        sql = "(SELECT row_id, {}{}, predict_neighbors, COUNT(*) / {} AS proba_predict FROM ({}) z WHERE ordered_distance <= {} GROUP BY {}{}, row_id, predict_neighbors) kneighbors_table".format(
-            ", ".join(X),
-            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-            self.parameters["n_neighbors"],
-            sql,
-            self.parameters["n_neighbors"],
-            ", ".join(X),
-            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-        )
-        if predict:
-            sql = "(SELECT {}{}, predict_neighbors FROM (SELECT {}{}, predict_neighbors, ROW_NUMBER() OVER (PARTITION BY {} ORDER BY proba_predict DESC) AS order_prediction FROM {}) VERTICAPY_SUBTABLE WHERE order_prediction = 1) predict_neighbors_table".format(
-                ", ".join(X),
-                ", " + ", ".join([quote_ident(elem) for elem in key_columns])
-                if (key_columns)
-                else "",
-                ", ".join(X),
-                ", " + ", ".join([quote_ident(elem) for elem in key_columns])
-                if (key_columns)
-                else "",
-                ", ".join(X),
-                sql,
+        p = self.parameters["p"]
+        n_neighbors = self.parameters["n_neighbors"]
+        X_str = ", ".join([f"x.{x}" for x in X])
+        if key_columns:
+            key_columns_str = ", " + ", ".join(
+                ["x." + quote_ident(x) for x in key_columns]
             )
-        return sql
+        else:
+            key_columns_str = ""
+        sql = [f"POWER(ABS(x.{X[i]} - y.{self.X[i]}), {p})" for i in range(len(self.X))]
+        sql = f"""
+            SELECT 
+                {X_str}{key_columns_str}, 
+                ROW_NUMBER() OVER(PARTITION BY 
+                                  {X_str}, row_id 
+                                  ORDER BY POWER({' + '.join(sql)}, 1 / {p})) 
+                                  AS ordered_distance, 
+                y.{self.y} AS predict_neighbors, 
+                row_id 
+            FROM 
+                (SELECT 
+                    *, 
+                    ROW_NUMBER() OVER() AS row_id 
+                 FROM {test_relation} 
+                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in X])}) x 
+                 CROSS JOIN 
+                (SELECT * FROM {self.input_relation} 
+                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in self.X])}) y"""
+
+        if key_columns:
+            key_columns_str = ", " + ", ".join([quote_ident(x) for x in key_columns])
+
+        sql = f"""
+            (SELECT 
+                row_id, 
+                {", ".join(X)}{key_columns_str}, 
+                predict_neighbors, 
+                COUNT(*) / {n_neighbors} AS proba_predict 
+             FROM ({sql}) z 
+             WHERE ordered_distance <= {n_neighbors} 
+             GROUP BY {", ".join(X)}{key_columns_str}, 
+                      row_id, 
+                      predict_neighbors) kneighbors_table"""
+        if predict:
+            sql = f"""
+                (SELECT 
+                    {", ".join(X)}{key_columns_str}, 
+                    predict_neighbors 
+                 FROM 
+                    (SELECT 
+                        {", ".join(X)}{key_columns_str}, 
+                        predict_neighbors, 
+                        ROW_NUMBER() OVER (PARTITION BY {", ".join(X)} 
+                                           ORDER BY proba_predict DESC) 
+                                           AS order_prediction 
+                     FROM {sql}) VERTICAPY_SUBTABLE 
+                     WHERE order_prediction = 1) predict_neighbors_table"""
+        return clean_query(sql)
 
     # ---#
     @check_dtypes
@@ -336,13 +353,17 @@ p: int, optional
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
         classes = executeSQL(
-            "SELECT /*+LABEL('learn.neighbors.KNeighborsClassifier.fit')*/ DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(
-                self.y, self.input_relation, self.y, self.y
-            ),
+            query=f"""
+                SELECT 
+                    /*+LABEL('learn.neighbors.KNeighborsClassifier.fit')*/ 
+                    DISTINCT {self.y} 
+                FROM {self.input_relation} 
+                WHERE {self.y} IS NOT NULL 
+                ORDER BY {self.y} ASC""",
             method="fetchall",
             print_time_sql=False,
         )
-        self.classes_ = [item[0] for item in classes]
+        self.classes_ = [c[0] for c in classes]
         model_save = {
             "type": "KNeighborsClassifier",
             "input_relation": self.input_relation,
@@ -420,18 +441,13 @@ p: int, optional
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
-            pos_label
-        )
+        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
         return roc_curve(
             self.y,
             "proba_predict",
@@ -472,26 +488,29 @@ p: int, optional
             else pos_label
         )
         if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
-            input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
-                pos_label
+            input_relation = (
+                self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
             )
-            y_score = "(CASE WHEN proba_predict > {} THEN 1 ELSE 0 END)".format(cutoff)
-            y_true = "DECODE({}, '{}', 1, 0)".format(self.y, pos_label)
+            y_score = f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
+            y_true = f"DECODE({self.y}, '{pos_label}', 1, 0)"
             result = confusion_matrix(y_true, y_score, input_relation)
             if pos_label == 1:
                 return result
             else:
                 return tablesample(
                     values={
-                        "index": ["Non-{}".format(pos_label), "{}".format(pos_label),],
-                        "Non-{}".format(pos_label): result.values[0],
-                        "{}".format(pos_label): result.values[1],
+                        "index": [f"Non-{pos_label}", str(pos_label),],
+                        f"Non-{pos_label}": result.values[0],
+                        str(pos_label): result.values[1],
                     },
                 )
         else:
-            input_relation = "(SELECT *, ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY proba_predict DESC) AS pos FROM {}) neighbors_table WHERE pos = 1".format(
-                ", ".join(self.X), self.deploySQL()
-            )
+            input_relation = f"""
+                (SELECT 
+                    *, 
+                    ROW_NUMBER() OVER(PARTITION BY {", ".join(self.X)}, row_id 
+                                      ORDER BY proba_predict DESC) AS pos 
+                 FROM {self.deploySQL()}) neighbors_table WHERE pos = 1"""
             return multilabel_confusion_matrix(
                 self.y, "predict_neighbors", input_relation, self.classes_
             )
@@ -521,18 +540,13 @@ p: int, optional
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
-            pos_label
-        )
+        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
         return lift_chart(
             self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
@@ -562,18 +576,13 @@ p: int, optional
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
         if pos_label not in self.classes_:
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
-            pos_label
-        )
+        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
         return prc_curve(
             self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
@@ -630,6 +639,10 @@ p: int, optional
             key_columns_arg = None
         else:
             key_columns_arg = key_columns
+        if key_columns:
+            key_columns_str = ", " + ", ".join(key_columns)
+        else:
+            key_columns_str = ""
         if not (name):
             name = gen_name([self.type, self.name])
 
@@ -638,32 +651,31 @@ p: int, optional
             and self.classes_[0] in [0, "0"]
             and self.classes_[1] in [1, "1"]
         ):
-            sql = (
-                "(SELECT {0}{1}, (CASE WHEN proba_predict > {2} THEN '{3}' ELSE '{4}' END)"
-                " AS {5} FROM {6} WHERE predict_neighbors = '{3}') VERTICAPY_SUBTABLE"
-            ).format(
-                ", ".join(X),
-                ", " + ", ".join(key_columns) if key_columns else "",
-                cutoff,
-                self.classes_[1],
-                self.classes_[0],
-                name,
-                self.deploySQL(
-                    X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-                ),
+            table = self.deploySQL(
+                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
             )
+            sql = f"""
+                (SELECT 
+                    {", ".join(X)}{key_columns_str}, 
+                    (CASE 
+                        WHEN proba_predict > {cutoff} 
+                            THEN '{self.classes_[1]}' 
+                        ELSE '{self.classes_[0]}' 
+                     END) AS {name} 
+                 FROM {table} 
+                 WHERE predict_neighbors = '{self.classes_[1]}') VERTICAPY_SUBTABLE"""
         else:
-            sql = "(SELECT {0}{1}, predict_neighbors AS {2} FROM {3}) VERTICAPY_SUBTABLE".format(
-                ", ".join(X),
-                ", " + ", ".join(key_columns) if key_columns else "",
-                name,
-                self.deploySQL(
-                    X=X,
-                    test_relation=vdf.__genSQL__(),
-                    key_columns=key_columns_arg,
-                    predict=True,
-                ),
+            table = self.deploySQL(
+                X=X,
+                test_relation=vdf.__genSQL__(),
+                key_columns=key_columns_arg,
+                predict=True,
             )
+            sql = f"""
+                (SELECT 
+                    {", ".join(X)}{key_columns_str}, 
+                    predict_neighbors AS {name} 
+                 FROM {table}) VERTICAPY_SUBTABLE"""
         if inplace:
             return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
         else:
@@ -714,12 +726,13 @@ p: int, optional
         assert pos_label is None or pos_label in self.classes_, ParameterError(
             (
                 "Incorrect parameter 'pos_label'.\nThe class label "
-                "must be in [{0}]. Found '{1}'."
-            ).format("|".join([str(c) for c in self.classes_]), pos_label)
+                f"must be in [{'|'.join([str(c) for c in self.classes_])}]. "
+                f"Found '{pos_label}'."
+            )
         )
         if isinstance(vdf, str):
             vdf = vDataFrameSQL(relation=vdf)
-        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        X = [quote_ident(x) for x in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if not (name):
             name = gen_name([self.type, self.name])
@@ -731,28 +744,32 @@ p: int, optional
         # Generating the probabilities
         if pos_label == None:
             predict = [
-                (
-                    "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{0}', "
-                    "proba_predict, NULL))) AS {1}"
-                ).format(elem, gen_name([name, elem]))
-                for elem in self.classes_
+                f"""ZEROIFNULL(AVG(DECODE(predict_neighbors, 
+                                          '{c}', 
+                                          proba_predict, 
+                                          NULL))) AS {gen_name([name, c])}"""
+                for c in self.classes_
             ]
         else:
             predict = [
-                (
-                    "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{0}', "
-                    "proba_predict, NULL))) AS {1}"
-                ).format(pos_label, name)
+                f"""ZEROIFNULL(AVG(DECODE(predict_neighbors, 
+                                          '{pos_label}', 
+                                          proba_predict, 
+                                          NULL))) AS {name}"""
             ]
-        sql = "(SELECT {0}{1}, {2} FROM {3} GROUP BY {4}) VERTICAPY_SUBTABLE".format(
-            ", ".join(X),
-            ", " + ", ".join(key_columns) if key_columns else "",
-            ", ".join(predict),
-            self.deploySQL(
-                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-            ),
-            ", ".join(X + key_columns),
+        if key_columns:
+            key_columns_str = ", " + ", ".join(key_columns)
+        else:
+            key_columns_str = ""
+        table = self.deploySQL(
+            X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
         )
+        sql = f"""
+            (SELECT 
+                {", ".join(X)}{key_columns_str}, 
+                {", ".join(predict)} 
+             FROM {table} 
+             GROUP BY {", ".join(X + key_columns)}) VERTICAPY_SUBTABLE"""
 
         # Result
         if inplace:
@@ -794,9 +811,7 @@ p: int, optional
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
-            pos_label
-        )
+        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
         return roc_curve(
             self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
@@ -852,12 +867,14 @@ p: int, optional
         """
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
-        input_relation = "(SELECT * FROM {0} WHERE predict_neighbors = '{1}') final_centroids_relation".format(
-            self.deploySQL(), pos_label
-        )
-        y_score = "(CASE WHEN proba_predict > {} THEN 1 ELSE 0 END)".format(cutoff)
+        input_relation = f"""
+            (SELECT 
+                * 
+             FROM {self.deploySQL()} 
+             WHERE predict_neighbors = '{pos_label}') final_centroids_relation"""
+        y_score = f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
         y_proba = "proba_predict"
-        y_true = "DECODE({}, '{}', 1, 0)".format(self.y, pos_label)
+        y_true = f"DECODE({self.y}, '{pos_label}', 1, 0)"
         if (pos_label not in self.classes_) and (method != "accuracy"):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
@@ -1063,23 +1080,23 @@ xlim: list, optional
                 elif isinstance(x, (list)):
                     N = vdf.shape()[0]
                     L = []
-                    for elem in x:
+                    for xj in x:
                         distance = []
                         for i in range(len(columns)):
-                            distance += [
-                                "POWER({0} - {1}, {2})".format(columns[i], elem[i], p)
-                            ]
+                            distance += [f"POWER({columns[i]} - {xj[i]}, {p})"]
                         distance = " + ".join(distance)
-                        distance = "POWER({0}, {1})".format(distance, 1.0 / p)
+                        distance = f"POWER({distance}, {1.0 / p})"
                         fkernel_tmp = fkernel.format(f"{distance} / {h}")
                         L += [f"SUM({fkernel_tmp}) / ({h} * {N})"]
-                    query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ {0} FROM {1}".format(
-                        ", ".join(L), vdf.__genSQL__()
-                    )
+                    query = f"""
+                        SELECT 
+                            /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
+                            {", ".join(L)} 
+                        FROM {vdf.__genSQL__()}"""
                     result = executeSQL(
                         query, title="Computing the KDE", method="fetchrow"
                     )
-                    return [elem for elem in result]
+                    return [x for x in result]
                 else:
                     return 0
 
@@ -1126,31 +1143,36 @@ xlim: list, optional
             self.parameters["nbins"],
             self.parameters["p"],
         )
+        name_str = self.name.replace('"', "")
         if self.verticapy_store:
-            query = """CREATE TABLE {0}_KernelDensity_Map AS    
-                            SELECT /*+LABEL('learn.neighbors.KernelDensity.fit')*/
-                                {1}, 0.0::float AS KDE 
-                            FROM {2} 
-                            LIMIT 0""".format(
-                self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
+            executeSQL(
+                query=f"""CREATE TABLE {name_str}_KernelDensity_Map AS    
+                            SELECT 
+                                /*+LABEL('learn.neighbors.KernelDensity.fit')*/
+                                {", ".join(X)}, 0.0::float AS KDE 
+                            FROM {vdf.__genSQL__()} 
+                            LIMIT 0""",
+                print_time_sql=False,
             )
-            executeSQL(query, print_time_sql=False)
             r, idx = 0, 0
             while r < len(y):
                 values = []
                 m = min(r + 100, len(y))
                 for i in range(r, m):
                     values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
-                query = "INSERT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ INTO {0}_KernelDensity_Map ({1}, KDE) {2}".format(
-                    self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
+                executeSQL(
+                    query=f"""
+                    INSERT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
+                    INTO {name_str}_KernelDensity_Map 
+                    ({", ".join(X)}, KDE) {" UNION ".join(values)}""",
+                    title=f"Computing the KDE [Step {idx}].",
                 )
-                executeSQL(query, f"Computing the KDE [Step {idx}].")
                 executeSQL("COMMIT;", print_time_sql=False)
                 r += 100
                 idx += 1
             self.X, self.input_relation = X, input_relation
-            self.map = "{0}_KernelDensity_Map".format(self.name.replace('"', ""))
-            self.tree_name = "{0}_KernelDensity_Tree".format(self.name.replace('"', ""))
+            self.map = f"{name_str}_KernelDensity_Map"
+            self.tree_name = f"{name_str}_KernelDensity_Tree"
             self.y = "KDE"
 
             from verticapy.learn.tree import DecisionTreeRegressor
@@ -1208,13 +1230,15 @@ xlim: list, optional
         """
         if len(self.X) == 1:
             if self.verticapy_store:
-                query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.plot')*/ {}, KDE FROM {} ORDER BY 1".format(
-                    self.X[0], self.map
-                )
+                query = f"""
+                    SELECT 
+                        /*+LABEL('learn.neighbors.KernelDensity.plot')*/ 
+                        {self.X[0]}, KDE 
+                    FROM {self.map} ORDER BY 1"""
                 result = executeSQL(query, method="fetchall", print_time_sql=False)
-                x, y = [elem[0] for elem in result], [elem[1] for elem in result]
+                x, y = [v[0] for v in result], [v[1] for v in result]
             else:
-                x, y = [elem[0] for elem in self.verticapy_x], self.verticapy_y
+                x, y = [v[0] for v in self.verticapy_x], self.verticapy_y
             if not (ax):
                 fig, ax = plt.subplots()
                 if isnotebook():
@@ -1237,19 +1261,24 @@ xlim: list, optional
         elif len(self.X) == 2:
             n = self.parameters["nbins"]
             if self.verticapy_store:
-                query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.plot')*/ {}, {}, KDE FROM {} ORDER BY 1, 2".format(
-                    self.X[0], self.X[1], self.map,
-                )
+                query = f"""
+                    SELECT 
+                        /*+LABEL('learn.neighbors.KernelDensity.plot')*/ 
+                        {self.X[0]}, 
+                        {self.X[1]}, 
+                        KDE 
+                    FROM {self.map} 
+                    ORDER BY 1, 2"""
                 result = executeSQL(query, method="fetchall", print_time_sql=False)
                 x, y, z = (
-                    [elem[0] for elem in result],
-                    [elem[1] for elem in result],
-                    [elem[2] for elem in result],
+                    [v[0] for v in result],
+                    [v[1] for v in result],
+                    [v[2] for v in result],
                 )
             else:
                 x, y, z = (
-                    [elem[0] for elem in self.verticapy_x],
-                    [elem[1] for elem in self.verticapy_x],
+                    [v[0] for v in self.verticapy_x],
+                    [v[1] for v in self.verticapy_x],
                     self.verticapy_y,
                 )
             result, idx = [], 0
@@ -1268,7 +1297,7 @@ xlim: list, optional
                 "interpolation": "bilinear",
             }
             extent = [min(x), max(x), min(y), max(y)]
-            extent = [float(elem) for elem in extent]
+            extent = [float(v) for v in extent]
             im = ax.imshow(result, extent=extent, **updated_dict(param, style_kwds))
             fig.colorbar(im, ax=ax)
             ax.set_ylabel(self.X[1])
@@ -1348,39 +1377,45 @@ p: int, optional
             test_relation = self.test_relation
         if not (key_columns) and key_columns != None:
             key_columns = [self.y]
-        sql = [
-            "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
-            for i in range(len(self.X))
-        ]
-        sql = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
-        sql = "ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY {})".format(
-            ", ".join([f"x.{item}" for item in X]), sql
-        )
-        sql = "SELECT {}{}, {} AS ordered_distance, y.{} AS predict_neighbors, row_id FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM {} WHERE {}) x CROSS JOIN (SELECT * FROM {} WHERE {}) y".format(
-            ", ".join([f"x.{item}" for item in X]),
-            ", " + ", ".join(["x." + quote_ident(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-            sql,
-            self.y,
-            test_relation,
-            " AND ".join([f"{item} IS NOT NULL" for item in X]),
-            self.input_relation,
-            " AND ".join([f"{item} IS NOT NULL" for item in self.X]),
-        )
-        sql = "(SELECT {}{}, AVG(predict_neighbors) AS predict_neighbors FROM ({}) z WHERE ordered_distance <= {} GROUP BY {}{}, row_id) knr_table".format(
-            ", ".join(X),
-            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-            sql,
-            self.parameters["n_neighbors"],
-            ", ".join(X),
-            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-        )
-        return sql
+        p = self.parameters["p"]
+        X_str = ", ".join([f"x.{x}" for x in X])
+        if key_columns:
+            key_columns_str = ", " + ", ".join(
+                ["x." + quote_ident(x) for x in key_columns]
+            )
+        else:
+            key_columns_str = ""
+        sql = [f"POWER(ABS(x.{X[i]} - y.{self.X[i]}), {p})" for i in range(len(self.X))]
+        sql = f"""
+            SELECT 
+                {X_str}{key_columns_str}, 
+                ROW_NUMBER() OVER(PARTITION BY {X_str}, row_id 
+                                  ORDER BY POWER({' + '.join(sql)}, 1 / {p})) 
+                                  AS ordered_distance, 
+                y.{self.y} AS predict_neighbors, 
+                row_id 
+            FROM
+                (SELECT 
+                    *, 
+                    ROW_NUMBER() OVER() AS row_id 
+                 FROM {test_relation} 
+                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in X])}) x 
+                 CROSS JOIN 
+                 (SELECT 
+                    * 
+                 FROM {self.input_relation} 
+                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in self.X])}) y"""
+        if key_columns:
+            key_columns_str = ", " + ", ".join([quote_ident(x) for x in key_columns])
+        n_neighbors = self.parameters["n_neighbors"]
+        sql = f"""
+            (SELECT 
+                {", ".join(X)}{key_columns_str}, 
+                AVG(predict_neighbors) AS predict_neighbors 
+             FROM ({sql}) z 
+             WHERE ordered_distance <= {n_neighbors} 
+             GROUP BY {", ".join(X)}{key_columns_str}, row_id) knr_table"""
+        return clean_query(sql)
 
     # ---#
     @check_dtypes
@@ -1488,20 +1523,20 @@ p: int, optional
             key_columns_arg = None
         else:
             key_columns_arg = key_columns
-        name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
+        if not (name):
+            name = f"{self.type}_" + "".join(ch for ch in self.name if ch.isalnum())
+        if key_columns:
+            key_columns_str = ", " + ", ".join(key_columns)
+        else:
+            key_columns_str = ""
+        table = self.deploySQL(
+            X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
         )
-        sql = "(SELECT {}{}, {} AS {} FROM {}) VERTICAPY_SUBTABLE".format(
-            ", ".join(X),
-            ", " + ", ".join(key_columns) if key_columns else "",
-            "predict_neighbors",
-            name,
-            self.deploySQL(
-                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-            ),
-        )
+        sql = f"""
+            (SELECT 
+                {", ".join(X)}{key_columns_str}, 
+                predict_neighbors AS {name} 
+             FROM {table}) VERTICAPY_SUBTABLE"""
         if inplace:
             return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
         else:
@@ -1598,12 +1633,6 @@ p: int, optional
         n_neighbors = self.parameters["n_neighbors"]
         p = self.parameters["p"]
         schema, relation = schema_relation(input_relation)
-        name_list = [
-            gen_tmp_name(name="main"),
-            gen_tmp_name(name="distance"),
-            gen_tmp_name(name="lrd"),
-            gen_tmp_name(name="lof"),
-        ]
         tmp_main_table_name = gen_tmp_name(name="main")
         tmp_distance_table_name = gen_tmp_name(name="distance")
         tmp_lrd_table_name = gen_tmp_name(name="lrd")
@@ -1613,86 +1642,128 @@ p: int, optional
                 index = "id"
                 main_table = tmp_main_table_name
                 schema = "v_temp_schema"
-                sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
-                    main_table,
-                    ", ".join(X + key_columns),
-                    self.input_relation,
-                    " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
+                drop(f"v_temp_schema.{tmp_main_table_name}", method="table")
+                executeSQL(
+                    query=f"""
+                        CREATE LOCAL TEMPORARY TABLE {main_table} 
+                        ON COMMIT PRESERVE ROWS AS 
+                            SELECT 
+                                /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ 
+                                ROW_NUMBER() OVER() AS id, 
+                                {', '.join(X + key_columns)} 
+                            FROM {self.input_relation} 
+                            WHERE {' AND '.join([f"{x} IS NOT NULL" for x in X])}""",
+                    print_time_sql=False,
                 )
-                drop("v_temp_schema.{}".format(tmp_main_table_name), method="table")
-                executeSQL(sql, print_time_sql=False)
             else:
                 main_table = self.input_relation
-            sql = [
-                "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], p)
-                for i in range(len(X))
-            ]
-            distance = "POWER({}, 1 / {})".format(" + ".join(sql), p)
-            sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance, ROW_NUMBER() OVER(PARTITION BY x.{} ORDER BY {}) AS knn FROM {}.{} AS x CROSS JOIN {}.{} AS y".format(
-                index,
-                index,
-                distance,
-                index,
-                distance,
-                schema,
-                main_table,
-                schema,
-                main_table,
+            sql = [f"POWER(ABS(x.{X[i]} - y.{X[i]}), {p})" for i in range(len(X))]
+            distance = f"POWER({' + '.join(sql)}, 1 / {p})"
+            drop(f"v_temp_schema.{tmp_distance_table_name}", method="table")
+            executeSQL(
+                query=f"""
+                    CREATE LOCAL TEMPORARY TABLE {tmp_distance_table_name} 
+                    ON COMMIT PRESERVE ROWS AS 
+                        SELECT 
+                            /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ 
+                            node_id, 
+                            nn_id, 
+                            distance, 
+                            knn 
+                        FROM 
+                            (SELECT 
+                                x.{index} AS node_id, 
+                                y.{index} AS nn_id, 
+                                {distance} AS distance, 
+                                ROW_NUMBER() OVER(PARTITION BY x.{index} 
+                                                  ORDER BY {distance}) AS knn 
+                             FROM {schema}.{main_table} AS x 
+                             CROSS JOIN 
+                             {schema}.{main_table} AS y) distance_table 
+                        WHERE knn <= {n_neighbors + 1}""",
+                title="Computing the LOF [Step 0].",
             )
-            sql = "SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(
-                sql, n_neighbors + 1
+            drop(f"v_temp_schema.{tmp_lrd_table_name}", method="table")
+            executeSQL(
+                query=f"""
+                    CREATE LOCAL TEMPORARY TABLE {tmp_lrd_table_name} 
+                    ON COMMIT PRESERVE ROWS AS 
+                        SELECT 
+                            /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ 
+                            distance_table.node_id, 
+                            {n_neighbors} / SUM(
+                                    CASE 
+                                        WHEN distance_table.distance 
+                                             > kdistance_table.distance 
+                                        THEN distance_table.distance 
+                                        ELSE kdistance_table.distance 
+                                     END) AS lrd 
+                        FROM 
+                            (v_temp_schema.{tmp_distance_table_name} AS distance_table 
+                             LEFT JOIN 
+                             (SELECT 
+                                 node_id, 
+                                 nn_id, 
+                                 distance AS distance 
+                              FROM v_temp_schema.{tmp_distance_table_name} 
+                              WHERE knn = {n_neighbors + 1}) AS kdistance_table
+                             ON distance_table.nn_id = kdistance_table.node_id) x 
+                        GROUP BY 1""",
+                title="Computing the LOF [Step 1].",
             )
-            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
-                tmp_distance_table_name, sql
-            )
-            drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
-            executeSQL(sql, "Computing the LOF [Step 0].")
-            kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.{} WHERE knn = {}) AS kdistance_table".format(
-                tmp_distance_table_name, n_neighbors + 1
-            )
-            lrd = "SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(
-                n_neighbors, tmp_distance_table_name, kdistance
-            )
-            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
-                tmp_lrd_table_name, lrd
-            )
-            drop("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
-            executeSQL(sql, "Computing the LOF [Step 1].")
-            sql = "SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
-                n_neighbors,
-                tmp_distance_table_name,
-                tmp_lrd_table_name,
-                tmp_lrd_table_name,
-            )
-            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
-                tmp_lof_table_name, sql
-            )
-            drop("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
-            executeSQL(sql, "Computing the LOF [Step 2].")
-            sql = "SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format(
-                ", ".join(X + self.key_columns), main_table, tmp_lof_table_name, index,
+            drop(f"v_temp_schema.{tmp_lof_table_name}", method="table")
+            executeSQL(
+                query=f"""
+                    CREATE LOCAL TEMPORARY TABLE {tmp_lof_table_name} 
+                    ON COMMIT PRESERVE ROWS AS 
+                    SELECT 
+                        /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ 
+                        x.node_id, 
+                        SUM(y.lrd) / (MAX(x.node_lrd) * {n_neighbors}) AS LOF 
+                    FROM 
+                        (SELECT 
+                            n_table.node_id, 
+                            n_table.nn_id, 
+                            lrd_table.lrd AS node_lrd 
+                         FROM 
+                            v_temp_schema.{tmp_distance_table_name} AS n_table 
+                         LEFT JOIN 
+                            v_temp_schema.{tmp_lrd_table_name} AS lrd_table 
+                        ON n_table.node_id = lrd_table.node_id) x 
+                    LEFT JOIN 
+                        v_temp_schema.{tmp_lrd_table_name} AS y 
+                    ON x.nn_id = y.node_id GROUP BY 1""",
+                title="Computing the LOF [Step 2].",
             )
             executeSQL(
-                "CREATE TABLE {} AS {}".format(self.name, sql),
+                query=f"""
+                    CREATE TABLE {self.name} AS 
+                        SELECT 
+                            /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ 
+                            {', '.join(X + self.key_columns)}, 
+                            (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score
+                        FROM 
+                            {main_table} AS x 
+                        LEFT JOIN 
+                            v_temp_schema.{tmp_lof_table_name} AS y 
+                        ON x.{index} = y.node_id""",
                 title="Computing the LOF [Step 3].",
             )
             self.n_errors_ = executeSQL(
-                "SELECT /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ COUNT(*) FROM {}.{} z WHERE lof > 1e100 OR lof != lof".format(
-                    schema, tmp_lof_table_name
-                ),
+                query=f"""
+                    SELECT 
+                        /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ 
+                        COUNT(*) 
+                    FROM {schema}.{tmp_lof_table_name} z 
+                    WHERE lof > 1e100 OR lof != lof""",
                 method="fetchfirstelem",
                 print_time_sql=False,
             )
-        except:
-            drop("v_temp_schema.{}".format(tmp_main_table_name), method="table")
-            drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
-            drop("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
-            drop("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
-            raise
-        drop("v_temp_schema.{}".format(tmp_main_table_name), method="table")
-        drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
-        drop("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
-        drop("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
+        finally:
+            drop(f"v_temp_schema.{tmp_main_table_name}", method="table")
+            drop(f"v_temp_schema.{tmp_distance_table_name}", method="table")
+            drop(f"v_temp_schema.{tmp_lrd_table_name}", method="table")
+            drop(f"v_temp_schema.{tmp_lof_table_name}", method="table")
         model_save = {
             "type": "LocalOutlierFactor",
             "input_relation": self.input_relation,
