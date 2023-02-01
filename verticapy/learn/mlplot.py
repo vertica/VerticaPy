@@ -98,13 +98,20 @@ def logit_plot(
         return 1 / (1 + math.exp(-x))
 
     if len(X) == 1:
-        query = "(SELECT /*+LABEL('learn.mlplot.logit_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(
-            X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
+        query = f"""
+            (SELECT 
+                /*+LABEL('learn.mlplot.logit_plot')*/ 
+                {X[0]}, 
+                {y} 
+             FROM {input_relation} 
+             WHERE {X[0]} IS NOT NULL 
+               AND {y} = {{}} 
+            LIMIT {int(max_nb_points / 2)})"""
+        all_points = executeSQL(
+            query=f"{query.format(0)} UNION ALL {query.format(1)}",
+            method="fetchall",
+            print_time_sql=False,
         )
-        query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(
-            X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
-        )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -152,13 +159,21 @@ def logit_plot(
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     elif len(X) == 2:
-        query = "(SELECT /*+LABEL('learn.mlplot.logit_plot')*/ {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
-            X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
+        query = f"""
+            (SELECT 
+                /*+LABEL('learn.mlplot.logit_plot')*/ 
+                {X[0]}, 
+                {X[1]}, 
+                {y} 
+             FROM {input_relation} 
+             WHERE {X[0]} IS NOT NULL
+               AND {X[1]} IS NOT NULL
+               AND {y} = {{}} LIMIT {int(max_nb_points / 2)})"""
+        all_points = executeSQL(
+            query=f"{query.format(0)} UNION {query.format(1)}",
+            method="fetchall",
+            print_time_sql=False,
         )
-        query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(
-            X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
-        )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         x0, x1, y0, y1 = [], [], [], []
         for idx, item in enumerate(all_points):
             if item[2] == 0:
@@ -259,11 +274,7 @@ def lof_plot(
     ax=None,
     **style_kwds,
 ):
-    tablesample = (
-        "TABLESAMPLE({})".format(tablesample)
-        if (tablesample > 0 and tablesample < 100)
-        else ""
-    )
+    tablesample = f"TABLESAMPLE({tablesample})" if (0 < tablesample < 100) else ""
     colors = []
     if "color" in style_kwds:
         if isinstance(style_kwds["color"], str):
@@ -285,10 +296,17 @@ def lof_plot(
     }
     if len(columns) == 1:
         column = quote_ident(columns[0])
-        query = "SELECT /*+LABEL('learn.mlplot.lof_plot')*/ {}, {} FROM {} {} WHERE {} IS NOT NULL".format(
-            column, lof, input_relation, tablesample, column
+        query_result = executeSQL(
+            query=f"""
+                SELECT 
+                    /*+LABEL('learn.mlplot.lof_plot')*/ 
+                    {column}, 
+                    {lof} 
+                FROM {input_relation} {tablesample} 
+                WHERE {column} IS NOT NULL""",
+            method="fetchall",
+            print_time_sql=False,
         )
-        query_result = executeSQL(query, method="fetchall", print_time_sql=False)
         column1, lof = (
             [item[0] for item in query_result],
             [item[1] for item in query_result],
@@ -315,16 +333,19 @@ def lof_plot(
         )
     elif len(columns) == 2:
         columns = [quote_ident(column) for column in columns]
-        query = "SELECT /*+LABEL('learn.mlplot.lof_plot')*/ {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
-            columns[0],
-            columns[1],
-            lof,
-            input_relation,
-            tablesample,
-            columns[0],
-            columns[1],
+        query_result = executeSQL(
+            query=f"""
+            SELECT 
+                /*+LABEL('learn.mlplot.lof_plot')*/ 
+                {columns[0]}, 
+                {columns[1]}, 
+                {lof} 
+            FROM {input_relation} {tablesample} 
+            WHERE {columns[0]} IS NOT NULL 
+              AND {columns[1]} IS NOT NULL""",
+            method="fetchall",
+            print_time_sql=False,
         )
-        query_result = executeSQL(query, method="fetchall", print_time_sql=False)
         column1, column2, lof = (
             [item[0] for item in query_result],
             [item[1] for item in query_result],
@@ -351,18 +372,21 @@ def lof_plot(
             color=colors[1],
         )
     elif len(columns) == 3:
-        query = "SELECT /*+LABEL('learn.mlplot.lof_plot')*/ {}, {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL".format(
-            columns[0],
-            columns[1],
-            columns[2],
-            lof,
-            input_relation,
-            tablesample,
-            columns[0],
-            columns[1],
-            columns[2],
+        query_result = executeSQL(
+            query=f"""
+            SELECT 
+                /*+LABEL('learn.mlplot.lof_plot')*/ 
+                {columns[0]}, 
+                {columns[1]}, 
+                {columns[2]}, 
+                {lof} 
+            FROM {input_relation} {tablesample} 
+            WHERE {columns[0]} IS NOT NULL 
+              AND {columns[1]} IS NOT NULL 
+              AND {columns[2]} IS NOT NULL""",
+            method="fetchall",
+            print_time_sql=False,
         )
-        query_result = executeSQL(query, method="fetchall", print_time_sql=False)
         column1, column2, column3, lof = (
             [float(item[0]) for item in query_result],
             [float(item[1]) for item in query_result],
@@ -508,7 +532,7 @@ def plot_stepwise_ml(
     ax.text(
         x_new[0] + delta_ini,
         y_new[0],
-        "Initial Variables: {}".format("[" + ", ".join(var0) + "]"),
+        f"Initial Variables: [{', '.join(var0)}]",
         rotation=rot_ini,
         verticalalignment=verticalalignment_init,
     )
@@ -529,7 +553,7 @@ def plot_stepwise_ml(
     ax.text(
         x_new[-1] + delta_final,
         y_new[-1],
-        "Final Variables: {}".format("[" + ", ".join(var1) + "]"),
+        f"Final Variables: [{', '.join(var1)}]",
         rotation=rot_final,
         verticalalignment=verticalalignment_final,
         horizontalalignment=horizontalalignment,
@@ -740,22 +764,16 @@ def plot_pca_circle(
         ax.text(x[i], y[i], variable_names[i])
     ax.plot([-1.1, 1.1], [0.0, 0.0], linestyle="--", color="black")
     ax.plot([0.0, 0.0], [-1.1, 1.1], linestyle="--", color="black")
-    ax.set_xlabel(
-        "Dim{} {}".format(
-            dimensions[0],
-            ""
-            if not (explained_variance[0])
-            else "({}%)".format(round(explained_variance[0] * 100, 1)),
-        )
-    )
-    ax.set_ylabel(
-        "Dim{} {}".format(
-            dimensions[1],
-            ""
-            if not (explained_variance[1])
-            else "({}%)".format(round(explained_variance[1] * 100, 1)),
-        )
-    )
+    if explained_variance[0]:
+        dim1 = f"({round(explained_variance[0] * 100, 1)}%)"
+    else:
+        dim1 = ""
+    ax.set_xlabel(f"Dim{dimensions[0]} {dim1}")
+    if explained_variance[1]:
+        dim1 = f"({round(explained_variance[1] * 100, 1)}%)"
+    else:
+        dim1 = ""
+    ax.set_ylabel(f"Dim{dimensions[1]} {dim1}")
     ax.xaxis.set_ticks_position("bottom")
     ax.yaxis.set_ticks_position("left")
     ax.set_xlim(-1.1, 1.1)
@@ -808,22 +826,16 @@ def plot_var(
     )
     ax.set_xlim(min(x) - 5 * delta_x, max(x) + 5 * delta_x)
     ax.set_ylim(min(y) - 5 * delta_y, max(y) + 5 * delta_y)
-    ax.set_xlabel(
-        "Dim{} {}".format(
-            dimensions[0],
-            ""
-            if not (explained_variance[0])
-            else "({}%)".format(round(explained_variance[0] * 100, 1)),
-        )
-    )
-    ax.set_ylabel(
-        "Dim{} {}".format(
-            dimensions[1],
-            ""
-            if not (explained_variance[1])
-            else "({}%)".format(round(explained_variance[1] * 100, 1)),
-        )
-    )
+    if explained_variance[0]:
+        dim1 = f"({round(explained_variance[0] * 100, 1)}%)"
+    else:
+        dim1 = ""
+    ax.set_xlabel(f"Dim{dimensions[0]} {dim1}")
+    if explained_variance[1]:
+        dim1 = f"({round(explained_variance[1] * 100, 1)}%)"
+    else:
+        dim1 = ""
+    ax.set_ylabel(f"Dim{dimensions[1]} {dim1}")
     ax.xaxis.set_ticks_position("bottom")
     ax.yaxis.set_ticks_position("left")
     if "c" in style_kwds:
@@ -849,10 +861,18 @@ def regression_plot(
         "edgecolors": "black",
     }
     if len(X) == 1:
-        query = "SELECT /*+LABEL('learn.mlplot.regression_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
-            X[0], y, input_relation, X[0], y, int(max_nb_points)
+        all_points = executeSQL(
+            query=f"""
+            SELECT 
+                /*+LABEL('learn.mlplot.regression_plot')*/ 
+                {X[0]}, 
+                {y} 
+            FROM {input_relation} 
+            WHERE {X[0]} IS NOT NULL 
+              AND {y} IS NOT NULL LIMIT {int(max_nb_points)}""",
+            method="fetchall",
+            print_time_sql=False,
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -873,10 +893,21 @@ def regression_plot(
         ax.set_xlabel(X[0])
         ax.set_ylabel(y)
     elif len(X) == 2:
-        query = "(SELECT /*+LABEL('learn.mlplot.regression_plot')*/ {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(
-            X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
+        all_points = executeSQL(
+            query=f"""
+            (SELECT 
+                /*+LABEL('learn.mlplot.regression_plot')*/ 
+                {X[0]}, 
+                {X[1]}, 
+                {y} 
+             FROM {input_relation} 
+             WHERE {X[0]} IS NOT NULL 
+               AND {X[1]} IS NOT NULL 
+               AND {y} IS NOT NULL 
+             LIMIT {int(max_nb_points)})""",
+            method="fetchall",
+            print_time_sql=False,
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         x0, y0, z0 = (
             [float(item[0]) for item in all_points],
             [float(item[1]) for item in all_points],
@@ -926,10 +957,22 @@ def regression_tree_plot(
     ax=None,
     **style_kwds,
 ):
-    query = "SELECT /*+LABEL('learn.mlplot.regression_tree_plot')*/ {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
-        X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
+    all_points = executeSQL(
+        query=f"""
+        SELECT 
+            /*+LABEL('learn.mlplot.regression_tree_plot')*/ 
+            {X[0]}, 
+            {X[1]}, 
+            {y} 
+        FROM {input_relation} 
+        WHERE {X[0]} IS NOT NULL 
+          AND {X[1]} IS NOT NULL 
+          AND {y} IS NOT NULL 
+        ORDER BY RANDOM() 
+        LIMIT {int(max_nb_points)}""",
+        method="fetchall",
+        print_time_sql=False,
     )
-    all_points = executeSQL(query, method="fetchall", print_time_sql=False)
     if not (ax):
         fig, ax = plt.subplots()
         if isnotebook():

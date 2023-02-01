@@ -3254,11 +3254,16 @@ def compute_function_metrics(
         title=f"Computing the {label.upper()}.",
         method="fetchall",
     )
-    return (
+    result = [
         [item[0] for item in query_result],
         [item[1] for item in query_result],
         [item[2] for item in query_result],
-    )
+    ]
+    if fun_sql_name == "prc":
+        result[0] = [0] + result[0] + [1]
+        result[1] = [1] + result[1] + [0]
+        result[2] = [0] + result[2] + [1]
+    return result
 
 
 def compute_area(X: list, Y: list):

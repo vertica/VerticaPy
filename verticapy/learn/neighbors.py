@@ -1083,9 +1083,7 @@ xlim: list, optional
                     for xj in x:
                         distance = []
                         for i in range(len(columns)):
-                            distance += [
-                                f"POWER({columns[i]} - {xj[i]}, {p})"
-                            ]
+                            distance += [f"POWER({columns[i]} - {xj[i]}, {p})"]
                         distance = " + ".join(distance)
                         distance = f"POWER({distance}, {1.0 / p})"
                         fkernel_tmp = fkernel.format(f"{distance} / {h}")
@@ -1381,14 +1379,13 @@ p: int, optional
             key_columns = [self.y]
         p = self.parameters["p"]
         X_str = ", ".join([f"x.{x}" for x in X])
-        if (key_columns):
-            key_columns_str = ", " + ", ".join(["x." + quote_ident(x) for x in key_columns])
+        if key_columns:
+            key_columns_str = ", " + ", ".join(
+                ["x." + quote_ident(x) for x in key_columns]
+            )
         else:
             key_columns_str = ""
-        sql = [
-            f"POWER(ABS(x.{X[i]} - y.{self.X[i]}), {p})"
-            for i in range(len(self.X))
-        ]
+        sql = [f"POWER(ABS(x.{X[i]} - y.{self.X[i]}), {p})" for i in range(len(self.X))]
         sql = f"""
             SELECT 
                 {X_str}{key_columns_str}, 
@@ -1408,19 +1405,16 @@ p: int, optional
                     * 
                  FROM {self.input_relation} 
                  WHERE {" AND ".join([f"{x} IS NOT NULL" for x in self.X])}) y"""
-        
-        sql = "(SELECT {}{}, AVG(predict_neighbors) AS predict_neighbors FROM ({}) z WHERE ordered_distance <= {} GROUP BY {}{}, row_id) knr_table".format(
-            ", ".join(X),
-            ", " + ", ".join([quote_ident(x) for x in key_columns])
-            if (key_columns)
-            else "",
-            sql,
-            self.parameters["n_neighbors"],
-            ", ".join(X),
-            ", " + ", ".join([quote_ident(x) for x in key_columns])
-            if (key_columns)
-            else "",
-        )
+        if key_columns:
+            key_columns_str = ", " + ", ".join([quote_ident(x) for x in key_columns])
+        n_neighbors = self.parameters["n_neighbors"]
+        sql = f"""
+            (SELECT 
+                {", ".join(X)}{key_columns_str}, 
+                AVG(predict_neighbors) AS predict_neighbors 
+             FROM ({sql}) z 
+             WHERE ordered_distance <= {n_neighbors} 
+             GROUP BY {", ".join(X)}{key_columns_str}, row_id) knr_table"""
         return sql
 
     # ---#
