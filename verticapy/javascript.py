@@ -116,8 +116,8 @@ def clean_data(data):
                         '<div style="background-color: transparent; '
                         "border: none; text-align: center; width: 100%;"
                         'scrollbar-width: none; overflow-x: scroll; white-space: nowrap;">'
-                        "{0}</div>"
-                    ).format(val)
+                        f"{val}</div>"
+                    )
                     continue
 
                 if isinstance(val, bool):
@@ -218,8 +218,8 @@ def beautiful_header(
         if type_val != "":
             ctype = (
                 '<div style="color: #FE5016; margin-top: 6px; '
-                'font-size: 0.95em;">{0}</div>'
-            ).format(dtype[val].capitalize())
+                f'font-size: 0.95em;">{dtype[val].capitalize()}</div>'
+            )
         else:
             ctype = '<div style="color: #FE5016; margin-top: 6px; font-size: 0.95em;"></div>'
         if val in percent:
@@ -234,12 +234,12 @@ def beautiful_header(
             except:
                 pass
             missing_values = (
-                '<div style="float: right; margin-top: 6px;">{0}%</div><div '
-                'style="width: calc(100% - {1}px); height: 8px; margin-top: '
-                '10px; border: 1px solid black;"><div style="width: {0}%; '
+                f'<div style="float: right; margin-top: 6px;">{per}%</div><div '
+                f'style="width: calc(100% - {diff}px); height: 8px; margin-top: '
+                f'10px; border: 1px solid black;"><div style="width: {per}%; '
                 'height: 6px; background-color: orange;"></div></div>'
-            ).format(per, diff)
-        val = "{}<b>{}</b>{}{}".format(category, val, ctype, missing_values)
+            )
+        val = f"{category}<b>{val}</b>{ctype}{missing_values}"
         header[i] = f'<div style="padding-left: 15px;">{val}</div>'
     return header
 

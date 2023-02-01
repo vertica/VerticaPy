@@ -1543,7 +1543,7 @@ Attributes
                     sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
                     symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                 )
-                result = [elem[0] for elem in result]
+                result = [x[0] for x in result]
             finally:
                 drop(tmp_view_name, method="view")
                 drop(tmp_model_name, method="model")
@@ -1554,18 +1554,15 @@ Attributes
                 "case of discretization using the method 'topk'"
             )
             distinct = self.topk(k).values["index"]
+            category_str = bin_spatial_to_str(self.category())
+            X_str = ", ".join([f"""'{str(x).replace("'", "''")}'""" for x in distinct])
+            new_category_str = new_category.replace("'", "''")
             trans = (
-                "(CASE WHEN {} IN ({}) THEN {} || '' ELSE '{}' END)".format(
-                    bin_spatial_to_str(self.category()),
-                    ", ".join(
-                        [
-                            "'{}'".format(str(elem).replace("'", "''"))
-                            for elem in distinct
-                        ]
-                    ),
-                    bin_spatial_to_str(self.category()),
-                    new_category.replace("'", "''"),
-                ),
+                f"""(CASE 
+                        WHEN {category_str} IN ({X_str})
+                        THEN {category_str} || '' 
+                        ELSE '{new_category_str}' 
+                     END)""",
                 "varchar",
                 "text",
             )
@@ -2075,18 +2072,15 @@ Attributes
                         sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
                         symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                     )
-                    for idx, elem in enumerate(result):
-                        result[idx][0] = (
-                            "NULL"
-                            if (elem[0] == None)
-                            else "'{}'".format(str(elem[0]).replace("'", "''"))
-                        )
-                        result[idx][1] = "NULL" if (elem[1] == None) else str(elem[1])
-                    new_column = "COALESCE({}, DECODE({}, {}, NULL))".format(
-                        "{}",
-                        by[0],
-                        ", ".join([f"{elem[0]}, {elem[1]}" for elem in result]),
-                    )
+                    for idx, x in enumerate(result):
+                        if x[0] == None:
+                            result[idx][0] = "NULL"
+                        else:
+                            x0 = str(x[0]).replace("'", "''")
+                            result[idx][0] = f"'{x0}'"
+                        result[idx][1] = "NULL" if (x[1] == None) else str(x[1])
+                    val = ", ".join([f"{x[0]}, {x[1]}" for x in result])
+                    new_column = f"COALESCE({{}}, DECODE({by[0]}, {val}, NULL))"
                     executeSQL(
                         query=f"""
                             SELECT 
@@ -3088,12 +3082,12 @@ Attributes
                 elif (n == 1) and (self.parent[by[0]].nunique() < 50):
                     try:
                         result = executeSQL(
-                            f"""
-                            SELECT 
-                                /*+LABEL('vColumn.normalize')*/ {by[0]}, 
-                                AVG({self.alias}), 
-                                STDDEV({self.alias}) 
-                            FROM {self.parent.__genSQL__()} GROUP BY {by[0]}""",
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vColumn.normalize')*/ {by[0]}, 
+                                    AVG({self.alias}), 
+                                    STDDEV({self.alias}) 
+                                FROM {self.parent.__genSQL__()} GROUP BY {by[0]}""",
                             title="Computing the different categories to normalize.",
                             method="fetchall",
                             sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
@@ -3106,36 +3100,21 @@ Attributes
                                 pass
                             elif math.isnan(result[i][2]):
                                 result[i][2] = None
-                        avg = "DECODE({}, {}, NULL)".format(
-                            by[0],
-                            ", ".join(
-                                [
-                                    "{}, {}".format(
-                                        "'{}'".format(str(elem[0]).replace("'", "''"))
-                                        if elem[0] != None
-                                        else "NULL",
-                                        elem[1] if elem[1] != None else "NULL",
-                                    )
-                                    for elem in result
-                                    if elem[1] != None
-                                ]
-                            ),
-                        )
-                        stddev = "DECODE({}, {}, NULL)".format(
-                            by[0],
-                            ", ".join(
-                                [
-                                    "{}, {}".format(
-                                        "'{}'".format(str(elem[0]).replace("'", "''"))
-                                        if elem[0] != None
-                                        else "NULL",
-                                        elem[2] if elem[2] != None else "NULL",
-                                    )
-                                    for elem in result
-                                    if elem[2] != None
-                                ]
-                            ),
-                        )
+                        avg_stddev = []
+                        for i in range(1, 3):
+                            if x[0] != None:
+                                x0 = f"""'{str(x[0]).replace("'", "''")}'"""
+                            else:
+                                x0 = "NULL"
+                            x_tmp = [
+                                f"""{x0}, {x[i] if x[i] != None else "NULL"}"""
+                                for x in result
+                                if x[i] != None
+                            ]
+                            avg_stddev += [
+                                f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
+                            ]
+                        avg, stddev = avg_stddev
                         executeSQL(
                             query=f"""
                                 SELECT 
@@ -3210,13 +3189,13 @@ Attributes
                 elif n == 1:
                     try:
                         result = executeSQL(
-                            f"""
-                            SELECT 
-                                /*+LABEL('vColumn.normalize')*/ {by[0]}, 
-                                MIN({self.alias}), 
-                                MAX({self.alias})
-                            FROM {self.parent.__genSQL__()} 
-                            GROUP BY {by[0]}""",
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vColumn.normalize')*/ {by[0]}, 
+                                    MIN({self.alias}), 
+                                    MAX({self.alias})
+                                FROM {self.parent.__genSQL__()} 
+                                GROUP BY {by[0]}""",
                             title=f"Computing the different categories {by[0]} to normalize.",
                             method="fetchall",
                             sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
@@ -3224,42 +3203,27 @@ Attributes
                             ],
                             symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
                         )
-                        cmin = "DECODE({}, {}, NULL)".format(
-                            by[0],
-                            ", ".join(
-                                [
-                                    "{}, {}".format(
-                                        "'{}'".format(str(elem[0]).replace("'", "''"))
-                                        if elem[0] != None
-                                        else "NULL",
-                                        elem[1] if elem[1] != None else "NULL",
-                                    )
-                                    for elem in result
-                                    if elem[1] != None
-                                ]
-                            ),
-                        )
-                        cmax = "DECODE({}, {}, NULL)".format(
-                            by[0],
-                            ", ".join(
-                                [
-                                    "{}, {}".format(
-                                        "'{}'".format(str(elem[0]).replace("'", "''"))
-                                        if elem[0] != None
-                                        else "NULL",
-                                        elem[2] if elem[2] != None else "NULL",
-                                    )
-                                    for elem in result
-                                    if elem[2] != None
-                                ]
-                            ),
-                        )
+                        cmin_cmax = []
+                        for i in range(1, 3):
+                            if x[0] != None:
+                                x0 = f"""'{str(x[0]).replace("'", "''")}'"""
+                            else:
+                                x0 = "NULL"
+                            x_tmp = [
+                                f"""{x0}, {x[i] if x[i] != None else "NULL"}"""
+                                for x in result
+                                if x[i] != None
+                            ]
+                            cmin_cmax += [
+                                f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
+                            ]
+                        cmin, cmax = cmin_cmax
                         executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vColumn.normalize')*/ 
-                                    {cmax}, 
-                                    {cmin} 
+                                    {cmin_cmax[1]}, 
+                                    {cmin_cmax[0]} 
                                 FROM {self.parent.__genSQL__()} 
                                 LIMIT 1""",
                             print_time_sql=False,
