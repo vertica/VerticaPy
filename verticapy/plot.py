@@ -3100,25 +3100,27 @@ def pivot_table(
     extent: list = [],
     **style_kwds,
 ):
+    columns, of = vdf.format_colnames(columns, of)
     other_columns = ""
-    if method.lower() == "median":
+    method = method.lower()
+    if method == "median":
         method = "50%"
-    elif method.lower() == "mean":
+    elif method == "mean":
         method = "avg"
     if (
-        method.lower() not in ["avg", "min", "max", "sum", "density", "count"]
+        method not in ["avg", "min", "max", "sum", "density", "count"]
         and "%" != method[-1]
     ) and of:
         raise ParameterError(
             "Parameter 'of' must be empty when using customized aggregations."
         )
-    if (method.lower() in ["avg", "min", "max", "sum"]) and (of):
-        aggregate = "{}({})".format(method.upper(), quote_ident(of))
-    elif method.lower() and method[-1] == "%":
-        aggregate = "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(
-            quote_ident(of), float(method[0:-1]) / 100
-        )
-    elif method.lower() in ["density", "count"]:
+    if (method in ["avg", "min", "max", "sum"]) and (of):
+        aggregate = f"{method.upper()}({of})"
+    elif method and method[-1] == "%":
+        aggregate = f"""APPROXIMATE_PERCENTILE({of} 
+                                               USING PARAMETERS 
+                                               percentile = {float(method[0:-1]) / 100})"""
+    elif method in ["density", "count"]:
         aggregate = "COUNT(*)"
     elif isinstance(method, str):
         aggregate = method
@@ -3128,10 +3130,9 @@ def pivot_table(
         raise ParameterError(
             "The parameter 'method' must be in [count|density|avg|mean|min|max|sum|q%]"
         )
-    columns = [quote_ident(column) for column in columns]
-    all_columns = []
     is_column_date = [False, False]
     timestampadd = ["", ""]
+    all_columns = []
     for idx, column in enumerate(columns):
         is_numeric = vdf[column].isnum() and (vdf[column].nunique(True) > 2)
         is_date = vdf[column].isdate()
@@ -3145,11 +3146,8 @@ def pivot_table(
                     interval = round(interval, 4)
                 elif interval > 0.000001:
                     interval = round(interval, 6)
-                interval = (
-                    int(max(math.floor(interval), 1))
-                    if (vdf[column].category() == "int")
-                    else interval
-                )
+                if (vdf[column].category() == "int"):
+                    interval = int(max(math.floor(interval), 1))
             else:
                 interval = h[idx]
             if vdf[column].category() == "int":
@@ -3157,178 +3155,117 @@ def pivot_table(
                 interval = int(max(math.floor(interval), 1))
             else:
                 floor_end = ""
-            expr = "'[' || FLOOR({} / {}) * {} || ';' || (FLOOR({} / {}) * {} + {}{}) || ']'".format(
-                column,
-                interval,
-                interval,
-                column,
-                interval,
-                interval,
-                interval,
-                floor_end,
-            )
-            all_columns += (
-                [expr]
-                if (interval > 1) or (vdf[column].category() == "float")
-                else ["FLOOR({}) || ''".format(column)]
-            )
-            order_by = "ORDER BY MIN(FLOOR({} / {}) * {}) ASC".format(
-                column, interval, interval
-            )
-            where += ["{} IS NOT NULL".format(column)]
+            expr = f"""'[' 
+                      || FLOOR({column} 
+                             / {interval}) 
+                             * {interval} 
+                      || ';' 
+                      || (FLOOR({column} 
+                              / {interval}) 
+                              * {interval} 
+                              + {interval}{floor_end}) 
+                      || ']'"""
+            if (interval > 1) or (vdf[column].category() == "float"):
+                all_columns += [expr]
+            else:
+                all_columns += [f"FLOOR({column}) || ''"]
+            order_by = f"""ORDER BY MIN(FLOOR({column} 
+                                      / {interval}) * {interval}) ASC"""
+            where += [f"{column} IS NOT NULL"]
         elif is_date:
-            interval = (
-                vdf[column].numh() if (h[idx] == None) else max(math.floor(h[idx]), 1)
-            )
+            if (h[idx] == None):
+                interval = vdf[column].numh()
+            else:
+                interval = max(math.floor(h[idx]), 1)
             min_date = vdf[column].min()
             all_columns += [
-                "FLOOR(DATEDIFF('second', '"
-                + str(min_date)
-                + "', "
-                + column
-                + ") / "
-                + str(interval)
-                + ") * "
-                + str(interval)
+                f"""FLOOR(DATEDIFF('second',
+                                   '{min_date}',
+                                   {column})
+                        / {interval}) * {interval}"""
             ]
             is_column_date[idx] = True
-            timestampadd[idx] = (
-                "TIMESTAMPADD('second', "
-                + columns[idx]
-                + "::int, '"
-                + str(min_date)
-                + "'::timestamp)"
-            )
+            timestampadd[idx] = f"""TIMESTAMPADD('second', 
+                                                 {columns[idx]}::int,
+                                                 '{min_date}'::timestamp)"""
             order_by = "ORDER BY 1 ASC"
-            where += ["{} IS NOT NULL".format(column)]
+            where += [f"{column} IS NOT NULL"]
         else:
             all_columns += [column]
             order_by = "ORDER BY 1 ASC"
             distinct = vdf[column].topk(max_cardinality[idx]).values["index"]
+            distinct = ["'" + str(c).replace("'", "''") + "'" for c in distinct]
             if len(distinct) < max_cardinality[idx]:
-                where += [
-                    "({} IN ({}))".format(
-                        bin_spatial_to_str(vdf[column].category(), column),
-                        ", ".join(
-                            [
-                                "'{}'".format(str(elem).replace("'", "''"))
-                                for elem in distinct
-                            ]
-                        ),
-                    )
-                ]
+                cast = bin_spatial_to_str(vdf[column].category(), column)
+                where += [f"({cast} IN ({', '.join(distinct)}))"]
             else:
-                where += ["({} IS NOT NULL)".format(column)]
-    where = " WHERE {}".format(" AND ".join(where))
+                where += [f"({column} IS NOT NULL)"]
+    where = f" WHERE {' AND '.join(where)}"
+    over = "/" + str(vdf.shape()[0]) if (method == "density") else ""
     if len(columns) == 1:
-        over = "/" + str(vdf.shape()[0]) if (method.lower() == "density") else ""
-        query = "SELECT {} AS {}, {}{} FROM {}{} GROUP BY 1 {}".format(
-            bin_spatial_to_str(vdf[columns[0]].category(), all_columns[-1]),
-            columns[0],
-            aggregate,
-            over,
-            vdf.__genSQL__(),
-            where,
-            order_by,
+        cast = bin_spatial_to_str(vdf[columns[0]].category(), all_columns[-1])
+        return to_tablesample(
+            query=f"""
+                SELECT 
+                    {cast} AS {columns[0]},
+                    {aggregate}{over} 
+                FROM {vdf.__genSQL__()}
+                {where}
+                GROUP BY 1 {order_by}"""
         )
-        return to_tablesample(query)
-    alias = ", " + quote_ident(of) + " AS " + quote_ident(of) if of else ""
-    aggr = ", " + of if (of) else ""
-    subtable = "(SELECT {} AS {}, {} AS {}{}{} FROM {}{}) pivot_table".format(
-        all_columns[0],
-        columns[0],
-        all_columns[1],
-        columns[1],
-        alias,
-        other_columns,
-        vdf.__genSQL__(),
-        where,
-    )
-    if is_column_date[0] and not (is_column_date[1]):
-        subtable = "(SELECT {} AS {}, {}{}{} FROM {}{}) pivot_table_date".format(
-            timestampadd[0],
-            columns[0],
-            columns[1],
-            aggr,
-            other_columns,
-            subtable,
-            where,
-        )
-    elif is_column_date[1] and not (is_column_date[0]):
-        subtable = "(SELECT {}, {} AS {}{}{} FROM {}{}) pivot_table_date".format(
-            columns[0],
-            timestampadd[1],
-            columns[1],
-            aggr,
-            other_columns,
-            subtable,
-            where,
-        )
-    elif is_column_date[1] and is_column_date[0]:
-        subtable = "(SELECT {} AS {}, {} AS {}{}{} FROM {}{}) pivot_table_date".format(
-            timestampadd[0],
-            columns[0],
-            timestampadd[1],
-            columns[1],
-            aggr,
-            other_columns,
-            subtable,
-            where,
-        )
-    over = "/" + str(vdf.shape()[0]) if (method.lower() == "density") else ""
-    cast = []
-    for column in columns:
-        cast += [bin_spatial_to_str(vdf[column].category(), column)]
-    query = "SELECT /*+LABEL('plot.pivot_table')*/ {} AS {}, {} AS {}, {}{} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY {}, {} ORDER BY {}, {} ASC".format(
-        cast[0],
-        columns[0],
-        cast[1],
-        columns[1],
-        aggregate,
-        over,
-        subtable,
-        columns[0],
-        columns[1],
-        columns[0],
-        columns[1],
-        columns[0],
-        columns[1],
-    )
+    aggr = f", {of}" if (of) else ""
+    cols, cast = [], []
+    for i in range(2):
+        if is_column_date[0]:
+            cols += [f"{timestampadd[i]} AS {columns[i]}"]
+        else:
+            cols += [columns[i]]
+        cast += [bin_spatial_to_str(vdf[columns[i]].category(), columns[i])]
     query_result = executeSQL(
-        query=query,
+        query=f"""
+            SELECT 
+                /*+LABEL('plot.pivot_table')*/
+                {cast[0]} AS {columns[0]},
+                {cast[1]} AS {columns[1]},
+                {aggregate}{over}
+            FROM (SELECT 
+                      {cols[0]},
+                      {cols[1]}
+                      {aggr}
+                      {other_columns} 
+                  FROM 
+                      (SELECT 
+                          {all_columns[0]} AS {columns[0]},
+                          {all_columns[1]} AS {columns[1]}
+                          {aggr}
+                          {other_columns} 
+                       FROM {vdf.__genSQL__()}{where}) 
+                       pivot_table) pivot_table_date
+            WHERE {columns[0]} IS NOT NULL 
+              AND {columns[1]} IS NOT NULL
+            GROUP BY {columns[0]}, {columns[1]}
+            ORDER BY {columns[0]}, {columns[1]} ASC""",
         title="Grouping the features to compute the pivot table",
         method="fetchall",
     )
-    # Column0 sorted categories
-    all_column0_categories = list(set([str(item[0]) for item in query_result]))
-    all_column0_categories.sort()
-    try:
+    all_columns_categories = []
+    for i in range(2):
+        L = list(set([str(item[i]) for item in query_result]))
+        L.sort()
         try:
-            order = []
-            for item in all_column0_categories:
-                order += [float(item.split(";")[0].split("[")[1])]
+            try:
+                order = []
+                for item in L:
+                    order += [float(item.split(";")[0].split("[")[1])]
+            except:
+                order = [float(item) for item in L]
+            L = [
+                x for _, x in sorted(zip(order, L))
+            ]
         except:
-            order = [float(item) for item in all_column0_categories]
-        all_column0_categories = [
-            x for _, x in sorted(zip(order, all_column0_categories))
-        ]
-    except:
-        pass
-    # Column1 sorted categories
-    all_column1_categories = list(set([str(item[1]) for item in query_result]))
-    all_column1_categories.sort()
-    try:
-        try:
-            order = []
-            for item in all_column1_categories:
-                order += [float(item.split(";")[0].split("[")[1])]
-        except:
-            order = [float(item) for item in all_column1_categories]
-        all_column1_categories = [
-            x for _, x in sorted(zip(order, all_column1_categories))
-        ]
-    except:
-        pass
+            pass
+        all_columns_categories += [copy.deepcopy(L)]
+    all_column0_categories, all_column1_categories = all_columns_categories
     all_columns = [
         [fill_none for item in all_column0_categories]
         for item in all_column1_categories
