@@ -303,7 +303,7 @@ p: int, optional
                                            AS order_prediction 
                      FROM {sql}) VERTICAPY_SUBTABLE 
                      WHERE order_prediction = 1) predict_neighbors_table"""
-        return sql
+        return clean_query(sql)
 
     # ---#
     @check_dtypes
@@ -1415,7 +1415,7 @@ p: int, optional
              FROM ({sql}) z 
              WHERE ordered_distance <= {n_neighbors} 
              GROUP BY {", ".join(X)}{key_columns_str}, row_id) knr_table"""
-        return sql
+        return clean_query(sql)
 
     # ---#
     @check_dtypes
@@ -1526,7 +1526,7 @@ p: int, optional
         if not (name):
             name = f"{self.type}_" + "".join(ch for ch in self.name if ch.isalnum())
         if key_columns:
-            key_columns_str = ", ".join(key_columns)
+            key_columns_str = ", " + ", ".join(key_columns)
         else:
             key_columns_str = ""
         table = self.deploySQL(

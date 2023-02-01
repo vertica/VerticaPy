@@ -1028,13 +1028,20 @@ def svm_classifier_plot(
         "edgecolors": "black",
     }
     if len(X) == 1:
-        query = "(SELECT /*+LABEL('learn.mlplot.svm_classifier_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(
-            X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
+        query = f"""
+            (SELECT 
+                /*+LABEL('learn.mlplot.svm_classifier_plot')*/ 
+                {X[0]}, 
+                {y} 
+             FROM {input_relation} 
+             WHERE {X[0]} IS NOT NULL 
+               AND {y} = {{}}
+             LIMIT {int(max_nb_points / 2)})"""
+        all_points = executeSQL(
+            query=f"{query.format(0)} UNION ALL {query.format(1)}",
+            method="fetchall",
+            print_time_sql=False,
         )
-        query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(
-            X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
-        )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -1069,13 +1076,22 @@ def svm_classifier_plot(
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     elif len(X) == 2:
-        query = "(SELECT /*+LABEL('learn.mlplot.svm_classifier_plot')*/ {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
-            X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
+        query = f"""
+            (SELECT 
+                /*+LABEL('learn.mlplot.svm_classifier_plot')*/ 
+                {X[0]}, 
+                {X[1]}, 
+                {y} 
+             FROM {input_relation} 
+             WHERE {X[0]} IS NOT NULL 
+               AND {X[1]} IS NOT NULL 
+               AND {y} = {{}} 
+             LIMIT {int(max_nb_points / 2)})"""
+        all_points = executeSQL(
+            query=f"{query.format(0)} UNION {query.format(1)}",
+            method="fetchall",
+            print_time_sql=False,
         )
-        query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(
-            X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
-        )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -1113,31 +1129,24 @@ def svm_classifier_plot(
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     elif len(X) == 3:
-        query = "(SELECT /*+LABEL('learn.mlplot.svm_classifier_plot')*/ {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
-            X[0],
-            X[1],
-            X[2],
-            y,
-            input_relation,
-            X[0],
-            X[1],
-            X[2],
-            y,
-            int(max_nb_points / 2),
+        query = f"""
+            (SELECT 
+                /*+LABEL('learn.mlplot.svm_classifier_plot')*/ 
+                {X[0]}, 
+                {X[1]}, 
+                {X[2]}, 
+                {y} 
+             FROM {input_relation} 
+             WHERE {X[0]} IS NOT NULL 
+               AND {X[1]} IS NOT NULL 
+               AND {X[2]} IS NOT NULL 
+               AND {y} = {{}} 
+             LIMIT {int(max_nb_points / 2)})"""
+        all_points = executeSQL(
+            query=f"{query.format(0)} UNION {query.format(1)}",
+            method="fetchall",
+            print_time_sql=False,
         )
-        query += " UNION (SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(
-            X[0],
-            X[1],
-            X[2],
-            y,
-            input_relation,
-            X[0],
-            X[1],
-            X[2],
-            y,
-            int(max_nb_points / 2),
-        )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         x0, x1, y0, y1, z0, z1 = [], [], [], [], [], []
         for idx, item in enumerate(all_points):
             if item[3] == 0:
@@ -1242,26 +1251,31 @@ def voronoi_plot(
     ax.xlim(min_x - 0.05 * (max_x - min_x), max_x + 0.05 * (max_x - min_x))
     ax.ylim(min_y - 0.05 * (max_y - min_y), max_y + 0.05 * (max_y - min_y))
     if max_nb_points > 0:
-        query = "SELECT /*+LABEL('learn.mlplot.voronoi_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
-            columns[0],
-            columns[1],
-            input_relation,
-            columns[0],
-            columns[1],
-            int(max_nb_points),
+        all_points = executeSQL(
+            query=f"""
+                SELECT 
+                    /*+LABEL('learn.mlplot.voronoi_plot')*/ 
+                    {columns[0]}, 
+                    {columns[1]} 
+                FROM {input_relation} 
+                WHERE {columns[0]} IS NOT NULL 
+                  AND {columns[1]} IS NOT NULL 
+                ORDER BY RANDOM() 
+                LIMIT {int(max_nb_points)}""",
+            method="fetchall",
+            print_time_sql=False,
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         x, y = (
-            [float(item[0]) for item in all_points],
-            [float(item[1]) for item in all_points],
+            [float(c[0]) for c in all_points],
+            [float(c[1]) for c in all_points],
         )
         ax.scatter(
             x, y, color="black", s=10, alpha=1, zorder=3,
         )
         if plot_crosses:
             ax.scatter(
-                [elem[0] for elem in clusters],
-                [elem[1] for elem in clusters],
+                [c[0] for c in clusters],
+                [c[1] for c in clusters],
                 color="white",
                 s=200,
                 linewidths=5,
