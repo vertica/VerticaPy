@@ -3379,35 +3379,29 @@ def pivot_table(
 def scatter_matrix(
     vdf, columns: list = [], **style_kwds,
 ):
-    for column in columns:
-        if (column not in vdf.get_columns()) and (
-            quote_ident(column) not in vdf.get_columns()
-        ):
-            raise MissingColumn("The Virtual Column {} doesn't exist".format(column))
+    columns = vdf.format_colnames(columns)
     if not (columns):
         columns = vdf.numcol()
     elif len(columns) == 1:
         return vdf[columns[0]].hist()
     n = len(columns)
-    fig, axes = (
-        plt.subplots(
-            nrows=n,
-            ncols=n,
-            figsize=(min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)),
-        )
-        if isnotebook()
-        else plt.subplots(
-            nrows=n,
-            ncols=n,
-            figsize=(min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)),
-        )
-    )
+    if isnotebook():
+        figsize = min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)
+        fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
+    else:
+        figsize = min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)
+        fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
     random_func = get_random_function()
-    query = "SELECT /*+LABEL('plot.scatter_matrix')*/ {}, {} AS rand FROM {} WHERE __verticapy_split__ < 0.5 ORDER BY rand LIMIT 1000".format(
-        ", ".join(columns), random_func, vdf.__genSQL__(True)
-    )
     all_scatter_points = executeSQL(
-        query=query,
+        query=f"""
+            SELECT 
+                /*+LABEL('plot.scatter_matrix')*/
+                {", ".join(columns)},
+                {random_func} AS rand
+            FROM {vdf.__genSQL__(True)}
+            WHERE __verticapy_split__ < 0.5
+            ORDER BY rand 
+            LIMIT 1000""",
         title="Selecting random points to draw the scatter plot",
         method="fetchall",
     )
@@ -3462,12 +3456,13 @@ def scatter(
     **style_kwds,
 ):
     columns, catcol = vdf.format_colnames(columns, catcol, expected_nb_of_cols=[2, 3])
+    n = len(columns)
     for col in columns:
         if not (vdf[col].isnum()):
             raise TypeError(
                 "The parameter 'columns' must only include numerical columns."
             )
-    if len(columns) == 2 and (bbox) and len(bbox) != 4:
+    if n == 2 and (bbox) and len(bbox) != 4:
         warning_message = (
             "Parameter 'bbox' must be a list of 4 numerics containing"
             " the 'xlim' and 'ylim'.\nIt was ignored."
@@ -3482,7 +3477,7 @@ def scatter(
         "marker": "o",
     }
     if not (ax):
-        if len(columns) == 2:
+        if n == 2:
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
@@ -3517,7 +3512,7 @@ def scatter(
           {{}}
           AND __verticapy_split__ < {tablesample} 
         LIMIT {limit}"""
-    if len(columns) == 3:
+    if n == 3:
         condition = [f", {columns[2]}", f"{columns[2]} IS NOT NULL AND"]
     else:
         condition = ["", ""]
@@ -3560,7 +3555,7 @@ def scatter(
             [float(d[0]) for d in query_result],
             [float(d[1]) for d in query_result],
         ]
-        if len(columns) == 3:
+        if n == 3:
             args += [[float(d[2]) for d in query_result]]
         all_scatter += [ax.scatter(*args, **updated_dict(param, style_kwds, idx),)]
 
@@ -3577,7 +3572,7 @@ def scatter(
                 all_categories[idx] = str(c)[0:20] + "..."
     ax.set_xlabel(columns[0])
     ax.set_ylabel(columns[1])
-    if len(columns) == 2:
+    if n == 2:
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
@@ -3596,7 +3591,7 @@ def scatter(
             ax.imshow(im, extent=bbox)
         bbox_to_anchor = [1, 0.5]
         scatterpoints = {"scatterpoints": 1}
-    elif len(columns) == 3:
+    elif n == 3:
         ax.set_zlabel(columns[2])
         ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
@@ -3728,6 +3723,12 @@ def ts_plot(
           {{}}
         ORDER BY {order_by}, {vdf.alias}"""
     title = "Selecting points to draw the curve"
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(8, 6)
+        ax.grid(axis="y")
+    colors = gen_colors()
     plot_fun = ax.step if step else ax.plot
     plot_param = {
         "marker": "o",
@@ -3735,11 +3736,6 @@ def ts_plot(
         "markersize": 7,
         "markeredgecolor": "black",
     }
-    if not (ax):
-        fig, ax = plt.subplots()
-        if isnotebook():
-            fig.set_size_inches(8, 6)
-        ax.grid(axis="y")
     if not (by):
         query_result = executeSQL(
             query=query.format(""), title=title, method="fetchall",
@@ -3749,7 +3745,7 @@ def ts_plot(
             order_by_values = parse_datetime(order_by_values)
         column_values = [float(item[1]) for item in query_result]
         param = {
-            "color": gen_colors()[0],
+            "color": colors[0],
             "linewidth": 2,
         }
         if len(order_by_values) < 20:
@@ -3769,7 +3765,6 @@ def ts_plot(
         ax.set_ylabel(vdf.alias)
         ax.set_xlim(min(order_by_values), max(order_by_values))
     else:
-        colors = gen_colors()
         by = quote_ident(by)
         cat = vdf.parent[by].distinct()
         all_data = []
