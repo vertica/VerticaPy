@@ -3506,7 +3506,7 @@ def scatter(
         groupby_cardinality = vdf[catcol].nunique(True)
     query = f"""
         SELECT 
-            /*+LABEL('plot.scatter3D')*/
+            /*+LABEL('plot.scatter')*/
             {columns[0]},
             {columns[1]}
             {{}}
