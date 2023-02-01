@@ -491,11 +491,9 @@ Attributes
             all_cols, max_floor = self.parent.get_columns(), 0
             for column in all_cols:
                 try:
+                    column_str = column.replace('"', "")
                     if (quote_ident(column) in func) or (
-                        re.search(
-                            re.compile("\\b{}\\b".format(column.replace('"', ""))),
-                            func,
-                        )
+                        re.search(re.compile(f"\\b{column_str}\\b"), func,)
                     ):
                         max_floor = max(
                             len(self.parent[column].transformations), max_floor

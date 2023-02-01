@@ -1876,12 +1876,11 @@ str_sql
     SQL expression.
     """
     return str_sql(
-        "({}, {}) OVERLAPS ({}, {})".format(
-            format_magic(start0),
-            format_magic(end0),
-            format_magic(start1),
-            format_magic(end1),
-        ),
+        f"""({format_magic(start0)},
+             {format_magic(end0)})
+             OVERLAPS
+            ({format_magic(start1)},
+             {format_magic(end1)})""",
         "int",
     )
 
