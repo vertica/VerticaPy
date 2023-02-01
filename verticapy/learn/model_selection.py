@@ -1791,9 +1791,9 @@ tablesample
             print(
                 f"{str(estimator.__class__).split('.')[-1][:-2]}; "
                 f"Parameters: {result['parameters'][0]}; \033"
-                "[91mTest_score: {result['avg_score'][0]}\033[0m;"
-                " \033[92mTrain_score: {result['avg_train_score']"
-                "[0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
+                f"[91mTest_score: {result['avg_score'][0]}\033[0m;"
+                f" \033[92mTrain_score: {result['avg_train_score'][0]}"
+                f"\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
             )
     else:
         result = tablesample(
