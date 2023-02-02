@@ -178,8 +178,8 @@ class TestSQL:
         set_external_connection("my_external_cid")
 
         assert (
-            get_dblink_fun("  My TEsT QUERY  ")
-            == "SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='  My TEsT QUERY  ', rowset=500) OVER ()"
+            get_dblink_fun(" My TEsT QUERY ")
+            == "SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query=' My TEsT QUERY ', rowset=500) OVER ()"
         )
 
         query = "SELECT * FROM $$$my_external_table$$$"
