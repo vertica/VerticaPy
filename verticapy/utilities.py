@@ -96,20 +96,24 @@ List of tuples
     List of virtual column names and their respective data types.
     """
     executeSQL(
-        f"SELECT /*+LABEL('utilities.compute_flex_table_keys')*/ compute_flextable_keys('{flex_name}');",
+        query=f"""
+            SELECT 
+                /*+LABEL('utilities.compute_flex_table_keys')*/
+                compute_flextable_keys('{flex_name}');""",
         title="Guessing flex tables keys.",
     )
-    where = (
-        " WHERE LOWER(key_name) IN ({0})".format(
-            ", ".join(
-                ["'{0}'".format(elem.lower().replace("'", "''")) for elem in usecols]
-            )
-        )
-        if (usecols)
-        else ""
-    )
+    usecols_str = [
+        "'" + str(column).lower().replace("'", "''") + "'" for column in usecols
+    ]
+    usecols_str = ", ".join(usecols_str)
+    where = f" WHERE LOWER(key_name) IN ({usecols_str})" if (usecols) else ""
     result = executeSQL(
-        f"SELECT /*+LABEL('utilities.compute_flex_table_keys')*/ key_name, data_type_guess FROM {flex_name}_keys{where}",
+        query=f"""
+            SELECT 
+                /*+LABEL('utilities.compute_flex_table_keys')*/
+                key_name,
+                data_type_guess 
+            FROM {flex_name}_keys{where}""",
         title="Guessing the data types.",
         method="fetchall",
     )
@@ -237,22 +241,17 @@ bool
     if schema.lower() == "v_temp_schema":
         schema = ""
         temporary_local_table = True
-    input_relation = (
-        quote_ident(schema) + "." + quote_ident(table_name)
-        if schema
-        else quote_ident(table_name)
-    )
+    if schema:
+        input_relation = quote_ident(schema) + "." + quote_ident(table_name)
+    else:
+        input_relation = quote_ident(table_name)
     temp = "TEMPORARY " if temporary_table else ""
     if not (schema):
         temp = "LOCAL TEMPORARY " if temporary_local_table else ""
-    query = "CREATE {0}TABLE {1}({2}){3};".format(
-        temp,
-        input_relation,
-        ", ".join(
-            ["{0} {1}".format(quote_ident(column), dtype[column]) for column in dtype]
-        ),
-        " ON COMMIT PRESERVE ROWS" if temp else "",
-    )
+    dtype_str = [f"{quote_ident(column)} {dtype[column]}" for column in dtype]
+    dtype_str = ", ".join(dtype_str)
+    on_commit = " ON COMMIT PRESERVE ROWS" if temp else ""
+    query = f"CREATE {temp}TABLE {input_relation}({dtype_str}){on_commit};"
     if genSQL:
         return query
     try:
@@ -472,11 +471,10 @@ bool
                     if res and res[0]:
                         drop(res[0], method="table")
             elif model_type == "KernelDensity":
-                drop(name.replace('"', "") + "_KernelDensity_Map", method="table")
-                drop(
-                    "{0}_KernelDensity_Tree".format(name.replace('"', "")),
-                    method="model",
-                )
+                table_name = name.replace('"', "") + "_KernelDensity_Map"
+                drop(table_name, method="table")
+                model_name = name.replace('"', "") + "_KernelDensity_Tree"
+                drop(model_name, method="model")
             elif model_type == "AutoDataPrep":
                 drop(name, method="table")
             if is_in_verticapy_schema:
@@ -605,22 +603,24 @@ list of tuples
                 column_name_ident = quote_ident(column)
                 query = f"SELECT {column_name_ident} FROM ({expr}) x LIMIT 0;"
             elif usecols:
-                query = "SELECT {0} FROM ({1}) x LIMIT 0;".format(
-                    ", ".join([quote_ident(elem) for elem in usecols]), expr
-                )
+                query = f"""
+                    SELECT 
+                        {", ".join([quote_ident(column) for column in usecols])} 
+                    FROM ({expr}) x 
+                    LIMIT 0;"""
             else:
                 query = expr
             executeSQL(query, print_time_sql=False)
             description, ctype = current_cursor().description, []
-            for elem in description:
+            for d in description:
                 ctype += [
                     [
-                        elem[0],
+                        d[0],
                         get_final_vertica_type(
-                            type_name=elem.type_name,
-                            display_size=elem[2],
-                            precision=elem[4],
-                            scale=elem[5],
+                            type_name=d.type_name,
+                            display_size=d[2],
+                            precision=d[4],
+                            scale=d[5],
                         ),
                     ]
                 ]
@@ -634,43 +634,52 @@ list of tuples
         drop(format_schema_table(schema, table_name), method="table")
         try:
             if schema == "v_temp_schema":
-                executeSQL(
-                    "CREATE LOCAL TEMPORARY TABLE {0} ON COMMIT PRESERVE ROWS AS {1}".format(
-                        table_name, expr
-                    ),
-                    print_time_sql=False,
-                )
+                table = table_name
+                local = "LOCAL"
             else:
-                executeSQL(
-                    "CREATE TEMPORARY TABLE {0} ON COMMIT PRESERVE ROWS AS {1}".format(
-                        format_schema_table(schema, table_name), expr
-                    ),
-                    print_time_sql=False,
-                )
+                table = format_schema_table(schema, table_name)
+                local = ""
+            executeSQL(
+                query=f"""
+                    CREATE {local} TEMPORARY TABLE {table} 
+                    ON COMMIT PRESERVE ROWS 
+                    AS {expr}""",
+                print_time_sql=False,
+            )
         finally:
             drop(format_schema_table(schema, table_name), method="table")
         drop_final_table = True
     else:
         drop_final_table = False
-    where = (
-        " AND LOWER(column_name) IN ({0})".format(
-            ", ".join(
-                ["'{0}'".format(elem.lower().replace("'", "''")) for elem in usecols]
-            )
-        )
-        if (usecols)
-        else ""
+    usecols_str, column_name = "", ""
+    if usecols:
+        usecols_str = [
+            "'" + column.lower().replace("'", "''") + "'" for column in usecols
+        ]
+        usecols_str = f" AND LOWER(column_name) IN ({', '.join(usecols_str)})"
+    if column:
+        column_name = f"column_name = '{column}' AND "
+    query = f"""
+        SELECT 
+            column_name,
+            data_type,
+            ordinal_position 
+        FROM {{}}
+        WHERE {column_name}table_name = '{table_name}' 
+            AND table_schema = '{schema}'{usecols_str}"""
+    cursor = executeSQL(
+        query=f"""
+            SELECT 
+                /*+LABEL('utilities.get_data_types')*/ 
+                column_name,
+                data_type 
+            FROM 
+                (({query.format("columns")}) 
+                 UNION 
+                 ({query.format("view_columns")})) x 
+                ORDER BY ordinal_position""",
+        title="Getting the data types.",
     )
-    query = (
-        "SELECT /*+LABEL('utilities.get_data_types')*/ column_name, data_type FROM "
-        "((SELECT column_name, data_type, ordinal_position FROM columns WHERE "
-        " {0}table_name = '{1}' AND table_schema = '{2}'{3}) UNION (SELECT column_name,"
-        " data_type, ordinal_position FROM view_columns WHERE {0}table_name = '{1}' "
-        "AND table_schema = '{2}'{3})) x ORDER BY ordinal_position"
-    ).format(
-        f"column_name = '{column}' AND " if (column) else "", table_name, schema, where,
-    )
-    cursor = executeSQL(query, title="Getting the data types.")
     ctype = cursor.fetchall()
     if column and ctype:
         ctype = ctype[0][1]
@@ -806,14 +815,14 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         schema = verticapy.OPTIONS["temp_schema"]
     input_relation = format_schema_table(schema, table_name)
     if not (column_names):
-        query = f"""SELECT /*+LABEL('utilities.insert_into')*/
-                        column_name
-                    FROM columns 
-                    WHERE table_name = '{table_name}' 
-                        AND table_schema = '{schema}' 
-                    ORDER BY ordinal_position"""
         result = executeSQL(
-            query,
+            query=f"""
+                SELECT /*+LABEL('utilities.insert_into')*/
+                    column_name
+                FROM columns 
+                WHERE table_name = '{table_name}' 
+                    AND table_schema = '{schema}' 
+                ORDER BY ordinal_position""",
             title=f"Getting the table {input_relation} column names.",
             method="fetchall",
         )
@@ -823,16 +832,15 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         )
     cols = [quote_ident(col) for col in column_names]
     if copy and not (genSQL):
-        sql = "INSERT INTO {0} ({1}) VALUES ({2})".format(
-            input_relation,
-            ", ".join(cols),
-            ", ".join(["%s" for i in range(len(cols))]),
-        )
         executeSQL(
-            sql,
+            query=f"""
+                INSERT INTO {input_relation} 
+                ({", ".join(cols)})
+                VALUES ({", ".join(["%s" for i in range(len(cols))])})""",
             title=(
-                f"Insert new lines in the {table_name} table. The batch insert is "
-                "converted into a COPY statement by using prepared statements."
+                f"Insert new lines in the {table_name} table. "
+                "The batch insert is converted into a COPY "
+                "statement by using prepared statements."
             ),
             data=list(map(tuple, data)),
         )
@@ -842,25 +850,28 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         if genSQL:
             sql = []
         i, n, total_rows = 0, len(data), 0
-        header = "INSERT INTO {0} ({1}) VALUES ".format(input_relation, ", ".join(cols))
+        header = f"""
+            INSERT INTO {input_relation}
+            ({", ".join(cols)}) VALUES """
         for i in range(n):
             sql_tmp = "("
-            for elem in data[i]:
-                if isinstance(elem, str):
-                    sql_tmp += "'{0}'".format(elem.replace("'", "''"))
-                elif elem is None or elem != elem:
+            for d in data[i]:
+                if isinstance(d, str):
+                    d_str = d.replace("'", "''")
+                    sql_tmp += f"'{d_str}'"
+                elif d is None or d != d:
                     sql_tmp += "NULL"
                 else:
-                    sql_tmp += f"'{elem}'"
+                    sql_tmp += f"'{d}'"
                 sql_tmp += ","
             sql_tmp = sql_tmp[:-1] + ");"
             query = header + sql_tmp
             if genSQL:
-                sql += [query]
+                sql += [clean_query(query)]
             else:
                 try:
                     executeSQL(
-                        query,
+                        query=query,
                         title=f"Insert a new line in the relation: {input_relation}.",
                     )
                     executeSQL("COMMIT;", title="Commit.")
@@ -1030,9 +1041,8 @@ read_json : Ingests a JSON file into the Vertica database.
         tmp_name = gen_tmp_name(name="df")[1:-1]
     else:
         tmp_name = ""
-    path = "{0}{1}{2}.csv".format(
-        temp_path, "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else "", name,
-    )
+    sep = "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else ""
+    path = f"{temp_path}{sep}{name}.csv"
     try:
         # Adding the quotes to STR pandas columns in order to simplify the ingestion.
         # Not putting them can lead to wrong data ingestion.
@@ -1066,20 +1076,21 @@ read_json : Ingests a JSON file into the Vertica database.
 
         if insert:
             input_relation = format_schema_table(schema, name)
-            query = """COPY {0}({1}) 
-                       FROM LOCAL '{2}' 
-                       DELIMITER ',' 
-                       NULL ''
-                       ENCLOSED BY '\"' 
-                       ESCAPE AS '\\' 
-                       SKIP 1;""".format(
-                input_relation,
-                ", ".join(
-                    ['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]
-                ),
-                path,
+            tmp_df_columns_str = ", ".join(
+                ['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]
             )
-            executeSQL(query, title="Inserting the pandas.DataFrame.")
+            executeSQL(
+                query=f"""
+                    COPY {input_relation}
+                    ({tmp_df_columns_str}) 
+                    FROM LOCAL '{path}' 
+                    DELIMITER ',' 
+                    NULL ''
+                    ENCLOSED BY '\"' 
+                    ESCAPE AS '\\' 
+                    SKIP 1;""",
+                title="Inserting the pandas.DataFrame.",
+            )
             from verticapy import vDataFrame
 
             vdf = vDataFrame(name, schema=schema)
@@ -1191,7 +1202,7 @@ read_json : Ingests a JSON file into the Vertica database.
     if not (flex_name):
         flex_name = gen_tmp_name(name="flex")[1:-1]
     if header_names:
-        header_names = "header_names = '{0}',".format(sep.join(header_names))
+        header_names = f"header_names = '{sep.join(header_names)}',"
     else:
         header_names = ""
     ingest_local = " LOCAL" if ingest_local else ""
@@ -1202,7 +1213,8 @@ read_json : Ingests a JSON file into the Vertica database.
     reject_on_materialized_type_error = str(reject_on_materialized_type_error).lower()
     compression = extract_compression(path)
     query = f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;"
-    query2 = f"""COPY {flex_name} 
+    query2 = f"""
+       COPY {flex_name} 
        FROM{ingest_local} '{path}' {compression} 
        PARSER FCSVPARSER(
             type = 'traditional', 
@@ -1220,26 +1232,27 @@ read_json : Ingests a JSON file into the Vertica database.
     if genSQL:
         return [clean_query(query), clean_query(query2)]
     executeSQL(
-        query, title="Creating flex table to identify the data types.",
+        query=query, title="Creating flex table to identify the data types.",
     )
     executeSQL(
-        query2, title="Parsing the data.",
+        query=query2, title="Parsing the data.",
     )
     result = compute_flextable_keys(flex_name)
     dtype = {}
     for column_dtype in result:
         try:
-            query = """SELECT /*+LABEL('utilities.pcsv')*/
+            executeSQL(
+                query=f"""
+                    SELECT /*+LABEL('utilities.pcsv')*/
                         (CASE 
-                            WHEN "{0}"=\'{1}\' THEN NULL 
-                            ELSE "{0}" 
-                         END)::{2} AS "{0}" 
-                       FROM {3} 
-                       WHERE "{0}" IS NOT NULL 
-                       LIMIT 1000""".format(
-                column_dtype[0], na_rep, column_dtype[1], flex_name,
+                            WHEN "{column_dtype[0]}"=\'{na_rep}\' THEN NULL 
+                            ELSE "{column_dtype[0]}" 
+                         END)::{column_dtype[1]} AS "{column_dtype[0]}" 
+                    FROM {flex_name} 
+                    WHERE "{column_dtype[0]}" IS NOT NULL 
+                    LIMIT 1000""",
+                print_time_sql=False,
             )
-            executeSQL(query, print_time_sql=False)
             dtype[column_dtype[0]] = column_dtype[1]
         except:
             dtype[column_dtype[0]] = "Varchar(100)"
@@ -1274,13 +1287,17 @@ read_json : Ingests a JSON file into the Vertica database.
     """
     flex_name = gen_tmp_name(name="flex")[1:-1]
     executeSQL(
-        f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;",
+        query=f"""
+            CREATE FLEX LOCAL TEMP TABLE {flex_name}
+            (x int) ON COMMIT PRESERVE ROWS;""",
         title="Creating a flex table.",
     )
+    path_str = path.replace("'", "''")
+    local = " LOCAL" if ingest_local else ""
     executeSQL(
-        "COPY {0} FROM{1} '{2}' PARSER FJSONPARSER();".format(
-            flex_name, " LOCAL" if ingest_local else "", path.replace("'", "''")
-        ),
+        query=f"""
+            COPY {flex_name} FROM{local} '{path_str}' 
+            PARSER FJSONPARSER();""",
         title="Ingesting the data.",
     )
     result = compute_flextable_keys(flex_name)
@@ -1564,34 +1581,27 @@ read_json : Ingests a JSON file into the Vertica database.
     if "*" in basename:
         multiple_files = True
     if not (genSQL):
-        query = """SELECT /*+LABEL('utilities.read_csv')*/
-                        column_name 
-                   FROM columns 
-                   WHERE table_name = '{0}' 
-                     AND table_schema = '{1}' 
-                   ORDER BY ordinal_position""".format(
-            table_name.replace("'", "''"), schema.replace("'", "''")
-        )
+        table_name_str = table_name.replace("'", "''")
+        schema_str = schema.replace("'", "''")
         result = executeSQL(
-            query, title="Looking if the relation exists.", method="fetchall"
+            query=f"""
+                SELECT /*+LABEL('utilities.read_csv')*/
+                    column_name 
+               FROM columns 
+               WHERE table_name = '{table_name_str}' 
+                 AND table_schema = '{schema_str}' 
+               ORDER BY ordinal_position""",
+            title="Looking if the relation exists.",
+            method="fetchall",
         )
+    input_relation = format_schema_table(schema, table_name)
     if not (genSQL) and (result != []) and not (insert) and not (genSQL):
-        raise NameError(
-            "The table {0} already exists !".format(
-                format_schema_table(schema, table_name)
-            )
-        )
+        raise NameError(f"The table {input_relation} already exists !")
     elif not (genSQL) and (result == []) and (insert):
-        raise MissingRelation(
-            "The table {0} doesn't exist !".format(
-                format_schema_table(schema, table_name)
-            )
-        )
+        raise MissingRelation(f"The table {input_relation} doesn't exist !")
     else:
-        if not (temporary_local_table):
-            input_relation = format_schema_table(schema, table_name)
-        else:
-            input_relation = "v_temp_schema.{}".format(quote_ident(table_name))
+        if temporary_local_table:
+            input_relation = f"v_temp_schema.{quote_ident(table_name)}"
         file_header = []
         path_first_file_in_folder = path
         if multiple_files and ingest_local:
@@ -1623,7 +1633,7 @@ read_json : Ingests a JSON file into the Vertica database.
             header_names = erase_space_start_end_in_list_values(header_names)
         elif len(file_header) > len(header_names):
             header_names += [
-                "ucol{}".format(i + len(header_names))
+                f"ucol{i + len(header_names)}"
                 for i in range(len(file_header) - len(header_names))
             ]
         if not (sep):
@@ -1722,22 +1732,15 @@ read_json : Ingests a JSON file into the Vertica database.
                 genSQL=True,
             )
         skip = " SKIP 1" if (header) else ""
-        query2 = """COPY {0}({1}) 
-                    FROM {2} {3} 
-                    DELIMITER '{4}' 
-                    NULL '{5}' 
-                    ENCLOSED BY '{6}' 
-                    ESCAPE AS '{7}'{8};""".format(
-            input_relation,
-            ", ".join(['"' + column + '"' for column in header_names]),
-            "{0}'{1}'".format("LOCAL " if ingest_local else "", path),
-            compression,
-            sep,
-            na_rep,
-            quotechar,
-            escape,
-            skip,
-        )
+        local = "LOCAL " if ingest_local else ""
+        header_names_str = ", ".join([f'"{column}"' for column in header_names])
+        query2 = f"""
+            COPY {input_relation}({header_names_str}) 
+            FROM {local}'{path}' {compression} 
+            DELIMITER '{sep}' 
+            NULL '{na_rep}' 
+            ENCLOSED BY '{quotechar}' 
+            ESCAPE AS '{escape}'{skip};"""
         if genSQL:
             if insert:
                 return [clean_query(query2)]
@@ -2156,29 +2159,28 @@ read_csv : Ingests a CSV file into the Vertica database.
         label = "read_json"
         parser = "FJSONPARSER"
     if not (genSQL):
-        query = (
-            "SELECT /*+LABEL('utilities.{0}')*/ column_name, data_type FROM columns WHERE table_name = '{1}' "
-            "AND table_schema = '{2}' ORDER BY ordinal_position"
-        ).format(label, table_name.replace("'", "''"), schema.replace("'", "''"))
+        table_name_str = table_name.replace("'", "''")
+        schema_str = schema.replace("'", "''")
         column_name = executeSQL(
-            query, title="Looking if the relation exists.", method="fetchall"
+            query=f"""
+                SELECT 
+                    /*+LABEL('utilities.{label}')*/ 
+                    column_name,
+                    data_type 
+                FROM columns 
+                WHERE table_name = '{table_name_str}' 
+                  AND table_schema = '{schema_str}' 
+                ORDER BY ordinal_position""",
+            title="Looking if the relation exists.",
+            method="fetchall",
         )
+    input_relation = format_schema_table(schema, table_name)
     if not (genSQL) and (column_name != []) and not (insert):
-        raise NameError(
-            "The table {0} already exists !".format(
-                format_schema_table(schema, table_name)
-            )
-        )
+        raise NameError(f"The table {input_relation} already exists !")
     elif not (genSQL) and (column_name == []) and (insert):
-        raise MissingRelation(
-            "The table {0} doesn't exist !".format(
-                format_schema_table(schema, table_name)
-            )
-        )
+        raise MissingRelation(f"The table {input_relation} doesn't exist !")
     else:
-        if not (temporary_local_table):
-            input_relation = format_schema_table(schema, table_name)
-        else:
+        if temporary_local_table:
             input_relation = quote_ident(table_name)
         all_queries = []
         if not (materialize):
@@ -2189,10 +2191,14 @@ read_csv : Ingests a CSV file into the Vertica database.
                 suffix = "TEMP "
             else:
                 prefix = ";"
-            query = f"CREATE FLEX {suffix}TABLE {input_relation}(x int){prefix}"
+            query = f"""
+                CREATE FLEX {suffix}TABLE 
+                {input_relation}(x int){prefix}"""
         else:
             flex_name = gen_tmp_name(name="flex")[1:-1]
-            query = f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;"
+            query = f"""
+                CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) 
+                ON COMMIT PRESERVE ROWS;"""
         if not (insert):
             all_queries += [clean_query(query)]
         options = []
@@ -2209,7 +2215,8 @@ read_csv : Ingests a CSV file into the Vertica database.
             options += ["suppress_nonalphanumeric_key_chars=false"]
         if reject_on_materialized_type_error:
             assert materialize, ParameterError(
-                "When using complex data types the table has to be materialized. Set materialize to True"
+                "When using complex data types the table has to "
+                "be materialized. Set materialize to True"
             )
             options += ["reject_on_materialized_type_error=true"]
         else:
@@ -2230,14 +2237,13 @@ read_csv : Ingests a CSV file into the Vertica database.
             options += ["flatten_maps=true"]
         else:
             options += ["flatten_maps=false"]
-        query2 = "COPY {0} FROM{1} '{2}' {3} PARSER {4}({5});".format(
-            flex_name if (materialize) else input_relation,
-            " LOCAL" if ingest_local else "",
-            path.replace("'", "''"),
-            compression,
-            parser,
-            ", ".join(options),
-        )
+        materialize_str = flex_name if (materialize) else input_relation
+        local = " LOCAL" if ingest_local else ""
+        path_str = path.replace("'", "''")
+        query2 = f"""
+            COPY {materialize_str} 
+            FROM{local} '{path_str}' {compression} 
+            PARSER {parser}({", ".join(options)});"""
         all_queries = all_queries + [clean_query(query2)]
         if genSQL and insert and not (materialize):
             return [clean_query(query2)]
@@ -2257,9 +2263,12 @@ read_csv : Ingests a CSV file into the Vertica database.
         for column_dtype in result:
             try:
                 executeSQL(
-                    "SELECT /*+LABEL('utilities.{0}')*/ \"{1}\"::{2} FROM {3} LIMIT 1000".format(
-                        label, column_dtype[0], column_dtype[1], flex_name
-                    ),
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('utilities.{label}')*/ 
+                            \"{column_dtype[0]}\"::{column_dtype[1]} 
+                        FROM {flex_name} 
+                        LIMIT 1000""",
                     print_time_sql=False,
                 )
                 dtype[column_dtype[0]] = column_dtype[1]
@@ -2272,27 +2281,24 @@ read_csv : Ingests a CSV file into the Vertica database.
                 else [column for column in usecols]
             )
             for i, column in enumerate(cols):
-                cols[i] = (
-                    '"{0}"::{1} AS "{2}"'.format(
-                        column.replace('"', ""), dtype[column], new_name[column]
-                    )
-                    if (column in new_name)
-                    else '"{0}"::{1}'.format(column.replace('"', ""), dtype[column])
-                )
+                column_str = column.replace('"', "")
+                if column in new_name:
+                    cols[i] = f'"{column_str}"::{dtype[column]} AS "{new_name[column]}"'
+                else:
+                    cols[i] = f'"{column_str}"::{dtype[column]}'
             if temporary_local_table:
                 suffix = "LOCAL TEMPORARY "
             elif temporary_table:
                 suffix = "TEMPORARY "
             else:
                 suffix = ""
-            query3 = "CREATE {0}TABLE {1}{2} AS SELECT /*+LABEL('utilities.{3}')*/ {4} FROM {5}".format(
-                suffix,
-                input_relation,
-                " ON COMMIT PRESERVE ROWS" if suffix else "",
-                label,
-                ", ".join(cols),
-                flex_name,
-            )
+            on_commit = " ON COMMIT PRESERVE ROWS" if suffix else ""
+            query3 = f"""
+                CREATE {suffix}TABLE {input_relation}{on_commit} AS 
+                    SELECT 
+                        /*+LABEL('utilities.{label}')*/ 
+                        {", ".join(cols)} 
+                    FROM {flex_name}"""
             all_queries = all_queries + [clean_query(query3)]
             if genSQL:
                 return all_queries
@@ -2317,18 +2323,19 @@ read_csv : Ingests a CSV file into the Vertica database.
                             final_cols[column] = col
             final_transformation = []
             for column in final_cols:
-                final_transformation += (
-                    [f'NULL AS "{column}"']
-                    if (final_cols[column] == None)
-                    else [
-                        '"{0}"::{1} AS "{2}"'.format(
-                            final_cols[column], column_name_dtype[column], column
-                        )
+                if final_cols[column] == None:
+                    final_transformation += [f'NULL AS "{column}"']
+                else:
+                    final_transformation += [
+                        f'"{final_cols}"::{column_name_dtype[column]} AS "{column}"'
                     ]
-                )
-            query = "INSERT /*+LABEL('utilities.{0}')*/ INTO {1} SELECT {2} FROM {3}".format(
-                label, input_relation, ", ".join(final_transformation), flex_name
-            )
+            query = f"""
+                INSERT 
+                    /*+LABEL('utilities.{label}')*/ 
+                INTO {input_relation} 
+                SELECT 
+                    {", ".join(final_transformation)} 
+                FROM {flex_name}"""
             if genSQL:
                 return [clean_query(query)]
             executeSQL(
@@ -2503,45 +2510,41 @@ bool
             if path:
                 json += f'"verticapy_fpath": "{path}", '
             if add_identifier:
-                json += '"verticapy_id": "{0}", '.format(
-                    verticapy.OPTIONS["identifier"]
-                )
-            for elem in json_dict:
-                json += '"{0}": '.format(str(elem))
-                if isinstance(json_dict[elem], bool):
-                    json += "true" if json_dict[elem] else "false"
-                elif isinstance(json_dict[elem], (float, int)):
-                    json += "{0}".format(json_dict[elem])
-                elif json_dict[elem] is None:
+                json += f'"verticapy_id": "{verticapy.OPTIONS["identifier"]}", '
+            for key in json_dict:
+                json += f'"{key}": '
+                if isinstance(json_dict[key], bool):
+                    json += "true" if json_dict[key] else "false"
+                elif isinstance(json_dict[key], (float, int)):
+                    json += str(json_dict[key])
+                elif json_dict[key] is None:
                     json += "null"
-                elif isinstance(json_dict[elem], vDataFrame):
-                    json += '"{0}"'.format(
-                        json_dict[elem].__genSQL__().replace('"', '\\"')
-                    )
-                elif isinstance(json_dict[elem], vModel):
-                    json += '"{0}"'.format(json_dict[elem].type)
-                elif isinstance(json_dict[elem], dict):
-                    json += dict_to_json_string(json_dict=json_dict[elem])
-                elif isinstance(json_dict[elem], list):
-                    json += '"{0}"'.format(
-                        ";".join([str(item) for item in json_dict[elem]])
-                    )
+                elif isinstance(json_dict[key], vDataFrame):
+                    json_dict_str = json_dict[key].__genSQL__().replace('"', '\\"')
+                    json += f'"{json_dict_str}"'
+                elif isinstance(json_dict[key], vModel):
+                    json += f'"{json_dict[key].type}"'
+                elif isinstance(json_dict[key], dict):
+                    json += dict_to_json_string(json_dict=json_dict[key])
+                elif isinstance(json_dict[key], list):
+                    json_dict_str = ";".join([str(item) for item in json_dict[key]])
+                    json += f'"{json_dict_str}"'
                 else:
-                    json += '"{0}"'.format(str(json_dict[elem]).replace('"', '\\"'))
+                    json_dict_str = str(json_dict[key]).replace('"', '\\"')
+                    json += f'"{json_dict_str}"'
                 json += ", "
             json = json[:-2] + "}"
             return json
 
-        query = "SELECT /*+LABEL('{0}')*/ '{1}'".format(
-            query_label.replace("'", "''"),
-            dict_to_json_string(name, path, json_dict, add_identifier).replace(
-                "'", "''"
-            ),
-        )
+        query_label_str = query_label.replace("'", "''")
+        dict_to_json_string_str = dict_to_json_string(
+            name, path, json_dict, add_identifier
+        ).replace("'", "''")
+        query = f"SELECT /*+LABEL('{query_label_str}')*/ '{dict_to_json_string_str}'"
         if return_query:
             return query
         executeSQL(
-            query,
+            query=query,
             title="Sending query to save the information in query profile table.",
             print_time_sql=False,
         )
@@ -2728,12 +2731,12 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
             verticapy.OPTIONS[option] = value
     elif option == "temp_schema":
         if isinstance(value, str):
-            query = """SELECT /*+LABEL('utilities.set_option')*/
-                          schema_name 
-                       FROM v_catalog.schemata 
-                       WHERE schema_name = '{0}' LIMIT 1;""".format(
-                value.replace("'", "''")
-            )
+            value_str = value.replace("'", "''")
+            query = f"""
+                SELECT /*+LABEL('utilities.set_option')*/
+                  schema_name 
+               FROM v_catalog.schemata 
+               WHERE schema_name = '{value_str}' LIMIT 1;"""
             res = executeSQL(
                 query, title="Checking if the schema exists.", method="fetchrow"
             )
@@ -2870,24 +2873,21 @@ The tablesample attributes are the same as the parameters.
             else:
                 start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
                 if start > end:
-                    rows = "0{0}".format(
-                        " of {0}".format(self.count) if (self.count > 0) else ""
-                    )
+                    rows = f"0 of {self.count}" if (self.count > 0) else "0"
                 else:
-                    rows = "{0}-{1}{2}".format(
-                        start,
-                        end,
-                        " of {0}".format(self.count) if (self.count > 0) else "",
-                    )
+                    of = f" of {self.count}" if (self.count > 0) else ""
+                    rows = f"{start}-{end}{of}"
             if len(self.values) == 1:
                 column = list(self.values.keys())[0]
                 if self.offset > self.count:
-                    formatted_text += "<b>Column:</b> {0} | <b>Type:</b> {1}".format(
-                        column, self.dtype[column]
+                    formatted_text += (
+                        f"<b>Column:</b> {column} | "
+                        f"<b>Type:</b> {self.dtype[column]}"
                     )
                 else:
-                    formatted_text += "<b>Rows:</b> {0} | <b>Column:</b> {1} | <b>Type:</b> {2}".format(
-                        rows, column, self.dtype[column]
+                    formatted_text += (
+                        f"<b>Rows:</b> {rows} | <b>Column:</b> {column} "
+                        f"| <b>Type:</b> {self.dtype[column]}"
                     )
             else:
                 if self.offset > self.count:
@@ -2935,22 +2935,17 @@ The tablesample attributes are the same as the parameters.
             rows = self.count
         else:
             if start > end:
-                rows = "0{0}".format(
-                    " of {0}".format(self.count) if (self.count > 0) else ""
-                )
+                rows = f"0 of {self.count}" if (self.count > 0) else "0"
             else:
-                rows = "{0}-{1}{2}".format(
-                    start, end, " of {}".format(self.count) if (self.count > 0) else "",
-                )
+                count_str = f" of {self.count}" if (self.count > 0) else ""
+                rows = f"{start}-{end}{count_str}"
         if len(self.values) == 1:
             column = list(self.values.keys())[0]
             if self.offset > self.count:
-                formatted_text += "Column: {0} | Type: {1}".format(
-                    column, self.dtype[column]
-                )
+                formatted_text += f"Column: {column} | Type: {self.dtype[column]}"
             else:
-                formatted_text += "Rows: {0} | Column: {1} | Type: {2}".format(
-                    rows, column, self.dtype[column]
+                formatted_text += (
+                    f"Rows: {rows} | Column: {column} | Type: {self.dtype[column]}"
                 )
         else:
             if self.offset > self.count:
@@ -3085,11 +3080,7 @@ The tablesample attributes are the same as the parameters.
                 idx = i
                 column = col
         if idx is None:
-            raise MissingColumn(
-                "The Column '{0}' doesn't exist.".format(
-                    column.lower().replace('"', "")
-                )
-            )
+            raise MissingColumn(f"The Column '{column}' doesn't exist.")
         n, sort = len(self[column]), []
         for i in range(n):
             tmp_list = []
@@ -3211,7 +3202,7 @@ The tablesample attributes are the same as the parameters.
                 val = "NULL"
             elif isinstance(val, bytes):
                 val = str(val)[2:-1]
-                val = "'{0}'::binary({1})".format(val, len(val))
+                val = f"'{val}'::binary({len(val)})"
             elif isinstance(val, datetime.datetime):
                 val = f"'{val}'::datetime"
             elif isinstance(val, datetime.date):
@@ -3224,14 +3215,14 @@ The tablesample attributes are the same as the parameters.
                 val = f"'{val}'::timestamptz"
             elif isinstance(val, (np.ndarray, list)):
                 vertica_version(condition=[10, 0, 0])
-                val = "ARRAY[{0}]".format(
-                    ",".join([str(get_correct_format_and_cast(k)) for k in val])
-                )
+                val = f"""
+                ARRAY[
+                    {", ".join([str(get_correct_format_and_cast(k)) for k in val])}
+                     ]"""
             elif isinstance(val, dict):
                 vertica_version(condition=[11, 0, 0])
                 all_elems = [
-                    "{0} AS {1}".format(get_correct_format_and_cast(val[k]), k)
-                    for k in val
+                    f"{get_correct_format_and_cast(val[k])} AS {k}" for k in val
                 ]
                 val = ", ".join(all_elems)
                 val = f"ROW({val})"
@@ -3248,8 +3239,9 @@ The tablesample attributes are the same as the parameters.
             row = []
             for column in self.values:
                 val = get_correct_format_and_cast(self.values[column][i])
-                row += ["{0} AS {1}".format(val, '"' + column.replace('"', "") + '"')]
-            sql += ["(SELECT {0})".format(", ".join(row))]
+                column_str = '"' + column.replace('"', "") + '"'
+                row += [f"{val} AS {column_str}"]
+            sql += [f"(SELECT {', '.join(row)})"]
         sql = " UNION ALL ".join(sql)
         return sql
 
@@ -3407,10 +3399,11 @@ vDataFrame
     # Creating the vColumns
     for column, ctype in dtypes:
         if '"' in column:
+            column_str = column.replace('"', "_")
             warning_message = (
-                'A double quote " was found in the column {0}, its '
-                "alias was changed using underscores '_' to {1}"
-            ).format(column, column.replace('"', "_"))
+                f'A double quote " was found in the column {column}, its '
+                f"alias was changed using underscores '_' to {column_str}"
+            )
             warnings.warn(warning_message, Warning)
         from verticapy.vcolumn import vColumn
 
@@ -3490,18 +3483,13 @@ list
         else:
             test = False
         if not (test):
+            v0, v1, v2 = result[0], result[1], str(result[2]).split("-")[0]
+            v = ".".join([str(c) for c in condition[:3]])
             raise VersionError(
                 (
-                    "This Function is not available for Vertica version {0}.\n"
-                    "Please upgrade your Vertica version to at least {1} to "
-                    "get this functionality."
-                ).format(
-                    str(result[0])
-                    + "."
-                    + str(result[1])
-                    + "."
-                    + str(result[2]).split("-")[0],
-                    ".".join([str(elem) for elem in condition[:3]]),
+                    "This Function is not available for Vertica version "
+                    f"{v0}.{v1}.{v2}.\nPlease upgrade your Vertica "
+                    f"version to at least {v} to get this functionality."
                 )
             )
     return result

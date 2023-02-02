@@ -9403,27 +9403,18 @@ vColumns : vColumn
             finally:
                 model.drop()
             return ax
-        if isinstance(columns, str):
-            columns = [columns]
-        columns, catcol = self.format_colnames(
-            columns, catcol, expected_nb_of_cols=[2, 3]
-        )
-        catcol = [catcol] if catcol else []
-
-        arg = [
+        args = [
             self,
-            columns + catcol,
+            columns,
+            catcol,
             max_cardinality,
             cat_priority,
             with_others,
             max_nb_points,
+            bbox,
+            img,
         ]
-        if len(columns) == 2:
-            fun = plt.scatter2D
-            arg += [bbox, img]
-        elif len(columns) == 3:
-            fun = plt.scatter3D
-        return fun(*arg, ax=ax, **style_kwds,)
+        return plt.scatter(*args, ax=ax, **style_kwds,)
 
     # ---#
     @check_dtypes

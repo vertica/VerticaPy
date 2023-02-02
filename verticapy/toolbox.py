@@ -248,7 +248,8 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
     elif isinstance(x, type(None)):
         val = "NULL"
     elif isinstance(x, (int, float)) or not (cast_float_int_to_str):
-        val = "'{}'".format(str(x).replace("'", "''"))
+        x_str = str(x).replace("'", "''")
+        val = f"'{x_str}'"
     else:
         val = x
     if return_cat:
@@ -350,11 +351,16 @@ def get_dblink_fun(query: str, symbol: str = "$"):
         f"Database is defined (Using the symbol '{symbol}'). Use the "
         "function connect.set_external_connection to set one with the correct symbol."
     )
-    return "SELECT DBLINK(USING PARAMETERS cid='{0}', query='{1}', rowset={2}) OVER ()".format(
-        vp.OPTIONS["external_connection"][symbol]["cid"].replace("'", "''"),
-        query.replace("'", "''"),
-        vp.OPTIONS["external_connection"][symbol]["rowset"],
-    )
+    cid = vp.OPTIONS["external_connection"][symbol]["cid"].replace("'", "''")
+    query = query.replace("'", "''")
+    rowset = vp.OPTIONS["external_connection"][symbol]["rowset"]
+    query = f"""
+        SELECT 
+            DBLINK(USING PARAMETERS 
+                   cid='{cid}',
+                   query='{query}',
+                   rowset={rowset}) OVER ()"""
+    return clean_query(query)
 
 
 # ---#
@@ -404,12 +410,12 @@ def get_header_name_csv(path: str, sep: str):
                 position = "end"
             else:
                 position = "middle"
-            file_header[idx] = "col{}".format(idx)
+            file_header[idx] = f"col{idx}"
             warning_message = (
-                "An inconsistent name was found in the {0} of the "
+                f"An inconsistent name was found in the {position} of the "
                 "file header (isolated separator). It will be replaced "
-                "by col{1}."
-            ).format(position, idx)
+                f"by col{idx}."
+            )
             if idx == 0:
                 warning_message += (
                     "\nThis can happen when exporting a pandas DataFrame "
@@ -499,9 +505,8 @@ def get_magic_options(line: str):
     while i < n:
         if splits[i][0] != "-":
             raise ParsingError(
-                "Can not parse option '{0}'. Options must start with '-'.".format(
-                    splits[i][0]
-                )
+                f"Can not parse option '{splits[i][0]}'. "
+                "Options must start with '-'."
             )
         all_options_dict[splits[i]] = splits[i + 1]
         i += 2
@@ -527,16 +532,21 @@ def get_random_function(rand_int=None):
 
 # ---#
 def get_session(add_username: bool = True):
-    query = "SELECT /*+LABEL(get_session)*/ CURRENT_SESSION();"
-    result = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
-    result = result.split(":")[1]
-    result = int(result, base=16)
+    current_session = executeSQL(
+        query="SELECT /*+LABEL(get_session)*/ CURRENT_SESSION();",
+        method="fetchfirstelem",
+        print_time_sql=False,
+    )
+    current_session = current_session.split(":")[1]
+    current_session = int(current_session, base=16)
     if add_username:
-        query = "SELECT /*+LABEL(get_session)*/ USERNAME();"
-        result = "{}_{}".format(
-            executeSQL(query, method="fetchfirstelem", print_time_sql=False), result
+        username = executeSQL(
+            query="SELECT /*+LABEL(get_session)*/ USERNAME();",
+            method="fetchfirstelem",
+            print_time_sql=False,
         )
-    return result
+        return f"{username}_{current_session}"
+    return current_session
 
 
 # ---#
@@ -604,7 +614,7 @@ def get_verticapy_function(key: str, method: str = ""):
     elif "%" == key[-1]:
         start = 7 if len(key) >= 7 and key[0:7] == "approx_" else 0
         if float(key[start:-1]) == int(float(key[start:-1])):
-            key = "{}%".format(int(float(key[start:-1])))
+            key = f"{int(float(key[start:-1]))}%"
             if start == 7:
                 key = "approx_" + key
     elif key == "row":
@@ -716,29 +726,50 @@ def insert_verticapy_schema(
         create_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
         try:
             model_name = quote_ident(model_name)
-            sql = "SELECT /*+LABEL(insert_verticapy_schema)*/ * FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
-                model_name.lower()
+            result = executeSQL(
+                query=f"""
+                    SELECT 
+                        /*+LABEL(insert_verticapy_schema)*/ * 
+                    FROM verticapy.models
+                    WHERE LOWER(model_name) = '{model_name.lower()}'""",
+                method="fetchrow",
+                print_time_sql=False,
             )
-            result = executeSQL(sql, method="fetchrow", print_time_sql=False)
             if result:
-                raise NameError("The model named {} already exists.".format(model_name))
+                raise NameError(f"The model named {model_name} already exists.")
             else:
-                sql = (
-                    "INSERT /*+LABEL(insert_verticapy_schema)*/ INTO verticapy.models(model_name, category, "
-                    "model_type, create_time, size) VALUES ('{}', '{}', '{}', "
-                    "'{}', {});"
-                ).format(model_name, category, model_type, create_time, size)
-                executeSQL(sql, print_time_sql=False)
+                executeSQL(
+                    query=f"""
+                        INSERT /*+LABEL(insert_verticapy_schema)*/ 
+                        INTO verticapy.models(model_name, 
+                                              category, 
+                                              model_type, 
+                                              create_time, 
+                                              size) 
+                                      VALUES ('{model_name}', 
+                                              '{category}',
+                                              '{model_type}',
+                                              '{create_time}',
+                                               {size});""",
+                    print_time_sql=False,
+                )
                 executeSQL("COMMIT;", print_time_sql=False)
-                for elem in model_save:
-                    sql = (
-                        "INSERT /*+LABEL(insert_verticapy_schema)*/ INTO verticapy.attr(model_name, attr_name, value) "
-                        "VALUES ('{0}', '{1}', '{2}');"
-                    ).format(model_name, elem, str(model_save[elem]).replace("'", "''"))
-                    executeSQL(sql, print_time_sql=False)
+                for attr_name in model_save:
+                    model_save_str = str(model_save[attr_name]).replace("'", "''")
+                    executeSQL(
+                        query=f"""
+                            INSERT /*+LABEL(insert_verticapy_schema)*/
+                            INTO verticapy.attr(model_name,
+                                                attr_name,
+                                                value) 
+                                        VALUES ('{model_name}',
+                                                '{attr_name}',
+                                                '{model_save_str}');""",
+                        print_time_sql=False,
+                    )
                     executeSQL("COMMIT;", print_time_sql=False)
         except Exception as e:
-            warning_message = "The VerticaPy model could not be stored:\n{}".format(e)
+            warning_message = f"The VerticaPy model could not be stored:\n{e}"
             warnings.warn(warning_message, Warning)
             raise
 
@@ -912,7 +943,7 @@ def print_table(
                     html_table += " #EEEEEE; "
                 else:
                     html_table += " #FAFAFA; "
-                html_table += "color: {}; white-space:nowrap; ".format(color)
+                html_table += f"color: {color}; white-space:nowrap; "
                 if vp.OPTIONS["mode"] in ("full", None):
                     if (j == 0) or (i == 0):
                         html_table += "border: 1px solid #AAAAAA; "
@@ -932,8 +963,8 @@ def print_table(
                     html_table += "text-align: center; "
                 else:
                     html_table += "text-align: center; "
-                html_table += 'min-width: {}px; max-width: {}px;"'.format(
-                    cell_width[j], cell_width[j]
+                html_table += (
+                    f"min-width: {cell_width[j]}px; " f'max-width: {cell_width[j]}px;"'
                 )
                 if (j == 0) or (i == 0):
                     if j != 0:
@@ -987,11 +1018,11 @@ def print_table(
                             except:
                                 pass
                             missing_values = (
-                                '<div style="float: right; margin-top: 6px;">{0}%</div><div '
-                                'style="width: calc(100% - {1}px); height: 8px; margin-top: '
-                                '10px; border: 1px solid black;"><div style="width: {0}%; '
+                                f'<div style="float: right; margin-top: 6px;">{per}%</div><div '
+                                f'style="width: calc(100% - {diff}px); height: 8px; margin-top: '
+                                f'10px; border: 1px solid black;"><div style="width: {per}%; '
                                 'height: 6px; background-color: orange;"></div></div>'
-                            ).format(per, diff)
+                            )
                     else:
                         ctype, missing_values, category = "", "", ""
                     if (i == 0) and (j == 0):
@@ -1001,23 +1032,21 @@ def print_table(
                             val = ""
                     elif cell_width[j] > 240:
                         val = (
-                            '<input style="border: none; text-align: center; width: {0}px;" '
-                            'type="text" value="{1}" readonly>'
-                        ).format(cell_width[j] - 10, val)
-                    html_table += ">{}<b>{}</b>{}{}</td>".format(
-                        category, val, ctype, missing_values
-                    )
+                            '<input style="border: none; text-align: center; width: '
+                            f'{cell_width[j] - 10}px;" type="text" value="{val}" readonly>'
+                        )
+                    html_table += f">{category}<b>{val}</b>{ctype}{missing_values}</td>"
                 elif cell_width[j] > 240:
                     background = "#EEEEEE" if val == "[null]" else "#FAFAFA"
                     if vp.OPTIONS["mode"] not in ("full", None):
                         background = "#FFFFFF"
                     html_table += (
-                        '><input style="background-color: {0}; border: none; '
-                        'text-align: center; width: {1}px;" type="text" '
-                        'value="{2}" readonly></td>'
-                    ).format(background, cell_width[j] - 10, val)
+                        f'><input style="background-color: {val}; border: none; '
+                        f'text-align: center; width: {cell_width[j] - 10}px;" '
+                        f'type="text" value="{val}" readonly></td>'
+                    )
                 else:
-                    html_table += ">{}</td>".format(val)
+                    html_table += f">{val}</td>"
             html_table += "</tr>"
             if i == 0:
                 html_table += "</thead>"
@@ -1033,11 +1062,9 @@ def print_time(elapsed_time: float):
     if isnotebook():
         from IPython.display import HTML, display
 
-        display(
-            HTML("<div><b>Execution: </b> {0}s</div>".format(round(elapsed_time, 3)))
-        )
+        display(HTML(f"<div><b>Execution: </b> {round(elapsed_time, 3)}s</div>"))
     else:
-        print("Execution: {0}s".format(round(elapsed_time, 3)))
+        print(f"Execution: {round(elapsed_time, 3)}s")
         print("-" * int(screen_columns) + "\n")
 
 
@@ -1061,7 +1088,8 @@ def quote_ident(column: str):
     tmp_column = str(column)
     if len(tmp_column) >= 2 and (tmp_column[0] == tmp_column[-1] == '"'):
         tmp_column = tmp_column[1:-1]
-    return '"{}"'.format(str(tmp_column).replace('"', '""'))
+    temp_column_str = str(tmp_column).replace('"', '""')
+    return f'"{temp_column_str}"'
 
 
 # ---#
@@ -1321,11 +1349,11 @@ class str_sql:
             ParameterError("Method '_not_in' doesn't work with no parameters.")
         else:
             x = [elem for elem in argv]
-        assert isinstance(x, Iterable) and not (
-            isinstance(x, str)
-        ), "Method '_not_in' only works on iterable elements other than str. Found {}.".format(
-            x
-        )
+        if not (isinstance(x, Iterable)) or (isinstance(x, str)):
+            raise TypeError(
+                "Method '_not_in' only works on iterable "
+                f"elements other than str. Found {x}."
+            )
         val = [str(format_magic(elem)) for elem in x]
         val = ", ".join(val)
         return str_sql(f"({self.init_transf}) NOT IN ({val})", self.category())
