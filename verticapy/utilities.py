@@ -1213,7 +1213,8 @@ read_json : Ingests a JSON file into the Vertica database.
     reject_on_materialized_type_error = str(reject_on_materialized_type_error).lower()
     compression = extract_compression(path)
     query = f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;"
-    query2 = f"""COPY {flex_name} 
+    query2 = f"""
+       COPY {flex_name} 
        FROM{ingest_local} '{path}' {compression} 
        PARSER FCSVPARSER(
             type = 'traditional', 
@@ -1231,10 +1232,10 @@ read_json : Ingests a JSON file into the Vertica database.
     if genSQL:
         return [clean_query(query), clean_query(query2)]
     executeSQL(
-        query, title="Creating flex table to identify the data types.",
+        query=query, title="Creating flex table to identify the data types.",
     )
     executeSQL(
-        query2, title="Parsing the data.",
+        query=query2, title="Parsing the data.",
     )
     result = compute_flextable_keys(flex_name)
     dtype = {}
@@ -1731,7 +1732,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 genSQL=True,
             )
         skip = " SKIP 1" if (header) else ""
-        local = "LOCAL " if ingest_local else "", path
+        local = "LOCAL " if ingest_local else ""
         header_names_str = ", ".join([f'"{column}"' for column in header_names])
         query2 = f"""
             COPY {input_relation}({header_names_str}) 

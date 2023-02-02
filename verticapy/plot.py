@@ -713,7 +713,7 @@ def animated_ts_plot(
         raise EmptyParameter(
             "No numerical columns found to draw the animated multi TS plot"
         )
-    order_by_start_str, order_by_end_str, limit = "", "", ""
+    order_by_start_str, order_by_end_str, limit_str = "", "", ""
     if order_by_start:
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
     if order_by_end:
