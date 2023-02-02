@@ -1097,10 +1097,11 @@ def boxplot(
     # MULTI BOXPLOT
     else:
         try:
+            by = vdf.format_colnames(by)
             if vdf.alias == by:
-                raise NameError("The column and the groupby can not be the same")
-            elif by not in vdf.parent.get_columns():
-                raise MissingColumn("The column " + by + " doesn't exist")
+                raise NameError(
+                    "The parameter 'column' and the parameter 'groupby' can not be the same"
+                )
             count = vdf.parent.shape()[0]
             is_numeric = vdf.parent[by].isnum()
             is_categorical = (vdf.parent[by].nunique(True) <= max_cardinality) or not (
@@ -1115,7 +1116,7 @@ def boxplot(
                     + " AS "
                     + by
                 )
-                enum_trans += f", {vdf.alias}".format(vdf.alias)
+                enum_trans += f", {vdf.alias}"
                 table = f"(SELECT {enum_trans} FROM {table}) enum_table"
             if not (cat_priority):
                 query_result = executeSQL(
@@ -1137,7 +1138,7 @@ def boxplot(
             lp = "(" if (len(cat_priority) == 1) else ""
             rp = ")" if (len(cat_priority) == 1) else ""
             for idx, category in enumerate(cat_priority):
-                if (category in ("None", None)):
+                if category in ("None", None):
                     where = f"WHERE {by} IS NULL"
                 else:
                     category_str = str(category).replace("'", "''")
@@ -2523,7 +2524,7 @@ def multiple_hist(
                 if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
                     warning_message = (
                         f"The Virtual Column {column} is not numerical."
-                        " Its histogram will not be draw."
+                        " Its histogram will not be drawn."
                     )
                     warnings.warn(warning_message, Warning)
         ax.set_xlabel(", ".join(all_columns))
@@ -3159,11 +3160,9 @@ def pivot_table(
                         / {interval}) * {interval}"""
             ]
             is_column_date[idx] = True
-            timestampadd[
-                idx
-            ] = f"""TIMESTAMPADD('second', 
-                                                 {columns[idx]}::int,
-                                                 '{min_date}'::timestamp)"""
+            sql = f"""TIMESTAMPADD('second', {columns[idx]}::int, 
+                                             '{min_date}'::timestamp)"""
+            timestampadd[idx] = sql
             order_by = "ORDER BY 1 ASC"
             where += [f"{column} IS NOT NULL"]
         else:
@@ -3537,8 +3536,8 @@ def spider(
     unique = vdf[columns[0]].nunique(True)
     if unique < 3:
         raise ParameterError(
-            f"The first column of the Spider Plot must have at "
-            "least 3 categories. Found {int(unique)}."
+            "The first column of the Spider Plot must have at "
+            f"least 3 categories. Found {int(unique)}."
         )
     colors = gen_colors()
     all_columns = vdf.pivot_table(
