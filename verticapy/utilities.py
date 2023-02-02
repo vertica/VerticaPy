@@ -666,7 +666,7 @@ list of tuples
             ordinal_position 
         FROM {{}}
         WHERE {column_name}table_name = '{table_name}' 
-            AND table_schema = '{schema}'{usecols_str})"""
+            AND table_schema = '{schema}'{usecols_str}"""
     cursor = executeSQL(
         query=f"""
             SELECT 
@@ -815,14 +815,14 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         schema = verticapy.OPTIONS["temp_schema"]
     input_relation = format_schema_table(schema, table_name)
     if not (column_names):
-        query = f"""SELECT /*+LABEL('utilities.insert_into')*/
-                        column_name
-                    FROM columns 
-                    WHERE table_name = '{table_name}' 
-                        AND table_schema = '{schema}' 
-                    ORDER BY ordinal_position"""
         result = executeSQL(
-            query,
+            query=f"""
+                SELECT /*+LABEL('utilities.insert_into')*/
+                    column_name
+                FROM columns 
+                WHERE table_name = '{table_name}' 
+                    AND table_schema = '{schema}' 
+                ORDER BY ordinal_position""",
             title=f"Getting the table {input_relation} column names.",
             method="fetchall",
         )
@@ -832,16 +832,15 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         )
     cols = [quote_ident(col) for col in column_names]
     if copy and not (genSQL):
-        sql = "INSERT INTO {0} ({1}) VALUES ({2})".format(
-            input_relation,
-            ", ".join(cols),
-            ", ".join(["%s" for i in range(len(cols))]),
-        )
         executeSQL(
-            sql,
+            query=f"""
+                INSERT INTO {input_relation} 
+                ({", ".join(cols)})
+                VALUES ({", ".join(["%s" for i in range(len(cols))])})""",
             title=(
-                f"Insert new lines in the {table_name} table. The batch insert is "
-                "converted into a COPY statement by using prepared statements."
+                f"Insert new lines in the {table_name} table. "
+                "The batch insert is converted into a COPY "
+                "statement by using prepared statements."
             ),
             data=list(map(tuple, data)),
         )
@@ -851,7 +850,9 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         if genSQL:
             sql = []
         i, n, total_rows = 0, len(data), 0
-        header = "INSERT INTO {0} ({1}) VALUES ".format(input_relation, ", ".join(cols))
+        header = f"""
+            INSERT INTO {input_relation}
+            ({", ".join(cols)}) VALUES """
         for i in range(n):
             sql_tmp = "("
             for elem in data[i]:
@@ -869,7 +870,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
             else:
                 try:
                     executeSQL(
-                        query,
+                        query=query,
                         title=f"Insert a new line in the relation: {input_relation}.",
                     )
                     executeSQL("COMMIT;", title="Commit.")
@@ -1039,9 +1040,8 @@ read_json : Ingests a JSON file into the Vertica database.
         tmp_name = gen_tmp_name(name="df")[1:-1]
     else:
         tmp_name = ""
-    path = "{0}{1}{2}.csv".format(
-        temp_path, "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else "", name,
-    )
+    sep = "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else ""
+    path = f"{temp_path}{sep}{name}.csv"
     try:
         # Adding the quotes to STR pandas columns in order to simplify the ingestion.
         # Not putting them can lead to wrong data ingestion.
@@ -1075,20 +1075,21 @@ read_json : Ingests a JSON file into the Vertica database.
 
         if insert:
             input_relation = format_schema_table(schema, name)
-            query = """COPY {0}({1}) 
-                       FROM LOCAL '{2}' 
-                       DELIMITER ',' 
-                       NULL ''
-                       ENCLOSED BY '\"' 
-                       ESCAPE AS '\\' 
-                       SKIP 1;""".format(
-                input_relation,
-                ", ".join(
-                    ['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]
-                ),
-                path,
+            tmp_df_columns_str = ", ".join(
+                ['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]
             )
-            executeSQL(query, title="Inserting the pandas.DataFrame.")
+            executeSQL(
+                query=f"""
+                    COPY {input_relation}
+                    ({tmp_df_columns_str}) 
+                    FROM LOCAL '{path}' 
+                    DELIMITER ',' 
+                    NULL ''
+                    ENCLOSED BY '\"' 
+                    ESCAPE AS '\\' 
+                    SKIP 1;""",
+                title="Inserting the pandas.DataFrame.",
+            )
             from verticapy import vDataFrame
 
             vdf = vDataFrame(name, schema=schema)
@@ -1200,7 +1201,7 @@ read_json : Ingests a JSON file into the Vertica database.
     if not (flex_name):
         flex_name = gen_tmp_name(name="flex")[1:-1]
     if header_names:
-        header_names = "header_names = '{0}',".format(sep.join(header_names))
+        header_names = f"header_names = '{sep.join(header_names)}',"
     else:
         header_names = ""
     ingest_local = " LOCAL" if ingest_local else ""
@@ -1238,17 +1239,18 @@ read_json : Ingests a JSON file into the Vertica database.
     dtype = {}
     for column_dtype in result:
         try:
-            query = """SELECT /*+LABEL('utilities.pcsv')*/
+            executeSQL(
+                query=f"""
+                    SELECT /*+LABEL('utilities.pcsv')*/
                         (CASE 
-                            WHEN "{0}"=\'{1}\' THEN NULL 
-                            ELSE "{0}" 
-                         END)::{2} AS "{0}" 
-                       FROM {3} 
-                       WHERE "{0}" IS NOT NULL 
-                       LIMIT 1000""".format(
-                column_dtype[0], na_rep, column_dtype[1], flex_name,
+                            WHEN "{column_dtype[0]}"=\'{na_rep}\' THEN NULL 
+                            ELSE "{column_dtype[0]}" 
+                         END)::{column_dtype[1]} AS "{column_dtype[0]}" 
+                    FROM {flex_name} 
+                    WHERE "{column_dtype[0]}" IS NOT NULL 
+                    LIMIT 1000""",
+                print_time_sql=False,
             )
-            executeSQL(query, print_time_sql=False)
             dtype[column_dtype[0]] = column_dtype[1]
         except:
             dtype[column_dtype[0]] = "Varchar(100)"
@@ -1283,13 +1285,17 @@ read_json : Ingests a JSON file into the Vertica database.
     """
     flex_name = gen_tmp_name(name="flex")[1:-1]
     executeSQL(
-        f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;",
+        query=f"""
+            CREATE FLEX LOCAL TEMP TABLE {flex_name}
+            (x int) ON COMMIT PRESERVE ROWS;""",
         title="Creating a flex table.",
     )
+    path_str = path.replace("'", "''")
+    local = " LOCAL" if ingest_local else ""
     executeSQL(
-        "COPY {0} FROM{1} '{2}' PARSER FJSONPARSER();".format(
-            flex_name, " LOCAL" if ingest_local else "", path.replace("'", "''")
-        ),
+        query=f"""
+            COPY {flex_name} FROM{local} '{path_str}' 
+            PARSER FJSONPARSER();""",
         title="Ingesting the data.",
     )
     result = compute_flextable_keys(flex_name)
