@@ -485,35 +485,29 @@ def animated_bubble_plot(
         fig = ax.get_figure()
     count = vdf.shape()[0]
     if columns[2] != 1:
-        max_size, min_size = (
-            float(vdf[columns[2]].max()),
-            float(vdf[columns[2]].min()),
-        )
-    where = (
-        " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
-    )
-    where += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
-    query = "SELECT /*+LABEL('plot.animated_bubble_plot')*/ * FROM (SELECT {}, {}, {} FROM {} WHERE  {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL{} LIMIT {} OVER (PARTITION BY {} ORDER BY {}, {} DESC)) x ORDER BY {}, 4 DESC, 3 DESC, 2 DESC LIMIT {}"
-    query = query.format(
-        order_by,
-        ", ".join([str(elem) for elem in columns]),
-        by,
-        vdf.__genSQL__(True),
-        columns[0],
-        columns[1],
-        columns[2],
-        order_by,
-        by,
-        where,
-        limit_over,
-        order_by,
-        order_by,
-        columns[2],
-        order_by,
-        limit,
-    )
+        max_size = float(vdf[columns[2]].max())
+        min_size = float(vdf[columns[2]].min())
+    where = f" AND {order_by} > '{order_by_start}'" if (order_by_start) else ""
+    where += f" AND {order_by} < '{order_by_end}'" if (order_by_end) else ""
     query_result = executeSQL(
-        query=query,
+        query=f"""
+            SELECT 
+                /*+LABEL('plot.animated_bubble_plot')*/ * 
+            FROM 
+                (SELECT 
+                    {order_by}, 
+                    {", ".join([str(column) for column in columns])}, 
+                    {by} 
+                 FROM {vdf.__genSQL__(True)} 
+                 WHERE  {columns[0]} IS NOT NULL 
+                    AND {columns[1]} IS NOT NULL 
+                    AND {columns[2]} IS NOT NULL
+                    AND {order_by} IS NOT NULL
+                    AND {by} IS NOT NULL{where} 
+                 LIMIT {limit_over} OVER (PARTITION BY {order_by} 
+                                ORDER BY {order_by}, {columns[2]} DESC)) x 
+            ORDER BY {order_by}, 4 DESC, 3 DESC, 2 DESC 
+            LIMIT {limit}""",
         title="Selecting points to draw the animated bubble plot.",
         method="fetchall",
     )
@@ -709,8 +703,9 @@ def animated_ts_plot(
     for column in columns:
         if not (vdf[column].isnum()):
             if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
-                warning_message = "The Virtual Column {} is not numerical.\nIt will be ignored.".format(
-                    column
+                warning_message = (
+                    f"The Virtual Column {column} is "
+                    "not numerical.\nIt will be ignored."
                 )
                 warnings.warn(warning_message, Warning)
             columns.remove(column)
@@ -718,25 +713,32 @@ def animated_ts_plot(
         raise EmptyParameter(
             "No numerical columns found to draw the animated multi TS plot"
         )
-    query = "SELECT /*+LABEL('plot.animated_ts_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL".format(
-        order_by, ", ".join(columns), vdf.__genSQL__(), order_by
-    )
-    query += (
-        " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
-    )
-    query += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
-    query += " AND " + " AND ".join(
-        ["{} IS NOT NULL".format(column) for column in columns]
-    )
-    query += " ORDER BY {}".format(order_by)
+    order_by_start_str, order_by_end_str, limit = "", "", ""
+    if order_by_start:
+        order_by_start_str = f" AND {order_by} > '{order_by_start}'"
+    if order_by_end:
+        order_by_end_str = f" AND {order_by} < '{order_by_end}'"
     if limit:
-        query += " LIMIT {}".format(limit)
+        limit_str = f" LIMIT {limit}"
+    condition = " AND ".join([f"{column} IS NOT NULL" for column in columns])
     query_result = executeSQL(
-        query=query,
+        query=f"""
+            SELECT 
+                /*+LABEL('plot.animated_ts_plot')*/ 
+                {order_by},
+                {", ".join(columns)} 
+            FROM {vdf.__genSQL__()} 
+            WHERE {order_by} IS NOT NULL
+                  {order_by_start_str}
+                  {order_by_end_str}
+              AND {condition}
+            ORDER BY {order_by}
+            {limit_str}
+            """,
         title="Selecting the needed points to draw the curves",
         method="fetchall",
     )
-    order_by_values = [item[0] for item in query_result]
+    order_by_values = [column[0] for column in query_result]
     if isinstance(order_by_values[0], str) and PARSER_IMPORT:
         order_by_values = parse_datetime(order_by_values)
     alpha = 0.3
@@ -849,7 +851,7 @@ def bar(
     elif (method.lower() in ["avg", "min", "max", "sum"] or "%" == method[-1]) and (
         of != None
     ):
-        aggregate = "{}({})".format(method.upper(), of)
+        aggregate = f"{method.upper()}({of})"
         ax.set_xlabel(aggregate)
     elif method.lower() == "count":
         ax.set_xlabel("Frequency")
@@ -969,7 +971,7 @@ def bar2D(
         if method.lower() == "density":
             ax.set_xlabel("Density")
         elif (method.lower() in ["avg", "min", "max", "sum"]) and (of != None):
-            ax.set_xlabel("{}({})".format(method, of))
+            ax.set_xlabel(f"{method}({of})")
         elif method.lower() == "count":
             ax.set_xlabel("Frequency")
         else:
@@ -1113,15 +1115,20 @@ def boxplot(
                     + " AS "
                     + by
                 )
-                enum_trans += ", {}".format(vdf.alias)
-                table = "(SELECT {} FROM {}) enum_table".format(enum_trans, table)
+                enum_trans += f", {vdf.alias}".format(vdf.alias)
+                table = f"(SELECT {enum_trans} FROM {table}) enum_table"
             if not (cat_priority):
-                query = "SELECT /*+LABEL('plot.boxplot')*/ {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {}".format(
-                    by, table, vdf.alias, by, max_cardinality
-                )
                 query_result = executeSQL(
-                    query=query,
-                    title="Computing the categories of {}".format(by),
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('plot.boxplot')*/ 
+                            {by} 
+                        FROM {table} 
+                        WHERE {vdf.alias} IS NOT NULL 
+                        GROUP BY {by} 
+                        ORDER BY COUNT(*) DESC 
+                        LIMIT {max_cardinality}""",
+                    title=f"Computing the categories of {by}",
                     method="fetchall",
                 )
                 cat_priority = [item for sublist in query_result for item in sublist]
@@ -1130,27 +1137,28 @@ def boxplot(
             lp = "(" if (len(cat_priority) == 1) else ""
             rp = ")" if (len(cat_priority) == 1) else ""
             for idx, category in enumerate(cat_priority):
-                tmp_query = "SELECT MIN({}) AS min, APPROXIMATE_PERCENTILE ({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE ({}".format(
-                    vdf.alias, vdf.alias, vdf.alias
-                )
-                tmp_query += "USING PARAMETERS percentile = 0.5) AS Median, APPROXIMATE_PERCENTILE ({} USING PARAMETERS percentile = 0.75) AS Q3, MAX".format(
-                    vdf.alias
-                )
-                tmp_query += "({}) AS max, '{}' FROM vdf_table".format(vdf.alias, "{}")
-                tmp_query = (
-                    tmp_query.format("None")
-                    if (category in ("None", None))
-                    else tmp_query.format(category)
-                )
-                tmp_query += (
-                    " WHERE {} IS NULL".format(by)
-                    if (category in ("None", None))
-                    else " WHERE {} = '{}'".format(by, str(category).replace("'", "''"))
-                )
+                if (category in ("None", None)):
+                    where = f"WHERE {by} IS NULL"
+                else:
+                    category_str = str(category).replace("'", "''")
+                    where = f"WHERE {by} = '{category_str}'"
+                tmp_query = f"""
+                    SELECT 
+                        MIN({vdf.alias}) AS min,
+                        APPROXIMATE_PERCENTILE ({vdf.alias} 
+                               USING PARAMETERS percentile = 0.25) AS Q1,
+                        APPROXIMATE_PERCENTILE ({vdf.alias} 
+                               USING PARAMETERS percentile = 0.5) AS Median, 
+                        APPROXIMATE_PERCENTILE ({vdf.alias} 
+                               USING PARAMETERS percentile = 0.75) AS Q3, 
+                        MAX({vdf.alias}) AS max, '{category}' 
+                    FROM vdf_table
+                    {where}"""
                 query += [lp + tmp_query + rp]
-            query = "WITH vdf_table AS (SELECT /*+LABEL('plot.boxplot')*/ * FROM {}) {}".format(
-                table, " UNION ALL ".join(query)
-            )
+            query = f"""
+                WITH vdf_table AS 
+                    (SELECT /*+LABEL('plot.boxplot')*/ * FROM {table})
+                    {" UNION ALL ".join(query)}"""
             try:
                 query_result = executeSQL(
                     query=query,

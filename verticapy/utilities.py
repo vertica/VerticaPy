@@ -855,13 +855,14 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
             ({", ".join(cols)}) VALUES """
         for i in range(n):
             sql_tmp = "("
-            for elem in data[i]:
-                if isinstance(elem, str):
-                    sql_tmp += "'{0}'".format(elem.replace("'", "''"))
-                elif elem is None or elem != elem:
+            for d in data[i]:
+                if isinstance(d, str):
+                    d_str = d.replace("'", "''")
+                    sql_tmp += f"'{d_str}'"
+                elif d is None or d != d:
                     sql_tmp += "NULL"
                 else:
-                    sql_tmp += f"'{elem}'"
+                    sql_tmp += f"'{d}'"
                 sql_tmp += ","
             sql_tmp = sql_tmp[:-1] + ");"
             query = header + sql_tmp
@@ -1579,34 +1580,27 @@ read_json : Ingests a JSON file into the Vertica database.
     if "*" in basename:
         multiple_files = True
     if not (genSQL):
-        query = """SELECT /*+LABEL('utilities.read_csv')*/
-                        column_name 
-                   FROM columns 
-                   WHERE table_name = '{0}' 
-                     AND table_schema = '{1}' 
-                   ORDER BY ordinal_position""".format(
-            table_name.replace("'", "''"), schema.replace("'", "''")
-        )
+        table_name_str = table_name.replace("'", "''")
+        schema_str = schema.replace("'", "''")
         result = executeSQL(
-            query, title="Looking if the relation exists.", method="fetchall"
+            query=f"""
+                SELECT /*+LABEL('utilities.read_csv')*/
+                    column_name 
+               FROM columns 
+               WHERE table_name = '{table_name_str}' 
+                 AND table_schema = '{schema_str}' 
+               ORDER BY ordinal_position""",
+            title="Looking if the relation exists.",
+            method="fetchall",
         )
+    input_relation = format_schema_table(schema, table_name)
     if not (genSQL) and (result != []) and not (insert) and not (genSQL):
-        raise NameError(
-            "The table {0} already exists !".format(
-                format_schema_table(schema, table_name)
-            )
-        )
+        raise NameError(f"The table {input_relation} already exists !")
     elif not (genSQL) and (result == []) and (insert):
-        raise MissingRelation(
-            "The table {0} doesn't exist !".format(
-                format_schema_table(schema, table_name)
-            )
-        )
+        raise MissingRelation(f"The table {input_relation} doesn't exist !")
     else:
-        if not (temporary_local_table):
-            input_relation = format_schema_table(schema, table_name)
-        else:
-            input_relation = "v_temp_schema.{}".format(quote_ident(table_name))
+        if temporary_local_table:
+            input_relation = f"v_temp_schema.{quote_ident(table_name)}"
         file_header = []
         path_first_file_in_folder = path
         if multiple_files and ingest_local:
@@ -1638,7 +1632,7 @@ read_json : Ingests a JSON file into the Vertica database.
             header_names = erase_space_start_end_in_list_values(header_names)
         elif len(file_header) > len(header_names):
             header_names += [
-                "ucol{}".format(i + len(header_names))
+                f"ucol{i + len(header_names)}"
                 for i in range(len(file_header) - len(header_names))
             ]
         if not (sep):
@@ -1737,22 +1731,15 @@ read_json : Ingests a JSON file into the Vertica database.
                 genSQL=True,
             )
         skip = " SKIP 1" if (header) else ""
-        query2 = """COPY {0}({1}) 
-                    FROM {2} {3} 
-                    DELIMITER '{4}' 
-                    NULL '{5}' 
-                    ENCLOSED BY '{6}' 
-                    ESCAPE AS '{7}'{8};""".format(
-            input_relation,
-            ", ".join(['"' + column + '"' for column in header_names]),
-            "{0}'{1}'".format("LOCAL " if ingest_local else "", path),
-            compression,
-            sep,
-            na_rep,
-            quotechar,
-            escape,
-            skip,
-        )
+        local = "LOCAL " if ingest_local else "", path
+        header_names_str = ", ".join([f'"{column}"' for column in header_names])
+        query2 = f"""
+            COPY {input_relation}({header_names_str}) 
+            FROM {local}'{path}' {compression} 
+            DELIMITER '{sep}' 
+            NULL '{na_rep}' 
+            ENCLOSED BY '{quotechar}' 
+            ESCAPE AS '{escape}'{skip};"""
         if genSQL:
             if insert:
                 return [clean_query(query2)]
