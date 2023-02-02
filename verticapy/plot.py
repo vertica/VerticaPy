@@ -185,44 +185,43 @@ def animated_bar(
         def date_f(x):
             return str(x)
 
-    if "color" in style_kwds:
-        colors = style_kwds["color"]
-        del style_kwds["color"]
-    elif "colors" in style_kwds:
-        colors = style_kwds["colors"]
-        del style_kwds["color"]
-    else:
-        colors = gen_colors()
+    colors = gen_colors()
+    for c in ["color", "colors"]:
+        if c in style_kwds:
+            colors = style_kwds[c]
+            del style_kwds[c]
+            break
     if isinstance(colors, str):
         colors = []
     colors_map = {}
-    if len(columns) >= 3:
-        all_cats = vdf[columns[2]].distinct(agg="MAX({})".format(columns[1]))
-        for idx, elem in enumerate(all_cats):
-            colors_map[elem] = colors[idx % len(colors)]
-    else:
-        all_cats = vdf[columns[0]].distinct(agg="MAX({})".format(columns[1]))
-        for idx, elem in enumerate(all_cats):
-            colors_map[elem] = colors[idx % len(colors)]
-    where = (
-        " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
-    )
-    where += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
-    query = "SELECT /*+LABEL('plot.animated_bar')*/ * FROM (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} LIMIT {} OVER (PARTITION BY {} ORDER BY {} DESC)) x ORDER BY {} ASC, {} ASC LIMIT {}".format(
-        order_by,
-        ", ".join(columns),
-        vdf.__genSQL__(),
-        order_by,
-        " AND ".join([f"{elem} IS NOT NULL" for elem in columns]) + where,
-        limit_over,
-        order_by,
-        columns[1],
-        order_by,
-        columns[1],
-        limit,
-    )
+    idx = 2 if len(columns) >= 3 else 0
+    all_cats = vdf[columns[idx]].distinct(agg=f"MAX({columns[1]})")
+    for idx, i in enumerate(all_cats):
+        colors_map[i] = colors[idx % len(colors)]
+    order_by_start_str, order_by_end_str = "", ""
+    if order_by_start:
+        order_by_start_str = f"AND {order_by} > '{order_by_start}'"
+    if order_by_end:
+        order_by_end_str = f" AND {order_by} < '{order_by_end}'"
+    condition = [f"{column} IS NOT NULL" for column in columns]
     query_result = executeSQL(
-        query=query,
+        query=f"""
+            SELECT 
+                /*+LABEL('plot.animated_bar')*/ * 
+            FROM 
+                (SELECT 
+                    {order_by},
+                    {", ".join(columns)} 
+                 FROM {vdf.__genSQL__()} 
+                 WHERE {order_by} IS NOT NULL 
+                   AND {condition}
+                   {order_by_start_str}
+                   {order_by_end_str} 
+                 LIMIT {limit_over} 
+                    OVER (PARTITION BY {order_by} 
+                          ORDER BY {columns[1]} DESC)) x 
+            ORDER BY {order_by} ASC, {columns[1]} ASC 
+            LIMIT {limit}""",
         title="Selecting points to draw the animated bar chart.",
         method="fetchall",
     )
@@ -468,7 +467,7 @@ def animated_bubble_plot(
             }
         else:
             colors_map = {}
-            all_cats = vdf[by].distinct(agg="MAX({})".format(columns[2]))
+            all_cats = vdf[by].distinct(agg=f"MAX({columns[2]})")
             for idx, elem in enumerate(all_cats):
                 colors_map[elem] = colors[idx % len(colors)]
     else:
@@ -2514,8 +2513,9 @@ def multiple_hist(
                 all_columns += [columns[idx]]
             else:
                 if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
-                    warning_message = "The Virtual Column {} is not numerical. Its histogram will not be draw.".format(
-                        column
+                    warning_message = (
+                        f"The Virtual Column {column} is not numerical."
+                        " Its histogram will not be draw."
                     )
                     warnings.warn(warning_message, Warning)
         ax.set_xlabel(", ".join(all_columns))
@@ -2525,7 +2525,7 @@ def multiple_hist(
             method.lower() in ["avg", "min", "max", "sum", "mean"]
             or ("%" == method[-1])
         ) and (of):
-            ax.set_ylabel(method + "(" + of + ")")
+            ax.set_ylabel(f"{method}({of})")
         elif method.lower() == "count":
             ax.set_ylabel("Frequency")
         else:
@@ -2569,27 +2569,31 @@ def multi_ts_plot(
     for column in columns:
         if not (vdf[column].isnum()):
             if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
-                warning_message = "The Virtual Column {} is not numerical.\nIt will be ignored.".format(
-                    column
+                warning_message = (
+                    f"The Virtual Column {column} is "
+                    "not numerical.\nIt will be ignored."
                 )
                 warnings.warn(warning_message, Warning)
             columns.remove(column)
     if not (columns):
         raise EmptyParameter("No numerical columns found to draw the multi TS plot")
     colors = gen_colors()
-    query = "SELECT /*+LABEL('plot.multi_ts_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL".format(
-        order_by, ", ".join(columns), vdf.__genSQL__(), order_by
-    )
-    query += (
-        " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
-    )
-    query += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
-    query += " AND " + " AND ".join(
-        ["{} IS NOT NULL".format(column) for column in columns]
-    )
-    query += " ORDER BY {}".format(order_by)
+    order_by_start_str, order_by_end_str = "", ""
+    if order_by_start:
+        order_by_start_str = f" AND {order_by} > '{order_by_start}'"
+    if order_by_end:
+        order_by_end_str = f" AND {order_by} < '{order_by_end}'"
+    condition = " AND " + " AND ".join([f"{column} IS NOT NULL" for column in columns])
     query_result = executeSQL(
-        query=query,
+        query=f"""
+            SELECT 
+                /*+LABEL('plot.multi_ts_plot')*/ 
+                {order_by}, 
+                {", ".join(columns)} 
+            FROM {vdf.__genSQL__()} 
+            WHERE {order_by} IS NOT NULL
+            {condition}
+            ORDER BY {order_by}""",
         title="Selecting the needed points to draw the curves",
         method="fetchall",
     )
@@ -2615,14 +2619,17 @@ def multi_ts_plot(
         else:
             points = [item[i + 1] for item in query_result]
         param = {"linewidth": 1}
+        param_style = {
+            "marker": "o",
+            "markevery": 0.05,
+            "markerfacecolor": colors[i],
+            "markersize": 7,
+        }
         if kind in ("line", "step"):
             color = colors[i]
             if len(order_by_values) < 20:
                 param = {
-                    "marker": "o",
-                    "markevery": 0.05,
-                    "markerfacecolor": colors[i],
-                    "markersize": 7,
+                    **param_style,
                     "markeredgecolor": "black",
                 }
             param["label"] = columns[i]
@@ -2631,20 +2638,14 @@ def multi_ts_plot(
             color = "white"
             if len(order_by_values) < 20:
                 param = {
-                    "marker": "o",
-                    "markevery": 0.05,
-                    "markerfacecolor": colors[i],
-                    "markersize": 7,
+                    **param_style,
                     "markeredgecolor": "white",
                 }
         else:
             color = "black"
             if len(order_by_values) < 20:
                 param = {
-                    "marker": "o",
-                    "markevery": 0.05,
-                    "markerfacecolor": colors[i],
-                    "markersize": 7,
+                    **param_style,
                     "markeredgecolor": "black",
                 }
         param["color"] = color
@@ -2698,7 +2699,7 @@ def range_curve(
         if isnotebook():
             fig.set_size_inches(8, 6)
         ax.grid()
-    for i, elem in enumerate(Y):
+    for i, y in enumerate(Y):
         if labels:
             label = labels[i]
         else:
@@ -2708,19 +2709,17 @@ def range_curve(
         else:
             alpha1, alpha2 = 0.5, 0.9
         param = {"facecolor": color_dict(style_kwds, i)}
-        ax.fill_between(X, elem[0], elem[2], alpha=alpha1, **param)
+        ax.fill_between(X, y[0], y[2], alpha=alpha1, **param)
         param = {"color": color_dict(style_kwds, i)}
-        ax.plot(
-            X, elem[0], alpha=alpha2, **updated_dict(param, style_kwds, i),
-        )
-        ax.plot(
-            X, elem[2], alpha=alpha2, **updated_dict(param, style_kwds, i),
-        )
+        for j in [0, 2]:
+            ax.plot(
+                X, y[j], alpha=alpha2, **updated_dict(param, style_kwds, i),
+            )
         if plot_median:
-            ax.plot(X, elem[1], label=label, **updated_dict(param, style_kwds, i))
+            ax.plot(X, y[1], label=label, **updated_dict(param, style_kwds, i))
         if (not (without_scatter) or len(X) < 20) and plot_median:
             ax.scatter(
-                X, elem[1], c="white", marker="o", s=60, edgecolors="black", zorder=3,
+                X, y[1], c="white", marker="o", s=60, edgecolors="black", zorder=3,
             )
     ax.set_xlabel(param_name)
     ax.set_ylabel(score_name)
@@ -2745,24 +2744,27 @@ def range_curve_vdf(
     ax=None,
     **style_kwds,
 ):
-    query = "SELECT /*+LABEL('plot.range_curve_vdf')*/ {}, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}), APPROXIMATE_MEDIAN({}), APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
-        order_by,
-        vdf.alias,
-        q[0],
-        vdf.alias,
-        vdf.alias,
-        q[1],
-        vdf.parent.__genSQL__(),
-        order_by,
-        vdf.alias,
-    )
-    query += (
-        " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
-    )
-    query += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
-    query += " GROUP BY 1 ORDER BY 1"
+    order_by_start_str = ""
+    if order_by_start:
+        order_by_start_str = f" AND {order_by} > '{order_by_start}'"
+    if order_by_end:
+        order_by_end_str = f" AND {order_by} < '{order_by_end}'"
     query_result = executeSQL(
-        query=query, title="Selecting points to draw the curve", method="fetchall"
+        query=f"""
+        SELECT 
+            /*+LABEL('plot.range_curve_vdf')*/ 
+            {order_by}, 
+            APPROXIMATE_PERCENTILE({vdf.alias} USING PARAMETERS percentile = {q[0]}),
+            APPROXIMATE_MEDIAN({vdf.alias}),
+            APPROXIMATE_PERCENTILE({vdf.alias} USING PARAMETERS percentile = {q[1]})
+        FROM {vdf.parent.__genSQL__()} 
+        WHERE {order_by} IS NOT NULL 
+          AND {vdf.alias} IS NOT NULL
+          {order_by_start_str}
+          {order_by_end_str}
+        GROUP BY 1 ORDER BY 1""",
+        title="Selecting points to draw the curve",
+        method="fetchall",
     )
     order_by_values = [item[0] for item in query_result]
     if isinstance(order_by_values[0], str) and PARSER_IMPORT:
@@ -2832,16 +2834,12 @@ def outliers_contour_plot(
             [threshold, threshold],
             facecolor=color,
         )
-        ax.plot(
-            [all_agg["min"][0], all_agg["max"][0]],
-            [-threshold, -threshold],
-            color=inliers_border_color,
-        )
-        ax.plot(
-            [all_agg["min"][0], all_agg["max"][0]],
-            [threshold, threshold],
-            color=inliers_border_color,
-        )
+        for i in [-1, 1]:
+            ax.plot(
+                [all_agg["min"][0], all_agg["max"][0]],
+                [i * threshold, i * threshold],
+                color=inliers_border_color,
+            )
         for tick in ax.get_xticklabels():
             tick.set_rotation(90)
         ax.set_xlabel(columns[0])
@@ -2862,7 +2860,6 @@ def outliers_contour_plot(
                 color=searchi[1],
                 **style_kwds,
             )
-        bbox_to_anchor = [1, 0.5]
     elif len(columns) == 2:
         ylist = np.linspace(all_agg["min"][1], all_agg["max"][1], 1000)
         X, Y = np.meshgrid(xlist, ylist)
@@ -2878,68 +2875,37 @@ def outliers_contour_plot(
         fig.colorbar(cp).set_label("ZSCORE")
         ax.set_xlabel(columns[0])
         ax.set_ylabel(columns[1])
-        search1 = "ABS(({} - {}) / {}) > {} OR ABS(({} - {}) / {}) > {}".format(
-            columns[0],
-            all_agg["avg"][0],
-            all_agg["std"][0],
-            threshold,
-            columns[1],
-            all_agg["avg"][1],
-            all_agg["std"][1],
-            threshold,
-        )
-        search2 = "ABS(({} - {}) / {}) <= {} AND ABS(({} - {}) / {}) <= {}".format(
-            columns[0],
-            all_agg["avg"][0],
-            all_agg["std"][0],
-            threshold,
-            columns[1],
-            all_agg["avg"][1],
-            all_agg["std"][1],
-            threshold,
-        )
-        bbox_to_anchor = [1, 0.5]
-        scatter(
-            vdf.search(search1),
-            columns,
-            max_nb_points=max_nb_points,
-            ax=ax,
-            color=outliers_color,
-            **style_kwds,
-        )
-        scatter(
-            vdf.search(search2),
-            columns,
-            max_nb_points=max_nb_points,
-            ax=ax,
-            color=inliers_color,
-            **style_kwds,
-        )
+        s = []
+        for op, color in [("OR", outliers_color), ("AND", inliers_color)]:
+            s = f"""
+                ABS(({columns[0]} - {all_agg["avg"][0]}) 
+                / {all_agg["std"][0]}) <= {threshold} 
+           {op} ABS(({columns[1]} - {all_agg["avg"][1]}) 
+                / {all_agg["std"][1]}) <= {threshold}"""
+            scatter(
+                vdf.search(s),
+                columns,
+                max_nb_points=max_nb_points,
+                ax=ax,
+                color=color,
+                **style_kwds,
+            )
+    args = [[0], [0]]
+    kwds = {
+        "marker": "o",
+        "color": "black",
+        "label": "Scatter",
+        "markersize": 8,
+    }
     ax.legend(
         [
-            Line2D([0], [0], color=inliers_border_color, lw=4),
-            Line2D(
-                [0],
-                [0],
-                marker="o",
-                color="black",
-                label="Scatter",
-                markerfacecolor=inliers_color,
-                markersize=8,
-            ),
-            Line2D(
-                [0],
-                [0],
-                marker="o",
-                color="black",
-                label="Scatter",
-                markerfacecolor=outliers_color,
-                markersize=8,
-            ),
+            Line2D(*args, color=inliers_border_color, lw=4),
+            Line2D(*args, **kwds, markerfacecolor=inliers_color),
+            Line2D(*args, **kwds, markerfacecolor=outliers_color),
         ],
         ["threshold", "inliers", "outliers"],
         loc="center left",
-        bbox_to_anchor=bbox_to_anchor,
+        bbox_to_anchor=[1, 0.5],
         labelspacing=1,
     )
     box = ax.get_position()
@@ -3146,7 +3112,7 @@ def pivot_table(
                     interval = round(interval, 4)
                 elif interval > 0.000001:
                     interval = round(interval, 6)
-                if (vdf[column].category() == "int"):
+                if vdf[column].category() == "int":
                     interval = int(max(math.floor(interval), 1))
             else:
                 interval = h[idx]
@@ -3173,7 +3139,7 @@ def pivot_table(
                                       / {interval}) * {interval}) ASC"""
             where += [f"{column} IS NOT NULL"]
         elif is_date:
-            if (h[idx] == None):
+            if h[idx] == None:
                 interval = vdf[column].numh()
             else:
                 interval = max(math.floor(h[idx]), 1)
@@ -3185,7 +3151,9 @@ def pivot_table(
                         / {interval}) * {interval}"""
             ]
             is_column_date[idx] = True
-            timestampadd[idx] = f"""TIMESTAMPADD('second', 
+            timestampadd[
+                idx
+            ] = f"""TIMESTAMPADD('second', 
                                                  {columns[idx]}::int,
                                                  '{min_date}'::timestamp)"""
             order_by = "ORDER BY 1 ASC"
@@ -3259,9 +3227,7 @@ def pivot_table(
                     order += [float(item.split(";")[0].split("[")[1])]
             except:
                 order = [float(item) for item in L]
-            L = [
-                x for _, x in sorted(zip(order, L))
-            ]
+            L = [x for _, x in sorted(zip(order, L))]
         except:
             pass
         all_columns_categories += [copy.deepcopy(L)]

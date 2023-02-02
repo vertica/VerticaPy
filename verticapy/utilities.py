@@ -2728,12 +2728,12 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
             verticapy.OPTIONS[option] = value
     elif option == "temp_schema":
         if isinstance(value, str):
-            query = """SELECT /*+LABEL('utilities.set_option')*/
-                          schema_name 
-                       FROM v_catalog.schemata 
-                       WHERE schema_name = '{0}' LIMIT 1;""".format(
-                value.replace("'", "''")
-            )
+            value_str = value.replace("'", "''")
+            query = f"""
+                SELECT /*+LABEL('utilities.set_option')*/
+                  schema_name 
+               FROM v_catalog.schemata 
+               WHERE schema_name = '{value_str}' LIMIT 1;"""
             res = executeSQL(
                 query, title="Checking if the schema exists.", method="fetchrow"
             )
@@ -2870,24 +2870,21 @@ The tablesample attributes are the same as the parameters.
             else:
                 start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
                 if start > end:
-                    rows = "0{0}".format(
-                        " of {0}".format(self.count) if (self.count > 0) else ""
-                    )
+                    rows = f"0 of {self.count}" if (self.count > 0) else "0"
                 else:
-                    rows = "{0}-{1}{2}".format(
-                        start,
-                        end,
-                        " of {0}".format(self.count) if (self.count > 0) else "",
-                    )
+                    of = f" of {self.count}" if (self.count > 0) else ""
+                    rows = f"{start}-{end}{of}"
             if len(self.values) == 1:
                 column = list(self.values.keys())[0]
                 if self.offset > self.count:
-                    formatted_text += "<b>Column:</b> {0} | <b>Type:</b> {1}".format(
-                        column, self.dtype[column]
+                    formatted_text += (
+                        f"<b>Column:</b> {column} | "
+                        f"<b>Type:</b> {self.dtype[column]}"
                     )
                 else:
-                    formatted_text += "<b>Rows:</b> {0} | <b>Column:</b> {1} | <b>Type:</b> {2}".format(
-                        rows, column, self.dtype[column]
+                    formatted_text += (
+                        f"<b>Rows:</b> {rows} | <b>Column:</b> {column} "
+                        f"| <b>Type:</b> {self.dtype[column]}"
                     )
             else:
                 if self.offset > self.count:
@@ -2935,22 +2932,17 @@ The tablesample attributes are the same as the parameters.
             rows = self.count
         else:
             if start > end:
-                rows = "0{0}".format(
-                    " of {0}".format(self.count) if (self.count > 0) else ""
-                )
+                rows = f"0 of {self.count}" if (self.count > 0) else "0"
             else:
-                rows = "{0}-{1}{2}".format(
-                    start, end, " of {}".format(self.count) if (self.count > 0) else "",
-                )
+                count_str = f" of {self.count}" if (self.count > 0) else ""
+                rows = f"{start}-{end}{count_str}"
         if len(self.values) == 1:
             column = list(self.values.keys())[0]
             if self.offset > self.count:
-                formatted_text += "Column: {0} | Type: {1}".format(
-                    column, self.dtype[column]
-                )
+                formatted_text += f"Column: {column} | Type: {self.dtype[column]}"
             else:
-                formatted_text += "Rows: {0} | Column: {1} | Type: {2}".format(
-                    rows, column, self.dtype[column]
+                formatted_text += (
+                    f"Rows: {rows} | Column: {column} | Type: {self.dtype[column]}"
                 )
         else:
             if self.offset > self.count:
@@ -3085,11 +3077,7 @@ The tablesample attributes are the same as the parameters.
                 idx = i
                 column = col
         if idx is None:
-            raise MissingColumn(
-                "The Column '{0}' doesn't exist.".format(
-                    column.lower().replace('"', "")
-                )
-            )
+            raise MissingColumn(f"The Column '{column}' doesn't exist.")
         n, sort = len(self[column]), []
         for i in range(n):
             tmp_list = []
@@ -3211,7 +3199,7 @@ The tablesample attributes are the same as the parameters.
                 val = "NULL"
             elif isinstance(val, bytes):
                 val = str(val)[2:-1]
-                val = "'{0}'::binary({1})".format(val, len(val))
+                val = f"'{val}'::binary({len(val)})"
             elif isinstance(val, datetime.datetime):
                 val = f"'{val}'::datetime"
             elif isinstance(val, datetime.date):
@@ -3224,14 +3212,14 @@ The tablesample attributes are the same as the parameters.
                 val = f"'{val}'::timestamptz"
             elif isinstance(val, (np.ndarray, list)):
                 vertica_version(condition=[10, 0, 0])
-                val = "ARRAY[{0}]".format(
-                    ",".join([str(get_correct_format_and_cast(k)) for k in val])
-                )
+                val = f"""
+                ARRAY[
+                    {", ".join([str(get_correct_format_and_cast(k)) for k in val])}
+                     ]"""
             elif isinstance(val, dict):
                 vertica_version(condition=[11, 0, 0])
                 all_elems = [
-                    "{0} AS {1}".format(get_correct_format_and_cast(val[k]), k)
-                    for k in val
+                    f"{get_correct_format_and_cast(val[k])} AS {k}" for k in val
                 ]
                 val = ", ".join(all_elems)
                 val = f"ROW({val})"
@@ -3248,8 +3236,9 @@ The tablesample attributes are the same as the parameters.
             row = []
             for column in self.values:
                 val = get_correct_format_and_cast(self.values[column][i])
-                row += ["{0} AS {1}".format(val, '"' + column.replace('"', "") + '"')]
-            sql += ["(SELECT {0})".format(", ".join(row))]
+                column_str = '"' + column.replace('"', "") + '"'
+                row += [f"{val} AS {column_str}"]
+            sql += [f"(SELECT {', '.join(row)})"]
         sql = " UNION ALL ".join(sql)
         return sql
 
@@ -3407,10 +3396,11 @@ vDataFrame
     # Creating the vColumns
     for column, ctype in dtypes:
         if '"' in column:
+            column_str = column.replace('"', "_")
             warning_message = (
-                'A double quote " was found in the column {0}, its '
-                "alias was changed using underscores '_' to {1}"
-            ).format(column, column.replace('"', "_"))
+                f'A double quote " was found in the column {column}, its '
+                f"alias was changed using underscores '_' to {column_str}"
+            )
             warnings.warn(warning_message, Warning)
         from verticapy.vcolumn import vColumn
 
@@ -3490,18 +3480,13 @@ list
         else:
             test = False
         if not (test):
+            v0, v1, v2 = result[0], result[1], str(result[2]).split("-")[0]
+            v = ".".join([str(c) for c in condition[:3]])
             raise VersionError(
                 (
-                    "This Function is not available for Vertica version {0}.\n"
-                    "Please upgrade your Vertica version to at least {1} to "
-                    "get this functionality."
-                ).format(
-                    str(result[0])
-                    + "."
-                    + str(result[1])
-                    + "."
-                    + str(result[2]).split("-")[0],
-                    ".".join([str(elem) for elem in condition[:3]]),
+                    "This Function is not available for Vertica version "
+                    f"{v0}.{v1}.{v2}.\nPlease upgrade your Vertica "
+                    f"version to at least {v} to get this functionality."
                 )
             )
     return result
