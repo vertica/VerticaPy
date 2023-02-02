@@ -2512,9 +2512,8 @@ vColumns : vColumn
         except:
 
             try:
-
                 query = [
-                    "SELECT {} FROM vdf_table LIMIT 1".format(
+                    "SELECT {0} FROM vdf_table LIMIT 1".format(
                         ", ".join(
                             [
                                 format_magic(item, cast_float_int_to_str=True)
