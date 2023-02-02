@@ -1097,7 +1097,10 @@ def boxplot(
     # MULTI BOXPLOT
     else:
         try:
-            by = vdf.format_colnames(by)
+            try:
+                by = vdf.format_colnames(by)
+            except:
+                by = vdf.parent.format_colnames(by)
             if vdf.alias == by:
                 raise NameError(
                     "The parameter 'column' and the parameter 'groupby' can not be the same"
@@ -1273,7 +1276,7 @@ def boxplot(
             return ax
         except Exception as e:
             raise Exception(
-                "{}\nAn error occured during the BoxPlot creation.".format(e)
+                f"{e}\nAn error occured during the BoxPlot creation."
             )
 
 
@@ -1300,9 +1303,7 @@ def boxplot2D(
     for column in columns:
         if column not in vdf.numcol():
             if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
-                warning_message = "The Virtual Column {} is not numerical.\nIt will be ignored.".format(
-                    column
-                )
+                warning_message = f"The Virtual Column {column} is not numerical.\nIt will be ignored."
                 warnings.warn(warning_message, Warning)
             columns.remove(column)
     if not (columns):
@@ -1344,7 +1345,7 @@ def boxplot2D(
             return ax
         except Exception as e:
             raise Exception(
-                "{}\nAn error occured during the BoxPlot creation.".format(e)
+                f"{e}\nAn error occured during the BoxPlot creation."
             )
 
 
