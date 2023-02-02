@@ -1997,10 +1997,10 @@ def compute_plot_variables(
             if (method.lower() == "density")
             else [item[1] for item in query_result]
         )
-        query = ""
+        query = "("
         for idx, item in enumerate(query_result):
             query_tmp = f"""
-                ((SELECT 
+                (SELECT 
                     {{}}
                     TIMESTAMPADD('second',
                                  {math.floor(h * idx)},
