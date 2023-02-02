@@ -378,10 +378,11 @@ vColumns : vColumn
             for col_dtype in columns_dtype:
                 column, dtype = col_dtype[0], col_dtype[1]
                 if '"' in column:
+                    column_str = column.replace('"', "_")
                     warning_message = (
-                        'A double quote " was found in the column {0}, '
-                        "its alias was changed using underscores '_' to {1}."
-                    ).format(column, column.replace('"', "_"))
+                        f'A double quote " was found in the column {column}, '
+                        f"its alias was changed using underscores '_' to {column_str}."
+                    )
                     warnings.warn(warning_message, Warning)
                 category = get_category_from_vertica_type(dtype)
                 if (dtype.lower()[0:12] in ("long varbina", "long varchar")) and (
@@ -476,17 +477,16 @@ vColumns : vColumn
             columns = self.get_columns()
             for idx, elem in enumerate(columns):
                 if self[elem].category() == "float":
-                    columns[idx] = "{}::float".format(elem)
+                    columns[idx] = f"{elem}::float"
             if index < 0:
                 index += self.shape()[0]
-            query = f"""
-                SELECT /*+LABEL('vDataframe.__getitem__')*/ 
-                    {', '.join(columns)} 
-                FROM {self.__genSQL__()}
-                {self.__get_last_order_by__()} 
-                OFFSET {index} LIMIT 1"""
             return executeSQL(
-                query=query,
+                query=f"""
+                    SELECT /*+LABEL('vDataframe.__getitem__')*/ 
+                        {', '.join(columns)} 
+                    FROM {self.__genSQL__()}
+                    {self.__get_last_order_by__()} 
+                    OFFSET {index} LIMIT 1""",
                 title="Getting the vDataFrame element.",
                 method="fetchrow",
                 sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -605,7 +605,7 @@ vColumns : vColumn
     vDataFrame history attribute.
         """
         self._VERTICAPY_VARIABLES_["history"] += [
-            "{}{}{} {}".format("{", time.strftime("%c"), "}", message)
+            "{" + time.strftime("%c") + "}" + " " + message
         ]
         return self
 
@@ -711,60 +711,61 @@ vColumns : vColumn
                     cast_b, cast_n = cast_0, cast_1
                 else:
                     return float("nan")
-                query = """SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
-                                (AVG(DECODE({0}{1}, 1, {2}{3}, NULL)) 
-                                    - AVG(DECODE({0}{1}, 0, {2}{3}, NULL))) 
-                                    / STDDEV({2}{3}) * SQRT(SUM({0}{1}) 
-                                    * SUM(1 - {0}{1}) / COUNT(*) / COUNT(*)) 
-                            FROM {4} 
-                            WHERE {0} IS NOT NULL AND {2} IS NOT NULL;""".format(
-                    column_b, cast_b, column_n, cast_n, self.__genSQL__(),
-                )
-                title = "Computes the biserial correlation between {} and {}.".format(
-                    column_b, column_n
+                query = f"""
+                    SELECT 
+                        /*+LABEL('vDataframe.__aggregate_matrix__')*/
+                        (AVG(DECODE({column_b}{cast_b}, 1, 
+                                    {column_n}{cast_n}, NULL)) 
+                       - AVG(DECODE({column_b}{cast_b}, 0, 
+                                    {column_n}{cast_n}, NULL))) 
+                       / STDDEV({column_n}{cast_n}) 
+                       * SQRT(SUM({column_b}{cast_b}) 
+                       * SUM(1 - {column_b}{cast_b}) 
+                       / COUNT(*) / COUNT(*)) 
+                    FROM {self.__genSQL__()} 
+                    WHERE {column_b} IS NOT NULL 
+                      AND {column_n} IS NOT NULL;"""
+                title = (
+                    "Computes the biserial correlation "
+                    f"between {column_b} and {column_n}."
                 )
             elif method == "cramer":
                 if columns[1] == columns[0]:
                     return 1
-                table_0_1 = """SELECT 
-                                    {0}, 
-                                    {1}, 
-                                    COUNT(*) AS nij 
-                               FROM {2} 
-                               WHERE {0} IS NOT NULL 
-                                 AND {1} IS NOT NULL 
-                               GROUP BY 1, 2""".format(
-                    columns[0], columns[1], self.__genSQL__()
-                )
-                table_0 = """SELECT 
-                                {0}, 
-                                COUNT(*) AS ni 
-                             FROM {1} 
-                             WHERE {0} IS NOT NULL 
-                               AND {2} IS NOT NULL 
-                             GROUP BY 1""".format(
-                    columns[0], self.__genSQL__(), columns[1]
-                )
-                table_1 = """SELECT 
-                                {0}, 
-                                COUNT(*) AS nj 
-                             FROM {1} 
-                             WHERE {2} IS NOT NULL 
-                               AND {0} IS NOT NULL 
-                             GROUP BY 1""".format(
-                    columns[1], self.__genSQL__(), columns[0]
-                )
-                sql = """SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
-                            COUNT(*) AS n, 
-                            APPROXIMATE_COUNT_DISTINCT({0}) AS k, 
-                            APPROXIMATE_COUNT_DISTINCT({1}) AS r 
-                         FROM {2} 
-                         WHERE {0} IS NOT NULL 
-                           AND {1} IS NOT NULL""".format(
-                    columns[0], columns[1], self.__genSQL__()
-                )
+                table_0_1 = f"""
+                    SELECT 
+                        {columns[0]}, 
+                        {columns[1]}, 
+                        COUNT(*) AS nij 
+                    FROM {self.__genSQL__()} 
+                    WHERE {columns[0]} IS NOT NULL 
+                      AND {columns[1]} IS NOT NULL 
+                    GROUP BY 1, 2"""
+                table_0 = f"""
+                    SELECT 
+                        {columns[0]}, 
+                        COUNT(*) AS ni 
+                    FROM {self.__genSQL__()} 
+                    WHERE {columns[0]} IS NOT NULL 
+                      AND {columns[1]} IS NOT NULL 
+                    GROUP BY 1"""
+                table_1 = f"""
+                    SELECT 
+                        {columns[1]}, 
+                        COUNT(*) AS nj 
+                    FROM {self.__genSQL__()} 
+                    WHERE {columns[0]} IS NOT NULL 
+                      AND {columns[1]} IS NOT NULL 
+                    GROUP BY 1"""
                 n, k, r = executeSQL(
-                    sql,
+                    query=f"""
+                        SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
+                            COUNT(*) AS n, 
+                            APPROXIMATE_COUNT_DISTINCT({columns[0]}) AS k, 
+                            APPROXIMATE_COUNT_DISTINCT({columns[1]}) AS r 
+                         FROM {self.__genSQL__()} 
+                         WHERE {columns[0]} IS NOT NULL 
+                           AND {columns[1]} IS NOT NULL""",
                     title="Computing the columns cardinalities.",
                     method="fetchrow",
                     sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -872,19 +873,16 @@ vColumns : vColumn
                     method in ("pearson", "spearman", "spearmand",)
                 )
                 fun = "DENSE_RANK" if method == "spearmand" else "RANK"
-                table = (
-                    self.__genSQL__()
-                    if (method == "pearson")
-                    else "(SELECT {0} FROM {1}) spearman_table".format(
-                        ", ".join(
-                            [
-                                "{0}() OVER (ORDER BY {1}) AS {1}".format(fun, column)
-                                for column in columns
-                            ]
-                        ),
-                        self.__genSQL__(),
+                if method == "pearson":
+                    table = self.__genSQL__()
+                else:
+                    columns_str = ", ".join(
+                        [
+                            f"{fun}() OVER (ORDER BY {column}) AS {column}"
+                            for column in columns
+                        ]
                     )
-                )
+                    table = f"(SELECT {columns_str} FROM {self.__genSQL__()}) spearman_table"
                 util.vertica_version(condition=[9, 2, 1])
                 result = executeSQL(
                     query=f"""SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
@@ -949,38 +947,40 @@ vColumns : vColumn
                                 nb_precomputed += 1
                             elif method in ("pearson", "spearman", "spearmand"):
                                 all_list += [
-                                    "ROUND(CORR({0}{1}, {2}{3}), {4})".format(
-                                        columns[i],
-                                        cast_i,
-                                        columns[j],
-                                        cast_j,
-                                        round_nb,
-                                    )
+                                    f"""ROUND(CORR({columns[i]}{cast_i}, 
+                                                  {columns[j]}{cast_j}), {round_nb})"""
                                 ]
                             elif method == "kendall":
                                 n_ = "SQRT(COUNT(*))"
-                                n_c = (
-                                    "(SUM(((x.{0}{1} < y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
-                                    "(x.{0}{1} > y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
-                                ).format(columns[i], cast_i, columns[j], cast_j,)
-                                n_d = (
-                                    "(SUM(((x.{0}{1} > y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
-                                    "(x.{0}{1} < y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
-                                ).format(columns[i], cast_i, columns[j], cast_j,)
-                                n_1 = "(SUM((x.{0}{1} = y.{0}{1})::int)-{2})/2".format(
-                                    columns[i], cast_i, n_
-                                )
-                                n_2 = "(SUM((x.{0}{1} = y.{0}{1})::int)-{2})/2".format(
-                                    columns[j], cast_j, n_
-                                )
+                                n_c = f"""
+                                    (SUM(((x.{columns[i]}{cast_i} 
+                                         < y.{columns[i]}{cast_i} 
+                                       AND x.{columns[j]}{cast_j} 
+                                         < y.{columns[j]}{cast_j})
+                                       OR (x.{columns[i]}{cast_i} 
+                                         > y.{columns[i]}{cast_i} 
+                                       AND x.{columns[j]}{cast_j} 
+                                         > y.{columns[j]}{cast_j}))::int))/2"""
+                                n_d = f"""
+                                    (SUM(((x.{columns[i]}{cast_i} 
+                                         > y.{columns[i]}{cast_i} 
+                                       AND x.{columns[j]}{cast_j} 
+                                         < y.{columns[j]}{cast_j}) 
+                                       OR (x.{columns[i]}{cast_i} 
+                                         < y.{columns[i]}{cast_i} 
+                                       AND x.{columns[j]}{cast_j} 
+                                         > y.{columns[j]}{cast_j}))::int))/2"""
+                                n_1 = f"""
+                                    (SUM((x.{columns[i]}{cast_i} = 
+                                          y.{columns[i]}{cast_i})::int)-{n_})/2"""
+                                n_2 = f"""(SUM((x.{columns[j]}{cast_j} = 
+                                          y.{columns[j]}{cast_j})::int)-{n_})/2"""
                                 n_0 = f"{n_} * ({n_} - 1)/2"
                                 tau_b = f"({n_c} - {n_d}) / sqrt(({n_0} - {n_1}) * ({n_0} - {n_2}))"
                                 all_list += [tau_b]
                             elif method == "cov":
                                 all_list += [
-                                    "COVAR_POP({0}{1}, {2}{3})".format(
-                                        columns[i], cast_i, columns[j], cast_j
-                                    )
+                                    f"COVAR_POP({columns[i]}{cast_i}, {columns[j]}{cast_j})"
                                 ]
                             else:
                                 raise
@@ -992,9 +992,9 @@ vColumns : vColumn
                         ]
                         table = f"(SELECT {', '.join(rank)} FROM {self.__genSQL__()}) rank_spearman_table"
                     elif method == "kendall":
-                        table = "(SELECT {0} FROM {1}) x CROSS JOIN (SELECT {0} FROM {1}) y".format(
-                            ", ".join(columns), self.__genSQL__(),
-                        )
+                        table = f"""
+                            (SELECT {", ".join(columns)} FROM {self.__genSQL__()}) x 
+                 CROSS JOIN (SELECT {", ".join(columns)} FROM {self.__genSQL__()}) y"""
                     else:
                         table = self.__genSQL__()
                     if nb_precomputed == nb_loop:
@@ -1177,20 +1177,28 @@ vColumns : vColumn
                         ]
                     elif method == "kendall":
                         n = "SQRT(COUNT(*))"
-                        n_c = (
-                            "(SUM(((x.{0}{1} < y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
-                            "(x.{0}{1} > y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
-                        ).format(focus, cast_i, column, cast_j,)
-                        n_d = (
-                            "(SUM(((x.{0}{1} > y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
-                            "(x.{0}{1} < y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
-                        ).format(focus, cast_i, column, cast_j,)
-                        n_1 = "(SUM((x.{0}{1} = y.{0}{1})::int)-{2})/2".format(
-                            focus, cast_i, n
+                        n_c = f"""
+                            (SUM(((x.{focus}{cast_i} 
+                                 < y.{focus}{cast_i} 
+                               AND x.{column}{cast_j}
+                                 < y.{column}{cast_j})
+                               OR (x.{focus}{cast_i} 
+                                 > y.{focus}{cast_i} 
+                               AND x.{column}{cast_j} 
+                                 > y.{column}{cast_j}))::int))/2"""
+                        n_d = f"""
+                            (SUM(((x.{focus}{cast_i} 
+                                 > y.{focus}{cast_i} 
+                               AND x.{column}{cast_j} 
+                                 < y.{column}{cast_j})
+                               OR (x.{focus}{cast_i}
+                                 < y.{focus}{cast_i}
+                               AND x.{column}{cast_j} 
+                                 > y.{column}{cast_j}))::int))/2"""
+                        n_1 = (
+                            f"(SUM((x.{focus}{cast_i} = y.{focus}{cast_i})::int)-{n})/2"
                         )
-                        n_2 = "(SUM((x.{0}{1} = y.{0}{1})::int)-{2})/2".format(
-                            column, cast_j, n
-                        )
+                        n_2 = f"(SUM((x.{column}{cast_j} = y.{column}{cast_j})::int)-{n})/2"
                         n_0 = f"{n} * ({n} - 1)/2"
                         tau_b = (
                             f"({n_c} - {n_d}) / sqrt(({n_0} - {n_1}) * ({n_0} - {n_2}))"
@@ -1201,7 +1209,7 @@ vColumns : vColumn
                 if method in ("spearman", "spearmand"):
                     fun = "DENSE_RANK" if method == "spearmand" else "RANK"
                     rank = [
-                        "{0}() OVER (ORDER BY {1}) AS {1}".format(fun, column)
+                        f"{fun}() OVER (ORDER BY {column}) AS {column}"
                         for column in all_cols
                     ]
                     table = f"(SELECT {', '.join(rank)} FROM {self.__genSQL__()}) rank_spearman_table"
@@ -1378,9 +1386,7 @@ vColumns : vColumn
                     {', '.join(first_values)} 
                 FROM {self._VERTICAPY_VARIABLES_['main_relation']}"""
         else:
-            table = "SELECT * FROM {}".format(
-                self._VERTICAPY_VARIABLES_["main_relation"]
-            )
+            table = f"""SELECT * FROM {self._VERTICAPY_VARIABLES_["main_relation"]}"""
         # We compute the other floors
         for i in range(1, max_transformation_floor):
             values = [item[i] for item in all_imputations_grammar]
@@ -1388,9 +1394,8 @@ vColumns : vColumn
                 if values[j] == "{}":
                     values[j] = columns[j]
                 elif values[j] != "___VERTICAPY_UNDEFINED___":
-                    values[j] = "{} AS {}".format(
-                        values[j].replace("{}", columns[j]), columns[j]
-                    )
+                    values_str = values[j].replace("{}", columns[j])
+                    values[j] = f"{values_str} AS {columns[j]}"
             table = f"SELECT {', '.join(values)} FROM ({table}) VERTICAPY_SUBTABLE"
             if len(all_where) > i - 1:
                 table += all_where[i - 1]
@@ -1510,7 +1515,7 @@ vColumns : vColumn
                     warning_message = (
                         f"Method of {column_name} must be in (asc, desc), "
                         f"found '{columns[col].lower()}'\nThis column was ignored."
-                    ).format(column_name, columns[col].lower())
+                    )
                     warnings.warn(warning_message, Warning)
                 else:
                     order_by += [f"{column_name} {columns[col].upper()}"]
@@ -2305,15 +2310,9 @@ vColumns : vColumn
                     else:
                         expr = f"AVG(POWER(({column}{cast} - {avg}) / {std}, 4))"
                         if count > 3:
-                            expr += "* {} - 3 * {}".format(
-                                count
-                                * count
-                                * (count + 1)
-                                / (count - 1)
-                                / (count - 2)
-                                / (count - 3),
-                                (count - 1) * (count - 1) / (count - 2) / (count - 3),
-                            )
+                            expr += f"""
+                                * {count * count * (count + 1) / (count - 1) / (count - 2) / (count - 3)} 
+                                - 3 * {(count - 1) * (count - 1) / (count - 2) / (count - 3)}"""
                         else:
                             expr += "* - 3"
                             expr += (
@@ -2449,7 +2448,9 @@ vColumns : vColumn
                         POWER(10, SUM(LOG(ABS({column}{cast}))))"""
 
                 elif fun.lower() in ("percent", "count_percent"):
-                    expr = f"ROUND(COUNT({column}) / { self.shape()[0]} * 100, 3)::float"
+                    expr = (
+                        f"ROUND(COUNT({column}) / { self.shape()[0]} * 100, 3)::float"
+                    )
 
                 elif "{}" not in fun:
                     expr = f"{fun.upper()}({column}{cast})"
@@ -2477,18 +2478,21 @@ vColumns : vColumn
 
             if nb_precomputed == len(func) * len(columns):
                 res = executeSQL(
-                    "SELECT /*+LABEL('vDataframe.aggregate')*/ {}".format(
-                        ", ".join([str(item) for sublist in agg for item in sublist])
-                    ),
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('vDataframe.aggregate')*/ 
+                            {", ".join([str(item) for sublist in agg for item in sublist])}""",
                     print_time_sql=False,
                     method="fetchrow",
                 )
             else:
                 res = executeSQL(
-                    "SELECT /*+LABEL('vDataframe.aggregate')*/ {} FROM {} LIMIT 1".format(
-                        ", ".join([str(item) for sublist in agg for item in sublist]),
-                        self.__genSQL__(),
-                    ),
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('vDataframe.aggregate')*/ 
+                            {", ".join([str(item) for sublist in agg for item in sublist])} 
+                        FROM {self.__genSQL__()} 
+                        LIMIT 1""",
                     title="Computing the different aggregations.",
                     method="fetchrow",
                     sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
@@ -2553,19 +2557,18 @@ vColumns : vColumn
                         for fun in func:
                             pre_comp = self.__get_catalog_value__(columns[i], fun)
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
-                                query = "SELECT /*+LABEL('vDataframe.aggregate')*/ {} FROM {}".format(
-                                    ", ".join(
-                                        [
-                                            format_magic(
-                                                item, cast_float_int_to_str=True
-                                            )
-                                            for item in elem
-                                        ]
-                                    ),
-                                    self.__genSQL__(),
+                                columns_str = ", ".join(
+                                    [
+                                        format_magic(item, cast_float_int_to_str=True)
+                                        for item in elem
+                                    ]
                                 )
                                 executeSQL(
-                                    query,
+                                    query=f"""
+                                        SELECT 
+                                            /*+LABEL('vDataframe.aggregate')*/ 
+                                            {columns_str} 
+                                        FROM {self.__genSQL__()}""",
                                     title=(
                                         "Computing the different aggregations one "
                                         "vColumn at a time."
@@ -2856,14 +2859,11 @@ vColumns : vColumn
                         name, f"AVG(ABS({columns[0]} - {median_name})) OVER ({by})",
                     )
             elif func == "top":
-                self.eval(
-                    name,
-                    "ROW_NUMBER() OVER ({0})".format(
-                        "PARTITION BY {0}".format(columns[0])
-                        if not (by)
-                        else "{0}, {1}".format(by, columns[0])
-                    ),
-                )
+                if not (by):
+                    by_str = f"PARTITION BY {columns[0]}"
+                else:
+                    by_str = f"{by}, {columns[0]}"
+                self.eval(name, f"ROW_NUMBER() OVER ({by_str})")
                 if add_count:
                     name_str = name.replace('"', "")
                     self.eval(
@@ -2876,10 +2876,8 @@ vColumns : vColumn
             elif func == "unique":
                 self.eval(
                     name,
-                    (
-                        "DENSE_RANK() OVER ({0} ORDER BY {1} ASC) + DENSE_RANK() "
-                        "OVER ({0} ORDER BY {1} DESC) - 1"
-                    ).format(by, columns[0]),
+                    f"""DENSE_RANK() OVER ({by} ORDER BY {columns[0]} ASC) 
+                      + DENSE_RANK() OVER ({by} ORDER BY {columns[0]} DESC) - 1""",
                 )
             elif "%" == func[-1]:
                 try:
@@ -2970,8 +2968,7 @@ vColumns : vColumn
                 info_param = ""
             if func == "pct_change":
                 self.eval(
-                    name,
-                    f"{columns[0]} / (LAG({columns[0]}) OVER ({by}{order_by}))",
+                    name, f"{columns[0]} / (LAG({columns[0]}) OVER ({by}{order_by}))",
                 )
             else:
                 columns0 = columns[0] if (columns) else ""
@@ -4260,10 +4257,10 @@ vColumns : vColumn
                     remove_cols += [col]
                     if self[col].category() not in ("float", "int", "text"):
                         warning_message = (
-                            "vColumn '{0}' is of category '{1}'. This method only "
-                            "accepts categorical & numerical inputs. This vColumn "
-                            "was ignored."
-                        ).format(col, self[col].category())
+                            f"vColumn '{col}' is of category '{self[col].category()}'. "
+                            "This method only accepts categorical & numerical inputs. "
+                            "This vColumn was ignored."
+                        )
                     else:
                         warning_message = (
                             f"vColumn '{col}' has a too high cardinality "
@@ -4524,17 +4521,32 @@ vColumns : vColumn
         elif method == "kendall":
             cast_i = "::int" if (self[column1].isbool()) else ""
             cast_j = "::int" if (self[column2].isbool()) else ""
-            n_c = (
-                "(SUM(((x.{0}{1} < y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
-                "(x.{0}{1} > y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
-            ).format(column1, cast_i, column2, cast_j,)
-            n_d = (
-                "(SUM(((x.{0}{1} > y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
-                "(x.{0}{1} < y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
-            ).format(column1, cast_i, column2, cast_j,)
-            table = "(SELECT {0} FROM {1}) x CROSS JOIN (SELECT {0} FROM {1}) y".format(
-                ", ".join([column1, column2]), self.__genSQL__(),
-            )
+            n_c = f"""
+                (SUM(((x.{column1}{cast_i} 
+                     < y.{column1}{cast_i} 
+                   AND x.{column2}{cast_j} 
+                     < y.{column2}{cast_j})
+                   OR (x.{column1}{cast_i} 
+                     > y.{column1}{cast_i}
+                   AND x.{column2}{cast_j} 
+                     > y.{column2}{cast_j}))::int))/2"""
+            n_d = f"""
+                (SUM(((x.{column1}{cast_i} 
+                     > y.{column1}{cast_i}
+                   AND x.{column2}{cast_j} 
+                     < y.{column2}{cast_j})
+                   OR (x.{column1}{cast_i} 
+                     < y.{column1}{cast_i} 
+                   AND x.{column2}{cast_j} 
+                     > y.{column2}{cast_j}))::int))/2"""
+            table = f"""
+                (SELECT 
+                    {", ".join([column1, column2])} 
+                 FROM {self.__genSQL__()}) x 
+                CROSS JOIN 
+                (SELECT 
+                    {", ".join([column1, column2])} 
+                 FROM {self.__genSQL__()}) y"""
             nc, nd = executeSQL(
                 query=f"""
                     SELECT 
@@ -6224,14 +6236,10 @@ vColumns : vColumn
         for vmap in vmap_col_final:
             keys = util.compute_vmap_keys(expr=self, vmap_col=vmap, limit=limit)
             keys = [k[0] for k in keys]
-            maplookup += [
-                "MAPLOOKUP({0}, '{1}') AS {2}".format(
-                    quote_ident(vmap),
-                    k,
-                    quote_ident(vmap.replace('"', "") + "." + k.replace('"', "")),
-                )
-                for k in keys
-            ]
+            for k in keys:
+                column = quote_ident(vmap)
+                alias = quote_ident(vmap.replace('"', "") + "." + k.replace('"', ""))
+                maplookup += [f"MAPLOOKUP({column}, '{k}') AS {alias}"]
         return self.select(self.get_columns() + maplookup)
 
     # ---#
@@ -6449,21 +6457,23 @@ vColumns : vColumn
             rollup_expr += ")"
         if having:
             having = f" HAVING {having}"
-        relation = "(SELECT {} FROM {} GROUP BY {}{}) VERTICAPY_SUBTABLE".format(
-            ", ".join(
-                [str(elem) for elem in columns_to_select] + [str(elem) for elem in expr]
-            ),
-            self.__genSQL__(),
-            ", ".join(
+        columns_str = ", ".join(
+            [str(elem) for elem in columns_to_select] + [str(elem) for elem in expr]
+        )
+        if not (rollup):
+            rollup_expr_str = ", ".join(
                 [
                     str(i + 1)
                     for i in range(len([str(elem) for elem in columns_to_select]))
                 ],
             )
-            if not (rollup)
-            else rollup_expr,
-            having,
-        )
+        else:
+            rollup_expr_str = rollup_expr
+        relation = f"""
+            (SELECT 
+                {columns_str} 
+            FROM {self.__genSQL__()} 
+            GROUP BY {rollup_expr_str}{having}) VERTICAPY_SUBTABLE"""
         if not (rollup):
             rollup_expr_str = ", ".join([str(c) for c in columns_to_select])
         else:
@@ -7064,9 +7074,7 @@ vColumns : vColumn
                     tmp_query += [f"{quote_ident(column)} IS NULL"]
                 else:
                     val_str = str(val[column][i]).replace("'", "''")
-                    tmp_query += [
-                        f"{quote_ident(column)} = '{val_str}'"
-                    ]
+                    tmp_query += [f"{quote_ident(column)} = '{val_str}'"]
             result += [" AND ".join(tmp_query)]
         return self.search(" OR ".join(result))
 
@@ -9031,9 +9039,8 @@ vColumns : vColumn
         if isinstance(columns, str):
             columns = [columns]
         if not (name):
-            name = "moving_{}".format(
-                gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]])
-            )
+            name = gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]])
+            name = f"moving_{name}"
         columns, by = self.format_colnames(columns, by)
         by = "" if not (by) else "PARTITION BY " + ", ".join(by)
         if not (order_by):
@@ -9340,26 +9347,13 @@ vColumns : vColumn
                     **style_kwds,
                 )
                 explained_variance = model.explained_variance_["explained_variance"]
-                ax.set_xlabel(
-                    "Dim{} {}".format(
-                        dimensions[0],
-                        ""
-                        if not (explained_variance[dimensions[0] - 1])
-                        else "({}%)".format(
-                            round(explained_variance[dimensions[0] - 1] * 100, 1)
-                        ),
-                    )
-                )
-                ax.set_ylabel(
-                    "Dim{} {}".format(
-                        dimensions[1],
-                        ""
-                        if not (explained_variance[dimensions[1] - 1])
-                        else "({}%)".format(
-                            round(explained_variance[dimensions[1] - 1] * 100, 1)
-                        ),
-                    )
-                )
+                for idx, fun in enumerate([ax.set_xlabel, ax.set_ylabel]):
+                    if not (explained_variance[dimensions[idx] - 1]):
+                        dimension2 = ""
+                    else:
+                        x2 = round(explained_variance[dimensions[idx] - 1] * 100, 1)
+                        dimension2 = f"({x2}%)"
+                    fun(f"Dim{dimensions[idx]} {dimension2}")
             finally:
                 model.drop()
             return ax
