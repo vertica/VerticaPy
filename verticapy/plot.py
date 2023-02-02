@@ -203,7 +203,7 @@ def animated_bar(
         order_by_start_str = f"AND {order_by} > '{order_by_start}'"
     if order_by_end:
         order_by_end_str = f" AND {order_by} < '{order_by_end}'"
-    condition = ", ".join([f"{column} IS NOT NULL" for column in columns])
+    condition = " AND ".join([f"{column} IS NOT NULL" for column in columns])
     query_result = executeSQL(
         query=f"""
             SELECT 
