@@ -203,7 +203,7 @@ def animated_bar(
         order_by_start_str = f"AND {order_by} > '{order_by_start}'"
     if order_by_end:
         order_by_end_str = f" AND {order_by} < '{order_by_end}'"
-    condition = [f"{column} IS NOT NULL" for column in columns]
+    condition = ", ".join([f"{column} IS NOT NULL" for column in columns])
     query_result = executeSQL(
         query=f"""
             SELECT 
@@ -2744,7 +2744,7 @@ def range_curve_vdf(
     ax=None,
     **style_kwds,
 ):
-    order_by_start_str = ""
+    order_by_start_str, order_by_end_str = "", ""
     if order_by_start:
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
     if order_by_end:

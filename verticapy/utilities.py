@@ -96,20 +96,24 @@ List of tuples
     List of virtual column names and their respective data types.
     """
     executeSQL(
-        f"SELECT /*+LABEL('utilities.compute_flex_table_keys')*/ compute_flextable_keys('{flex_name}');",
+        query=f"""
+            SELECT 
+                /*+LABEL('utilities.compute_flex_table_keys')*/
+                compute_flextable_keys('{flex_name}');""",
         title="Guessing flex tables keys.",
     )
-    where = (
-        " WHERE LOWER(key_name) IN ({0})".format(
-            ", ".join(
-                ["'{0}'".format(elem.lower().replace("'", "''")) for elem in usecols]
-            )
-        )
-        if (usecols)
-        else ""
-    )
+    usecols_str = [
+        "'" + str(column).lower().replace("'", "''") + "'" for column in usecols
+    ]
+    usecols_str = ", ".join(usecols_str)
+    where = f" WHERE LOWER(key_name) IN ({usecols_str})" if (usecols) else ""
     result = executeSQL(
-        f"SELECT /*+LABEL('utilities.compute_flex_table_keys')*/ key_name, data_type_guess FROM {flex_name}_keys{where}",
+        query=f"""
+            SELECT 
+                /*+LABEL('utilities.compute_flex_table_keys')*/
+                key_name,
+                data_type_guess 
+            FROM {flex_name}_keys{where}""",
         title="Guessing the data types.",
         method="fetchall",
     )
@@ -237,22 +241,17 @@ bool
     if schema.lower() == "v_temp_schema":
         schema = ""
         temporary_local_table = True
-    input_relation = (
-        quote_ident(schema) + "." + quote_ident(table_name)
-        if schema
-        else quote_ident(table_name)
-    )
+    if schema:
+        input_relation = quote_ident(schema) + "." + quote_ident(table_name)
+    else:
+        input_relation = quote_ident(table_name)
     temp = "TEMPORARY " if temporary_table else ""
     if not (schema):
         temp = "LOCAL TEMPORARY " if temporary_local_table else ""
-    query = "CREATE {0}TABLE {1}({2}){3};".format(
-        temp,
-        input_relation,
-        ", ".join(
-            ["{0} {1}".format(quote_ident(column), dtype[column]) for column in dtype]
-        ),
-        " ON COMMIT PRESERVE ROWS" if temp else "",
-    )
+    dtype_str = [f"{quote_ident(column)} {dtype[column]}" for column in dtype]
+    dtype_str = ", ".join(dtype_str)
+    on_commit = " ON COMMIT PRESERVE ROWS" if temp else ""
+    query = f"CREATE {temp}TABLE {input_relation}({dtype_str}){on_commit};"
     if genSQL:
         return query
     try:
@@ -472,11 +471,10 @@ bool
                     if res and res[0]:
                         drop(res[0], method="table")
             elif model_type == "KernelDensity":
-                drop(name.replace('"', "") + "_KernelDensity_Map", method="table")
-                drop(
-                    "{0}_KernelDensity_Tree".format(name.replace('"', "")),
-                    method="model",
-                )
+                table_name = name.replace('"', "") + "_KernelDensity_Map"
+                drop(table_name, method="table")
+                model_name = name.replace('"', "") + "_KernelDensity_Tree"
+                drop(model_name, method="model")
             elif model_type == "AutoDataPrep":
                 drop(name, method="table")
             if is_in_verticapy_schema:
@@ -605,22 +603,24 @@ list of tuples
                 column_name_ident = quote_ident(column)
                 query = f"SELECT {column_name_ident} FROM ({expr}) x LIMIT 0;"
             elif usecols:
-                query = "SELECT {0} FROM ({1}) x LIMIT 0;".format(
-                    ", ".join([quote_ident(elem) for elem in usecols]), expr
-                )
+                query = f"""
+                    SELECT 
+                        {", ".join([quote_ident(column) for column in usecols])} 
+                    FROM ({expr}) x 
+                    LIMIT 0;"""
             else:
                 query = expr
             executeSQL(query, print_time_sql=False)
             description, ctype = current_cursor().description, []
-            for elem in description:
+            for d in description:
                 ctype += [
                     [
-                        elem[0],
+                        d[0],
                         get_final_vertica_type(
-                            type_name=elem.type_name,
-                            display_size=elem[2],
-                            precision=elem[4],
-                            scale=elem[5],
+                            type_name=d.type_name,
+                            display_size=d[2],
+                            precision=d[4],
+                            scale=d[5],
                         ),
                     ]
                 ]
@@ -634,43 +634,52 @@ list of tuples
         drop(format_schema_table(schema, table_name), method="table")
         try:
             if schema == "v_temp_schema":
-                executeSQL(
-                    "CREATE LOCAL TEMPORARY TABLE {0} ON COMMIT PRESERVE ROWS AS {1}".format(
-                        table_name, expr
-                    ),
-                    print_time_sql=False,
-                )
+                table = table_name
+                local = "LOCAL"
             else:
-                executeSQL(
-                    "CREATE TEMPORARY TABLE {0} ON COMMIT PRESERVE ROWS AS {1}".format(
-                        format_schema_table(schema, table_name), expr
-                    ),
-                    print_time_sql=False,
-                )
+                table = format_schema_table(schema, table_name)
+                local = ""
+            executeSQL(
+                query=f"""
+                    CREATE {local} TEMPORARY TABLE {table} 
+                    ON COMMIT PRESERVE ROWS 
+                    AS {expr}""",
+                print_time_sql=False,
+            )
         finally:
             drop(format_schema_table(schema, table_name), method="table")
         drop_final_table = True
     else:
         drop_final_table = False
-    where = (
-        " AND LOWER(column_name) IN ({0})".format(
-            ", ".join(
-                ["'{0}'".format(elem.lower().replace("'", "''")) for elem in usecols]
-            )
-        )
-        if (usecols)
-        else ""
+    usecols_str, column_name = "", ""
+    if usecols:
+        usecols_str = [
+            "'" + column.lower().replace("'", "''") + "'" for column in usecols
+        ]
+        usecols_str = f" AND LOWER(column_name) IN ({', '.join(usecols_str)})"
+    if column:
+        column_name = f"column_name = '{column}' AND "
+    query = f"""
+        SELECT 
+            column_name,
+            data_type,
+            ordinal_position 
+        FROM {{}}
+        WHERE {column_name}table_name = '{table_name}' 
+            AND table_schema = '{schema}'{usecols_str})"""
+    cursor = executeSQL(
+        query=f"""
+            SELECT 
+                /*+LABEL('utilities.get_data_types')*/ 
+                column_name,
+                data_type 
+            FROM 
+                (({query.format("columns")}) 
+                 UNION 
+                 ({query.format("view_columns")})) x 
+                ORDER BY ordinal_position""",
+        title="Getting the data types.",
     )
-    query = (
-        "SELECT /*+LABEL('utilities.get_data_types')*/ column_name, data_type FROM "
-        "((SELECT column_name, data_type, ordinal_position FROM columns WHERE "
-        " {0}table_name = '{1}' AND table_schema = '{2}'{3}) UNION (SELECT column_name,"
-        " data_type, ordinal_position FROM view_columns WHERE {0}table_name = '{1}' "
-        "AND table_schema = '{2}'{3})) x ORDER BY ordinal_position"
-    ).format(
-        f"column_name = '{column}' AND " if (column) else "", table_name, schema, where,
-    )
-    cursor = executeSQL(query, title="Getting the data types.")
     ctype = cursor.fetchall()
     if column and ctype:
         ctype = ctype[0][1]
