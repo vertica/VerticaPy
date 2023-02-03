@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,11 +22,12 @@
 # Standard Python Modules
 import os
 from configparser import ConfigParser
+from typing import Literal
 
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.decorators import check_dtypes
-from verticapy.errors import ConnectionError, ParameterError, raise_error_if_not_in
+from verticapy.errors import ConnectionError, ParameterError
 
 # Vertica Modules
 import vertica_python
@@ -78,10 +50,10 @@ SPECIAL_SYMBOLS = [
 ]
 
 #
-# ---#
+
+
 def available_connections():
     """
-----------------------------------------------------------------------------------------
 Displays all the available connections.
 
 Returns
@@ -100,10 +72,10 @@ list
 
 
 available_auto_connection = available_connections
-# ---#
+
+
 def change_auto_connection(name: str):
     """
-----------------------------------------------------------------------------------------
 Changes the current auto connection.
 
 Parameters
@@ -135,20 +107,16 @@ name: str
         )
 
 
-# ---#
 def close_connection():
     """
-----------------------------------------------------------------------------------------
 Closes the connection to the database.
     """
     if CONNECTION["conn"] and not (CONNECTION["conn"].closed()):
         CONNECTION["conn"].close()
 
 
-# ---#
 def connect(section: str, dsn: str = ""):
     """
-----------------------------------------------------------------------------------------
 Connects to the database.
 
 Parameters
@@ -181,10 +149,8 @@ dsn: str, optional
         raise (e)
 
 
-# ---#
 def current_connection():
     """
-----------------------------------------------------------------------------------------
 Returns the current database connection.
 If the connection is closed, VerticaPy attempts to reconnect with the 
 existing connection.
@@ -223,20 +189,15 @@ VerticaLab Environment.
     return CONNECTION["conn"]
 
 
-# ---#
 def current_cursor():
     """
-----------------------------------------------------------------------------------------
 Returns the current database cursor.
     """
     return current_connection().cursor()
 
 
-# ---#
-@check_dtypes
 def delete_connection(name: str):
     """
-----------------------------------------------------------------------------------------
 Deletes a specified connection from the connection file.
 
 Parameters
@@ -272,10 +233,8 @@ bool
         return False
 
 
-# ---#
 def get_connection_file():
     """
-----------------------------------------------------------------------------------------
 Gets (and creates, if necessary) the auto-connection file.
 If the environment variable 'VERTICAPY_CONNECTIONS' is set, it is assumed 
 to be the full path to the auto-connection file.
@@ -295,8 +254,6 @@ string
     return path
 
 
-# ---#
-@check_dtypes
 def new_connection(
     conn_info: dict,
     name: str = "vertica_connection",
@@ -304,7 +261,6 @@ def new_connection(
     overwrite: bool = True,
 ):
     """
-----------------------------------------------------------------------------------------
 Saves the new connection in the VerticaPy connection file.
 The information is saved plaintext in the local machine.
 The function 'get_connection_file' returns the associated connection file path.
@@ -371,10 +327,10 @@ env: bool, optional
 
 
 new_auto_connection = new_connection
-# ---#
+
+
 def read_auto_connect():
     """
-----------------------------------------------------------------------------------------
 Automatically creates a connection using the auto-connection.
 	"""
     path = get_connection_file()
@@ -392,11 +348,8 @@ Automatically creates a connection using the auto-connection.
     connect(section, path)
 
 
-# ---#
-@check_dtypes
 def read_dsn(section: str, dsn: str = ""):
     """
-----------------------------------------------------------------------------------------
 Reads the DSN information from the VERTICAPY_CONNECTIONS environment 
 variable or the input file.
 
@@ -506,10 +459,8 @@ dict
         raise NameError(f"The DSN Section '{section}' doesn't exist.")
 
 
-# ---#
 def set_connection(conn):
     """
-----------------------------------------------------------------------------------------
 Saves a custom connection to the VerticaPy object. This allows you to 
 specify, for example, a JDBC or ODBC connection. This should not be 
 confused with a native VerticaPy connection created by the new_connection 
@@ -531,11 +482,10 @@ conn: object
     CONNECTION["section"] = None
 
 
-# ---#
-@check_dtypes
-def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$"):
+def set_external_connection(
+    cid: str, rowset: int = 500, symbol: Literal[tuple(SPECIAL_SYMBOLS)] = "$"
+):
     """
-----------------------------------------------------------------------------------------
 Sets a Connection Identifier Database. It connects to an external
 source using DBLINK. For more information, see:
 https://github.com/vertica/dblink
@@ -555,7 +505,6 @@ symbol: str, optional
     with the input cid by writing $$$QUERY$$$, where QUERY represents 
     a custom query.
     """
-    raise_error_if_not_in("symbol", symbol, SPECIAL_SYMBOLS)
     if isinstance(cid, str) and isinstance(rowset, int):
         vp.OPTIONS["external_connection"][symbol] = {
             "cid": cid,
@@ -567,11 +516,8 @@ symbol: str, optional
         )
 
 
-# ---#
-@check_dtypes
 def vertica_connection(section: str, dsn: str = ""):
     """
-----------------------------------------------------------------------------------------
 Reads the input DSN and creates a Vertica Database connection.
 
 Parameters
@@ -590,10 +536,8 @@ conn
     return vertica_python.connect(**read_dsn(section, dsn))
 
 
-# ---#
 def verticalab_connection():
     """
-----------------------------------------------------------------------------------------
 Returns the VerticaLab connection if possible.
 
 Returns

@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,7 +22,6 @@
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.learn.metrics import *
@@ -67,12 +37,11 @@ from verticapy.learn.tools import *
 
 # Standard Python Modules
 import warnings, itertools
-from typing import Union
+from typing import Union, Literal
 
-# ---#
+
 class NearestCentroid(MulticlassClassifier):
     """
-----------------------------------------------------------------------------------------
 [Beta Version]
 Creates a NearestCentroid object using the k-nearest centroid algorithm. 
 This object uses pure SQL to compute the distances and final score. 
@@ -87,7 +56,6 @@ p: int, optional
 	to compute the model).
 	"""
 
-    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, p: int = 2):
         self.type, self.name = "NearestCentroid", name
@@ -97,8 +65,6 @@ p: int, optional
         self.MODEL_SUBTYPE = "CLASSIFIER"
         self.parameters = {"p": p}
 
-    # ---#
-    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -107,7 +73,6 @@ p: int, optional
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -174,10 +139,8 @@ p: int, optional
         return self
 
 
-# ---#
 class KNeighborsClassifier(vModel):
     """
-----------------------------------------------------------------------------------------
 [Beta Version]
 Creates a KNeighborsClassifier object using the k-nearest neighbors algorithm. 
 This object uses pure SQL to compute the distances and final score.
@@ -197,7 +160,6 @@ p: int, optional
 	to compute the model).
 	"""
 
-    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
         self.type, self.name = "KNeighborsClassifier", name
@@ -207,8 +169,6 @@ p: int, optional
         self.MODEL_SUBTYPE = "CLASSIFIER"
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
-    # ---#
-    @check_dtypes
     def deploySQL(
         self,
         X: Union[str, list] = [],
@@ -217,7 +177,6 @@ p: int, optional
         key_columns: Union[str, list] = [],
     ):
         """
-	----------------------------------------------------------------------------------------
 	Returns the SQL code needed to deploy the model. 
 
     Parameters
@@ -305,8 +264,6 @@ p: int, optional
                      WHERE order_prediction = 1) predict_neighbors_table"""
         return clean_query(sql)
 
-    # ---#
-    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -315,7 +272,6 @@ p: int, optional
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -381,13 +337,10 @@ p: int, optional
         )
         return self
 
-    # ---#
-    @check_dtypes
     def classification_report(
         self, cutoff: Union[int, float, list] = [], labels: list = []
     ):
         """
-    ----------------------------------------------------------------------------------------
     Computes a classification report using multiple metrics to evaluate the model
     (AUC, accuracy, PRC AUC, F1, etc.). For multiclass classification, this 
     function tests the model by considering one class as the sole positive case, 
@@ -417,13 +370,10 @@ p: int, optional
 
     report = classification_report
 
-    # ---#
-    @check_dtypes
     def cutoff_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
         """
-    ----------------------------------------------------------------------------------------
     Draws the ROC curve of a classification model.
 
     Parameters
@@ -458,13 +408,10 @@ p: int, optional
             **style_kwds,
         )
 
-    # ---#
-    @check_dtypes
     def confusion_matrix(
         self, pos_label: Union[int, float, str] = None, cutoff: Union[int, float] = -1,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Computes the model confusion matrix.
 
     Parameters
@@ -515,13 +462,10 @@ p: int, optional
                 self.y, "predict_neighbors", input_relation, self.classes_
             )
 
-    # ---#
-    @check_dtypes
     def lift_chart(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
         """
-    ----------------------------------------------------------------------------------------
     Draws the model Lift Chart.
 
     Parameters
@@ -551,13 +495,10 @@ p: int, optional
             self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
 
-    # ---#
-    @check_dtypes
     def prc_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
         """
-    ----------------------------------------------------------------------------------------
     Draws the model PRC curve.
 
     Parameters
@@ -587,8 +528,6 @@ p: int, optional
             self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
 
-    # ---#
-    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
@@ -599,7 +538,6 @@ p: int, optional
         **kwargs,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -681,8 +619,6 @@ p: int, optional
         else:
             return vDataFrameSQL(name="Neighbors", relation=sql)
 
-    # ---#
-    @check_dtypes
     def predict_proba(
         self,
         vdf: Union[str, vDataFrame],
@@ -693,7 +629,6 @@ p: int, optional
         **kwargs,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Returns the model's probabilities using the input relation.
 
     Parameters
@@ -777,13 +712,10 @@ p: int, optional
         else:
             return vDataFrameSQL(name="Neighbors", relation=sql)
 
-    # ---#
-    @check_dtypes
     def roc_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
     ):
         """
-    ----------------------------------------------------------------------------------------
     Draws the model ROC curve.
 
     Parameters
@@ -816,8 +748,6 @@ p: int, optional
             self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
 
-    # ---#
-    @check_dtypes
     def score(
         self,
         method: str = "accuracy",
@@ -826,7 +756,6 @@ p: int, optional
         nbins: int = 10000,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Computes the model score.
 
     Parameters
@@ -929,10 +858,8 @@ p: int, optional
             )
 
 
-# ---#
 class KernelDensity(Regressor, Tree):
     """
-----------------------------------------------------------------------------------------
 [Beta Version]
 Creates a KernelDensity object. 
 This object uses pure SQL to compute the final score.
@@ -964,13 +891,12 @@ xlim: list, optional
     List of tuples use to compute the kernel window.
     """
 
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         bandwidth: Union[int, float] = 1.0,
-        kernel: str = "gaussian",
+        kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         p: int = 2,
         max_leaf_nodes: Union[int, float] = 1e9,
         max_depth: int = 5,
@@ -979,11 +905,6 @@ xlim: list, optional
         xlim: list = [],
         **kwargs,
     ):
-        raise_error_if_not_in(
-            "kernel",
-            str(kernel).lower(),
-            ["gaussian", "logistic", "sigmoid", "silverman"],
-        )
         self.type, self.name = "KernelDensity", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
@@ -1004,11 +925,8 @@ xlim: list, optional
         else:
             self.verticapy_store = False
 
-    # ---#
-    @check_dtypes
     def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
         """
-    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -1043,7 +961,6 @@ xlim: list, optional
                 X = vdf.numcol()
         X = vdf.format_colnames(X)
 
-        # ---#
         def density_compute(
             vdf: vDataFrame,
             columns: list,
@@ -1052,7 +969,6 @@ xlim: list, optional
             nbins: int = 5,
             p: int = 2,
         ):
-            # ---#
             def density_kde(vdf, columns: list, kernel: str, x, p: int, h=None):
                 for col in columns:
                     if not (vdf[col].isnum()):
@@ -1208,10 +1124,8 @@ xlim: list, optional
             self.verticapy_y = y
         return self
 
-    # ---#
     def plot(self, ax=None, **style_kwds):
         """
-    ----------------------------------------------------------------------------------------
     Draws the Model.
 
     Parameters
@@ -1305,10 +1219,8 @@ xlim: list, optional
             raise Exception("KDE Plots are only available in 1D or 2D.")
 
 
-# ---#
 class KNeighborsRegressor(Regressor):
     """
-----------------------------------------------------------------------------------------
 [Beta Version]
 Creates a KNeighborsRegressor object using the k-nearest neighbors 
 algorithm. This object uses pure SQL to compute all the distances and 
@@ -1329,7 +1241,6 @@ p: int, optional
 	the model computation).
 	"""
 
-    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
         self.type, self.name = "KNeighborsRegressor", name
@@ -1339,8 +1250,6 @@ p: int, optional
         self.MODEL_SUBTYPE = "REGRESSOR"
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
-    # ---#
-    @check_dtypes
     def deploySQL(
         self,
         X: Union[str, list] = [],
@@ -1348,7 +1257,6 @@ p: int, optional
         key_columns: Union[str, list] = [],
     ):
         """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
 
     Parameters
@@ -1415,8 +1323,6 @@ p: int, optional
              GROUP BY {", ".join(X)}{key_columns_str}, row_id) knr_table"""
         return clean_query(sql)
 
-    # ---#
-    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -1425,7 +1331,6 @@ p: int, optional
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -1478,8 +1383,6 @@ p: int, optional
         )
         return self
 
-    # ---#
-    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
@@ -1489,7 +1392,6 @@ p: int, optional
         **kwargs,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -1541,10 +1443,8 @@ p: int, optional
             return vDataFrameSQL(name="Neighbors", relation=sql)
 
 
-# ---#
 class LocalOutlierFactor(vModel):
     """
-----------------------------------------------------------------------------------------
 [Beta Version]
 Creates a LocalOutlierFactor object by using the Local Outlier Factor algorithm 
 as defined by Markus M. Breunig, Hans-Peter Kriegel, Raymond T. Ng and Jörg 
@@ -1568,7 +1468,6 @@ p: int, optional
 	The p of the p-distances (distance metric used during the model computation).
 	"""
 
-    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
         self.type, self.name = "LocalOutlierFactor", name
@@ -1578,8 +1477,6 @@ p: int, optional
         self.MODEL_SUBTYPE = "ANOMALY_DETECTION"
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
-    # ---#
-    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -1588,7 +1485,6 @@ p: int, optional
         index: str = "",
     ):
         """
-	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -1778,10 +1674,8 @@ p: int, optional
         )
         return self
 
-    # ---#
     def predict(self):
         """
-	----------------------------------------------------------------------------------------
 	Creates a vDataFrame of the model.
 
 	Returns

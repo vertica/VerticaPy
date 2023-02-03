@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,7 +22,6 @@
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.utilities import *
@@ -60,7 +30,7 @@ from verticapy.stats.tools import *
 
 #
 # Global Variables
-# ---#
+
 PI = str_sql("PI()")
 E = str_sql("EXP(1)")
 TAU = str_sql("2 * PI()")
@@ -69,13 +39,13 @@ NAN = str_sql("'nan'::float")
 
 
 # Soundex
-# ---#
+
+
 @check_minimum_version
 def edit_distance(
     expr1, expr2,
 ):
     """
-----------------------------------------------------------------------------------------
 Calculates and returns the Levenshtein distance between the two strings.
 
 Parameters
@@ -97,11 +67,10 @@ str_sql
 
 levenshtein = edit_distance
 
-# ---#
+
 @check_minimum_version
 def soundex(expr):
     """
-----------------------------------------------------------------------------------------
 Returns Soundex encoding of a varchar strings as a four -character string.
 
 Parameters
@@ -118,13 +87,11 @@ str_sql
     return str_sql(f"SOUNDEX({expr})", "varchar")
 
 
-# ---#
 @check_minimum_version
 def soundex_matches(
     expr1, expr2,
 ):
     """
-----------------------------------------------------------------------------------------
 Generates and compares Soundex encodings of two strings, and returns a count 
 of the matching characters (ranging from 0 for no match to 4 for an exact 
 match).
@@ -147,13 +114,13 @@ str_sql
 
 
 # Jaro & Jaro Winkler
-# ---#
+
+
 @check_minimum_version
 def jaro_distance(
     expr1, expr2,
 ):
     """
-----------------------------------------------------------------------------------------
 Calculates and returns the Jaro distance between two strings.
 
 Parameters
@@ -173,13 +140,11 @@ str_sql
     return str_sql(f"JARO_DISTANCE({expr1}, {expr2})", "float")
 
 
-# ---#
 @check_minimum_version
 def jaro_winkler_distance(
     expr1, expr2,
 ):
     """
-----------------------------------------------------------------------------------------
 Calculates and returns the Jaro-Winkler distance between two strings.
 
 Parameters
@@ -200,12 +165,12 @@ str_sql
 
 
 # Regular Expressions
-# ---#
+
+
 def regexp_count(
     expr, pattern, position: int = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Returns the number times a regular expression matches a string.
 
 Parameters
@@ -228,10 +193,8 @@ str_sql
     return str_sql(f"REGEXP_COUNT({expr}, {pattern}, {position})", "int")
 
 
-# ---#
 def regexp_ilike(expr, pattern):
     """
-----------------------------------------------------------------------------------------
 Returns true if the string contains a match for the regular expression.
 
 Parameters
@@ -251,12 +214,10 @@ str_sql
     return str_sql(f"REGEXP_ILIKE({expr}, {pattern})")
 
 
-# ---#
 def regexp_instr(
     expr, pattern, position: int = 1, occurrence: int = 1, return_position: int = 0
 ):
     """
-----------------------------------------------------------------------------------------
 Returns the starting or ending position in a string where a regular 
 expression matches.
 
@@ -286,10 +247,8 @@ str_sql
     )
 
 
-# ---#
 def regexp_like(expr, pattern):
     """
-----------------------------------------------------------------------------------------
 Returns true if the string matches the regular expression.
 
 Parameters
@@ -309,10 +268,8 @@ str_sql
     return str_sql(f"REGEXP_LIKE({expr}, {pattern})")
 
 
-# ---#
 def regexp_replace(expr, target, replacement, position: int = 1, occurrence: int = 1):
     """
-----------------------------------------------------------------------------------------
 Replace all occurrences of a substring that match a regular expression 
 with another substring.
 
@@ -343,10 +300,8 @@ str_sql
     )
 
 
-# ---#
 def regexp_substr(expr, pattern, position: int = 1, occurrence: int = 1):
     """
-----------------------------------------------------------------------------------------
 Returns the substring that matches a regular expression within a string.
 
 Parameters
@@ -372,10 +327,10 @@ str_sql
 
 
 # String Functions
-# ---#
+
+
 def length(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the length of a string.
 
 Parameters
@@ -392,10 +347,8 @@ str_sql
     return str_sql(f"LENGTH({expr})", "int")
 
 
-# ---#
 def lower(expr):
     """
-----------------------------------------------------------------------------------------
 Returns a VARCHAR value containing the argument converted to 
 lowercase letters. 
 
@@ -413,10 +366,8 @@ str_sql
     return str_sql(f"LOWER({expr})", "text")
 
 
-# ---#
 def substr(expr, position: int, extent: int = None):
     """
-----------------------------------------------------------------------------------------
 Returns VARCHAR or VARBINARY value representing a substring of a specified 
 string.
 
@@ -440,10 +391,8 @@ str_sql
     return str_sql(f"SUBSTR({expr}, {position})", "text")
 
 
-# ---#
 def upper(expr):
     """
-----------------------------------------------------------------------------------------
 Returns a VARCHAR value containing the argument converted to uppercase 
 letters. 
 
@@ -462,10 +411,10 @@ str_sql
 
 
 # Aggregate & Analytical functions
-# ---#
+
+
 def apply(func: str, *args, **kwargs):
     """
-----------------------------------------------------------------------------------------
 Applies any Vertica function on the input expressions.
 Please check-out Vertica Documentation to see the available functions:
 
@@ -585,10 +534,8 @@ str_sql
     return str_sql(f"{func}({expr}{param_expr})")
 
 
-# ---#
 def avg(expr):
     """
-----------------------------------------------------------------------------------------
 Computes the average (arithmetic mean) of an expression over a group of rows.
 
 Parameters
@@ -607,10 +554,9 @@ str_sql
 
 mean = avg
 
-# ---#
+
 def bool_and(expr):
     """
-----------------------------------------------------------------------------------------
 Processes Boolean values and returns a Boolean value result. If all input 
 values are true, BOOL_AND returns True. Otherwise it returns False.
 
@@ -628,10 +574,8 @@ str_sql
     return str_sql(f"BOOL_AND({expr})", "int")
 
 
-# ---#
 def bool_or(expr):
     """
-----------------------------------------------------------------------------------------
 Processes Boolean values and returns a Boolean value result. If at least one 
 input value is true, BOOL_OR returns True. Otherwise, it returns False.
 
@@ -649,10 +593,8 @@ str_sql
     return str_sql(f"BOOL_OR({expr})", "int")
 
 
-# ---#
 def bool_xor(expr):
     """
-----------------------------------------------------------------------------------------
 Processes Boolean values and returns a Boolean value result. If specifically 
 only one input value is true, BOOL_XOR returns True. Otherwise, it returns 
 False.
@@ -671,10 +613,8 @@ str_sql
     return str_sql(f"BOOL_XOR({expr})", "int")
 
 
-# ---#
 def conditional_change_event(expr):
     """
-----------------------------------------------------------------------------------------
 Assigns an event window number to each row, starting from 0, and increments 
 by 1 when the result of evaluating the argument expression on the current 
 row differs from that on the previous row.
@@ -693,10 +633,8 @@ str_sql
     return str_sql(f"CONDITIONAL_CHANGE_EVENT({expr})", "int")
 
 
-# ---#
 def conditional_true_event(expr):
     """
-----------------------------------------------------------------------------------------
 Assigns an event window number to each row, starting from 0, and increments 
 the number by 1 when the result of the boolean argument expression evaluates 
 true.
@@ -715,10 +653,8 @@ str_sql
     return str_sql(f"CONDITIONAL_TRUE_EVENT({expr})", "int")
 
 
-# ---#
 def count(expr):
     """
-----------------------------------------------------------------------------------------
 Returns as a BIGINT the number of rows in each group where the expression is 
 not NULL.
 
@@ -736,10 +672,8 @@ str_sql
     return str_sql(f"COUNT({expr})", "int")
 
 
-# ---#
 def lag(expr, offset: int = 1):
     """
-----------------------------------------------------------------------------------------
 Returns the value of the input expression at the given offset before the 
 current row within a window. 
 
@@ -759,10 +693,8 @@ str_sql
     return str_sql(f"LAG({expr}, {offset})")
 
 
-# ---#
 def lead(expr, offset: int = 1):
     """
-----------------------------------------------------------------------------------------
 Returns values from the row after the current row within a window, letting 
 you access more than one row in a table at the same time. 
 
@@ -782,10 +714,8 @@ str_sql
     return str_sql(f"LEAD({expr}, {offset})")
 
 
-# ---#
 def max(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the greatest value of an expression over a group of rows.
 
 Parameters
@@ -802,10 +732,8 @@ str_sql
     return str_sql(f"MAX({expr})", "float")
 
 
-# ---#
 def median(expr):
     """
-----------------------------------------------------------------------------------------
 Computes the approximate median of an expression over a group of rows.
 
 Parameters
@@ -822,10 +750,8 @@ str_sql
     return str_sql(f"APPROXIMATE_MEDIAN({expr})", "float")
 
 
-# ---#
 def min(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the smallest value of an expression over a group of rows.
 
 Parameters
@@ -842,10 +768,8 @@ str_sql
     return str_sql(f"MIN({expr})", "float")
 
 
-# ---#
 def nth_value(expr, row_number: int):
     """
-----------------------------------------------------------------------------------------
 Returns the value evaluated at the row that is the nth row of the window 
 (counting from 1).
 
@@ -865,10 +789,8 @@ str_sql
     return str_sql(f"NTH_VALUE({expr}, {row_number})", "int")
 
 
-# ---#
 def quantile(expr, number: float):
     """
-----------------------------------------------------------------------------------------
 Computes the approximate percentile of an expression over a group of rows.
 
 Parameters
@@ -891,10 +813,8 @@ str_sql
     )
 
 
-# ---#
 def rank():
     """
-----------------------------------------------------------------------------------------
 Within each window partition, ranks all rows in the query results set 
 according to the order specified by the window's ORDER BY clause.
 
@@ -906,10 +826,8 @@ str_sql
     return str_sql("RANK()", "int")
 
 
-# ---#
 def row_number():
     """
-----------------------------------------------------------------------------------------
 Assigns a sequence of unique numbers, starting from 1, to each row in a 
 window partition.
 
@@ -921,10 +839,8 @@ str_sql
     return str_sql("ROW_NUMBER()", "int")
 
 
-# ---#
 def std(expr):
     """
-----------------------------------------------------------------------------------------
 Evaluates the statistical sample standard deviation for each member of the 
 group.
 
@@ -945,10 +861,8 @@ str_sql
 stddev = std
 
 
-# ---#
 def sum(expr):
     """
-----------------------------------------------------------------------------------------
 Computes the sum of an expression over a group of rows.
 
 Parameters
@@ -965,10 +879,8 @@ str_sql
     return str_sql(f"SUM({expr})", "float")
 
 
-# ---#
 def var(expr):
     """
-----------------------------------------------------------------------------------------
 Evaluates the sample variance for each row of the group.
 
 Parameters
@@ -989,10 +901,10 @@ variance = var
 
 
 # Mathematical Functions
-# ---#
+
+
 def abs(expr):
     """
-----------------------------------------------------------------------------------------
 Absolute Value.
 
 Parameters
@@ -1009,10 +921,8 @@ str_sql
     return str_sql(f"ABS({expr})", "float")
 
 
-# ---#
 def acos(expr):
     """
-----------------------------------------------------------------------------------------
 Trigonometric Inverse Cosine.
 
 Parameters
@@ -1029,10 +939,8 @@ str_sql
     return str_sql(f"ACOS({expr})", "float")
 
 
-# ---#
 def asin(expr):
     """
-----------------------------------------------------------------------------------------
 Trigonometric Inverse Sine.
 
 Parameters
@@ -1049,10 +957,8 @@ str_sql
     return str_sql(f"ASIN({expr})", "float")
 
 
-# ---#
 def atan(expr):
     """
-----------------------------------------------------------------------------------------
 Trigonometric Inverse Tangent.
 
 Parameters
@@ -1069,10 +975,8 @@ str_sql
     return str_sql(f"ATAN({expr})", "float")
 
 
-# ---#
 def atan2(quotient, divisor):
     """
-----------------------------------------------------------------------------------------
 Trigonometric Inverse Tangent of the arithmetic dividend of the arguments.
 
 Parameters
@@ -1091,10 +995,8 @@ str_sql
     return str_sql(f"ATAN2({quotient}, {divisor})", "float")
 
 
-# ---#
 def case_when(*argv):
     """
-----------------------------------------------------------------------------------------
 Returns the conditional statement of the input arguments.
 
 Parameters
@@ -1134,10 +1036,8 @@ str_sql
     return str_sql(expr, category)
 
 
-# ---#
 def cbrt(expr):
     """
-----------------------------------------------------------------------------------------
 Cube Root.
 
 Parameters
@@ -1154,10 +1054,8 @@ str_sql
     return str_sql(f"CBRT({expr})", "float")
 
 
-# ---#
 def ceil(expr):
     """
-----------------------------------------------------------------------------------------
 Ceiling Function.
 
 Parameters
@@ -1174,10 +1072,8 @@ str_sql
     return str_sql(f"CEIL({expr})", "float")
 
 
-# ---#
 def coalesce(expr, *argv):
     """
-----------------------------------------------------------------------------------------
 Returns the value of the first non-null expression in the list.
 
 Parameters
@@ -1200,10 +1096,8 @@ str_sql
     return str_sql(f"COALESCE({expr})", category)
 
 
-# ---#
 def comb(n: int, k: int):
     """
-----------------------------------------------------------------------------------------
 Number of ways to choose k items from n items.
 
 Parameters
@@ -1221,10 +1115,8 @@ str_sql
     return str_sql(f"({n})! / (({k})! * ({n} - {k})!)", "float")
 
 
-# ---#
 def cos(expr):
     """
-----------------------------------------------------------------------------------------
 Trigonometric Cosine.
 
 Parameters
@@ -1241,10 +1133,8 @@ str_sql
     return str_sql(f"COS({expr})", "float")
 
 
-# ---#
 def cosh(expr):
     """
-----------------------------------------------------------------------------------------
 Hyperbolic Cosine.
 
 Parameters
@@ -1261,10 +1151,8 @@ str_sql
     return str_sql(f"COSH({expr})", "float")
 
 
-# ---#
 def cot(expr):
     """
-----------------------------------------------------------------------------------------
 Trigonometric Cotangent.
 
 Parameters
@@ -1281,10 +1169,8 @@ str_sql
     return str_sql(f"COT({expr})", "float")
 
 
-# ---#
 def date(expr):
     """
-----------------------------------------------------------------------------------------
 Converts the input value to a DATE data type.
 
 Parameters
@@ -1301,10 +1187,8 @@ str_sql
     return str_sql(f"DATE({expr})", "date")
 
 
-# ---#
 def day(expr):
     """
-----------------------------------------------------------------------------------------
 Returns as an integer the day of the month from the input expression. 
 
 Parameters
@@ -1321,10 +1205,8 @@ str_sql
     return str_sql(f"DAY({expr})", "float")
 
 
-# ---#
 def dayofweek(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the day of the week as an integer, where Sunday is day 1.
 
 Parameters
@@ -1341,10 +1223,8 @@ str_sql
     return str_sql(f"DAYOFWEEK({expr})", "float")
 
 
-# ---#
 def dayofyear(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the day of the year as an integer, where January 1 is day 1.
 
 Parameters
@@ -1361,10 +1241,8 @@ str_sql
     return str_sql(f"DAYOFYEAR({expr})", "float")
 
 
-# ---#
 def decode(expr, *argv):
     """
-----------------------------------------------------------------------------------------
 Compares expression to each search value one by one.
 
 Parameters
@@ -1398,10 +1276,8 @@ str_sql
     return str_sql(expr, category)
 
 
-# ---#
 def degrees(expr):
     """
-----------------------------------------------------------------------------------------
 Converts Radians to Degrees.
 
 Parameters
@@ -1418,12 +1294,10 @@ str_sql
     return str_sql(f"DEGREES({expr})", "float")
 
 
-# ---#
 def distance(
     lat0: float, lon0: float, lat1: float, lon1: float, radius: float = 6371.009
 ):
     """
-----------------------------------------------------------------------------------------
 Returns the distance (in kilometers) between two points.
 
 Parameters
@@ -1448,10 +1322,8 @@ str_sql
     return str_sql(f"DISTANCE({lat0}, {lon0}, {lat1}, {lon1}, {radius})", "float")
 
 
-# ---#
 def exp(expr):
     """
-----------------------------------------------------------------------------------------
 Exponential.
 
 Parameters
@@ -1468,10 +1340,8 @@ str_sql
     return str_sql(f"EXP({expr})", "float")
 
 
-# ---#
 def extract(expr, field: str):
     """
-----------------------------------------------------------------------------------------
 Extracts a sub-field such as year or hour from a date/time expression.
 
 Parameters
@@ -1493,10 +1363,8 @@ str_sql
     return str_sql(f"DATE_PART('{field}', {expr})", "int")
 
 
-# ---#
 def factorial(expr):
     """
-----------------------------------------------------------------------------------------
 Factorial.
 
 Parameters
@@ -1513,10 +1381,8 @@ str_sql
     return str_sql(f"({expr})!", "int")
 
 
-# ---#
 def floor(expr):
     """
-----------------------------------------------------------------------------------------
 Floor Function.
 
 Parameters
@@ -1533,10 +1399,8 @@ str_sql
     return str_sql(f"FLOOR({expr})", "int")
 
 
-# ---#
 def gamma(expr):
     """
-----------------------------------------------------------------------------------------
 Gamma Function.
 
 Parameters
@@ -1553,10 +1417,8 @@ str_sql
     return str_sql(f"({expr} - 1)!", "float")
 
 
-# ---#
 def getdate():
     """
-----------------------------------------------------------------------------------------
 Returns the current statement's start date and time as a TIMESTAMP value.
 
 Returns
@@ -1567,10 +1429,8 @@ str_sql
     return str_sql("GETDATE()", "date")
 
 
-# ---#
 def getutcdate():
     """
-----------------------------------------------------------------------------------------
 Returns the current statement's start date and time at TIME ZONE 'UTC' 
 as a TIMESTAMP value.
 
@@ -1582,10 +1442,8 @@ str_sql
     return str_sql("GETUTCDATE()", "date")
 
 
-# ---#
 def hash(*argv):
     """
-----------------------------------------------------------------------------------------
 Calculates a hash value over the function arguments.
 
 Parameters
@@ -1605,10 +1463,8 @@ str_sql
     return str_sql(f"HASH({expr})", "float")
 
 
-# ---#
 def hour(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the hour portion of the specified date as an integer, where 0 is 
 00:00 to 00:59.
 
@@ -1626,10 +1482,8 @@ str_sql
     return str_sql(f"HOUR({expr})", "int")
 
 
-# ---#
 def interval(expr):
     """
-----------------------------------------------------------------------------------------
 Converts the input value to a INTERVAL data type.
 
 Parameters
@@ -1646,10 +1500,8 @@ str_sql
     return str_sql(f"({expr})::interval", "interval")
 
 
-# ---#
 def isfinite(expr):
     """
-----------------------------------------------------------------------------------------
 Returns True if the expression is finite.
 
 Parameters
@@ -1666,10 +1518,8 @@ str_sql
     return str_sql(f"(({expr}) = ({expr})) AND (ABS({expr}) < 'inf'::float)", cat)
 
 
-# ---#
 def isinf(expr):
     """
-----------------------------------------------------------------------------------------
 Returns True if the expression is infinite.
 
 Parameters
@@ -1686,10 +1536,8 @@ str_sql
     return str_sql(f"ABS({expr}) = 'inf'::float", "float")
 
 
-# ---#
 def isnan(expr):
     """
-----------------------------------------------------------------------------------------
 Returns True if the expression is NaN.
 
 Parameters
@@ -1706,10 +1554,8 @@ str_sql
     return str_sql(f"(({expr}) != ({expr}))", cat)
 
 
-# ---#
 def lgamma(expr):
     """
-----------------------------------------------------------------------------------------
 Natural Logarithm of the expression Gamma.
 
 Parameters
@@ -1726,10 +1572,8 @@ str_sql
     return str_sql(f"LN(({expr} - 1)!)", "float")
 
 
-# ---#
 def ln(expr):
     """
-----------------------------------------------------------------------------------------
 Natural Logarithm.
 
 Parameters
@@ -1746,10 +1590,8 @@ str_sql
     return str_sql(f"LN({expr})", "float")
 
 
-# ---#
 def log(expr, base: int = 10):
     """
-----------------------------------------------------------------------------------------
 Logarithm.
 
 Parameters
@@ -1768,10 +1610,8 @@ str_sql
     return str_sql(f"LOG({base}, {expr})", "float")
 
 
-# ---#
 def minute(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the minute portion of the specified date as an integer.
 
 Parameters
@@ -1788,10 +1628,8 @@ str_sql
     return str_sql(f"MINUTE({expr})", "int")
 
 
-# ---#
 def microsecond(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the microsecond portion of the specified date as an integer.
 
 Parameters
@@ -1808,10 +1646,8 @@ str_sql
     return str_sql(f"MICROSECOND({expr})", "int")
 
 
-# ---#
 def month(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the month portion of the specified date as an integer.
 
 Parameters
@@ -1828,10 +1664,8 @@ str_sql
     return str_sql(f"MONTH({expr})", "int")
 
 
-# ---#
 def nullifzero(expr):
     """
-----------------------------------------------------------------------------------------
 Evaluates to NULL if the value in the expression is 0.
 
 Parameters
@@ -1848,10 +1682,8 @@ str_sql
     return str_sql(f"NULLIFZERO({expr})", cat)
 
 
-# ---#
 def overlaps(start0, end0, start1, end1):
     """
-----------------------------------------------------------------------------------------
 Evaluates two time periods and returns true when they overlap, false 
 otherwise.
 
@@ -1884,10 +1716,8 @@ str_sql
     return str_sql(clean_query(expr), "int")
 
 
-# ---#
 def quarter(expr):
     """
-----------------------------------------------------------------------------------------
 Returns calendar quarter of the specified date as an integer, where the 
 January-March quarter is 1.
 
@@ -1905,10 +1735,8 @@ str_sql
     return str_sql(f"QUARTER({expr})", "int")
 
 
-# ---#
 def radians(expr):
     """
-----------------------------------------------------------------------------------------
 Converts Degrees to Radians.
 
 Parameters
@@ -1925,10 +1753,8 @@ str_sql
     return str_sql(f"RADIANS({expr})", "float")
 
 
-# ---#
 def random():
     """
-----------------------------------------------------------------------------------------
 Returns a Random Number.
 
 Returns
@@ -1939,10 +1765,8 @@ str_sql
     return str_sql("RANDOM()", "float")
 
 
-# ---#
 def randomint(n: int):
     """
-----------------------------------------------------------------------------------------
 Returns a Random Number from 0 through n – 1.
 
 Parameters
@@ -1958,10 +1782,8 @@ str_sql
     return str_sql(f"RANDOMINT({n})", "int")
 
 
-# ---#
 def round(expr, places: int = 0):
     """
-----------------------------------------------------------------------------------------
 Rounds the expression.
 
 Parameters
@@ -1980,10 +1802,8 @@ str_sql
     return str_sql(f"ROUND({expr}, {places})", "float")
 
 
-# ---#
 def round_date(expr, precision: str = "DD"):
     """
-----------------------------------------------------------------------------------------
 Rounds the specified date or time.
 
 Parameters
@@ -2016,10 +1836,8 @@ str_sql
     return str_sql(f"ROUND({expr}, '{precision}')", "date")
 
 
-# ---#
 def second(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the seconds portion of the specified date as an integer.
 
 Parameters
@@ -2036,10 +1854,8 @@ str_sql
     return str_sql(f"SECOND({expr})", "int")
 
 
-# ---#
 def seeded_random(random_state: int):
     """
-----------------------------------------------------------------------------------------
 Returns a Seeded Random Number using the input random state.
 
 Parameters
@@ -2055,10 +1871,8 @@ str_sql
     return str_sql(f"SEEDED_RANDOM({random_state})", "float")
 
 
-# ---#
 def sign(expr):
     """
-----------------------------------------------------------------------------------------
 Sign of the expression.
 
 Parameters
@@ -2075,10 +1889,8 @@ str_sql
     return str_sql(f"SIGN({expr})", "int")
 
 
-# ---#
 def sin(expr):
     """
-----------------------------------------------------------------------------------------
 Trigonometric Sine.
 
 Parameters
@@ -2095,10 +1907,8 @@ str_sql
     return str_sql(f"SIN({expr})", "float")
 
 
-# ---#
 def sinh(expr):
     """
-----------------------------------------------------------------------------------------
 Hyperbolic Sine.
 
 Parameters
@@ -2115,10 +1925,8 @@ str_sql
     return str_sql(f"SINH({expr})", "float")
 
 
-# ---#
 def sqrt(expr):
     """
-----------------------------------------------------------------------------------------
 Arithmetic Square Root.
 
 Parameters
@@ -2135,10 +1943,8 @@ str_sql
     return str_sql(f"SQRT({expr})", "float")
 
 
-# ---#
 def tan(expr):
     """
-----------------------------------------------------------------------------------------
 Trigonometric Tangent.
 
 Parameters
@@ -2155,10 +1961,8 @@ str_sql
     return str_sql(f"TAN({expr})", "float")
 
 
-# ---#
 def tanh(expr):
     """
-----------------------------------------------------------------------------------------
 Hyperbolic Tangent.
 
 Parameters
@@ -2175,10 +1979,8 @@ str_sql
     return str_sql(f"TANH({expr})", "float")
 
 
-# ---#
 def timestamp(expr):
     """
-----------------------------------------------------------------------------------------
 Converts the input value to a TIMESTAMP data type.
 
 Parameters
@@ -2195,10 +1997,8 @@ str_sql
     return str_sql(f"({expr})::timestamp", "date")
 
 
-# ---#
 def trunc(expr, places: int = 0):
     """
-----------------------------------------------------------------------------------------
 Truncates the expression.
 
 Parameters
@@ -2217,10 +2017,8 @@ str_sql
     return str_sql(f"TRUNC({expr}, {places})", "float")
 
 
-# ---#
 def week(expr):
     """
-----------------------------------------------------------------------------------------
 Returns the week of the year for the specified date as an integer, where the 
 first week begins on the first Sunday on or preceding January 1.
 
@@ -2238,10 +2036,8 @@ str_sql
     return str_sql(f"WEEK({expr})", "int")
 
 
-# ---#
 def year(expr):
     """
-----------------------------------------------------------------------------------------
 Returns an integer that represents the year portion of the specified date.
 
 Parameters
@@ -2258,10 +2054,8 @@ str_sql
     return str_sql(f"YEAR({expr})", "int")
 
 
-# ---#
 def zeroifnull(expr):
     """
-----------------------------------------------------------------------------------------
 Evaluates to 0 if the expression is NULL.
 
 Parameters

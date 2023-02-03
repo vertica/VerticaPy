@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,17 +22,18 @@
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.learn.vmodel import *
 
-# ---#
+# Standard Module
+from typing import Literal
+
+
 class MCA(Decomposition):
     """
-----------------------------------------------------------------------------------------
 Creates a MCA (multiple correspondence analysis) object using the Vertica 
 PCA algorithm on the data. It uses the property that the MCA is a PCA 
 applied to a complete disjunctive table. The input relation is transformed 
@@ -74,7 +46,6 @@ name: str
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str):
         self.type, self.name = "MCA", name
@@ -85,13 +56,14 @@ name: str
         self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
         self.parameters = {}
 
-    # ---#
-    @check_dtypes
     def plot_var(
-        self, dimensions: tuple = (1, 2), method: str = "auto", ax=None, **style_kwds
+        self,
+        dimensions: tuple = (1, 2),
+        method: Literal["auto", "cos2", "contrib"] = "auto",
+        ax=None,
+        **style_kwds,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Draws the MCA (multiple correspondence analysis) graph.
 
     Parameters
@@ -113,7 +85,6 @@ name: str
     ax
         Matplotlib axes object
         """
-        raise_error_if_not_in("method", method, ["auto", "cos2", "contrib"])
         x = self.components_[f"PC{dimensions[0]}"]
         y = self.components_[f"PC{dimensions[1]}"]
         n = len(self.cos2_[f"PC{dimensions[0]}"])
@@ -160,10 +131,8 @@ name: str
             **style_kwds,
         )
 
-    # ---#
     def plot_contrib(self, dimension: int = 1, ax=None, **style_kwds):
         """
-    ----------------------------------------------------------------------------------------
     Draws a decomposition contribution plot of the input dimension.
 
     Parameters
@@ -209,10 +178,8 @@ name: str
             )
         return ax
 
-    # ---#
     def plot_cos2(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
-    ----------------------------------------------------------------------------------------
     Draws a MCA (multiple correspondence analysis) cos2 plot of 
     the two input dimensions.
 
@@ -249,10 +216,8 @@ name: str
         return ax
 
 
-# ---#
 class PCA(Decomposition):
     """
-----------------------------------------------------------------------------------------
 Creates a PCA (Principal Component Analysis) object using the Vertica PCA
 algorithm on the data.
  
@@ -275,16 +240,14 @@ method: str, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_components: int = 0,
         scale: bool = False,
-        method: str = "lapack",
+        method: Literal["lapack"] = "lapack",
     ):
-        raise_error_if_not_in("method", str(method).lower(), ["lapack"])
         self.type, self.name = "PCA", name
         self.VERTICA_FIT_FUNCTION_SQL = "PCA"
         self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
@@ -298,10 +261,8 @@ method: str, optional
         }
 
 
-# ---#
 class SVD(Decomposition):
     """
-----------------------------------------------------------------------------------------
 Creates an SVD (Singular Value Decomposition) object using the Vertica SVD
 algorithm on the data.
  
@@ -321,10 +282,10 @@ method: str, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
-    def __init__(self, name: str, n_components: int = 0, method: str = "lapack"):
-        raise_error_if_not_in("method", str(method).lower(), ["lapack"])
+    def __init__(
+        self, name: str, n_components: int = 0, method: Literal["lapack"] = "lapack"
+    ):
         self.type, self.name = "SVD", name
         self.VERTICA_FIT_FUNCTION_SQL = "SVD"
         self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_SVD"

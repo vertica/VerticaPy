@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -101,7 +72,8 @@ MARKERS = ["^", "o", "+", "*", "h", "x", "D", "1"]
 #
 # Functions used by vDataFrames to draw graphics which are not useful independently.
 #
-# ---#
+
+
 def acf_plot(
     x: list,
     y: list,
@@ -156,7 +128,6 @@ def acf_plot(
     return ax
 
 
-# ---#
 def animated_bar(
     vdf,
     columns: list,
@@ -410,7 +381,6 @@ def animated_bar(
         return myAnimation
 
 
-# ---#
 def animated_bubble_plot(
     vdf,
     order_by: str,
@@ -680,7 +650,6 @@ def animated_bubble_plot(
         return myAnimation
 
 
-# ---#
 def animated_ts_plot(
     vdf,
     order_by: str,
@@ -807,7 +776,6 @@ def animated_ts_plot(
         return myAnimation
 
 
-# ---#
 def bar(
     vdf,
     method: str = "density",
@@ -855,7 +823,6 @@ def bar(
     return ax
 
 
-# ---#
 def bar2D(
     vdf,
     columns: list,
@@ -1031,7 +998,6 @@ def bar2D(
     return ax
 
 
-# ---#
 def boxplot(
     vdf,
     by: str = "",
@@ -1258,7 +1224,6 @@ def boxplot(
             raise Exception(f"{e}\nAn error occured during the BoxPlot creation.")
 
 
-# ---#
 def boxplot2D(
     vdf, columns: list = [], ax=None, **style_kwds,
 ):
@@ -1325,7 +1290,6 @@ def boxplot2D(
             raise Exception(f"{e}\nAn error occured during the BoxPlot creation.")
 
 
-# ---#
 def bubble(
     vdf,
     columns: list,
@@ -1614,7 +1578,6 @@ def bubble(
     return ax
 
 
-# ---#
 def cmatrix(
     matrix,
     columns_x,
@@ -1695,7 +1658,6 @@ def cmatrix(
     return ax
 
 
-# ---#
 def contour_plot(
     vdf,
     columns: list,
@@ -1832,7 +1794,6 @@ def contour_plot(
     return ax
 
 
-# ---#
 def compute_plot_variables(
     vdf,
     method: str = "density",
@@ -2044,7 +2005,6 @@ def compute_plot_variables(
     return [x, y, z, h, is_categorical]
 
 
-# ---#
 def gen_cmap(color: str = "", reverse: bool = False):
     if not (color):
         cm1 = LinearSegmentedColormap.from_list(
@@ -2063,7 +2023,6 @@ def gen_cmap(color: str = "", reverse: bool = False):
             return LinearSegmentedColormap.from_list("vml", ["#FFFFFF", color], N=1000)
 
 
-# ---#
 def gen_colors():
     if not (verticapy.OPTIONS["colors"]) or not (
         isinstance(verticapy.OPTIONS["colors"], list)
@@ -2119,7 +2078,6 @@ def gen_colors():
         return verticapy.OPTIONS["colors"]
 
 
-# ---#
 def hexbin(
     vdf,
     columns: list,
@@ -2218,7 +2176,6 @@ def hexbin(
     return ax
 
 
-# ---#
 def hist(
     vdf,
     method: str = "density",
@@ -2269,7 +2226,6 @@ def hist(
     return ax
 
 
-# ---#
 def hist2D(
     vdf,
     columns: list,
@@ -2360,7 +2316,6 @@ def hist2D(
     return ax
 
 
-# ---#
 def nested_pie(
     vdf,
     columns: list,
@@ -2457,7 +2412,6 @@ def nested_pie(
     return ax
 
 
-# ---#
 def multiple_hist(
     vdf,
     columns: list,
@@ -2526,7 +2480,6 @@ def multiple_hist(
         return ax
 
 
-# ---#
 def multi_ts_plot(
     vdf,
     order_by: str,
@@ -2672,7 +2625,6 @@ def multi_ts_plot(
     return ax
 
 
-# ---#
 def range_curve(
     X,
     Y,
@@ -2723,7 +2675,6 @@ def range_curve(
     return ax
 
 
-# ---#
 def range_curve_vdf(
     vdf,
     order_by: str,
@@ -2779,7 +2730,6 @@ def range_curve_vdf(
     )
 
 
-# ---#
 def outliers_contour_plot(
     vdf,
     columns: list,
@@ -2903,7 +2853,6 @@ def outliers_contour_plot(
     return ax
 
 
-# ---#
 def pie(
     vdf,
     method: str = "density",
@@ -3040,7 +2989,6 @@ def pie(
     return ax
 
 
-# ---#
 def pivot_table(
     vdf,
     columns: list,
@@ -3266,7 +3214,6 @@ def pivot_table(
     return tablesample(values=values)
 
 
-# ---#
 def scatter_matrix(
     vdf, columns: list = [], **style_kwds,
 ):
@@ -3332,7 +3279,6 @@ def scatter_matrix(
     return axes
 
 
-# ---#
 def scatter(
     vdf,
     columns: list,
@@ -3503,7 +3449,6 @@ def scatter(
     return ax
 
 
-# ---#
 def spider(
     vdf,
     columns: list,
@@ -3581,7 +3526,6 @@ def spider(
     return ax
 
 
-# ---#
 def ts_plot(
     vdf,
     order_by: str,
@@ -3699,7 +3643,8 @@ def ts_plot(
 #
 # Functions to simplify the coding.
 #
-# ---#
+
+
 def parse_datetime(D: list):
     try:
         return [parse(d) for d in D]

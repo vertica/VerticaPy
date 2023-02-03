@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,12 +22,11 @@
 # Standard Python Modules
 import random, datetime
 import numpy as np
-from typing import Union
+from typing import Union, Literal
 
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy import vDataFrame
@@ -78,10 +48,8 @@ from tqdm.auto import tqdm
 
 
 class vAuto(vModel):
-    # ---#
     def set_params(self, parameters: dict = {}):
         """
-    ----------------------------------------------------------------------------------------
     Sets the parameters of the model.
 
     Parameters
@@ -97,7 +65,6 @@ class vAuto(vModel):
 
 class AutoDataPrep(vAuto):
     """
-----------------------------------------------------------------------------------------
 Automatically find relations between the different features to preprocess
 the data according to each column type.
 
@@ -170,32 +137,24 @@ final_relation_: vDataFrame
     Relation created after fitting the model.
     """
 
-    # ---#
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str = "",
-        cat_method: str = "ooe",
-        num_method: str = "none",
+        cat_method: Literal["label", "ooe"] = "ooe",
+        num_method: Literal["same_freq", "same_width", "none"] = "none",
         nbins: int = 20,
         outliers_threshold: float = 4.0,
-        na_method: str = "auto",
+        na_method: Literal["auto", "drop"] = "auto",
         cat_topk: int = 10,
         normalize: bool = True,
         normalize_min_cat: int = 6,
-        id_method: int = "drop",
+        id_method: Literal["none", "drop"] = "drop",
         apply_pca: bool = False,
         rule: Union[str, datetime.timedelta] = "auto",
         identify_ts: bool = True,
         save: bool = True,
     ):
-        raise_error_if_not_in("cat_method", cat_method, ["label", "ooe"])
-        raise_error_if_not_in(
-            "num_method", num_method, ["same_freq", "same_width", "none"]
-        )
-        raise_error_if_not_in("na_method", na_method, ["auto", "drop"])
-        raise_error_if_not_in("id_method", id_method, ["none", "drop"])
         self.type, self.name = "AutoDataPrep", name
         if not (self.name):
             self.name = gen_tmp_name(
@@ -217,7 +176,6 @@ final_relation_: vDataFrame
             "save": save,
         }
 
-    # ---#
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -226,7 +184,6 @@ final_relation_: vDataFrame
         by: list = [],
     ):
         """
-    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -426,7 +383,6 @@ final_relation_: vDataFrame
 
 class AutoClustering(vAuto):
     """
-----------------------------------------------------------------------------------------
 Automatically creates k different groups with which to generalize the data.
 
 Parameters
@@ -470,8 +426,6 @@ model_: object
     Final model used for the clustering.
     """
 
-    # ---#
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -504,10 +458,8 @@ model_: object
             "preprocess_dict": preprocess_dict,
         }
 
-    # ---#
     def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
-    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -582,7 +534,6 @@ model_: object
 
 class AutoML(vAuto):
     """
-----------------------------------------------------------------------------------------
 Tests multiple models to find those that maximize the input score.
 
 Parameters
@@ -677,14 +628,12 @@ model_grid_ : tablesample
     Grid containing the different models information.
     """
 
-    # ---#
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         estimator: Union[list, str] = "fast",
-        estimator_type: str = "auto",
+        estimator_type: Literal["auto", "regressor", "binary", "multi"] = "auto",
         metric: str = "auto",
         cv: int = 3,
         pos_label: Union[int, float, str] = None,
@@ -693,26 +642,14 @@ model_grid_ : tablesample
         lmax: int = 5,
         optimized_grid: int = 2,
         stepwise: bool = True,
-        stepwise_criterion: str = "aic",
-        stepwise_direction: str = "backward",
+        stepwise_criterion: Literal["aic", "bic"] = "aic",
+        stepwise_direction: Literal["forward", "backward"] = "backward",
         stepwise_max_steps: int = 100,
-        stepwise_x_order: str = "pearson",
+        stepwise_x_order: Literal["pearson", "spearman", "random", "none"] = "pearson",
         preprocess_data: bool = True,
         preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
     ):
-        raise_error_if_not_in(
-            "estimator_type", estimator_type, ["auto", "regressor", "binary", "multi"],
-        )
-        raise_error_if_not_in("stepwise_criterion", stepwise_criterion, ["aic", "bic"])
-        raise_error_if_not_in(
-            "stepwise_direction", stepwise_direction, ["forward", "backward"]
-        )
-        raise_error_if_not_in(
-            "stepwise_x_order",
-            stepwise_x_order,
-            ["pearson", "spearman", "random", "none"],
-        )
         assert optimized_grid in [0, 1, 2], ParameterError(
             "Optimized Grid must be an integer between 0 and 2."
         )
@@ -737,10 +674,8 @@ model_grid_ : tablesample
             "preprocess_dict": preprocess_dict,
         }
 
-    # ---#
     def fit(self, input_relation: Union[str, vDataFrame], X: list = [], y: str = ""):
         """
-    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -774,9 +709,6 @@ model_grid_ : tablesample
         if isinstance(self.parameters["estimator"], str):
             v = vertica_version()
             self.parameters["estimator"] = self.parameters["estimator"].lower()
-            raise_error_if_not_in(
-                "estimator", self.parameters["estimator"], ["native", "all", "fast"]
-            )
             modeltype = None
             estimator_method = self.parameters["estimator"]
             if not (isinstance(input_relation, vDataFrame)):
@@ -1043,10 +975,8 @@ model_grid_ : tablesample
             self.preprocess_.final_relation_ = vDataFrameSQL(self.preprocess_.sql_)
         return self.model_grid_
 
-    # ---#
     def plot(self, mltype: str = "champion", ax=None, **style_kwds):
         """
-    ----------------------------------------------------------------------------------------
     Draws the AutoML plot.
 
     Parameters

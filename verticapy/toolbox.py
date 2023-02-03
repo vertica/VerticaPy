@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,11 +22,10 @@
 # Standard Python Modules
 import shutil, re, sys, warnings, random, itertools, datetime, time, html, os
 from collections.abc import Iterable
-from typing import Union
+from typing import Union, Literal
 
 # VerticaPy Modules
 import verticapy as vp
-from verticapy.decorators import check_dtypes
 from verticapy.errors import *
 
 # Other Modules
@@ -72,7 +42,8 @@ except:
 #
 # Functions to use to simplify the coding.
 #
-# ---#
+
+
 def all_comb(X: list):
     all_configuration = []
     for r in range(len(X) + 1):
@@ -83,7 +54,6 @@ def all_comb(X: list):
     return all_configuration
 
 
-# ---#
 def bin_spatial_to_str(
     category: str, column: str = "{}",
 ):
@@ -97,7 +67,6 @@ def bin_spatial_to_str(
     return column
 
 
-# ---#
 def clean_query(query: str):
     res = re.sub(r"--.+(\n|\Z)", "", query)
     res = res.replace("\t", " ").replace("\n", " ")
@@ -112,7 +81,6 @@ def clean_query(query: str):
     return res
 
 
-# ---#
 def color_dict(d: dict, idx: int = 0):
     if "color" in d:
         if isinstance(d["color"], str):
@@ -125,7 +93,6 @@ def color_dict(d: dict, idx: int = 0):
         return gen_colors()[idx % len(gen_colors())]
 
 
-# ---#
 def erase_label(query: str):
     labels = re.findall("\/\*\+LABEL(.*?)\*\/", query)
     for label in labels:
@@ -133,7 +100,6 @@ def erase_label(query: str):
     return query
 
 
-# ---#
 def erase_space_start_end_in_list_values(L: list):
     L_tmp = [elem for elem in L]
     for idx in range(len(L_tmp)):
@@ -141,22 +107,18 @@ def erase_space_start_end_in_list_values(L: list):
     return L_tmp
 
 
-# ---#
-@check_dtypes
 def executeSQL(
     query: str,
     title: str = "",
     data: list = [],
-    method: str = "cursor",
+    method: Literal[
+        "cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"
+    ] = "cursor",
     path: str = "",
     print_time_sql: bool = True,
     sql_push_ext: bool = False,
     symbol: str = "$",
 ):
-    raise_error_if_not_in(
-        "method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"],
-    )
-
     # Cleaning the query
     if sql_push_ext and (symbol in vp.SPECIAL_SYMBOLS):
         query = erase_label(query)
@@ -191,7 +153,6 @@ def executeSQL(
     return cursor
 
 
-# ---#
 def extract_col_dt_from_query(query: str, field: str):
     n, m = len(query), len(field) + 2
     for i in range(n - m):
@@ -210,7 +171,6 @@ def extract_col_dt_from_query(query: str, field: str):
     return None
 
 
-# ---#
 def extract_compression(path: str):
     file_extension = path.split(".")[-1].lower()
     lookup_table = {"gz": "GZIP", "bz": "BZIP", "lz": "LZO", "zs": "ZSTD"}
@@ -220,7 +180,6 @@ def extract_compression(path: str):
         return "UNCOMPRESSED"
 
 
-# ---#
 def find_val_in_dict(x: str, d: dict, return_key: bool = False):
     for elem in d:
         if quote_ident(x).lower() == quote_ident(elem).lower():
@@ -230,7 +189,6 @@ def find_val_in_dict(x: str, d: dict, return_key: bool = False):
     raise NameError(f'Key "{x}" was not found in {d}.')
 
 
-# ---#
 def flat_dict(d: dict) -> str:
     # converts dictionary to string with a specific format
     res = []
@@ -243,7 +201,6 @@ def flat_dict(d: dict) -> str:
     return res
 
 
-# ---#
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
     if isinstance(x, vp.vColumn):
         val = x.alias
@@ -264,7 +221,6 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
         return val
 
 
-# ---#
 def gen_name(L: list):
     return "_".join(
         [
@@ -274,7 +230,6 @@ def gen_name(L: list):
     )
 
 
-# ---#
 def gen_tmp_name(schema: str = "", name: str = ""):
     session_user = get_session()
     L = session_user.split("_")
@@ -287,7 +242,6 @@ def gen_tmp_name(schema: str = "", name: str = ""):
     return name
 
 
-# ---#
 def get_category_from_python_type(expr):
     try:
         category = expr.category()
@@ -307,8 +261,6 @@ def get_category_from_python_type(expr):
     return category
 
 
-# ---#
-@check_dtypes
 def get_category_from_vertica_type(ctype: str = ""):
     ctype = ctype.lower().strip()
     if ctype != "":
@@ -350,7 +302,6 @@ def get_category_from_vertica_type(ctype: str = ""):
         return "undefined"
 
 
-# ---#
 def get_dblink_fun(query: str, symbol: str = "$"):
     assert symbol in vp.OPTIONS["external_connection"], ConnectionError(
         f"External Query detected but no corresponding Connection Identifier "
@@ -369,7 +320,6 @@ def get_dblink_fun(query: str, symbol: str = "$"):
     return clean_query(query)
 
 
-# ---#
 def get_first_file(path: str, ext: str):
     dirname = os.path.dirname(path)
     files = os.listdir(dirname)
@@ -380,7 +330,6 @@ def get_first_file(path: str, ext: str):
     return None
 
 
-# ---#
 def get_final_vertica_type(
     type_name: str, display_size: int = 0, precision: int = 0, scale: int = 0
 ):
@@ -400,7 +349,6 @@ Takes as input the Vertica Python type code and returns its corresponding data t
     return result
 
 
-# ---#
 def get_header_name_csv(path: str, sep: str):
     f = open(path, "r")
     file_header = f.readline().replace("\n", "").replace('"', "")
@@ -432,7 +380,6 @@ def get_header_name_csv(path: str, sep: str):
     return erase_space_start_end_in_list_values(file_header)
 
 
-# ---#
 def get_match_index(x: str, col_list: list, str_check: bool = True):
     for idx, col in enumerate(col_list):
         if (str_check and quote_ident(x.lower()) == quote_ident(col.lower())) or (
@@ -442,7 +389,6 @@ def get_match_index(x: str, col_list: list, str_check: bool = True):
     return None
 
 
-# ---#
 def get_narrow_tablesample(t, use_number_as_category: bool = False):
     result = []
     t = t.values
@@ -478,7 +424,6 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
         return result
 
 
-# ---#
 def get_magic_options(line: str):
 
     # parsing the line
@@ -520,7 +465,6 @@ def get_magic_options(line: str):
     return all_options_dict
 
 
-# ---#
 def get_random_function(rand_int=None):
     random_state = vp.OPTIONS["random_state"]
     if isinstance(rand_int, int):
@@ -536,7 +480,6 @@ def get_random_function(rand_int=None):
     return random_func
 
 
-# ---#
 def get_session(add_username: bool = True):
     current_session = executeSQL(
         query="SELECT /*+LABEL(get_session)*/ CURRENT_SESSION();",
@@ -555,7 +498,6 @@ def get_session(add_username: bool = True):
     return current_session
 
 
-# ---#
 def get_vertica_type(dtype):
     if dtype in (str, "str", "string"):
         dtype = "varchar"
@@ -584,7 +526,6 @@ def get_vertica_type(dtype):
     return dtype
 
 
-# ---#
 def get_verticapy_function(key: str, method: str = ""):
     key = key.lower()
     if key in ("median", "med"):
@@ -641,7 +582,6 @@ def get_verticapy_function(key: str, method: str = ""):
     return key
 
 
-# ---#
 def guess_sep(file_str: str):
     sep = ","
     max_occur = file_str.count(",")
@@ -653,7 +593,6 @@ def guess_sep(file_str: str):
     return sep
 
 
-# ---#
 def heuristic_length(i):
     GAMMA = 0.5772156649
     if i == 2:
@@ -664,7 +603,6 @@ def heuristic_length(i):
         return 0
 
 
-# ---#
 def indentSQL(query: str):
     query = (
         query.replace("SELECT", "\n   SELECT\n    ")
@@ -709,7 +647,6 @@ def indentSQL(query: str):
     return query_print
 
 
-# ---#
 def insert_verticapy_schema(
     model_name: str,
     model_type: str,
@@ -780,7 +717,6 @@ def insert_verticapy_schema(
             raise
 
 
-# ---#
 def isnotebook():
     try:
         shell = get_ipython().__class__.__name__
@@ -794,7 +730,6 @@ def isnotebook():
         return False  # Probably standard Python interpreter
 
 
-# ---#
 def levenshtein(s: str, t: str):
     rows = len(s) + 1
     cols = len(t) + 1
@@ -817,7 +752,6 @@ def levenshtein(s: str, t: str):
     return dist[row][col]
 
 
-# ---#
 def print_query(query: str, title: str = ""):
     screen_columns = shutil.get_terminal_size().columns
     query_print = indentSQL(query)
@@ -831,7 +765,6 @@ def print_query(query: str, title: str = ""):
         print("-" * int(screen_columns) + "\n")
 
 
-# ---#
 def print_table(
     data_columns,
     is_finished: bool = True,
@@ -1060,7 +993,6 @@ def print_table(
         return html_table
 
 
-# ---#
 def print_time(elapsed_time: float):
     screen_columns = shutil.get_terminal_size().columns
     if isnotebook():
@@ -1070,10 +1002,8 @@ def print_time(elapsed_time: float):
         print("-" * int(screen_columns) + "\n")
 
 
-# ---#
 def quote_ident(column: str):
     """
-    ----------------------------------------------------------------------------------------
     Returns the specified string argument in the format that is required in
     order to use that string as an identifier in an SQL statement.
 
@@ -1094,7 +1024,6 @@ def quote_ident(column: str):
     return f'"{temp_column_str}"'
 
 
-# ---#
 def replace_external_queries_in_query(query: str):
     sql_keyword = (
         "select ",
@@ -1144,7 +1073,6 @@ def replace_external_queries_in_query(query: str):
     return query
 
 
-# ---#
 def replace_vars_in_query(query: str, locals_dict: dict):
     variables, query_tmp = re.findall("(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
@@ -1187,7 +1115,6 @@ def replace_vars_in_query(query: str, locals_dict: dict):
     return query_tmp
 
 
-# ---#
 def reverse_score(metric: str):
     if metric in [
         "logloss",
@@ -1205,7 +1132,6 @@ def reverse_score(metric: str):
     return True
 
 
-# ---#
 def schema_relation(relation):
     if isinstance(relation, vp.vDataFrame):
         schema, relation = vp.OPTIONS["temp_schema"], ""
@@ -1232,14 +1158,12 @@ def schema_relation(relation):
     return (quote_ident(schema), quote_ident(relation))
 
 
-# ---#
 def format_schema_table(schema: str, table_name: str):
     if not (schema):
         schema = "public"
     return f"{quote_ident(schema)}.{quote_ident(table_name)}"
 
 
-# ---#
 def updated_dict(
     d1: dict, d2: dict, color_idx: int = 0,
 ):
@@ -1259,9 +1183,7 @@ def updated_dict(
     return d
 
 
-# ---#
 class str_sql:
-    # ---#
     def __init__(self, alias, category="", init_transf=""):
         self.alias = alias
         self.category_ = category
@@ -1270,19 +1192,15 @@ class str_sql:
         else:
             self.init_transf = init_transf
 
-    # ---#
     def __repr__(self):
         return str(self.init_transf)
 
-    # ---#
     def __str__(self):
         return str(self.init_transf)
 
-    # ---#
     def __abs__(self):
         return str_sql(f"ABS({self.init_transf})", self.category())
 
-    # ---#
     def __add__(self, x):
         if (isinstance(self, vp.vColumn) and self.isarray()) and (
             isinstance(x, vp.vColumn) and x.isarray()
@@ -1296,7 +1214,6 @@ class str_sql:
         )
         return str_sql(f"({self.init_transf}) {op} ({val})", self.category())
 
-    # ---#
     def __radd__(self, x):
         if (isinstance(self, vp.vColumn) and self.isarray()) and (
             isinstance(x, vp.vColumn) and x.isarray()
@@ -1310,17 +1227,14 @@ class str_sql:
         )
         return str_sql(f"({val}) {op} ({self.init_transf})", self.category())
 
-    # ---#
     def __and__(self, x):
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) AND ({val})", self.category())
 
-    # ---#
     def __rand__(self, x):
         val = format_magic(x)
         return str_sql(f"({val}) AND ({self.init_transf})", self.category())
 
-    # ---#
     def _between(self, x, y):
         val1 = str(format_magic(x))
         val2 = str(format_magic(y))
@@ -1328,7 +1242,6 @@ class str_sql:
             f"({self.init_transf}) BETWEEN ({val1}) AND ({val2})", self.category(),
         )
 
-    # ---#
     def _in(self, *argv):
         if (len(argv) == 1) and (isinstance(argv[0], list)):
             x = argv[0]
@@ -1343,7 +1256,6 @@ class str_sql:
         val = ", ".join(val)
         return str_sql(f"({self.init_transf}) IN ({val})", self.category())
 
-    # ---#
     def _not_in(self, *argv):
         if (len(argv) == 1) and (isinstance(argv[0], list)):
             x = argv[0]
@@ -1360,15 +1272,12 @@ class str_sql:
         val = ", ".join(val)
         return str_sql(f"({self.init_transf}) NOT IN ({val})", self.category())
 
-    # ---#
     def _as(self, x):
         return str_sql(f"({self.init_transf}) AS {x}", self.category())
 
-    # ---#
     def _distinct(self):
         return str_sql(f"DISTINCT ({self.init_transf})", self.category())
 
-    # ---#
     def _over(self, by: (str, list) = [], order_by: (str, list) = []):
         if isinstance(by, str):
             by = [by]
@@ -1382,7 +1291,6 @@ class str_sql:
             order_by = f"ORDER BY {order_by}"
         return str_sql(f"{self.init_transf} OVER ({by} {order_by})", self.category(),)
 
-    # ---#
     def __eq__(self, x):
         op = "IS" if (x == None) and not (isinstance(x, str_sql)) else "="
         val = format_magic(x)
@@ -1390,7 +1298,6 @@ class str_sql:
             val = f"({val})"
         return str_sql(f"({self.init_transf}) {op} {val}", self.category())
 
-    # ---#
     def __ne__(self, x):
         op = "IS NOT" if (x == None) and not (isinstance(x, str_sql)) else "!="
         val = format_magic(x)
@@ -1398,125 +1305,100 @@ class str_sql:
             val = f"({val})"
         return str_sql(f"({self.init_transf}) {op} {val}", self.category())
 
-    # ---#
     def __ge__(self, x):
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) >= ({val})", self.category())
 
-    # ---#
     def __gt__(self, x):
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) > ({val})", self.category())
 
-    # ---#
     def __le__(self, x):
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) <= ({val})", self.category())
 
-    # ---#
     def __lt__(self, x):
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) < ({val})", self.category())
 
-    # ---#
     def __mul__(self, x):
         if self.category() == "text" and isinstance(x, int):
             return str_sql(f"REPEAT({self.init_transf}, {x})", self.category())
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) * ({val})", self.category())
 
-    # ---#
     def __rmul__(self, x):
         if self.category() == "text" and isinstance(x, int):
             return str_sql(f"REPEAT({self.init_transf}, {x})", self.category())
         val = format_magic(x)
         return str_sql(f"({val}) * ({self.init_transf})", self.category())
 
-    # ---#
     def __or__(self, x):
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) OR ({val})", self.category())
 
-    # ---#
     def __ror__(self, x):
         val = format_magic(x)
         return str_sql(f"({val}) OR ({self.init_transf})", self.category())
 
-    # ---#
     def __pos__(self):
         return str_sql(f"+({self.init_transf})", self.category())
 
-    # ---#
     def __neg__(self):
         return str_sql(f"-({self.init_transf})", self.category())
 
-    # ---#
     def __pow__(self, x):
         val = format_magic(x)
         return str_sql(f"POWER({self.init_transf}, {val})", self.category())
 
-    # ---#
     def __rpow__(self, x):
         val = format_magic(x)
         return str_sql(f"POWER({val}, {self.init_transf})", self.category())
 
-    # ---#
     def __mod__(self, x):
         val = format_magic(x)
         return str_sql(f"MOD({self.init_transf}, {val})", self.category())
 
-    # ---#
     def __rmod__(self, x):
         val = format_magic(x)
         return str_sql(f"MOD({val}, {self.init_transf})", self.category())
 
-    # ---#
     def __sub__(self, x):
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) - ({val})", self.category())
 
-    # ---#
     def __rsub__(self, x):
         val = format_magic(x)
         return str_sql(f"({val}) - ({self.init_transf})", self.category())
 
-    # ---#
     def __truediv__(self, x):
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) / ({val})", self.category())
 
-    # ---#
     def __rtruediv__(self, x):
         val = format_magic(x)
         return str_sql(f"({val}) / ({self.init_transf})", self.category())
 
-    # ---#
     def __floordiv__(self, x):
         val = format_magic(x)
         return str_sql(f"({self.init_transf}) // ({val})", self.category())
 
-    # ---#
     def __rfloordiv__(self, x):
         val = format_magic(x)
         return str_sql(f"({val}) // ({self.init_transf})", self.category())
 
-    # ---#
     def __ceil__(self):
         return str_sql(f"CEIL({self.init_transf})", self.category())
 
-    # ---#
     def __floor__(self):
         return str_sql(f"FLOOR({self.init_transf})", self.category())
 
-    # ---#
     def __trunc__(self):
         return str_sql(f"TRUNC({self.init_transf})", self.category())
 
-    # ---#
     def __invert__(self):
         return str_sql(f"-({self.init_transf}) - 1", self.category())
 
-    # ---#
     def __round__(self, x):
         return str_sql(f"ROUND({self.init_transf}, {x})", self.category())
 
@@ -1528,10 +1410,10 @@ class str_sql:
 #
 # Tools to merge similar names/categories together.
 #
-# ---#
+
+
 def erase_prefix_in_name(name: str, prefix: list = []):
-    """
---------------------------------------------------------------------------------------------
+    """----
 Excludes the input lists of prefixes from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1556,10 +1438,8 @@ name
     return name_tmp
 
 
-# ---#
 def erase_suffix_in_name(name: str, suffix: list = []):
-    """
---------------------------------------------------------------------------------------------
+    """----
 Excludes the input lists of suffixes from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1584,10 +1464,8 @@ name
     return name_tmp
 
 
-# ---#
 def erase_word_in_name(name: str, word: list = []):
-    """
---------------------------------------------------------------------------------------------
+    """----
 Excludes the input lists of words from the input name and returns it.
 When there is a match, the other elements of the list are ignored.
 
@@ -1610,7 +1488,6 @@ name
     return name
 
 
-# ---#
 def erase_in_name(
     name: str,
     suffix: list = [],
@@ -1618,8 +1495,7 @@ def erase_in_name(
     word: list = [],
     order: list = ["p", "s", "w"],
 ):
-    """
---------------------------------------------------------------------------------------------
+    """----
 Excludes the input lists of suffixes and prefixes from the input name and 
 returns it. When there is a match, the other elements of the list are ignored.
 
@@ -1657,7 +1533,6 @@ name
     return name_tmp
 
 
-# ---#
 def is_similar_name(
     name1: str,
     name2: str,
@@ -1666,8 +1541,7 @@ def is_similar_name(
     skip_word: list = [],
     order: list = ["p", "s", "w"],
 ):
-    """
---------------------------------------------------------------------------------------------
+    """----
 Excludes the input lists of suffixes, prefixes and words from the input name 
 and returns it.
 
@@ -1706,7 +1580,6 @@ bool
     return n1 == n2
 
 
-# ---#
 def belong_to_group(
     name: str,
     group: list,
@@ -1715,8 +1588,7 @@ def belong_to_group(
     skip_word: list = [],
     order: list = ["p", "s", "w"],
 ):
-    """
---------------------------------------------------------------------------------------------
+    """----
 Excludes the input lists of suffixes, prefixes and words from the input name 
 and looks if it belongs to a specific group.
 
@@ -1758,7 +1630,6 @@ bool
     return False
 
 
-# ---#
 def group_similar_names(
     colnames: list,
     skip_suffix: list = [],
@@ -1766,8 +1637,7 @@ def group_similar_names(
     skip_word: list = [],
     order: list = ["p", "s", "w"],
 ):
-    """
---------------------------------------------------------------------------------------------
+    """----
 Creates similar group using the input column names.
 
 Parameters
@@ -1809,10 +1679,8 @@ dict
     return result
 
 
-# ---#
 def gen_coalesce(group_dict: dict):
-    """
---------------------------------------------------------------------------------------------
+    """----
 Generates the SQL statement to merge the groups together.
 
 Parameters

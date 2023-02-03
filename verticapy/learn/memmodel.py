@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,12 +22,11 @@
 # Standard Python Modules
 import numpy as np
 from collections.abc import Iterable
-from typing import Union
+from typing import Union, Literal
 
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.toolbox import *
@@ -71,8 +41,7 @@ try:
 except:
     GRAPHVIZ_ON = False
 
-# ---#
-@check_dtypes
+
 def predict_from_nb(
     X: Union[list, np.ndarray],
     attributes: list,
@@ -81,7 +50,6 @@ def predict_from_nb(
     return_proba: bool = False,
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Predicts using a naive Bayes model and the input attributes.
 
     Parameters
@@ -170,8 +138,6 @@ def predict_from_nb(
     return np.apply_along_axis(naive_bayes_score_row, 1, X)
 
 
-# ---#
-@check_dtypes
 def sql_from_nb(
     X: Union[list, np.ndarray],
     attributes: list,
@@ -179,7 +145,6 @@ def sql_from_nb(
     prior: Union[list, np.ndarray],
 ) -> list:
     """
-    ----------------------------------------------------------------------------------------
     Predicts using a naive Bayes model and the input attributes. This function
     returns the unnormalized probabilities of each class as raw SQL code to 
     deploy the model.
@@ -258,8 +223,6 @@ def sql_from_nb(
     return result
 
 
-# ---#
-@check_dtypes
 def predict_from_chaid_tree(
     X: Union[list, np.ndarray],
     tree: dict,
@@ -267,7 +230,6 @@ def predict_from_chaid_tree(
     return_proba: bool = False,
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Predicts using a CHAID model and the input attributes.
 
     Parameters
@@ -314,8 +276,6 @@ def predict_from_chaid_tree(
     return np.apply_along_axis(predict_tree_final, 1, np.array(X))
 
 
-# ---#
-@check_dtypes
 def sql_from_chaid_tree(
     X: Union[list, np.ndarray],
     tree: dict,
@@ -323,7 +283,6 @@ def sql_from_chaid_tree(
     return_proba: bool = False,
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the CHAID model.
 
     Parameters
@@ -375,7 +334,6 @@ def sql_from_chaid_tree(
         return predict_tree(X, tree, classes)
 
 
-@check_dtypes
 def chaid_to_graphviz(
     tree: dict,
     classes: Union[list, np.ndarray] = [],
@@ -389,7 +347,6 @@ def chaid_to_graphviz(
     **kwds,
 ):
     """
-    ----------------------------------------------------------------------------------------
     Returns the code for a Graphviz tree.
 
     Parameters
@@ -507,8 +464,6 @@ def chaid_to_graphviz(
         return res
 
 
-# ---#
-@check_dtypes
 def predict_from_binary_tree(
     X: Union[list, np.ndarray],
     children_left: Union[list, np.ndarray],
@@ -523,7 +478,6 @@ def predict_from_binary_tree(
     psy: int = -1,
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Predicts using a binary tree model and the input attributes.
 
     Parameters
@@ -621,8 +575,6 @@ def predict_from_binary_tree(
     return np.apply_along_axis(predict_tree_final, 1, np.array(X))
 
 
-# ---#
-@check_dtypes
 def sql_from_binary_tree(
     X: Union[list, np.ndarray],
     children_left: Union[list, np.ndarray],
@@ -637,7 +589,6 @@ def sql_from_binary_tree(
     psy: int = -1,
 ) -> Union[list, str]:
     """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a binary tree model using 
     its attributes.
 
@@ -752,7 +703,6 @@ def sql_from_binary_tree(
         )
 
 
-@check_dtypes
 def binary_tree_to_graphviz(
     children_left: Union[list, np.ndarray],
     children_right: Union[list, np.ndarray],
@@ -772,7 +722,6 @@ def binary_tree_to_graphviz(
     psy: int = -1,
 ):
     """
-    ----------------------------------------------------------------------------------------
     Returns the code for a Graphviz tree.
 
     Parameters
@@ -934,17 +883,16 @@ def binary_tree_to_graphviz(
     return res + "\n}"
 
 
-# ---#
-@check_dtypes
 def predict_from_coef(
     X: Union[list, np.ndarray],
     coefficients: Union[list, np.ndarray],
     intercept: float,
-    method: str = "LinearRegression",
+    method: Literal[
+        "LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"
+    ] = "LinearRegression",
     return_proba: bool = False,
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Predicts using a linear regression model and the input attributes.
 
     Parameters
@@ -967,11 +915,6 @@ def predict_from_coef(
     numpy.array
         Predicted values
     """
-    raise_error_if_not_in(
-        "method",
-        method,
-        ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],
-    )
     result = intercept + np.sum(np.array(coefficients) * np.array(X), axis=1)
     if method in ("LogisticRegression", "LinearSVC"):
         result = 1 / (1 + np.exp(-(result)))
@@ -983,16 +926,15 @@ def predict_from_coef(
         return np.where(result > 0.5, 1, 0)
 
 
-# ---#
-@check_dtypes
 def sql_from_coef(
     X: Union[list, np.ndarray],
     coefficients: Union[list, np.ndarray],
     intercept: float,
-    method: str = "LinearRegression",
+    method: Union[
+        "LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"
+    ] = "LinearRegression",
 ) -> str:
     """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a linear model using its attributes.
 
     Parameters
@@ -1012,11 +954,6 @@ def sql_from_coef(
     str
         SQL code
     """
-    raise_error_if_not_in(
-        "method",
-        method,
-        ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],
-    )
     assert len(X) == len(coefficients), ParameterError(
         "The length of parameter 'X' must be equal to the number of coefficients."
     )
@@ -1029,7 +966,6 @@ def sql_from_coef(
     return sql
 
 
-@check_dtypes
 def bisecting_kmeans_to_graphviz(
     children_left: Union[list, np.ndarray],
     children_right: Union[list, np.ndarray],
@@ -1043,7 +979,6 @@ def bisecting_kmeans_to_graphviz(
     leaf_style: dict = {},
 ):
     """
-    ----------------------------------------------------------------------------------------
     Returns the code for a Graphviz tree.
 
     Parameters
@@ -1133,8 +1068,6 @@ def bisecting_kmeans_to_graphviz(
     return res + "\n}"
 
 
-# ---#
-@check_dtypes
 def predict_from_bisecting_kmeans(
     X: Union[list, np.ndarray],
     clusters: Union[list, np.ndarray],
@@ -1143,7 +1076,6 @@ def predict_from_bisecting_kmeans(
     p: int = 2,
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Predicts using a bisecting k-means model and the input attributes.
 
     Parameters
@@ -1187,8 +1119,6 @@ def predict_from_bisecting_kmeans(
     return np.apply_along_axis(predict_tree_final, 1, X)
 
 
-# ---#
-@check_dtypes
 def sql_from_bisecting_kmeans(
     X: Union[list, np.ndarray],
     clusters: Union[list, np.ndarray],
@@ -1198,7 +1128,6 @@ def sql_from_bisecting_kmeans(
     p: int = 2,
 ) -> Union[list, str]:
     """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a bisecting k-means model using its 
     attributes.
 
@@ -1261,8 +1190,6 @@ def sql_from_bisecting_kmeans(
     return clean_query(sql_final)
 
 
-# ---#
-@check_dtypes
 def predict_from_clusters(
     X: Union[list, np.ndarray],
     clusters: Union[list, np.ndarray],
@@ -1272,7 +1199,6 @@ def predict_from_clusters(
     p: int = 2,
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Predicts using a k-means or nearest centroid model and the input attributes.
 
     Parameters
@@ -1315,8 +1241,6 @@ def predict_from_clusters(
     return result
 
 
-# ---#
-@check_dtypes
 def sql_from_clusters(
     X: Union[list, np.ndarray],
     clusters: Union[list, np.ndarray],
@@ -1326,7 +1250,6 @@ def sql_from_clusters(
     p: int = 2,
 ) -> Union[list, str]:
     """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a k-means or nearest centroids model 
     using its attributes.
 
@@ -1415,8 +1338,6 @@ def sql_from_clusters(
     return sql_final
 
 
-# ---#
-@check_dtypes
 def predict_from_clusters_kprotypes(
     X: Union[list, np.ndarray],
     clusters: Union[list, np.ndarray],
@@ -1426,7 +1347,6 @@ def predict_from_clusters_kprotypes(
     gamma: float = 1.0,
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Predicts using a k-prototypes model and the input attributes.
 
     Parameters
@@ -1488,8 +1408,6 @@ def predict_from_clusters_kprotypes(
     return result
 
 
-# ---#
-@check_dtypes
 def sql_from_clusters_kprotypes(
     X: Union[list, np.ndarray],
     clusters: Union[list, np.ndarray],
@@ -1500,7 +1418,6 @@ def sql_from_clusters_kprotypes(
     is_categorical: Union[list, np.ndarray] = [],
 ) -> Union[list, str]:
     """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a k-prototypes or nearest centroids 
     model using its attributes.
 
@@ -1599,15 +1516,12 @@ def sql_from_clusters_kprotypes(
     return sql_final
 
 
-# ---#
-@check_dtypes
 def transform_from_pca(
     X: Union[list, np.ndarray],
     principal_components: Union[list, np.ndarray],
     mean: Union[list, np.ndarray],
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Transforms the data with a PCA model using the input attributes.
 
     Parameters
@@ -1632,15 +1546,12 @@ def transform_from_pca(
     return np.column_stack(L)
 
 
-# ---#
-@check_dtypes
 def sql_from_pca(
     X: Union[list, np.ndarray],
     principal_components: Union[list, np.ndarray],
     mean: Union[list, np.ndarray],
 ) -> list:
     """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a PCA model using its attributes.
 
     Parameters
@@ -1671,15 +1582,12 @@ def sql_from_pca(
     return sql
 
 
-# ---#
-@check_dtypes
 def transform_from_svd(
     X: Union[list, np.ndarray],
     vectors: Union[list, np.ndarray],
     values: Union[list, np.ndarray],
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Transforms the data with an SVD model using the input attributes.
 
     Parameters
@@ -1703,15 +1611,12 @@ def transform_from_svd(
     return np.column_stack(L)
 
 
-# ---#
-@check_dtypes
 def sql_from_svd(
     X: Union[list, np.ndarray],
     vectors: Union[list, np.ndarray],
     values: Union[list, np.ndarray],
 ) -> list:
     """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a SVD model using its attributes.
 
     Parameters
@@ -1740,13 +1645,12 @@ def sql_from_svd(
     return sql
 
 
-# ---#
-@check_dtypes
 def transform_from_normalizer(
-    X: Union[list, np.ndarray], values: Union[list, np.ndarray], method: str = "zscore",
+    X: Union[list, np.ndarray],
+    values: Union[list, np.ndarray],
+    method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Transforms the data with a normalizer model using the input attributes.
 
     Parameters
@@ -1766,7 +1670,6 @@ def transform_from_normalizer(
     numpy.array
         Transformed data
     """
-    raise_error_if_not_in("method", method, ["zscore", "robust_zscore", "minmax"])
     a, b = (
         np.array([elem[0] for elem in values]),
         np.array([elem[1] for elem in values]),
@@ -1776,13 +1679,12 @@ def transform_from_normalizer(
     return (np.array(X) - a) / b
 
 
-# ---#
-@check_dtypes
 def sql_from_normalizer(
-    X: Union[list, np.ndarray], values: Union[list, np.ndarray], method: str = "zscore",
+    X: Union[list, np.ndarray],
+    values: Union[list, np.ndarray],
+    method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
 ) -> list:
     """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a normalizer model using its attributes.
 
     Parameters
@@ -1803,7 +1705,6 @@ def sql_from_normalizer(
     list
         SQL code
     """
-    raise_error_if_not_in("method", method, ["zscore", "robust_zscore", "minmax"])
     assert len(X) == len(values), ParameterError(
         "The length of parameter 'X' must be equal to the length of the list 'values'."
     )
@@ -1814,15 +1715,12 @@ def sql_from_normalizer(
     return sql
 
 
-# ---#
-@check_dtypes
 def transform_from_one_hot_encoder(
     X: Union[list, np.ndarray],
     categories: Union[list, np.ndarray],
     drop_first: bool = False,
 ) -> np.ndarray:
     """
-    ----------------------------------------------------------------------------------------
     Transforms the data with a one-hot encoder model using the input attributes.
 
     Parameters
@@ -1854,16 +1752,13 @@ def transform_from_one_hot_encoder(
     return np.apply_along_axis(ooe_row, 1, X)
 
 
-# ---#
-@check_dtypes
 def sql_from_one_hot_encoder(
     X: Union[list, np.ndarray],
     categories: Union[list, np.ndarray],
     drop_first: bool = False,
-    column_naming: str = None,
+    column_naming: Literal["indices", "values", "values_relaxed", None] = None,
 ) -> list:
     """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy a one-hot encoder model using its 
     attributes.
 
@@ -1889,10 +1784,6 @@ def sql_from_one_hot_encoder(
     list
         SQL code
     """
-    if column_naming:
-        raise_error_if_not_in(
-            "column_naming", column_naming, ["indices", "values", "values_relaxed"]
-        )
     assert len(X) == len(categories), ParameterError(
         "The length of parameter 'X' must be equal to the length of the list 'values'."
     )
@@ -1921,10 +1812,8 @@ def sql_from_one_hot_encoder(
     return sql
 
 
-# ---#
 class memModel:
     """
-----------------------------------------------------------------------------------------
 Independent machine learning models that can easily be deployed 
 using raw SQL or Python code.
 
@@ -2062,38 +1951,36 @@ attributes: dict
     #
     # Special Methods
     #
-    # ---#
-    @check_dtypes
+
     @save_verticapy_logs
-    def __init__(self, model_type: str, attributes: dict):
-        raise_error_if_not_in(
-            "model_type",
-            model_type,
-            [
-                "OneHotEncoder",
-                "Normalizer",
-                "SVD",
-                "PCA",
-                "CHAID",
-                "BisectingKMeans",
-                "KMeans",
-                "KPrototypes",
-                "NaiveBayes",
-                "XGBoostClassifier",
-                "XGBoostRegressor",
-                "RandomForestClassifier",
-                "BinaryTreeClassifier",
-                "BinaryTreeRegressor",
-                "BinaryTreeAnomaly",
-                "RandomForestRegressor",
-                "LinearSVR",
-                "LinearSVC",
-                "LogisticRegression",
-                "LinearRegression",
-                "NearestCentroid",
-                "IsolationForest",
-            ],
-        )
+    def __init__(
+        self,
+        model_type: Literal[
+            "OneHotEncoder",
+            "Normalizer",
+            "SVD",
+            "PCA",
+            "CHAID",
+            "BisectingKMeans",
+            "KMeans",
+            "KPrototypes",
+            "NaiveBayes",
+            "XGBoostClassifier",
+            "XGBoostRegressor",
+            "RandomForestClassifier",
+            "BinaryTreeClassifier",
+            "BinaryTreeRegressor",
+            "BinaryTreeAnomaly",
+            "RandomForestRegressor",
+            "LinearSVR",
+            "LinearSVC",
+            "LogisticRegression",
+            "LinearRegression",
+            "NearestCentroid",
+            "IsolationForest",
+        ],
+        attributes: dict,
+    ):
         attributes_ = {}
         if model_type == "NaiveBayes":
             if (
@@ -2233,9 +2120,10 @@ attributes: dict
             elif not (attributes["column_naming"]):
                 attributes_["column_naming"] = None
             else:
-                raise_error_if_not_in(
-                    "column_naming", attributes["column_naming"], ["indices", "values"],
-                )
+                if attributes["column_naming"] not in ["indices", "values"]:
+                    raise ValueError(
+                        f"Attribute 'column_naming' must be in <{' | '.join(attributes['column_naming'])}>"
+                    )
                 attributes_["column_naming"] = attributes["column_naming"]
         elif model_type in (
             "LinearSVR",
@@ -2322,9 +2210,10 @@ attributes: dict
                 "Normalizer's attributes must include a list including the model's "
                 "aggregations and a string representing the model's method."
             )
-            raise_error_if_not_in(
-                "method", attributes["method"], ["minmax", "zscore", "robust_zscore"],
-            )
+            if attributes["method"] not in ["minmax", "zscore", "robust_zscore"]:
+                raise ValueError(
+                    f"Attribute 'method' must be in <{' | '.join(attributes['method'])}>"
+                )
             attributes_["values"] = np.copy(attributes["values"])
             attributes_["method"] = attributes["method"]
         else:
@@ -2333,25 +2222,21 @@ attributes: dict
         self.model_type_ = model_type
         self.represent_ = f"<{model_type}>\n\nattributes = {attributes_}"
 
-    # ---#
     def __repr__(self):
         return self.represent_
 
     #
     # Methods
     #
-    # ---#
+
     def get_attributes(self) -> dict:
         """
-    ----------------------------------------------------------------------------------------
     Returns model's attributes.
         """
         return self.attributes_
 
-    # ---#
     def set_attributes(self, attributes: dict):
         """
-    ----------------------------------------------------------------------------------------
     Sets new model's attributes.
 
     Parameters
@@ -2366,7 +2251,6 @@ attributes: dict
             attributes_tmp[elem] = attributes[elem]
         self.__init__(model_type=self.model_type_, attributes=attributes_tmp)
 
-    @check_dtypes
     def plot_tree(
         self,
         pic_path: str = "",
@@ -2381,7 +2265,6 @@ attributes: dict
         leaf_style: dict = {},
     ):
         """
-        ----------------------------------------------------------------------------------------
         Draws the input tree. Requires the graphviz module.
 
         Parameters
@@ -2437,10 +2320,8 @@ attributes: dict
             res.view(pic_path)
         return res
 
-    # ---#
     def predict(self, X: list) -> np.ndarray:
         """
-    ----------------------------------------------------------------------------------------
     Predicts using the model's attributes.
 
     Parameters
@@ -2552,10 +2433,8 @@ attributes: dict
                 f"Method 'predict' is not available for model type '{self.model_type_}'."
             )
 
-    # ---#
     def predict_sql(self, X: list) -> Union[list, str]:
         """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Parameters
@@ -2704,10 +2583,8 @@ attributes: dict
             result = clean_query(result.replace("\xa0", " "))
         return result
 
-    # ---#
     def predict_proba(self, X: list) -> np.ndarray:
         """
-    ----------------------------------------------------------------------------------------
     Predicts probabilities using the model's attributes.
 
     Parameters
@@ -2799,10 +2676,8 @@ attributes: dict
                 f"for model type '{self.model_type_}'."
             )
 
-    # ---#
     def predict_proba_sql(self, X: list) -> list:
         """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the probabilities model.
 
     Parameters
@@ -2949,7 +2824,6 @@ attributes: dict
         leaf_style: dict = {},
     ):
         """
-        ----------------------------------------------------------------------------------------
         Returns the code for a Graphviz tree.
 
         Parameters
@@ -3081,10 +2955,8 @@ attributes: dict
                 f"Method 'to_graphviz' does not exist for model type '{self.model_type_}'."
             )
 
-    # ---#
     def transform(self, X: list) -> np.ndarray:
         """
-    ----------------------------------------------------------------------------------------
     Transforms the data using the model's attributes.
 
     Parameters
@@ -3129,10 +3001,8 @@ attributes: dict
                 f"Method 'transform' is not available for model type '{self.model_type_}'."
             )
 
-    # ---#
     def transform_sql(self, X: list) -> list:
         """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Parameters
@@ -3187,10 +3057,8 @@ attributes: dict
         else:
             return [r.replace("\xa0", " ") for r in result]
 
-    # ---#
     def rotate(self, gamma: float = 1.0, q: int = 20, tol: float = 1e-6):
         """
-    ----------------------------------------------------------------------------------------
     Performs a Oblimin (Varimax, Quartimax) rotation on the the model's PCA 
     matrix.
 

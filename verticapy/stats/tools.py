@@ -1,56 +1,27 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
 #
 # Standard Python Modules
 import math, decimal, datetime
-from typing import Union
+from typing import Union, Literal
 
 # Other Python Modules
 from scipy.stats import chi2, norm, f
@@ -60,7 +31,6 @@ import numpy as np
 import verticapy
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.utilities import *
@@ -69,8 +39,8 @@ from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 
 # Statistical Tests & Tools
-# ---#
-@check_dtypes
+
+
 @save_verticapy_logs
 def adfuller(
     vdf: vDataFrame,
@@ -82,7 +52,6 @@ def adfuller(
     regresults: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Augmented Dickey Fuller test (Time Series stationarity).
 
 Parameters
@@ -305,8 +274,6 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def cochrane_orcutt(
     model,
@@ -316,7 +283,6 @@ def cochrane_orcutt(
     drop_tmp_model: bool = True,
 ):
     """
-----------------------------------------------------------------------------------------
 Performs a Cochrane-Orcutt estimation.
 
 Parameters
@@ -384,12 +350,9 @@ model
     return model_tmp
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def durbin_watson(vdf: vDataFrame, eps: str, ts: str, by: list = []):
     """
-----------------------------------------------------------------------------------------
 Durbin Watson test (residuals autocorrelation).
 
 Parameters
@@ -428,12 +391,9 @@ float
     return d
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def endogtest(vdf: vDataFrame, eps: str, X: list):
     """
-----------------------------------------------------------------------------------------
 Endogeneity test.
 
 Parameters
@@ -483,12 +443,9 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def het_arch(vdf: vDataFrame, eps: str, ts: str, by: list = [], p: int = 1):
     """
-----------------------------------------------------------------------------------------
 Engle’s Test for Autoregressive Conditional Heteroscedasticity (ARCH).
 
 Parameters
@@ -556,12 +513,9 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def het_breuschpagan(vdf: vDataFrame, eps: str, X: list):
     """
-----------------------------------------------------------------------------------------
 Uses the Breusch-Pagan to test a model for heteroskedasticity.
 
 Parameters
@@ -613,8 +567,6 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def het_goldfeldquandt(
     vdf: vDataFrame,
@@ -622,10 +574,9 @@ def het_goldfeldquandt(
     X: list,
     idx: int = 0,
     split: float = 0.5,
-    alternative: str = "increasing",
+    alternative: Literal["increasing", "decreasing", "two-sided"] = "increasing",
 ):
     """
-----------------------------------------------------------------------------------------
 Goldfeld-Quandt homoscedasticity test.
 
 Parameters
@@ -661,9 +612,6 @@ tablesample
             model.drop()
         return mse
 
-    raise_error_if_not_in(
-        "alternative", alternative, ["increasing", "decreasing", "two-sided"]
-    )
     y, X = vdf.format_colnames(y, X)
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
@@ -691,12 +639,9 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def het_white(vdf: vDataFrame, eps: str, X: list):
     """
-----------------------------------------------------------------------------------------
 White’s Lagrange Multiplier Test for heteroscedasticity.
 
 Parameters
@@ -761,12 +706,9 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def jarque_bera(vdf: vDataFrame, column: str, alpha: Union[int, float] = 0.05):
     """
-----------------------------------------------------------------------------------------
 Jarque-Bera test (Distribution Normality).
 
 Parameters
@@ -806,12 +748,9 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def kurtosistest(vdf: vDataFrame, column: str):
     """
-----------------------------------------------------------------------------------------
 Test whether the kurtosis is different from the normal distribution.
 
 Parameters
@@ -846,8 +785,6 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def ljungbox(
     vdf: vDataFrame,
@@ -859,7 +796,6 @@ def ljungbox(
     box_pierce: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Ljung–Box test (whether any of a group of autocorrelations of a time series 
 are different from zero).
 
@@ -913,12 +849,9 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def mkt(vdf: vDataFrame, column: str, ts: str, alpha: Union[int, float] = 0.05):
     """
-----------------------------------------------------------------------------------------
 Mann Kendall test (Time Series trend).
 
 \u26A0 Warning : This Test is computationally expensive. It is using a CROSS 
@@ -1002,11 +935,9 @@ tablesample
     return result
 
 
-# ---#
 @save_verticapy_logs
 def normaltest(vdf: vDataFrame, column: str):
     """
-----------------------------------------------------------------------------------------
 Test whether a sample differs from a normal distribution.
 
 Parameters
@@ -1032,8 +963,6 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def seasonal_decompose(
     vdf: vDataFrame,
@@ -1048,7 +977,6 @@ def seasonal_decompose(
     two_sided: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Performs a seasonal time series decomposition.
 
 Parameters
@@ -1191,12 +1119,9 @@ vDataFrame
     return vdf_tmp
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def skewtest(vdf: vDataFrame, column: str):
     """
-----------------------------------------------------------------------------------------
 Test whether the skewness is different from the normal distribution.
 
 Parameters
@@ -1229,12 +1154,9 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def variance_inflation_factor(vdf: vDataFrame, X: list, X_idx: int = None):
     """
-----------------------------------------------------------------------------------------
 Computes the variance inflation factor (VIF). It can be used to detect
 multicollinearity in an OLS Regression Analysis.
 

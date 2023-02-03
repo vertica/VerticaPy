@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,7 +22,6 @@
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.toolbox import *
@@ -64,13 +34,12 @@ from numpy.linalg import svd
 from typing import Union
 
 #
-# ---#
-@check_dtypes
+
+
 def does_model_exist(
     name: str, raise_error: bool = False, return_model_type: bool = False
 ):
     """
-----------------------------------------------------------------------------------------
 Checks if the model already exists.
 
 Parameters
@@ -143,12 +112,9 @@ int
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def load_model(name: str, input_relation: str = "", test_relation: str = ""):
     """
-----------------------------------------------------------------------------------------
 Loads a Vertica model and returns the associated object.
 
 Parameters
@@ -723,10 +689,10 @@ model
     return model
 
 
-# ---#
 # This piece of code was taken from
 # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
-@check_dtypes
+
+
 def matrix_rotation(
     Phi: Union[list, np.ndarray],
     gamma: Union[int, float] = 1.0,
@@ -734,7 +700,6 @@ def matrix_rotation(
     tol: float = 1e-6,
 ):
     """
-----------------------------------------------------------------------------------------
 Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
 PCA matrix.
 

@@ -1,61 +1,32 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
 #
 # Standard Python Modules
 import os
+from typing import Literal
 
 # VerticaPy Modules
 import vertica_python, verticapy
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy import vDataFrame
@@ -66,10 +37,9 @@ from verticapy.errors import *
 from verticapy.learn.vmodel import *
 from verticapy.learn.tools import *
 
-# ---#
+
 class BisectingKMeans(Clustering, Tree):
     """
-----------------------------------------------------------------------------------------
 Creates a BisectingKMeans object using the Vertica bisecting k-means 
 algorithm on the data. k-means clustering is a method of vector quantization, 
 originally from signal processing, that aims to partition n observations into 
@@ -117,31 +87,19 @@ tol: float, optional
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_cluster: int = 8,
         bisection_iterations: int = 1,
-        split_method: str = "sum_squares",
+        split_method: Literal["size", "sum_squares"] = "sum_squares",
         min_divisible_cluster_size: int = 2,
-        distance_method: str = "euclidean",
-        init: Union[str, list] = "kmeanspp",
+        distance_method: Literal["euclidean"] = "euclidean",
+        init: Union[Literal["kmeanspp", "pseudo", "random"], list] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        raise_error_if_not_in(
-            "split_method", str(split_method).lower(), ["size", "sum_squares"]
-        )
-        raise_error_if_not_in(
-            "distance_method", str(distance_method).lower(), ["euclidean"]
-        )
-        if isinstance(init, str):
-            raise_error_if_not_in(
-                "init", init.lower(), ["kmeanspp", "pseudo", "random"]
-            )
-            init = init.lower()
         self.type, self.name = "BisectingKMeans", name
         self.VERTICA_FIT_FUNCTION_SQL = "BISECTING_KMEANS"
         self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_BISECTING_KMEANS"
@@ -158,19 +116,15 @@ tol: float, optional
             "tol": tol,
         }
 
-    # ---#
     def get_tree(self):
         """
-    ----------------------------------------------------------------------------------------
     Returns a table containing information about the BK-tree.
         """
         return self.cluster_centers_
 
 
-# ---#
 class DBSCAN(vModel):
     """
-----------------------------------------------------------------------------------------
 [Beta Version]
 Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin 
 Ester, Hans-Peter Kriegel, Jörg Sander, and Xiaowei Xu. This object uses 
@@ -201,7 +155,6 @@ p: int, optional
 	The p of the p-distance (distance metric used during the model computation).
 	"""
 
-    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
         self.type, self.name = "DBSCAN", name
@@ -211,8 +164,6 @@ p: int, optional
         self.MODEL_SUBTYPE = "CLUSTERING"
         self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
 
-    # ---#
-    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -221,7 +172,6 @@ p: int, optional
         index: str = "",
     ):
         """
-	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -424,10 +374,8 @@ p: int, optional
         )
         return self
 
-    # ---#
     def predict(self):
         """
-	----------------------------------------------------------------------------------------
 	Creates a vDataFrame of the model.
 
 	Returns
@@ -438,10 +386,8 @@ p: int, optional
         return vDataFrame(self.name)
 
 
-# ---#
 class KMeans(Clustering):
     """
-----------------------------------------------------------------------------------------
 Creates a KMeans object using the Vertica k-means algorithm on the data. 
 k-means clustering is a method of vector quantization, originally from signal 
 processing, that aims to partition n observations into k clusters in which 
@@ -469,19 +415,15 @@ tol: float, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_cluster: int = 8,
-        init: Union[str, list] = "kmeanspp",
+        init: Union[Literal["kmeanspp", "random"], list] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        if isinstance(init, str):
-            raise_error_if_not_in("init", init.lower(), ["kmeanspp", "random"])
-            init = init.lower()
         self.type, self.name = "KMeans", name
         self.VERTICA_FIT_FUNCTION_SQL = "KMEANS"
         self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KMEANS"
@@ -494,12 +436,10 @@ tol: float, optional
             "tol": tol,
         }
 
-    # ---#
     def plot_voronoi(
         self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Draws the Voronoi Graph of the model.
 
     Parameters
@@ -544,10 +484,8 @@ tol: float, optional
             raise Exception("Voronoi Plots are only available in 2D")
 
 
-# ---#
 class KPrototypes(Clustering):
     """
-----------------------------------------------------------------------------------------
 Creates a KPrototypes object by using the Vertica k-prototypes algorithm on 
 the data. The algorithm combines the k-means and k-modes algorithms in order
 to handle both numerical and categorical data.
@@ -574,20 +512,16 @@ gamma: float, optional
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_cluster: int = 8,
-        init: Union[str, list] = "random",
+        init: Union[Literal["random"], list] = "random",
         max_iter: int = 300,
         tol: float = 1e-4,
         gamma: float = 1.0,
     ):
-        if isinstance(init, str):
-            raise_error_if_not_in("init", init.lower(), ["random"])
-            init = init.lower()
         self.type, self.name = "KPrototypes", name
         self.VERTICA_FIT_FUNCTION_SQL = "KPROTOTYPES"
         self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KPROTOTYPES"
