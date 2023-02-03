@@ -1597,8 +1597,6 @@ vColumns : vColumn
                     cols_to_check = copy.deepcopy(columns)
                 all_columns = self.get_columns()
                 for column in cols_to_check:
-                    from verticapy.toolbox import levenshtein, quote_ident
-
                     result = []
                     if column not in all_columns:
                         min_distance, min_distance_op = 1000, ""
