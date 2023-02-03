@@ -60,6 +60,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
 import matplotlib.ticker as mticker
+import matplotlib.animation as animation
 import numpy as np
 
 # Optional
@@ -69,6 +70,12 @@ try:
     PARSER_IMPORT = True
 except:
     PARSER_IMPORT = False
+
+# IPython - Optional
+try:
+    from IPython.display import HTML
+except:
+    pass
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -387,8 +394,6 @@ def animated_bar(
                 )
         return (ax,)
 
-    import matplotlib.animation as animation
-
     myAnimation = animation.FuncAnimation(
         fig,
         animate,
@@ -398,8 +403,6 @@ def animated_bar(
         repeat=repeat,
     )
     if isnotebook() and return_html:
-        from IPython.display import HTML
-
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
@@ -661,8 +664,6 @@ def animated_bubble_plot(
             ax.set_title(date_f(scatter_values[i]["date"]))
         return (ax,)
 
-    import matplotlib.animation as animation
-
     myAnimation = animation.FuncAnimation(
         fig,
         animate,
@@ -672,8 +673,6 @@ def animated_bubble_plot(
         repeat=repeat,
     )
     if isnotebook() and return_html:
-        from IPython.display import HTML
-
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
@@ -792,8 +791,6 @@ def animated_ts_plot(
             tick.set_rotation(90)
         return (ax,)
 
-    import matplotlib.animation as animation
-
     myAnimation = animation.FuncAnimation(
         fig,
         animate,
@@ -803,8 +800,6 @@ def animated_ts_plot(
         repeat=repeat,
     )
     if isnotebook() and return_html:
-        from IPython.display import HTML
-
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
@@ -1137,7 +1132,7 @@ def boxplot(
                 )
                 cat_priority = [item for sublist in query_result for item in sublist]
             with_summarize = False
-            query = []
+            all_queries = []
             lp = "(" if (len(cat_priority) == 1) else ""
             rp = ")" if (len(cat_priority) == 1) else ""
             for idx, category in enumerate(cat_priority):
@@ -1158,45 +1153,30 @@ def boxplot(
                         MAX({vdf.alias}) AS max, '{category}' 
                     FROM vdf_table
                     {where}"""
-                query += [lp + tmp_query + rp]
-            query = f"""
-                WITH vdf_table AS 
-                    (SELECT /*+LABEL('plot.boxplot')*/ * FROM {table})
-                    {" UNION ALL ".join(query)}"""
+                all_queries += [tmp_query]
+            main_table = (
+                f"WITH vdf_table AS (SELECT /*+LABEL('plot.boxplot')*/ * FROM {table})"
+            )
+            query = f"""{main_table}{" UNION ALL ".join([lp + q + rp for q in all_queries])}"""
             try:
                 query_result = executeSQL(
                     query=query,
-                    title="Computing all the descriptive statistics for each category to draw the box plot",
+                    title=(
+                        "Computing all the descriptive statistics for each "
+                        "category to draw the box plot"
+                    ),
                     method="fetchall",
                 )
             except:
                 query_result = []
-                for idx, category in enumerate(cat_priority):
-                    tmp_query = "SELECT /*+LABEL('plot.boxplot')*/ MIN({}) AS min, APPROXIMATE_PERCENTILE ({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE ({}".format(
-                        vdf.alias, vdf.alias, vdf.alias
-                    )
-                    tmp_query += "USING PARAMETERS percentile = 0.5) AS Median, APPROXIMATE_PERCENTILE ({} USING PARAMETERS percentile = 0.75) AS Q3, MAX".format(
-                        vdf.alias
-                    )
-                    tmp_query += "({}) AS max, '{}' FROM {}".format(
-                        vdf.alias, "{}", vdf.parent.__genSQL__()
-                    )
-                    tmp_query = (
-                        tmp_query.format("None")
-                        if (category in ("None", None))
-                        else tmp_query.format(str(category).replace("'", "''"))
-                    )
-                    tmp_query += (
-                        " WHERE {} IS NULL".format(by)
-                        if (category in ("None", None))
-                        else " WHERE {} = '{}'".format(
-                            by, str(category).replace("'", "''")
-                        )
-                    )
+                for q in enumerate(all_queries):
                     query_result += [
                         executeSQL(
-                            query=tmp_query,
-                            title="Computing all the descriptive statistics for each category to draw the box plot, one at a time",
+                            query=f"{main_table} {q}",
+                            title=(
+                                "Computing all the descriptive statistics for "
+                                "each category to draw the box plot, one at a time"
+                            ),
                             method="fetchrow",
                         )
                     ]
@@ -1275,9 +1255,7 @@ def boxplot(
                 patch.set_facecolor(color)
             return ax
         except Exception as e:
-            raise Exception(
-                f"{e}\nAn error occured during the BoxPlot creation."
-            )
+            raise Exception(f"{e}\nAn error occured during the BoxPlot creation.")
 
 
 # ---#
@@ -1344,9 +1322,7 @@ def boxplot2D(
                 patch.set_facecolor(color)
             return ax
         except Exception as e:
-            raise Exception(
-                f"{e}\nAn error occured during the BoxPlot creation."
-            )
+            raise Exception(f"{e}\nAn error occured during the BoxPlot creation.")
 
 
 # ---#
@@ -1376,19 +1352,19 @@ def bubble(
         colors = [colors]
     if not (catcol) and not (cmap_col):
         tablesample = max_nb_points / vdf.shape()[0]
-        query = "SELECT /*+LABEL('plot.bubble')*/ {}, {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
-            columns[0],
-            columns[1],
-            columns[2],
-            vdf.__genSQL__(True),
-            tablesample,
-            columns[0],
-            columns[1],
-            columns[2],
-            max_nb_points,
-        )
         query_result = executeSQL(
-            query=query,
+            query=f"""
+                SELECT 
+                    /*+LABEL('plot.bubble')*/ 
+                    {columns[0]}, 
+                    {columns[1]}, 
+                    {columns[2]} 
+                FROM {vdf.__genSQL__(True)} 
+                WHERE __verticapy_split__ < {tablesample} 
+                  AND {columns[0]} IS NOT NULL
+                  AND {columns[1]} IS NOT NULL
+                  AND {columns[2]} IS NOT NULL 
+                LIMIT {max_nb_points}""",
             title="Selecting random points to draw the scatter plot",
             method="fetchall",
         )
@@ -1431,31 +1407,22 @@ def bubble(
             column1, column2, s=size, **updated_dict(param, style_kwds),
         )
         if columns[2] != 1:
+            args_legends = [[], []]
+            for i, fun in enumerate([min, max]):
+                args_legends[0] += [
+                    Line2D(
+                        [0],
+                        [0],
+                        marker="o",
+                        color="w",
+                        markerfacecolor=colors[0],
+                        label="Scatter",
+                        markersize=fun(size) / 100 + 15,
+                    )
+                ]
+                args_legends[1] += [fun([x[2] for x in query_result])]
             leg1 = ax.legend(
-                [
-                    Line2D(
-                        [0],
-                        [0],
-                        marker="o",
-                        color="w",
-                        markerfacecolor=colors[0],
-                        label="Scatter",
-                        markersize=min(size) / 100 + 15,
-                    ),
-                    Line2D(
-                        [0],
-                        [0],
-                        marker="o",
-                        color="w",
-                        markerfacecolor=colors[0],
-                        label="Scatter",
-                        markersize=max(size) / 100 + 15,
-                    ),
-                ],
-                [
-                    min([item[2] for item in query_result]),
-                    max([item[2] for item in query_result]),
-                ],
+                *args_legends,
                 bbox_to_anchor=[1, 0.5],
                 loc="center left",
                 title=columns[2],
@@ -1502,24 +1469,24 @@ def bubble(
             all_categories = vdf[catcol].distinct()
             groupby_cardinality = vdf[catcol].nunique(True)
             for idx, category in enumerate(all_categories):
-                query = "SELECT /*+LABEL('plot.bubble')*/  {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
-                query = query.format(
-                    columns[0],
-                    columns[1],
-                    columns[2],
-                    vdf.__genSQL__(True),
-                    tablesample,
-                    catcol,
-                    str(category).replace("'", "''"),
-                    columns[0],
-                    columns[1],
-                    columns[2],
-                    int(max_nb_points / len(all_categories)),
-                )
+                category_str = str(category).replace("'", "''")
                 query_result = executeSQL(
-                    query=query,
-                    title="Selecting random points to draw the bubble plot (category = '{}')".format(
-                        str(category)
+                    query=f"""
+                        SELECT
+                            /*+LABEL('plot.bubble')*/  
+                            {columns[0]},
+                            {columns[1]},
+                            {columns[2]} 
+                        FROM {vdf.__genSQL__(True)}
+                        WHERE  __verticapy_split__ < {tablesample} 
+                           AND {catcol} = '{category_str}'
+                           AND {columns[0]} IS NOT NULL
+                           AND {columns[1]} IS NOT NULL
+                           AND {columns[2]} IS NOT NULL 
+                        LIMIT {int(max_nb_points / len(all_categories))}""",
+                    title=(
+                        "Selecting random points to draw the "
+                        f"bubble plot (category = '{category}')"
                     ),
                     method="fetchall",
                 )
@@ -1550,23 +1517,24 @@ def bubble(
                 if len(str(item)) > 20:
                     all_categories[idx] = str(item)[0:20] + "..."
         else:
-            query = "SELECT /*+LABEL('plot.bubble')*/ {}, {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
-            query = query.format(
-                columns[0],
-                columns[1],
-                columns[2],
-                cmap_col,
-                vdf.__genSQL__(True),
-                tablesample,
-                columns[0],
-                columns[1],
-                columns[2],
-                cmap_col,
-                max_nb_points,
-            )
             query_result = executeSQL(
-                query=query,
-                title="Selecting random points to draw the bubble plot with cmap expr.",
+                query=f"""
+                    SELECT
+                        /*+LABEL('plot.bubble')*/ 
+                        {columns[0]},
+                        {columns[1]},
+                        {columns[2]},
+                        {cmap_col}
+                    FROM {vdf.__genSQL__(True)}
+                    WHERE  __verticapy_split__ < {tablesample} 
+                       AND {columns[0]} IS NOT NULL
+                       AND {columns[1]} IS NOT NULL
+                       AND {columns[2]} IS NOT NULL
+                       AND {cmap_col} IS NOT NULL
+                    LIMIT {max_nb_points}""",
+                title=(
+                    "Selecting random points to draw the bubble plot with cmap expr."
+                ),
                 method="fetchall",
             )
             size = 50
@@ -1891,16 +1859,16 @@ def compute_plot_variables(
         or (method.lower() and method[-1] == "%")
     ) and (of):
         if method.lower() in ["avg", "min", "max", "sum"]:
-            aggregate = "{}({})".format(method.upper(), quote_ident(of))
+            aggregate = f"{method.upper()}({quote_ident(of)})"
         elif method and method[-1] == "%":
-            aggregate = "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(
-                quote_ident(of), float(method[0:-1]) / 100
-            )
+            aggregate = f"""
+                APPROXIMATE_PERCENTILE({quote_ident(of)} 
+                                       USING PARAMETERS
+                                       percentile = {float(method[0:-1]) / 100})"""
         else:
             raise ParameterError(
-                "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%] or a customized aggregation. Found {}.".format(
-                    method
-                )
+                "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%]"
+                f" or a customized aggregation. Found {method}."
             )
     elif method.lower() in ["density", "count"]:
         aggregate = "count(*)"
@@ -1911,9 +1879,8 @@ def compute_plot_variables(
         )
     else:
         raise ParameterError(
-            "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%] or a customized aggregation. Found {}.".format(
-                method
-            )
+            "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%]"
+            f" or a customized aggregation. Found {method}."
         )
     # depending on the cardinality, the type, the vColumn can be treated as categorical or not
     cardinality, count, is_numeric, is_date, is_categorical = (
@@ -1929,15 +1896,15 @@ def compute_plot_variables(
         is_date
     ):
         if (is_numeric) and not (pie):
-            query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {} ASC LIMIT {}".format(
-                vdf.alias,
-                aggregate,
-                vdf.parent.__genSQL__(),
-                vdf.alias,
-                vdf.alias,
-                vdf.alias,
-                max_cardinality,
-            )
+            query = f"""
+                SELECT 
+                    {vdf.alias},
+                    {aggregate}
+                FROM {vdf.parent.__genSQL__()} 
+                WHERE {vdf.alias} IS NOT NULL 
+                GROUP BY {vdf.alias} 
+                ORDER BY {vdf.alias} ASC 
+                LIMIT {max_cardinality}"""
         else:
             table = vdf.parent.__genSQL__()
             if (pie) and (is_numeric):
@@ -1949,35 +1916,34 @@ def compute_plot_variables(
                     + vdf.alias
                 )
                 if of:
-                    enum_trans += " , " + of
-                table = "(SELECT {} FROM {}) enum_table".format(
-                    enum_trans + other_columns, table
-                )
-            query = "(SELECT /*+LABEL('plot.compute_plot_variables')*/ {} AS {}, {} FROM {} GROUP BY {} ORDER BY 2 DESC LIMIT {})".format(
-                bin_spatial_to_str(vdf.category(), vdf.alias),
-                vdf.alias,
-                aggregate,
-                table,
-                bin_spatial_to_str(vdf.category(), vdf.alias),
-                max_cardinality,
-            )
+                    enum_trans += f" , {of}"
+                table = f"(SELECT {enum_trans + other_columns} FROM {table}) enum_table"
+            cast_alias = bin_spatial_to_str(vdf.category(), vdf.alias)
+            query = f"""
+                (SELECT 
+                    /*+LABEL('plot.compute_plot_variables')*/ 
+                    {cast_alias} AS {vdf.alias},
+                    {aggregate}
+                 FROM {table} 
+                 GROUP BY {cast_alias} 
+                 ORDER BY 2 DESC 
+                 LIMIT {max_cardinality})"""
             if cardinality > max_cardinality:
-                query += (
-                    " UNION (SELECT 'Others', {} FROM {} WHERE {} NOT IN "
-                    + "(SELECT {} FROM {} GROUP BY {} ORDER BY {} DESC LIMIT {}))"
-                )
-                query = query.format(
-                    aggregate,
-                    table,
-                    vdf.alias,
-                    vdf.alias,
-                    table,
-                    vdf.alias,
-                    aggregate,
-                    max_cardinality,
-                )
+                query += f"""
+                    UNION 
+                    (SELECT 
+                        'Others',
+                        {aggregate} 
+                     FROM {table}
+                     WHERE {vdf.alias} NOT IN
+                     (SELECT 
+                        {vdf.alias} 
+                      FROM {table}
+                      GROUP BY {vdf.alias}
+                      ORDER BY {aggregate} DESC
+                      LIMIT {max_cardinality}))"""
         query_result = executeSQL(
-            query, title="Computing the histogram heights", method="fetchall"
+            query=query, title="Computing the histogram heights", method="fetchall"
         )
         if query_result[-1][1] == None:
             del query_result[-1]
@@ -1995,22 +1961,30 @@ def compute_plot_variables(
         if (h <= 0) and (nbins <= 0):
             h = vdf.numh()
         elif nbins > 0:
-            query = "SELECT /*+LABEL('plot.compute_plot_variables')*/ DATEDIFF('second', MIN({}), MAX({})) FROM ".format(
-                vdf.alias, vdf.alias
-            )
             query_result = executeSQL(
-                query=query,
+                query=f"""
+                    SELECT 
+                        /*+LABEL('plot.compute_plot_variables')*/
+                        DATEDIFF('second', MIN({vdf.alias}), MAX({vdf.alias}))
+                    FROM {vdf.parent.__genSQL__()}""",
                 title="Computing the histogram interval",
                 method="fetchrow",
             )
             h = float(query_result[0]) / nbins
         min_date = vdf.min()
-        converted_date = "DATEDIFF('second', '{}', {})".format(min_date, vdf.alias)
-        query = "SELECT /*+LABEL('plot.compute_plot_variables')*/ FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1".format(
-            converted_date, h, h, aggregate, vdf.parent.__genSQL__(), vdf.alias
-        )
+        converted_date = f"DATEDIFF('second', '{min_date}', {vdf.alias})"
         query_result = executeSQL(
-            query=query, title="Computing the histogram heights", method="fetchall"
+            query=f"""
+                SELECT 
+                    /*+LABEL('plot.compute_plot_variables')*/
+                    FLOOR({converted_date} / {h}) * {h}, 
+                    {aggregate} 
+                FROM {vdf.parent.__genSQL__()}
+                WHERE {vdf.alias} IS NOT NULL 
+                GROUP BY 1 
+                ORDER BY 1""",
+            title="Computing the histogram heights",
+            method="fetchall",
         )
         x = [float(item[0]) for item in query_result]
         y = (
@@ -2018,16 +1992,18 @@ def compute_plot_variables(
             if (method.lower() == "density")
             else [item[1] for item in query_result]
         )
-        query = ""
+        query = "("
         for idx, item in enumerate(query_result):
+            query_tmp = f"""
+                (SELECT 
+                    {{}}
+                    TIMESTAMPADD('second',
+                                 {math.floor(h * idx)},
+                                 '{min_date}'::timestamp))"""
             if idx == 0:
-                query += "((SELECT /*+LABEL('plot.compute_plot_variables')*/ TIMESTAMPADD('second' , {}, '{}'::timestamp))".format(
-                    math.floor(h * idx), min_date
-                )
+                query += query_tmp.format("/*+LABEL('plot.compute_plot_variables')*/")
             else:
-                query += " UNION (SELECT TIMESTAMPADD('second' , {}, '{}'::timestamp))".format(
-                    math.floor(h * idx), min_date
-                )
+                query += f" UNION {query_tmp.format('')}"
         query += ")"
         h = 0.94 * h
         query_result = executeSQL(
@@ -2044,12 +2020,18 @@ def compute_plot_variables(
             h = float(vdf.max() - vdf.min()) / nbins
         if (vdf.ctype == "int") or (h == 0):
             h = max(1.0, h)
-        query = "SELECT /*+LABEL('plot.compute_plot_variables')*/ FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1"
-        query = query.format(
-            vdf.alias, h, h, aggregate, vdf.parent.__genSQL__(), vdf.alias
-        )
         query_result = executeSQL(
-            query=query, title="Computing the histogram heights", method="fetchall"
+            query=f"""
+                SELECT
+                    /*+LABEL('plot.compute_plot_variables')*/
+                    FLOOR({vdf.alias} / {h}) * {h},
+                    {aggregate} 
+                FROM {vdf.parent.__genSQL__()}
+                WHERE {vdf.alias} IS NOT NULL
+                GROUP BY 1
+                ORDER BY 1""",
+            title="Computing the histogram heights",
+            method="fetchall",
         )
         y = (
             [item[1] / float(count) for item in query_result]
@@ -2159,7 +2141,7 @@ def hexbin(
         and (of)
         and ((of in vdf.get_columns()) or (quote_ident(of) in vdf.get_columns()))
     ):
-        aggregate = "{}({})".format(method, of)
+        aggregate = f"{method}({of})"
         others_aggregate = method
         if method.lower() == "avg":
             reduce_C_function = statistics.mean
@@ -2181,17 +2163,15 @@ def hexbin(
         over = "/" + str(float(count))
     else:
         over = ""
-    query = "SELECT /*+LABEL('plot.hexbin')*/ {}, {}, {}{} FROM {} GROUP BY {}, {}".format(
-        columns[0],
-        columns[1],
-        aggregate,
-        over,
-        vdf.__genSQL__(),
-        columns[0],
-        columns[1],
-    )
     query_result = executeSQL(
-        query=query,
+        query=f"""
+            SELECT
+                /*+LABEL('plot.hexbin')*/
+                {columns[0]},
+                {columns[1]},
+                {aggregate}{over}
+            FROM {vdf.__genSQL__()}
+            GROUP BY {columns[0]}, {columns[1]}""",
         title="Grouping all the elements for the Hexbin Plot",
         method="fetchall",
     )
@@ -2280,7 +2260,7 @@ def hist(
     elif (
         method.lower() in ["avg", "min", "max", "sum", "mean"] or ("%" == method[-1])
     ) and (of != None):
-        aggregate = "{}({})".format(method, of)
+        aggregate = f"{method}({of})"
         ax.set_ylabel(method)
     elif method.lower() == "count":
         ax.set_ylabel("Frequency")
@@ -2369,7 +2349,7 @@ def hist2D(
     if method.lower() == "density":
         ax.set_ylabel("Density")
     elif (method.lower() in ["avg", "min", "max", "sum"]) and (of != None):
-        ax.set_ylabel("{}({})".format(method, of))
+        ax.set_ylabel(f"{method}({of})")
     elif method.lower() == "count":
         ax.set_ylabel("Frequency")
     else:

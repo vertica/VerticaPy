@@ -63,6 +63,14 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.utilities import save_verticapy_logs
 
+# other modules:
+try:
+    import graphviz
+
+    GRAPHVIZ_ON = True
+except:
+    GRAPHVIZ_ON = False
+
 # ---#
 @check_dtypes
 def predict_from_nb(
@@ -2407,9 +2415,7 @@ attributes: dict
         graphviz.Source
             graphviz object.
         """
-        try:
-            import graphviz
-        except:
+        if not (GRAPHVIZ_ON):
             raise ImportError(
                 "The graphviz module doesn't seem to be installed in your environment.\n"
                 "To be able to use this method, you'll have to install it.\n"

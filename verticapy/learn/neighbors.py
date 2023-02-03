@@ -66,7 +66,7 @@ from verticapy.learn.vmodel import *
 from verticapy.learn.tools import *
 
 # Standard Python Modules
-import warnings
+import warnings, itertools
 from typing import Union
 
 # ---#
@@ -1124,8 +1124,6 @@ xlim: list, optional
                 x_vars += [
                     [(x_max - x_min) * i / nbins + x_min for i in range(0, nbins + 1)]
                 ]
-            import itertools
-
             x = list(itertools.product(*x_vars))
             try:
                 y = density_kde(vdf, columns, kernel, x, p, h)

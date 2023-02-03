@@ -55,7 +55,6 @@ from verticapy.decorators import (
     check_minimum_version,
 )
 from verticapy.learn.vmodel import *
-from verticapy.utilities import save_verticapy_logs
 
 # ---#
 class LinearSVC(BinaryClassifier):
