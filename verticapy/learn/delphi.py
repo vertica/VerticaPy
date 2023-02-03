@@ -76,6 +76,7 @@ from verticapy.learn.vmodel import *
 # Other Modules
 from tqdm.auto import tqdm
 
+
 class vAuto(vModel):
     # ---#
     def set_params(self, parameters: dict = {}):

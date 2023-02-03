@@ -393,6 +393,7 @@ def animated_bar(
                     bbox_to_anchor=[1, 0.5],
                 )
         return (ax,)
+
     myAnimation = animation.FuncAnimation(
         fig,
         animate,
