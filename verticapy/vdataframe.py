@@ -9220,7 +9220,7 @@ vColumns : vColumn
         self,
         y_true: str,
         y_score: str,
-        method: Literal[tuple(vp.learn.metrics.FUNCTIONS_DICTIONNARY)],
+        method: ..., # TO COMPLETE Literal[vp.learn.metrics.FUNCTIONS_DICTIONNARY]
         nbins: int = 30,
     ):
         """

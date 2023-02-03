@@ -50,10 +50,6 @@ data transformation operations, and offers beautiful graphical options.
 VerticaPy aims to do all of the above. The idea is simple: instead of moving
 data around for processing, VerticaPy brings the logic to the data.
 """
-
-# External Modules IMPORT
-import uuid
-
 __version__ = "0.13.0"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
@@ -69,6 +65,12 @@ __license__ = "Apache License, Version 2.0"
 # Logo
 from verticapy.logo import *
 
+# Connect
+from verticapy.connect import *
+
+# Config
+from verticapy._config.config import *
+
 # vDataFrame
 from verticapy.vdataframe import *
 
@@ -78,14 +80,8 @@ from verticapy.vcolumn import *
 # Utilities
 from verticapy.utilities import *
 
-# Connect
-from verticapy.connect import *
-
 # SQL Functions
 import verticapy.stats
 
 # Learn
 import verticapy.learn
-
-# Config
-from verticapy._config.config import *

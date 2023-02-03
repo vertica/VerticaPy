@@ -2467,7 +2467,7 @@ bool
 
 @overload
 def set_option(
-    option: Literal["color_style"], value: Literal[tuple(vp.COLORS)]
+    option: Literal["color_style"], value: Literal[tuple(vp.COLORS_OPTIONS)]
 ) -> None:
     ...
 

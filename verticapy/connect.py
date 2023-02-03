@@ -26,7 +26,8 @@ from typing import Literal
 
 # VerticaPy Modules
 import verticapy as vp
-from verticapy.decorators import check_dtypes
+import verticapy._config.config as vp_config
+
 from verticapy.errors import ConnectionError, ParameterError
 
 # Vertica Modules
@@ -34,8 +35,8 @@ import vertica_python
 
 # Global Variables
 VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
-SESSION_LABEL = f"verticapy-{vp.__version__}-{vp.OPTIONS['identifier']}"
-CONNECTION = vp.OPTIONS["connection"]
+SESSION_LABEL = f"verticapy-{vp.__version__}-{vp_config.OPTIONS['identifier']}"
+CONNECTION = vp_config.OPTIONS["connection"]
 SPECIAL_SYMBOLS = [
     "$",
     "€",
@@ -506,7 +507,7 @@ symbol: str, optional
     a custom query.
     """
     if isinstance(cid, str) and isinstance(rowset, int):
-        vp.OPTIONS["external_connection"][symbol] = {
+        vp_config.OPTIONS["external_connection"][symbol] = {
             "cid": cid,
             "rowset": rowset,
         }
