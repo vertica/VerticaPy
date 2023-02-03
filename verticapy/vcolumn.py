@@ -70,6 +70,7 @@ from verticapy.errors import *
 
 # Other modules
 import numpy as np
+from matplotlib.lines import Line2D
 
 ##
 #
@@ -1175,8 +1176,6 @@ Attributes
 	--------
 	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
-        from matplotlib.lines import Line2D
-
         raise_error_if_not_in(
             "kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]
         )

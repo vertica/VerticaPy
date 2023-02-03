@@ -55,6 +55,7 @@ from typing import Union
 
 # Other Modules
 import numpy as np
+from scipy.stats import f
 
 # VerticaPy Modules
 from verticapy import *
@@ -290,8 +291,6 @@ tablesample
         F = float("inf")
     else:
         F = MSR / MSE
-    from scipy.stats import f
-
     pvalue = f.sf(F, k, n)
     return tablesample(
         {

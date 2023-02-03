@@ -73,6 +73,7 @@ from verticapy.learn.mlplot import plot_bubble_ml, plot_stepwise_ml, plot_import
 # Other Python Modules
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from tqdm.auto import tqdm
 
 # ---#
 @save_verticapy_logs
@@ -236,8 +237,6 @@ tablesample
             "the hyperparameters data\033[0m\033[0m\n"
         )
     if verticapy.OPTIONS["tqdm"] and print_info:
-        from tqdm.auto import tqdm
-
         loop = tqdm(range(1))
     else:
         loop = range(1)
@@ -403,8 +402,6 @@ int
     if verticapy.OPTIONS["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
-        from tqdm.auto import tqdm
-
         loop = tqdm(L)
     else:
         loop = L
@@ -556,8 +553,6 @@ tablesample
     if verticapy.OPTIONS["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
-        from tqdm.auto import tqdm
-
         loop = tqdm(range(cv))
     else:
         loop = range(cv)
@@ -787,8 +782,6 @@ tablesample
         L = n_cluster
         L.sort()
     if verticapy.OPTIONS["tqdm"]:
-        from tqdm.auto import tqdm
-
         loop = tqdm(L)
     else:
         loop = L
@@ -1692,8 +1685,6 @@ tablesample
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
-        from tqdm.auto import tqdm
-
         loop = tqdm(all_configuration)
     else:
         loop = all_configuration
@@ -1920,8 +1911,6 @@ tablesample
     lc_result_final = []
     sizes = sorted(set(sizes))
     if verticapy.OPTIONS["tqdm"]:
-        from tqdm.auto import tqdm
-
         loop = tqdm(sizes)
     else:
         loop = sizes
@@ -2474,8 +2463,6 @@ tablesample
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
-        from tqdm.auto import tqdm
-
         loop = tqdm(all_configuration)
     else:
         loop = all_configuration
@@ -2945,8 +2932,6 @@ tablesample
     if print_info:
         print("\033[1m\033[4mStarting Stepwise\033[0m\033[0m")
     if verticapy.OPTIONS["tqdm"] and print_info:
-        from tqdm.auto import tqdm
-
         loop = tqdm(range(len(X)))
     else:
         loop = range(len(X))

@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import os, math, shutil, re, time, decimal, warnings, datetime, inspect
+import os, math, shutil, re, time, decimal, warnings, datetime, inspect, csv
 from typing import Union
 
 # VerticaPy Modules
@@ -67,8 +67,9 @@ from verticapy.errors import *
 # Other Modules
 import pandas as pd
 
+# IPython - Optional
 try:
-    from IPython.display import display
+    from IPython.display import HTML, display, Markdown
 except:
     pass
 
@@ -695,11 +696,6 @@ def help_start():
 ----------------------------------------------------------------------------------------
 VERTICAPY Interactive Help (FAQ).
     """
-
-    try:
-        from IPython.display import HTML, display, Markdown
-    except:
-        pass
     path = os.path.dirname(verticapy.__file__)
     img1 = verticapy.gen_verticapy_logo_html(size="10%")
     img2 = verticapy.gen_verticapy_logo_str()
@@ -1060,8 +1056,6 @@ read_json : Ingests a JSON file into the Vertica database.
         else:
             tmp_df = df
             clear = False
-        import csv
-
         tmp_df.to_csv(
             path, index=False, quoting=csv.QUOTE_NONE, quotechar="", escapechar="\027",
         )

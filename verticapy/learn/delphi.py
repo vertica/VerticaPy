@@ -73,6 +73,8 @@ from verticapy.learn.svm import *
 from verticapy.learn.mlplot import plot_bubble_ml
 from verticapy.learn.vmodel import *
 
+# Other Modules
+from tqdm.auto import tqdm
 
 class vAuto(vModel):
     # ---#
@@ -552,8 +554,6 @@ model_: object
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mBuilding the Final Model\033[0m\033[0m\n")
         if verticapy.OPTIONS["tqdm"] and self.parameters["print_info"]:
-            from tqdm.auto import tqdm
-
             loop = tqdm(range(1))
         else:
             loop = range(1)
@@ -932,8 +932,6 @@ model_grid_ : tablesample
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoML\033[0m\033[0m\n")
         if verticapy.OPTIONS["tqdm"] and self.parameters["print_info"]:
-            from tqdm.auto import tqdm
-
             loop = tqdm(self.parameters["estimator"])
         else:
             loop = self.parameters["estimator"]

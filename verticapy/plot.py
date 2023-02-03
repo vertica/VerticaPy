@@ -60,6 +60,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
 import matplotlib.ticker as mticker
+import matplotlib.animation as animation
 import numpy as np
 
 # Optional
@@ -69,6 +70,12 @@ try:
     PARSER_IMPORT = True
 except:
     PARSER_IMPORT = False
+
+# IPython - Optional
+try:
+    from IPython.display import HTML
+except:
+    pass
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -386,9 +393,6 @@ def animated_bar(
                     bbox_to_anchor=[1, 0.5],
                 )
         return (ax,)
-
-    import matplotlib.animation as animation
-
     myAnimation = animation.FuncAnimation(
         fig,
         animate,
@@ -398,8 +402,6 @@ def animated_bar(
         repeat=repeat,
     )
     if isnotebook() and return_html:
-        from IPython.display import HTML
-
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
@@ -661,8 +663,6 @@ def animated_bubble_plot(
             ax.set_title(date_f(scatter_values[i]["date"]))
         return (ax,)
 
-    import matplotlib.animation as animation
-
     myAnimation = animation.FuncAnimation(
         fig,
         animate,
@@ -672,8 +672,6 @@ def animated_bubble_plot(
         repeat=repeat,
     )
     if isnotebook() and return_html:
-        from IPython.display import HTML
-
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
@@ -792,8 +790,6 @@ def animated_ts_plot(
             tick.set_rotation(90)
         return (ax,)
 
-    import matplotlib.animation as animation
-
     myAnimation = animation.FuncAnimation(
         fig,
         animate,
@@ -803,8 +799,6 @@ def animated_ts_plot(
         repeat=repeat,
     )
     if isnotebook() and return_html:
-        from IPython.display import HTML
-
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)

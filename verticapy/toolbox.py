@@ -62,6 +62,12 @@ from verticapy.errors import *
 import numpy as np
 import pandas as pd
 
+# IPython - Optional
+try:
+    from IPython.display import HTML, display
+except:
+    pass
+
 #
 #
 # Functions to use to simplify the coding.
@@ -816,8 +822,6 @@ def print_query(query: str, title: str = ""):
     screen_columns = shutil.get_terminal_size().columns
     query_print = indentSQL(query)
     if isnotebook():
-        from IPython.display import HTML, display
-
         display(HTML(f"<h4>{title}</h4>"))
         query_print = query_print.replace("\n", " <br>").replace("  ", " &emsp; ")
         display(HTML(query_print))
@@ -1060,8 +1064,6 @@ def print_table(
 def print_time(elapsed_time: float):
     screen_columns = shutil.get_terminal_size().columns
     if isnotebook():
-        from IPython.display import HTML, display
-
         display(HTML(f"<div><b>Execution: </b> {round(elapsed_time, 3)}s</div>"))
     else:
         print(f"Execution: {round(elapsed_time, 3)}s")
