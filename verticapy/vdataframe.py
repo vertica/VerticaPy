@@ -1599,19 +1599,24 @@ vColumns : vColumn
                 for column in cols_to_check:
                     from verticapy.toolbox import levenshtein, quote_ident
 
+                    result = []
                     if column not in all_columns:
                         min_distance, min_distance_op = 1000, ""
+                        is_error = True
                         for col in all_columns:
                             if quote_ident(column).lower() == quote_ident(col).lower():
-                                return
+                                is_error = False
+                                break
                             else:
                                 ldistance = levenshtein(column, col)
                                 if ldistance < min_distance:
                                     min_distance, min_distance_op = ldistance, col
-                        error_message = f"The Virtual Column '{column}' doesn't exist."
-                        if min_distance < threshold:
-                            error_message += f"\nDid you mean '{min_distance_op}' ?"
-                        raise MissingColumn(error_message)
+                        if is_error:
+                            error_message = f"The Virtual Column '{column}' doesn't exist."
+                            if min_distance < 10:
+                                error_message += f"\nDid you mean '{min_distance_op}' ?"
+                            raise MissingColumn(error_message)
+
             if isinstance(columns, str):
                 result = columns
                 vdf_columns = self.get_columns()
