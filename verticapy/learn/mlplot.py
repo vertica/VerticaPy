@@ -37,7 +37,7 @@ from verticapy.decorators import (
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
-from verticapy.plot import gen_colors
+from verticapy.plotting._matplotlib import gen_colors
 
 
 def logit_plot(

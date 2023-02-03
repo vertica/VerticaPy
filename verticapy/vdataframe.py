@@ -52,7 +52,7 @@ except:
 
 # VerticaPy Modules
 import verticapy as vp
-import verticapy.plot as plt
+import verticapy.plotting._matplotlib as plt
 import verticapy.utilities as util
 import verticapy.learn.memmodel as mem
 import verticapy.learn.mlplot as ml_plot
@@ -10330,14 +10330,13 @@ vColumns : vColumn
             else random.randint(-10e6, 10e6)
         )
         random_func = f"SEEDED_RANDOM({random_seed})"
-        query = f"""
-            SELECT 
-                /*+LABEL('vDataframe.train_test_split')*/ 
-                APPROXIMATE_PERCENTILE({random_func} 
-                    USING PARAMETERS percentile = {test_size}) 
-            FROM {self.__genSQL__()}"""
         q = executeSQL(
-            query,
+            query=f"""
+                SELECT 
+                    /*+LABEL('vDataframe.train_test_split')*/ 
+                    APPROXIMATE_PERCENTILE({random_func} 
+                        USING PARAMETERS percentile = {test_size}) 
+                FROM {self.__genSQL__()}""",
             title="Computing the seeded numbers quantile.",
             method="fetchfirstelem",
         )

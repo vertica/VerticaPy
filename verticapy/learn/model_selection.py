@@ -36,7 +36,7 @@ from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
-from verticapy.plot import gen_colors
+from verticapy.plotting._matplotlib import gen_colors
 from verticapy.learn.tools import does_model_exist
 from verticapy.learn.mlplot import plot_bubble_ml, plot_stepwise_ml, plot_importance
 
@@ -1841,7 +1841,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.plot import range_curve
+    from verticapy.plotting._matplotlib import range_curve
 
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
@@ -3049,7 +3049,7 @@ tablesample
     """
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
         param_range = [param_range]
-    from verticapy.plot import range_curve
+    from verticapy.plotting._matplotlib import range_curve
 
     gs_result = grid_search_cv(
         estimator,

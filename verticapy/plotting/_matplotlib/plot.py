@@ -185,7 +185,7 @@ def animated_bar(
     query_result = executeSQL(
         query=f"""
             SELECT 
-                /*+LABEL('plot.animated_bar')*/ * 
+                /*+LABEL('plotting._matplotlib.animated_bar')*/ * 
             FROM 
                 (SELECT 
                     {order_by},
@@ -465,7 +465,7 @@ def animated_bubble_plot(
     query_result = executeSQL(
         query=f"""
             SELECT 
-                /*+LABEL('plot.animated_bubble_plot')*/ * 
+                /*+LABEL('plotting._matplotlib.animated_bubble_plot')*/ * 
             FROM 
                 (SELECT 
                     {order_by}, 
@@ -481,7 +481,7 @@ def animated_bubble_plot(
                                 ORDER BY {order_by}, {columns[2]} DESC)) x 
             ORDER BY {order_by}, 4 DESC, 3 DESC, 2 DESC 
             LIMIT {limit}""",
-        title="Selecting points to draw the animated bubble plot.",
+        title="Selecting points to draw the animated bubble plotting._matplotlib.",
         method="fetchall",
     )
     size = 50
@@ -692,7 +692,7 @@ def animated_ts_plot(
     query_result = executeSQL(
         query=f"""
             SELECT 
-                /*+LABEL('plot.animated_ts_plot')*/ 
+                /*+LABEL('plotting._matplotlib.animated_ts_plot')*/ 
                 {order_by},
                 {", ".join(columns)} 
             FROM {vdf.__genSQL__()} 
@@ -1086,7 +1086,7 @@ def boxplot(
                 query_result = executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('plot.boxplot')*/ 
+                            /*+LABEL('plotting._matplotlib.boxplot')*/ 
                             {by} 
                         FROM {table} 
                         WHERE {vdf.alias} IS NOT NULL 
@@ -1121,7 +1121,7 @@ def boxplot(
                     {where}"""
                 all_queries += [tmp_query]
             main_table = (
-                f"WITH vdf_table AS (SELECT /*+LABEL('plot.boxplot')*/ * FROM {table})"
+                f"WITH vdf_table AS (SELECT /*+LABEL('plotting._matplotlib.boxplot')*/ * FROM {table})"
             )
             query = f"""{main_table}{" UNION ALL ".join([lp + q + rp for q in all_queries])}"""
             try:
@@ -1319,7 +1319,7 @@ def bubble(
         query_result = executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('plot.bubble')*/ 
+                    /*+LABEL('plotting._matplotlib.bubble')*/ 
                     {columns[0]}, 
                     {columns[1]}, 
                     {columns[2]} 
@@ -1437,7 +1437,7 @@ def bubble(
                 query_result = executeSQL(
                     query=f"""
                         SELECT
-                            /*+LABEL('plot.bubble')*/  
+                            /*+LABEL('plotting._matplotlib.bubble')*/  
                             {columns[0]},
                             {columns[1]},
                             {columns[2]} 
@@ -1484,7 +1484,7 @@ def bubble(
             query_result = executeSQL(
                 query=f"""
                     SELECT
-                        /*+LABEL('plot.bubble')*/ 
+                        /*+LABEL('plotting._matplotlib.bubble')*/ 
                         {columns[0]},
                         {columns[1]},
                         {columns[2]},
@@ -1882,7 +1882,7 @@ def compute_plot_variables(
             cast_alias = bin_spatial_to_str(vdf.category(), vdf.alias)
             query = f"""
                 (SELECT 
-                    /*+LABEL('plot.compute_plot_variables')*/ 
+                    /*+LABEL('plotting._matplotlib.compute_plot_variables')*/ 
                     {cast_alias} AS {vdf.alias},
                     {aggregate}
                  FROM {table} 
@@ -1925,7 +1925,7 @@ def compute_plot_variables(
             query_result = executeSQL(
                 query=f"""
                     SELECT 
-                        /*+LABEL('plot.compute_plot_variables')*/
+                        /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
                         DATEDIFF('second', MIN({vdf.alias}), MAX({vdf.alias}))
                     FROM {vdf.parent.__genSQL__()}""",
                 title="Computing the histogram interval",
@@ -1937,7 +1937,7 @@ def compute_plot_variables(
         query_result = executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('plot.compute_plot_variables')*/
+                    /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
                     FLOOR({converted_date} / {h}) * {h}, 
                     {aggregate} 
                 FROM {vdf.parent.__genSQL__()}
@@ -1962,7 +1962,7 @@ def compute_plot_variables(
                                  {math.floor(h * idx)},
                                  '{min_date}'::timestamp))"""
             if idx == 0:
-                query += query_tmp.format("/*+LABEL('plot.compute_plot_variables')*/")
+                query += query_tmp.format("/*+LABEL('plotting._matplotlib.compute_plot_variables')*/")
             else:
                 query += f" UNION {query_tmp.format('')}"
         query += ")"
@@ -1984,7 +1984,7 @@ def compute_plot_variables(
         query_result = executeSQL(
             query=f"""
                 SELECT
-                    /*+LABEL('plot.compute_plot_variables')*/
+                    /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
                     FLOOR({vdf.alias} / {h}) * {h},
                     {aggregate} 
                 FROM {vdf.parent.__genSQL__()}
@@ -2124,7 +2124,7 @@ def hexbin(
     query_result = executeSQL(
         query=f"""
             SELECT
-                /*+LABEL('plot.hexbin')*/
+                /*+LABEL('plotting._matplotlib.hexbin')*/
                 {columns[0]},
                 {columns[1]},
                 {aggregate}{over}
@@ -2530,7 +2530,7 @@ def multi_ts_plot(
     query_result = executeSQL(
         query=f"""
             SELECT 
-                /*+LABEL('plot.multi_ts_plot')*/ 
+                /*+LABEL('plotting._matplotlib.multi_ts_plot')*/ 
                 {order_by}, 
                 {", ".join(columns)} 
             FROM {vdf.__genSQL__()} 
@@ -2693,7 +2693,7 @@ def range_curve_vdf(
     query_result = executeSQL(
         query=f"""
         SELECT 
-            /*+LABEL('plot.range_curve_vdf')*/ 
+            /*+LABEL('plotting._matplotlib.range_curve_vdf')*/ 
             {order_by}, 
             APPROXIMATE_PERCENTILE({vdf.alias} USING PARAMETERS percentile = {q[0]}),
             APPROXIMATE_MEDIAN({vdf.alias}),
@@ -3128,7 +3128,7 @@ def pivot_table(
     query_result = executeSQL(
         query=f"""
             SELECT 
-                /*+LABEL('plot.pivot_table')*/
+                /*+LABEL('plotting._matplotlib.pivot_table')*/
                 {cast[0]} AS {columns[0]},
                 {cast[1]} AS {columns[1]},
                 {aggregate}{over}
@@ -3233,7 +3233,7 @@ def scatter_matrix(
     all_scatter_points = executeSQL(
         query=f"""
             SELECT 
-                /*+LABEL('plot.scatter_matrix')*/
+                /*+LABEL('plotting._matplotlib.scatter_matrix')*/
                 {", ".join(columns)},
                 {random_func} AS rand
             FROM {vdf.__genSQL__(True)}
@@ -3338,7 +3338,7 @@ def scatter(
         groupby_cardinality = vdf[catcol].nunique(True)
     query = f"""
         SELECT 
-            /*+LABEL('plot.scatter')*/
+            /*+LABEL('plotting._matplotlib.scatter')*/
             {columns[0]},
             {columns[1]}
             {{}}
@@ -3547,7 +3547,7 @@ def ts_plot(
         order_by_end_str = ""
     query = f"""
         SELECT 
-            /*+LABEL('plot.ts_plot')*/ 
+            /*+LABEL('plotting._matplotlib.ts_plot')*/ 
             {order_by},
             {vdf.alias}
         FROM {vdf.parent.__genSQL__()}

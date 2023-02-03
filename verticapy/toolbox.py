@@ -88,7 +88,7 @@ def color_dict(d: dict, idx: int = 0):
         else:
             return d["color"][idx % len(d["color"])]
     else:
-        from verticapy.plot import gen_colors
+        from verticapy.plotting._matplotlib import gen_colors
 
         return gen_colors()[idx % len(gen_colors())]
 

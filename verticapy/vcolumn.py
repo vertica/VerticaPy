@@ -27,7 +27,7 @@ from typing import Union, Literal
 # VerticaPy Modules
 import verticapy as vp
 import verticapy.stats as st
-import verticapy.plot as plt
+import verticapy.plotting._matplotlib as plt
 import verticapy.learn.ensemble as vpy_ensemble
 import verticapy.learn.neighbors as vpy_neighbors
 from verticapy.decorators import (

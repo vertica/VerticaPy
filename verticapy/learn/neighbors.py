@@ -1157,7 +1157,7 @@ xlim: list, optional
                     fig.set_size_inches(7, 5)
                 ax.grid()
                 ax.set_axisbelow(True)
-            from verticapy.plot import gen_colors
+            from verticapy.plotting._matplotlib import gen_colors
 
             param = {
                 "color": gen_colors()[0],
