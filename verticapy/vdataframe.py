@@ -1610,7 +1610,9 @@ vColumns : vColumn
                                 if ldistance < min_distance:
                                     min_distance, min_distance_op = ldistance, col
                         if is_error:
-                            error_message = f"The Virtual Column '{column}' doesn't exist."
+                            error_message = (
+                                f"The Virtual Column '{column}' doesn't exist."
+                            )
                             if min_distance < 10:
                                 error_message += f"\nDid you mean '{min_distance_op}' ?"
                             raise MissingColumn(error_message)
@@ -9223,7 +9225,7 @@ vColumns : vColumn
         self,
         y_true: str,
         y_score: str,
-        method: ..., # TO COMPLETE Literal[vp.learn.metrics.FUNCTIONS_DICTIONNARY]
+        method: ...,  # TO COMPLETE Literal[vp.learn.metrics.FUNCTIONS_DICTIONNARY]
         nbins: int = 30,
     ):
         """

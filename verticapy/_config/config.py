@@ -72,7 +72,6 @@ MINIMUM_VERSION = {
 OPTIONS = {
     "cache": True,
     "colors": None,
-    "color_style": "default",
     "connection": {"conn": None, "section": None, "dsn": None,},
     "external_connection": {},
     "interactive": False,
@@ -93,24 +92,3 @@ OPTIONS = {
     "tqdm": True,
     "vertica_version": None,
 }
-
-COLORS_OPTIONS = [
-    "rgb",
-    "sunset",
-    "retro",
-    "shimbg",
-    "swamp",
-    "med",
-    "orchid",
-    "magenta",
-    "orange",
-    "vintage",
-    "vivid",
-    "berries",
-    "refreshing",
-    "summer",
-    "tropical",
-    "india",
-    "default",
-    None,
-]

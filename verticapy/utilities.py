@@ -33,6 +33,7 @@ from verticapy.decorators import (
 from verticapy.toolbox import *
 from verticapy.javascript import datatables_repr
 from verticapy.errors import *
+import verticapy.plotting._colors as vp_colors
 
 # Other Modules
 import pandas as pd
@@ -2467,7 +2468,7 @@ bool
 
 @overload
 def set_option(
-    option: Literal["color_style"], value: Literal[tuple(vp.COLORS_OPTIONS)]
+    option: Literal["color_style"], value: Literal[tuple(vp_colors.COLORS_OPTIONS)]
 ) -> None:
     ...
 
@@ -2573,9 +2574,10 @@ def set_option(
         else:
             wrong_value = True
     elif option == "color_style":
-        if value in vp.COLORS:
-            vp.OPTIONS["color_style"] = value
-            vp.OPTIONS["colors"] = []
+        if value == None:
+            value = "default"
+        if value in vp_colors.COLORS_OPTIONS:
+            vp.OPTIONS["colors"] = vp_colors.COLORS_OPTIONS[value]
         else:
             wrong_value = True
     elif option == "max_columns":
