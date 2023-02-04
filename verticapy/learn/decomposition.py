@@ -111,7 +111,7 @@ name: str
                 ]
             style_kwds["c"] = c
             if "cmap" not in style_kwds:
-                from verticapy.plotting._matplotlib import gen_cmap, gen_colors
+                from verticapy.plotting._colors import gen_colors, gen_cmap
 
                 style_kwds["cmap"] = gen_cmap(
                     color=[gen_colors()[0], gen_colors()[1], gen_colors()[2]]

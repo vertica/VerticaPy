@@ -29,7 +29,7 @@ import numpy as np
 from verticapy.utilities import *
 from verticapy.toolbox import executeSQL, quote_ident
 from verticapy.errors import ParameterError
-from verticapy.plotting._matplotlib.core import gen_cmap, gen_colors
+from verticapy.plotting._colors import gen_colors, gen_cmap
 
 
 def cmatrix(

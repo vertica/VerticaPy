@@ -14,6 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+# Standard Modules
+import copy
+from random import shuffle
+
+# MATPLOTLIB
+import matplotlib.colors as plt_colors
+from matplotlib.colors import LinearSegmentedColormap
+
+# VerticaPy Modules
+import verticapy
+
 COLORS_OPTIONS = {
     "rgb": ["red", "green", "blue", "orange", "yellow", "gray"],
     "sunset": ["#36688D", "#F3CD05", "#F49F05", "#F18904", "#BDA589"],
@@ -33,3 +44,38 @@ COLORS_OPTIONS = {
     "india": ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625"],
     "default": ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"],
 }
+
+def gen_cmap(color: str = "", reverse: bool = False):
+    if not (color):
+        cm1 = LinearSegmentedColormap.from_list(
+            "vml", ["#FFFFFF", gen_colors()[0]], N=1000
+        )
+        cm2 = LinearSegmentedColormap.from_list(
+            "vml", [gen_colors()[1], "#FFFFFF", gen_colors()[0]], N=1000
+        )
+        return (cm1, cm2)
+    else:
+        if isinstance(color, list):
+            return LinearSegmentedColormap.from_list("vml", color, N=1000)
+        elif reverse:
+            return LinearSegmentedColormap.from_list("vml", [color, "#FFFFFF"], N=1000)
+        else:
+            return LinearSegmentedColormap.from_list("vml", ["#FFFFFF", color], N=1000)
+
+
+def gen_colors():
+    if not (verticapy.OPTIONS["colors"]) or not (
+        isinstance(verticapy.OPTIONS["colors"], list)
+    ):
+        if not (verticapy.OPTIONS["colors"]):
+            colors = COLORS_OPTIONS["default"]
+        else:
+            colors = copy.deepcopy(verticapy.OPTIONS["colors"])
+        all_colors = [item for item in plt_colors.cnames]
+        shuffle(all_colors)
+        for c in all_colors:
+            if c not in colors:
+                colors += [c]
+        return colors
+    else:
+        return verticapy.OPTIONS["colors"]

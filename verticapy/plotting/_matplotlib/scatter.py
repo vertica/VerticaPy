@@ -28,11 +28,8 @@ import numpy as np
 from verticapy.utilities import *
 from verticapy.toolbox import executeSQL, quote_ident
 from verticapy.errors import ParameterError
-from verticapy.plotting._matplotlib.core import (
-    compute_plot_variables,
-    gen_cmap,
-    gen_colors,
-)
+from verticapy.plotting._matplotlib.core import compute_plot_variables
+from verticapy.plotting._colors import gen_colors, gen_cmap
 
 # Global Variables
 MARKERS = ["^", "o", "+", "*", "h", "x", "D", "1"]

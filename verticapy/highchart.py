@@ -36,7 +36,7 @@ except:
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.plotting._matplotlib import gen_colors
+from verticapy.plotting._colors import gen_colors
 
 #
 ##

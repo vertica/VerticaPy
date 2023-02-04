@@ -72,6 +72,7 @@ from verticapy.errors import (
     QueryError,
 )
 from verticapy.toolbox import *
+from verticapy.plotting._colors import gen_colors, gen_cmap
 
 ###
 #                                           _____
@@ -1012,7 +1013,7 @@ vColumns : vColumn
                     else None
                 )
                 if "cmap" not in style_kwds:
-                    cm1, cm2 = plt.gen_cmap()
+                    cm1, cm2 = gen_cmap()
                     cmap = cm1 if (method == "cramer") else cm2
                     style_kwds["cmap"] = cmap
                 plt.cmatrix(
@@ -1231,7 +1232,7 @@ vColumns : vColumn
                 else None
             )
             if "cmap" not in style_kwds:
-                cm1, cm2 = plt.gen_cmap()
+                cm1, cm2 = gen_cmap()
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwds["cmap"] = cmap
             title = f"Correlation Vector of {focus} ({method})"
@@ -4896,7 +4897,7 @@ vColumns : vColumn
                     f"vColumn {column} is not numerical to draw KDE"
                 )
         assert columns, EmptyParameter("No Numerical Columns found to draw KDE.")
-        colors = plt.gen_colors()
+        colors = gen_colors()
         min_max = self.agg(func=["min", "max"], columns=columns)
         if not xlim:
             xmin = min(min_max["min"])

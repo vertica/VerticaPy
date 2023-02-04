@@ -32,7 +32,7 @@ import verticapy.learn.metrics as mt
 from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame, save_verticapy_logs
-from verticapy.plotting._matplotlib import gen_colors
+from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import *
 
 # Other Python Modules

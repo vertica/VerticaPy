@@ -20,18 +20,11 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Modules
-import math, copy
-from random import shuffle
-
-# MATPLOTLIB
-import matplotlib.colors as plt_colors
-from matplotlib.colors import LinearSegmentedColormap
+import math
 
 # VerticaPy Modules
-from verticapy.utilities import *
 from verticapy.toolbox import executeSQL, quote_ident
 from verticapy.errors import ParameterError
-from verticapy.plotting._colors import COLORS_OPTIONS
 import verticapy
 
 #
@@ -262,39 +255,3 @@ def compute_plot_variables(
         h = 0.94 * h
         z = None
     return [x, y, z, h, is_categorical]
-
-
-def gen_cmap(color: str = "", reverse: bool = False):
-    if not (color):
-        cm1 = LinearSegmentedColormap.from_list(
-            "vml", ["#FFFFFF", gen_colors()[0]], N=1000
-        )
-        cm2 = LinearSegmentedColormap.from_list(
-            "vml", [gen_colors()[1], "#FFFFFF", gen_colors()[0]], N=1000
-        )
-        return (cm1, cm2)
-    else:
-        if isinstance(color, list):
-            return LinearSegmentedColormap.from_list("vml", color, N=1000)
-        elif reverse:
-            return LinearSegmentedColormap.from_list("vml", [color, "#FFFFFF"], N=1000)
-        else:
-            return LinearSegmentedColormap.from_list("vml", ["#FFFFFF", color], N=1000)
-
-
-def gen_colors():
-    if not (verticapy.OPTIONS["colors"]) or not (
-        isinstance(verticapy.OPTIONS["colors"], list)
-    ):
-        if not (verticapy.OPTIONS["colors"]):
-            colors = COLORS_OPTIONS["default"]
-        else:
-            colors = copy.deepcopy(verticapy.OPTIONS["colors"])
-        all_colors = [item for item in plt_colors.cnames]
-        shuffle(all_colors)
-        for c in all_colors:
-            if c not in colors:
-                colors += [c]
-        return colors
-    else:
-        return verticapy.OPTIONS["colors"]

@@ -22,8 +22,6 @@ from verticapy.plotting._matplotlib.animated import (
 from verticapy.plotting._matplotlib.bar import bar, bar2D, hist, hist2D, multiple_hist
 from verticapy.plotting._matplotlib.core import (
     compute_plot_variables,
-    gen_cmap,
-    gen_colors,
 )
 from verticapy.plotting._matplotlib.boxplot import boxplot, boxplot2D
 from verticapy.plotting._matplotlib.heatmap import (

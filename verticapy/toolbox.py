@@ -88,13 +88,13 @@ def color_dict(d: dict, idx: int = 0):
         else:
             return d["color"][idx % len(d["color"])]
     else:
-        from verticapy.plotting._matplotlib import gen_colors
+        from verticapy.plotting._colors import gen_colors
 
         return gen_colors()[idx % len(gen_colors())]
 
 
 def erase_label(query: str):
-    labels = re.findall("\/\*\+LABEL(.*?)\*\/", query)
+    labels = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
     for label in labels:
         query = query.replace(f"/*+LABEL{label}*/", "")
     return query
@@ -1074,7 +1074,7 @@ def replace_external_queries_in_query(query: str):
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):
-    variables, query_tmp = re.findall("(?<!:):[A-Za-z0-9_\[\]]+", query), query
+    variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
         fail = True
         if len(v) > 1 and not (v[1].isdigit()):

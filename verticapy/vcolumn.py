@@ -28,6 +28,7 @@ from typing import Union, Literal
 import verticapy as vp
 import verticapy.stats as st
 import verticapy.plotting._matplotlib as plt
+from verticapy.plotting;_colors import gen_colors, gen_cmap
 import verticapy.learn.ensemble as vpy_ensemble
 import verticapy.learn.neighbors as vpy_neighbors
 from verticapy.decorators import (
@@ -2074,10 +2075,10 @@ Attributes
             column = self.parent.format_colnames(column)
             columns += [column]
             if not ("cmap" in kwargs):
-                kwargs["cmap"] = plt.gen_cmap()[0]
+                kwargs["cmap"] = gen_cmap()[0]
         else:
             if not ("color" in kwargs):
-                kwargs["color"] = plt.gen_colors()[0]
+                kwargs["color"] = gen_colors()[0]
         if not ("legend" in kwargs):
             kwargs["legend"] = True
         if not ("figsize" in kwargs):
