@@ -31,6 +31,7 @@ from verticapy.toolbox import executeSQL, quote_ident
 from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import gen_cmap, gen_colors
 
+
 def cmatrix(
     matrix,
     columns_x,

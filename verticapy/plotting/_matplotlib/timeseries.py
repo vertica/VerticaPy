@@ -34,11 +34,13 @@ try:
 except:
     PARSER_IMPORT = False
 
+
 def parse_datetime(D: list):
     try:
         return [parse(d) for d in D]
     except:
         return copy.deepcopy(D)
+
 
 def acf_plot(
     x: list,

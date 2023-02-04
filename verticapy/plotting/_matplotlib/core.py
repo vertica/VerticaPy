@@ -286,7 +286,7 @@ def gen_colors():
     if not (verticapy.OPTIONS["colors"]) or not (
         isinstance(verticapy.OPTIONS["colors"], list)
     ):
-        if colors == None:
+        if not (verticapy.OPTIONS["colors"]) == None:
             colors = COLORS_OPTIONS["default"]
         else:
             colors = copy.deepcopy(verticapy.OPTIONS["colors"])

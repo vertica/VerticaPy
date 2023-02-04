@@ -26,6 +26,7 @@ from verticapy.toolbox import executeSQL, quote_ident
 from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import gen_colors
 
+
 def spider(
     vdf,
     columns: list,
