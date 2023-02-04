@@ -286,16 +286,15 @@ def gen_colors():
     if not (verticapy.OPTIONS["colors"]) or not (
         isinstance(verticapy.OPTIONS["colors"], list)
     ):
-        if not (verticapy.OPTIONS["colors"]) == None:
+        if not (verticapy.OPTIONS["colors"]):
             colors = COLORS_OPTIONS["default"]
         else:
             colors = copy.deepcopy(verticapy.OPTIONS["colors"])
         all_colors = [item for item in plt_colors.cnames]
         shuffle(all_colors)
-        if all_colors:
-            for c in all_colors:
-                if c not in colors:
-                    colors += [c]
+        for c in all_colors:
+            if c not in colors:
+                colors += [c]
         return colors
     else:
         return verticapy.OPTIONS["colors"]
