@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,19 +22,19 @@
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.learn.vmodel import *
 from verticapy.utilities import save_verticapy_logs
 
 # Standard Python Modules
-from typing import Union
+from typing import Union, Literal
 
 #
 # Functions used to simplify the code
 #
-# ---#
+
+
 def get_tree_list_of_arrays(
     tree, X: list, model_type: str, return_probability: bool = False
 ):
@@ -125,10 +96,10 @@ def get_tree_list_of_arrays(
 #
 # Tree Algorithms
 #
-# ---#
+
+
 class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """
-    ----------------------------------------------------------------------------------------
     A DecisionTreeClassifier made of a single tree.
 
     Parameters
@@ -161,21 +132,17 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
-        max_features: Union[str, int] = "auto",
+        max_features: Union[Literal["auto", "max"], int] = "auto",
         max_leaf_nodes: Union[int, float] = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        if isinstance(max_features, str):
-            raise_error_if_not_in("max_features", max_features.lower(), ["auto", "max"])
-            max_features = max_features.lower()
         self.type, self.name = "RandomForestClassifier", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
@@ -193,10 +160,8 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         }
 
 
-# ---#
 class DecisionTreeRegressor(Regressor, Tree):
     """
-    ----------------------------------------------------------------------------------------
     A DecisionTreeRegressor made of a single tree.
 
     Parameters
@@ -229,21 +194,17 @@ class DecisionTreeRegressor(Regressor, Tree):
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
-        max_features: Union[int, str] = "auto",
+        max_features: Union[Literal["auto", "max"], int] = "auto",
         max_leaf_nodes: Union[int, float] = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        if isinstance(max_features, str):
-            raise_error_if_not_in("max_features", max_features.lower(), ["auto", "max"])
-            max_features = max_features.lower()
         self.type, self.name = "RandomForestRegressor", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
@@ -261,10 +222,8 @@ class DecisionTreeRegressor(Regressor, Tree):
         }
 
 
-# ---#
 class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
-    ----------------------------------------------------------------------------------------
     A classifier that overfits the training data. These models are typically
     used as a control to compare with your other models.
 
@@ -275,7 +234,6 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str):
         self.type, self.name = "RandomForestClassifier", name
@@ -295,10 +253,8 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
         }
 
 
-# ---#
 class DummyTreeRegressor(Regressor, Tree):
     """
-    ----------------------------------------------------------------------------------------
     A regressor that overfits the training data. These models are typically
     used as a control to compare with your other models.
 
@@ -309,7 +265,6 @@ class DummyTreeRegressor(Regressor, Tree):
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(self, name: str):
         self.type, self.name = "RandomForestRegressor", name

@@ -1,78 +1,47 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
 #
 # Standard Python Modules
 import math, warnings
-from typing import Union
+from typing import Union, Literal
 
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 import verticapy.learn.metrics as mt
 from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame, save_verticapy_logs
-from verticapy.plot import gen_colors
+from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import *
 
 # Other Python Modules
 from dateutil.parser import parse
 import matplotlib.pyplot as plt
 
-# ---#
+
 class SARIMAX(Regressor):
     """
-----------------------------------------------------------------------------------------
 [Beta Version]
 Creates an SARIMAX object using the Vertica Linear Regression algorithm on 
 the data.
@@ -111,7 +80,6 @@ papprox_ma: int, optional
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -125,11 +93,10 @@ papprox_ma: int, optional
         s: int = 0,
         tol: float = 1e-4,
         max_iter: int = 1000,
-        solver: str = "newton",
+        solver: Literal["newton", "bfgs"] = "newton",
         max_pik: int = 100,
         papprox_ma: int = 200,
     ):
-        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
         if s == 0:
             assert (D, P, Q) == (0, 0, 0), ParameterError(
                 "In case of non-seasonality (s = 0), all the parameters P, D or Q must be equal to 0."
@@ -156,10 +123,8 @@ papprox_ma: int, optional
             "papprox_ma": papprox_ma,
         }
 
-    # ---#
     def deploySQL(self):
         """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Returns
@@ -193,10 +158,8 @@ papprox_ma: int, optional
                         )
         return sql
 
-    # ---#
     def fpredict(self, L: list):
         """
-    ----------------------------------------------------------------------------------------
     Computes the prediction.
 
     Parameters
@@ -308,8 +271,6 @@ papprox_ma: int, optional
         except:
             return None
 
-    # ---#
-    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -319,7 +280,6 @@ papprox_ma: int, optional
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -700,8 +660,6 @@ papprox_ma: int, optional
         )
         return self
 
-    # ---#
-    @check_dtypes
     def plot(
         self,
         vdf: vDataFrame = None,
@@ -719,7 +677,6 @@ papprox_ma: int, optional
         **style_kwds,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Draws the SARIMAX model.
 
     Parameters
@@ -958,8 +915,6 @@ papprox_ma: int, optional
             tick.set_rotation(90)
         return ax
 
-    # ---#
-    @check_dtypes
     def predict(
         self,
         vdf: vDataFrame,
@@ -970,7 +925,6 @@ papprox_ma: int, optional
         name: str = "",
     ):
         """
-    ----------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -1084,11 +1038,14 @@ papprox_ma: int, optional
             )
         return result
 
-    # ---#
-    @check_dtypes
-    def score(self, method: str = "r2"):
+    def score(
+        self,
+        method: Literal[
+            tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)
+            + ("r2adj", "r2adjusted", "r2a", "rmse")
+        ] = "r2",
+    ):
         """
-    ----------------------------------------------------------------------------------------
     Computes the model score.
 
     Parameters
@@ -1113,12 +1070,9 @@ papprox_ma: int, optional
         score
         """
         # Initialization
-        methods = list(mt.FUNCTIONS_REGRESSION_DICTIONNARY.keys())
-        methods += ["r2a", "rmse"]
         method = str(method).lower()
         if method in ["r2adj", "r2adjusted"]:
             method = "r2a"
-        raise_error_if_not_in("method", method, methods)
         adj, root = False, False
         if method in ("r2a", "r2adj", "r2adjusted"):
             method, adj = "r2", True
@@ -1153,10 +1107,8 @@ papprox_ma: int, optional
         return fun(*arg)
 
 
-# ---#
 class VAR(Regressor):
     """
-----------------------------------------------------------------------------------------
 [Beta Version]
 Creates an VAR object using the Vertica Linear Regression algorithm on the 
 data.
@@ -1174,12 +1126,11 @@ max_iter: int, optional
     achieving the specified accuracy result.
 solver: str, optional
     The optimizer method to use to train the model. 
-        Newton : Newton Method
-        BFGS   : Broyden Fletcher Goldfarb Shanno
+        newton : Newton Method
+        bfgs   : Broyden Fletcher Goldfarb Shanno
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -1187,9 +1138,8 @@ solver: str, optional
         p: int = 1,
         tol: float = 1e-4,
         max_iter: int = 1000,
-        solver: str = "Newton",
+        solver: Literal["newton", "bfgs"] = "newton",
     ):
-        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
         self.type, self.name = "VAR", name
         assert p > 0, ParameterError(
             "Parameter 'p' must be greater than 0 to build a VAR model."
@@ -1201,10 +1151,8 @@ solver: str, optional
             "solver": str(solver).lower(),
         }
 
-    # ---#
     def deploySQL(self):
         """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Returns
@@ -1228,13 +1176,10 @@ solver: str, optional
             ]
         return sql
 
-    # ---#
-    @check_dtypes
     def features_importance(
         self, X_idx: Union[int, str] = 0, show: bool = True, ax=None, **style_kwds
     ):
         """
-    ----------------------------------------------------------------------------------------
     Computes the model's features importance.
 
     Parameters
@@ -1300,8 +1245,6 @@ solver: str, optional
             importances[elem] = [coeff_importances[elem], coeff_sign[elem]]
         return tablesample(values=importances).transpose()
 
-    # ---#
-    @check_dtypes
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -1310,7 +1253,6 @@ solver: str, optional
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -1413,10 +1355,8 @@ solver: str, optional
         )
         return self
 
-    # ---#
     def fpredict(self, L: list):
         """
-    ----------------------------------------------------------------------------------------
     Computes the prediction.
 
     Parameters
@@ -1451,7 +1391,6 @@ solver: str, optional
         except:
             return None
 
-    # ---#
     def plot(
         self,
         vdf: vDataFrame = None,
@@ -1469,7 +1408,6 @@ solver: str, optional
         **style_kwds,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Draws the VAR model.
 
     Parameters
@@ -1711,8 +1649,6 @@ solver: str, optional
             tick.set_rotation(90)
         return ax
 
-    # ---#
-    @check_dtypes
     def predict(
         self,
         vdf: vDataFrame,
@@ -1722,7 +1658,6 @@ solver: str, optional
         name: list = [],
     ):
         """
-    ----------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -1820,11 +1755,14 @@ solver: str, optional
                 )
         return result
 
-    # ---#
-    @check_dtypes
-    def score(self, method: str = "r2"):
+    def score(
+        self,
+        method: Literal[
+            tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)
+            + ("r2adj", "r2adjusted", "r2a", "rmse")
+        ] = "r2",
+    ):
         """
-    ----------------------------------------------------------------------------------------
     Computes the model score.
 
     Parameters
@@ -1849,12 +1787,9 @@ solver: str, optional
         score
         """
         # Initialization
-        methods = list(mt.FUNCTIONS_REGRESSION_DICTIONNARY.keys())
-        methods += ["r2a", "rmse"]
         method = str(method).lower()
         if method in ["r2adj", "r2adjusted"]:
             method = "r2a"
-        raise_error_if_not_in("method", method, methods)
         adj, root, index = False, False, method
         if method in ("r2a", "r2adj", "r2adjusted"):
             method, adj = "r2", True

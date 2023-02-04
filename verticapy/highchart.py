@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -65,7 +36,7 @@ except:
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.plot import gen_colors
+from verticapy.plotting._colors import gen_colors
 
 #
 ##
@@ -82,7 +53,8 @@ from verticapy.plot import gen_colors
 #
 # Functions used to simplify the code.
 #
-# ---#
+
+
 def sort_classes(categories):
     try:
         try:
@@ -99,7 +71,6 @@ def sort_classes(categories):
     return order
 
 
-# ---#
 def data_to_columns(data: list, n: int):
     columns = [[]] * n
     for elem in data:
@@ -114,7 +85,8 @@ def data_to_columns(data: list, n: int):
 #
 # Functions used by vDataFrames to draw graphics using High Chart API.
 #
-# ---#
+
+
 def hchart_from_vdf(
     vdf,
     x=None,
@@ -610,7 +582,6 @@ def hchart_from_vdf(
         return chart
 
 
-# ---#
 def hchartSQL(
     query: str, kind="auto", width: int = 600, height: int = 400, options: dict = {},
 ):
@@ -710,12 +681,12 @@ def hchartSQL(
     )
 
 
-# ---#
 #####
 #####
 #####
 #####
-# ---#
+
+
 def bar(
     query: str,
     options: dict = {},
@@ -806,7 +777,6 @@ def bar(
     return chart
 
 
-# ---#
 def boxplot(
     data: list = [],
     options: dict = {},
@@ -857,7 +827,6 @@ def boxplot(
     return chart
 
 
-# ---#
 def candlestick(query: str, options: dict = {}, width: int = 600, height: int = 400):
     data = executeSQL(
         query,
@@ -906,7 +875,6 @@ def candlestick(query: str, options: dict = {}, width: int = 600, height: int = 
     return chart
 
 
-# ---#
 def drilldown_chart(
     query: list,
     options: dict = {},
@@ -975,7 +943,6 @@ def drilldown_chart(
     return chart
 
 
-# ---#
 def heatmap(
     query: str = "",
     data: list = [],
@@ -1069,7 +1036,6 @@ def heatmap(
     return chart
 
 
-# ---#
 def line(
     query: str,
     options: dict = {},
@@ -1239,7 +1205,6 @@ def line(
     return chart
 
 
-# ---#
 def negative_bar(query: str, options: dict = {}, width: int = 600, height: int = 400):
     data = executeSQL(
         query,
@@ -1307,7 +1272,6 @@ def negative_bar(query: str, options: dict = {}, width: int = 600, height: int =
     return chart
 
 
-# ---#
 def pie(
     query: str,
     options: dict = {},
@@ -1385,7 +1349,6 @@ def pie(
     return chart
 
 
-# ---#
 def scatter(
     query: str,
     options: dict = {},
@@ -1577,7 +1540,6 @@ def scatter(
     return chart
 
 
-# ---#
 def spider(query: str, options: dict = {}, width: int = 600, height: int = 400):
     data = executeSQL(
         query,

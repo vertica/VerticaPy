@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,15 +22,16 @@
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.learn.vmodel import *
 
-# ---#
+# Standard Modules
+from typing import Literal
+
+
 class LinearSVC(BinaryClassifier):
     """
-----------------------------------------------------------------------------------------
 Creates a LinearSVC object using the Vertica Support Vector Machine (SVM) 
 algorithm on the data. Given a set of training examples, each marked as 
 belonging to one or the other of two categories, an SVM training algorithm 
@@ -98,7 +70,6 @@ max_iter: int, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -107,18 +78,10 @@ max_iter: int, optional
         C: float = 1.0,
         fit_intercept: bool = True,
         intercept_scaling: float = 1.0,
-        intercept_mode: str = "regularized",
-        class_weight: Union[str, list] = [1, 1],
+        intercept_mode: Literal["regularized", "unregularized"] = "regularized",
+        class_weight: Union[Literal["auto", "none"], list] = [1, 1],
         max_iter: int = 100,
     ):
-        raise_error_if_not_in(
-            "intercept_mode",
-            str(intercept_mode).lower(),
-            ["regularized", "unregularized"],
-        )
-        if isinstance(class_weight, str):
-            raise_error_if_not_in("class_weight", class_weight, ["auto", "none"])
-            class_weight = str(class_weight).lower()
         self.type, self.name = "LinearSVC", name
         self.VERTICA_FIT_FUNCTION_SQL = "SVM_CLASSIFIER"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_CLASSIFIER"
@@ -135,10 +98,8 @@ max_iter: int, optional
         }
 
 
-# ---#
 class LinearSVR(Regressor):
     """
-----------------------------------------------------------------------------------------
 Creates a LinearSVR object using the Vertica SVM (Support Vector Machine) 
 algorithm. This algorithm finds the hyperplane used to approximate 
 distribution of the data..
@@ -194,7 +155,6 @@ test_relation: str
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -203,15 +163,10 @@ test_relation: str
         C: float = 1.0,
         fit_intercept: bool = True,
         intercept_scaling: float = 1.0,
-        intercept_mode: str = "regularized",
+        intercept_mode: Literal["regularized", "unregularized"] = "regularized",
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
-        raise_error_if_not_in(
-            "intercept_mode",
-            str(intercept_mode).lower(),
-            ["regularized", "unregularized"],
-        )
         self.type, self.name = "LinearSVR", name
         self.VERTICA_FIT_FUNCTION_SQL = "SVM_REGRESSOR"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_REGRESSOR"

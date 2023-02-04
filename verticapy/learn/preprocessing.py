@@ -1,61 +1,31 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
 #
 # Standard Python Modules
 import random
-from typing import Union
+from typing import Union, Literal
 
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.utilities import *
@@ -63,15 +33,17 @@ from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.learn.vmodel import *
 
-# ---#
+
 @check_minimum_version
-@check_dtypes
 @save_verticapy_logs
 def Balance(
-    name: str, input_relation: str, y: str, method: str = "hybrid", ratio: float = 0.5,
+    name: str,
+    input_relation: str,
+    y: str,
+    method: Literal["hybrid", "over", "under"] = "hybrid",
+    ratio: float = 0.5,
 ):
     """
-----------------------------------------------------------------------------------------
 Creates a view with an equal distribution of the input data based on the 
 response_column.
  
@@ -100,7 +72,6 @@ Returns
 vDataFrame
 	vDataFrame of the created view
 	"""
-    raise_error_if_not_in("method", method, ["hybrid", "over", "under"])
     executeSQL(
         query=f"""
             SELECT 
@@ -116,10 +87,8 @@ vDataFrame
     return vDataFrame(name)
 
 
-# ---#
 class CountVectorizer(vModel):
     """
-----------------------------------------------------------------------------------------
 Creates a Text Index which will count the occurences of each word in the 
 data.
  
@@ -144,7 +113,6 @@ max_text_size: int, optional
 	columns during the fitting.
 	"""
 
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -168,10 +136,8 @@ max_text_size: int, optional
             "max_text_size": max_text_size,
         }
 
-    # ---#
     def compute_stop_words(self):
         """
-    ----------------------------------------------------------------------------------------
     Computes the CountVectorizer Stop Words. It will affect the result to the
     stop_words_ attribute.
         """
@@ -185,21 +151,16 @@ max_text_size: int, optional
         res = executeSQL(query=query, print_time_sql=False, method="fetchall")
         self.stop_words_ = [item[0] for item in res]
 
-    # ---#
     def compute_vocabulary(self):
         """
-    ----------------------------------------------------------------------------------------
     Computes the CountVectorizer Vocabulary. It will affect the result to the
     vocabulary_ attribute.
         """
         res = executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
         self.vocabulary_ = [item[0] for item in res]
 
-    # ---#
-    @check_dtypes
     def deploySQL(self, return_main_table: bool = False):
         """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model.
 
     Returns
@@ -228,11 +189,8 @@ max_text_size: int, optional
             query += f" AND (rnk <= {self.parameters['max_features']})"
         return clean_query(query.format("*", ""))
 
-    # ---#
-    @check_dtypes
     def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
         """
-	----------------------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
@@ -317,10 +275,8 @@ max_text_size: int, optional
         )
         return self
 
-    # ---#
     def transform(self):
         """
-	----------------------------------------------------------------------------------------
 	Creates a vDataFrame of the model.
 
 	Returns
@@ -331,10 +287,8 @@ max_text_size: int, optional
         return vDataFrameSQL(f"({self.deploySQL()}) VERTICAPY_SUBTABLE", self.name,)
 
 
-# ---#
 class Normalizer(Preprocessing):
     """
-----------------------------------------------------------------------------------------
 Creates a Vertica Normalizer object.
  
 Parameters
@@ -352,12 +306,10 @@ method: str, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
-    def __init__(self, name: str, method: str = "zscore"):
-        raise_error_if_not_in(
-            "method", str(method).lower(), ["zscore", "robust_zscore", "minmax"]
-        )
+    def __init__(
+        self, name: str, method: Literal["zscore", "robust_zscore", "minmax"] = "zscore"
+    ):
         self.type, self.name = "Normalizer", name
         self.VERTICA_FIT_FUNCTION_SQL = "NORMALIZE_FIT"
         self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_NORMALIZE"
@@ -367,7 +319,6 @@ method: str, optional
         self.parameters = {"method": str(method).lower()}
 
 
-# ---#
 class StandardScaler(Normalizer):
     """i.e. Normalizer with param method = 'zscore'"""
 
@@ -375,7 +326,6 @@ class StandardScaler(Normalizer):
         super().__init__(name, "zscore")
 
 
-# ---#
 class RobustScaler(Normalizer):
     """i.e. Normalizer with param method = 'robust_zscore'"""
 
@@ -383,7 +333,6 @@ class RobustScaler(Normalizer):
         super().__init__(name, "robust_zscore")
 
 
-# ---#
 class MinMaxScaler(Normalizer):
     """i.e. Normalizer with param method = 'minmax'"""
 
@@ -391,10 +340,8 @@ class MinMaxScaler(Normalizer):
         super().__init__(name, "minmax")
 
 
-# ---#
 class OneHotEncoder(Preprocessing):
     """
-----------------------------------------------------------------------------------------
 Creates a Vertica One Hot Encoder object.
  
 Parameters
@@ -427,7 +374,6 @@ null_column_name: str, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -436,14 +382,9 @@ null_column_name: str, optional
         drop_first: bool = True,
         ignore_null: bool = True,
         separator: str = "_",
-        column_naming: str = "indices",
+        column_naming: Literal["indices", "values", "values_relaxed"] = "indices",
         null_column_name: str = "null",
     ):
-        raise_error_if_not_in(
-            "column_naming",
-            str(column_naming).lower(),
-            ["indices", "values", "values_relaxed"],
-        )
         self.type, self.name = "OneHotEncoder", name
         self.VERTICA_FIT_FUNCTION_SQL = "ONE_HOT_ENCODER_FIT"
         self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_ONE_HOT_ENCODER"

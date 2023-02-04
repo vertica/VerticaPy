@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -53,20 +24,19 @@ import statistics, random, time
 import numpy as np
 from collections.abc import Iterable
 from itertools import product
-from typing import Union
+from typing import Union, Literal
 
 # VerticaPy Modules
 import verticapy
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
-from verticapy.plot import gen_colors
+from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import does_model_exist
 from verticapy.learn.mlplot import plot_bubble_ml, plot_stepwise_ml, plot_importance
 
@@ -75,7 +45,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from tqdm.auto import tqdm
 
-# ---#
+
 @save_verticapy_logs
 def bayesian_search_cv(
     estimator,
@@ -98,7 +68,6 @@ def bayesian_search_cv(
     **kwargs,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the k-fold bayesian search of an estimator using a random
 forest model to estimate a probable optimal set of parameters.
 
@@ -325,14 +294,12 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def best_k(
     input_relation: Union[str, vDataFrame],
     X: Union[str, list] = [],
     n_cluster: Union[tuple, list] = (1, 100),
-    init: Union[str, list] = None,
+    init: Literal["kmeanspp", "random", None] = None,
     max_iter: int = 50,
     tol: float = 1e-4,
     use_kprototype: bool = False,
@@ -341,7 +308,6 @@ def best_k(
     **kwargs,
 ):
     """
-----------------------------------------------------------------------------------------
 Finds the k-means / k-prototypes k based on a score.
 
 Parameters
@@ -386,7 +352,6 @@ int
         init = "random"
     elif not (init):
         init = "kmeanspp"
-    raise_error_if_not_in("init", init, ["kmeanspp", "random"])
 
     from verticapy.learn.cluster import KMeans, KPrototypes
 
@@ -426,8 +391,6 @@ int
     return i
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def cross_validate(
     estimator,
@@ -443,7 +406,6 @@ def cross_validate(
     **kwargs,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the K-Fold cross validation of an estimator.
 
 Parameters
@@ -699,14 +661,12 @@ tablesample
         return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def elbow(
     input_relation: Union[str, vDataFrame],
     X: Union[str, list] = [],
     n_cluster: Union[tuple, list] = (1, 15),
-    init: Union[str, list] = None,
+    init: Literal["kmeanspp", "random", None] = None,
     max_iter: int = 50,
     tol: float = 1e-4,
     use_kprototype: bool = False,
@@ -715,7 +675,6 @@ def elbow(
     **style_kwds,
 ):
     """
-----------------------------------------------------------------------------------------
 Draws an elbow curve.
 
 Parameters
@@ -763,7 +722,6 @@ tablesample
         init = "random"
     elif not (init):
         init = "kmeanspp"
-    raise_error_if_not_in("init", init, ["kmeanspp", "random"])
     from verticapy.learn.cluster import KMeans, KPrototypes
 
     if isinstance(n_cluster, tuple):
@@ -815,8 +773,6 @@ tablesample
     return tablesample(values=values)
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def enet_search_cv(
     input_relation: Union[str, vDataFrame],
@@ -824,13 +780,12 @@ def enet_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    estimator_type: str = "auto",
+    estimator_type: Literal["logit", "enet", "auto"] = "auto",
     cutoff: float = -1,
     print_info: bool = True,
     **kwargs,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the k-fold grid search using multiple ENet models.
 
 Parameters
@@ -886,7 +841,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    raise_error_if_not_in("estimator_type", estimator_type, ["logit", "enet", "auto"])
     param_grid = parameter_grid(
         {
             "solver": ["cgd"],
@@ -937,7 +891,6 @@ tablesample
     return result
 
 
-# ---#
 @save_verticapy_logs
 def gen_params_grid(
     estimator,
@@ -947,7 +900,6 @@ def gen_params_grid(
     optimized_grid: int = 0,
 ):
     """
-----------------------------------------------------------------------------------------
 Generates the estimator grid.
 
 Parameters
@@ -1568,8 +1520,6 @@ tablesample
     return final_param_grid
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def grid_search_cv(
     estimator,
@@ -1587,7 +1537,6 @@ def grid_search_cv(
     **kwargs,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the k-fold grid search of an estimator.
 
 Parameters
@@ -1808,8 +1757,6 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def learning_curve(
     estimator,
@@ -1817,7 +1764,7 @@ def learning_curve(
     X: Union[str, list],
     y: str,
     sizes: list = [0.1, 0.33, 0.55, 0.78, 1.0],
-    method="efficiency",
+    method: Literal["efficiency", "performance", "scalability"] = "efficiency",
     metric: str = "auto",
     cv: int = 3,
     pos_label: Union[int, float, str] = None,
@@ -1827,7 +1774,6 @@ def learning_curve(
     **style_kwds,
 ):
     """
-----------------------------------------------------------------------------------------
 Draws the learning curve.
 
 Parameters
@@ -1895,10 +1841,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    raise_error_if_not_in(
-        "method", method, ["efficiency", "performance", "scalability"]
-    )
-    from verticapy.plot import range_curve
+    from verticapy.plotting._matplotlib import range_curve
 
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
@@ -2029,9 +1972,7 @@ tablesample
     return result
 
 
-# ---#
 @check_minimum_version
-@check_dtypes
 @save_verticapy_logs
 def lift_chart(
     y_true: str,
@@ -2043,7 +1984,6 @@ def lift_chart(
     **style_kwds,
 ):
     """
-----------------------------------------------------------------------------------------
 Draws the Lift Chart.
 
 Parameters
@@ -2127,12 +2067,9 @@ tablesample
     )
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def parameter_grid(param_grid: dict):
     """
-----------------------------------------------------------------------------------------
 Generates the list of the different combinations of input parameters.
 
 Parameters
@@ -2150,8 +2087,6 @@ list of dict
     ]
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def plot_acf_pacf(
     vdf: vDataFrame,
@@ -2162,7 +2097,6 @@ def plot_acf_pacf(
     **style_kwds,
 ):
     """
-----------------------------------------------------------------------------------------
 Draws the ACF and PACF Charts.
 
 Parameters
@@ -2255,9 +2189,7 @@ tablesample
     return result
 
 
-# ---#
 @check_minimum_version
-@check_dtypes
 @save_verticapy_logs
 def prc_curve(
     y_true: str,
@@ -2270,7 +2202,6 @@ def prc_curve(
     **style_kwds,
 ):
     """
-----------------------------------------------------------------------------------------
 Draws the PRC Curve.
 
 Parameters
@@ -2347,8 +2278,6 @@ tablesample
     )
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def randomized_features_search_cv(
     estimator,
@@ -2366,7 +2295,6 @@ def randomized_features_search_cv(
     **kwargs,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the k-fold grid search of an estimator using different features
 combinations. It can be used to find the parameters which will optimize
 the model.
@@ -2588,7 +2516,6 @@ tablesample
     return result
 
 
-# ---#
 @save_verticapy_logs
 def randomized_search_cv(
     estimator,
@@ -2605,7 +2532,6 @@ def randomized_search_cv(
     print_info: bool = True,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the K-Fold randomized search of an estimator.
 
 Parameters
@@ -2686,9 +2612,7 @@ tablesample
     )
 
 
-# ---#
 @check_minimum_version
-@check_dtypes
 @save_verticapy_logs
 def roc_curve(
     y_true: str,
@@ -2703,7 +2627,6 @@ def roc_curve(
     **style_kwds,
 ):
     """
-----------------------------------------------------------------------------------------
 Draws the ROC Curve.
 
 Parameters
@@ -2824,27 +2747,24 @@ tablesample
     )
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def stepwise(
     estimator,
     input_relation: Union[str, vDataFrame],
     X: Union[str, list],
     y: str,
-    criterion: str = "bic",
-    direction: str = "backward",
+    criterion: Literal["aic", "bic"] = "bic",
+    direction: Literal["forward", "backward"] = "backward",
     max_steps: int = 100,
     criterion_threshold: int = 3,
     drop_final_estimator: bool = True,
-    x_order: str = "pearson",
+    x_order: Literal["pearson", "spearman", "random", "none", None] = "pearson",
     print_info: bool = True,
     show: bool = True,
     ax=None,
     **style_kwds,
 ):
     """
-----------------------------------------------------------------------------------------
 Uses the Stepwise algorithm to find the most suitable number of features
 when fitting the estimator.
 
@@ -2897,9 +2817,6 @@ tablesample
     if isinstance(X, str):
         X = [X]
     assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
-    raise_error_if_not_in("criterion", criterion, ["aic", "bic"])
-    raise_error_if_not_in("direction", direction, ["forward", "backward"])
-    raise_error_if_not_in("x_order", x_order, ["pearson", "spearman", "random", "none"])
     if not (verticapy.OPTIONS["overwrite_model"]):
         does_model_exist(name=estimator.name, raise_error=True)
     result, current_step = [], 0
@@ -3050,7 +2967,6 @@ tablesample
     return result
 
 
-# ---#
 @save_verticapy_logs
 def validation_curve(
     estimator,
@@ -3068,7 +2984,6 @@ def validation_curve(
     **style_kwds,
 ):
     """
-----------------------------------------------------------------------------------------
 Draws the validation curve.
 
 Parameters
@@ -3134,7 +3049,7 @@ tablesample
     """
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
         param_range = [param_range]
-    from verticapy.plot import range_curve
+    from verticapy.plotting._matplotlib import range_curve
 
     gs_result = grid_search_cv(
         estimator,
@@ -3193,7 +3108,8 @@ tablesample
 #
 # Functions to use to simplify the coding.
 #
-# ---#
+
+
 def compute_function_metrics(
     y_true: str,
     y_score: str,

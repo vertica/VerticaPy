@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -62,7 +33,8 @@ from verticapy.toolbox import get_category_from_vertica_type
 #
 # Functions to use to create an nteractive table.
 #
-# ---#
+
+
 def _table_header(
     head: list, table_id, style, classes, dtype: dict = {},
 ):
@@ -91,7 +63,6 @@ def _table_header(
     return f"""<div class="container"><table id="{table_id}" class="{classes}" {style}>{thead}<tbody>{tbody}</tbody></table></div>"""
 
 
-# ---#
 def replace_value(template, pattern, value, count=1):
     """Set the given pattern to the desired value in the template,
     after making sure that the pattern is found exactly once."""
@@ -100,7 +71,6 @@ def replace_value(template, pattern, value, count=1):
     return template.replace(pattern, value)
 
 
-# ---#
 def clean_data(data):
     """Clean the data to improve the html display"""
 
@@ -134,7 +104,6 @@ def clean_data(data):
     return data
 
 
-# ---#
 def datatables_repr(
     data_columns, repeat_first_column: bool = False, offset: int = 0, dtype: dict = {},
 ):
@@ -177,7 +146,6 @@ def datatables_repr(
     return output
 
 
-# ---#
 def beautiful_header(
     header, dtype: dict = {}, percent: dict = {},
 ):
@@ -244,14 +212,12 @@ def beautiful_header(
     return header
 
 
-# ---#
 def read_package_file(*path):
     """Return the content of a file from the itables package"""
     with open(find_package_file(*path), encoding="utf-8") as fp:
         return fp.read()
 
 
-# ---#
 def find_package_file(*path):
     """Return the full path to a file from the itables package"""
     current_path = os.path.dirname(__file__)

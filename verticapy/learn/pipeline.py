@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -51,7 +22,6 @@
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy import vDataFrame
@@ -63,10 +33,9 @@ from verticapy.learn.vmodel import *
 # Standard Python Modules
 from typing import Union
 
-# ---#
+
 class Pipeline:
     """
-----------------------------------------------------------------------------------------
 Creates a Pipeline object. Sequentially apply a list of transforms and a 
 final estimator. The intermediate steps must implement a transform method.
 
@@ -77,7 +46,6 @@ steps: list
     in the order in which they are chained, with the last object an estimator.
 	"""
 
-    @check_dtypes
     @save_verticapy_logs
     def __init__(self, steps: list):
         self.type = "Pipeline"
@@ -111,7 +79,6 @@ steps: list
                         )
             self.steps += [s]
 
-    # ---#
     def __getitem__(self, index):
         if isinstance(index, slice):
             return self.steps[index]
@@ -120,16 +87,13 @@ steps: list
         else:
             return getattr(self, index)
 
-    # ---#
     def drop(self):
         """
-    ----------------------------------------------------------------------------------------
     Drops the model from the Vertica database.
         """
         for step in self.steps:
             step[1].drop()
 
-    # ---#
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -138,7 +102,6 @@ steps: list
         test_relation: Union[str, vDataFrame] = "",
     ):
         """
-    ----------------------------------------------------------------------------------------
     Trains the model.
 
     Parameters
@@ -186,10 +149,8 @@ steps: list
             pass
         return self
 
-    # ---#
     def get_params(self):
         """
-    ----------------------------------------------------------------------------------------
     Returns the models Parameters.
 
     Returns
@@ -202,12 +163,10 @@ steps: list
             params[step[0]] = step[1].get_params()
         return params
 
-    # ---#
     def predict(
         self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator",
     ):
         """
-    ----------------------------------------------------------------------------------------
     Applies the model on a vDataFrame.
 
     Parameters
@@ -254,10 +213,8 @@ steps: list
                 X_all += X_new
         return current_vdf[vdf.get_columns() + [name]]
 
-    # ---#
     def report(self):
         """
-    ----------------------------------------------------------------------------------------
     Computes a regression/classification report using multiple metrics to evaluate 
     the model depending on its type. 
 
@@ -272,10 +229,8 @@ steps: list
         else:
             return self.steps[-1][1].classification_report()
 
-    # ---#
     def score(self, method: str = ""):
         """
-    ----------------------------------------------------------------------------------------
     Computes the model score.
 
     Parameters
@@ -296,10 +251,8 @@ steps: list
                 method = "accuracy"
         return self.steps[-1][1].score(method)
 
-    # ---#
     def transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
         """
-    ----------------------------------------------------------------------------------------
     Applies the model on a vDataFrame.
 
     Parameters
@@ -336,10 +289,8 @@ steps: list
             X_all += X_new
         return current_vdf
 
-    # ---#
     def inverse_transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
         """
-    ----------------------------------------------------------------------------------------
     Applies the inverse model transformation on a vDataFrame.
 
     Parameters
@@ -379,10 +330,8 @@ steps: list
             X_all += X_new
         return current_vdf
 
-    # ---#
     def set_params(self, parameters: dict = {}):
         """
-    ----------------------------------------------------------------------------------------
     Sets the parameters of the model.
 
     Parameters
@@ -396,7 +345,6 @@ steps: list
                 if param.lower() == step[0].lower():
                     step[1].set_params(parameters[param])
 
-    # ---#
     def to_python(
         self,
         name: str = "predict",
@@ -405,7 +353,6 @@ steps: list
         return_str: bool = False,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Returns the Python code needed to deploy the pipeline without using 
     built-in Vertica functions.
 

@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -61,7 +32,6 @@ from scipy.stats import f
 from verticapy import *
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy import vDataFrame
@@ -72,8 +42,8 @@ from verticapy.toolbox import *
 #
 # Function used to simplify the code
 #
-# ---#
-@check_dtypes
+
+
 def compute_metric_query(
     metric: str,
     y_true: str,
@@ -83,7 +53,6 @@ def compute_metric_query(
     fetchfirstelem: bool = True,
 ):
     """
-----------------------------------------------------------------------------------------
 A helper function that uses a specified metric to generate and score a query.
 
 Parameters
@@ -133,7 +102,6 @@ float or tuple of floats
     )
 
 
-# ---#
 def compute_tn_fn_fp_tp(
     y_true: str,
     y_score: str,
@@ -141,7 +109,6 @@ def compute_tn_fn_fp_tp(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 A helper function that computes the confusion matrix for the specified 
 'pos_label' class and returns its values as a tuple of the following: 
 true negatives, false negatives, false positives, and true positives.
@@ -180,14 +147,13 @@ tuple
 #
 # Regression
 #
-# ---#
-@check_dtypes
+
+
 @save_verticapy_logs
 def aic_bic(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the AIC (Akaike’s Information Criterion) & BIC (Bayesian Information 
 Criterion).
 
@@ -229,14 +195,11 @@ tuple of floats
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def anova_table(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Anova Table.
 
 Parameters
@@ -304,13 +267,11 @@ tablesample
     )
 
 
-# ---#
 @save_verticapy_logs
 def explained_variance(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Explained Variance.
 
 Parameters
@@ -338,11 +299,9 @@ float
     )
 
 
-# ---#
 @save_verticapy_logs
 def max_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
     """
-----------------------------------------------------------------------------------------
 Computes the Max Error.
 
 Parameters
@@ -370,13 +329,11 @@ float
     )
 
 
-# ---#
 @save_verticapy_logs
 def mean_absolute_error(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Mean Absolute Error.
 
 Parameters
@@ -404,8 +361,6 @@ float
     )
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def mean_squared_error(
     y_true: str,
@@ -414,7 +369,6 @@ def mean_squared_error(
     root: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Mean Squared Error.
 
 Parameters
@@ -443,13 +397,11 @@ float
     return result
 
 
-# ---#
 @save_verticapy_logs
 def mean_squared_log_error(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Mean Squared Log Error.
 
 Parameters
@@ -477,13 +429,11 @@ float
     )
 
 
-# ---#
 @save_verticapy_logs
 def median_absolute_error(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Median Absolute Error.
 
 Parameters
@@ -511,8 +461,6 @@ float
     )
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def quantile_error(
     q: Union[int, float],
@@ -521,7 +469,6 @@ def quantile_error(
     input_relation: Union[str, vDataFrame],
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the input Quantile of the Error.
 
 Parameters
@@ -549,8 +496,6 @@ float
     )
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def r2_score(
     y_true: str,
@@ -560,7 +505,6 @@ def r2_score(
     adj: bool = True,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the R2 Score.
 
 Parameters
@@ -604,14 +548,11 @@ float
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def regression_report(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes a regression report using multiple metrics (r2, mse, max error...). 
 
 Parameters
@@ -693,8 +634,8 @@ tablesample
 #
 # Classification
 #
-# ---#
-@check_dtypes
+
+
 @save_verticapy_logs
 def accuracy_score(
     y_true: str,
@@ -703,7 +644,6 @@ def accuracy_score(
     pos_label: Union[str, int, float] = None,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Accuracy Score.
 
 Parameters
@@ -748,7 +688,6 @@ float
             )
 
 
-# ---#
 @save_verticapy_logs
 def auc(
     y_true: str,
@@ -758,7 +697,6 @@ def auc(
     nbins: int = 10000,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the ROC AUC (Area Under Curve).
 
 Parameters
@@ -791,8 +729,6 @@ float
     )
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def classification_report(
     y_true: str = "",
@@ -804,7 +740,6 @@ def classification_report(
     nbins: int = 10000,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes a classification report using multiple metrics (AUC, accuracy, PRC 
 AUC, F1...). It will consider each category as positive and switch to the 
 next one during the computation.
@@ -957,9 +892,7 @@ tablesample
     return tablesample(values)
 
 
-# ---#
 @check_minimum_version
-@check_dtypes
 @save_verticapy_logs
 def confusion_matrix(
     y_true: str,
@@ -968,7 +901,6 @@ def confusion_matrix(
     pos_label: Union[str, int, float] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Confusion Matrix.
 
 Parameters
@@ -1026,7 +958,6 @@ tablesample
     return result
 
 
-# ---#
 @save_verticapy_logs
 def critical_success_index(
     y_true: str,
@@ -1035,7 +966,6 @@ def critical_success_index(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Critical Success Index.
 
 Parameters
@@ -1062,7 +992,6 @@ float
     return csi
 
 
-# ---#
 @save_verticapy_logs
 def f1_score(
     y_true: str,
@@ -1071,7 +1000,6 @@ def f1_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the F1 Score.
 
 Parameters
@@ -1104,7 +1032,6 @@ float
     return f1
 
 
-# ---#
 @save_verticapy_logs
 def informedness(
     y_true: str,
@@ -1113,7 +1040,6 @@ def informedness(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Informedness.
 
 Parameters
@@ -1141,7 +1067,6 @@ float
     return tpr + tnr - 1
 
 
-# ---#
 @save_verticapy_logs
 def log_loss(
     y_true: str,
@@ -1150,7 +1075,6 @@ def log_loss(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Log Loss.
 
 Parameters
@@ -1183,7 +1107,6 @@ float
     )
 
 
-# ---#
 @save_verticapy_logs
 def markedness(
     y_true: str,
@@ -1192,7 +1115,6 @@ def markedness(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Markedness.
 
 Parameters
@@ -1220,7 +1142,6 @@ float
     return ppv + npv - 1
 
 
-# ---#
 @save_verticapy_logs
 def matthews_corrcoef(
     y_true: str,
@@ -1229,7 +1150,6 @@ def matthews_corrcoef(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Matthews Correlation Coefficient.
 
 Parameters
@@ -1261,15 +1181,12 @@ float
     return mcc
 
 
-# ---#
 @check_minimum_version
-@check_dtypes
 @save_verticapy_logs
 def multilabel_confusion_matrix(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], labels: list,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Multi Label Confusion Matrix.
 
 Parameters
@@ -1320,7 +1237,6 @@ tablesample
     return result
 
 
-# ---#
 @save_verticapy_logs
 def negative_predictive_score(
     y_true: str,
@@ -1329,7 +1245,6 @@ def negative_predictive_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Negative Predictive Score.
 
 Parameters
@@ -1356,7 +1271,6 @@ float
     return npv
 
 
-# ---#
 @save_verticapy_logs
 def prc_auc(
     y_true: str,
@@ -1366,7 +1280,6 @@ def prc_auc(
     nbins: int = 10000,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the area under the curve (AUC) of a Precision-Recall (PRC) curve.
 
 Parameters
@@ -1399,7 +1312,6 @@ float
     )
 
 
-# ---#
 @save_verticapy_logs
 def precision_score(
     y_true: str,
@@ -1408,7 +1320,6 @@ def precision_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Precision Score.
 
 Parameters
@@ -1435,7 +1346,6 @@ float
     return precision
 
 
-# ---#
 @save_verticapy_logs
 def recall_score(
     y_true: str,
@@ -1444,7 +1354,6 @@ def recall_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Recall Score.
 
 Parameters
@@ -1471,7 +1380,6 @@ float
     return recall
 
 
-# ---#
 @save_verticapy_logs
 def specificity_score(
     y_true: str,
@@ -1480,7 +1388,6 @@ def specificity_score(
     pos_label: Union[int, float, str] = 1,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the Specificity Score.
 
 Parameters
@@ -1510,7 +1417,8 @@ float
 #
 # TOOLS
 #
-# ---#
+
+
 def aic_score(
     y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
 ):

@@ -31,7 +31,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     install_requires=[
         "matplotlib<=3.5.3",
         "numpy>=1.11.0",
@@ -53,9 +53,6 @@ setuptools.setup(
     classifiers=[
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Topic :: Database",

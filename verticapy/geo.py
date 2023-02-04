@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -56,12 +27,11 @@ from typing import Union
 import verticapy.stats as st
 import verticapy.datasets as vp_datasets
 from verticapy.vdataframe import vDataFrame
-from verticapy.decorators import save_verticapy_logs, check_dtypes
+from verticapy.decorators import save_verticapy_logs
 from verticapy.utilities import tablesample, to_tablesample, vDataFrameSQL
 from verticapy.toolbox import executeSQL
 
-# ---#
-@check_dtypes
+
 @save_verticapy_logs
 def create_index(
     vdf: vDataFrame,
@@ -73,7 +43,6 @@ def create_index(
     skip_nonindexable_polygons: bool = False,
 ) -> tablesample:
     """
-----------------------------------------------------------------------------------------
 Creates a spatial index on a set of polygons to speed up spatial 
 intersection with a set of points.
 
@@ -124,8 +93,6 @@ tablesample
     return to_tablesample(query)
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def coordinate_converter(
     vdf: vDataFrame,
@@ -136,7 +103,6 @@ def coordinate_converter(
     reverse: bool = False,
 ) -> vDataFrame:
     """
-----------------------------------------------------------------------------------------
 Converts between geographic coordinates (latitude and longitude) and 
 Euclidean coordinates (x,y).
 
@@ -180,12 +146,9 @@ vDataFrame
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def describe_index(name: str = "", list_polygons: bool = False) -> tablesample:
     """
-----------------------------------------------------------------------------------------
 Retrieves information about an index that contains a set of polygons. If 
 you do not pass any parameters, this function returns all defined indexes.
 
@@ -224,14 +187,11 @@ tablesample
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def intersect(
     vdf: vDataFrame, index: str, gid: str, g: str = "", x: str = "", y: str = ""
 ) -> vDataFrame:
     """
-----------------------------------------------------------------------------------------
 Spatially intersects a point or points with a set of polygons.
 
 Parameters
@@ -279,12 +239,9 @@ vDataFrame
     return vDataFrameSQL(query)
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
     """
-----------------------------------------------------------------------------------------
 Renames a spatial index.
 
 Parameters
@@ -325,12 +282,9 @@ bool
     return True
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     """
-----------------------------------------------------------------------------------------
 Splits a polygon into (nbins ** 2) smaller polygons of approximately equal
 total area. This process is inexact, and the split polygons have 
 approximated edges; greater values for nbins produces more accurate and 

@@ -1,68 +1,39 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
 #
 # Standard Python Modules
 import os, math, shutil, re, time, decimal, warnings, datetime, inspect, csv
-from typing import Union
+from typing import Union, Literal, overload
 
 # VerticaPy Modules
 import vertica_python
-import verticapy
+import verticapy as vp
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.toolbox import *
 from verticapy.javascript import datatables_repr
 from verticapy.errors import *
+import verticapy.plotting._colors as vp_colors
 
 # Other Modules
 import pandas as pd
@@ -76,12 +47,11 @@ except:
 #
 # Utilities Functions
 #
-# ---#
-@check_dtypes
+
+
 @save_verticapy_logs
 def compute_flextable_keys(flex_name: str, usecols: list = []):
     """
-----------------------------------------------------------------------------------------
 Computes the flex table keys and returns the predicted data types.
 
 Parameters
@@ -121,14 +91,11 @@ List of tuples
     return result
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def compute_vmap_keys(
     expr: Union[str, str_sql], vmap_col: str, limit: int = 100,
 ):
     """
-----------------------------------------------------------------------------------------
 Computes the most frequent keys in the input VMap.
 
 Parameters
@@ -167,13 +134,10 @@ List of tuples
     return result
 
 
-# ---#
-@check_dtypes
 def create_schema(
     schema: str, raise_error: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Creates a new schema.
 
 Parameters
@@ -197,8 +161,6 @@ bool
         return False
 
 
-# ---#
-@check_dtypes
 def create_table(
     table_name: str,
     dtype: dict,
@@ -209,7 +171,6 @@ def create_table(
     raise_error: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Creates a new table using the input columns' names and data types.
 
 Parameters
@@ -264,10 +225,8 @@ bool
         return False
 
 
-# ---#
 def create_verticapy_schema():
     """
-----------------------------------------------------------------------------------------
 Creates a schema named 'verticapy' used to store VerticaPy extended models.
     """
     sql = "CREATE SCHEMA IF NOT EXISTS verticapy;"
@@ -284,11 +243,13 @@ Creates a schema named 'verticapy' used to store VerticaPy extended models.
     executeSQL(sql, title="Creating the attr table.")
 
 
-# ---#
-@check_dtypes
-def drop(name: str = "", method: str = "auto", raise_error: bool = False, **kwds):
+def drop(
+    name: str = "",
+    method: Literal["table", "view", "model", "geo", "text", "auto", "schema"] = "auto",
+    raise_error: bool = False,
+    **kwds,
+):
     """
-----------------------------------------------------------------------------------------
 Drops the input relation. This can be a model, view, table, text index,
 schema, or geo index.
 
@@ -319,9 +280,6 @@ bool
     # -#
     if "relation_type" in kwds and method == "auto":
         method = kwds["relation_type"]
-    raise_error_if_not_in(
-        "method", method, ["table", "view", "model", "geo", "text", "auto", "schema"],
-    )
     schema, relation = schema_relation(name)
     schema, relation = schema[1:-1], relation[1:-1]
     if not (name):
@@ -544,8 +502,6 @@ bool
     return result
 
 
-# ---#
-@check_dtypes
 def get_data_types(
     expr: str = "",
     column: str = "",
@@ -554,7 +510,6 @@ def get_data_types(
     usecols: list = [],
 ):
     """
-----------------------------------------------------------------------------------------
 Returns customized relation columns and the respective data types.
 This process creates a temporary table.
 
@@ -689,16 +644,14 @@ list of tuples
     return ctype
 
 
-# ---#
 @save_verticapy_logs
 def help_start():
     """
-----------------------------------------------------------------------------------------
 VERTICAPY Interactive Help (FAQ).
     """
-    path = os.path.dirname(verticapy.__file__)
-    img1 = verticapy.gen_verticapy_logo_html(size="10%")
-    img2 = verticapy.gen_verticapy_logo_str()
+    path = os.path.dirname(vp.__file__)
+    img1 = vp.gen_verticapy_logo_html(size="10%")
+    img2 = vp.gen_verticapy_logo_str()
     message = img1 if (isnotebook()) else img2
     message += (
         "\n\n&#128226; Welcome to the <b>VerticaPy</b> help module."
@@ -759,14 +712,11 @@ VERTICAPY Interactive Help (FAQ).
     display(Markdown(message)) if (isnotebook()) else print(message)
 
 
-# ---#
 def init_interactive_mode(all_interactive=False):
     """Activate the datatables representation for all the vDataFrames."""
     set_option("interactive", all_interactive)
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def insert_into(
     table_name: str,
@@ -777,7 +727,6 @@ def insert_into(
     genSQL: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Inserts the dataset into an existing Vertica table.
 
 Parameters
@@ -808,7 +757,7 @@ See Also
 pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     """
     if not (schema):
-        schema = verticapy.OPTIONS["temp_schema"]
+        schema = vp.OPTIONS["temp_schema"]
     input_relation = format_schema_table(schema, table_name)
     if not (column_names):
         result = executeSQL(
@@ -881,11 +830,8 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
             return total_rows
 
 
-# ---#
-@check_dtypes
 def isflextable(table_name: str, schema: str):
     """
-----------------------------------------------------------------------------------------
 Checks if the input relation is a flextable.
 
 Parameters
@@ -912,13 +858,10 @@ bool
     return bool(result)
 
 
-# ---#
-@check_dtypes
 def isvmap(
     expr: Union[str, str_sql], column: str,
 ):
     """
-----------------------------------------------------------------------------------------
 Checks if the input column is a VMap.
 
 Parameters
@@ -969,8 +912,6 @@ bool
         return True
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def pandas_to_vertica(
     df: pd.DataFrame,
@@ -982,7 +923,6 @@ def pandas_to_vertica(
     insert: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Ingests a pandas DataFrame into the Vertica database by creating a 
 CSV file and then using flex tables to load the data.
 
@@ -1029,7 +969,7 @@ read_csv  : Ingests a  CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
     if not (schema):
-        schema = verticapy.OPTIONS["temp_schema"]
+        schema = vp.OPTIONS["temp_schema"]
     assert name or not (insert), ParameterError(
         "Parameter 'name' can not be empty when parameter 'insert' is set to True."
     )
@@ -1114,7 +1054,6 @@ read_json : Ingests a JSON file into the Vertica database.
     return vdf
 
 
-# ---#
 def pcsv(
     path: str,
     sep: str = ",",
@@ -1134,7 +1073,6 @@ def pcsv(
     genSQL: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Parses a CSV file using flex tables. It will identify the columns and their
 respective types.
 
@@ -1255,10 +1193,10 @@ read_json : Ingests a JSON file into the Vertica database.
 
 
 vHelp = help_start
-# ---#
+
+
 def pjson(path: str, ingest_local: bool = True):
     """
-----------------------------------------------------------------------------------------
 Parses a JSON file using flex tables. It will identify the columns and their
 respective types.
 
@@ -1302,7 +1240,6 @@ read_json : Ingests a JSON file into the Vertica database.
     return dtype
 
 
-# ---#
 @save_verticapy_logs
 def read_avro(
     path: str,
@@ -1323,7 +1260,6 @@ def read_avro(
     use_complex_dt: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Ingests an AVRO file using flex tables.
 
 Parameters
@@ -1421,8 +1357,6 @@ read_json : Ingests a JSON file into the Vertica database.
     )
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def read_csv(
     path: str,
@@ -1451,7 +1385,6 @@ def read_csv(
     materialize: bool = True,
 ):
     """
-----------------------------------------------------------------------------------------
 Ingests a CSV file using flex tables.
 
 Parameters
@@ -1749,15 +1682,13 @@ read_json : Ingests a JSON file into the Vertica database.
             if (
                 not (insert)
                 and not (temporary_local_table)
-                and verticapy.OPTIONS["print_info"]
+                and vp.OPTIONS["print_info"]
             ):
                 print(f"The table {input_relation} has been successfully created.")
             return vDataFrame(table_name, schema=schema)
 
 
-# ---#
 @check_minimum_version
-@check_dtypes
 @save_verticapy_logs
 def read_file(
     path: str,
@@ -1775,7 +1706,6 @@ def read_file(
     max_files: int = 100,
 ):
     """
-----------------------------------------------------------------------------------------
 Inspects and ingests a file in CSV, Parquet, ORC, JSON, or Avro format.
 This function uses the Vertica complex data type.
 For new table creation, the file must be located in the server.
@@ -1966,8 +1896,6 @@ vDataFrame
     return vDataFrame(input_relation=table_name, schema=schema)
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def read_json(
     path: str,
@@ -1994,7 +1922,6 @@ def read_json(
     is_avro: bool = False,
 ):
     """
-----------------------------------------------------------------------------------------
 Ingests a JSON file using flex tables.
 
 Parameters
@@ -2299,7 +2226,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             executeSQL(
                 query3, title="Creating table.",
             )
-            if not (temporary_local_table) and verticapy.OPTIONS["print_info"]:
+            if not (temporary_local_table) and vp.OPTIONS["print_info"]:
                 print(f"The table {input_relation} has been successfully created.")
         else:
             column_name_dtype = {}
@@ -2339,14 +2266,11 @@ read_csv : Ingests a CSV file into the Vertica database.
         return vDataFrame(table_name, schema=schema)
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def read_shp(
     path: str, schema: str = "public", table_name: str = "",
 ):
     """
-----------------------------------------------------------------------------------------
 Ingests a SHP file. For the moment, only files located in the Vertica server 
 can be ingested.
 
@@ -2390,12 +2314,9 @@ vDataFrame
     return vDataFrame(table_name, schema=schema)
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def readSQL(query: str, time_on: bool = False, limit: int = 100):
     """
-    ----------------------------------------------------------------------------------------
     Returns the result of a SQL query as a tablesample object.
 
     Parameters
@@ -2414,7 +2335,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     """
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
-    if verticapy.OPTIONS["count_on"]:
+    if vp.OPTIONS["count_on"]:
         count = executeSQL(
             f"""SELECT 
                     /*+LABEL('utilities.readSQL')*/ COUNT(*) 
@@ -2424,20 +2345,20 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         )
     else:
         count = -1
-    sql_on_init = verticapy.OPTIONS["sql_on"]
-    time_on_init = verticapy.OPTIONS["time_on"]
+    sql_on_init = vp.OPTIONS["sql_on"]
+    time_on_init = vp.OPTIONS["time_on"]
     try:
-        verticapy.OPTIONS["time_on"] = time_on
-        verticapy.OPTIONS["sql_on"] = False
+        vp.OPTIONS["time_on"] = time_on
+        vp.OPTIONS["sql_on"] = False
         try:
             result = to_tablesample(f"{query} LIMIT {limit}")
         except:
             result = to_tablesample(query)
     finally:
-        verticapy.OPTIONS["time_on"] = time_on_init
-        verticapy.OPTIONS["sql_on"] = sql_on_init
+        vp.OPTIONS["time_on"] = time_on_init
+        vp.OPTIONS["sql_on"] = sql_on_init
     result.count = count
-    if verticapy.OPTIONS["percent_bar"]:
+    if vp.OPTIONS["percent_bar"]:
         vdf = vDataFrameSQL(f"({query}) VERTICAPY_SUBTABLE")
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
@@ -2446,7 +2367,6 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     return result
 
 
-# ---#
 def save_to_query_profile(
     name: str,
     path: str = "",
@@ -2456,7 +2376,6 @@ def save_to_query_profile(
     add_identifier: bool = True,
 ):
     """
-----------------------------------------------------------------------------------------
 Saves information about the specified VerticaPy method to the QUERY_PROFILES 
 table in the Vertica database. It is used to collect usage statistics on 
 methods and their parameters. This function generates a JSON string.
@@ -2482,9 +2401,9 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
-    if not (verticapy.OPTIONS["save_query_profile"]) or (
-        isinstance(verticapy.OPTIONS["save_query_profile"], list)
-        and name not in verticapy.OPTIONS["save_query_profile"]
+    if not (vp.OPTIONS["save_query_profile"]) or (
+        isinstance(vp.OPTIONS["save_query_profile"], list)
+        and name not in vp.OPTIONS["save_query_profile"]
     ):
         return False
     try:
@@ -2504,7 +2423,7 @@ bool
             if path:
                 json += f'"verticapy_fpath": "{path}", '
             if add_identifier:
-                json += f'"verticapy_id": "{verticapy.OPTIONS["identifier"]}", '
+                json += f'"verticapy_id": "{vp.OPTIONS["identifier"]}", '
             for key in json_dict:
                 json += f'"{key}": '
                 if isinstance(json_dict[key], bool):
@@ -2547,11 +2466,42 @@ bool
         return False
 
 
-# ---#
-@check_dtypes
-def set_option(option: str, value: Union[bool, int, str, list] = None):
+@overload
+def set_option(
+    option: Literal["color_style"], value: Literal[tuple(vp_colors.COLORS_OPTIONS)]
+) -> None:
+    ...
+
+
+@overload
+def set_option(option: Literal["mode"], value: Literal["light", "full"]) -> None:
+    ...
+
+
+def set_option(
+    option: Literal[
+        "cache",
+        "colors",
+        "color_style",
+        "interactive",
+        "count_on",
+        "footer_on",
+        "max_columns",
+        "max_rows",
+        "mode",
+        "overwrite_model",
+        "percent_bar",
+        "print_info",
+        "random_state",
+        "save_query_profile",
+        "sql_on",
+        "temp_schema",
+        "time_on",
+        "tqdm",
+    ],
+    value: Union[bool, int, str, list, None] = None,
+) -> None:
     """
-    ----------------------------------------------------------------------------------------
     Sets VerticaPy options.
 
     Parameters
@@ -2617,85 +2567,41 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
     value: object, optional
         New value of option.
     """
-    raise_error_if_not_in(
-        "option",
-        option,
-        [
-            "cache",
-            "colors",
-            "color_style",
-            "interactive",
-            "count_on",
-            "footer_on",
-            "max_columns",
-            "max_rows",
-            "mode",
-            "overwrite_model",
-            "percent_bar",
-            "print_info",
-            "random_state",
-            "save_query_profile",
-            "sql_on",
-            "temp_schema",
-            "time_on",
-            "tqdm",
-        ],
-    )
     wrong_value = False
     if option == "colors":
         if isinstance(value, list):
-            verticapy.OPTIONS["colors"] = [str(elem) for elem in value]
+            vp.OPTIONS["colors"] = [str(elem) for elem in value]
         else:
             wrong_value = True
     elif option == "color_style":
-        raise_error_if_not_in(
-            "value",
-            value,
-            [
-                "rgb",
-                "sunset",
-                "retro",
-                "shimbg",
-                "swamp",
-                "med",
-                "orchid",
-                "magenta",
-                "orange",
-                "vintage",
-                "vivid",
-                "berries",
-                "refreshing",
-                "summer",
-                "tropical",
-                "india",
-                "default",
-            ],
-        )
-        if isinstance(value, str):
-            verticapy.OPTIONS["color_style"] = value
-            verticapy.OPTIONS["colors"] = []
+        if value == None:
+            value = "default"
+        if value in vp_colors.COLORS_OPTIONS:
+            vp.OPTIONS["colors"] = vp_colors.COLORS_OPTIONS[value]
         else:
             wrong_value = True
     elif option == "max_columns":
         if isinstance(value, int) and value > 0:
-            verticapy.OPTIONS["max_columns"] = int(value)
+            vp.OPTIONS["max_columns"] = int(value)
         else:
             wrong_value = True
     elif option == "max_rows":
         if isinstance(value, int) and value >= 0:
-            verticapy.OPTIONS["max_rows"] = int(value)
+            vp.OPTIONS["max_rows"] = int(value)
         else:
             wrong_value = True
     elif option == "mode":
-        raise_error_if_not_in("value", value, ["light", "full"])
-        verticapy.OPTIONS["mode"] = value
+        if value in ["light", "full"]:
+            vp.OPTIONS["mode"] = value
+        else:
+            wrong_value = True
     elif option == "random_state":
         if isinstance(value, int) and (value < 0):
             raise ParameterError("Random State Value must be positive.")
         if isinstance(value, int):
-            verticapy.OPTIONS["random_state"] = value
+            vp.OPTIONS["random_state"] = value
         elif value == None:
-            verticapy.OPTIONS["random_state"] = None
+            vp.OPTIONS["random_state"] = None
         else:
             wrong_value = True
     elif option in (
@@ -2711,7 +2617,7 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
         "interactive",
     ):
         if value in (True, False, None):
-            verticapy.OPTIONS[option] = value
+            vp.OPTIONS[option] = value
         else:
             wrong_value = True
     elif option == "save_query_profile":
@@ -2722,7 +2628,7 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
         else:
             wrong_value = True
         if not (wrong_value):
-            verticapy.OPTIONS[option] = value
+            vp.OPTIONS[option] = value
     elif option == "temp_schema":
         if isinstance(value, str):
             value_str = value.replace("'", "''")
@@ -2735,7 +2641,7 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
                 query, title="Checking if the schema exists.", method="fetchrow"
             )
             if res:
-                verticapy.OPTIONS["temp_schema"] = str(value)
+                vp.OPTIONS["temp_schema"] = str(value)
             else:
                 raise ParameterError(f"The schema '{value}' could not be found.")
         else:
@@ -2747,10 +2653,8 @@ def set_option(option: str, value: Union[bool, int, str, list] = None):
         warnings.warn(warning_message, Warning)
 
 
-# ---#
 class tablesample:
     """
-----------------------------------------------------------------------------------------
 The tablesample is the transition from 'Big Data' to 'Small Data'. 
 This object allows you to conveniently display your results without any  
 dependencies on any other module. It stores the aggregated result in memory
@@ -2783,8 +2687,7 @@ The tablesample attributes are the same as the parameters.
     #
     # Special Methods
     #
-    # ---#
-    @check_dtypes
+
     def __init__(
         self,
         values: dict = {},
@@ -2804,24 +2707,19 @@ The tablesample attributes are the same as the parameters.
             if column not in dtype:
                 self.dtype[column] = "undefined"
 
-    # ---#
     def __iter__(self):
         return (elem for elem in self.values)
 
-    # ---#
     def __getitem__(self, key):
         return find_val_in_dict(key, self.values)
 
-    # ---#
     def _repr_html_(self, interactive=False):
         if len(self.values) == 0:
             return ""
         n = len(self.values)
         dtype = self.dtype
         max_columns = (
-            self.max_columns
-            if self.max_columns > 0
-            else verticapy.OPTIONS["max_columns"]
+            self.max_columns if self.max_columns > 0 else vp.OPTIONS["max_columns"]
         )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
@@ -2843,7 +2741,7 @@ The tablesample attributes are the same as the parameters.
                 break
         formatted_text = ""
         # get interactive table if condition true
-        if verticapy.OPTIONS["interactive"] or interactive:
+        if vp.OPTIONS["interactive"] or interactive:
             formatted_text = datatables_repr(
                 data_columns,
                 repeat_first_column=("index" in self.values),
@@ -2860,7 +2758,7 @@ The tablesample attributes are the same as the parameters.
                 dtype=dtype,
                 percent=percent,
             )
-        if verticapy.OPTIONS["footer_on"]:
+        if vp.OPTIONS["footer_on"]:
             formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
             if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
                 rows = self.count
@@ -2891,16 +2789,13 @@ The tablesample attributes are the same as the parameters.
             formatted_text += "</div>"
         return formatted_text
 
-    # ---#
     def __repr__(self):
         if len(self.values) == 0:
             return ""
         n = len(self.values)
         dtype = self.dtype
         max_columns = (
-            self.max_columns
-            if self.max_columns > 0
-            else verticapy.OPTIONS["max_columns"]
+            self.max_columns if self.max_columns > 0 else vp.OPTIONS["max_columns"]
         )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
@@ -2951,11 +2846,9 @@ The tablesample attributes are the same as the parameters.
     #
     # Methods
     #
-    # ---#
-    @check_dtypes
+
     def append(self, tbs):
         """
-        ----------------------------------------------------------------------------------------
         Appends the input tablesample to a target tablesample.
 
         Parameters
@@ -2981,10 +2874,8 @@ The tablesample attributes are the same as the parameters.
             self.values[cols1[idx]] += tbs.values[cols2[idx]]
         return self
 
-    # ---#
     def decimal_to_float(self):
         """
-    ----------------------------------------------------------------------------------------
     Converts all the tablesample's decimals to floats.
 
     Returns
@@ -2999,11 +2890,8 @@ The tablesample attributes are the same as the parameters.
                         self.values[elem][i] = float(self.values[elem][i])
         return self
 
-    # ---#
-    @check_dtypes
     def merge(self, tbs):
         """
-        ----------------------------------------------------------------------------------------
         Merges the input tablesample to a target tablesample.
 
         Parameters
@@ -3031,10 +2919,8 @@ The tablesample attributes are the same as the parameters.
                 self.values[col] += tbs.values[col]
         return self
 
-    # ---#
     def shape(self):
         """
-    ----------------------------------------------------------------------------------------
     Computes the tablesample shape.
 
     Returns
@@ -3046,11 +2932,8 @@ The tablesample attributes are the same as the parameters.
         n, m = len(cols), len(self.values[cols[0]])
         return (n, m)
 
-    # ---#
-    @check_dtypes
     def sort(self, column: str, desc: bool = False):
         """
-        ----------------------------------------------------------------------------------------
         Sorts the tablesample using the input column.
 
         Parameters
@@ -3086,10 +2969,8 @@ The tablesample attributes are the same as the parameters.
             self.values[col] = [sort[j][i] for j in range(n)]
         return self
 
-    # ---#
     def transpose(self):
         """
-	----------------------------------------------------------------------------------------
 	Transposes the tablesample.
 
  	Returns
@@ -3112,10 +2993,8 @@ The tablesample attributes are the same as the parameters.
             values[item[0]] = item[1 : len(item)]
         return tablesample(values, self.dtype, self.count, self.offset, self.percent)
 
-    # ---#
     def to_list(self):
         """
-    ----------------------------------------------------------------------------------------
     Converts the tablesample to a list.
 
     Returns
@@ -3135,10 +3014,8 @@ The tablesample attributes are the same as the parameters.
             result += [result_tmp]
         return result
 
-    # ---#
     def to_numpy(self):
         """
-    ----------------------------------------------------------------------------------------
     Converts the tablesample to a numpy array.
 
     Returns
@@ -3150,10 +3027,8 @@ The tablesample attributes are the same as the parameters.
 
         return np.array(self.to_list())
 
-    # ---#
     def to_pandas(self):
         """
-	----------------------------------------------------------------------------------------
 	Converts the tablesample to a pandas DataFrame.
 
  	Returns
@@ -3172,10 +3047,8 @@ The tablesample attributes are the same as the parameters.
         else:
             return pd.DataFrame(data=self.values)
 
-    # ---#
     def to_sql(self):
         """
-    ----------------------------------------------------------------------------------------
     Generates the SQL query associated to the tablesample.
 
     Returns
@@ -3239,10 +3112,8 @@ The tablesample attributes are the same as the parameters.
         sql = " UNION ALL ".join(sql)
         return sql
 
-    # ---#
     def to_vdf(self):
         """
-	----------------------------------------------------------------------------------------
 	Converts the tablesample to a vDataFrame.
 
  	Returns
@@ -3258,8 +3129,6 @@ The tablesample attributes are the same as the parameters.
         return vDataFrameSQL(f"({self.to_sql()}) sql_relation")
 
 
-# ---#
-@check_dtypes
 def to_tablesample(
     query: Union[str, str_sql],
     title: str = "",
@@ -3268,7 +3137,6 @@ def to_tablesample(
     symbol: str = "$",
 ):
     """
-	----------------------------------------------------------------------------------------
 	Returns the result of a SQL query as a tablesample object.
 
 	Parameters
@@ -3298,7 +3166,7 @@ def to_tablesample(
 	--------
 	tablesample : Object in memory created for rendering purposes.
 	"""
-    if verticapy.OPTIONS["sql_on"]:
+    if vp.OPTIONS["sql_on"]:
         print_query(query, title)
     start_time = time.time()
     cursor = executeSQL(
@@ -3313,7 +3181,7 @@ def to_tablesample(
             scale=elem[5],
         )
     elapsed_time = time.time() - start_time
-    if verticapy.OPTIONS["time_on"]:
+    if vp.OPTIONS["time_on"]:
         print_time(elapsed_time)
     result = cursor.fetchall()
     columns = [column[0] for column in cursor.description]
@@ -3330,8 +3198,6 @@ def to_tablesample(
     ).decimal_to_float()
 
 
-# ---#
-@check_dtypes
 def vDataFrameSQL(
     relation: str,
     name: str = "VDF",
@@ -3341,7 +3207,6 @@ def vDataFrameSQL(
     vdf=None,
 ):
     """
-----------------------------------------------------------------------------------------
 Creates a vDataFrame based on a customized relation.
 
 Parameters
@@ -3421,11 +3286,10 @@ vDataFrame
 
 
 vdf_from_relation = vDataFrameSQL
-# ---#
-@check_dtypes
+
+
 def vertica_version(condition: list = []):
     """
-----------------------------------------------------------------------------------------
 Returns the Vertica Version.
 
 Parameters
@@ -3443,7 +3307,7 @@ list
     # -#
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
-    if not (verticapy.OPTIONS["vertica_version"]):
+    if not (vp.OPTIONS["vertica_version"]):
         current_version = executeSQL(
             "SELECT /*+LABEL('utilities.version')*/ version();",
             title="Getting the version.",
@@ -3458,9 +3322,9 @@ list
             result += [int(current_version[2].split("-")[1])]
         except:
             pass
-        verticapy.OPTIONS["vertica_version"] = result
+        vp.OPTIONS["vertica_version"] = result
     else:
-        result = verticapy.OPTIONS["vertica_version"]
+        result = vp.OPTIONS["vertica_version"]
     if condition:
         if condition[0] < result[0]:
             test = True

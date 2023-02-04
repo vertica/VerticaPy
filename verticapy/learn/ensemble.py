@@ -1,62 +1,32 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
 #
 # Standard Python Modules
-from typing import Union
+from typing import Union, Literal
 import random
 import numpy as np
 
 # VerticaPy Modules
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.learn.metrics import *
@@ -68,7 +38,7 @@ from verticapy.errors import *
 from verticapy.learn.vmodel import *
 from verticapy.learn.tree import get_tree_list_of_arrays
 
-# ---#
+
 class XGBoost_utils:
     # Class:
     # - to export Vertica XGBoost to the Python XGBoost JSON format.
@@ -76,7 +46,6 @@ class XGBoost_utils:
 
     def to_json(self, path: str = ""):
         """
-        ----------------------------------------------------------------------------------------
         Creates a Python XGBoost JSON file that can be imported into the Python
         XGBoost API.
         
@@ -369,10 +338,8 @@ class XGBoost_utils:
         else:
             return result
 
-    # ---#
     def get_prior(self):
         """
-        ----------------------------------------------------------------------------------------
         Returns the XGB Priors.
             
         Returns
@@ -417,10 +384,8 @@ class XGBoost_utils:
         return prior_
 
 
-# ---#
 class IsolationForest(Clustering, Tree):
     """
-----------------------------------------------------------------------------------------
 Creates an IsolationForest object using the Vertica IFOREST algorithm.
 
 Parameters
@@ -444,7 +409,6 @@ col_sample_by_tree: float, optional
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -468,8 +432,6 @@ col_sample_by_tree: float, optional
             "col_sample_by_tree": col_sample_by_tree,
         }
 
-    # ---#
-    @check_dtypes
     def decision_function(
         self,
         vdf: Union[str, vDataFrame],
@@ -478,7 +440,6 @@ col_sample_by_tree: float, optional
         inplace: bool = True,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Returns the anomaly score using the input relation.
 
     Parameters
@@ -513,8 +474,6 @@ col_sample_by_tree: float, optional
         # Result
         return vdf_return.eval(name, self.deploySQL(X=X, return_score=True,))
 
-    # ---#
-    @check_dtypes
     def deploySQL(
         self,
         X: Union[str, list] = [],
@@ -523,7 +482,6 @@ col_sample_by_tree: float, optional
         return_score: bool = False,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
 
     Parameters
@@ -575,8 +533,6 @@ col_sample_by_tree: float, optional
             sql = f"(({sql}).is_anomaly)::int"
         return sql
 
-    # ---#
-    @check_dtypes
     def predict(
         self,
         vdf: Union[str, vDataFrame],
@@ -587,7 +543,6 @@ col_sample_by_tree: float, optional
         inplace: bool = True,
     ):
         """
-    ----------------------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
@@ -634,10 +589,8 @@ col_sample_by_tree: float, optional
         )
 
 
-# ---#
 class RandomForestClassifier(MulticlassClassifier, Tree):
     """
-----------------------------------------------------------------------------------------
 Creates a RandomForestClassifier object using the Vertica RF_CLASSIFIER 
 function. It is one of the ensemble learning methods for classification 
 that operates by constructing a multitude of decision trees at 
@@ -676,13 +629,12 @@ nbins: int, optional
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_estimators: int = 10,
-        max_features: Union[int, str] = "auto",
+        max_features: Union[Literal["auto", "max"], int] = "auto",
         max_leaf_nodes: Union[int, float] = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
@@ -690,9 +642,6 @@ nbins: int, optional
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        if isinstance(max_features, str):
-            raise_error_if_not_in("max_features", max_features, ["auto", "max"])
-            max_features = max_features.lower()
         self.type, self.name = "RandomForestClassifier", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
@@ -710,10 +659,8 @@ nbins: int, optional
         }
 
 
-# ---#
 class RandomForestRegressor(Regressor, Tree):
     """
-----------------------------------------------------------------------------------------
 Creates a RandomForestRegressor object using the Vertica RF_REGRESSOR 
 function. It is one of the ensemble learning methods for regression that 
 operates by constructing a multitude of decision trees at training-time 
@@ -752,13 +699,12 @@ nbins: int, optional
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         n_estimators: int = 10,
-        max_features: Union[int, str] = "auto",
+        max_features: Union[Literal["auto", "max"], int] = "auto",
         max_leaf_nodes: Union[int, float] = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
@@ -766,9 +712,6 @@ nbins: int, optional
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        if isinstance(max_features, str):
-            raise_error_if_not_in("max_features", max_features.lower(), ["auto", "max"])
-            max_features = max_features.lower()
         self.type, self.name = "RandomForestRegressor", name
         self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
@@ -786,10 +729,8 @@ nbins: int, optional
         }
 
 
-# ---#
 class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost_utils):
     """
-----------------------------------------------------------------------------------------
 Creates an XGBoostClassifier object using the Vertica XGB_CLASSIFIER 
 algorithm.
 
@@ -835,7 +776,6 @@ col_sample_by_node: float, optional
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -843,7 +783,7 @@ col_sample_by_node: float, optional
         max_ntree: int = 10,
         max_depth: int = 5,
         nbins: int = 32,
-        split_proposal_method: str = "global",
+        split_proposal_method: Literal["local", "global"] = "global",
         tol: float = 0.001,
         learning_rate: float = 0.1,
         min_split_loss: float = 0.0,
@@ -852,11 +792,6 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        raise_error_if_not_in(
-            "split_proposal_method",
-            str(split_proposal_method).lower(),
-            ["local", "global"],
-        )
         self.type, self.name = "XGBoostClassifier", name
         self.VERTICA_FIT_FUNCTION_SQL = "XGB_CLASSIFIER"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_CLASSIFIER"
@@ -881,10 +816,8 @@ col_sample_by_node: float, optional
         self.parameters = params
 
 
-# ---#
 class XGBoostRegressor(Regressor, Tree, XGBoost_utils):
     """
-----------------------------------------------------------------------------------------
 Creates an XGBoostRegressor object using the Vertica XGB_REGRESSOR 
 algorithm.
 
@@ -930,7 +863,6 @@ col_sample_by_node: float, optional
     """
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -938,7 +870,7 @@ col_sample_by_node: float, optional
         max_ntree: int = 10,
         max_depth: int = 5,
         nbins: int = 32,
-        split_proposal_method: str = "global",
+        split_proposal_method: Literal["local", "global"] = "global",
         tol: float = 0.001,
         learning_rate: float = 0.1,
         min_split_loss: float = 0.0,
@@ -947,11 +879,6 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        raise_error_if_not_in(
-            "split_proposal_method",
-            str(split_proposal_method).lower(),
-            ["local", "global"],
-        )
         self.type, self.name = "XGBoostRegressor", name
         self.VERTICA_FIT_FUNCTION_SQL = "XGB_REGRESSOR"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_REGRESSOR"

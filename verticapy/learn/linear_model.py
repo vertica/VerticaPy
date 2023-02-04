@@ -1,49 +1,20 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
@@ -52,7 +23,6 @@
 from verticapy import vDataFrame
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
 from verticapy.utilities import *
@@ -60,10 +30,12 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
-# ---#
+# Standard Module
+from typing import Literal
+
+
 class ElasticNet(Regressor):
     """
-----------------------------------------------------------------------------------------
 Creates a ElasticNet object using the Vertica Linear Regression algorithm 
 on the data. The Elastic Net is a regularized regression method that 
 linearly combines the L1 and L2 penalties of the Lasso and Ridge methods.
@@ -97,7 +69,6 @@ fit_intercept: bool, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -105,11 +76,10 @@ fit_intercept: bool, optional
         tol: float = 1e-6,
         C: Union[int, float] = 1.0,
         max_iter: int = 100,
-        solver: str = "cgd",
+        solver: Literal["newton", "bfgs", "cgd"] = "cgd",
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
-        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs", "cgd"])
         self.type, self.name = "LinearRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
@@ -131,10 +101,8 @@ fit_intercept: bool, optional
         }
 
 
-# ---#
 class Lasso(Regressor):
     """
-----------------------------------------------------------------------------------------
 Creates a Lasso object using the Vertica Linear Regression algorithm on the 
 data. The Lasso is a regularized regression method which uses an L1 penalty.
 
@@ -164,7 +132,6 @@ fit_intercept: bool, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -172,10 +139,9 @@ fit_intercept: bool, optional
         tol: float = 1e-6,
         C: Union[int, float] = 1.0,
         max_iter: int = 100,
-        solver: str = "CGD",
+        solver: Literal["newton", "bfgs", "cgd"] = "cgd",
         fit_intercept: bool = True,
     ):
-        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs", "cgd"])
         self.type, self.name = "LinearRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
@@ -196,10 +162,8 @@ fit_intercept: bool, optional
         }
 
 
-# ---#
 class LinearRegression(Regressor):
     """
-----------------------------------------------------------------------------------------
 Creates a LinearRegression object using the Vertica Linear Regression 
 algorithm on the data.
 
@@ -225,17 +189,15 @@ fit_intercept: bool, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
         tol: float = 1e-6,
         max_iter: int = 100,
-        solver: str = "Newton",
+        solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
     ):
-        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
         self.type, self.name = "LinearRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
@@ -255,10 +217,8 @@ fit_intercept: bool, optional
         }
 
 
-# ---#
 class LogisticRegression(BinaryClassifier):
     """
-----------------------------------------------------------------------------------------
 Creates a LogisticRegression object using the Vertica Logistic Regression
 algorithm on the data.
 
@@ -269,9 +229,9 @@ name: str
 penalty: str, optional
 	Determines the method of regularization.
 		None : No Regularization
-		L1   : L1 Regularization
-		L2   : L2 Regularization
-		ENet : Combination between L1 and L2
+		l1   : L1 Regularization
+		l2   : L2 Regularization
+		enet : Combination between L1 and L2
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: int / float, optional
@@ -295,23 +255,20 @@ fit_intercept: bool, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
         name: str,
-        penalty: str = "None",
+        penalty: Literal["none", "l1", "l2", "enet", None] = "none",
         tol: float = 1e-6,
         C: Union[int, float] = 1.0,
         max_iter: int = 100,
-        solver: str = "newton",
+        solver: Literal["newton", "bfgs", "cgd"] = "newton",
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
         penalty = str(penalty).lower()
         solver = str(solver).lower()
-        raise_error_if_not_in("penalty", penalty, ["none", "l1", "l2", "enet"])
-        raise_error_if_not_in("solver", solver, ["newton", "bfgs", "cgd"])
         self.type, self.name = "LogisticRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LOGISTIC_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LOGISTIC_REG"
@@ -334,16 +291,16 @@ fit_intercept: bool, optional
         if str(penalty).lower() == "none":
             del self.parameters["l1_ratio"]
             del self.parameters["C"]
-            raise_error_if_not_in("solver", solver, ["bfgs", "newton"])
+            if "solver" == "cgd":
+                raise ValueError(
+                    "solver can not be set to 'cgd' when there is no regularization."
+                )
         elif str(penalty).lower() in ("l1", "l2"):
             del self.parameters["l1_ratio"]
-            raise_error_if_not_in("solver", solver, ["bfgs", "newton", "cgd"])
 
 
-# ---#
 class Ridge(Regressor):
     """
-----------------------------------------------------------------------------------------
 Creates a Ridge object using the Vertica Linear Regression algorithm on the 
 data. The Ridge is a regularized regression method which uses an L2 penalty. 
 
@@ -372,7 +329,6 @@ fit_intercept: bool, optional
 	"""
 
     @check_minimum_version
-    @check_dtypes
     @save_verticapy_logs
     def __init__(
         self,
@@ -380,10 +336,9 @@ fit_intercept: bool, optional
         tol: float = 1e-6,
         C: Union[int, float] = 1.0,
         max_iter: int = 100,
-        solver: str = "newton",
+        solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
     ):
-        raise_error_if_not_in("solver", str(solver).lower(), ["newton", "bfgs"])
         self.type, self.name = "LinearRegression", name
         self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
         self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"

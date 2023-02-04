@@ -1,77 +1,45 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+
 #
 #
 # Modules
 #
 # Standard Python Modules
 import datetime, decimal, inspect, os, warnings
-from typing import Union
+from typing import Union, Literal
 
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.decorators import (
     save_verticapy_logs,
-    check_dtypes,
     check_minimum_version,
 )
-from verticapy.errors import raise_error_if_not_in
 from verticapy.utilities import *
 from verticapy.toolbox import *
 
 #
-# ---#
-@check_dtypes
+
+
 @save_verticapy_logs
 def import_lib_udf(
     udf_list: list, library_name: str, include_dependencies: Union[str, list] = []
 ) -> bool:
     """
-----------------------------------------------------------------------------------------
 Install a library of Python functions in Vertica. This function will work only
 when it is executed directly in the server.
 
@@ -123,8 +91,6 @@ bool
         os.remove(f"{directory}/{file_name}")
 
 
-# ---#
-@check_dtypes
 @save_verticapy_logs
 def create_lib_udf(
     udf_list: list,
@@ -134,7 +100,6 @@ def create_lib_udf(
     create_file: bool = False,
 ) -> tuple:
     """
-----------------------------------------------------------------------------------------
 Generates the code needed to install a library of Python functions. It will
 use the Vertica SDK to create UDF of the input functions.
 
@@ -233,7 +198,7 @@ udx_str, sql
 
 # Functions used to create the 2 main ones.
 
-# ---#
+
 def create_udf(
     function,
     arg_types: Union[list, dict],
@@ -388,7 +353,6 @@ def create_udf(
     return udx_str, sql
 
 
-# ---#
 def get_func_info(func) -> tuple:
     # TO COMPLETE - GUESS FUNCTIONS TYPES
 
@@ -410,7 +374,6 @@ def get_func_info(func) -> tuple:
     return (func, arg_types, return_type, parameters)
 
 
-# ---#
 def get_module_func_info(module) -> list:
     # TO COMPLETE - TRY AND RAISE THE APPROPRIATE ERROR
 
@@ -430,10 +393,9 @@ def get_module_func_info(module) -> list:
     return func_info
 
 
-# ---#
-def get_set_add_function(ftype: type, func: str = "get") -> str:
-    # func = get / set / add
-    raise_error_if_not_in("func", str(func).lower(), ["get", "set", "add"])
+def get_set_add_function(
+    ftype: type, func: Literal["get", "set", "add"] = "get"
+) -> str:
     func = str(func).lower()
     if ftype == bytes:
         return f"{func}Binary"
