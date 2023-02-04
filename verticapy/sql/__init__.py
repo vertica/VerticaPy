@@ -14,9 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.sql.sql_magic import sql_magic
+from verticapy.sql.sql_magic import sql_magic as sql
 
 
 def load_ipython_extension(ipython):
-    ipython.register_magic_function(sql_magic, "cell", "sql")
-    ipython.register_magic_function(sql_magic, "line", "sql")
+    ipython.register_magic_function(sql, "cell", "sql")
+    ipython.register_magic_function(sql, "line", "sql")
