@@ -930,7 +930,7 @@ def sql_from_coef(
     X: Union[list, np.ndarray],
     coefficients: Union[list, np.ndarray],
     intercept: float,
-    method: Union[
+    method: Literal[
         "LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"
     ] = "LinearRegression",
 ) -> str:

@@ -44,5 +44,6 @@ from verticapy.plotting._matplotlib.timeseries import (
     acf_plot,
     multi_ts_plot,
     range_curve,
+    range_curve_vdf,
     ts_plot,
 )
