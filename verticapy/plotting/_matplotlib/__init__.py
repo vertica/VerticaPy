@@ -43,3 +43,16 @@ from verticapy.plotting._matplotlib.timeseries import (
     range_curve_vdf,
     ts_plot,
 )
+from verticapy.plotting._matplotlib.mlplot import (
+    logit_plot,
+    lof_plot,
+    plot_importance,
+    plot_stepwise_ml,
+    plot_bubble_ml,
+    plot_pca_circle,
+    plot_var,
+    regression_plot,
+    regression_tree_plot,
+    svm_classifier_plot,
+    voronoi_plot,
+)

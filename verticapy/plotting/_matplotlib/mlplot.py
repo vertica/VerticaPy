@@ -69,7 +69,7 @@ def logit_plot(
     if len(X) == 1:
         query = f"""
             (SELECT 
-                /*+LABEL('learn.mlplot.logit_plot')*/ 
+                /*+LABEL('plotting._matplotlib.logit_plot')*/ 
                 {X[0]}, 
                 {y} 
              FROM {input_relation} 
@@ -130,7 +130,7 @@ def logit_plot(
     elif len(X) == 2:
         query = f"""
             (SELECT 
-                /*+LABEL('learn.mlplot.logit_plot')*/ 
+                /*+LABEL('plotting._matplotlib.logit_plot')*/ 
                 {X[0]}, 
                 {X[1]}, 
                 {y} 
@@ -266,7 +266,7 @@ def lof_plot(
         query_result = executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('learn.mlplot.lof_plot')*/ 
+                    /*+LABEL('plotting._matplotlib.lof_plot')*/ 
                     {column}, 
                     {lof} 
                 FROM {input_relation} {tablesample} 
@@ -303,7 +303,7 @@ def lof_plot(
         query_result = executeSQL(
             query=f"""
             SELECT 
-                /*+LABEL('learn.mlplot.lof_plot')*/ 
+                /*+LABEL('plotting._matplotlib.lof_plot')*/ 
                 {columns[0]}, 
                 {columns[1]}, 
                 {lof} 
@@ -342,7 +342,7 @@ def lof_plot(
         query_result = executeSQL(
             query=f"""
             SELECT 
-                /*+LABEL('learn.mlplot.lof_plot')*/ 
+                /*+LABEL('plotting._matplotlib.lof_plot')*/ 
                 {columns[0]}, 
                 {columns[1]}, 
                 {columns[2]}, 
@@ -823,7 +823,7 @@ def regression_plot(
         all_points = executeSQL(
             query=f"""
             SELECT 
-                /*+LABEL('learn.mlplot.regression_plot')*/ 
+                /*+LABEL('plotting._matplotlib.regression_plot')*/ 
                 {X[0]}, 
                 {y} 
             FROM {input_relation} 
@@ -855,7 +855,7 @@ def regression_plot(
         all_points = executeSQL(
             query=f"""
             (SELECT 
-                /*+LABEL('learn.mlplot.regression_plot')*/ 
+                /*+LABEL('plotting._matplotlib.regression_plot')*/ 
                 {X[0]}, 
                 {X[1]}, 
                 {y} 
@@ -917,7 +917,7 @@ def regression_tree_plot(
     all_points = executeSQL(
         query=f"""
         SELECT 
-            /*+LABEL('learn.mlplot.regression_tree_plot')*/ 
+            /*+LABEL('plotting._matplotlib.regression_tree_plot')*/ 
             {X[0]}, 
             {X[1]}, 
             {y} 
@@ -985,7 +985,7 @@ def svm_classifier_plot(
     if len(X) == 1:
         query = f"""
             (SELECT 
-                /*+LABEL('learn.mlplot.svm_classifier_plot')*/ 
+                /*+LABEL('plotting._matplotlib.svm_classifier_plot')*/ 
                 {X[0]}, 
                 {y} 
              FROM {input_relation} 
@@ -1033,7 +1033,7 @@ def svm_classifier_plot(
     elif len(X) == 2:
         query = f"""
             (SELECT 
-                /*+LABEL('learn.mlplot.svm_classifier_plot')*/ 
+                /*+LABEL('plotting._matplotlib.svm_classifier_plot')*/ 
                 {X[0]}, 
                 {X[1]}, 
                 {y} 
@@ -1086,7 +1086,7 @@ def svm_classifier_plot(
     elif len(X) == 3:
         query = f"""
             (SELECT 
-                /*+LABEL('learn.mlplot.svm_classifier_plot')*/ 
+                /*+LABEL('plotting._matplotlib.svm_classifier_plot')*/ 
                 {X[0]}, 
                 {X[1]}, 
                 {X[2]}, 
@@ -1207,7 +1207,7 @@ def voronoi_plot(
         all_points = executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('learn.mlplot.voronoi_plot')*/ 
+                    /*+LABEL('plotting._matplotlib.voronoi_plot')*/ 
                     {columns[0]}, 
                     {columns[1]} 
                 FROM {input_relation} 

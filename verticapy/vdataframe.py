@@ -55,7 +55,6 @@ import verticapy as vp
 import verticapy.plotting._matplotlib as plt
 import verticapy.utilities as util
 import verticapy.learn.memmodel as mem
-import verticapy.learn.mlplot as ml_plot
 from verticapy.highchart import hchart_from_vdf
 from verticapy.decorators import (
     save_verticapy_logs,
@@ -10445,7 +10444,7 @@ vColumns : vColumn
         for elem in columns:
             coeff_importances[elem] = self[elem].iv_woe(y=y, nbins=nbins)["iv"][-1]
         if show:
-            ax = ml_plot.plot_importance(coeff_importances, print_legend=False, ax=ax)
+            ax = plt.plot_importance(coeff_importances, print_legend=False, ax=ax)
             ax.set_xlabel("IV")
         index = [elem for elem in coeff_importances]
         iv = [coeff_importances[elem] for elem in coeff_importances]

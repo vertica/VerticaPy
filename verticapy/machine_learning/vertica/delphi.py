@@ -40,7 +40,7 @@ from verticapy.learn.decomposition import *
 from verticapy.learn.cluster import *
 from verticapy.learn.neighbors import *
 from verticapy.learn.svm import *
-from verticapy.learn.mlplot import plot_bubble_ml
+from verticapy.plotting._matplotlib import plot_bubble_ml
 from verticapy.learn.vmodel import *
 
 # Other Modules

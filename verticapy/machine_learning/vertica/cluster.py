@@ -459,7 +459,7 @@ tol: float, optional
         Matplotlib Figure
         """
         if len(self.X) == 2:
-            from verticapy.learn.mlplot import voronoi_plot
+            from verticapy.plotting._matplotlib import voronoi_plot
 
             clusters = executeSQL(
                 query=f"""

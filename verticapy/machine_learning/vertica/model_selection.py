@@ -38,7 +38,11 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import does_model_exist
-from verticapy.learn.mlplot import plot_bubble_ml, plot_stepwise_ml, plot_importance
+from verticapy.plotting._matplotlib import (
+    plot_bubble_ml,
+    plot_stepwise_ml,
+    plot_importance,
+)
 
 # Other Python Modules
 import matplotlib.pyplot as plt

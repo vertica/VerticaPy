@@ -25,11 +25,10 @@ from verticapy.decorators import (
     check_minimum_version,
 )
 from verticapy.learn.metrics import *
-from verticapy.learn.mlplot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.learn.mlplot import *
+from verticapy.plotting._matplotlib import *
 from verticapy.learn.model_selection import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *

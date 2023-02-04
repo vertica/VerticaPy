@@ -56,7 +56,7 @@ from verticapy import (
 
 @save_verticapy_logs
 @needs_local_scope
-def sql(line, cell="", local_ns=None):
+def sql_magic(line, cell="", local_ns=None):
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.
@@ -324,8 +324,3 @@ def sql(line, cell="", local_ns=None):
         # we load the previous configuration before returning the result.
         set_option("sql_on", sql_on)
         set_option("time_on", time_on)
-
-
-def load_ipython_extension(ipython):
-    ipython.register_magic_function(sql, "cell")
-    ipython.register_magic_function(sql, "line")
