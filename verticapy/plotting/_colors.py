@@ -45,6 +45,7 @@ COLORS_OPTIONS = {
     "default": ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"],
 }
 
+
 def gen_cmap(color: str = "", reverse: bool = False):
     if not (color):
         cm1 = LinearSegmentedColormap.from_list(

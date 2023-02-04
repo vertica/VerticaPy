@@ -28,6 +28,7 @@ from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import compute_plot_variables
 from verticapy.plotting._colors import gen_colors
 
+
 def bar(
     vdf,
     method: str = "density",

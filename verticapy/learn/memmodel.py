@@ -25,13 +25,9 @@ from collections.abc import Iterable
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy.decorators import save_verticapy_logs
 from verticapy.toolbox import *
 from verticapy.errors import *
-from verticapy.utilities import save_verticapy_logs
 
 # other modules:
 try:
