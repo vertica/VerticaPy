@@ -278,10 +278,10 @@ def load_dataset(
 
             path = os.path.dirname(verticapy.__file__)
             if dataset_name in ("laliga",):
-                path += f"/data/{dataset_name}/*.json"
+                path += f"/datasets/data/{dataset_name}/*.json"
                 query = f"COPY {schema}.{name} FROM {{}} PARSER FJsonParser();"
             else:
-                path += f"/data/{dataset_name}.csv"
+                path += f"/datasets/data/{dataset_name}.csv"
                 if not (copy_cols):
                     copy_cols = [quote_ident(col) for col in dtype]
                 query = f"""
@@ -316,10 +316,6 @@ def load_dataset(
             raise
 
     return vdf
-
-
-#
-#
 
 
 @save_verticapy_logs

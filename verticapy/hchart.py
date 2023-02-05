@@ -38,7 +38,7 @@ from verticapy import (
     get_magic_options,
     save_verticapy_logs,
 )
-from verticapy.highchart import hchartSQL
+from verticapy.plotting._highcharts import hchartSQL
 
 
 @save_verticapy_logs
