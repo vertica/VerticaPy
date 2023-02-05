@@ -56,7 +56,7 @@ import verticapy.plotting._matplotlib as plt
 import verticapy.utilities as util
 import verticapy.learn.memmodel as mem
 from verticapy.highchart import hchart_from_vdf
-from verticapy.decorators import (
+from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )

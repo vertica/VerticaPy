@@ -27,7 +27,7 @@ from typing import Union
 import verticapy.stats as st
 import verticapy.datasets as vp_datasets
 from verticapy.vdataframe import vDataFrame
-from verticapy.decorators import save_verticapy_logs
+from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utilities import tablesample, to_tablesample, vDataFrameSQL
 from verticapy.toolbox import executeSQL
 

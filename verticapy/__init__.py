@@ -74,9 +74,6 @@ from verticapy._config.config import *
 # vDataFrame
 from verticapy.vdataframe import *
 
-# vColumn
-from verticapy.vcolumn import *
-
 # Utilities
 from verticapy.utilities import *
 

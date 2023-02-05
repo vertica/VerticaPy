@@ -24,7 +24,7 @@ import os, datetime
 
 # VerticaPy Modules
 import verticapy, vertica_python
-from verticapy.decorators import (
+from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )

@@ -25,7 +25,7 @@ from collections.abc import Iterable
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.decorators import save_verticapy_logs
+from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.toolbox import *
 from verticapy.errors import *
 

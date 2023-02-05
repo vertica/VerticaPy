@@ -30,7 +30,7 @@ from scipy.stats import f
 
 # VerticaPy Modules
 from verticapy import *
-from verticapy.decorators import (
+from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )

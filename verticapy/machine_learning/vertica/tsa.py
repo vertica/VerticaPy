@@ -24,7 +24,7 @@ import math, warnings
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.decorators import (
+from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )

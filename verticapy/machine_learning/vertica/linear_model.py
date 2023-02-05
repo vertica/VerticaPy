@@ -21,7 +21,7 @@ permissions and limitations under the License.
 #
 # VerticaPy Modules
 from verticapy import vDataFrame
-from verticapy.decorators import (
+from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )

@@ -25,7 +25,7 @@ from typing import Literal
 
 # VerticaPy Modules
 import vertica_python, verticapy
-from verticapy.decorators import (
+from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )

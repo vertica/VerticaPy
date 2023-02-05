@@ -31,7 +31,7 @@ import verticapy.plotting._matplotlib as plt
 from verticapy.plotting._colors import gen_colors, gen_cmap
 import verticapy.learn.ensemble as vpy_ensemble
 import verticapy.learn.neighbors as vpy_neighbors
-from verticapy.decorators import (
+from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )

@@ -26,7 +26,7 @@ from typing import Union, Literal, overload
 # VerticaPy Modules
 import vertica_python
 import verticapy as vp
-from verticapy.decorators import (
+from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
@@ -3264,7 +3264,7 @@ vDataFrame
                 f"alias was changed using underscores '_' to {column_str}"
             )
             warnings.warn(warning_message, Warning)
-        from verticapy.vcolumn import vColumn
+        from verticapy.core.vcolumn import vColumn
 
         column_name = '"' + column.replace('"', "_") + '"'
         category = get_category_from_vertica_type(ctype)
