@@ -105,6 +105,8 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
+    from ..utilities import drop
+    
     if record_terminator == "\n":
         record_terminator = "\\n"
     if not (flex_name):

@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from .utilities import *
-from .parsers.csv import read_csv
-from .parsers.json import read_json
+from .parsers.csv import read_csv, pcsv
+from .parsers.json import read_json, pjson
+from .parsers.avro import read_avro
 from .flex import *

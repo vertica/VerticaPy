@@ -1878,6 +1878,7 @@ vDataFrame
 	"""
     # Initialization
     from verticapy import vDataFrame
+    from .flex import isvmap
 
     if isinstance(vdf, vDataFrame):
         external = vdf._VERTICAPY_VARIABLES_["external"]
