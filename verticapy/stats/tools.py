@@ -29,7 +29,7 @@ import numpy as np
 
 # VerticaPy Modules
 import verticapy
-from verticapy.decorators import (
+from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )

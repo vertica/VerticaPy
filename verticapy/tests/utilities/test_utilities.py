@@ -304,7 +304,7 @@ class TestUtilities:
         current_cursor().execute(
             "CREATE FLEX LOCAL TEMP TABLE utilities_flex_test(x int) ON COMMIT PRESERVE ROWS;"
         )
-        path = os.path.dirname(verticapy.__file__) + "/data/laliga/*.json"
+        path = os.path.dirname(verticapy.__file__) + "/datasets/data/laliga/*.json"
         current_cursor().execute(
             f"COPY utilities_flex_test FROM LOCAL '{path}' PARSER FJSONPARSER();"
         )
@@ -441,7 +441,9 @@ class TestUtilities:
         # assert vdf.shape() == (4, 2)
 
     def test_pcsv(self):
-        result = pcsv(os.path.dirname(verticapy.__file__) + "/data/titanic.csv")
+        result = pcsv(
+            os.path.dirname(verticapy.__file__) + "/datasets/data/titanic.csv"
+        )
         assert result == {
             "age": "Numeric(6,3)",
             "boat": "Varchar(100)",
@@ -531,7 +533,7 @@ class TestUtilities:
         """
 
         # Trying SQL
-        path = os.path.dirname(verticapy.__file__) + "/data/laliga/*.json"
+        path = os.path.dirname(verticapy.__file__) + "/datasets/data/laliga/*.json"
         drop("public.laliga_verticapy_test_json", method="table")
         queries = read_json(
             path,
@@ -623,7 +625,7 @@ class TestUtilities:
         drop("public.titanic_verticapy_test_json_2")
 
     def test_read_csv(self):
-        path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
+        path = os.path.dirname(verticapy.__file__) + "/datasets/data/titanic.csv"
         # with schema
         result = read_csv(
             path, table_name="titanic_verticapy_test_csv", schema="public"
@@ -703,7 +705,7 @@ class TestUtilities:
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
 
         # Checking Flextable
-        path = os.path.dirname(verticapy.__file__) + "/data/"
+        path = os.path.dirname(verticapy.__file__) + "/datasets/data/"
         drop("public.titanic_verticapy_test_csv")
         result = read_csv(
             path=path + "titanic.csv",

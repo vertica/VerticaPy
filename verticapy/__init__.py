@@ -41,14 +41,18 @@ permissions and limitations under the License.
 #  \/ (/_|  | |(_(_|| \/
 #                     /
 """
-VerticaPy is a Python library with scikit-like functionality for conducting
-data science projects on data stored in Vertica, taking advantage Vertica’s
-speed and built-in analytics and machine learning features. It supports the
-entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-data transformation operations, and offers beautiful graphical options.
+VerticaPy  is  a  Python  library  with   scikit-like
+functionality  for conducting  data science  projects
+on data stored in Vertica, taking advantage Vertica’s
+speed and built-in  analytics  and  machine  learning
+features. It supports  the entire  data  science life
+cycle, uses a ‘pipeline’  mechanism to  sequentialize
+data transformation  operations, and offers beautiful
+graphical options.
 
-VerticaPy aims to do all of the above. The idea is simple: instead of moving
-data around for processing, VerticaPy brings the logic to the data.
+VerticaPy aims  to do all  of the above.  The idea is
+simple: instead of moving data around for processing, 
+VerticaPy brings the logic to the data.
 """
 __version__ = "0.13.0"
 __author__ = "Badr Ouali"
@@ -63,7 +67,7 @@ __license__ = "Apache License, Version 2.0"
 # VerticaPy Modules IMPORT
 
 # Logo
-from verticapy.logo import *
+from verticapy.utils._logo import *
 
 # Connect
 from verticapy.connect import *
@@ -74,8 +78,8 @@ from verticapy._config.config import *
 # vDataFrame
 from verticapy.vdataframe import *
 
-# vColumn
-from verticapy.vcolumn import *
+# vDataFrame
+from verticapy.core.vcolumn import *
 
 # Utilities
 from verticapy.utilities import *

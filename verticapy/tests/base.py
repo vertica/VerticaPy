@@ -27,7 +27,7 @@ import vertica_python
 
 from configparser import ConfigParser
 
-from ..util.log import VerticaLogging
+from .utils.log import VerticaLogging
 
 
 default_configs = {
