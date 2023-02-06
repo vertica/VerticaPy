@@ -15,4 +15,4 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy.io import *
-from verticapy.config import *
+from verticapy._config.config import *
