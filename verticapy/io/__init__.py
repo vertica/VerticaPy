@@ -17,3 +17,4 @@ permissions and limitations under the License.
 from .utilities import *
 from .parsers.csv import read_csv
 from .parsers.json import read_json
+from .flex import *
