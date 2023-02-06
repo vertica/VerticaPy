@@ -34,7 +34,7 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.utilities import *
-from verticapy.toolbox import *
+from verticapy.utils._toolbox import *
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 

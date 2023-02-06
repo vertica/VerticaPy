@@ -37,7 +37,7 @@ from verticapy.utils._decorators import (
 from verticapy import vDataFrame
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
-from verticapy.toolbox import *
+from verticapy.utils._toolbox import *
 
 #
 # Function used to simplify the code

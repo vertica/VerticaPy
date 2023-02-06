@@ -32,7 +32,7 @@ from verticapy.utils._decorators import (
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
-from verticapy.toolbox import *
+from verticapy.utils._toolbox import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 from verticapy.learn.tools import *

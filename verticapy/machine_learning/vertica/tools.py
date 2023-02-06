@@ -24,7 +24,7 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
-from verticapy.toolbox import *
+from verticapy.utils._toolbox import *
 from verticapy.utilities import *
 
 # Standard Python Modules

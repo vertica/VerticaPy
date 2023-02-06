@@ -34,7 +34,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy import vDataFrame
 from verticapy.utilities import *
-from verticapy.toolbox import *
+from verticapy.utils._toolbox import *
 from verticapy.errors import *
 from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import does_model_exist

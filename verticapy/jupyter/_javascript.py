@@ -27,7 +27,7 @@ import datetime
 
 # VerticaPy Modules
 import verticapy
-from verticapy.toolbox import get_category_from_vertica_type
+from verticapy.utils._toolbox import get_category_from_vertica_type
 
 #
 #

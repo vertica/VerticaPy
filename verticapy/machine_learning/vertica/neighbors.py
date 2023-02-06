@@ -26,7 +26,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.learn.metrics import *
 from verticapy.utilities import *
-from verticapy.toolbox import *
+from verticapy.utils._toolbox import *
 from verticapy import vDataFrame
 from verticapy.plotting._matplotlib import *
 from verticapy.learn.model_selection import *
