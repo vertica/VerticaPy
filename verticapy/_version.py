@@ -14,3 +14,122 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from .errors import VersionError
+
+# Global Variable
+MINIMUM_VERSION = {
+    "Balance": [8, 1, 1],
+    "BernoulliNB": [8, 0, 0],
+    "BisectingKMeans": [9, 3, 1],
+    "CategoricalNB": [8, 0, 0],
+    "confusion_matrix": [8, 0, 0],
+    "DecisionTreeClassifier": [8, 1, 1],
+    "DecisionTreeRegressor": [9, 0, 1],
+    "DummyTreeClassifier": [8, 1, 1],
+    "DummyTreeRegressor": [9, 0, 1],
+    "edit_distance": [10, 1, 0],
+    "ElasticNet": [8, 0, 0],
+    "GaussianNB": [8, 0, 0],
+    "gen_dataset": [9, 3, 0],
+    "get_tree": [9, 1, 1],
+    "IsolationForest": [12, 0, 0],
+    "jaro_distance": [12, 0, 2],
+    "jaro_winkler_distance": [12, 0, 2],
+    "Lasso": [8, 0, 0],
+    "lift_chart": [8, 0, 0],
+    "LinearRegression": [8, 0, 0],
+    "LinearSVC": [8, 1, 0],
+    "LinearSVR": [8, 1, 1],
+    "LogisticRegression": [8, 0, 0],
+    "KMeans": [8, 0, 0],
+    "KPrototypes": [12, 0, 3],
+    "MCA": [9, 1, 0],
+    "MinMaxScaler": [8, 1, 0],
+    "multilabel_confusion_matrix": [8, 0, 0],
+    "MultinomialNB": [8, 0, 0],
+    "NaiveBayes": [8, 0, 0],
+    "Normalizer": [8, 1, 0],
+    "OneHotEncoder": [9, 0, 0],
+    "PCA": [9, 1, 0],
+    "prc_curve": [9, 1, 0],
+    "RandomForestClassifier": [8, 1, 1],
+    "RandomForestRegressor": [9, 0, 1],
+    "read_file": [11, 1, 1],
+    "Ridge": [8, 0, 0],
+    "RobustScaler": [8, 1, 0],
+    "roc_curve": [8, 0, 0],
+    "SARIMAX": [8, 0, 0],
+    "soundex": [10, 1, 0],
+    "soundex_matches": [10, 1, 0],
+    "StandardScaler": [8, 1, 0],
+    "SVD": [9, 1, 0],
+    "VAR": [8, 0, 0],
+    "XGBoostClassifier": [10, 1, 0],
+    "XGBoostRegressor": [10, 1, 0],
+}
+
+def vertica_version(condition: list = []):
+    """
+Returns the Vertica Version.
+
+Parameters
+----------
+condition: list, optional
+    List of the minimal version information. If the current version is not
+    greater or equal to this one, it will raise an error.
+
+Returns
+-------
+list
+    List containing the version information.
+    [MAJOR, MINOR, PATCH, POST]
+    """
+    from .utils._toolbox import executeSQL
+    import verticapy as vp
+
+    if condition:
+        condition = condition + [0 for elem in range(4 - len(condition))]
+    if not (vp.OPTIONS["vertica_version"]):
+        current_version = executeSQL(
+            "SELECT /*+LABEL('utilities.version')*/ version();",
+            title="Getting the version.",
+            method="fetchfirstelem",
+        ).split("Vertica Analytic Database v")[1]
+        current_version = current_version.split(".")
+        result = []
+        try:
+            result += [int(current_version[0])]
+            result += [int(current_version[1])]
+            result += [int(current_version[2].split("-")[0])]
+            result += [int(current_version[2].split("-")[1])]
+        except:
+            pass
+        vp.OPTIONS["vertica_version"] = result
+    else:
+        result = vp.OPTIONS["vertica_version"]
+    if condition:
+        if condition[0] < result[0]:
+            test = True
+        elif condition[0] == result[0]:
+            if condition[1] < result[1]:
+                test = True
+            elif condition[1] == result[1]:
+                if condition[2] <= result[2]:
+                    test = True
+                else:
+                    test = False
+            else:
+                test = False
+        else:
+            test = False
+        if not (test):
+            v0, v1, v2 = result[0], result[1], str(result[2]).split("-")[0]
+            v = ".".join([str(c) for c in condition[:3]])
+            raise VersionError(
+                (
+                    "This Function is not available for Vertica version "
+                    f"{v0}.{v1}.{v2}.\nPlease upgrade your Vertica "
+                    f"version to at least {v} to get this functionality."
+                )
+            )
+    return result

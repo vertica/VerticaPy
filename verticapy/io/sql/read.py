@@ -37,7 +37,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         Result of the query.
     """
     from verticapy.utils._toolbox import executeSQL
-    from verticapy.io import to_tablesample
+    import verticapy as vp
 
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
@@ -71,3 +71,169 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
             result.dtype[column] = vdf[column].ctype()
             result.percent[column] = percent[vdf.format_colnames(column)][0]
     return result
+
+
+def to_tablesample(
+    query: Union[str, str_sql],
+    title: str = "",
+    max_columns: int = -1,
+    sql_push_ext: bool = False,
+    symbol: str = "$",
+):
+    """
+    Returns the result of a SQL query as a tablesample object.
+
+    Parameters
+    ----------
+    query: str, optional
+        SQL Query.
+    title: str, optional
+        Query title when the query is displayed.
+    max_columns: int, optional
+        Maximum number of columns to display.
+    sql_push_ext: bool, optional
+        If set to True, the entire query is pushed to the external table. 
+        This can increase performance but might increase the error rate. 
+        For instance, some DBs might not support the same SQL as Vertica.
+    symbol: str, optional
+        One of the following:
+        "$", "€", "£", "%", "@", "&", "§", "%", "?", "!"
+        Symbol used to identify the external connection.
+        See the connect.set_external_connection function for more information.
+
+    Returns
+    -------
+    tablesample
+        Result of the query.
+
+    See Also
+    --------
+    tablesample : Object in memory created for rendering purposes.
+    """
+    import verticapy as vp
+    from verticapy.io import tablesample
+    from verticapy.utils._toolbox import executeSQL, get_final_vertica_type, print_time
+
+    if vp.OPTIONS["sql_on"]:
+        print_query(query, title)
+    start_time = time.time()
+    cursor = executeSQL(
+        query, print_time_sql=False, sql_push_ext=sql_push_ext, symbol=symbol
+    )
+    description, dtype = cursor.description, {}
+    for elem in description:
+        dtype[elem[0]] = get_final_vertica_type(
+            type_name=elem.type_name,
+            display_size=elem[2],
+            precision=elem[4],
+            scale=elem[5],
+        )
+    elapsed_time = time.time() - start_time
+    if vp.OPTIONS["time_on"]:
+        print_time(elapsed_time)
+    result = cursor.fetchall()
+    columns = [column[0] for column in cursor.description]
+    data_columns = [[item] for item in columns]
+    data = [item for item in result]
+    for row in data:
+        for idx, val in enumerate(row):
+            data_columns[idx] += [val]
+    values = {}
+    for column in data_columns:
+        values[column[0]] = column[1 : len(column)]
+    return tablesample(
+        values=values, dtype=dtype, max_columns=max_columns,
+    ).decimal_to_float()
+
+
+def vDataFrameSQL(
+    relation: str,
+    name: str = "VDF",
+    schema: str = "public",
+    history: list = [],
+    saving: list = [],
+    vdf=None,
+):
+    """
+Creates a vDataFrame based on a customized relation.
+
+Parameters
+----------
+relation: str
+    Relation. You can also specify a customized relation, 
+    but you must enclose it with an alias. For example "(SELECT 1) x" is 
+    correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+name: str, optional
+    Name of the vDataFrame. It is used only when displaying the vDataFrame.
+schema: str, optional
+    Relation schema. It can be to use to be less ambiguous and allow to 
+    create schema and relation name with dots '.' inside.
+history: list, optional
+    vDataFrame history (user modifications). To use to keep the previous 
+    vDataFrame history.
+saving: list, optional
+    List to use to reconstruct the vDataFrame from previous transformations.
+
+Returns
+-------
+vDataFrame
+    The vDataFrame associated to the input relation.
+    """
+    # Initialization
+    from verticapy import vDataFrame
+    from .flex import isvmap
+    from verticapy.io import get_data_types
+    from verticapy.utils._toolbox import get_category_from_vertica_type
+
+    if isinstance(vdf, vDataFrame):
+        external = vdf._VERTICAPY_VARIABLES_["external"]
+        symbol = vdf._VERTICAPY_VARIABLES_["symbol"]
+        sql_push_ext = vdf._VERTICAPY_VARIABLES_["sql_push_ext"]
+        vdf.__init__("", empty=True)
+        vdf._VERTICAPY_VARIABLES_["external"] = external
+        vdf._VERTICAPY_VARIABLES_["symbol"] = symbol
+        vdf._VERTICAPY_VARIABLES_["sql_push_ext"] = sql_push_ext
+    else:
+        vdf = vDataFrame("", empty=True)
+    vdf._VERTICAPY_VARIABLES_["input_relation"] = name
+    vdf._VERTICAPY_VARIABLES_["main_relation"] = relation
+    vdf._VERTICAPY_VARIABLES_["schema"] = schema
+    vdf._VERTICAPY_VARIABLES_["where"] = []
+    vdf._VERTICAPY_VARIABLES_["order_by"] = {}
+    vdf._VERTICAPY_VARIABLES_["exclude_columns"] = []
+    vdf._VERTICAPY_VARIABLES_["history"] = history
+    vdf._VERTICAPY_VARIABLES_["saving"] = saving
+    dtypes = get_data_types(f"SELECT * FROM {relation} LIMIT 0")
+    vdf._VERTICAPY_VARIABLES_["columns"] = ['"' + item[0] + '"' for item in dtypes]
+
+    # Creating the vColumns
+    for column, ctype in dtypes:
+        if '"' in column:
+            column_str = column.replace('"', "_")
+            warning_message = (
+                f'A double quote " was found in the column {column}, its '
+                f"alias was changed using underscores '_' to {column_str}"
+            )
+            warnings.warn(warning_message, Warning)
+        from verticapy.core.vcolumn import vColumn
+
+        column_name = '"' + column.replace('"', "_") + '"'
+        category = get_category_from_vertica_type(ctype)
+        if (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
+            isvmap(expr=relation, column=column,)
+        ):
+            category = "vmap"
+            ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
+        new_vColumn = vColumn(
+            column_name,
+            parent=vdf,
+            transformations=[(quote_ident(column), ctype, category,)],
+        )
+        setattr(vdf, column_name, new_vColumn)
+        setattr(vdf, column_name[1:-1], new_vColumn)
+        new_vColumn.init = False
+
+    return vdf
+
+
+vdf_from_relation = vDataFrameSQL

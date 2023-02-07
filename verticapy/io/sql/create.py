@@ -109,3 +109,20 @@ bool
         if raise_error:
             raise
         return False
+
+def create_verticapy_schema():
+    """
+Creates a schema named 'verticapy' used to store VerticaPy extended models.
+    """
+    sql = "CREATE SCHEMA IF NOT EXISTS verticapy;"
+    executeSQL(sql, title="Creating VerticaPy schema.")
+    sql = """CREATE TABLE IF NOT EXISTS verticapy.models (model_name VARCHAR(128), 
+                                                          category VARCHAR(128), 
+                                                          model_type VARCHAR(128), 
+                                                          create_time TIMESTAMP, 
+                                                          size INT);"""
+    executeSQL(sql, title="Creating the models table.")
+    sql = """CREATE TABLE IF NOT EXISTS verticapy.attr (model_name VARCHAR(128), 
+                                                        attr_name VARCHAR(128), 
+                                                        value VARCHAR(65000));"""
+    executeSQL(sql, title="Creating the attr table.")

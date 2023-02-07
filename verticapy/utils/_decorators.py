@@ -34,7 +34,7 @@ identifies which function to save to the QUERY PROFILES table.
     @wraps(func)
     def func_prec_save_logs(*args, **kwargs):
 
-        from verticapy.utilities import save_to_query_profile
+        from ._collect import save_to_query_profile
 
         name = func.__name__
         path = func.__module__.replace("verticapy.", "")

@@ -18,3 +18,5 @@ from verticapy.io import *
 from verticapy._config.config import *
 from verticapy.io.sql import *
 from verticapy._help import *
+from verticapy._version import vertica_version
+from verticapy._collect import save_to_query_profile
