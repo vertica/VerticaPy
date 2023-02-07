@@ -42,7 +42,6 @@ import verticapy as vp
 from verticapy.errors import QueryError, ParameterError, ParsingError
 from verticapy import (
     executeSQL,
-    vDataFrameSQL,
     get_magic_options,
     vDataFrame,
     set_option,
@@ -57,6 +56,7 @@ from verticapy import (
 @save_verticapy_logs
 @needs_local_scope
 def sql_magic(line, cell="", local_ns=None):
+    from verticapy import vDataFrameSQL
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.
