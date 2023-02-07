@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy._decorators import save_verticapy_logs
+from verticapy._config._decorators import save_verticapy_logs
 from verticapy.errors import MissingRelation
 
 
