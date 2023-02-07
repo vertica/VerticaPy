@@ -20,4 +20,5 @@ from .parsers.json import read_json, pjson
 from .parsers.avro import read_avro
 from .parsers.shp import read_shp
 from .parsers.all import read_file
+from .parsers.pandas import pandas_to_vertica
 from .flex import compute_flextable_keys, compute_vmap_keys, isflextable, isvmap
