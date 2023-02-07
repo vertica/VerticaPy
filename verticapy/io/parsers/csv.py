@@ -105,7 +105,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    from ...db.drop import drop
+    from ..sql.drop import drop
 
     if record_terminator == "\n":
         record_terminator = "\\n"
@@ -285,7 +285,7 @@ See Also
 read_json : Ingests a JSON file into the Vertica database.
 	"""
     from verticapy import vDataFrame
-    from ...db.create import create_table
+    from ..sql.create import create_table
 
     if schema:
         temporary_local_table = False

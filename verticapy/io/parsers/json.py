@@ -47,7 +47,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    from ...db.drop import drop
+    from ..sql.drop import drop
 
     flex_name = gen_tmp_name(name="flex")[1:-1]
     executeSQL(
@@ -203,7 +203,7 @@ See Also
 read_csv : Ingests a CSV file into the Vertica database.
 	"""
     from verticapy import vDataFrame
-    from ...db.drop import drop
+    from ..sql.drop import drop
 
     if use_complex_dt:
         assert not (new_name), ParameterError(

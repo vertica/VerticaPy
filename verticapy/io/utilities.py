@@ -102,7 +102,7 @@ Returns
 list of tuples
     The list of the different columns and their respective type.
     """
-    from ..db.drop import drop
+    from ..io.sql.drop import drop
 
     assert expr or table_name, ParameterError(
         "Missing parameter: 'expr' and 'table_name' can not both be empty."
@@ -327,59 +327,6 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
             return sql
         else:
             return total_rows
-
-
-@save_verticapy_logs
-def readSQL(query: str, time_on: bool = False, limit: int = 100):
-    """
-    Returns the result of a SQL query as a tablesample object.
-
-    Parameters
-    ----------
-    query: str
-        SQL Query.
-    time_on: bool, optional
-        If set to True, displays the query elapsed time.
-    limit: int, optional
-        Maximum number of elements to display.
-
-    Returns
-    -------
-    tablesample
-        Result of the query.
-    """
-    while len(query) > 0 and query[-1] in (";", " "):
-        query = query[:-1]
-    if vp.OPTIONS["count_on"]:
-        count = executeSQL(
-            f"""SELECT 
-                    /*+LABEL('utilities.readSQL')*/ COUNT(*) 
-                FROM ({query}) VERTICAPY_SUBTABLE""",
-            method="fetchfirstelem",
-            print_time_sql=False,
-        )
-    else:
-        count = -1
-    sql_on_init = vp.OPTIONS["sql_on"]
-    time_on_init = vp.OPTIONS["time_on"]
-    try:
-        vp.OPTIONS["time_on"] = time_on
-        vp.OPTIONS["sql_on"] = False
-        try:
-            result = to_tablesample(f"{query} LIMIT {limit}")
-        except:
-            result = to_tablesample(query)
-    finally:
-        vp.OPTIONS["time_on"] = time_on_init
-        vp.OPTIONS["sql_on"] = sql_on_init
-    result.count = count
-    if vp.OPTIONS["percent_bar"]:
-        vdf = vDataFrameSQL(f"({query}) VERTICAPY_SUBTABLE")
-        percent = vdf.agg(["percent"]).transpose().values
-        for column in result.values:
-            result.dtype[column] = vdf[column].ctype()
-            result.percent[column] = percent[vdf.format_colnames(column)][0]
-    return result
 
 
 def save_to_query_profile(
