@@ -70,7 +70,7 @@ from verticapy.errors import (
     ParsingError,
     QueryError,
 )
-from verticapy.toolbox import *
+from verticapy.utils._toolbox import *
 from verticapy.plotting._colors import gen_colors, gen_cmap
 
 ###

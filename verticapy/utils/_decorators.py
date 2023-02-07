@@ -24,11 +24,6 @@ permissions and limitations under the License.
 import typing, warnings, sys, inspect
 from functools import wraps
 
-#
-#
-# Decorators
-#
-
 
 def save_verticapy_logs(func):
     """

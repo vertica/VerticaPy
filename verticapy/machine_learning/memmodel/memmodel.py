@@ -26,7 +26,7 @@ from typing import Union, Literal
 
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.toolbox import *
+from verticapy.utils._toolbox import *
 from verticapy.errors import *
 
 # other modules:

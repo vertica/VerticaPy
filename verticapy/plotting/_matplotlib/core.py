@@ -23,7 +23,7 @@ permissions and limitations under the License.
 import math
 
 # VerticaPy Modules
-from verticapy.toolbox import executeSQL, quote_ident, bin_spatial_to_str
+from verticapy.utils._toolbox import executeSQL, quote_ident, bin_spatial_to_str
 from verticapy.errors import ParameterError
 import verticapy
 

@@ -34,7 +34,7 @@ from verticapy import vDataFrame
 from verticapy.plotting._matplotlib import *
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
-from verticapy.toolbox import *
+from verticapy.utils._toolbox import *
 from verticapy.errors import *
 import verticapy.learn.metrics as mt
 from verticapy.learn.metrics import *

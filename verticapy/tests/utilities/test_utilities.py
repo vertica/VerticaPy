@@ -24,7 +24,7 @@ import os
 
 # VerticaPy
 import vertica_python, verticapy
-from verticapy import vDataFrame
+from verticapy import vDataFrame, set_option
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.datasets import (

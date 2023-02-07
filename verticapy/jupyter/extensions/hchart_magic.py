@@ -43,7 +43,7 @@ from verticapy.plotting._highcharts import hchartSQL
 
 @save_verticapy_logs
 @needs_local_scope
-def hchart(line, cell="", local_ns=None):
+def hchart_magic(line, cell="", local_ns=None):
 
     # Initialization
     query = "" if (not (cell) and (line)) else cell
@@ -125,8 +125,3 @@ def hchart(line, cell="", local_ns=None):
     display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
 
     return chart
-
-
-def load_ipython_extension(ipython):
-    ipython.register_magic_function(hchart, "cell")
-    ipython.register_magic_function(hchart, "line")

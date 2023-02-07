@@ -31,7 +31,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy import vDataFrame
 from verticapy.utilities import *
-from verticapy.toolbox import *
+from verticapy.utils._toolbox import *
 from verticapy.errors import *
 from verticapy.learn.ensemble import *
 from verticapy.learn.naive_bayes import *
