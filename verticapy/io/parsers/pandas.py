@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 
 # Standard Python Modules
-import os
+import os, csv
 
 # VerticaPy Modules
 import verticapy as vp
