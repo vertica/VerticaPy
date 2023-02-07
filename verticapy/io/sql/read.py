@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import time
 from typing import Union
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._toolbox import str_sql
@@ -185,7 +186,7 @@ vDataFrame
     from verticapy import vDataFrame
     from .flex import isvmap
     from verticapy.io import get_data_types
-    from verticapy.utils._toolbox import get_category_from_vertica_type
+    from verticapy.utils._toolbox import get_category_from_vertica_type, quote_ident
 
     if isinstance(vdf, vDataFrame):
         external = vdf._VERTICAPY_VARIABLES_["external"]
