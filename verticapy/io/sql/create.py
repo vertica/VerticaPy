@@ -115,6 +115,8 @@ def create_verticapy_schema():
     """
 Creates a schema named 'verticapy' used to store VerticaPy extended models.
     """
+    from verticapy.utils._toolbox import executeSQL
+
     sql = "CREATE SCHEMA IF NOT EXISTS verticapy;"
     executeSQL(sql, title="Creating VerticaPy schema.")
     sql = """CREATE TABLE IF NOT EXISTS verticapy.models (model_name VARCHAR(128), 
