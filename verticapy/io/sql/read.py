@@ -114,7 +114,7 @@ def to_tablesample(
     tablesample : Object in memory created for rendering purposes.
     """
     import verticapy as vp
-    from verticapy.io import tablesample
+    from verticapy.io.utilities import tablesample
     from verticapy.utils._toolbox import executeSQL, get_final_vertica_type, print_time
 
     if vp.OPTIONS["sql_on"]:
@@ -184,7 +184,7 @@ vDataFrame
     """
     # Initialization
     from verticapy import vDataFrame
-    from .flex import isvmap
+    from ..flex import isvmap
     from verticapy.io import get_data_types
     from verticapy.utils._toolbox import get_category_from_vertica_type, quote_ident
 
