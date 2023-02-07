@@ -14,7 +14,3 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.io import *
-from verticapy._config.config import *
-from verticapy.sql.create import *
-from verticapy.sql.drop import *
