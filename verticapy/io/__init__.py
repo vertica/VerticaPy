@@ -18,4 +18,6 @@ from .utilities import *
 from .parsers.csv import read_csv, pcsv
 from .parsers.json import read_json, pjson
 from .parsers.avro import read_avro
-from .flex import *
+from .parsers.shp import read_shp
+from .parsers.all import read_file
+from .flex import compute_flextable_keys, compute_vmap_keys, isflextable, isvmap
