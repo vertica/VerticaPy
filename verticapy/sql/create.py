@@ -14,7 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy._toolbox import executeSQL, quote_ident
 
 
 def create_schema(
@@ -35,6 +34,8 @@ Returns
 bool
     True if the schema was successfully created, False otherwise.
     """
+    from verticapy._toolbox import executeSQL, quote_ident
+
     try:
         executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
         return True
@@ -82,6 +83,8 @@ Returns
 bool
     True if the table was successfully created, False otherwise.
     """
+    from verticapy._toolbox import executeSQL, quote_ident
+
     # -#
     if schema.lower() == "v_temp_schema":
         schema = ""

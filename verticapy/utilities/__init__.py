@@ -18,3 +18,4 @@ from verticapy.io import *
 from verticapy._config.config import *
 from verticapy.sql.create import *
 from verticapy.sql.drop import *
+from verticapy._help import *

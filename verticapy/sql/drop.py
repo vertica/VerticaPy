@@ -14,7 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy._toolbox import executeSQL, quote_ident, schema_relation
 
 
 def drop(
@@ -51,7 +50,8 @@ Returns
 bool
     True if the relation was dropped, False otherwise.
     """
-    # -#
+    from verticapy._toolbox import executeSQL, quote_ident, schema_relation
+
     if "relation_type" in kwds and method == "auto":
         method = kwds["relation_type"]
     schema, relation = schema_relation(name)
