@@ -68,6 +68,7 @@ MINIMUM_VERSION = {
     "XGBoostRegressor": [10, 1, 0],
 }
 
+
 def vertica_version(condition: list = []):
     """
 Returns the Vertica Version.

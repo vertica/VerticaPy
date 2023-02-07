@@ -50,9 +50,11 @@ OPTIONS = {
     "vertica_version": None,
 }
 
+
 def init_interactive_mode(all_interactive=False):
     """Activate the datatables representation for all the vDataFrames."""
     set_option("interactive", all_interactive)
+
 
 @overload
 def set_option(

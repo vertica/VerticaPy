@@ -110,6 +110,7 @@ bool
             raise
         return False
 
+
 def create_verticapy_schema():
     """
 Creates a schema named 'verticapy' used to store VerticaPy extended models.
