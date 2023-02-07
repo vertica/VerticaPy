@@ -58,7 +58,7 @@ See Also
 pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     """
     import verticapy as vp
-    from verticapy.utils._toolbox import executeSQL, format_schema_table, quote_ident
+    from verticapy.utils._toolbox import executeSQL, format_schema_table, quote_ident, clean_query
 
     if not (schema):
         schema = vp.OPTIONS["temp_schema"]
