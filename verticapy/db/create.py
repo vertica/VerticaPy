@@ -34,7 +34,7 @@ Returns
 bool
     True if the schema was successfully created, False otherwise.
     """
-    from verticapy._toolbox import executeSQL, quote_ident
+    from verticapy.utils._toolbox import executeSQL, quote_ident
 
     try:
         executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
@@ -83,7 +83,7 @@ Returns
 bool
     True if the table was successfully created, False otherwise.
     """
-    from verticapy._toolbox import executeSQL, quote_ident
+    from verticapy.utils._toolbox import executeSQL, quote_ident
 
     # -#
     if schema.lower() == "v_temp_schema":

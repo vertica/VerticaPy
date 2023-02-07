@@ -51,7 +51,7 @@ Returns
 bool
     True if the relation was dropped, False otherwise.
     """
-    from verticapy._toolbox import executeSQL, quote_ident, schema_relation
+    from verticapy.utils._toolbox import executeSQL, quote_ident, schema_relation
 
     if "relation_type" in kwds and method == "auto":
         method = kwds["relation_type"]
