@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import shutil
 
+
 def print_table(
     data_columns,
     is_finished: bool = True,
@@ -26,8 +27,8 @@ def print_table(
     dtype: dict = {},
     percent: dict = {},
 ):
-	import verticapy as vp
-	from verticapy.utils._toolbox import get_category_from_vertica_type
+    import verticapy as vp
+    from verticapy.utils._toolbox import get_category_from_vertica_type
 
     if not (return_html):
         data_columns_rep = [] + data_columns
