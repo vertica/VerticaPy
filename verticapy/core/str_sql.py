@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy.utils._toolbox import format_magic
 from verticapy.errors import ParameterError
+from typing import Iterable
 
 
 class str_sql:

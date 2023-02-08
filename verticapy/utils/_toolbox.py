@@ -362,47 +362,6 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
         return result
 
 
-def get_magic_options(line: str):
-
-    # parsing the line
-    i, n, splits = 0, len(line), []
-    while i < n:
-        while i < n and line[i] == " ":
-            i += 1
-        if i < n:
-            k = i
-            op = line[i]
-            if op in ('"', "'"):
-                i += 1
-                while i < n - 1:
-                    if line[i] == op and line[i + 1] != op:
-                        break
-                    i += 1
-                i += 1
-                quote_in = True
-            else:
-                while i < n and line[i] != " ":
-                    i += 1
-                quote_in = False
-            if quote_in:
-                splits += [line[k + 1 : i - 1]]
-            else:
-                splits += [line[k:i]]
-
-    # Creating the dictionary
-    n, i, all_options_dict = len(splits), 0, {}
-    while i < n:
-        if splits[i][0] != "-":
-            raise ParsingError(
-                f"Can not parse option '{splits[i][0]}'. "
-                "Options must start with '-'."
-            )
-        all_options_dict[splits[i]] = splits[i + 1]
-        i += 2
-
-    return all_options_dict
-
-
 def get_random_function(rand_int=None):
     random_state = vp.OPTIONS["random_state"]
     if isinstance(rand_int, int):

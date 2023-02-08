@@ -44,19 +44,19 @@ def replace_external_queries_in_query(query: str):
     from verticapy.utils._toolbox import gen_tmp_name, executeSQL
 
     sql_keyword = (
-        "select",
-        "create",
-        "insert",
-        "drop",
-        "backup",
-        "alter",
-        "update",
+        "select ",
+        "create ",
+        "insert ",
+        "drop ",
+        "backup ",
+        "alter ",
+        "update ",
     )
     nb_external_queries = 0
     for s in vp.OPTIONS["external_connection"]:
         external_queries = re.findall(f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", query)
         for external_query in external_queries:
-            if external_query.strip().lower().startswith(sql_keyword + " "):
+            if external_query.strip().lower().startswith(sql_keyword):
                 external_query_tmp = external_query
                 subquery_flag = False
             else:

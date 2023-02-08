@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
+import itertools
+import numpy as np
 
 def all_comb(X: list):
     all_configuration = []

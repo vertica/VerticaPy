@@ -51,6 +51,7 @@ from verticapy import (
     save_verticapy_logs,
 )
 from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
+from .utils import get_magic_options
 
 
 @save_verticapy_logs
