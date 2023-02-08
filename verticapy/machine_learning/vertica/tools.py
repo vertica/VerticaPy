@@ -26,6 +26,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utils._toolbox import *
 from verticapy.utilities import *
+from verticapy.io.sql.utils._format import quote_ident, schema_relation
 
 # Standard Python Modules
 import numpy as np
@@ -58,7 +59,6 @@ int
     1 if the model exists and is native.
     2 if the model exists and is not native.
     """
-    # -#
     model_type = None
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], model_name[1:-1]

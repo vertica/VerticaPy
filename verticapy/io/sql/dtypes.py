@@ -21,11 +21,10 @@ import warnings, datetime
 import vertica_python
 from verticapy.utils._toolbox import (
     executeSQL,
-    quote_ident,
     get_final_vertica_type,
-    format_schema_table,
     gen_tmp_name,
 )
+from verticapy.io.sql.utils._format import quote_ident, format_schema_table
 from verticapy.errors import ParameterError
 
 

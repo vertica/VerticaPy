@@ -73,6 +73,13 @@ from verticapy.errors import (
 from verticapy.utils._toolbox import *
 from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.core.str_sql import str_sql
+from verticapy.io.sql.utils._format import (
+    format_magic,
+    quote_ident,
+    schema_relation,
+    format_schema_table,
+    clean_query,
+)
 
 ###
 #                                           _____
@@ -4804,6 +4811,8 @@ vColumns : vColumn
     str
         The formatted current vDataFrame relation.
         """
+        from verticapy.io.sql.utils._format import indentSQL
+
         if reindent:
             return indentSQL(self.__genSQL__())
         else:

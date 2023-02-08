@@ -32,6 +32,7 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy import vDataFrame
 from verticapy.learn.vmodel import *
+from verticapy.io.sql.utils._format import quote_ident, schema_relation, clean_query
 
 
 @check_minimum_version
@@ -187,6 +188,7 @@ max_text_size: int, optional
             return query
         if self.parameters["max_features"] > 0:
             query += f" AND (rnk <= {self.parameters['max_features']})"
+
         return clean_query(query.format("*", ""))
 
     def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):

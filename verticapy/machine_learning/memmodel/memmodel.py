@@ -28,6 +28,7 @@ from typing import Union, Literal
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._toolbox import *
 from verticapy.errors import *
+from verticapy.io.sql.utils._format import clean_query
 
 # other modules:
 try:

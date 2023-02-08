@@ -27,6 +27,7 @@ from typing import Union, Literal
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.errors import *
+from verticapy.io.sql.utils._format import quote_ident
 
 # Other Modules
 import numpy as np
@@ -42,8 +43,6 @@ except:
 #
 # Functions to use to simplify the coding.
 #
-
-
 def bin_spatial_to_str(
     category: str, column: str = "{}",
 ):
@@ -55,20 +54,6 @@ def bin_spatial_to_str(
     if category in map_dict:
         return map_dict[column]
     return column
-
-
-def clean_query(query: str):
-    res = re.sub(r"--.+(\n|\Z)", "", query)
-    res = res.replace("\t", " ").replace("\n", " ")
-    res = re.sub(" +", " ", res)
-
-    while len(res) > 0 and (res[-1] in (";", " ")):
-        res = res[0:-1]
-
-    while len(res) > 0 and (res[0] in (";", " ")):
-        res = res[1:]
-
-    return res
 
 
 def color_dict(d: dict, idx: int = 0):
@@ -103,6 +88,7 @@ def executeSQL(
     symbol: str = "$",
 ):
     from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
+    from verticapy.io.sql.utils._format import clean_query
 
     # Cleaning the query
     if sql_push_ext and (symbol in vp.SPECIAL_SYMBOLS):
@@ -184,28 +170,6 @@ def flat_dict(d: dict) -> str:
     if res:
         res = f", {res}"
     return res
-
-
-def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
-    from verticapy.core.str_sql import str_sql
-
-    if isinstance(x, vp.vColumn):
-        val = x.alias
-    elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
-        x, str_sql
-    ):
-        val = x
-    elif isinstance(x, type(None)):
-        val = "NULL"
-    elif isinstance(x, (int, float)) or not (cast_float_int_to_str):
-        x_str = str(x).replace("'", "''")
-        val = f"'{x_str}'"
-    else:
-        val = x
-    if return_cat:
-        return (val, get_category_from_python_type(x))
-    else:
-        return val
 
 
 def gen_name(L: list):
@@ -479,50 +443,6 @@ def get_verticapy_function(key: str, method: str = ""):
     return key
 
 
-def indentSQL(query: str):
-    query = (
-        query.replace("SELECT", "\n   SELECT\n    ")
-        .replace("FROM", "\n   FROM\n")
-        .replace(",", ",\n    ")
-    )
-    query = query.replace("VERTICAPY_SUBTABLE", "\nVERTICAPY_SUBTABLE")
-    n = len(query)
-    return_l = []
-    j = 1
-    while j < n - 9:
-        if (
-            query[j] == "("
-            and (query[j - 1].isalnum() or query[j - 5 : j] == "OVER ")
-            and query[j + 1 : j + 7] != "SELECT"
-        ):
-            k = 1
-            while k > 0 and j < n - 9:
-                j += 1
-                if query[j] == "\n":
-                    return_l += [j]
-                elif query[j] == ")":
-                    k -= 1
-                elif query[j] == "(":
-                    k += 1
-        else:
-            j += 1
-    query_print = ""
-    i = 0 if query[0] != "\n" else 1
-    while return_l:
-        j = return_l[0]
-        query_print += query[i:j]
-        if query[j] != "\n":
-            query_print += query[j]
-        else:
-            i = j + 1
-            while query[i] == " " and i < n - 9:
-                i += 1
-            query_print += " "
-        del return_l[0]
-    query_print += query[i:n]
-    return query_print
-
-
 def isnotebook():
     try:
         shell = get_ipython().__class__.__name__
@@ -537,6 +457,8 @@ def isnotebook():
 
 
 def print_query(query: str, title: str = ""):
+    from verticapy.io.sql.utils._format import indentSQL
+
     screen_columns = shutil.get_terminal_size().columns
     query_print = indentSQL(query)
     if isnotebook():
@@ -558,70 +480,6 @@ def print_time(elapsed_time: float):
         print("-" * int(screen_columns) + "\n")
 
 
-def quote_ident(column: str):
-    """
-    Returns the specified string argument in the format that is required in
-    order to use that string as an identifier in an SQL statement.
-
-    Parameters
-    ----------
-    column: str
-        Column's name.
-
-    Returns
-    -------
-    str
-        Formatted column' name.
-    """
-    tmp_column = str(column)
-    if len(tmp_column) >= 2 and (tmp_column[0] == tmp_column[-1] == '"'):
-        tmp_column = tmp_column[1:-1]
-    temp_column_str = str(tmp_column).replace('"', '""')
-    return f'"{temp_column_str}"'
-
-
-def replace_vars_in_query(query: str, locals_dict: dict):
-    variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
-    for v in variables:
-        fail = True
-        if len(v) > 1 and not (v[1].isdigit()):
-            try:
-                var = v[1:]
-                n, splits = var.count("["), []
-                if var.count("]") == n and n > 0:
-                    i, size = 0, len(var)
-                    while i < size:
-                        if var[i] == "[":
-                            k = i + 1
-                            while i < size and var[i] != "]":
-                                i += 1
-                            splits += [(k, i)]
-                        i += 1
-                    var = var[: splits[0][0] - 1]
-                val = locals_dict[var]
-                if splits:
-                    for s in splits:
-                        val = val[int(v[s[0] + 1 : s[1] + 1])]
-                fail = False
-            except Exception as e:
-                warning_message = (
-                    f"Failed to replace variables in the query.\nError: {e}"
-                )
-                warnings.warn(warning_message, Warning)
-                fail = True
-        if not (fail):
-            if isinstance(val, vp.vDataFrame):
-                val = val.__genSQL__()
-            elif isinstance(val, vp.tablesample):
-                val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
-            elif isinstance(val, pd.DataFrame):
-                val = vp.pandas_to_vertica(val).__genSQL__()
-            elif isinstance(val, list):
-                val = ", ".join(["NULL" if elem is None else str(elem) for elem in val])
-            query_tmp = query_tmp.replace(v, str(val))
-    return query_tmp
-
-
 def reverse_score(metric: str):
     if metric in [
         "logloss",
@@ -637,38 +495,6 @@ def reverse_score(metric: str):
     ]:
         return False
     return True
-
-
-def schema_relation(relation):
-    if isinstance(relation, vp.vDataFrame):
-        schema, relation = vp.OPTIONS["temp_schema"], ""
-    else:
-        quote_nb = relation.count('"')
-        if quote_nb not in (0, 2, 4):
-            raise ParsingError("The format of the input relation is incorrect.")
-        if quote_nb == 4:
-            schema_input_relation = relation.split('"')[1], relation.split('"')[3]
-        elif quote_nb == 4:
-            schema_input_relation = (
-                relation.split('"')[1],
-                relation.split('"')[2][1:]
-                if (relation.split('"')[0] == "")
-                else relation.split('"')[0][0:-1],
-                relation.split('"')[1],
-            )
-        else:
-            schema_input_relation = relation.split(".")
-        if len(schema_input_relation) == 1:
-            schema, relation = "public", relation
-        else:
-            schema, relation = schema_input_relation[0], schema_input_relation[1]
-    return (quote_ident(schema), quote_ident(relation))
-
-
-def format_schema_table(schema: str, table_name: str):
-    if not (schema):
-        schema = "public"
-    return f"{quote_ident(schema)}.{quote_ident(table_name)}"
 
 
 def updated_dict(

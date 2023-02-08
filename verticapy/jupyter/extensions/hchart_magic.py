@@ -33,11 +33,10 @@ from verticapy.errors import ParameterError
 from verticapy import (
     vDataFrame,
     tablesample,
-    clean_query,
-    replace_vars_in_query,
     save_verticapy_logs,
 )
 from verticapy.plotting._highcharts import hchartSQL
+from verticapy.io.sql.utils._format import replace_vars_in_query, clean_query
 
 
 @save_verticapy_logs

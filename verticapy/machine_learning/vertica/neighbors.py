@@ -33,6 +33,8 @@ from verticapy.learn.model_selection import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 from verticapy.learn.tools import *
+from verticapy.io.sql.utils._format import quote_ident, schema_relation
+from verticapy.io.sql.utils._format import clean_query
 
 # Standard Python Modules
 import warnings, itertools
@@ -1273,6 +1275,8 @@ p: int, optional
     str/list
         the SQL code needed to deploy the model.
         """
+        from verticapy.io.sql.utils._format import clean_query
+
         if isinstance(X, str):
             X = [X]
         if isinstance(key_columns, str):

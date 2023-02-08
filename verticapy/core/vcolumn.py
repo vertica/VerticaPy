@@ -39,6 +39,7 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import *
+from verticapy.io.sql.utils._format import quote_ident, clean_query
 
 # Other modules
 import numpy as np

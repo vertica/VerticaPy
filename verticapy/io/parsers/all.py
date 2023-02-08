@@ -22,6 +22,7 @@ import warnings
 from verticapy.utils._decorators import save_verticapy_logs, check_minimum_version
 from verticapy.utils._toolbox import *
 from verticapy.errors import ExtensionError, ParameterError
+from verticapy.io.sql.utils._format import quote_ident, format_schema_table, clean_query
 
 
 @check_minimum_version

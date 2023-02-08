@@ -25,6 +25,7 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.learn.vmodel import *
+from verticapy.io.sql.utils._format import quote_ident
 
 # Standard Modules
 from typing import Literal

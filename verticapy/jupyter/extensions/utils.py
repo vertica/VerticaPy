@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy.errors import ParsingError
 
+
 def get_magic_options(line: str):
 
     # parsing the line

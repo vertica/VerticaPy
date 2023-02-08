@@ -16,11 +16,11 @@ permissions and limitations under the License.
 """
 from verticapy.errors import ConnectionError
 import re
+from verticapy.io.sql.utils._format import clean_query
 
 
 def get_dblink_fun(query: str, symbol: str = "$"):
     import verticapy as vp
-    from verticapy.utils._toolbox import clean_query
 
     assert symbol in vp.OPTIONS["external_connection"], ConnectionError(
         f"External Query detected but no corresponding Connection Identifier "

@@ -23,11 +23,11 @@ from verticapy import (
     drop,
     set_option,
     create_verticapy_schema,
-    clean_query,
 )
 from verticapy.connect import current_cursor
 from verticapy.datasets import load_titanic
 from verticapy.learn.preprocessing import CountVectorizer
+from verticapy.io.sql.utils._format import clean_query
 
 set_option("print_info", False)
 

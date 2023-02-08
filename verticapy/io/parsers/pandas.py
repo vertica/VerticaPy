@@ -24,6 +24,7 @@ from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._toolbox import *
 from verticapy.errors import ParameterError
 from .csv import read_csv
+from verticapy.io.sql.utils._format import format_schema_table
 
 
 @save_verticapy_logs

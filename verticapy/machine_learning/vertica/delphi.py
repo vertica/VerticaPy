@@ -42,6 +42,7 @@ from verticapy.learn.neighbors import *
 from verticapy.learn.svm import *
 from verticapy.plotting._matplotlib import plot_bubble_ml
 from verticapy.learn.vmodel import *
+from verticapy.io.sql.utils._format import schema_relation
 
 # Other Modules
 from tqdm.auto import tqdm

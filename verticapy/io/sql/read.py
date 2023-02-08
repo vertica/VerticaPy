@@ -186,7 +186,8 @@ vDataFrame
     from verticapy import vDataFrame
     from ..flex import isvmap
     from verticapy.io.sql.dtypes import get_data_types
-    from verticapy.utils._toolbox import get_category_from_vertica_type, quote_ident
+    from verticapy.utils._toolbox import get_category_from_vertica_type
+    from verticapy.io.sql.utils._format import quote_ident
 
     if isinstance(vdf, vDataFrame):
         external = vdf._VERTICAPY_VARIABLES_["external"]

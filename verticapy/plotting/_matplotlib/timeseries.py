@@ -22,9 +22,10 @@ import matplotlib.pyplot as plt
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, quote_ident, color_dict, updated_dict
+from verticapy.utils._toolbox import executeSQL, color_dict, updated_dict
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors
+from verticapy.io.sql.utils._format import quote_ident
 
 # Optional
 try:

@@ -28,7 +28,6 @@ import numpy as np
 from verticapy.utilities import *
 from verticapy.utils._toolbox import (
     executeSQL,
-    quote_ident,
     updated_dict,
     get_random_function,
     color_dict,

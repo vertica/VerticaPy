@@ -29,13 +29,13 @@ import numpy as np
 from verticapy.utilities import *
 from verticapy.utils._toolbox import (
     executeSQL,
-    quote_ident,
     bin_spatial_to_str,
     updated_dict,
 )
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, gen_cmap
+from verticapy.io.sql.utils._format import quote_ident
 
 
 def cmatrix(

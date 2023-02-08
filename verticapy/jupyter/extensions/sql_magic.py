@@ -45,11 +45,10 @@ from verticapy import (
     vDataFrame,
     set_option,
     tablesample,
-    clean_query,
-    replace_vars_in_query,
     save_verticapy_logs,
 )
 from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
+from verticapy.io.sql.utils._format import replace_vars_in_query, clean_query
 
 
 @save_verticapy_logs
