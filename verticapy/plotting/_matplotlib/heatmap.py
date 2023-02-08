@@ -27,7 +27,13 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, quote_ident, str_sql, bin_spatial_to_str
+from verticapy.utils._toolbox import (
+    executeSQL,
+    quote_ident,
+    str_sql,
+    bin_spatial_to_str,
+    updated_dict,
+)
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, gen_cmap
 
