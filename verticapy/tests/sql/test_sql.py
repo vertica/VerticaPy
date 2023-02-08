@@ -29,7 +29,7 @@ from verticapy import (
     set_option,
     tablesample,
 )
-from verticapy.sdk.vertica import get_dblink_fun
+from verticapy.sdk.vertica.dblink import get_dblink_fun
 from verticapy.datasets import load_titanic
 from verticapy.sql import sql
 from verticapy.sdk.vertica.dblink import replace_external_queries_in_query

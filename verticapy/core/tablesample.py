@@ -25,7 +25,8 @@ import numpy as np
 
 # VerticaPy Modules
 import verticapy as vp
-from verticapy.utils._toolbox import print_table, find_val_in_dict
+from verticapy.utils._toolbox import find_val_in_dict
+from verticapy.core._display import print_table
 from verticapy.jupyter._javascript import datatables_repr
 from verticapy.errors import ParameterError, MissingColumn
 from verticapy._version import vertica_version
