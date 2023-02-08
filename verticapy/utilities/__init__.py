@@ -21,3 +21,4 @@ from verticapy._help import *
 from verticapy._version import vertica_version
 from verticapy.utils._collect import save_to_query_profile
 from verticapy.core.tablesample import tablesample
+from verticapy.io.sql.dtypes import get_data_types

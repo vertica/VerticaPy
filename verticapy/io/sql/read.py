@@ -185,7 +185,7 @@ vDataFrame
     # Initialization
     from verticapy import vDataFrame
     from ..flex import isvmap
-    from verticapy.io import get_data_types
+    from verticapy.io.sql.dtypes import get_data_types
     from verticapy.utils._toolbox import get_category_from_vertica_type, quote_ident
 
     if isinstance(vdf, vDataFrame):

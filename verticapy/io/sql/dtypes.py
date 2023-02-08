@@ -14,39 +14,19 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
 # Standard Python Modules
-import os, math, shutil, re, time, decimal, warnings, datetime, inspect, csv
-from typing import Union, Literal, overload
+import warnings, datetime
 
 # VerticaPy Modules
 import vertica_python
-import verticapy as vp
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
+from verticapy.utils._toolbox import (
+    executeSQL,
+    quote_ident,
+    get_final_vertica_type,
+    format_schema_table,
+    gen_tmp_name,
 )
-from verticapy.utils._toolbox import *
-from verticapy.jupyter._javascript import datatables_repr
-from verticapy.errors import *
-from .parsers.csv import read_csv
-
-# Other Modules
-import pandas as pd
-
-# IPython - Optional
-try:
-    from IPython.display import HTML, display, Markdown
-except:
-    pass
-
-#
-# Utilities Functions
-#
+from verticapy.errors import ParameterError
 
 
 def get_data_types(
@@ -84,7 +64,7 @@ Returns
 list of tuples
     The list of the different columns and their respective type.
     """
-    from ..io.sql.drop import drop
+    from .drop import drop
 
     assert expr or table_name, ParameterError(
         "Missing parameter: 'expr' and 'table_name' can not both be empty."

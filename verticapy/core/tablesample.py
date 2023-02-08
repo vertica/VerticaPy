@@ -24,7 +24,7 @@ import math, decimal, datetime
 
 # VerticaPy Modules
 import verticapy as vp
-from verticapy.utils._toolbox import print_table
+from verticapy.utils._toolbox import print_table, find_val_in_dict
 from verticapy.jupyter._javascript import datatables_repr
 from verticapy.errors import ParameterError, MissingColumn
 from verticapy._version import vertica_version
