@@ -49,8 +49,8 @@ from verticapy import (
     clean_query,
     replace_vars_in_query,
     save_verticapy_logs,
-    replace_external_queries_in_query,
 )
+from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
 
 
 @save_verticapy_logs

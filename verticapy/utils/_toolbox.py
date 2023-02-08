@@ -44,7 +44,6 @@ except:
 #
 
 
-
 def bin_spatial_to_str(
     category: str, column: str = "{}",
 ):
@@ -103,6 +102,8 @@ def executeSQL(
     sql_push_ext: bool = False,
     symbol: str = "$",
 ):
+    from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
+
     # Cleaning the query
     if sql_push_ext and (symbol in vp.SPECIAL_SYMBOLS):
         query = erase_label(query)
@@ -187,7 +188,7 @@ def flat_dict(d: dict) -> str:
 
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
     from verticapy.core.str_sql import str_sql
-    
+
     if isinstance(x, vp.vColumn):
         val = x.alias
     elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
@@ -286,24 +287,6 @@ def get_category_from_vertica_type(ctype: str = ""):
             return "text"
     else:
         return "undefined"
-
-
-def get_dblink_fun(query: str, symbol: str = "$"):
-    assert symbol in vp.OPTIONS["external_connection"], ConnectionError(
-        f"External Query detected but no corresponding Connection Identifier "
-        f"Database is defined (Using the symbol '{symbol}'). Use the "
-        "function connect.set_external_connection to set one with the correct symbol."
-    )
-    cid = vp.OPTIONS["external_connection"][symbol]["cid"].replace("'", "''")
-    query = query.replace("'", "''")
-    rowset = vp.OPTIONS["external_connection"][symbol]["rowset"]
-    query = f"""
-        SELECT 
-            DBLINK(USING PARAMETERS 
-                   cid='{cid}',
-                   query='{query}',
-                   rowset={rowset}) OVER ()"""
-    return clean_query(query)
 
 
 def get_first_file(path: str, ext: str):
@@ -864,55 +847,6 @@ def quote_ident(column: str):
         tmp_column = tmp_column[1:-1]
     temp_column_str = str(tmp_column).replace('"', '""')
     return f'"{temp_column_str}"'
-
-
-def replace_external_queries_in_query(query: str):
-    sql_keyword = (
-        "select ",
-        "create ",
-        "insert ",
-        "drop ",
-        "backup ",
-        "alter ",
-        "update ",
-    )
-    nb_external_queries = 0
-    for s in vp.OPTIONS["external_connection"]:
-        external_queries = re.findall(f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", query)
-        for external_query in external_queries:
-            if external_query.strip().lower().startswith(sql_keyword):
-                external_query_tmp = external_query
-                subquery_flag = False
-            else:
-                external_query_tmp = f"SELECT * FROM {external_query}"
-                subquery_flag = True
-            query_dblink_template = get_dblink_fun(external_query_tmp, symbol=s)
-            if " " in external_query.strip():
-                alias = f"VERTICAPY_EXTERNAL_TABLE_{nb_external_queries}"
-            else:
-                alias = '"' + external_query.strip().replace('"', '""') + '"'
-            if nb_external_queries >= 1:
-                temp_table_name = '"' + gen_tmp_name(name=alias).replace('"', "") + '"'
-                create_statement = f"""
-                    CREATE LOCAL TEMPORARY TABLE {temp_table_name} 
-                    ON COMMIT PRESERVE ROWS 
-                    AS {query_dblink_template}"""
-                executeSQL(
-                    create_statement,
-                    title=(
-                        "Creating a temporary local table to "
-                        f"store the {nb_external_queries} external table."
-                    ),
-                )
-                query_dblink_template = f"v_temp_schema.{temp_table_name} AS {alias}"
-            else:
-                if subquery_flag:
-                    query_dblink_template = f"({query_dblink_template}) AS {alias}"
-            query = query.replace(
-                f"{s}{s}{s}{external_query}{s}{s}{s}", query_dblink_template
-            )
-            nb_external_queries += 1
-    return query
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):

@@ -29,6 +29,7 @@ from verticapy.utils._toolbox import *
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 from ..flex import compute_flextable_keys
 
+
 def guess_sep(file_str: str):
     sep = ","
     max_occur = file_str.count(",")
@@ -39,11 +40,13 @@ def guess_sep(file_str: str):
             sep = s
     return sep
 
+
 def erase_space_start_end_in_list_values(L: list):
     L_tmp = [elem for elem in L]
     for idx in range(len(L_tmp)):
         L_tmp[idx] = L_tmp[idx].strip()
     return L_tmp
+
 
 def get_header_name_csv(path: str, sep: str):
     f = open(path, "r")
@@ -74,6 +77,7 @@ def get_header_name_csv(path: str, sep: str):
                 )
             warnings.warn(warning_message, Warning)
     return erase_space_start_end_in_list_values(file_header)
+
 
 def pcsv(
     path: str,

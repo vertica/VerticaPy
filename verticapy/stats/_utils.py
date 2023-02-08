@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
+
 def all_comb(X: list):
     all_configuration = []
     for r in range(len(X) + 1):
@@ -24,6 +25,7 @@ def all_comb(X: list):
             all_configuration += combinations_list
     return all_configuration
 
+
 def heuristic_length(i: int):
     GAMMA = 0.5772156649
     if i == 2:
@@ -32,6 +34,7 @@ def heuristic_length(i: int):
         return 2 * (np.log(i - 1) + GAMMA) - 2 * (i - 1) / i
     else:
         return 0
+
 
 def levenshtein(s: str, t: str):
     rows = len(s) + 1
@@ -53,5 +56,3 @@ def levenshtein(s: str, t: str):
                 dist[row - 1][col - 1] + cost,
             )
     return dist[row][col]
-
-

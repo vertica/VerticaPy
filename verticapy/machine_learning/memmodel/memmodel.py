@@ -515,7 +515,7 @@ def predict_from_binary_tree(
     numpy.array
         Predicted values
     """
-    from veticapy.stats._utils import heuristic_length
+    from verticapy.stats._utils import heuristic_length
 
     def predict_tree(
         children_left, children_right, feature, threshold, value, node_id, X
@@ -628,7 +628,7 @@ def sql_from_binary_tree(
     str / list
         SQL code
     """
-    from veticapy.stats._utils import heuristic_length
+    from verticapy.stats._utils import heuristic_length
 
     def predict_tree(
         children_left, children_right, feature, threshold, value, node_id, X, prob_ID=0,
@@ -775,8 +775,8 @@ def binary_tree_to_graphviz(
     str
         Graphviz code.
     """
-    from veticapy.stats._utils import heuristic_length
-    
+    from verticapy.stats._utils import heuristic_length
+
     empty_color = False
     if len(classes_color) == 0:
         empty_color = True

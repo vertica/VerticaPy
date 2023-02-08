@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
+import warnings, sys, time
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.errors import MissingRelation
 
@@ -138,6 +138,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
             return sql
         else:
             return total_rows
+
 
 def insert_verticapy_schema(
     model_name: str,
