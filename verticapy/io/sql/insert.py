@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import warnings
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.errors import MissingRelation
 
@@ -137,3 +138,77 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
             return sql
         else:
             return total_rows
+
+def insert_verticapy_schema(
+    model_name: str,
+    model_type: str,
+    model_save: dict,
+    category: str = "VERTICAPY_MODELS",
+):
+    from verticapy.utils._toolbox import (
+        executeSQL,
+        quote_ident,
+    )
+
+    sql = "SELECT /*+LABEL(insert_verticapy_schema)*/ * FROM columns WHERE table_schema='verticapy';"
+    result = executeSQL(sql, method="fetchrow", print_time_sql=False)
+    if not (result):
+        warning_message = (
+            "The VerticaPy schema doesn't exist or is "
+            "incomplete. The model can not be stored.\n"
+            "Please use create_verticapy_schema function "
+            "to set up the schema and the drop function to "
+            "drop it if it is corrupted."
+        )
+        warnings.warn(warning_message, Warning)
+    else:
+        size = sys.getsizeof(model_save)
+        create_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+        try:
+            model_name = quote_ident(model_name)
+            result = executeSQL(
+                query=f"""
+                    SELECT 
+                        /*+LABEL(insert_verticapy_schema)*/ * 
+                    FROM verticapy.models
+                    WHERE LOWER(model_name) = '{model_name.lower()}'""",
+                method="fetchrow",
+                print_time_sql=False,
+            )
+            if result:
+                raise NameError(f"The model named {model_name} already exists.")
+            else:
+                executeSQL(
+                    query=f"""
+                        INSERT /*+LABEL(insert_verticapy_schema)*/ 
+                        INTO verticapy.models(model_name, 
+                                              category, 
+                                              model_type, 
+                                              create_time, 
+                                              size) 
+                                      VALUES ('{model_name}', 
+                                              '{category}',
+                                              '{model_type}',
+                                              '{create_time}',
+                                               {size});""",
+                    print_time_sql=False,
+                )
+                executeSQL("COMMIT;", print_time_sql=False)
+                for attr_name in model_save:
+                    model_save_str = str(model_save[attr_name]).replace("'", "''")
+                    executeSQL(
+                        query=f"""
+                            INSERT /*+LABEL(insert_verticapy_schema)*/
+                            INTO verticapy.attr(model_name,
+                                                attr_name,
+                                                value) 
+                                        VALUES ('{model_name}',
+                                                '{attr_name}',
+                                                '{model_save_str}');""",
+                        print_time_sql=False,
+                    )
+                    executeSQL("COMMIT;", print_time_sql=False)
+        except Exception as e:
+            warning_message = f"The VerticaPy model could not be stored:\n{e}"
+            warnings.warn(warning_message, Warning)
+            raise

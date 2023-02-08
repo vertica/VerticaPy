@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import time
 from typing import Union
 from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utils._toolbox import str_sql
+from verticapy.core.str_sql import str_sql
 
 
 @save_verticapy_logs

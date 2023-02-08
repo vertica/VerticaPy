@@ -37,6 +37,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.core.str_sql import str_sql
 from verticapy.errors import *
 
 # Other modules
@@ -647,6 +648,8 @@ Attributes
                     query, title="getting the biggest string", method="fetchfirstelem",
                 )
                 biggest_str = biggest_str.strip()
+                from verticapy.io.parsers.csv import guess_sep
+
                 sep = guess_sep(biggest_str)
                 if str(dtype).startswith("vmap"):
                     if len(biggest_str) > 2 and (

@@ -72,6 +72,7 @@ from verticapy.errors import (
 )
 from verticapy.utils._toolbox import *
 from verticapy.plotting._colors import gen_colors, gen_cmap
+from verticapy.core.str_sql import str_sql
 
 ###
 #                                           _____
@@ -1581,6 +1582,8 @@ vColumns : vColumn
     str / list
         Formatted columns' names.
         """
+        from verticapy.stats._utils import levenshtein
+
         if argv:
             result = []
             for arg in argv:
@@ -1684,6 +1687,8 @@ vColumns : vColumn
     tuple
         (nearest column, levenstein distance)
         """
+        from verticapy.stats._utils import levenshtein
+
         columns = self.get_columns()
         col = column.replace('"', "").lower()
         result = (columns[0], levenshtein(col, columns[0].replace('"', "").lower()))

@@ -2381,6 +2381,8 @@ tablesample
     elif metric == "auto":
         metric = "logloss"
     if len(X) < 20:
+        from verticapy.stats._utils import all_comb
+
         all_configuration = all_comb(X)
         if len(all_configuration) > comb_limit and comb_limit > 0:
             all_configuration = random.sample(all_configuration, comb_limit)

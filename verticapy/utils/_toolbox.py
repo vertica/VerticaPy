@@ -44,15 +44,6 @@ except:
 #
 
 
-def all_comb(X: list):
-    all_configuration = []
-    for r in range(len(X) + 1):
-        combinations_object = itertools.combinations(X, r)
-        combinations_list = list(combinations_object)
-        if combinations_list[0]:
-            all_configuration += combinations_list
-    return all_configuration
-
 
 def bin_spatial_to_str(
     category: str, column: str = "{}",
@@ -98,13 +89,6 @@ def erase_label(query: str):
     for label in labels:
         query = query.replace(f"/*+LABEL{label}*/", "")
     return query
-
-
-def erase_space_start_end_in_list_values(L: list):
-    L_tmp = [elem for elem in L]
-    for idx in range(len(L_tmp)):
-        L_tmp[idx] = L_tmp[idx].strip()
-    return L_tmp
 
 
 def executeSQL(
@@ -202,6 +186,8 @@ def flat_dict(d: dict) -> str:
 
 
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
+    from verticapy.core.str_sql import str_sql
+    
     if isinstance(x, vp.vColumn):
         val = x.alias
     elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
@@ -347,37 +333,6 @@ Takes as input the Vertica Python type code and returns its corresponding data t
     elif scale and precision and has_precision_scale:
         result += f"({precision},{scale})"
     return result
-
-
-def get_header_name_csv(path: str, sep: str):
-    f = open(path, "r")
-    file_header = f.readline().replace("\n", "").replace('"', "")
-    if not (sep):
-        sep = guess_sep(file_header)
-    file_header = file_header.split(sep)
-    f.close()
-    for idx, col in enumerate(file_header):
-        if col == "":
-            if idx == 0:
-                position = "beginning"
-            elif idx == len(file_header) - 1:
-                position = "end"
-            else:
-                position = "middle"
-            file_header[idx] = f"col{idx}"
-            warning_message = (
-                f"An inconsistent name was found in the {position} of the "
-                "file header (isolated separator). It will be replaced "
-                f"by col{idx}."
-            )
-            if idx == 0:
-                warning_message += (
-                    "\nThis can happen when exporting a pandas DataFrame "
-                    "to CSV while retaining its indexes.\nTip: Use "
-                    "index=False when exporting with pandas.DataFrame.to_csv."
-                )
-            warnings.warn(warning_message, Warning)
-    return erase_space_start_end_in_list_values(file_header)
 
 
 def get_match_index(x: str, col_list: list, str_check: bool = True):
@@ -582,27 +537,6 @@ def get_verticapy_function(key: str, method: str = ""):
     return key
 
 
-def guess_sep(file_str: str):
-    sep = ","
-    max_occur = file_str.count(",")
-    for s in ("|", ";"):
-        total_occurences = file_str.count(s)
-        if total_occurences > max_occur:
-            max_occur = total_occurences
-            sep = s
-    return sep
-
-
-def heuristic_length(i):
-    GAMMA = 0.5772156649
-    if i == 2:
-        return 1
-    elif i > 2:
-        return 2 * (np.log(i - 1) + GAMMA) - 2 * (i - 1) / i
-    else:
-        return 0
-
-
 def indentSQL(query: str):
     query = (
         query.replace("SELECT", "\n   SELECT\n    ")
@@ -647,76 +581,6 @@ def indentSQL(query: str):
     return query_print
 
 
-def insert_verticapy_schema(
-    model_name: str,
-    model_type: str,
-    model_save: dict,
-    category: str = "VERTICAPY_MODELS",
-):
-    sql = "SELECT /*+LABEL(insert_verticapy_schema)*/ * FROM columns WHERE table_schema='verticapy';"
-    result = executeSQL(sql, method="fetchrow", print_time_sql=False)
-    if not (result):
-        warning_message = (
-            "The VerticaPy schema doesn't exist or is "
-            "incomplete. The model can not be stored.\n"
-            "Please use create_verticapy_schema function "
-            "to set up the schema and the drop function to "
-            "drop it if it is corrupted."
-        )
-        warnings.warn(warning_message, Warning)
-    else:
-        size = sys.getsizeof(model_save)
-        create_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-        try:
-            model_name = quote_ident(model_name)
-            result = executeSQL(
-                query=f"""
-                    SELECT 
-                        /*+LABEL(insert_verticapy_schema)*/ * 
-                    FROM verticapy.models
-                    WHERE LOWER(model_name) = '{model_name.lower()}'""",
-                method="fetchrow",
-                print_time_sql=False,
-            )
-            if result:
-                raise NameError(f"The model named {model_name} already exists.")
-            else:
-                executeSQL(
-                    query=f"""
-                        INSERT /*+LABEL(insert_verticapy_schema)*/ 
-                        INTO verticapy.models(model_name, 
-                                              category, 
-                                              model_type, 
-                                              create_time, 
-                                              size) 
-                                      VALUES ('{model_name}', 
-                                              '{category}',
-                                              '{model_type}',
-                                              '{create_time}',
-                                               {size});""",
-                    print_time_sql=False,
-                )
-                executeSQL("COMMIT;", print_time_sql=False)
-                for attr_name in model_save:
-                    model_save_str = str(model_save[attr_name]).replace("'", "''")
-                    executeSQL(
-                        query=f"""
-                            INSERT /*+LABEL(insert_verticapy_schema)*/
-                            INTO verticapy.attr(model_name,
-                                                attr_name,
-                                                value) 
-                                        VALUES ('{model_name}',
-                                                '{attr_name}',
-                                                '{model_save_str}');""",
-                        print_time_sql=False,
-                    )
-                    executeSQL("COMMIT;", print_time_sql=False)
-        except Exception as e:
-            warning_message = f"The VerticaPy model could not be stored:\n{e}"
-            warnings.warn(warning_message, Warning)
-            raise
-
-
 def isnotebook():
     try:
         shell = get_ipython().__class__.__name__
@@ -728,28 +592,6 @@ def isnotebook():
             return False  # Other type (?)
     except NameError:
         return False  # Probably standard Python interpreter
-
-
-def levenshtein(s: str, t: str):
-    rows = len(s) + 1
-    cols = len(t) + 1
-    dist = [[0 for x in range(cols)] for x in range(rows)]
-    for i in range(1, rows):
-        dist[i][0] = i
-    for i in range(1, cols):
-        dist[0][i] = i
-    for col in range(1, cols):
-        for row in range(1, rows):
-            if s[row - 1] == t[col - 1]:
-                cost = 0
-            else:
-                cost = 1
-            dist[row][col] = min(
-                dist[row - 1][col] + 1,
-                dist[row][col - 1] + 1,
-                dist[row - 1][col - 1] + cost,
-            )
-    return dist[row][col]
 
 
 def print_query(query: str, title: str = ""):
@@ -1181,229 +1023,6 @@ def updated_dict(
         else:
             d[elem] = d2[elem]
     return d
-
-
-class str_sql:
-    def __init__(self, alias, category="", init_transf=""):
-        self.alias = alias
-        self.category_ = category
-        if not (init_transf):
-            self.init_transf = alias
-        else:
-            self.init_transf = init_transf
-
-    def __repr__(self):
-        return str(self.init_transf)
-
-    def __str__(self):
-        return str(self.init_transf)
-
-    def __abs__(self):
-        return str_sql(f"ABS({self.init_transf})", self.category())
-
-    def __add__(self, x):
-        if (isinstance(self, vp.vColumn) and self.isarray()) and (
-            isinstance(x, vp.vColumn) and x.isarray()
-        ):
-            return str_sql(
-                f"ARRAY_CAT({self.init_transf}, {x.init_transf})", "complex",
-            )
-        val = format_magic(x)
-        op = (
-            "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
-        )
-        return str_sql(f"({self.init_transf}) {op} ({val})", self.category())
-
-    def __radd__(self, x):
-        if (isinstance(self, vp.vColumn) and self.isarray()) and (
-            isinstance(x, vp.vColumn) and x.isarray()
-        ):
-            return str_sql(
-                f"ARRAY_CAT({x.init_transf}, {self.init_transf})", "complex",
-            )
-        val = format_magic(x)
-        op = (
-            "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
-        )
-        return str_sql(f"({val}) {op} ({self.init_transf})", self.category())
-
-    def __and__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({self.init_transf}) AND ({val})", self.category())
-
-    def __rand__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({val}) AND ({self.init_transf})", self.category())
-
-    def _between(self, x, y):
-        val1 = str(format_magic(x))
-        val2 = str(format_magic(y))
-        return str_sql(
-            f"({self.init_transf}) BETWEEN ({val1}) AND ({val2})", self.category(),
-        )
-
-    def _in(self, *argv):
-        if (len(argv) == 1) and (isinstance(argv[0], list)):
-            x = argv[0]
-        elif len(argv) == 0:
-            ParameterError("Method 'in_' doesn't work with no parameters.")
-        else:
-            x = [elem for elem in argv]
-        assert isinstance(x, Iterable) and not (
-            isinstance(x, str)
-        ), f"Method '_in' only works on iterable elements other than str. Found {x}."
-        val = [str(format_magic(elem)) for elem in x]
-        val = ", ".join(val)
-        return str_sql(f"({self.init_transf}) IN ({val})", self.category())
-
-    def _not_in(self, *argv):
-        if (len(argv) == 1) and (isinstance(argv[0], list)):
-            x = argv[0]
-        elif len(argv) == 0:
-            ParameterError("Method '_not_in' doesn't work with no parameters.")
-        else:
-            x = [elem for elem in argv]
-        if not (isinstance(x, Iterable)) or (isinstance(x, str)):
-            raise TypeError(
-                "Method '_not_in' only works on iterable "
-                f"elements other than str. Found {x}."
-            )
-        val = [str(format_magic(elem)) for elem in x]
-        val = ", ".join(val)
-        return str_sql(f"({self.init_transf}) NOT IN ({val})", self.category())
-
-    def _as(self, x):
-        return str_sql(f"({self.init_transf}) AS {x}", self.category())
-
-    def _distinct(self):
-        return str_sql(f"DISTINCT ({self.init_transf})", self.category())
-
-    def _over(self, by: (str, list) = [], order_by: (str, list) = []):
-        if isinstance(by, str):
-            by = [by]
-        if isinstance(order_by, str):
-            order_by = [order_by]
-        by = ", ".join([str(elem) for elem in by])
-        if by:
-            by = f"PARTITION BY {by}"
-        order_by = ", ".join([str(elem) for elem in order_by])
-        if order_by:
-            order_by = f"ORDER BY {order_by}"
-        return str_sql(f"{self.init_transf} OVER ({by} {order_by})", self.category(),)
-
-    def __eq__(self, x):
-        op = "IS" if (x == None) and not (isinstance(x, str_sql)) else "="
-        val = format_magic(x)
-        if val != "NULL":
-            val = f"({val})"
-        return str_sql(f"({self.init_transf}) {op} {val}", self.category())
-
-    def __ne__(self, x):
-        op = "IS NOT" if (x == None) and not (isinstance(x, str_sql)) else "!="
-        val = format_magic(x)
-        if val != "NULL":
-            val = f"({val})"
-        return str_sql(f"({self.init_transf}) {op} {val}", self.category())
-
-    def __ge__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({self.init_transf}) >= ({val})", self.category())
-
-    def __gt__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({self.init_transf}) > ({val})", self.category())
-
-    def __le__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({self.init_transf}) <= ({val})", self.category())
-
-    def __lt__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({self.init_transf}) < ({val})", self.category())
-
-    def __mul__(self, x):
-        if self.category() == "text" and isinstance(x, int):
-            return str_sql(f"REPEAT({self.init_transf}, {x})", self.category())
-        val = format_magic(x)
-        return str_sql(f"({self.init_transf}) * ({val})", self.category())
-
-    def __rmul__(self, x):
-        if self.category() == "text" and isinstance(x, int):
-            return str_sql(f"REPEAT({self.init_transf}, {x})", self.category())
-        val = format_magic(x)
-        return str_sql(f"({val}) * ({self.init_transf})", self.category())
-
-    def __or__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({self.init_transf}) OR ({val})", self.category())
-
-    def __ror__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({val}) OR ({self.init_transf})", self.category())
-
-    def __pos__(self):
-        return str_sql(f"+({self.init_transf})", self.category())
-
-    def __neg__(self):
-        return str_sql(f"-({self.init_transf})", self.category())
-
-    def __pow__(self, x):
-        val = format_magic(x)
-        return str_sql(f"POWER({self.init_transf}, {val})", self.category())
-
-    def __rpow__(self, x):
-        val = format_magic(x)
-        return str_sql(f"POWER({val}, {self.init_transf})", self.category())
-
-    def __mod__(self, x):
-        val = format_magic(x)
-        return str_sql(f"MOD({self.init_transf}, {val})", self.category())
-
-    def __rmod__(self, x):
-        val = format_magic(x)
-        return str_sql(f"MOD({val}, {self.init_transf})", self.category())
-
-    def __sub__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({self.init_transf}) - ({val})", self.category())
-
-    def __rsub__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({val}) - ({self.init_transf})", self.category())
-
-    def __truediv__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({self.init_transf}) / ({val})", self.category())
-
-    def __rtruediv__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({val}) / ({self.init_transf})", self.category())
-
-    def __floordiv__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({self.init_transf}) // ({val})", self.category())
-
-    def __rfloordiv__(self, x):
-        val = format_magic(x)
-        return str_sql(f"({val}) // ({self.init_transf})", self.category())
-
-    def __ceil__(self):
-        return str_sql(f"CEIL({self.init_transf})", self.category())
-
-    def __floor__(self):
-        return str_sql(f"FLOOR({self.init_transf})", self.category())
-
-    def __trunc__(self):
-        return str_sql(f"TRUNC({self.init_transf})", self.category())
-
-    def __invert__(self):
-        return str_sql(f"-({self.init_transf}) - 1", self.category())
-
-    def __round__(self, x):
-        return str_sql(f"ROUND({self.init_transf}, {x})", self.category())
-
-    def category(self):
-        return self.category_
 
 
 #

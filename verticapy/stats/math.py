@@ -27,6 +27,7 @@ from verticapy.utils._decorators import (
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy.stats.tools import *
+from verticapy.core.str_sql import str_sql
 
 #
 # Global Variables

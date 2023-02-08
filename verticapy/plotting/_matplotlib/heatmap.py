@@ -30,10 +30,10 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import (
     executeSQL,
     quote_ident,
-    str_sql,
     bin_spatial_to_str,
     updated_dict,
 )
+from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, gen_cmap
 

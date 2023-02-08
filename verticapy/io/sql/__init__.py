@@ -17,4 +17,4 @@ permissions and limitations under the License.
 from .create import create_schema, create_table, create_verticapy_schema
 from .drop import drop
 from .read import readSQL, to_tablesample, vDataFrameSQL
-from .insert import insert_into
+from .insert import insert_into, insert_verticapy_schema

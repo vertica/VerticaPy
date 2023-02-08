@@ -29,6 +29,51 @@ from verticapy.utils._toolbox import *
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 from ..flex import compute_flextable_keys
 
+def guess_sep(file_str: str):
+    sep = ","
+    max_occur = file_str.count(",")
+    for s in ("|", ";"):
+        total_occurences = file_str.count(s)
+        if total_occurences > max_occur:
+            max_occur = total_occurences
+            sep = s
+    return sep
+
+def erase_space_start_end_in_list_values(L: list):
+    L_tmp = [elem for elem in L]
+    for idx in range(len(L_tmp)):
+        L_tmp[idx] = L_tmp[idx].strip()
+    return L_tmp
+
+def get_header_name_csv(path: str, sep: str):
+    f = open(path, "r")
+    file_header = f.readline().replace("\n", "").replace('"', "")
+    if not (sep):
+        sep = guess_sep(file_header)
+    file_header = file_header.split(sep)
+    f.close()
+    for idx, col in enumerate(file_header):
+        if col == "":
+            if idx == 0:
+                position = "beginning"
+            elif idx == len(file_header) - 1:
+                position = "end"
+            else:
+                position = "middle"
+            file_header[idx] = f"col{idx}"
+            warning_message = (
+                f"An inconsistent name was found in the {position} of the "
+                "file header (isolated separator). It will be replaced "
+                f"by col{idx}."
+            )
+            if idx == 0:
+                warning_message += (
+                    "\nThis can happen when exporting a pandas DataFrame "
+                    "to CSV while retaining its indexes.\nTip: Use "
+                    "index=False when exporting with pandas.DataFrame.to_csv."
+                )
+            warnings.warn(warning_message, Warning)
+    return erase_space_start_end_in_list_values(file_header)
 
 def pcsv(
     path: str,
