@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import os
 
 def extract_col_dt_from_query(query: str, field: str):
     n, m = len(query), len(field) + 2
@@ -29,7 +30,7 @@ def extract_col_dt_from_query(query: str, field: str):
                     total_parenthesis += 1
                 elif query[i] in (")", "]", "}"):
                     total_parenthesis -= 1
-            return (current_word, query[k:i])
+            return current_word, query[k:i]
 
 def extract_compression(path: str):
     file_extension = path.split(".")[-1].lower()
@@ -41,9 +42,9 @@ def extract_compression(path: str):
 
 
 def get_first_file(path: str, ext: str):
-    dirname = os.path.dirname(path)
-    files = os.listdir(dirname)
+    directory_name = os.path.dirname(path)
+    files = os.listdir(directory_name)
     for f in files:
         file_ext = f.split(".")[-1]
         if file_ext == ext:
-            return dirname + "/" + f
+            return directory_name + "/" + f
