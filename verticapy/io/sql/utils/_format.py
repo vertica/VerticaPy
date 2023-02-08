@@ -30,7 +30,6 @@ def clean_query(query: str):
 
     return res
 
-
 def erase_label(query: str):
     labels = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
     for label in labels:

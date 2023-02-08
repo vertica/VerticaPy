@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 import os
 
-
 def extract_col_dt_from_query(query: str, field: str):
     n, m = len(query), len(field) + 2
     for i in range(n - m):
@@ -32,7 +31,6 @@ def extract_col_dt_from_query(query: str, field: str):
                 elif query[i] in (")", "]", "}"):
                     total_parenthesis -= 1
             return current_word, query[k:i]
-
 
 def extract_compression(path: str):
     file_extension = path.split(".")[-1].lower()

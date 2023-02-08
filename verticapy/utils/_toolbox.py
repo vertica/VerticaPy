@@ -20,8 +20,9 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import shutil, random, datetime, time
-from typing import Literal
+import shutil, re, sys, warnings, random, itertools, datetime, time, html, os
+from collections.abc import Iterable
+from typing import Union, Literal
 
 # VerticaPy Modules
 import verticapy as vp
@@ -30,13 +31,13 @@ from verticapy.io.sql.utils._format import quote_ident
 
 # Other Modules
 import numpy as np
+import pandas as pd
 
 # IPython - Optional
 try:
     from IPython.display import HTML, display
 except:
     pass
-
 
 #
 #
@@ -70,7 +71,7 @@ def color_dict(d: dict, idx: int = 0):
 def executeSQL(
     query: str,
     title: str = "",
-    data: list = None,
+    data: list = [],
     method: Literal[
         "cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"
     ] = "cursor",
