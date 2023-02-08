@@ -23,7 +23,7 @@ from verticapy.utils._decorators import save_verticapy_logs, check_minimum_versi
 from verticapy.utils._toolbox import *
 from verticapy.errors import ExtensionError, ParameterError
 from verticapy.io.sql.utils._format import quote_ident, format_schema_table, clean_query
-
+from verticapy.io.parsers._utils import extract_compression, extract_col_dt_from_query
 
 @check_minimum_version
 @save_verticapy_logs

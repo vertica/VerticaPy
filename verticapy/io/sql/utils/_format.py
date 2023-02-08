@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import re
 
+
 def clean_query(query: str):
     res = re.sub(r"--.+(\n|\Z)", "", query)
     res = res.replace("\t", " ").replace("\n", " ")
@@ -29,9 +30,16 @@ def clean_query(query: str):
 
     return res
 
+def erase_label(query: str):
+    labels = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
+    for label in labels:
+        query = query.replace(f"/*+LABEL{label}*/", "")
+    return query
+
 
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
     from verticapy.core.str_sql import str_sql
+    from verticapy.utils._toolbox import get_category_from_python_type
     import verticapy as vp
 
     if isinstance(x, vp.vColumn):
@@ -165,7 +173,7 @@ def replace_vars_in_query(query: str, locals_dict: dict):
 
 def schema_relation(relation):
     import verticapy as vp
-    
+
     if isinstance(relation, vp.vDataFrame):
         schema, relation = vp.OPTIONS["temp_schema"], ""
     else:

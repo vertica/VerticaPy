@@ -80,6 +80,7 @@ from verticapy.io.sql.utils._format import (
     format_schema_table,
     clean_query,
 )
+from verticapy.core._utils._merge import gen_coalesce, group_similar_names
 
 ###
 #                                           _____

@@ -39,6 +39,18 @@ except:
     GRAPHVIZ_ON = False
 
 
+def flat_dict(d: dict) -> str:
+    # converts dictionary to string with a specific format
+    res = []
+    for key in d:
+        q = '"' if isinstance(d[key], str) else ""
+        res += [f"{key}={q}{d[key]}{q}"]
+    res = ", ".join(res)
+    if res:
+        res = f", {res}"
+    return res
+
+
 def predict_from_nb(
     X: Union[list, np.ndarray],
     attributes: list,

@@ -68,13 +68,6 @@ def color_dict(d: dict, idx: int = 0):
         return gen_colors()[idx % len(gen_colors())]
 
 
-def erase_label(query: str):
-    labels = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
-    for label in labels:
-        query = query.replace(f"/*+LABEL{label}*/", "")
-    return query
-
-
 def executeSQL(
     query: str,
     title: str = "",
@@ -88,7 +81,7 @@ def executeSQL(
     symbol: str = "$",
 ):
     from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-    from verticapy.io.sql.utils._format import clean_query
+    from verticapy.io.sql.utils._format import clean_query, erase_label
 
     # Cleaning the query
     if sql_push_ext and (symbol in vp.SPECIAL_SYMBOLS):
@@ -124,33 +117,6 @@ def executeSQL(
     return cursor
 
 
-def extract_col_dt_from_query(query: str, field: str):
-    n, m = len(query), len(field) + 2
-    for i in range(n - m):
-        current_word = query[i : i + m]
-        if current_word.lower() == '"' + field.lower() + '"':
-            i = i + m
-            total_parenthesis = 0
-            k = i + 1
-            while ((query[i] != ",") or (total_parenthesis > 0)) and i < n - m:
-                i += 1
-                if query[i] in ("(", "[", "{"):
-                    total_parenthesis += 1
-                elif query[i] in (")", "]", "}"):
-                    total_parenthesis -= 1
-            return (current_word, query[k:i])
-    return None
-
-
-def extract_compression(path: str):
-    file_extension = path.split(".")[-1].lower()
-    lookup_table = {"gz": "GZIP", "bz": "BZIP", "lz": "LZO", "zs": "ZSTD"}
-    if file_extension[0:2] in lookup_table:
-        return lookup_table[file_extension[0:2]]
-    else:
-        return "UNCOMPRESSED"
-
-
 def find_val_in_dict(x: str, d: dict, return_key: bool = False):
     for elem in d:
         if quote_ident(x).lower() == quote_ident(elem).lower():
@@ -158,18 +124,6 @@ def find_val_in_dict(x: str, d: dict, return_key: bool = False):
                 return elem
             return d[elem]
     raise NameError(f'Key "{x}" was not found in {d}.')
-
-
-def flat_dict(d: dict) -> str:
-    # converts dictionary to string with a specific format
-    res = []
-    for key in d:
-        q = '"' if isinstance(d[key], str) else ""
-        res += [f"{key}={q}{d[key]}{q}"]
-    res = ", ".join(res)
-    if res:
-        res = f", {res}"
-    return res
 
 
 def gen_name(L: list):
@@ -251,16 +205,6 @@ def get_category_from_vertica_type(ctype: str = ""):
             return "text"
     else:
         return "undefined"
-
-
-def get_first_file(path: str, ext: str):
-    dirname = os.path.dirname(path)
-    files = os.listdir(dirname)
-    for f in files:
-        file_ext = f.split(".")[-1]
-        if file_ext == ext:
-            return dirname + "/" + f
-    return None
 
 
 def get_final_vertica_type(
@@ -514,303 +458,3 @@ def updated_dict(
         else:
             d[elem] = d2[elem]
     return d
-
-
-#
-#
-# Tools to merge similar names/categories together.
-#
-
-
-def erase_prefix_in_name(name: str, prefix: list = []):
-    """----
-Excludes the input lists of prefixes from the input name and returns it.
-When there is a match, the other elements of the list are ignored.
-
-Parameters
----------- 
-name: str
-    Input name.
-prefix: list, optional
-    List of prefixes.
-
-Returns
--------
-name
-    The name without the prefixes.
-    """
-    name_tmp = name
-    for p in prefix:
-        n = len(p)
-        if p in name_tmp and name_tmp[:n] == p:
-            name_tmp = name_tmp[n:]
-            break
-    return name_tmp
-
-
-def erase_suffix_in_name(name: str, suffix: list = []):
-    """----
-Excludes the input lists of suffixes from the input name and returns it.
-When there is a match, the other elements of the list are ignored.
-
-Parameters
----------- 
-name: str
-    Input name.
-suffix: list, optional
-    List of suffixes.
-
-Returns
--------
-name
-    The name without the suffixes.
-    """
-    name_tmp = name
-    for s in suffix:
-        n = len(s)
-        if s in name_tmp and name_tmp[-n:] == s:
-            name_tmp = name_tmp[:-n]
-            break
-    return name_tmp
-
-
-def erase_word_in_name(name: str, word: list = []):
-    """----
-Excludes the input lists of words from the input name and returns it.
-When there is a match, the other elements of the list are ignored.
-
-Parameters
----------- 
-name: str
-    Input name.
-word: list, optional
-    List of words.
-
-Returns
--------
-name
-    The name without the input words.
-    """
-    for w in word:
-        if w in name:
-            return name.replace(w, "")
-            break
-    return name
-
-
-def erase_in_name(
-    name: str,
-    suffix: list = [],
-    prefix: list = [],
-    word: list = [],
-    order: list = ["p", "s", "w"],
-):
-    """----
-Excludes the input lists of suffixes and prefixes from the input name and 
-returns it. When there is a match, the other elements of the list are ignored.
-
-Parameters
----------- 
-name: str
-    Input name.
-suffix: list, optional
-    List of suffixes.
-prefix: list, optional
-    List of prefixes.
-word: list, optional
-    List of words.
-order: list, optional
-    The order of the process.
-        s: suffix
-        p: prefix
-        w: word
-    For example the list ["p", "s", "w"] will start by excluding the 
-    prefixes, then suffixes and finally the input words.
-
-Returns
--------
-name
-    The name without the prefixes, suffixes and input words.
-    """
-    name_tmp = name
-    f = {
-        "p": (erase_prefix_in_name, prefix),
-        "s": (erase_suffix_in_name, suffix),
-        "w": (erase_word_in_name, word),
-    }
-    for x in order:
-        name_tmp = f[x][0](name_tmp, f[x][1])
-    return name_tmp
-
-
-def is_similar_name(
-    name1: str,
-    name2: str,
-    skip_suffix: list = [],
-    skip_prefix: list = [],
-    skip_word: list = [],
-    order: list = ["p", "s", "w"],
-):
-    """----
-Excludes the input lists of suffixes, prefixes and words from the input name 
-and returns it.
-
-Parameters
----------- 
-name1: str
-    First name to compare.
-name2: str
-    Second name to compare.
-skip_suffix: list, optional
-    List of suffixes to exclude.
-skip_prefix: list, optional
-    List of prefixes to exclude.
-skip_word: list, optional
-    List of words to exclude.
-order: list, optional
-    The order of the process.
-        s: suffix
-        p: prefix
-        w: word
-    For example the list ["p", "s", "w"] will start by excluding the 
-    prefixes, then suffixes and finally the input words.
-    
-
-Returns
--------
-bool
-    True if the two names are similar, false otherwise.
-    """
-    n1 = erase_in_name(
-        name=name1, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order,
-    )
-    n2 = erase_in_name(
-        name=name2, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order,
-    )
-    return n1 == n2
-
-
-def belong_to_group(
-    name: str,
-    group: list,
-    skip_suffix: list = [],
-    skip_prefix: list = [],
-    skip_word: list = [],
-    order: list = ["p", "s", "w"],
-):
-    """----
-Excludes the input lists of suffixes, prefixes and words from the input name 
-and looks if it belongs to a specific group.
-
-Parameters
----------- 
-name: str
-    Input Name.
-group: list
-    List of names.
-skip_suffix: list, optional
-    List of suffixes to exclude.
-skip_prefix: list, optional
-    List of prefixes to exclude.
-skip_word: list, optional
-    List of words to exclude.
-order: list, optional
-    The order of the process.
-        s: suffix
-        p: prefix
-        w: word
-    For example the list ["p", "s", "w"] will start by excluding the 
-    prefixes, then suffixes and finally the input words.
-
-Returns
--------
-bool
-    True if the name belong to the input group, false otherwise.
-    """
-    for name2 in group:
-        if is_similar_name(
-            name1=name,
-            name2=name2,
-            skip_suffix=skip_suffix,
-            skip_prefix=skip_prefix,
-            skip_word=skip_word,
-            order=order,
-        ):
-            return True
-    return False
-
-
-def group_similar_names(
-    colnames: list,
-    skip_suffix: list = [],
-    skip_prefix: list = [],
-    skip_word: list = [],
-    order: list = ["p", "s", "w"],
-):
-    """----
-Creates similar group using the input column names.
-
-Parameters
----------- 
-colnames: list
-    List of input names.
-skip_suffix: list, optional
-    List of suffixes to exclude.
-skip_prefix: list, optional
-    List of prefixes to exclude.
-skip_word: list, optional
-    List of words to exclude.
-order: list, optional
-    The order of the process.
-        s: suffix
-        p: prefix
-        w: word
-    For example the list ["p", "s", "w"] will start by excluding the 
-    prefixes, then suffixes and finally the input words.
-
-Returns
--------
-dict
-    dictionary including the different groups.
-    """
-    result = {}
-    for col in colnames:
-        groupname = erase_in_name(
-            name=col,
-            suffix=skip_suffix,
-            prefix=skip_prefix,
-            word=skip_word,
-            order=order,
-        )
-        if groupname not in result:
-            result[groupname] = [col]
-        else:
-            result[groupname] += [col]
-    return result
-
-
-def gen_coalesce(group_dict: dict):
-    """----
-Generates the SQL statement to merge the groups together.
-
-Parameters
----------- 
-group_dict: dict
-    Dictionary including the different groups.
-
-Returns
--------
-str
-    SQL statement.
-    """
-    result = []
-    for g in group_dict:
-        L = [quote_ident(elem) for elem in group_dict[g]]
-        g_ident = quote_ident(g)
-        if len(L) == 1:
-            sql_tmp = quote_ident(group_dict[g][0])
-            result += [f"{sql_tmp} AS {g_ident}"]
-        else:
-            sql_tmp = ", ".join(L)
-            result += [f"COALESCE({sql_tmp}) AS {g_ident}"]
-    return ",\n".join(result)
