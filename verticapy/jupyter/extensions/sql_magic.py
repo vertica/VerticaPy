@@ -42,7 +42,6 @@ import verticapy as vp
 from verticapy.errors import QueryError, ParameterError, ParsingError
 from verticapy import (
     executeSQL,
-    get_magic_options,
     vDataFrame,
     set_option,
     tablesample,

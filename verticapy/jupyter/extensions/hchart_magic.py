@@ -35,7 +35,6 @@ from verticapy import (
     tablesample,
     clean_query,
     replace_vars_in_query,
-    get_magic_options,
     save_verticapy_logs,
 )
 from verticapy.plotting._highcharts import hchartSQL
