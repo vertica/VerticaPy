@@ -21,6 +21,7 @@ permissions and limitations under the License.
 #
 # Standard Python Modules
 import math, decimal, datetime
+import numpy as np
 
 # VerticaPy Modules
 import verticapy as vp
@@ -400,8 +401,6 @@ The tablesample attributes are the same as the parameters.
     numpy.array
         Numpy Array.
         """
-        import numpy as np
-
         return np.array(self.to_list())
 
     def to_pandas(self):

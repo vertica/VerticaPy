@@ -20,7 +20,7 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import statistics, random, time
+import statistics, random, time, math
 import numpy as np
 from collections.abc import Iterable
 from itertools import product
