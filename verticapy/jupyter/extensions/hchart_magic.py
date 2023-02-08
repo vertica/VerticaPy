@@ -39,12 +39,12 @@ from verticapy import (
     save_verticapy_logs,
 )
 from verticapy.plotting._highcharts import hchartSQL
-from .utils import get_magic_options
 
 
 @save_verticapy_logs
 @needs_local_scope
 def hchart_magic(line, cell="", local_ns=None):
+    from .utils import get_magic_options
 
     # Initialization
     query = "" if (not (cell) and (line)) else cell
