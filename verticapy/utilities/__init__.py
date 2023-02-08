@@ -20,3 +20,4 @@ from verticapy.io.sql import *
 from verticapy._help import *
 from verticapy._version import vertica_version
 from verticapy.utils._collect import save_to_query_profile
+from verticapy.core.tablesample import tablesample
