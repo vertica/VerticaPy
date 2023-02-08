@@ -51,13 +51,13 @@ from verticapy import (
     save_verticapy_logs,
 )
 from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-from .utils import get_magic_options
 
 
 @save_verticapy_logs
 @needs_local_scope
 def sql_magic(line, cell="", local_ns=None):
     from verticapy import vDataFrameSQL
+    from .utils import get_magic_options
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.
