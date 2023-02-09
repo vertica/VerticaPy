@@ -149,6 +149,7 @@ def gen_tmp_name(schema: str = "", name: str = ""):
         name = f"{quote_ident(schema)}.{name}"
     return name
 
+
 def get_category_from_vertica_type(ctype: str = ""):
     ctype = ctype.lower().strip()
     if ctype != "":

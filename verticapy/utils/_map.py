@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import datetime
 import numpy as np
 
+
 def python_to_dtype_category(expr):
     try:
         category = expr.category()
@@ -34,6 +35,7 @@ def python_to_dtype_category(expr):
         else:
             category = ""
     return category
+
 
 def python_to_sql_dtype(dtype):
     if dtype in (str, "str", "string"):
@@ -61,6 +63,7 @@ def python_to_sql_dtype(dtype):
     elif isinstance(dtype, str):
         dtype = dtype.lower().strip()
     return dtype
+
 
 def verticapy_agg_name(key: str, method: str = ""):
     key = key.lower()

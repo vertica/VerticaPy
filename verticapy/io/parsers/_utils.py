@@ -42,6 +42,7 @@ def extract_compression(path: str):
     else:
         return "UNCOMPRESSED"
 
+
 def get_first_file(path: str, ext: str):
     directory_name = os.path.dirname(path)
     files = os.listdir(directory_name)

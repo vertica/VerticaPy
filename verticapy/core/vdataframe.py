@@ -8207,9 +8207,7 @@ vColumns : vColumn
             q = [q]
         prefix = "approx_" if approx else ""
         return self.aggregate(
-            func=[
-                verticapy_agg_name(prefix + f"{float(item) * 100}%") for item in q
-            ],
+            func=[verticapy_agg_name(prefix + f"{float(item) * 100}%") for item in q],
             columns=columns,
             **agg_kwds,
         )

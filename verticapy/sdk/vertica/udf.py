@@ -33,6 +33,7 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy.io.sql.sys import current_session, username
 
+
 @save_verticapy_logs
 def import_lib_udf(
     udf_list: list, library_name: str, include_dependencies: Union[str, list] = []

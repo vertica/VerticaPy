@@ -15,8 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
+
 def current_session():
-	from verticapy.utils._toolbox import executeSQL
+    from verticapy.utils._toolbox import executeSQL
 
     res = executeSQL(
         query="SELECT /*+LABEL(current_session)*/ CURRENT_SESSION();",
@@ -25,9 +26,10 @@ def current_session():
     )
     return int(res.split(":")[1], base=16)
 
+
 def username():
-	from verticapy.utils._toolbox import executeSQL
-	
+    from verticapy.utils._toolbox import executeSQL
+
     res = executeSQL(
         query="SELECT /*+LABEL(username)*/ USERNAME();",
         method="fetchfirstelem",

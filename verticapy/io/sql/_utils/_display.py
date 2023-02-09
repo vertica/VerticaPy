@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import shutil
 from verticapy.io.sql._utils._format import indentSQL
 
+
 def print_query(query: str, title: str = ""):
     screen_columns = shutil.get_terminal_size().columns
     query_print = indentSQL(query)
