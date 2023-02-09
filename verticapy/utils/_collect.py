@@ -52,6 +52,7 @@ bool
     """
     import verticapy as vp
     from verticapy.sql.read import _executeSQL
+    from verticapy.connect.connect import SESSION_IDENTIFIER
 
     if not (vp.OPTIONS["save_query_profile"]) or (
         isinstance(vp.OPTIONS["save_query_profile"], list)
@@ -75,7 +76,7 @@ bool
             if path:
                 json += f'"verticapy_fpath": "{path}", '
             if add_identifier:
-                json += f'"verticapy_id": "{vp.OPTIONS["identifier"]}", '
+                json += f'"verticapy_id": "{SESSION_IDENTIFIER}", '
             for key in json_dict:
                 json += f'"{key}": '
                 if isinstance(json_dict[key], bool):

@@ -20,14 +20,12 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import os
+import os, uuid
 from configparser import ConfigParser
 from typing import Literal
 
 # VerticaPy Modules
-import verticapy as vp
-import verticapy._config.config as vp_config
-
+from verticapy._version import __version__
 from verticapy.errors import ConnectionError, ParameterError
 
 # Vertica Modules
@@ -35,8 +33,8 @@ import vertica_python
 
 # Global Variables
 VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
-SESSION_LABEL = f"verticapy-{vp.__version__}-{vp_config.OPTIONS['identifier']}"
-CONNECTION = vp_config.OPTIONS["connection"]
+CONNECTION = {"conn": None, "section": None, "dsn": None,}
+EXTERNAL_CONNECTION = {}
 SPECIAL_SYMBOLS = [
     "$",
     "€",
@@ -49,8 +47,8 @@ SPECIAL_SYMBOLS = [
     "?",
     "!",
 ]
-
-#
+SESSION_IDENTIFIER = str(uuid.uuid1()).replace("-", "")
+SESSION_LABEL = f"verticapy-{__version__}-{SESSION_IDENTIFIER}"
 
 
 def available_connections():
@@ -507,7 +505,7 @@ symbol: str, optional
     a custom query.
     """
     if isinstance(cid, str) and isinstance(rowset, int):
-        vp_config.OPTIONS["external_connection"][symbol] = {
+        EXTERNAL_CONNECTION[symbol] = {
             "cid": cid,
             "rowset": rowset,
         }

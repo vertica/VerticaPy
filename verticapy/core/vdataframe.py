@@ -83,6 +83,7 @@ from verticapy.sql._utils._format import (
 )
 from verticapy.core._utils._merge import gen_coalesce, group_similar_names
 from verticapy.utils._map import verticapy_agg_name
+from verticapy.connect.connect import EXTERNAL_CONNECTION
 
 ###
 #                                           _____
@@ -244,7 +245,7 @@ vColumns : vColumn
             else:
                 query = sql
 
-            if symbol in vp.OPTIONS["external_connection"]:
+            if symbol in EXTERNAL_CONNECTION:
                 sql = symbol * 3 + query + symbol * 3
 
             else:

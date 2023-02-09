@@ -17,7 +17,8 @@ permissions and limitations under the License.
 from verticapy.errors import VersionError
 
 # Global Variable
-MINIMUM_VERSION = {
+__version__ = "0.13.0"
+MINIMUM_VERTICA_VERSION = {
     "Balance": [8, 1, 1],
     "BernoulliNB": [8, 0, 0],
     "BisectingKMeans": [9, 3, 1],
@@ -67,6 +68,7 @@ MINIMUM_VERSION = {
     "XGBoostClassifier": [10, 1, 0],
     "XGBoostRegressor": [10, 1, 0],
 }
+VERTICA_VERSION = None
 
 
 def vertica_version(condition: list = []):
@@ -86,11 +88,10 @@ list
     [MAJOR, MINOR, PATCH, POST]
     """
     from verticapy.sql.read import _executeSQL
-    import verticapy as vp
 
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
-    if not (vp.OPTIONS["vertica_version"]):
+    if not (VERTICA_VERSION):
         current_version = _executeSQL(
             "SELECT /*+LABEL('utilities.version')*/ version();",
             title="Getting the version.",
@@ -105,9 +106,9 @@ list
             result += [int(current_version[2].split("-")[1])]
         except:
             pass
-        vp.OPTIONS["vertica_version"] = result
+        VERTICA_VERSION = result
     else:
-        result = vp.OPTIONS["vertica_version"]
+        result = VERTICA_VERSION
     if condition:
         if condition[0] < result[0]:
             test = True

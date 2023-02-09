@@ -17,19 +17,20 @@ permissions and limitations under the License.
 from verticapy.errors import ConnectionError
 import re
 from verticapy.sql._utils._format import clean_query
+from verticapy.connect.connect import EXTERNAL_CONNECTION
 
 
 def get_dblink_fun(query: str, symbol: str = "$"):
-    import verticapy as vp
-
-    assert symbol in vp.OPTIONS["external_connection"], ConnectionError(
-        f"External Query detected but no corresponding Connection Identifier "
-        f"Database is defined (Using the symbol '{symbol}'). Use the "
-        "function connect.set_external_connection to set one with the correct symbol."
-    )
-    cid = vp.OPTIONS["external_connection"][symbol]["cid"].replace("'", "''")
+    if symbol not in EXTERNAL_CONNECTION: 
+        raise ConnectionError(
+            "External Query detected but no corresponding "
+            "Connection Identifier Database is defined (Using "
+            f"the symbol '{symbol}'). Use the function connect."
+            "set_external_connection to set one with the correct symbol."
+        )
+    cid = EXTERNAL_CONNECTION[symbol]["cid"].replace("'", "''")
     query = query.replace("'", "''")
-    rowset = vp.OPTIONS["external_connection"][symbol]["rowset"]
+    rowset = EXTERNAL_CONNECTION[symbol]["rowset"]
     query = f"""
         SELECT 
             DBLINK(USING PARAMETERS 
@@ -40,7 +41,6 @@ def get_dblink_fun(query: str, symbol: str = "$"):
 
 
 def replace_external_queries_in_query(query: str):
-    import verticapy as vp
     from verticapy.utils._toolbox import gen_tmp_name
     from verticapy.sql.read import _executeSQL
 
@@ -54,7 +54,7 @@ def replace_external_queries_in_query(query: str):
         "update ",
     )
     nb_external_queries = 0
-    for s in vp.OPTIONS["external_connection"]:
+    for s in EXTERNAL_CONNECTION:
         external_queries = re.findall(f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", query)
         for external_query in external_queries:
             if external_query.strip().lower().startswith(sql_keyword):

@@ -54,7 +54,6 @@ VerticaPy aims  to  do  all  of  the above.  The idea is
 simple:  instead of moving data around  for  processing, 
 VerticaPy brings the logic to the data.
 """
-__version__ = "0.13.0"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = (

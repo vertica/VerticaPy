@@ -15,7 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 # Standard Libraries
-import uuid
 import verticapy.plotting._colors as vp_colors
 
 # Standard Python Modules
@@ -30,12 +29,9 @@ from verticapy.errors import ParameterError
 OPTIONS = {
     "cache": True,
     "colors": None,
-    "connection": {"conn": None, "section": None, "dsn": None,},
-    "external_connection": {},
     "interactive": False,
     "count_on": False,
     "footer_on": True,
-    "identifier": str(uuid.uuid1()).replace("-", ""),
     "max_columns": 50,
     "max_rows": 100,
     "mode": None,
@@ -48,14 +44,12 @@ OPTIONS = {
     "temp_schema": "public",
     "time_on": False,
     "tqdm": True,
-    "vertica_version": None,
 }
 
 
 def init_interactive_mode(all_interactive=False):
     """Activate the datatables representation for all the vDataFrames."""
     set_option("interactive", all_interactive)
-
 
 @overload
 def set_option(

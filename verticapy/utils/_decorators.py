@@ -77,7 +77,7 @@ feature is available in the user's version.
         if len(args) > 0:
             object_name = type(args[0]).__name__
         name = object_name if fun_name == "__init__" else fun_name
-        vertica_version(vp.MINIMUM_VERSION[name])
+        vertica_version(vp.MINIMUM_VERTICA_VERSION[name])
 
         return func(*args, **kwargs)
 
