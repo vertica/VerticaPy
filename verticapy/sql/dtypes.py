@@ -24,7 +24,7 @@ from verticapy.utils._toolbox import (
     get_final_vertica_type,
     gen_tmp_name,
 )
-from verticapy.io.sql._utils._format import quote_ident, format_schema_table
+from verticapy.sql._utils._format import quote_ident, format_schema_table
 from verticapy.errors import ParameterError
 
 
@@ -63,7 +63,7 @@ Returns
 list of tuples
     The list of the different columns and their respective type.
     """
-    from verticapy.io.sql.drop import drop
+    from verticapy.sql.drop import drop
 
     assert expr or table_name, ParameterError(
         "Missing parameter: 'expr' and 'table_name' can not both be empty."

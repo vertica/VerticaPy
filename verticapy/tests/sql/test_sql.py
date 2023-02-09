@@ -31,7 +31,7 @@ from verticapy import (
 )
 from verticapy.sdk.vertica.dblink import get_dblink_fun
 from verticapy.datasets import load_titanic
-from verticapy.sql import sql
+from verticapy.jupyter.extensions.sql_magic import sql_magic as sql
 from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
 
 set_option("print_info", False)

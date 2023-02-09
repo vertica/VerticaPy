@@ -15,8 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
-#
-
 # Jupyter Modules
 from IPython.core.magic import needs_local_scope
 from IPython.display import HTML, display
@@ -36,7 +34,7 @@ from verticapy import (
     save_verticapy_logs,
 )
 from verticapy.plotting._highcharts import hchartSQL
-from verticapy.io.sql._utils._format import replace_vars_in_query, clean_query
+from verticapy.sql._utils._format import replace_vars_in_query, clean_query
 
 
 @save_verticapy_logs
@@ -124,3 +122,8 @@ def hchart_magic(line, cell="", local_ns=None):
     display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
 
     return chart
+
+
+def load_ipython_extension(ipython):
+    ipython.register_magic_function(hchart_magic, "cell", "hchart")
+    ipython.register_magic_function(hchart_magic, "line", "hchart")

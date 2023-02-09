@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal
 
-from verticapy.io.sql._utils._format import (
+from verticapy.sql._utils._format import (
     quote_ident,
     schema_relation,
     format_schema_table,

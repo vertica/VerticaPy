@@ -31,7 +31,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
-from verticapy.io.sql.sys import current_session, username
+from verticapy.sql.sys import current_session, username
 
 
 @save_verticapy_logs

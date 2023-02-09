@@ -25,7 +25,7 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import executeSQL, color_dict, updated_dict
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors
-from verticapy.io.sql._utils._format import quote_ident
+from verticapy.sql._utils._format import quote_ident
 
 # Optional
 try:

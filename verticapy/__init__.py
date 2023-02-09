@@ -90,8 +90,5 @@ import verticapy.stats
 # Learn
 import verticapy.learn
 
-# Extension
-from verticapy.jupyter.extensions import load_ipython_extension
-
 # Version
 from verticapy._version import *

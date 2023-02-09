@@ -542,6 +542,6 @@ The tablesample attributes are the same as the parameters.
 	tablesample.to_pandas : Converts the tablesample to a pandas DataFrame.
 	tablesample.to_sql    : Generates the SQL query associated to the tablesample.
 		"""
-        from verticapy.io.sql.read import vDataFrameSQL
+        from verticapy.sql.read import vDataFrameSQL
 
         return vDataFrameSQL(f"({self.to_sql()}) sql_relation")

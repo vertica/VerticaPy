@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy.errors import ConnectionError
 import re
-from verticapy.io.sql._utils._format import clean_query
+from verticapy.sql._utils._format import clean_query
 
 
 def get_dblink_fun(query: str, symbol: str = "$"):

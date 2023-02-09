@@ -27,9 +27,9 @@ import verticapy as vp
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._toolbox import *
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
-from verticapy.io.flex import compute_flextable_keys
-from verticapy.io.sql._utils._format import format_schema_table, clean_query
-from verticapy.io.parsers._utils import extract_compression, get_first_file
+from verticapy.sql.flex import compute_flextable_keys
+from verticapy.sql._utils._format import format_schema_table, clean_query
+from verticapy.sql.parsers._utils import extract_compression, get_first_file
 
 
 def guess_sep(file_str: str):
@@ -156,7 +156,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    from verticapy.io.sql.drop import drop
+    from verticapy.sql.drop import drop
 
     if record_terminator == "\n":
         record_terminator = "\\n"
@@ -336,7 +336,7 @@ See Also
 read_json : Ingests a JSON file into the Vertica database.
 	"""
     from verticapy import vDataFrame
-    from verticapy.io.sql.create import create_table
+    from verticapy.sql.create import create_table
 
     if schema:
         temporary_local_table = False

@@ -28,7 +28,7 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy.stats.tools import *
 from verticapy.core.str_sql import str_sql
-from verticapy.io.sql._utils._format import format_magic, clean_query
+from verticapy.sql._utils._format import format_magic, clean_query
 from verticapy.utils._map import python_to_dtype_category
 
 #

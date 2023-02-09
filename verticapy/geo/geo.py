@@ -29,7 +29,7 @@ import verticapy.datasets as vp_datasets
 from verticapy.vdataframe import vDataFrame
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utilities import tablesample
-from verticapy.io.sql.read import to_tablesample, vDataFrameSQL
+from verticapy.sql.read import to_tablesample, vDataFrameSQL
 from verticapy.utils._toolbox import executeSQL
 
 

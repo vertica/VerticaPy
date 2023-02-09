@@ -40,15 +40,11 @@ import pandas as pd
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.errors import QueryError, ParameterError, ParsingError
-from verticapy import (
-    executeSQL,
-    vDataFrame,
-    set_option,
-    tablesample,
-    save_verticapy_logs,
-)
 from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-from verticapy.io.sql._utils._format import replace_vars_in_query, clean_query
+from verticapy.sql._utils._format import replace_vars_in_query, clean_query
+from verticapy.utils._decorators import save_verticapy_logs
+from verticapy.core.tablesample import tablesample
+from verticapy.utils._toolbox import executeSQL
 
 
 @save_verticapy_logs
@@ -56,6 +52,8 @@ from verticapy.io.sql._utils._format import replace_vars_in_query, clean_query
 def sql_magic(line, cell="", local_ns=None):
     from verticapy import vDataFrameSQL
     from verticapy.jupyter.extensions._utils import get_magic_options
+    from verticapy._config.config import set_option
+    from verticapy.core.vdataframe import vDataFrame
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.
@@ -323,3 +321,8 @@ def sql_magic(line, cell="", local_ns=None):
         # we load the previous configuration before returning the result.
         set_option("sql_on", sql_on)
         set_option("time_on", time_on)
+
+
+def load_ipython_extension(ipython):
+    ipython.register_magic_function(sql_magic, "cell", "sql")
+    ipython.register_magic_function(sql_magic, "line", "sql")

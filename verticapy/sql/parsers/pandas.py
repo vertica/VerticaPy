@@ -23,8 +23,8 @@ import verticapy as vp
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._toolbox import *
 from verticapy.errors import ParameterError
-from verticapy.io.parsers.csv import read_csv
-from verticapy.io.sql._utils._format import format_schema_table
+from verticapy.sql.parsers.csv import read_csv
+from verticapy.sql._utils._format import format_schema_table
 
 
 @save_verticapy_logs

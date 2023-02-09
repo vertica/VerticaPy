@@ -37,7 +37,7 @@ from verticapy import (
 from verticapy.connect import current_cursor
 import verticapy.stats as st
 from verticapy.datasets import load_titanic, load_cities, load_amazon, load_world
-from verticapy.io.sql.sys import current_session, username
+from verticapy.sql.sys import current_session, username
 
 set_option("print_info", False)
 

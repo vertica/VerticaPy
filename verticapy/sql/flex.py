@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 
 from verticapy.utils._toolbox import executeSQL
-from verticapy.io.sql._utils._format import quote_ident
+from verticapy.sql._utils._format import quote_ident
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
 from verticapy.utils._decorators import save_verticapy_logs

@@ -34,7 +34,7 @@ from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame, save_verticapy_logs
 from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import *
-from verticapy.io.sql._utils._format import quote_ident, schema_relation
+from verticapy.sql._utils._format import quote_ident, schema_relation
 
 # Other Python Modules
 from dateutil.parser import parse

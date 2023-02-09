@@ -40,7 +40,7 @@ import verticapy.learn.metrics as mt
 from verticapy.learn.metrics import *
 from verticapy.learn.tools import *
 from verticapy.learn.memmodel import *
-from verticapy.io.sql._utils._format import clean_query, quote_ident, schema_relation
+from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___

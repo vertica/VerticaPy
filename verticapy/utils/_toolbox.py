@@ -27,7 +27,7 @@ from typing import Union, Literal
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.errors import *
-from verticapy.io.sql._utils._format import quote_ident
+from verticapy.sql._utils._format import quote_ident
 
 # Other Modules
 import numpy as np
@@ -81,8 +81,8 @@ def executeSQL(
     symbol: str = "$",
 ):
     from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-    from verticapy.io.sql._utils._format import clean_query, erase_label
-    from verticapy.io.sql._utils._display import print_query
+    from verticapy.sql._utils._format import clean_query, erase_label
+    from verticapy.sql._utils._display import print_query
 
     # Cleaning the query
     if sql_push_ext and (symbol in vp.SPECIAL_SYMBOLS):
@@ -137,7 +137,7 @@ def gen_name(L: list):
 
 
 def gen_tmp_name(schema: str = "", name: str = ""):
-    from verticapy.io.sql.sys import current_session, username
+    from verticapy.sql.sys import current_session, username
 
     session_user = f"{current_session()}_{username()}"
     L = session_user.split("_")

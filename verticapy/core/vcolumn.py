@@ -39,7 +39,7 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import *
-from verticapy.io.sql._utils._format import quote_ident, clean_query
+from verticapy.sql._utils._format import quote_ident, clean_query
 from verticapy.utils._map import python_to_sql_dtype
 
 # Other modules
@@ -650,7 +650,7 @@ Attributes
                     query, title="getting the biggest string", method="fetchfirstelem",
                 )
                 biggest_str = biggest_str.strip()
-                from verticapy.io.parsers.csv import guess_sep
+                from verticapy.sql.parsers.csv import guess_sep
 
                 sep = guess_sep(biggest_str)
                 if str(dtype).startswith("vmap"):
