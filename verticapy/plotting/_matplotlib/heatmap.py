@@ -27,11 +27,7 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import (
-    bin_spatial_to_str,
-    updated_dict,
-    isnotebook
-)
+from verticapy.utils._toolbox import bin_spatial_to_str, updated_dict, isnotebook
 from verticapy.sql.read import _executeSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError

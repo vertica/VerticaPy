@@ -302,7 +302,9 @@ def load_dataset(
             ):
 
                 query = query.format("STDIN")
-                _executeSQL(query, title="Ingesting the data.", method="copy", path=path)
+                _executeSQL(
+                    query, title="Ingesting the data.", method="copy", path=path
+                )
 
             else:
 

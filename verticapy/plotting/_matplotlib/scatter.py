@@ -30,7 +30,7 @@ from verticapy.utils._toolbox import (
     updated_dict,
     get_random_function,
     color_dict,
-    isnotebook
+    isnotebook,
 )
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError

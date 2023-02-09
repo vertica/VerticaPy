@@ -15,9 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import time
-from typing import Union
+from typing import Union, Literal
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.core.str_sql import str_sql
+
 
 def _executeSQL(
     query: str,
@@ -31,6 +32,7 @@ def _executeSQL(
     sql_push_ext: bool = False,
     symbol: str = "$",
 ):
+    import verticapy as vp
     from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
     from verticapy.sql._utils._format import clean_query, erase_label
     from verticapy.sql._utils._display import print_query
@@ -67,6 +69,7 @@ def _executeSQL(
     elif method == "fetchall":
         return cursor.fetchall()
     return cursor
+
 
 @save_verticapy_logs
 def readSQL(query: str, time_on: bool = False, limit: int = 100):
