@@ -84,7 +84,7 @@ Returns
 bool
     True if the table was successfully created, False otherwise.
     """
-    from verticapy.utils._toolbox import _executeSQL, quote_ident
+    from verticapy.sql.read import _executeSQL, quote_ident
 
     # -#
     if schema.lower() == "v_temp_schema":

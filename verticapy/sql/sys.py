@@ -28,7 +28,7 @@ def current_session():
 
 
 def username():
-    from verticapy.utils._toolbox import _executeSQL
+    from verticapy.sql.read import _executeSQL
 
     res = _executeSQL(
         query="SELECT /*+LABEL(username)*/ USERNAME();",
