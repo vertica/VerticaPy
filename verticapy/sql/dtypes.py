@@ -20,10 +20,10 @@ import warnings, datetime
 # VerticaPy Modules
 import vertica_python
 from verticapy.utils._toolbox import (
-    executeSQL,
     get_final_vertica_type,
     gen_tmp_name,
 )
+from verticapy.sql.read import _executeSQL
 from verticapy.sql._utils._format import quote_ident, format_schema_table
 from verticapy.errors import ParameterError
 
@@ -94,7 +94,7 @@ list of tuples
                     LIMIT 0;"""
             else:
                 query = expr
-            executeSQL(query, print_time_sql=False)
+            _executeSQL(query, print_time_sql=False)
             description, ctype = current_cursor().description, []
             for d in description:
                 ctype += [
@@ -123,7 +123,7 @@ list of tuples
             else:
                 table = format_schema_table(schema, table_name)
                 local = ""
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     CREATE {local} TEMPORARY TABLE {table} 
                     ON COMMIT PRESERVE ROWS 
@@ -151,7 +151,7 @@ list of tuples
         FROM {{}}
         WHERE {column_name}table_name = '{table_name}' 
             AND table_schema = '{schema}'{usecols_str}"""
-    cursor = executeSQL(
+    cursor = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('utilities.get_data_types')*/ 

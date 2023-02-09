@@ -44,7 +44,7 @@ from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
 from verticapy.sql._utils._format import replace_vars_in_query, clean_query
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.core.tablesample import tablesample
-from verticapy.utils._toolbox import executeSQL
+from verticapy.sql.read import _executeSQL
 
 
 @save_verticapy_logs
@@ -229,7 +229,7 @@ def sql_magic(line, cell="", local_ns=None):
                 if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
                     file_name = file_name[1:-1]
 
-                executeSQL(query, method="copy", path=file_name, print_time_sql=False)
+                _executeSQL(query, method="copy", path=file_name, print_time_sql=False)
 
             elif (i < n - 1) or (
                 (i == n - 1)
@@ -239,7 +239,7 @@ def sql_magic(line, cell="", local_ns=None):
                 error = ""
 
                 try:
-                    executeSQL(query, print_time_sql=False)
+                    _executeSQL(query, print_time_sql=False)
 
                 except Exception as e:
                     error = str(e)
@@ -273,7 +273,7 @@ def sql_magic(line, cell="", local_ns=None):
                 except:
 
                     try:
-                        final_result = executeSQL(
+                        final_result = _executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
                         )
                         if final_result and vp.OPTIONS["print_info"]:

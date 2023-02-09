@@ -33,6 +33,7 @@ from verticapy.learn.metrics import *
 from verticapy.plotting._matplotlib import *
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy import vDataFrame
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
@@ -359,7 +360,7 @@ class XGBoost_utils:
         if self.type == "XGBoostRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
-            prior_ = executeSQL(
+            prior_ = _executeSQL(
                 query=query.format(f"AVG({self.y})", ""),
                 method="fetchfirstelem",
                 print_time_sql=False,
@@ -367,12 +368,12 @@ class XGBoost_utils:
         elif not (v):
             prior_ = []
             for c in self.classes_:
-                avg = executeSQL(
+                avg = _executeSQL(
                     query=query.format("COUNT(*)", f" AND {self.y} = '{c}'"),
                     method="fetchfirstelem",
                     print_time_sql=False,
                 )
-                avg /= executeSQL(
+                avg /= _executeSQL(
                     query=query.format("COUNT(*)", ""),
                     method="fetchfirstelem",
                     print_time_sql=False,

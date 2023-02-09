@@ -36,6 +36,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
 from verticapy.plotting._colors import gen_colors
 from verticapy.sql._utils._format import quote_ident
@@ -77,7 +78,7 @@ def logit_plot(
              WHERE {X[0]} IS NOT NULL 
                AND {y} = {{}} 
             LIMIT {int(max_nb_points / 2)})"""
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"{query.format(0)} UNION ALL {query.format(1)}",
             method="fetchall",
             print_time_sql=False,
@@ -139,7 +140,7 @@ def logit_plot(
              WHERE {X[0]} IS NOT NULL
                AND {X[1]} IS NOT NULL
                AND {y} = {{}} LIMIT {int(max_nb_points / 2)})"""
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"{query.format(0)} UNION {query.format(1)}",
             method="fetchall",
             print_time_sql=False,
@@ -264,7 +265,7 @@ def lof_plot(
     }
     if len(columns) == 1:
         column = quote_ident(columns[0])
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('plotting._matplotlib.lof_plot')*/ 
@@ -301,7 +302,7 @@ def lof_plot(
         )
     elif len(columns) == 2:
         columns = [quote_ident(column) for column in columns]
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.lof_plot')*/ 
@@ -340,7 +341,7 @@ def lof_plot(
             color=colors[1],
         )
     elif len(columns) == 3:
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.lof_plot')*/ 
@@ -821,7 +822,7 @@ def regression_plot(
         "edgecolors": "black",
     }
     if len(X) == 1:
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.regression_plot')*/ 
@@ -853,7 +854,7 @@ def regression_plot(
         ax.set_xlabel(X[0])
         ax.set_ylabel(y)
     elif len(X) == 2:
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"""
             (SELECT 
                 /*+LABEL('plotting._matplotlib.regression_plot')*/ 
@@ -915,7 +916,7 @@ def regression_tree_plot(
     ax=None,
     **style_kwds,
 ):
-    all_points = executeSQL(
+    all_points = _executeSQL(
         query=f"""
         SELECT 
             /*+LABEL('plotting._matplotlib.regression_tree_plot')*/ 
@@ -993,7 +994,7 @@ def svm_classifier_plot(
              WHERE {X[0]} IS NOT NULL 
                AND {y} = {{}}
              LIMIT {int(max_nb_points / 2)})"""
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"{query.format(0)} UNION ALL {query.format(1)}",
             method="fetchall",
             print_time_sql=False,
@@ -1043,7 +1044,7 @@ def svm_classifier_plot(
                AND {X[1]} IS NOT NULL 
                AND {y} = {{}} 
              LIMIT {int(max_nb_points / 2)})"""
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"{query.format(0)} UNION {query.format(1)}",
             method="fetchall",
             print_time_sql=False,
@@ -1098,7 +1099,7 @@ def svm_classifier_plot(
                AND {X[2]} IS NOT NULL 
                AND {y} = {{}} 
              LIMIT {int(max_nb_points / 2)})"""
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"{query.format(0)} UNION {query.format(1)}",
             method="fetchall",
             print_time_sql=False,
@@ -1205,7 +1206,7 @@ def voronoi_plot(
     ax.xlim(min_x - 0.05 * (max_x - min_x), max_x + 0.05 * (max_x - min_x))
     ax.ylim(min_y - 0.05 * (max_y - min_y), max_y + 0.05 * (max_y - min_y))
     if max_nb_points > 0:
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('plotting._matplotlib.voronoi_plot')*/ 

@@ -51,7 +51,7 @@ bool
     True if the operation succeeded, False otherwise.
     """
     import verticapy as vp
-    from verticapy.utils._toolbox import executeSQL
+    from verticapy.sql.read import _executeSQL
 
     if not (vp.OPTIONS["save_query_profile"]) or (
         isinstance(vp.OPTIONS["save_query_profile"], list)
@@ -108,7 +108,7 @@ bool
         query = f"SELECT /*+LABEL('{query_label_str}')*/ '{dict_to_json_string_str}'"
         if return_query:
             return query
-        executeSQL(
+        _executeSQL(
             query=query,
             title="Sending query to save the information in query profile table.",
             print_time_sql=False,

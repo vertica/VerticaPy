@@ -41,7 +41,8 @@ def get_dblink_fun(query: str, symbol: str = "$"):
 
 def replace_external_queries_in_query(query: str):
     import verticapy as vp
-    from verticapy.utils._toolbox import gen_tmp_name, executeSQL
+    from verticapy.utils._toolbox import gen_tmp_name
+    from verticapy.sql.read import _executeSQL
 
     sql_keyword = (
         "select ",
@@ -73,7 +74,7 @@ def replace_external_queries_in_query(query: str):
                     CREATE LOCAL TEMPORARY TABLE {temp_table_name} 
                     ON COMMIT PRESERVE ROWS 
                     AS {query_dblink_template}"""
-                executeSQL(
+                _executeSQL(
                     create_statement,
                     title=(
                         "Creating a temporary local table to "

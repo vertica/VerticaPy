@@ -44,6 +44,7 @@ from verticapy.plotting._matplotlib import plot_bubble_ml
 from verticapy.learn.vmodel import *
 from verticapy.sql._utils._format import schema_relation
 from verticapy.machine_learning._utils import reverse_score
+from verticapy.sql.read import _executeSQL
 
 # Other Modules
 from tqdm.auto import tqdm
@@ -339,7 +340,7 @@ final_relation_: vDataFrame
                   - (LAG({ts}) OVER ({by_tmp}ORDER BY {ts}))::timestamp) 
                   / '00:00:01'"""
                 vdf_tmp = vdf_tmp.groupby(["verticapy_time_delta"], ["COUNT(*) AS cnt"])
-                rule = executeSQL(
+                rule = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('learn.delphi.AutoDataPrep.fit')*/

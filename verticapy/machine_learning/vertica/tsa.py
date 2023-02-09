@@ -35,6 +35,7 @@ from verticapy import vDataFrame, save_verticapy_logs
 from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import *
 from verticapy.sql._utils._format import quote_ident, schema_relation
+from verticapy.sql.read import _executeSQL
 
 # Other Python Modules
 from dateutil.parser import parse
@@ -342,7 +343,7 @@ papprox_ma: int, optional
             query = "SELECT /*+LABEL('learn.tsa.SARIMAX.fit')*/ AVG({}) FROM {}".format(
                 self.y, self.input_relation
             )
-            self.ma_avg_ = executeSQL(
+            self.ma_avg_ = _executeSQL(
                 query, method="fetchfirstelem", print_time_sql=False
             )
             self.deploy_predict_ = str(self.ma_avg_)
@@ -391,7 +392,7 @@ papprox_ma: int, optional
                 .replace("[VerticaPy_key_columns]", ", " + ", ".join([self.ts] + X)),
             )
             try:
-                executeSQL(query, print_time_sql=False)
+                _executeSQL(query, print_time_sql=False)
                 self.X += AR + X
                 model.fit(
                     input_relation=view_name, X=self.X, y=self.y,
@@ -504,7 +505,7 @@ papprox_ma: int, optional
             query = "SELECT /*+LABEL('learn.tsa.SARIMAX.fit')*/ COUNT(*), AVG({}) FROM {}".format(
                 self.y, transform_relation.format(self.input_relation)
             )
-            result = executeSQL(query, method="fetchrow", print_time_sql=False)
+            result = _executeSQL(query, method="fetchrow", print_time_sql=False)
             self.ma_avg_ = result[1]
             n = result[0]
             n = max(
@@ -536,7 +537,7 @@ papprox_ma: int, optional
                 .replace("[VerticaPy_key_columns]", ", " + ", ".join([self.ts] + X)),
             )
             try:
-                executeSQL(query, print_time_sql=False)
+                _executeSQL(query, print_time_sql=False)
                 model.fit(
                     input_relation=view_name, X=ARq, y=self.y,
                 )
@@ -983,11 +984,11 @@ papprox_ma: int, optional
             query = "SELECT /*+LABEL('learn.tsa.SARIMAX.predict')*/ ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
             )
-            deltat = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
+            deltat = _executeSQL(query, method="fetchfirstelem", print_time_sql=False)
             query = "SELECT /*+LABEL('learn.tsa.SARIMAX.predict')*/ (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
                 ts, deltat, relation
             )
-            next_t = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
+            next_t = _executeSQL(query, method="fetchfirstelem", print_time_sql=False)
             if i == 0:
                 first_t = next_t
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {}".format(
@@ -1012,7 +1013,7 @@ papprox_ma: int, optional
                 transform_relation.format(relation_tmp),
                 ts,
             )
-            prediction = executeSQL(
+            prediction = _executeSQL(
                 query, method="fetchfirstelem", print_time_sql=False
             )
             columns_tmp = vdf.get_columns(exclude_columns=[ts, y])
@@ -1323,7 +1324,7 @@ solver: str, optional
             query = "CREATE VIEW {} AS SELECT /*+LABEL('learn.tsa.VAR.fit')*/ * FROM {}".format(
                 view_name, relation
             )
-            executeSQL(query, print_time_sql=False)
+            _executeSQL(query, print_time_sql=False)
             self.coef_ = []
             for elem in X:
                 model.fit(
@@ -1699,11 +1700,11 @@ solver: str, optional
             query = "SELECT /*+LABEL('learn.tsa.VAR.predict')*/ ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
             )
-            deltat = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
+            deltat = _executeSQL(query, method="fetchfirstelem", print_time_sql=False)
             query = "SELECT /*+LABEL('learn.tsa.VAR.predict')*/ (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
                 ts, deltat, relation
             )
-            next_t = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
+            next_t = _executeSQL(query, method="fetchfirstelem", print_time_sql=False)
             if i == 0:
                 first_t = next_t
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {}".format(
@@ -1726,7 +1727,7 @@ solver: str, optional
                 transform_relation.format(relation_tmp),
                 ts,
             )
-            prediction = executeSQL(query, method="fetchrow", print_time_sql=False)
+            prediction = _executeSQL(query, method="fetchrow", print_time_sql=False)
             for idx, elem in enumerate(X):
                 prediction[idx] = "{} AS {}".format(prediction[idx], elem)
             columns_tmp = vdf.get_columns(exclude_columns=[ts] + X)

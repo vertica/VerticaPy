@@ -57,7 +57,7 @@ Returns
 bool
     True if the relation was dropped, False otherwise.
     """
-    from verticapy.utils._toolbox import executeSQL
+    from verticapy.sql.read import _executeSQL
 
     if "relation_type" in kwds and method == "auto":
         method = kwds["relation_type"]
@@ -67,7 +67,7 @@ bool
         method = "temp"
     if method == "auto":
         fail, end_conditions = False, False
-        result = executeSQL(
+        result = _executeSQL(
             query=f"""
             SELECT 
                 /*+LABEL('utilities.drop')*/ * 
@@ -78,7 +78,7 @@ bool
             method="fetchrow",
         )
         if not (result):
-            result = executeSQL(
+            result = _executeSQL(
                 query=f"""
                 SELECT 
                     /*+LABEL('utilities.drop')*/ * 
@@ -93,7 +93,7 @@ bool
             end_conditions = True
         if not (result):
             try:
-                result = executeSQL(
+                result = _executeSQL(
                     query=f"""
                     SELECT 
                         /*+LABEL('utilities.drop')*/ model_type 
@@ -108,7 +108,7 @@ bool
             method = "view"
             end_conditions = True
         if not (result):
-            result = executeSQL(
+            result = _executeSQL(
                 query=f"""
                 SELECT 
                     /*+LABEL('utilities.drop')*/ * 
@@ -122,7 +122,7 @@ bool
             method = "model"
             end_conditions = True
         if not (result):
-            result = executeSQL(
+            result = _executeSQL(
                 query=f"""
                 SELECT 
                     /*+LABEL('utilities.drop')*/ * 
@@ -142,7 +142,7 @@ bool
             end_conditions = True
         if not (result):
             try:
-                executeSQL(
+                _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL(\'utilities.drop\')*/ * 
@@ -165,7 +165,7 @@ bool
     if method == "model":
         model_type = kwds["model_type"] if "model_type" in kwds else None
         try:
-            result = executeSQL(
+            result = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('utilities.drop')*/ model_type 
@@ -198,7 +198,7 @@ bool
             elif model_type == "CountVectorizer":
                 drop(name, method="text")
                 if is_in_verticapy_schema:
-                    res = executeSQL(
+                    res = _executeSQL(
                         query=f"""
                             SELECT 
                                 /*+LABEL('utilities.drop')*/ value 
@@ -218,22 +218,22 @@ bool
             elif model_type == "AutoDataPrep":
                 drop(name, method="table")
             if is_in_verticapy_schema:
-                executeSQL(
+                _executeSQL(
                     query=f"""
                         DELETE /*+LABEL('utilities.drop')*/ 
                         FROM verticapy.models 
                         WHERE LOWER(model_name) = '{quote_ident(name).lower()}';""",
                     title="Deleting vModel.",
                 )
-                executeSQL("COMMIT;", title="Commit.")
-                executeSQL(
+                _executeSQL("COMMIT;", title="Commit.")
+                _executeSQL(
                     query=f"""
                         DELETE /*+LABEL('utilities.drop')*/ 
                         FROM verticapy.attr 
                         WHERE LOWER(model_name) = '{quote_ident(name).lower()}';""",
                     title="Deleting vModel attributes.",
                 )
-                executeSQL("COMMIT;", title="Commit.")
+                _executeSQL("COMMIT;", title="Commit.")
         else:
             query = f"DROP MODEL {name};"
     elif method == "table":
@@ -248,7 +248,7 @@ bool
         query = f"DROP SCHEMA {name} CASCADE;"
     if query:
         try:
-            executeSQL(query, title="Deleting the relation.")
+            _executeSQL(query, title="Deleting the relation.")
             result = True
         except:
             if raise_error:
@@ -260,7 +260,7 @@ bool
                  FROM columns 
                  WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' 
                  GROUP BY 1, 2;"""
-        all_tables = result = executeSQL(sql, print_time_sql=False, method="fetchall")
+        all_tables = result = _executeSQL(sql, print_time_sql=False, method="fetchall")
         for elem in all_tables:
             table = format_schema_table(
                 elem[0].replace('"', '""'), elem[1].replace('"', '""')
@@ -271,7 +271,7 @@ bool
                  FROM view_columns 
                  WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' 
                  GROUP BY 1, 2;"""
-        all_views = executeSQL(sql, print_time_sql=False, method="fetchall")
+        all_views = _executeSQL(sql, print_time_sql=False, method="fetchall")
         for elem in all_views:
             view = format_schema_table(
                 elem[0].replace('"', '""'), elem[1].replace('"', '""')

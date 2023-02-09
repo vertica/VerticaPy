@@ -28,11 +28,11 @@ import numpy as np
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.utils._toolbox import (
-    executeSQL,
     bin_spatial_to_str,
     updated_dict,
     isnotebook
 )
+from verticapy.sql.read import _executeSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, gen_cmap
@@ -298,7 +298,7 @@ def hexbin(
         over = "/" + str(float(count))
     else:
         over = ""
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT
                 /*+LABEL('plotting._matplotlib.hexbin')*/
@@ -489,7 +489,7 @@ def pivot_table(
         else:
             cols += [columns[i]]
         cast += [bin_spatial_to_str(vdf[columns[i]].category(), columns[i])]
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.pivot_table')*/

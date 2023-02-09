@@ -27,7 +27,8 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, updated_dict, isnotebook
+from verticapy.utils._toolbox import updated_dict, isnotebook
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_cmap, gen_colors
 
@@ -107,7 +108,7 @@ def animated_bar(
     if order_by_end:
         order_by_end_str = f" AND {order_by} < '{order_by_end}'"
     condition = " AND ".join([f"{column} IS NOT NULL" for column in columns])
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.animated_bar')*/ * 
@@ -387,7 +388,7 @@ def animated_bubble_plot(
         min_size = float(vdf[columns[2]].min())
     where = f" AND {order_by} > '{order_by_start}'" if (order_by_start) else ""
     where += f" AND {order_by} < '{order_by_end}'" if (order_by_end) else ""
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.animated_bubble_plot')*/ * 
@@ -614,7 +615,7 @@ def animated_ts_plot(
     if limit:
         limit_str = f" LIMIT {limit}"
     condition = " AND ".join([f"{column} IS NOT NULL" for column in columns])
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.animated_ts_plot')*/ 

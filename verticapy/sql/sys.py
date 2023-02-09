@@ -17,9 +17,9 @@ permissions and limitations under the License.
 
 
 def current_session():
-    from verticapy.utils._toolbox import executeSQL
+    from verticapy.sql.read import _executeSQL
 
-    res = executeSQL(
+    res = _executeSQL(
         query="SELECT /*+LABEL(current_session)*/ CURRENT_SESSION();",
         method="fetchfirstelem",
         print_time_sql=False,
@@ -28,9 +28,9 @@ def current_session():
 
 
 def username():
-    from verticapy.utils._toolbox import executeSQL
+    from verticapy.utils._toolbox import _executeSQL
 
-    res = executeSQL(
+    res = _executeSQL(
         query="SELECT /*+LABEL(username)*/ USERNAME();",
         method="fetchfirstelem",
         print_time_sql=False,

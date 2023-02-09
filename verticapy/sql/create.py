@@ -34,11 +34,11 @@ Returns
 bool
     True if the schema was successfully created, False otherwise.
     """
-    from verticapy.utils._toolbox import executeSQL
+    from verticapy.sql.read import _executeSQL
     from verticapy.sql._utils._format import quote_ident
 
     try:
-        executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
+        _executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
         return True
     except:
         if raise_error:
@@ -84,7 +84,7 @@ Returns
 bool
     True if the table was successfully created, False otherwise.
     """
-    from verticapy.utils._toolbox import executeSQL, quote_ident
+    from verticapy.utils._toolbox import _executeSQL, quote_ident
 
     # -#
     if schema.lower() == "v_temp_schema":
@@ -104,7 +104,7 @@ bool
     if genSQL:
         return query
     try:
-        executeSQL(query, title="Creating the new table.")
+        _executeSQL(query, title="Creating the new table.")
         return True
     except:
         if raise_error:
@@ -116,17 +116,17 @@ def create_verticapy_schema():
     """
 Creates a schema named 'verticapy' used to store VerticaPy extended models.
     """
-    from verticapy.utils._toolbox import executeSQL
+    from verticapy.sql.read import _executeSQL
 
     sql = "CREATE SCHEMA IF NOT EXISTS verticapy;"
-    executeSQL(sql, title="Creating VerticaPy schema.")
+    _executeSQL(sql, title="Creating VerticaPy schema.")
     sql = """CREATE TABLE IF NOT EXISTS verticapy.models (model_name VARCHAR(128), 
                                                           category VARCHAR(128), 
                                                           model_type VARCHAR(128), 
                                                           create_time TIMESTAMP, 
                                                           size INT);"""
-    executeSQL(sql, title="Creating the models table.")
+    _executeSQL(sql, title="Creating the models table.")
     sql = """CREATE TABLE IF NOT EXISTS verticapy.attr (model_name VARCHAR(128), 
                                                         attr_name VARCHAR(128), 
                                                         value VARCHAR(65000));"""
-    executeSQL(sql, title="Creating the attr table.")
+    _executeSQL(sql, title="Creating the attr table.")

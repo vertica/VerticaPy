@@ -21,6 +21,7 @@ import warnings
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs, check_minimum_version
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError
 from verticapy.sql._utils._format import (
     quote_ident,
@@ -151,7 +152,7 @@ vDataFrame
         query = f"COPY {input_relation} FROM {local}'{path}'{parser};"
         if genSQL:
             return [clean_query(query)]
-        executeSQL(query, title="Inserting the data.")
+        _executeSQL(query, title="Inserting the data.")
         return vDataFrame(table_name, schema=schema)
     if schema:
         temporary_local_table = False
@@ -171,7 +172,7 @@ vDataFrame
         "with_copy_statement=true, one_line_result=true, "
         f"max_files={max_files}, max_candidates=1);"
     )
-    result = executeSQL(
+    result = _executeSQL(
         sql, title="Generating the CREATE and COPY statement.", method="fetchfirstelem",
     )
     result = result.replace("UNKNOWN", unknown)
@@ -222,15 +223,15 @@ vDataFrame
             result[idx] = clean_query(result[idx])
         return result
     if len(result) == 1:
-        executeSQL(
+        _executeSQL(
             result, title="Creating the table and ingesting the data.",
         )
     else:
-        executeSQL(
+        _executeSQL(
             result[0], title="Creating the table.",
         )
         try:
-            executeSQL(
+            _executeSQL(
                 result[1], title="Ingesting the data.",
             )
         except:

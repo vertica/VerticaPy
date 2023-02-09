@@ -27,12 +27,12 @@ import numpy as np
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.utils._toolbox import (
-    executeSQL,
     updated_dict,
     get_random_function,
     color_dict,
     isnotebook
 )
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import compute_plot_variables
 from verticapy.plotting._colors import gen_colors, gen_cmap
@@ -67,7 +67,7 @@ def bubble(
         colors = [colors]
     if not (catcol) and not (cmap_col):
         tablesample = max_nb_points / vdf.shape()[0]
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('plotting._matplotlib.bubble')*/ 
@@ -185,7 +185,7 @@ def bubble(
             groupby_cardinality = vdf[catcol].nunique(True)
             for idx, category in enumerate(all_categories):
                 category_str = str(category).replace("'", "''")
-                query_result = executeSQL(
+                query_result = _executeSQL(
                     query=f"""
                         SELECT
                             /*+LABEL('plotting._matplotlib.bubble')*/  
@@ -232,7 +232,7 @@ def bubble(
                 if len(str(item)) > 20:
                     all_categories[idx] = str(item)[0:20] + "..."
         else:
-            query_result = executeSQL(
+            query_result = _executeSQL(
                 query=f"""
                     SELECT
                         /*+LABEL('plotting._matplotlib.bubble')*/ 
@@ -468,7 +468,7 @@ def scatter_matrix(
         figsize = min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
     random_func = get_random_function()
-    all_scatter_points = executeSQL(
+    all_scatter_points = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.scatter_matrix')*/
@@ -623,7 +623,7 @@ def scatter(
                 others += [f"{catcol} != '{category_str}'"]
             condition += [f"AND {catcol} = '{category_str}'"]
             title = f" (category = '{category}')"
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=query.format(*condition), title=title, method="fetchall",
         )
         args = [

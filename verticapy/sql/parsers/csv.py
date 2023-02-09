@@ -26,6 +26,7 @@ import os, warnings
 import verticapy as vp
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 from verticapy.sql.flex import compute_flextable_keys
 from verticapy.sql._utils._format import format_schema_table, clean_query
@@ -192,17 +193,17 @@ read_json : Ingests a JSON file into the Vertica database.
        NULL '{na_rep}';"""
     if genSQL:
         return [clean_query(query), clean_query(query2)]
-    executeSQL(
+    _executeSQL(
         query=query, title="Creating flex table to identify the data types.",
     )
-    executeSQL(
+    _executeSQL(
         query=query2, title="Parsing the data.",
     )
     result = compute_flextable_keys(flex_name)
     dtype = {}
     for column_dtype in result:
         try:
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     SELECT /*+LABEL('utilities.pcsv')*/
                         (CASE 
@@ -375,7 +376,7 @@ read_json : Ingests a JSON file into the Vertica database.
     if not (genSQL):
         table_name_str = table_name.replace("'", "''")
         schema_str = schema.replace("'", "''")
-        result = executeSQL(
+        result = _executeSQL(
             query=f"""
                 SELECT /*+LABEL('utilities.read_csv')*/
                     column_name 
@@ -473,10 +474,10 @@ read_json : Ingests a JSON file into the Vertica database.
             elif genSQL:
                 return [clean_query(query2)]
             if not (insert):
-                executeSQL(
+                _executeSQL(
                     query, title="Creating the flex table.",
                 )
-            executeSQL(
+            _executeSQL(
                 query2, title="Copying the data.",
             )
             return vDataFrame(table_name, schema=schema)
@@ -540,8 +541,8 @@ read_json : Ingests a JSON file into the Vertica database.
                 return [clean_query(query1), clean_query(query2)]
         else:
             if not (insert):
-                executeSQL(query1, title="Creating the table.")
-            executeSQL(
+                _executeSQL(query1, title="Creating the table.")
+            _executeSQL(
                 query2, title="Ingesting the data.",
             )
             if (

@@ -30,6 +30,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy import vDataFrame
 from verticapy.learn.vmodel import *
 from verticapy.sql._utils._format import quote_ident, schema_relation, clean_query
@@ -73,7 +74,7 @@ Returns
 vDataFrame
 	vDataFrame of the created view
 	"""
-    executeSQL(
+    _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('learn.preprocessing.Balance')*/ 
@@ -149,7 +150,7 @@ max_text_size: int, optional
         )
         if self.parameters["max_features"] > 0:
             query += f" OR (rnk > {self.parameters['max_features']})"
-        res = executeSQL(query=query, print_time_sql=False, method="fetchall")
+        res = _executeSQL(query=query, print_time_sql=False, method="fetchall")
         self.stop_words_ = [item[0] for item in res]
 
     def compute_vocabulary(self):
@@ -157,7 +158,7 @@ max_text_size: int, optional
     Computes the CountVectorizer Vocabulary. It will affect the result to the
     vocabulary_ attribute.
         """
-        res = executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
+        res = _executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
         self.vocabulary_ = [item[0] for item in res]
 
     def deploySQL(self, return_main_table: bool = False):
@@ -229,7 +230,7 @@ max_text_size: int, optional
             self.drop()
         except:
             pass
-        executeSQL(
+        _executeSQL(
             query=f"""
                 CREATE TABLE {tmp_name}
                 (id identity(2000) primary key, 
@@ -243,7 +244,7 @@ max_text_size: int, optional
             text = f"LOWER({' || '.join(self.X)})"
         if self.parameters["ignore_special"]:
             text = f"REGEXP_REPLACE({text}, '[^a-zA-Z0-9\\s]+', '')"
-        executeSQL(
+        _executeSQL(
             query=f"""
                 INSERT 
                     /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/ 
@@ -251,7 +252,7 @@ max_text_size: int, optional
                 SELECT {text} FROM {self.input_relation}""",
             title="Computing the CountVectorizer [Step 1].",
         )
-        executeSQL(
+        _executeSQL(
             query=f"""
                 CREATE TEXT INDEX {self.name} 
                 ON {tmp_name}(id, text) stemmer NONE;""",

@@ -22,7 +22,8 @@ import matplotlib.pyplot as plt
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, isnotebook
+from verticapy.utils._toolbox import isnotebook
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors
 
@@ -112,7 +113,7 @@ def boxplot(
                 enum_trans += f", {vdf.alias}"
                 table = f"(SELECT {enum_trans} FROM {table}) enum_table"
             if not (cat_priority):
-                query_result = executeSQL(
+                query_result = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('plotting._matplotlib.boxplot')*/ 
@@ -152,7 +153,7 @@ def boxplot(
             main_table = f"WITH vdf_table AS (SELECT /*+LABEL('plotting._matplotlib.boxplot')*/ * FROM {table})"
             query = f"""{main_table}{" UNION ALL ".join([lp + q + rp for q in all_queries])}"""
             try:
-                query_result = executeSQL(
+                query_result = _executeSQL(
                     query=query,
                     title=(
                         "Computing all the descriptive statistics for each "
@@ -164,7 +165,7 @@ def boxplot(
                 query_result = []
                 for q in enumerate(all_queries):
                     query_result += [
-                        executeSQL(
+                        _executeSQL(
                             query=f"{main_table} {q}",
                             title=(
                                 "Computing all the descriptive statistics for "

@@ -25,6 +25,7 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.utilities import *
 from verticapy.sql._utils._format import quote_ident, schema_relation
 
@@ -62,7 +63,7 @@ int
     model_type = None
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], model_name[1:-1]
-    result = executeSQL(
+    result = _executeSQL(
         query="""
             SELECT
                 /*+LABEL('learn.tools.does_model_exist')*/ * 
@@ -73,7 +74,7 @@ int
         print_time_sql=False,
     )
     if result:
-        result = executeSQL(
+        result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('learn.tools.does_model_exist')*/ 
@@ -88,7 +89,7 @@ int
             model_type = result[0]
             result = 2
     if not (result):
-        result = executeSQL(
+        result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('learn.tools.does_model_exist')*/ 
@@ -139,7 +140,7 @@ model
     schema, model_name = schema[1:-1], name[1:-1]
     assert does_exist, NameError(f"The model '{name}' doesn't exist.")
     if does_exist == 2:
-        result = executeSQL(
+        result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('learn.tools.load_model')*/ 
@@ -295,7 +296,7 @@ model
             name=name, raise_error=False, return_model_type=True
         )
         if model_type.lower() in ("kmeans", "kprototypes",):
-            info = executeSQL(
+            info = _executeSQL(
                 f"SELECT /*+LABEL('learn.tools.load_model')*/ GET_MODEL_SUMMARY (USING PARAMETERS model_name = '{name}')",
                 method="fetchfirstelem",
                 print_time_sql=False,
@@ -316,7 +317,7 @@ model
                 model.parameters["method"] = "robust_zscore"
             return model
         else:
-            info = executeSQL(
+            info = _executeSQL(
                 "SELECT /*+LABEL('learn.tools.load_model')*/ GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '"
                 + name
                 + "', attr_name = 'call_string')",
@@ -649,7 +650,7 @@ model
         model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
         if model_type in ("naive_bayes", "rf_classifier", "xgb_classifier"):
             try:
-                classes = executeSQL(
+                classes = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('learn.tools.load_model')*/ 

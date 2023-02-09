@@ -68,56 +68,6 @@ def color_dict(d: dict, idx: int = 0):
         return gen_colors()[idx % len(gen_colors())]
 
 
-def executeSQL(
-    query: str,
-    title: str = "",
-    data: list = [],
-    method: Literal[
-        "cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"
-    ] = "cursor",
-    path: str = "",
-    print_time_sql: bool = True,
-    sql_push_ext: bool = False,
-    symbol: str = "$",
-):
-    from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-    from verticapy.sql._utils._format import clean_query, erase_label
-    from verticapy.sql._utils._display import print_query
-
-    # Cleaning the query
-    if sql_push_ext and (symbol in vp.SPECIAL_SYMBOLS):
-        query = erase_label(query)
-        query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
-
-    elif sql_push_ext and (symbol not in vp.SPECIAL_SYMBOLS):
-        raise ParameterError(f"Symbol '{symbol}' is not supported.")
-
-    query = replace_external_queries_in_query(query)
-    query = clean_query(query)
-
-    cursor = vp.current_cursor()
-    if vp.OPTIONS["sql_on"] and print_time_sql:
-        print_query(query, title)
-    start_time = time.time()
-    if data:
-        cursor.executemany(query, data)
-    elif method == "copy":
-        with open(path, "r") as fs:
-            cursor.copy(query, fs)
-    else:
-        cursor.execute(query)
-    elapsed_time = time.time() - start_time
-    if vp.OPTIONS["time_on"] and print_time_sql:
-        print_time(elapsed_time)
-    if method == "fetchrow":
-        return cursor.fetchone()
-    elif method == "fetchfirstelem":
-        return cursor.fetchone()[0]
-    elif method == "fetchall":
-        return cursor.fetchall()
-    return cursor
-
-
 def find_val_in_dict(x: str, d: dict, return_key: bool = False):
     for elem in d:
         if quote_ident(x).lower() == quote_ident(elem).lower():

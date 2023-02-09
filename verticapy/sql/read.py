@@ -19,6 +19,54 @@ from typing import Union
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.core.str_sql import str_sql
 
+def _executeSQL(
+    query: str,
+    title: str = "",
+    data: list = [],
+    method: Literal[
+        "cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"
+    ] = "cursor",
+    path: str = "",
+    print_time_sql: bool = True,
+    sql_push_ext: bool = False,
+    symbol: str = "$",
+):
+    from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
+    from verticapy.sql._utils._format import clean_query, erase_label
+    from verticapy.sql._utils._display import print_query
+
+    # Cleaning the query
+    if sql_push_ext and (symbol in vp.SPECIAL_SYMBOLS):
+        query = erase_label(query)
+        query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
+
+    elif sql_push_ext and (symbol not in vp.SPECIAL_SYMBOLS):
+        raise ParameterError(f"Symbol '{symbol}' is not supported.")
+
+    query = replace_external_queries_in_query(query)
+    query = clean_query(query)
+
+    cursor = vp.current_cursor()
+    if vp.OPTIONS["sql_on"] and print_time_sql:
+        print_query(query, title)
+    start_time = time.time()
+    if data:
+        cursor.executemany(query, data)
+    elif method == "copy":
+        with open(path, "r") as fs:
+            cursor.copy(query, fs)
+    else:
+        cursor.execute(query)
+    elapsed_time = time.time() - start_time
+    if vp.OPTIONS["time_on"] and print_time_sql:
+        print_time(elapsed_time)
+    if method == "fetchrow":
+        return cursor.fetchone()
+    elif method == "fetchfirstelem":
+        return cursor.fetchone()[0]
+    elif method == "fetchall":
+        return cursor.fetchall()
+    return cursor
 
 @save_verticapy_logs
 def readSQL(query: str, time_on: bool = False, limit: int = 100):
@@ -39,13 +87,13 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     tablesample
         Result of the query.
     """
-    from verticapy.utils._toolbox import executeSQL
+    from verticapy.utils._toolbox import _executeSQL
     import verticapy as vp
 
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
     if vp.OPTIONS["count_on"]:
-        count = executeSQL(
+        count = _executeSQL(
             f"""SELECT 
                     /*+LABEL('utilities.readSQL')*/ COUNT(*) 
                 FROM ({query}) VERTICAPY_SUBTABLE""",
@@ -115,13 +163,13 @@ def to_tablesample(
     """
     import verticapy as vp
     from verticapy.core.tablesample import tablesample
-    from verticapy.utils._toolbox import executeSQL, get_final_vertica_type
+    from verticapy.utils._toolbox import _executeSQL, get_final_vertica_type
     from verticapy.sql._utils._display import print_query, print_time
 
     if vp.OPTIONS["sql_on"]:
         print_query(query, title)
     start_time = time.time()
-    cursor = executeSQL(
+    cursor = _executeSQL(
         query, print_time_sql=False, sql_push_ext=sql_push_ext, symbol=symbol
     )
     description, dtype = cursor.description, {}

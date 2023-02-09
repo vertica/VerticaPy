@@ -23,7 +23,8 @@ permissions and limitations under the License.
 import math
 
 # VerticaPy Modules
-from verticapy.utils._toolbox import executeSQL, bin_spatial_to_str
+from verticapy.utils._toolbox import bin_spatial_to_str
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 import verticapy
 from verticapy.sql._utils._format import quote_ident
@@ -154,7 +155,7 @@ def compute_plot_variables(
                       GROUP BY {vdf.alias}
                       ORDER BY {aggregate} DESC
                       LIMIT {max_cardinality}))"""
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=query, title="Computing the histogram heights", method="fetchall"
         )
         if query_result[-1][1] == None:
@@ -173,7 +174,7 @@ def compute_plot_variables(
         if (h <= 0) and (nbins <= 0):
             h = vdf.numh()
         elif nbins > 0:
-            query_result = executeSQL(
+            query_result = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
@@ -185,7 +186,7 @@ def compute_plot_variables(
             h = float(query_result[0]) / nbins
         min_date = vdf.min()
         converted_date = f"DATEDIFF('second', '{min_date}', {vdf.alias})"
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
@@ -220,7 +221,7 @@ def compute_plot_variables(
                 query += f" UNION {query_tmp.format('')}"
         query += ")"
         h = 0.94 * h
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query, title="Computing the datetime intervals.", method="fetchall"
         )
         z = [item[0] for item in query_result]
@@ -234,7 +235,7 @@ def compute_plot_variables(
             h = float(vdf.max() - vdf.min()) / nbins
         if (vdf.ctype == "int") or (h == 0):
             h = max(1.0, h)
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
                 SELECT
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/

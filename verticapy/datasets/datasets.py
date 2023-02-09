@@ -32,6 +32,7 @@ from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
 from verticapy.sql._utils._format import quote_ident
 
@@ -301,14 +302,14 @@ def load_dataset(
             ):
 
                 query = query.format("STDIN")
-                executeSQL(query, title="Ingesting the data.", method="copy", path=path)
+                _executeSQL(query, title="Ingesting the data.", method="copy", path=path)
 
             else:
 
                 query = query.format(f"LOCAL '{path}'")
-                executeSQL(query, title="Ingesting the data.")
+                _executeSQL(query, title="Ingesting the data.")
 
-            executeSQL("COMMIT;", title="Commit.")
+            _executeSQL("COMMIT;", title="Commit.")
             vdf = vDataFrame(name, schema=schema)
 
         except:

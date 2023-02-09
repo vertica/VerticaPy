@@ -35,6 +35,7 @@ from verticapy.utils._decorators import (
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
 from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import does_model_exist
@@ -205,7 +206,7 @@ tablesample
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
     drop(relation, method="table")
-    executeSQL(f"CREATE TABLE {relation} AS {result}", print_time_sql=False)
+    _executeSQL(f"CREATE TABLE {relation} AS {result}", print_time_sql=False)
     if print_info:
         print(
             f"\033[1m\033[4mStep 2 - Fitting the RF model with "
@@ -2833,7 +2834,7 @@ tablesample
         if isinstance(input_relation, str)
         else input_relation.__genSQL__()
     )
-    avg = executeSQL(
+    avg = _executeSQL(
         f"SELECT /*+LABEL('learn.model_selection.stepwise')*/ AVG({y}) FROM {table}",
         method="fetchfirstelem",
         print_time_sql=False,
@@ -3142,7 +3143,7 @@ def compute_function_metrics(
         X = ["decision_boundary", "recall", "precision"]
     else:
         X = ["*"]
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT
                 {', '.join(X)}

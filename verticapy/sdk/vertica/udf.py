@@ -31,6 +31,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.sql.sys import current_session, username
 
 
@@ -81,7 +82,7 @@ bool
     f.close()
     try:
         for idx, query in enumerate(sql):
-            executeSQL(query, title=f"UDF installation. [step {idx}]")
+            _executeSQL(query, title=f"UDF installation. [step {idx}]")
         return True
     except Exception as e:
         warnings.warn(e, Warning)

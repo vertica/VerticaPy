@@ -33,6 +33,7 @@ from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 from verticapy.learn.tools import *
@@ -219,7 +220,7 @@ p: int, optional
             if not (index):
                 index = "id"
                 drop(f"v_temp_schema.{name_main}", method="table")
-                executeSQL(
+                _executeSQL(
                     query=f"""
                     CREATE LOCAL TEMPORARY TABLE {name_main} 
                     ON COMMIT PRESERVE ROWS AS 
@@ -231,7 +232,7 @@ p: int, optional
                     title="Computing the DBSCAN Table [Step 0]",
                 )
             else:
-                executeSQL(
+                _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('learn.cluster.DBSCAN.fit')*/ 
@@ -269,7 +270,7 @@ p: int, optional
                 order_by = "ORDER BY node_id, nn_id"
             else:
                 order_by = ""
-            graph = executeSQL(
+            graph = _executeSQL(
                 query=f"""
                     SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
                         node_id, 
@@ -307,7 +308,7 @@ p: int, optional
                     f.write(f"{c}, {clusters[c]}\n")
                 f.close()
                 drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")
-                executeSQL(
+                _executeSQL(
                     query=f"""
                     CREATE LOCAL TEMPORARY TABLE {name_dbscan_clusters}
                     (node_id int, cluster int) 
@@ -320,22 +321,22 @@ p: int, optional
                          DELIMITER ',' 
                          ESCAPE AS '\\';"""
                 if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
-                    executeSQL(
+                    _executeSQL(
                         query=query.format("STDIN"),
                         method="copy",
                         print_time_sql=False,
                         path=f"./{name_dbscan_clusters}.csv",
                     )
                 else:
-                    executeSQL(
+                    _executeSQL(
                         query=query.format(f"LOCAL './{name_dbscan_clusters}.csv'"),
                         print_time_sql=False,
                     )
-                executeSQL("COMMIT;", print_time_sql=False)
+                _executeSQL("COMMIT;", print_time_sql=False)
             finally:
                 os.remove(f"{name_dbscan_clusters}.csv")
             self.n_cluster_ = i
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     CREATE TABLE {self.name} AS 
                        SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
@@ -346,7 +347,7 @@ p: int, optional
                        ON x.{index} = y.node_id""",
                 title="Computing the DBSCAN Table [Step 2]",
             )
-            self.n_noise_ = executeSQL(
+            self.n_noise_ = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('learn.cluster.DBSCAN.fit')*/ 
@@ -462,7 +463,7 @@ tol: float, optional
         if len(self.X) == 2:
             from verticapy.plotting._matplotlib import voronoi_plot
 
-            clusters = executeSQL(
+            clusters = _executeSQL(
                 query=f"""
                 SELECT 
                     /*+LABEL('learn.cluster.KMeans.plot_voronoi')*/ 

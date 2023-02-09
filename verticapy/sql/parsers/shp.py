@@ -17,6 +17,7 @@ permissions and limitations under the License.
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ExtensionError
 
 
@@ -50,18 +51,18 @@ vDataFrame
         f"SELECT /*+LABEL('utilities.read_shp')*/ STV_ShpCreateTable(USING PARAMETERS file='{path}')"
         " OVER() AS create_shp_table;"
     )
-    result = executeSQL(query, title="Getting SHP definition.", method="fetchall")
+    result = _executeSQL(query, title="Getting SHP definition.", method="fetchall")
     if not (table_name):
         table_name = file[:-4]
     result[0] = [f'CREATE TABLE "{schema}"."{table_name}"(']
     result = [elem[0] for elem in result]
     result = "".join(result)
-    executeSQL(result, title="Creating the relation.")
+    _executeSQL(result, title="Creating the relation.")
     query = (
         f'COPY "{schema}"."{table_name}" WITH SOURCE STV_ShpSource(file=\'{path}\')'
         " PARSER STV_ShpParser();"
     )
-    executeSQL(query, title="Ingesting the data.")
+    _executeSQL(query, title="Ingesting the data.")
     print(f'The table "{schema}"."{table_name}" has been successfully created.')
     from verticapy import vDataFrame
 

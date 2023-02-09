@@ -27,6 +27,7 @@ from verticapy.utils._decorators import (
 from verticapy.learn.metrics import *
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy import vDataFrame
 from verticapy.plotting._matplotlib import *
 from verticapy.learn.model_selection import *
@@ -309,7 +310,7 @@ p: int, optional
             self.test_relation = self.input_relation
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
-        classes = executeSQL(
+        classes = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('learn.neighbors.KNeighborsClassifier.fit')*/ 
@@ -1010,7 +1011,7 @@ xlim: list, optional
                             /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
                             {", ".join(L)} 
                         FROM {vdf.__genSQL__()}"""
-                    result = executeSQL(
+                    result = _executeSQL(
                         query, title="Computing the KDE", method="fetchrow"
                     )
                     return [x for x in result]
@@ -1060,7 +1061,7 @@ xlim: list, optional
         )
         name_str = self.name.replace('"', "")
         if self.verticapy_store:
-            executeSQL(
+            _executeSQL(
                 query=f"""CREATE TABLE {name_str}_KernelDensity_Map AS    
                             SELECT 
                                 /*+LABEL('learn.neighbors.KernelDensity.fit')*/
@@ -1075,14 +1076,14 @@ xlim: list, optional
                 m = min(r + 100, len(y))
                 for i in range(r, m):
                     values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
-                executeSQL(
+                _executeSQL(
                     query=f"""
                     INSERT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
                     INTO {name_str}_KernelDensity_Map 
                     ({", ".join(X)}, KDE) {" UNION ".join(values)}""",
                     title=f"Computing the KDE [Step {idx}].",
                 )
-                executeSQL("COMMIT;", print_time_sql=False)
+                _executeSQL("COMMIT;", print_time_sql=False)
                 r += 100
                 idx += 1
             self.X, self.input_relation = X, input_relation
@@ -1148,7 +1149,7 @@ xlim: list, optional
                         /*+LABEL('learn.neighbors.KernelDensity.plot')*/ 
                         {self.X[0]}, KDE 
                     FROM {self.map} ORDER BY 1"""
-                result = executeSQL(query, method="fetchall", print_time_sql=False)
+                result = _executeSQL(query, method="fetchall", print_time_sql=False)
                 x, y = [v[0] for v in result], [v[1] for v in result]
             else:
                 x, y = [v[0] for v in self.verticapy_x], self.verticapy_y
@@ -1182,7 +1183,7 @@ xlim: list, optional
                         KDE 
                     FROM {self.map} 
                     ORDER BY 1, 2"""
-                result = executeSQL(query, method="fetchall", print_time_sql=False)
+                result = _executeSQL(query, method="fetchall", print_time_sql=False)
                 x, y, z = (
                     [v[0] for v in result],
                     [v[1] for v in result],
@@ -1540,7 +1541,7 @@ p: int, optional
                 main_table = tmp_main_table_name
                 schema = "v_temp_schema"
                 drop(f"v_temp_schema.{tmp_main_table_name}", method="table")
-                executeSQL(
+                _executeSQL(
                     query=f"""
                         CREATE LOCAL TEMPORARY TABLE {main_table} 
                         ON COMMIT PRESERVE ROWS AS 
@@ -1557,7 +1558,7 @@ p: int, optional
             sql = [f"POWER(ABS(x.{X[i]} - y.{X[i]}), {p})" for i in range(len(X))]
             distance = f"POWER({' + '.join(sql)}, 1 / {p})"
             drop(f"v_temp_schema.{tmp_distance_table_name}", method="table")
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     CREATE LOCAL TEMPORARY TABLE {tmp_distance_table_name} 
                     ON COMMIT PRESERVE ROWS AS 
@@ -1581,7 +1582,7 @@ p: int, optional
                 title="Computing the LOF [Step 0].",
             )
             drop(f"v_temp_schema.{tmp_lrd_table_name}", method="table")
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     CREATE LOCAL TEMPORARY TABLE {tmp_lrd_table_name} 
                     ON COMMIT PRESERVE ROWS AS 
@@ -1609,7 +1610,7 @@ p: int, optional
                 title="Computing the LOF [Step 1].",
             )
             drop(f"v_temp_schema.{tmp_lof_table_name}", method="table")
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     CREATE LOCAL TEMPORARY TABLE {tmp_lof_table_name} 
                     ON COMMIT PRESERVE ROWS AS 
@@ -1632,7 +1633,7 @@ p: int, optional
                     ON x.nn_id = y.node_id GROUP BY 1""",
                 title="Computing the LOF [Step 2].",
             )
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     CREATE TABLE {self.name} AS 
                         SELECT 
@@ -1646,7 +1647,7 @@ p: int, optional
                         ON x.{index} = y.node_id""",
                 title="Computing the LOF [Step 3].",
             )
-            self.n_errors_ = executeSQL(
+            self.n_errors_ = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ 

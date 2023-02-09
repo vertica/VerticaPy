@@ -22,7 +22,8 @@ import matplotlib.pyplot as plt
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, color_dict, updated_dict, isnotebook
+from verticapy.utils._toolbox import color_dict, updated_dict, isnotebook
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors
 from verticapy.sql._utils._format import quote_ident
@@ -144,7 +145,7 @@ def multi_ts_plot(
     if order_by_end:
         order_by_end_str = f" AND {order_by} < '{order_by_end}'"
     condition = " AND " + " AND ".join([f"{column} IS NOT NULL" for column in columns])
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.multi_ts_plot')*/ 
@@ -307,7 +308,7 @@ def range_curve_vdf(
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
     if order_by_end:
         order_by_end_str = f" AND {order_by} < '{order_by_end}'"
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
         SELECT 
             /*+LABEL('plotting._matplotlib.range_curve_vdf')*/ 
@@ -393,7 +394,7 @@ def ts_plot(
         "markeredgecolor": "black",
     }
     if not (by):
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=query.format(""), title=title, method="fetchall",
         )
         order_by_values = [item[0] for item in query_result]
@@ -426,7 +427,7 @@ def ts_plot(
         all_data = []
         for column in cat:
             column_str = str(column).replace("'", "''")
-            query_result = executeSQL(
+            query_result = _executeSQL(
                 query=query.format(f"AND {by} = '{column_str}'"),
                 title=title,
                 method="fetchall",

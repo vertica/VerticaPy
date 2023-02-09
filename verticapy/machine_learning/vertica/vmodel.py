@@ -35,6 +35,7 @@ from verticapy.plotting._matplotlib import *
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
 import verticapy.learn.metrics as mt
 from verticapy.learn.metrics import *
@@ -82,7 +83,7 @@ Main Class for Vertica Model
                     func = f"GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{name}')"
                 except:
                     func = f"SUMMARIZE_MODEL('{name}')"
-                res = executeSQL(
+                res = _executeSQL(
                     f"SELECT /*+LABEL('learn.vModel.__repr__')*/ {func}",
                     title="Summarizing the model.",
                     method="fetchfirstelem",
@@ -371,7 +372,7 @@ Main Class for Vertica Model
             raise FunctionError(
                 f"Method 'features_importance' for '{self.type}' doesn't exist."
             )
-        result = executeSQL(
+        result = _executeSQL(
             query, title="Computing Features Importance.", method="fetchall"
         )
         coeff_importances, coeff_sign = {}, {}
@@ -760,7 +761,7 @@ Main Class for Vertica Model
                 **style_kwds,
             )
         elif self.type == "LocalOutlierFactor":
-            cnt = executeSQL(
+            cnt = _executeSQL(
                 query=f"SELECT /*+LABEL('learn.vModel.plot')*/ COUNT(*) FROM {self.name}",
                 method="fetchfirstelem",
                 print_time_sql=False,
@@ -1497,7 +1498,7 @@ class Supervised(vModel):
                 self.input_relation = input_relation
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop(relation, method="view")
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     CREATE VIEW {relation} AS 
                         SELECT 
@@ -1553,7 +1554,7 @@ class Supervised(vModel):
                 id_column='{id_column_name}'"""
         query += ")"
         try:
-            executeSQL(query, title="Fitting the model.")
+            _executeSQL(query, title="Fitting the model.")
         finally:
             if tmp_view:
                 drop(relation, method="view")
@@ -1571,7 +1572,7 @@ class Supervised(vModel):
             "XGBoostClassifier",
         ):
             if not (isinstance(input_relation, vDataFrame)):
-                classes = executeSQL(
+                classes = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('learn.vModel.fit')*/ 
@@ -3040,7 +3041,7 @@ class Unsupervised(vModel):
                 )
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop(relation, method="view")
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     CREATE VIEW {relation} AS 
                         SELECT 
@@ -3109,7 +3110,7 @@ class Unsupervised(vModel):
                         query0 += ["SELECT " + line]
                 query0 = " UNION ".join(query0)
                 query0 = f"CREATE TABLE {name_init} AS {query0}"
-                executeSQL(query0, print_time_sql=False)
+                _executeSQL(query0, print_time_sql=False)
                 query += f"initial_centers_table = '{name_init}', "
         elif "init_method" in parameters:
             del parameters["init_method"]
@@ -3127,7 +3128,7 @@ class Unsupervised(vModel):
             query += f", id_column='{id_column_name}'"
         query += ")"
         try:
-            executeSQL(query, "Fitting the model.")
+            _executeSQL(query, "Fitting the model.")
         except:
             if (
                 "init_method" in parameters

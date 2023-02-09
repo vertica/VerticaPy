@@ -85,13 +85,13 @@ list
     List containing the version information.
     [MAJOR, MINOR, PATCH, POST]
     """
-    from verticapy.utils._toolbox import executeSQL
+    from verticapy.sql.read import _executeSQL
     import verticapy as vp
 
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
     if not (vp.OPTIONS["vertica_version"]):
-        current_version = executeSQL(
+        current_version = _executeSQL(
             "SELECT /*+LABEL('utilities.version')*/ version();",
             title="Getting the version.",
             method="fetchfirstelem",

@@ -22,6 +22,7 @@ import os, csv
 import verticapy as vp
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.sql.parsers.csv import read_csv
 from verticapy.sql._utils._format import format_schema_table
@@ -128,7 +129,7 @@ read_json : Ingests a JSON file into the Vertica database.
             tmp_df_columns_str = ", ".join(
                 ['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]
             )
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     COPY {input_relation}
                     ({tmp_df_columns_str}) 

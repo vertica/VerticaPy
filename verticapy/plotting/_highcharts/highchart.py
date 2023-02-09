@@ -36,6 +36,7 @@ except:
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.plotting._colors import gen_colors
 
 #
@@ -151,7 +152,7 @@ def hchart_from_vdf(
                     + f" AS {x}"
                 )
             else:
-                result = executeSQL(
+                result = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('highchart.hchart_from_vdf')*/ 
@@ -399,7 +400,7 @@ def hchart_from_vdf(
                 )
             else:
                 if len(y) == 1:
-                    result = executeSQL(
+                    result = _executeSQL(
                         query=f"""
                             SELECT 
                                 /*+LABEL('highchart.hchart_from_vdf')*/ 
@@ -586,7 +587,7 @@ def hchartSQL(
     query: str, kind="auto", width: int = 600, height: int = 400, options: dict = {},
 ):
     aggregate, stock = False, False
-    data = executeSQL(
+    data = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('highchart.hchartSQL')*/ * 
@@ -699,7 +700,7 @@ def bar(
         chart_type = "hist"
     if chart_type == "stacked_bar":
         chart_type = "bar"
-    data = executeSQL(
+    data = _executeSQL(
         query,
         title=(
             "Selecting the categories and their"
@@ -828,7 +829,7 @@ def boxplot(
 
 
 def candlestick(query: str, options: dict = {}, width: int = 600, height: int = 400):
-    data = executeSQL(
+    data = _executeSQL(
         query,
         title=(
             "Selecting the categories and their "
@@ -882,7 +883,7 @@ def drilldown_chart(
     height: int = 400,
     chart_type: str = "column",
 ):
-    data = executeSQL(
+    data = _executeSQL(
         query[0],
         title=(
             "Selecting the categories and their "
@@ -918,7 +919,7 @@ def drilldown_chart(
         key = str(elem[0])
         data_final += [{"name": key, "y": val, "drilldown": key}]
     chart.add_data_set(data_final, chart_type, colorByPoint=True)
-    data = executeSQL(
+    data = _executeSQL(
         query[1],
         title=(
             "Selecting the categories and their respective aggregations "
@@ -975,7 +976,7 @@ def heatmap(
     default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     if query:
-        data = executeSQL(
+        data = _executeSQL(
             query,
             title=(
                 "Selecting the categories and their respective "
@@ -1054,7 +1055,7 @@ def line(
         chart_type = "line"
     if chart_type == "multi_spline":
         chart_type = "spline"
-    data = executeSQL(
+    data = _executeSQL(
         query,
         title="Selecting the different values to draw the chart.",
         method="fetchall",
@@ -1206,7 +1207,7 @@ def line(
 
 
 def negative_bar(query: str, options: dict = {}, width: int = 600, height: int = 400):
-    data = executeSQL(
+    data = _executeSQL(
         query,
         title="Selecting the categories and their respective aggregations to draw the chart.",
         method="fetchall",
@@ -1279,7 +1280,7 @@ def pie(
     height: int = 400,
     chart_type: str = "regular",
 ):
-    data = executeSQL(
+    data = _executeSQL(
         query,
         title="Selecting the categories and their respective aggregations to draw the chart.",
         method="fetchall",
@@ -1356,7 +1357,7 @@ def scatter(
     height: int = 400,
     chart_type: str = "regular",
 ):
-    data = executeSQL(
+    data = _executeSQL(
         query,
         title="Selecting the different values to draw the chart.",
         method="fetchall",
@@ -1541,7 +1542,7 @@ def scatter(
 
 
 def spider(query: str, options: dict = {}, width: int = 600, height: int = 400):
-    data = executeSQL(
+    data = _executeSQL(
         query,
         title=(
             "Selecting the categories and their respective "

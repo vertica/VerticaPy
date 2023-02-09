@@ -64,13 +64,13 @@ See Also
 pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     """
     import verticapy as vp
-    from verticapy.utils._toolbox import executeSQL
+    from verticapy.sql.read import _executeSQL
 
     if not (schema):
         schema = vp.OPTIONS["temp_schema"]
     input_relation = format_schema_table(schema, table_name)
     if not (column_names):
-        result = executeSQL(
+        result = _executeSQL(
             query=f"""
                 SELECT /*+LABEL('utilities.insert_into')*/
                     column_name
@@ -87,7 +87,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         )
     cols = [quote_ident(col) for col in column_names]
     if copy and not (genSQL):
-        executeSQL(
+        _executeSQL(
             query=f"""
                 INSERT INTO {input_relation} 
                 ({", ".join(cols)})
@@ -99,7 +99,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
             ),
             data=list(map(tuple, data)),
         )
-        executeSQL("COMMIT;", title="Commit.")
+        _executeSQL("COMMIT;", title="Commit.")
         return len(data)
     else:
         if genSQL:
@@ -125,11 +125,11 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
                 sql += [clean_query(query)]
             else:
                 try:
-                    executeSQL(
+                    _executeSQL(
                         query=query,
                         title=f"Insert a new line in the relation: {input_relation}.",
                     )
-                    executeSQL("COMMIT;", title="Commit.")
+                    _executeSQL("COMMIT;", title="Commit.")
                     total_rows += 1
                 except Exception as e:
                     warning_message = f"Line {i} was skipped.\n{e}"
@@ -147,12 +147,12 @@ def insert_verticapy_schema(
     category: str = "VERTICAPY_MODELS",
 ):
     from verticapy.utils._toolbox import (
-        executeSQL,
+        _executeSQL,
         quote_ident,
     )
 
     sql = "SELECT /*+LABEL(insert_verticapy_schema)*/ * FROM columns WHERE table_schema='verticapy';"
-    result = executeSQL(sql, method="fetchrow", print_time_sql=False)
+    result = _executeSQL(sql, method="fetchrow", print_time_sql=False)
     if not (result):
         warning_message = (
             "The VerticaPy schema doesn't exist or is "
@@ -167,7 +167,7 @@ def insert_verticapy_schema(
         create_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
         try:
             model_name = quote_ident(model_name)
-            result = executeSQL(
+            result = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL(insert_verticapy_schema)*/ * 
@@ -179,7 +179,7 @@ def insert_verticapy_schema(
             if result:
                 raise NameError(f"The model named {model_name} already exists.")
             else:
-                executeSQL(
+                _executeSQL(
                     query=f"""
                         INSERT /*+LABEL(insert_verticapy_schema)*/ 
                         INTO verticapy.models(model_name, 
@@ -194,10 +194,10 @@ def insert_verticapy_schema(
                                                {size});""",
                     print_time_sql=False,
                 )
-                executeSQL("COMMIT;", print_time_sql=False)
+                _executeSQL("COMMIT;", print_time_sql=False)
                 for attr_name in model_save:
                     model_save_str = str(model_save[attr_name]).replace("'", "''")
-                    executeSQL(
+                    _executeSQL(
                         query=f"""
                             INSERT /*+LABEL(insert_verticapy_schema)*/
                             INTO verticapy.attr(model_name,
@@ -208,7 +208,7 @@ def insert_verticapy_schema(
                                                 '{model_save_str}');""",
                         print_time_sql=False,
                     )
-                    executeSQL("COMMIT;", print_time_sql=False)
+                    _executeSQL("COMMIT;", print_time_sql=False)
         except Exception as e:
             warning_message = f"The VerticaPy model could not be stored:\n{e}"
             warnings.warn(warning_message, Warning)

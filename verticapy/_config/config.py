@@ -24,6 +24,7 @@ from typing import Union, Literal, overload
 
 # VerticaPy
 from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 
 OPTIONS = {
@@ -227,7 +228,7 @@ def set_option(
                   schema_name 
                FROM v_catalog.schemata 
                WHERE schema_name = '{value_str}' LIMIT 1;"""
-            res = executeSQL(
+            res = _executeSQL(
                 query, title="Checking if the schema exists.", method="fetchrow"
             )
             if res:
