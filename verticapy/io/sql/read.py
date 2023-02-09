@@ -185,7 +185,7 @@ vDataFrame
     """
     # Initialization
     from verticapy import vDataFrame
-    from vertucapy.io.flex import isvmap
+    from verticapy.io.flex import isvmap
     from verticapy.io.sql.dtypes import get_data_types
     from verticapy.utils._toolbox import get_category_from_vertica_type
     from verticapy.io.sql._utils._format import quote_ident
