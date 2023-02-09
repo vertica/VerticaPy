@@ -89,6 +89,8 @@ list
     """
     from verticapy.sql.read import _executeSQL
 
+    global VERTICA_VERSION
+
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
     if not (VERTICA_VERSION):

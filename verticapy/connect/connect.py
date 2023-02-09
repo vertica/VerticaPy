@@ -33,7 +33,11 @@ import vertica_python
 
 # Global Variables
 VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
-CONNECTION = {"conn": None, "section": None, "dsn": None,}
+CONNECTION = {
+    "conn": None,
+    "section": None,
+    "dsn": None,
+}
 EXTERNAL_CONNECTION = {}
 SPECIAL_SYMBOLS = [
     "$",
@@ -126,6 +130,7 @@ dsn: str, optional
     Path to the file containing the credentials. If empty, the 
     Connection File will be used.
     """
+    global CONNECTION
     prev_conn = CONNECTION["conn"]
     if not (dsn):
         dsn = get_connection_file()
@@ -159,7 +164,7 @@ stored credentials. If this also fails, VerticaPy attempts to connect using
 an auto connection. Otherwise, VerticaPy attempts to connect to a 
 VerticaLab Environment.
     """
-
+    global CONNECTION
     # Look if the connection does not exist or is closed
     if not (CONNECTION["conn"]) or CONNECTION["conn"].closed():
 
@@ -470,6 +475,7 @@ Parameters
 conn: object
     Connection object.
     """
+    global CONNECTION
     try:
         conn.cursor().execute("SELECT /*+LABEL('connect.set_connection')*/ 1;")
         res = conn.cursor().fetchone()[0]
@@ -504,7 +510,8 @@ symbol: str, optional
     with the input cid by writing $$$QUERY$$$, where QUERY represents 
     a custom query.
     """
-    if isinstance(cid, str) and isinstance(rowset, int):
+    global EXTERNAL_CONNECTION
+    if isinstance(cid, str) and isinstance(rowset, int) and symbol in SPECIAL_SYMBOLS:
         EXTERNAL_CONNECTION[symbol] = {
             "cid": cid,
             "rowset": rowset,

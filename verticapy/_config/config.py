@@ -51,6 +51,7 @@ def init_interactive_mode(all_interactive=False):
     """Activate the datatables representation for all the vDataFrames."""
     set_option("interactive", all_interactive)
 
+
 @overload
 def set_option(
     option: Literal["color_style"], value: Literal[tuple(vp_colors.COLORS_OPTIONS)]

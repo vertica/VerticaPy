@@ -21,7 +21,7 @@ from verticapy.connect.connect import EXTERNAL_CONNECTION
 
 
 def get_dblink_fun(query: str, symbol: str = "$"):
-    if symbol not in EXTERNAL_CONNECTION: 
+    if symbol not in EXTERNAL_CONNECTION:
         raise ConnectionError(
             "External Query detected but no corresponding "
             "Connection Identifier Database is defined (Using "
