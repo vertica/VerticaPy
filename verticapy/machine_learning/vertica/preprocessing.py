@@ -32,7 +32,7 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy import vDataFrame
 from verticapy.learn.vmodel import *
-from verticapy.io.sql.utils._format import quote_ident, schema_relation, clean_query
+from verticapy.io.sql._utils._format import quote_ident, schema_relation, clean_query
 
 
 @check_minimum_version

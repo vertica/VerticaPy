@@ -31,9 +31,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
-
-#
-
+from verticapy.io.sql.sys import current_session, username
 
 @save_verticapy_logs
 def import_lib_udf(
@@ -68,7 +66,7 @@ bool
     True if the installation was a success, False otherwise.
 	"""
     directory = os.path.dirname(vp.__file__)
-    session_name = get_session()
+    session_name = f"{current_session()}_{username()}"
     file_name = f"{library_name}_{session_name}.py"
     try:
         os.remove(f"{directory}/{file_name}")

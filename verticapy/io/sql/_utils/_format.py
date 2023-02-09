@@ -40,7 +40,7 @@ def erase_label(query: str):
 
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
     from verticapy.core.str_sql import str_sql
-    from verticapy.utils._toolbox import get_category_from_python_type
+    from verticapy.utils._map import python_to_dtype_category
     import verticapy as vp
 
     if isinstance(x, vp.vColumn):
@@ -57,7 +57,7 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
     else:
         val = x
     if return_cat:
-        return (val, get_category_from_python_type(x))
+        return (val, python_to_dtype_category(x))
     else:
         return val
 

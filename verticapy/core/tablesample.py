@@ -20,13 +20,13 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import math, decimal, datetime
+import math, decimal, datetime, copy
 import numpy as np
 
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.utils._toolbox import find_val_in_dict
-from verticapy.core._display import print_table
+from verticapy.core._utils._display import print_table
 from verticapy.jupyter._javascript import datatables_repr
 from verticapy.errors import ParameterError, MissingColumn
 from verticapy._version import vertica_version
@@ -297,6 +297,43 @@ The tablesample attributes are the same as the parameters.
                     self.values[col] = []
                 self.values[col] += tbs.values[col]
         return self
+
+    def narrow(self, use_number_as_category: bool = False):
+        """
+        TODO
+        """
+        result = []
+        d = copy.deepcopy(self.values)
+        if use_number_as_category:
+            categories_alpha = d["index"]
+            categories_beta = [x for x in d]
+            del categories_beta[0]
+            bijection_categories = {}
+            for idx, x in enumerate(categories_alpha):
+                bijection_categories[x] = idx
+            for idx, x in enumerate(categories_beta):
+                bijection_categories[x] = idx
+        for x in d:
+            if x != "index":
+                for idx, val_tmp in enumerate(d[x]):
+                    try:
+                        val = float(val_tmp)
+                    except:
+                        val = val_tmp
+                    if not (use_number_as_category):
+                        result += [[x, d["index"][idx], val]]
+                    else:
+                        result += [
+                            [
+                                bijection_categories[x],
+                                bijection_categories[d["index"][idx]],
+                                val,
+                            ]
+                        ]
+        if use_number_as_category:
+            return result, categories_alpha, categories_beta
+        else:
+            return result
 
     def shape(self):
         """

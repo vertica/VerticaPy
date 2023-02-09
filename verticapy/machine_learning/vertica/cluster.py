@@ -36,7 +36,7 @@ from verticapy.utils._toolbox import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 from verticapy.learn.tools import *
-from verticapy.io.sql.utils._format import quote_ident, schema_relation
+from verticapy.io.sql._utils._format import quote_ident, schema_relation
 
 
 class BisectingKMeans(Clustering, Tree):

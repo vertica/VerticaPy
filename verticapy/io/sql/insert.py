@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import warnings, sys, time
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.errors import MissingRelation
-from verticapy.io.sql.utils._format import format_schema_table, clean_query, quote_ident
+from verticapy.io.sql._utils._format import format_schema_table, clean_query, quote_ident
 
 
 @save_verticapy_logs

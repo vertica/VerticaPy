@@ -27,7 +27,7 @@ from typing import Union, Literal
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.errors import *
-from verticapy.io.sql.utils._format import quote_ident
+from verticapy.io.sql._utils._format import quote_ident
 
 # Other Modules
 import numpy as np
@@ -81,7 +81,8 @@ def executeSQL(
     symbol: str = "$",
 ):
     from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-    from verticapy.io.sql.utils._format import clean_query, erase_label
+    from verticapy.io.sql._utils._format import clean_query, erase_label
+    from verticapy.io.sql._utils._display import print_query
 
     # Cleaning the query
     if sql_push_ext and (symbol in vp.SPECIAL_SYMBOLS):
@@ -136,7 +137,9 @@ def gen_name(L: list):
 
 
 def gen_tmp_name(schema: str = "", name: str = ""):
-    session_user = get_session()
+    from verticapy.io.sql.sys import current_session, username
+
+    session_user = f"{current_session()}_{username()}"
     L = session_user.split("_")
     L[0] = "".join(filter(str.isalnum, L[0]))
     L[1] = "".join(filter(str.isalnum, L[1]))
@@ -145,26 +148,6 @@ def gen_tmp_name(schema: str = "", name: str = ""):
     if schema:
         name = f"{quote_ident(schema)}.{name}"
     return name
-
-
-def get_category_from_python_type(expr):
-    try:
-        category = expr.category()
-    except:
-        if isinstance(expr, float):
-            category = "float"
-        elif isinstance(expr, int):
-            category = "int"
-        elif isinstance(expr, str):
-            category = "text"
-        elif isinstance(expr, (datetime.date, datetime.datetime)):
-            category = "date"
-        elif isinstance(expr, (dict, list, np.ndarray)):
-            category = "complex"
-        else:
-            category = ""
-    return category
-
 
 def get_category_from_vertica_type(ctype: str = ""):
     ctype = ctype.lower().strip()
@@ -235,41 +218,6 @@ def get_match_index(x: str, col_list: list, str_check: bool = True):
     return None
 
 
-def get_narrow_tablesample(t, use_number_as_category: bool = False):
-    result = []
-    t = t.values
-    if use_number_as_category:
-        categories_alpha = t["index"]
-        categories_beta = [elem for elem in t]
-        del categories_beta[0]
-        bijection_categories = {}
-        for idx, elem in enumerate(categories_alpha):
-            bijection_categories[elem] = idx
-        for idx, elem in enumerate(categories_beta):
-            bijection_categories[elem] = idx
-    for elem in t:
-        if elem != "index":
-            for idx, val_tmp in enumerate(t[elem]):
-                try:
-                    val = float(val_tmp)
-                except:
-                    val = val_tmp
-                if not (use_number_as_category):
-                    result += [[elem, t["index"][idx], val]]
-                else:
-                    result += [
-                        [
-                            bijection_categories[elem],
-                            bijection_categories[t["index"][idx]],
-                            val,
-                        ]
-                    ]
-    if use_number_as_category:
-        return result, categories_alpha, categories_beta
-    else:
-        return result
-
-
 def get_random_function(rand_int=None):
     random_state = vp.OPTIONS["random_state"]
     if isinstance(rand_int, int):
@@ -285,108 +233,6 @@ def get_random_function(rand_int=None):
     return random_func
 
 
-def get_session(add_username: bool = True):
-    current_session = executeSQL(
-        query="SELECT /*+LABEL(get_session)*/ CURRENT_SESSION();",
-        method="fetchfirstelem",
-        print_time_sql=False,
-    )
-    current_session = current_session.split(":")[1]
-    current_session = int(current_session, base=16)
-    if add_username:
-        username = executeSQL(
-            query="SELECT /*+LABEL(get_session)*/ USERNAME();",
-            method="fetchfirstelem",
-            print_time_sql=False,
-        )
-        return f"{username}_{current_session}"
-    return current_session
-
-
-def get_vertica_type(dtype):
-    if dtype in (str, "str", "string"):
-        dtype = "varchar"
-    elif dtype == float:
-        dtype = "float"
-    elif dtype == int:
-        dtype = "integer"
-    elif dtype == datetime.datetime:
-        dtype = "datetime"
-    elif dtype == datetime.date:
-        dtype = "date"
-    elif dtype == datetime.time:
-        dtype = "time"
-    elif dtype == datetime.timedelta:
-        dtype = "interval"
-    elif dtype == datetime.timezone:
-        dtype = "timestamptz"
-    elif dtype in (np.ndarray, np.array, list):
-        dtype = "array"
-    elif dtype == dict:
-        dtype = "row"
-    elif dtype == tuple:
-        dtype = "set"
-    elif isinstance(dtype, str):
-        dtype = dtype.lower().strip()
-    return dtype
-
-
-def get_verticapy_function(key: str, method: str = ""):
-    key = key.lower()
-    if key in ("median", "med"):
-        key = "50%"
-    elif key in ("approx_median", "approximate_median"):
-        key = "approx_50%"
-    elif key == "100%":
-        key = "max"
-    elif key == "0%":
-        key = "min"
-    elif key == "approximate_count_distinct":
-        key = "approx_unique"
-    elif key == "approximate_count_distinct":
-        key = "approx_unique"
-    elif key == "ema":
-        key = "exponential_moving_average"
-    elif key == "mean":
-        key = "avg"
-    elif key in ("stddev", "stdev"):
-        key = "std"
-    elif key == "product":
-        key = "prod"
-    elif key == "variance":
-        key = "var"
-    elif key == "kurt":
-        key = "kurtosis"
-    elif key == "skew":
-        key = "skewness"
-    elif key in ("top1", "mode"):
-        key = "top"
-    elif key == "top1_percent":
-        key = "top_percent"
-    elif "%" == key[-1]:
-        start = 7 if len(key) >= 7 and key[0:7] == "approx_" else 0
-        if float(key[start:-1]) == int(float(key[start:-1])):
-            key = f"{int(float(key[start:-1]))}%"
-            if start == 7:
-                key = "approx_" + key
-    elif key == "row":
-        key = "row_number"
-    elif key == "first":
-        key = "first_value"
-    elif key == "last":
-        key = "last_value"
-    elif key == "next":
-        key = "lead"
-    elif key in ("prev", "previous"):
-        key = "lag"
-    if method == "vertica":
-        if key == "var":
-            key = "variance"
-        elif key == "std":
-            key = "stddev"
-    return key
-
-
 def isnotebook():
     try:
         shell = get_ipython().__class__.__name__
@@ -398,47 +244,6 @@ def isnotebook():
             return False  # Other type (?)
     except NameError:
         return False  # Probably standard Python interpreter
-
-
-def print_query(query: str, title: str = ""):
-    from verticapy.io.sql.utils._format import indentSQL
-
-    screen_columns = shutil.get_terminal_size().columns
-    query_print = indentSQL(query)
-    if isnotebook():
-        display(HTML(f"<h4>{title}</h4>"))
-        query_print = query_print.replace("\n", " <br>").replace("  ", " &emsp; ")
-        display(HTML(query_print))
-    else:
-        print(f"$ {title} $\n")
-        print(query_print)
-        print("-" * int(screen_columns) + "\n")
-
-
-def print_time(elapsed_time: float):
-    screen_columns = shutil.get_terminal_size().columns
-    if isnotebook():
-        display(HTML(f"<div><b>Execution: </b> {round(elapsed_time, 3)}s</div>"))
-    else:
-        print(f"Execution: {round(elapsed_time, 3)}s")
-        print("-" * int(screen_columns) + "\n")
-
-
-def reverse_score(metric: str):
-    if metric in [
-        "logloss",
-        "max",
-        "mae",
-        "median",
-        "mse",
-        "msle",
-        "rmse",
-        "aic",
-        "bic",
-        "auto",
-    ]:
-        return False
-    return True
 
 
 def updated_dict(

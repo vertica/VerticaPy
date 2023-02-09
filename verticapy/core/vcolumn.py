@@ -39,7 +39,8 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import *
-from verticapy.io.sql.utils._format import quote_ident, clean_query
+from verticapy.io.sql._utils._format import quote_ident, clean_query
+from verticapy.utils._map import python_to_sql_dtype
 
 # Other modules
 import numpy as np
@@ -632,7 +633,7 @@ Attributes
 	--------
 	vDataFrame.astype : Converts the vColumns to the input type.
 		"""
-        dtype = get_vertica_type(dtype)
+        dtype = python_to_sql_dtype(dtype)
         try:
             if (
                 dtype == "array" or str(dtype).startswith("vmap")

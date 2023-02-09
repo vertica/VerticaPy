@@ -28,7 +28,7 @@ from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._toolbox import *
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 from ..flex import compute_flextable_keys
-from verticapy.io.sql.utils._format import format_schema_table, clean_query
+from verticapy.io.sql._utils._format import format_schema_table, clean_query
 from verticapy.io.parsers._utils import extract_compression, get_first_file
 
 

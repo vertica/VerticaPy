@@ -35,7 +35,7 @@ bool
     True if the schema was successfully created, False otherwise.
     """
     from verticapy.utils._toolbox import executeSQL
-    from verticapy.io.sql.utils._format import quote_ident
+    from verticapy.io.sql._utils._format import quote_ident
 
     try:
         executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")

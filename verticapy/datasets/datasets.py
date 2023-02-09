@@ -33,7 +33,7 @@ from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy.errors import *
-from verticapy.io.sql.utils._format import quote_ident
+from verticapy.io.sql._utils._format import quote_ident
 
 
 @check_minimum_version

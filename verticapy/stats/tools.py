@@ -37,7 +37,7 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
-from verticapy.io.sql.utils._format import schema_relation
+from verticapy.io.sql._utils._format import schema_relation
 
 # Statistical Tests & Tools
 

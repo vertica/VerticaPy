@@ -26,7 +26,7 @@ import math
 from verticapy.utils._toolbox import executeSQL, bin_spatial_to_str
 from verticapy.errors import ParameterError
 import verticapy
-from verticapy.io.sql.utils._format import quote_ident
+from verticapy.io.sql._utils._format import quote_ident
 
 #
 ##

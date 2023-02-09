@@ -43,7 +43,8 @@ from verticapy.plotting._matplotlib import (
     plot_stepwise_ml,
     plot_importance,
 )
-from verticapy.io.sql.utils._format import quote_ident, schema_relation
+from verticapy.io.sql._utils._format import quote_ident, schema_relation
+from verticapy.machine_learning._utils import reverse_score
 
 # Other Python Modules
 import matplotlib.pyplot as plt

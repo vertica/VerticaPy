@@ -26,7 +26,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utils._toolbox import *
 from verticapy.utilities import *
-from verticapy.io.sql.utils._format import quote_ident, schema_relation
+from verticapy.io.sql._utils._format import quote_ident, schema_relation
 
 # Standard Python Modules
 import numpy as np

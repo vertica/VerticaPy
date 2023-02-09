@@ -73,7 +73,7 @@ from verticapy.errors import (
 from verticapy.utils._toolbox import *
 from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.core.str_sql import str_sql
-from verticapy.io.sql.utils._format import (
+from verticapy.io.sql._utils._format import (
     format_magic,
     quote_ident,
     schema_relation,
@@ -81,6 +81,7 @@ from verticapy.io.sql.utils._format import (
     clean_query,
 )
 from verticapy.core._utils._merge import gen_coalesce, group_similar_names
+from verticapy.utils._map import verticapy_agg_name
 
 ###
 #                                           _____
@@ -1416,12 +1417,12 @@ vColumns : vColumn
                 return "VERTICAPY_NOT_PRECOMPUTED"
             return total
         elif method:
-            method = get_verticapy_function(method.lower())
+            method = verticapy_agg_name(method.lower())
             if columns[1] in self[columns[0]].catalog[method]:
                 return self[columns[0]].catalog[method][columns[1]]
             else:
                 return "VERTICAPY_NOT_PRECOMPUTED"
-        key = get_verticapy_function(key.lower())
+        key = verticapy_agg_name(key.lower())
         column = self.format_colnames(column)
         try:
             if (key == "approx_unique") and ("unique" in self[column].catalog):
@@ -1517,7 +1518,7 @@ vColumns : vColumn
                 self[column].catalog = copy.deepcopy(agg_dict)
             self._VERTICAPY_VARIABLES_["count"] = -1
         elif matrix:
-            matrix = get_verticapy_function(matrix.lower())
+            matrix = verticapy_agg_name(matrix.lower())
             if matrix in agg_dict:
                 for elem in values:
                     val = values[elem]
@@ -1533,7 +1534,7 @@ vColumns : vColumn
                 for i in range(len(values["index"])):
                     key, val = values["index"][i].lower(), values[column][i]
                     if key not in ["listagg"]:
-                        key = get_verticapy_function(key)
+                        key = verticapy_agg_name(key)
                         try:
                             val = float(val)
                             if val - int(val) == 0:
@@ -2706,7 +2707,7 @@ vColumns : vColumn
         by = ", ".join(by)
         by = f"PARTITION BY {by}" if (by) else ""
         order_by = self.__get_sort_syntax__(order_by)
-        func = get_verticapy_function(func.lower(), method="vertica")
+        func = verticapy_agg_name(func.lower(), method="vertica")
         if func in (
             "max",
             "min",
@@ -4812,7 +4813,7 @@ vColumns : vColumn
     str
         The formatted current vDataFrame relation.
         """
-        from verticapy.io.sql.utils._format import indentSQL
+        from verticapy.io.sql._utils._format import indentSQL
 
         if reindent:
             return indentSQL(self.__genSQL__())
@@ -8207,7 +8208,7 @@ vColumns : vColumn
         prefix = "approx_" if approx else ""
         return self.aggregate(
             func=[
-                get_verticapy_function(prefix + f"{float(item) * 100}%") for item in q
+                verticapy_agg_name(prefix + f"{float(item) * 100}%") for item in q
             ],
             columns=columns,
             **agg_kwds,
@@ -8715,7 +8716,7 @@ vColumns : vColumn
             order_by = f" ORDER BY {columns[0]}"
         else:
             order_by = self.__get_sort_syntax__(order_by)
-        func = get_verticapy_function(func.lower(), method="vertica")
+        func = verticapy_agg_name(func.lower(), method="vertica")
         windows_frame = f""" 
             OVER ({by}{order_by} 
             {method.upper()} 

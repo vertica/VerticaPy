@@ -24,7 +24,7 @@ from verticapy.utils._toolbox import (
     get_final_vertica_type,
     gen_tmp_name,
 )
-from verticapy.io.sql.utils._format import quote_ident, format_schema_table
+from verticapy.io.sql._utils._format import quote_ident, format_schema_table
 from verticapy.errors import ParameterError
 
 

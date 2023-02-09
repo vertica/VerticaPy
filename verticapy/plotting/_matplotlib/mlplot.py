@@ -38,7 +38,7 @@ from verticapy.utilities import *
 from verticapy.utils._toolbox import *
 from verticapy.errors import *
 from verticapy.plotting._colors import gen_colors
-from verticapy.io.sql.utils._format import quote_ident
+from verticapy.io.sql._utils._format import quote_ident
 
 
 def logit_plot(
