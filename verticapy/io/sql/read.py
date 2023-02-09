@@ -114,7 +114,7 @@ def to_tablesample(
     tablesample : Object in memory created for rendering purposes.
     """
     import verticapy as vp
-    from verticapy.core._utils.tablesample import tablesample
+    from verticapy.core.tablesample import tablesample
     from verticapy.utils._toolbox import executeSQL, get_final_vertica_type, print_time
     from verticapy.io.sql._utils._display import print_query
 

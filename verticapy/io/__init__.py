@@ -14,10 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from .parsers.csv import read_csv, pcsv
-from .parsers.json import read_json, pjson
-from .parsers.avro import read_avro
-from .parsers.shp import read_shp
-from .parsers.all import read_file
-from .parsers.pandas import pandas_to_vertica
-from .flex import compute_flextable_keys, compute_vmap_keys, isflextable, isvmap
+from verticapy.io.parsers.csv import read_csv, pcsv
+from verticapy.io.parsers.json import read_json, pjson
+from verticapy.io.parsers.avro import read_avro
+from verticapy.io.parsers.shp import read_shp
+from verticapy.io.parsers.all import read_file
+from verticapy.io.parsers.pandas import pandas_to_vertica
+from verticapy.io.flex import compute_flextable_keys, compute_vmap_keys, isflextable, isvmap
