@@ -166,7 +166,8 @@ def to_tablesample(
     """
     import verticapy as vp
     from verticapy.core.tablesample import tablesample
-    from verticapy.sql.read import _executeSQL, get_final_vertica_type
+    from verticapy.sql.read import _executeSQL
+    from verticapy.utils._toolbox import get_final_vertica_type
     from verticapy.sql._utils._display import print_query, print_time
 
     if vp.OPTIONS["sql_on"]:

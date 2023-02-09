@@ -87,7 +87,6 @@ bool
     from verticapy.sql.read import _executeSQL
     from verticapy.sql._utils._format import quote_ident
 
-    # -#
     if schema.lower() == "v_temp_schema":
         schema = ""
         temporary_local_table = True
