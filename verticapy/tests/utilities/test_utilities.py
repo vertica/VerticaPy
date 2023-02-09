@@ -545,7 +545,7 @@ class TestUtilities:
         )
         for query in queries:
             current_cursor().execute(
-                query.replace("tmp_flex_dbadmin", "tmp_flex_test_read_json")
+                query.replace("tmp_flex", "tmp_flex_test_read_json")
             )
         vdf = vDataFrame("public.laliga_verticapy_test_json")
         assert vdf.shape() == (452, 40)
