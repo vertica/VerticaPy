@@ -42,7 +42,7 @@ from verticapy.io.sql._utils._format import replace_vars_in_query, clean_query
 @save_verticapy_logs
 @needs_local_scope
 def hchart_magic(line, cell="", local_ns=None):
-    from ._utils import get_magic_options
+    from verticapy.jupyter.extensions._utils import get_magic_options
 
     # Initialization
     query = "" if (not (cell) and (line)) else cell

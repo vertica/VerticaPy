@@ -51,7 +51,7 @@ bool
     True if the operation succeeded, False otherwise.
     """
     import verticapy as vp
-    from ._toolbox import executeSQL
+    from verticapy.utils._toolbox import executeSQL
 
     if not (vp.OPTIONS["save_query_profile"]) or (
         isinstance(vp.OPTIONS["save_query_profile"], list)

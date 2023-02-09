@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from .create import create_schema, create_table, create_verticapy_schema
-from .drop import drop
-from .read import readSQL, to_tablesample, vDataFrameSQL
-from .insert import insert_into, insert_verticapy_schema
+from verticapy.io.sql.create import create_schema, create_table, create_verticapy_schema
+from verticapy.io.sql.drop import drop
+from verticapy.io.sql.read import readSQL, to_tablesample, vDataFrameSQL
+from verticapy.io.sql.insert import insert_into, insert_verticapy_schema

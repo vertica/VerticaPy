@@ -14,8 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from .utils._toolbox import isnotebook
-from .utils._logo import gen_verticapy_logo_html, gen_verticapy_logo_str
+from verticapy.utils._toolbox import isnotebook
+from verticapy.utils._logo import gen_verticapy_logo_html, gen_verticapy_logo_str
 
 
 def help_start():

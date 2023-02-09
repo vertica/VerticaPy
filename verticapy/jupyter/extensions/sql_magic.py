@@ -55,7 +55,7 @@ from verticapy.io.sql._utils._format import replace_vars_in_query, clean_query
 @needs_local_scope
 def sql_magic(line, cell="", local_ns=None):
     from verticapy import vDataFrameSQL
-    from ._utils import get_magic_options
+    from verticapy.jupyter.extensions._utils import get_magic_options
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.

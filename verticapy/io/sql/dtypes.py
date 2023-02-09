@@ -63,7 +63,7 @@ Returns
 list of tuples
     The list of the different columns and their respective type.
     """
-    from .drop import drop
+    from verticapy.io.sql.drop import drop
 
     assert expr or table_name, ParameterError(
         "Missing parameter: 'expr' and 'table_name' can not both be empty."

@@ -22,7 +22,7 @@ import verticapy as vp
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._toolbox import *
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
-from ..flex import compute_flextable_keys
+from verticapy.io.flex import compute_flextable_keys
 from verticapy.io.sql._utils._format import (
     quote_ident,
     format_schema_table,
@@ -53,7 +53,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    from ..sql.drop import drop
+    from verticapy.io.sql.drop import drop
 
     flex_name = gen_tmp_name(name="flex")[1:-1]
     executeSQL(
@@ -209,7 +209,7 @@ See Also
 read_csv : Ingests a CSV file into the Vertica database.
 	"""
     from verticapy import vDataFrame
-    from ..sql.drop import drop
+    from verticapy.io.sql.drop import drop
 
     if use_complex_dt:
         assert not (new_name), ParameterError(

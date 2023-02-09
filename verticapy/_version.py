@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from .errors import VersionError
+from verticapy.errors import VersionError
 
 # Global Variable
 MINIMUM_VERSION = {
@@ -85,7 +85,7 @@ list
     List containing the version information.
     [MAJOR, MINOR, PATCH, POST]
     """
-    from .utils._toolbox import executeSQL
+    from verticapy.utils._toolbox import executeSQL
     import verticapy as vp
 
     if condition:

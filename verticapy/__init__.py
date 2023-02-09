@@ -94,4 +94,4 @@ import verticapy.learn
 from verticapy.jupyter.extensions import load_ipython_extension
 
 # Version
-from ._version import *
+from verticapy._version import *

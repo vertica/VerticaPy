@@ -115,8 +115,8 @@ def to_tablesample(
     """
     import verticapy as vp
     from verticapy.core.tablesample import tablesample
-    from verticapy.utils._toolbox import executeSQL, get_final_vertica_type, print_time
-    from verticapy.io.sql._utils._display import print_query
+    from verticapy.utils._toolbox import executeSQL, get_final_vertica_type
+    from verticapy.io.sql._utils._display import print_query, print_time
 
     if vp.OPTIONS["sql_on"]:
         print_query(query, title)
@@ -185,7 +185,7 @@ vDataFrame
     """
     # Initialization
     from verticapy import vDataFrame
-    from ..flex import isvmap
+    from vertucapy.io.flex import isvmap
     from verticapy.io.sql.dtypes import get_data_types
     from verticapy.utils._toolbox import get_category_from_vertica_type
     from verticapy.io.sql._utils._format import quote_ident
