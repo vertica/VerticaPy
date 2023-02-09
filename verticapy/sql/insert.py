@@ -146,10 +146,8 @@ def insert_verticapy_schema(
     model_save: dict,
     category: str = "VERTICAPY_MODELS",
 ):
-    from verticapy.utils._toolbox import (
-        _executeSQL,
-        quote_ident,
-    )
+    from verticapy.utils._toolbox import quote_ident
+    from verticapy.sql.read import _executeSQL
 
     sql = "SELECT /*+LABEL(insert_verticapy_schema)*/ * FROM columns WHERE table_schema='verticapy';"
     result = _executeSQL(sql, method="fetchrow", print_time_sql=False)
