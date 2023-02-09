@@ -31,6 +31,7 @@ from verticapy.utils._toolbox import (
     executeSQL,
     bin_spatial_to_str,
     updated_dict,
+    isnotebook
 )
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError

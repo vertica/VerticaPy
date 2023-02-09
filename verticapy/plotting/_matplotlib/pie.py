@@ -23,7 +23,7 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, quote_ident, updated_dict
+from verticapy.utils._toolbox import executeSQL, quote_ident, updated_dict, isnotebook
 from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import compute_plot_variables
 from verticapy.plotting._colors import gen_colors

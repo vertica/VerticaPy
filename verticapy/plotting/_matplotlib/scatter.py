@@ -31,6 +31,7 @@ from verticapy.utils._toolbox import (
     updated_dict,
     get_random_function,
     color_dict,
+    isnotebook
 )
 from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import compute_plot_variables
