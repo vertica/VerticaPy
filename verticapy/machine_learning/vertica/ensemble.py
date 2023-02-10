@@ -29,9 +29,7 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
-from verticapy.learn.metrics import *
-from verticapy.plotting._matplotlib import *
-from verticapy.utilities import *
+from verticapy._version import vertica_version
 from verticapy.utils._gen import gen_name
 from verticapy.sql.read import _executeSQL
 from verticapy import vDataFrame

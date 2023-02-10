@@ -30,7 +30,11 @@ from verticapy.utils._decorators import (
 )
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
-from verticapy.utilities import *
+from verticapy.sql.create import create_table
+from verticapy.sql.drop import drop
+from verticapy.sql.read import vDataFrameSQL
+from verticapy.sql.insert import insert_into
+
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
 from verticapy.sql._utils._format import quote_ident

@@ -26,6 +26,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.learn.vmodel import *
 from verticapy.sql._utils._format import quote_ident
+from verticapy.sql.read import vDataFrameSQL
 
 # Standard Modules
 from typing import Literal
@@ -81,8 +82,6 @@ nbtype: str, optional
     def get_var_info(self):
         # Returns a list of dictionary for each of the NB variables.
         # It is used to translate NB to Python
-        from verticapy.utilities import vDataFrameSQL
-
         vdf = vDataFrameSQL(self.input_relation)
         var_info = {}
         gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0

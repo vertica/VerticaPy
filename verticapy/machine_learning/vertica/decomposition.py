@@ -24,7 +24,9 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
-from verticapy.utilities import *
+from verticapy._version import vertica_version
+from verticapy.plotting._matplotlib.mlplot import plot_var
+from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.learn.vmodel import *
 
 # Standard Module
@@ -110,8 +112,6 @@ name: str
                 ]
             style_kwds["c"] = c
             if "cmap" not in style_kwds:
-                from verticapy.plotting._colors import gen_colors, gen_cmap
-
                 style_kwds["cmap"] = gen_cmap(
                     color=[gen_colors()[0], gen_colors()[1], gen_colors()[2]]
                 )

@@ -25,7 +25,7 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
-from verticapy.utilities import *
+from verticapy._version import vertica_version
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 

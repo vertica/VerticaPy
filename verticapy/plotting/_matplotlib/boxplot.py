@@ -21,7 +21,6 @@ import math, warnings
 import matplotlib.pyplot as plt
 
 # VerticaPy Modules
-from verticapy.utilities import *
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError

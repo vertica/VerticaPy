@@ -71,7 +71,7 @@ feature is available in the user's version.
     def func_prec_check_minimum_version(*args, **kwargs):
 
         import verticapy as vp
-        from verticapy.utilities import vertica_version
+        from verticapy._version import vertica_version
 
         fun_name, object_name, condition = func.__name__, "", []
         if len(args) > 0:

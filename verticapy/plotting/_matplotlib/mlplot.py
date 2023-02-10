@@ -31,11 +31,6 @@ from matplotlib.lines import Line2D
 import numpy as np
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.utilities import *
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import *

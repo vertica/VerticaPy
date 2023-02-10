@@ -20,12 +20,12 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.sql.read import _executeSQL
-from verticapy.utilities import *
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample
+from verticapy._version import vertica_version
+from verticapy.core.tablesample import tablesample
 from verticapy.sql._utils._format import quote_ident, schema_relation
 
 # Standard Python Modules

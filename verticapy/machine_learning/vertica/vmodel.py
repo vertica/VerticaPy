@@ -33,7 +33,10 @@ from verticapy.utils._decorators import (
 from verticapy import vDataFrame
 from verticapy.plotting._matplotlib import *
 from verticapy.learn.model_selection import *
-from verticapy.utilities import *
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample, vDataFrameSQL
+from verticapy._version import vertica_version
+from verticapy.core.tablesample import tablesample
 from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import *

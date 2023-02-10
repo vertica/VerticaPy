@@ -30,7 +30,10 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy import vDataFrame
-from verticapy.utilities import *
+
+from verticapy.sql.read import vDataFrameSQL
+from verticapy._version import vertica_version
+from verticapy.core.tablesample import tablesample
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.errors import *
 from verticapy.learn.ensemble import *

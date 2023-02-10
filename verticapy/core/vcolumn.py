@@ -31,11 +31,13 @@ import verticapy.plotting._matplotlib as plt
 from verticapy.plotting._colors import gen_colors, gen_cmap
 import verticapy.learn.ensemble as vpy_ensemble
 import verticapy.learn.neighbors as vpy_neighbors
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.utilities import *
+from verticapy.utils._decorators import save_verticapy_logs
+from verticapy.sql.flex import isvmap
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample, vDataFrameSQL
+from verticapy._version import vertica_version
+from verticapy.core.tablesample import tablesample
+from verticapy.sql.dtypes import get_data_types
 from verticapy.utils._cast import to_category, to_varchar
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL

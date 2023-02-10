@@ -28,7 +28,7 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
-from verticapy.utilities import *
+from verticapy.sql.read import vDataFrameSQL
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy import vDataFrame

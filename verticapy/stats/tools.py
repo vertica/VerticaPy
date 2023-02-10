@@ -29,11 +29,11 @@ import numpy as np
 
 # VerticaPy Modules
 import verticapy
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.utilities import *
+from verticapy.utils._decorators import save_verticapy_logs
+from verticapy.sql.drop import drop
+from verticapy.sql.read import vDataFrameSQL
+from verticapy.core.tablesample import tablesample
+from verticapy.sql.dtypes import get_data_types
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame

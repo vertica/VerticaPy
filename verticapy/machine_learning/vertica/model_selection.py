@@ -33,7 +33,10 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy import vDataFrame
-from verticapy.utilities import *
+from verticapy.sql.drop import drop
+from verticapy.sql.read import vDataFrameSQL
+from verticapy.core.tablesample import tablesample
+
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
