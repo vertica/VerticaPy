@@ -39,7 +39,7 @@ from verticapy.utils._toolbox import *
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
-from verticapy.plotting._colors import gen_colors
+from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.sql._utils._format import quote_ident
 
 
@@ -415,9 +415,9 @@ def plot_importance(
     color = []
     for item in signs:
         color += (
-            [color_dict(style_kwds, 0)] if (item == 1) else [color_dict(style_kwds, 1)]
+            [get_color(style_kwds, 0)] if (item == 1) else [get_color(style_kwds, 1)]
         )
-    plus, minus = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
+    plus, minus = get_color(style_kwds, 0), get_color(style_kwds, 1)
     param = {"alpha": 0.86}
     style_kwds = updated_dict(param, style_kwds)
     style_kwds["color"] = color

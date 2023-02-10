@@ -27,7 +27,8 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import bin_spatial_to_str, updated_dict
+from verticapy.utils._toolbox import updated_dict
+from verticapy.utils._cast import to_varchar
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.core.str_sql import str_sql
@@ -461,14 +462,14 @@ def pivot_table(
             distinct = vdf[column].topk(max_cardinality[idx]).values["index"]
             distinct = ["'" + str(c).replace("'", "''") + "'" for c in distinct]
             if len(distinct) < max_cardinality[idx]:
-                cast = bin_spatial_to_str(vdf[column].category(), column)
+                cast = to_varchar(vdf[column].category(), column)
                 where += [f"({cast} IN ({', '.join(distinct)}))"]
             else:
                 where += [f"({column} IS NOT NULL)"]
     where = f" WHERE {' AND '.join(where)}"
     over = "/" + str(vdf.shape()[0]) if (method == "density") else ""
     if len(columns) == 1:
-        cast = bin_spatial_to_str(vdf[columns[0]].category(), all_columns[-1])
+        cast = to_varchar(vdf[columns[0]].category(), all_columns[-1])
         return to_tablesample(
             query=f"""
                 SELECT 
@@ -485,7 +486,7 @@ def pivot_table(
             cols += [f"{timestampadd[i]} AS {columns[i]}"]
         else:
             cols += [columns[i]]
-        cast += [bin_spatial_to_str(vdf[columns[i]].category(), columns[i])]
+        cast += [to_varchar(vdf[columns[i]].category(), columns[i])]
     query_result = _executeSQL(
         query=f"""
             SELECT 

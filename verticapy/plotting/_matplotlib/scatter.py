@@ -26,16 +26,13 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import (
-    updated_dict,
-    color_dict,
-)
-from verticapy.utils._random import current_random
+from verticapy.utils._toolbox import updated_dict
+from verticapy._config._random import current_random
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import compute_plot_variables
-from verticapy.plotting._colors import gen_colors, gen_cmap
+from verticapy.plotting._colors import gen_colors, gen_cmap, get_color
 
 # Global Variables
 MARKERS = ["^", "o", "+", "*", "h", "x", "D", "1"]
@@ -497,13 +494,13 @@ def scatter_matrix(
                 x0, y0, z0, h0, is_categorical = compute_plot_variables(
                     vdf[x], method="density", max_cardinality=1
                 )
-                param = {"color": color_dict(style_kwds, 0), "edgecolor": "black"}
+                param = {"color": get_color(style_kwds, 0), "edgecolor": "black"}
                 if "edgecolor" in style_kwds:
                     param["edgecolor"] = style_kwds["edgecolor"]
                 axes[i, j].bar(x0, y0, h0 / 0.94, **param)
             else:
                 param = {
-                    "color": color_dict(style_kwds, 1),
+                    "color": get_color(style_kwds, 1),
                     "edgecolor": "black",
                     "alpha": 0.9,
                     "s": 40,

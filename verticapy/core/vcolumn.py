@@ -37,13 +37,13 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
-from verticapy.utils._cast import sql_dtype_category
+from verticapy.utils._cast import to_category, to_varchar
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import *
 from verticapy.sql._utils._format import quote_ident, clean_query
-from verticapy.utils._cast import python_to_sql_dtype
+from verticapy.utils._cast import to_sql_dtype
 
 # Other modules
 import numpy as np
@@ -446,7 +446,7 @@ Attributes
                     LIMIT 0""",
                 column="apply_test_feature",
             )
-            category = sql_dtype_category(ctype=ctype)
+            category = to_category(ctype=ctype)
             all_cols, max_floor = self.parent.get_columns(), 0
             for column in all_cols:
                 try:
@@ -636,7 +636,7 @@ Attributes
 	--------
 	vDataFrame.astype : Converts the vColumns to the input type.
 		"""
-        dtype = python_to_sql_dtype(dtype)
+        dtype = to_sql_dtype(dtype)
         try:
             if (
                 dtype == "array" or str(dtype).startswith("vmap")
@@ -724,7 +724,7 @@ Attributes
                 symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             self.transformations += [
-                (transformation[1], dtype, sql_dtype_category(ctype=dtype),)
+                (transformation[1], dtype, to_category(ctype=dtype),)
             ]
             self.parent.__add_to_history__(
                 f"[AsType]: The vColumn {self.alias} was converted to {dtype}."
@@ -1253,7 +1253,7 @@ Attributes
                 if category in ("None", None):
                     tmp_query += f" WHERE {self.alias} IS NULL"
                 else:
-                    alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
+                    alias_sql_repr = to_varchar(self.category(), self.alias)
                     tmp_query += f" WHERE {alias_sql_repr} = '{category}'"
                 query += [lp + tmp_query + rp]
             values = to_tablesample(
@@ -1467,7 +1467,7 @@ Attributes
                 "case of discretization using the method 'topk'"
             )
             distinct = self.topk(k).values["index"]
-            category_str = bin_spatial_to_str(self.category())
+            category_str = to_varchar(self.category())
             X_str = ", ".join([f"""'{str(x).replace("'", "''")}'""" for x in distinct])
             new_category_str = new_category.replace("'", "''")
             trans = (
@@ -1583,7 +1583,7 @@ Attributes
 	--------
 	vDataFrame.topk : Returns the vColumn most occurent elements.
 		"""
-        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
+        alias_sql_repr = to_varchar(self.category(), self.alias)
         if "agg" not in kwargs:
             query = f"""
                 SELECT 
@@ -2319,7 +2319,7 @@ Attributes
         if offset < 0:
             offset = max(0, self.parent.shape()[0] - limit)
         title = f"Reads {self.alias}."
-        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
+        alias_sql_repr = to_varchar(self.category(), self.alias)
         tail = to_tablesample(
             query=f"""
                 SELECT 
@@ -3701,7 +3701,7 @@ Attributes
         pre_comp = self.parent.__get_catalog_value__(self.alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return pre_comp
-        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
+        alias_sql_repr = to_varchar(self.category(), self.alias)
         store_usage = _executeSQL(
             query=f"""
                 SELECT 
@@ -3957,7 +3957,7 @@ Attributes
             topk_cat = k
         if dropna:
             where = f" WHERE {self.alias} IS NOT NULL"
-        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
+        alias_sql_repr = to_varchar(self.category(), self.alias)
         result = _executeSQL(
             query=f"""
             SELECT 

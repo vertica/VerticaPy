@@ -43,6 +43,7 @@ from verticapy.learn.metrics import *
 from verticapy.learn.tools import *
 from verticapy.learn.memmodel import *
 from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation
+from verticapy.machine_learning._utils import get_match_index
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___

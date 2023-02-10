@@ -14,11 +14,25 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Union
 import datetime
 import numpy as np
 
 
-def python_to_dtype_category(expr):
+def to_varchar(
+    category: str, column: str = "{}",
+):
+    map_dict = {
+        "vmap": f"MAPTOSTRING({column})",
+        "binary": f"TO_HEX({column})",
+        "spatial": f"ST_AsText({column})",
+    }
+    if category in map_dict:
+        return map_dict[column]
+    return column
+
+
+def to_dtype_category(expr: type) -> str:
     try:
         category = expr.category()
     except:
@@ -37,7 +51,7 @@ def python_to_dtype_category(expr):
     return category
 
 
-def python_to_sql_dtype(dtype):
+def to_sql_dtype(dtype: Union[type, str]):
     if dtype in (str, "str", "string"):
         dtype = "varchar"
     elif dtype == float:
@@ -65,7 +79,7 @@ def python_to_sql_dtype(dtype):
     return dtype
 
 
-def sql_dtype_category(ctype: str = ""):
+def to_category(ctype: str = ""):
     ctype = ctype.lower().strip()
     if ctype != "":
         if (ctype[0:5] == "array") or (ctype[0:3] == "row") or (ctype[0:3] == "set"):
@@ -104,22 +118,3 @@ def sql_dtype_category(ctype: str = ""):
             return "text"
     else:
         return "undefined"
-
-
-def vertica_python_dtype(
-    type_name: str, display_size: int = 0, precision: int = 0, scale: int = 0
-):
-    """
-Takes as input the Vertica Python type code and returns its corresponding data type.
-    """
-    result = type_name
-    has_precision_scale = (
-        (type_name[0:4].lower() not in ("uuid", "date", "bool"))
-        and (type_name[0:5].lower() != "array")
-        and (type_name[0:3].lower() not in ("set", "row", "map", "int"))
-    )
-    if display_size and has_precision_scale:
-        result += f"({display_size})"
-    elif scale and precision and has_precision_scale:
-        result += f"({precision},{scale})"
-    return result

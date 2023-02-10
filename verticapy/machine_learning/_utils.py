@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy.sql._utils._format import quote_ident
 
 
 def reverse_score(metric: str):
@@ -31,3 +32,12 @@ def reverse_score(metric: str):
     ]:
         return False
     return True
+
+
+def get_match_index(x: str, col_list: list, str_check: bool = True):
+    for idx, col in enumerate(col_list):
+        if (str_check and quote_ident(x.lower()) == quote_ident(col.lower())) or (
+            x == col
+        ):
+            return idx
+    return None

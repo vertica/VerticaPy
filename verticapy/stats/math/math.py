@@ -29,7 +29,7 @@ from verticapy.utils._toolbox import *
 from verticapy.stats.tools import *
 from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import format_magic, clean_query
-from verticapy.utils._cast import python_to_dtype_category
+from verticapy.utils._cast import to_dtype_category
 
 #
 # Global Variables
@@ -1020,7 +1020,7 @@ str_sql
         raise ParameterError(
             "The number of arguments of the 'case_when' function must be strictly greater than 1."
         )
-    category = python_to_dtype_category(argv[1])
+    category = to_dtype_category(argv[1])
     i = 0
     expr = "CASE"
     while i < n:
@@ -1091,7 +1091,7 @@ Returns
 str_sql
     SQL expression.
     """
-    category = python_to_dtype_category(expr)
+    category = to_dtype_category(expr)
     expr = [format_magic(expr)]
     for arg in argv:
         expr += [format_magic(arg)]
@@ -1268,7 +1268,7 @@ str_sql
         raise ParameterError(
             "The number of arguments of the 'decode' function must be greater than 3."
         )
-    category = python_to_dtype_category(argv[1])
+    category = to_dtype_category(argv[1])
     expr = (
         "DECODE("
         + str(format_magic(expr))

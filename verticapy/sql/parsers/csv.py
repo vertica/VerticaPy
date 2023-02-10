@@ -514,8 +514,13 @@ read_json : Ingests a JSON file into the Vertica database.
             if parse_nrows > 0:
                 os.remove(path_test)
             dtype_sorted = {}
-            for elem in header_names:
-                key = find_val_in_dict(elem, dtype, return_key=True)
+            for name in header_names:
+                key = None
+                for col in dtype:
+                    if quote_ident(name).lower() == quote_ident(col).lower():
+                        key = col
+                if key == None:
+                    raise KeyError(f"'{name}'")
                 dtype_sorted[key] = dtype[key]
             query1 = create_table(
                 table_name,

@@ -22,11 +22,11 @@ import matplotlib.pyplot as plt
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import color_dict, updated_dict
+from verticapy.utils._toolbox import updated_dict
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.plotting._colors import gen_colors
+from verticapy.plotting._colors import get_color, gen_colors
 from verticapy.sql._utils._format import quote_ident
 
 # Optional
@@ -212,7 +212,7 @@ def multi_ts_plot(
                 }
         param["color"] = color
         if "color" in style_kwds and len(order_by_values) < 20:
-            param["markerfacecolor"] = color_dict(style_kwds, i)
+            param["markerfacecolor"] = get_color(style_kwds, i)
         if kind == "step":
             ax.step(order_by_values, points, **param)
         else:
@@ -269,9 +269,9 @@ def range_curve(
             alpha1, alpha2 = 0.3, 0.5
         else:
             alpha1, alpha2 = 0.5, 0.9
-        param = {"facecolor": color_dict(style_kwds, i)}
+        param = {"facecolor": get_color(style_kwds, i)}
         ax.fill_between(X, y[0], y[2], alpha=alpha1, **param)
-        param = {"color": color_dict(style_kwds, i)}
+        param = {"color": get_color(style_kwds, i)}
         for j in [0, 2]:
             ax.plot(
                 X, y[j], alpha=alpha2, **updated_dict(param, style_kwds, i),
@@ -450,7 +450,7 @@ def ts_plot(
                     **param,
                     "markerfacecolor": colors[idx % len(colors)],
                 }
-            param["markerfacecolor"] = color_dict(style_kwds, idx)
+            param["markerfacecolor"] = get_color(style_kwds, idx)
             plot_fun(d[0], d[1], label=d[2], **updated_dict(param, style_kwds, idx))
         ax.set_xlabel(order_by)
         ax.set_ylabel(vdf.alias)

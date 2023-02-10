@@ -19,11 +19,29 @@ import warnings, datetime
 
 # VerticaPy Modules
 import vertica_python
-from verticapy.utils._cast import vertica_python_dtype
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.sql._utils._format import quote_ident, format_schema_table
 from verticapy.errors import ParameterError
+
+
+def vertica_python_dtype(
+    type_name: str, display_size: int = 0, precision: int = 0, scale: int = 0
+):
+    """
+Takes as input the Vertica Python type code and returns its corresponding data type.
+    """
+    result = type_name
+    has_precision_scale = (
+        (type_name[0:4].lower() not in ("uuid", "date", "bool"))
+        and (type_name[0:5].lower() != "array")
+        and (type_name[0:3].lower() not in ("set", "row", "map", "int"))
+    )
+    if display_size and has_precision_scale:
+        result += f"({display_size})"
+    elif scale and precision and has_precision_scale:
+        result += f"({precision},{scale})"
+    return result
 
 
 def get_data_types(

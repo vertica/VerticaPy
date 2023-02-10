@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import os
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.utils._logo import gen_verticapy_logo_html, gen_verticapy_logo_str
 
@@ -23,8 +24,8 @@ def help_start():
 VERTICAPY Interactive Help (FAQ).
     """
     path = os.path.dirname(vp.__file__)
-    img1 = vp.gen_verticapy_logo_html(size="10%")
-    img2 = vp.gen_verticapy_logo_str()
+    img1 = gen_verticapy_logo_html(size="10%")
+    img2 = gen_verticapy_logo_str()
     message = img1 if (ISNOTEBOOK) else img2
     message += (
         "\n\n&#128226; Welcome to the <b>VerticaPy</b> help module."

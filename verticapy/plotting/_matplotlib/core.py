@@ -23,7 +23,7 @@ permissions and limitations under the License.
 import math
 
 # VerticaPy Modules
-from verticapy.utils._toolbox import bin_spatial_to_str
+from verticapy.utils._cast import to_varchar
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 import verticapy
@@ -131,7 +131,7 @@ def compute_plot_variables(
                 if of:
                     enum_trans += f" , {of}"
                 table = f"(SELECT {enum_trans + other_columns} FROM {table}) enum_table"
-            cast_alias = bin_spatial_to_str(vdf.category(), vdf.alias)
+            cast_alias = to_varchar(vdf.category(), vdf.alias)
             query = f"""
                 (SELECT 
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/ 

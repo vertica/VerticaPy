@@ -71,8 +71,8 @@ from verticapy.errors import (
     QueryError,
 )
 from verticapy.utils._toolbox import *
-from verticapy.utils._random import current_random
-from verticapy.utils._cast import sql_dtype_category
+from verticapy._config._random import current_random
+from verticapy.utils._cast import to_category, to_varchar
 from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.plotting._colors import gen_colors, gen_cmap
@@ -365,7 +365,7 @@ vColumns : vColumn
                         f"its alias was changed using underscores '_' to {column_str}."
                     )
                     warnings.warn(warning_message, Warning)
-                category = sql_dtype_category(dtype)
+                category = to_category(dtype)
                 if (dtype.lower()[0:12] in ("long varbina", "long varchar")) and (
                     isflex
                     or util.isvmap(
@@ -3966,6 +3966,8 @@ vColumns : vColumn
         An independent model containing the result. For more information, see
         learn.memmodel.
         """
+        from verticapy.machine_learning._utils import get_match_index
+
         if "process" not in kwds or kwds["process"]:
             if isinstance(columns, str):
                 columns = [columns]
@@ -5608,7 +5610,7 @@ vColumns : vColumn
             category = "vmap"
             ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
         else:
-            category = sql_dtype_category(ctype=ctype)
+            category = to_category(ctype=ctype)
         all_cols, max_floor = self.get_columns(), 0
         for column in all_cols:
             column_str = column.replace('"', "")
@@ -6740,7 +6742,7 @@ vColumns : vColumn
             columns = self.get_columns()
         all_columns = []
         for column in columns:
-            cast = bin_spatial_to_str(self[column].category(), column)
+            cast = to_varchar(self[column].category(), column)
             all_columns += [f"{cast} AS {column}"]
         title = (
             "Reads the final relation using a limit "

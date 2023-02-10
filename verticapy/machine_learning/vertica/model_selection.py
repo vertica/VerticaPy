@@ -39,7 +39,7 @@ from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
-from verticapy.plotting._colors import gen_colors
+from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.learn.tools import does_model_exist
 from verticapy.plotting._matplotlib import (
     plot_bubble_ml,
@@ -2046,7 +2046,7 @@ tablesample
         positive_prediction_ratio,
         **updated_dict(param2, style_kwds, 1),
     )
-    color1, color2 = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
+    color1, color2 = get_color(style_kwds, 0), get_color(style_kwds, 1)
     if color1 == color2:
         color2 = gen_colors()[1]
     ax.fill_between(
@@ -2260,13 +2260,13 @@ tablesample
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
-    param = {"color": color_dict(style_kwds, 0)}
+    param = {"color": get_color(style_kwds, 0)}
     ax.plot(recall, precision, **updated_dict(param, style_kwds))
     ax.fill_between(
         recall,
         [0 for item in recall],
         precision,
-        facecolor=color_dict(style_kwds, 0),
+        facecolor=get_color(style_kwds, 0),
         alpha=0.1,
     )
     ax.set_ylim(0, 1)
@@ -2697,7 +2697,7 @@ tablesample
         fig, ax = plt.subplots()
         if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
-    color1, color2 = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
+    color1, color2 = get_color(style_kwds, 0), get_color(style_kwds, 1)
     if color1 == color2:
         color2 = gen_colors()[1]
     if cutoff_curve:

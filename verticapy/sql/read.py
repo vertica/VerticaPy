@@ -167,7 +167,7 @@ def to_tablesample(
     import verticapy as vp
     from verticapy.core.tablesample import tablesample
     from verticapy.sql.read import _executeSQL
-    from verticapy.utils._cast import vertica_python_dtype
+    from verticapy.sql.dtypes import vertica_python_dtype
     from verticapy.sql._utils._display import print_query, print_time
 
     if vp.OPTIONS["sql_on"]:
@@ -239,7 +239,7 @@ vDataFrame
     from verticapy import vDataFrame
     from verticapy.sql.flex import isvmap
     from verticapy.sql.dtypes import get_data_types
-    from verticapy.utils._cast import sql_dtype_category
+    from verticapy.utils._cast import to_category
     from verticapy.sql._utils._format import quote_ident
 
     if isinstance(vdf, vDataFrame):
@@ -275,7 +275,7 @@ vDataFrame
         from verticapy.core.vcolumn import vColumn
 
         column_name = '"' + column.replace('"', "_") + '"'
-        category = sql_dtype_category(ctype)
+        category = to_category(ctype)
         if (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
             isvmap(expr=relation, column=column,)
         ):

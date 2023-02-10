@@ -25,7 +25,6 @@ import numpy as np
 
 # VerticaPy Modules
 import verticapy as vp
-from verticapy.utils._toolbox import find_val_in_dict
 from verticapy.core._utils._display import print_table
 from verticapy.jupyter._javascript import datatables_repr
 from verticapy.errors import ParameterError, MissingColumn
@@ -90,7 +89,10 @@ The tablesample attributes are the same as the parameters.
         return (elem for elem in self.values)
 
     def __getitem__(self, key):
-        return find_val_in_dict(key, self.values)
+        for x in self.values:
+            if quote_ident(key).lower() == quote_ident(x).lower():
+                return d[x]
+        raise KeyError(f"'{key}'")
 
     def _repr_html_(self, interactive=False):
         if len(self.values) == 0:
