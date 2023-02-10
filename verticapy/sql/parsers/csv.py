@@ -32,6 +32,7 @@ from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 from verticapy.sql.flex import compute_flextable_keys
 from verticapy.sql._utils._format import format_schema_table, clean_query
 from verticapy.sql.parsers._utils import extract_compression, get_first_file
+from verticapy.sql._utils._format import quote_ident
 
 
 def guess_sep(file_str: str):
