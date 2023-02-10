@@ -21,6 +21,7 @@ permissions and limitations under the License.
 #
 # Standard Python Modules
 import math, collections
+from typing import Union
 
 # Other Python Modules
 import matplotlib.pyplot as plt
