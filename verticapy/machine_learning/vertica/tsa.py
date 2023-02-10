@@ -31,7 +31,7 @@ from verticapy.utils._decorators import (
 import verticapy.learn.metrics as mt
 from verticapy.learn.vmodel import Regressor
 from verticapy.learn.linear_model import LinearRegression
-from verticapy.core.vdataframe import vDataFrame, save_verticapy_logs
+from verticapy.core.vdataframe import vDataFrame
 from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation

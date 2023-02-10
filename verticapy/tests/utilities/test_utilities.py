@@ -24,7 +24,7 @@ import os
 
 # VerticaPy
 import vertica_python, verticapy
-from verticapy.core.vdataframe import vDataFrame, set_option
+from verticapy.core.vdataframe import vDataFrame
 from verticapy.connect import current_cursor, SESSION_IDENTIFIER
 from verticapy.utilities import *
 from verticapy.datasets import (
@@ -37,6 +37,7 @@ from verticapy.datasets import (
 from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
 from verticapy.learn.linear_model import LinearRegression
+from verticapy._config.config import set_option
 
 set_option("print_info", False)
 
