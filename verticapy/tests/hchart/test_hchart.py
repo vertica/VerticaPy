@@ -22,8 +22,8 @@ import pytest
 import os
 
 # Other Modules
-from highcharts.highcharts.highcharts import Highchart
-from highcharts.highstock.highstock import Highstock
+from vertica_highcharts.highcharts.highcharts import Highchart
+from vertica_highcharts.highstock.highstock import Highstock
 
 # VerticaPy
 import verticapy
