@@ -30,7 +30,7 @@ from verticapy.errors import ParameterError
 from verticapy.learn.vmodel import Regressor, BinaryClassifier
 
 # Standard Module
-from typing import Literal
+from typing import Literal, Union
 
 
 class ElasticNet(Regressor):
