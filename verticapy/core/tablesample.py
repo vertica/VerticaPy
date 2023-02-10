@@ -92,7 +92,7 @@ The tablesample attributes are the same as the parameters.
     def __getitem__(self, key):
         for x in self.values:
             if quote_ident(key).lower() == quote_ident(x).lower():
-                return d[x]
+                return self.values[x]
         raise KeyError(f"'{key}'")
 
     def _repr_html_(self, interactive=False):
