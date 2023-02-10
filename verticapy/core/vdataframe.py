@@ -70,11 +70,11 @@ from verticapy.errors import (
     ParsingError,
     QueryError,
 )
-from verticapy.utils._toolbox import *
 from verticapy._config._random import current_random
 from verticapy.utils._cast import to_category, to_varchar
 from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
+from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import (

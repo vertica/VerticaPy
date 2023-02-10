@@ -25,7 +25,6 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
 from verticapy.stats.tools import *
 from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import format_magic, clean_query

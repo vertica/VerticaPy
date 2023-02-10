@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utils._toolbox import *
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ExtensionError
 

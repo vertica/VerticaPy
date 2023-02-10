@@ -31,7 +31,6 @@ from verticapy.utils._decorators import (
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
 from verticapy.sql._utils._format import quote_ident

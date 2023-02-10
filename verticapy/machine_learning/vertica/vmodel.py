@@ -34,7 +34,6 @@ from verticapy import vDataFrame
 from verticapy.plotting._matplotlib import *
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
 from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import *

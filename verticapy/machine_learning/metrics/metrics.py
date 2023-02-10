@@ -37,7 +37,6 @@ from verticapy.utils._decorators import (
 from verticapy import vDataFrame
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
 from verticapy.sql.read import _executeSQL
 
 #

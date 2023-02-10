@@ -257,3 +257,22 @@ def compute_plot_variables(
         h = 0.94 * h
         z = None
     return [x, y, z, h, is_categorical]
+
+
+def updated_dict(
+    d1: dict, d2: dict, color_idx: int = 0,
+):
+    d = {}
+    for elem in d1:
+        d[elem] = d1[elem]
+    for elem in d2:
+        if elem == "color":
+            if isinstance(d2["color"], str):
+                d["color"] = d2["color"]
+            elif color_idx < 0:
+                d["color"] = [elem for elem in d2["color"]]
+            else:
+                d["color"] = d2["color"][color_idx % len(d2["color"])]
+        else:
+            d[elem] = d2[elem]
+    return d

@@ -36,12 +36,12 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.sql._utils._format import quote_ident
+from verticapy.plotting._matplotlib.core import updated_dict
 
 
 def logit_plot(

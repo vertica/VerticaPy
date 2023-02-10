@@ -30,7 +30,6 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
 from verticapy.sql.read import _executeSQL
 from verticapy.sql.sys import current_session, username
 

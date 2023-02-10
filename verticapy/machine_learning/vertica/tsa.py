@@ -38,6 +38,7 @@ from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql.read import _executeSQL
 from verticapy.utils._gen import gen_tmp_name
 from verticapy._config._notebook import ISNOTEBOOK
+from verticapy.plotting._matplotlib.core import updated_dict
 
 # Other Python Modules
 from dateutil.parser import parse

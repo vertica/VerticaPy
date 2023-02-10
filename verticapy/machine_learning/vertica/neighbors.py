@@ -26,7 +26,6 @@ from verticapy.utils._decorators import (
 )
 from verticapy.learn.metrics import *
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
@@ -38,6 +37,7 @@ from verticapy.learn.vmodel import *
 from verticapy.learn.tools import *
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql._utils._format import clean_query
+from verticapy.plotting._matplotlib.core import updated_dict
 
 # Standard Python Modules
 import warnings, itertools

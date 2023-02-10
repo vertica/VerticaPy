@@ -26,7 +26,7 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import updated_dict
+from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy._config._random import current_random
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL

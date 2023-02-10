@@ -32,7 +32,6 @@ from verticapy.utils._decorators import (
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import *

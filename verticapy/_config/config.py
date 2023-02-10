@@ -22,7 +22,6 @@ import warnings
 from typing import Union, Literal, overload
 
 # VerticaPy
-from verticapy.utils._toolbox import *
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 

@@ -34,7 +34,6 @@ from verticapy.utils._decorators import (
 )
 from verticapy import vDataFrame
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
@@ -46,6 +45,7 @@ from verticapy.plotting._matplotlib import (
     plot_stepwise_ml,
     plot_importance,
 )
+from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.machine_learning._utils import reverse_score
 

@@ -36,7 +36,6 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
 from verticapy.utils._cast import to_category, to_varchar
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
@@ -44,6 +43,7 @@ from verticapy.core.str_sql import str_sql
 from verticapy.errors import *
 from verticapy.sql._utils._format import quote_ident, clean_query
 from verticapy.utils._cast import to_sql_dtype
+from verticapy.plotting._matplotlib.core import updated_dict
 
 # Other modules
 import numpy as np
