@@ -15,7 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
-from verticapy.utils._toolbox import executeSQL, quote_ident, str_sql
+from verticapy.sql.read import _executeSQL
+from verticapy.sql._utils._format import quote_ident
+from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
 from verticapy.utils._decorators import save_verticapy_logs
 
@@ -39,7 +41,7 @@ Returns
 List of tuples
     List of virtual column names and their respective data types.
     """
-    executeSQL(
+    _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('utilities.compute_flex_table_keys')*/
@@ -51,7 +53,7 @@ List of tuples
     ]
     usecols_str = ", ".join(usecols_str)
     where = f" WHERE LOWER(key_name) IN ({usecols_str})" if (usecols) else ""
-    result = executeSQL(
+    result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('utilities.compute_flex_table_keys')*/
@@ -95,7 +97,7 @@ List of tuples
             f"Virtual column {vmap_col} is not a VMAP."
         )
         expr = expr.__genSQL__()
-    result = executeSQL(
+    result = _executeSQL(
         (
             "SELECT /*+LABEL('utilities.compute_vmap_keys')*/ keys, COUNT(*) FROM "
             f"(SELECT MAPKEYS({vmap}) OVER (PARTITION BEST) FROM {expr})"
@@ -129,7 +131,7 @@ bool
         f"SELECT is_flextable FROM v_catalog.tables WHERE table_name = '{table_name}' AND "
         f"table_schema = '{schema}' AND is_flextable LIMIT 1;"
     )
-    result = executeSQL(
+    result = _executeSQL(
         sql, title="Checking if the table is a flextable.", method="fetchall",
     )
     return bool(result)
@@ -163,7 +165,7 @@ bool
         expr = expr.__genSQL__()
     sql = f"SELECT MAPVERSION({column}) AS isvmap, {column} FROM {expr} WHERE {column} IS NOT NULL LIMIT 1;"
     try:
-        result = executeSQL(
+        result = _executeSQL(
             sql, title="Checking if the column is a vmap.", method="fetchall",
         )
         dtype = current_cursor().description[1][1]
@@ -176,7 +178,7 @@ bool
         if "'utf-8' codec can't decode byte" in str(e):
             try:
                 sql = f"SELECT MAPVERSION({column}) AS isvmap FROM {expr} WHERE {column} IS NOT NULL LIMIT 1;"
-                result = executeSQL(
+                result = _executeSQL(
                     sql, title="Checking if the column is a vmap.", method="fetchall",
                 )
             except:

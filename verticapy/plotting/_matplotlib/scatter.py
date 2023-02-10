@@ -26,10 +26,13 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, quote_ident
+from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy._config._random import current_random
+from verticapy._config._notebook import ISNOTEBOOK
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import compute_plot_variables
-from verticapy.plotting._colors import gen_colors, gen_cmap
+from verticapy.plotting._colors import gen_colors, gen_cmap, get_color
 
 # Global Variables
 MARKERS = ["^", "o", "+", "*", "h", "x", "D", "1"]
@@ -61,7 +64,7 @@ def bubble(
         colors = [colors]
     if not (catcol) and not (cmap_col):
         tablesample = max_nb_points / vdf.shape()[0]
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('plotting._matplotlib.bubble')*/ 
@@ -91,7 +94,7 @@ def bubble(
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(10, 6)
             ax.grid()
             ax.set_axisbelow(True)
@@ -143,7 +146,7 @@ def bubble(
         count = vdf.shape()[0]
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(12, 7)
             ax.grid()
             ax.set_axisbelow(True)
@@ -179,7 +182,7 @@ def bubble(
             groupby_cardinality = vdf[catcol].nunique(True)
             for idx, category in enumerate(all_categories):
                 category_str = str(category).replace("'", "''")
-                query_result = executeSQL(
+                query_result = _executeSQL(
                     query=f"""
                         SELECT
                             /*+LABEL('plotting._matplotlib.bubble')*/  
@@ -226,7 +229,7 @@ def bubble(
                 if len(str(item)) > 20:
                     all_categories[idx] = str(item)[0:20] + "..."
         else:
-            query_result = executeSQL(
+            query_result = _executeSQL(
                 query=f"""
                     SELECT
                         /*+LABEL('plotting._matplotlib.bubble')*/ 
@@ -342,7 +345,7 @@ def outliers_contour_plot(
     xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
     if len(columns) == 1:
         if isinstance(cmap, str):
@@ -455,14 +458,14 @@ def scatter_matrix(
     elif len(columns) == 1:
         return vdf[columns[0]].hist()
     n = len(columns)
-    if isnotebook():
+    if ISNOTEBOOK:
         figsize = min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
     else:
         figsize = min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
-    random_func = get_random_function()
-    all_scatter_points = executeSQL(
+    random_func = current_random()
+    all_scatter_points = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.scatter_matrix')*/
@@ -491,13 +494,13 @@ def scatter_matrix(
                 x0, y0, z0, h0, is_categorical = compute_plot_variables(
                     vdf[x], method="density", max_cardinality=1
                 )
-                param = {"color": color_dict(style_kwds, 0), "edgecolor": "black"}
+                param = {"color": get_color(style_kwds, 0), "edgecolor": "black"}
                 if "edgecolor" in style_kwds:
                     param["edgecolor"] = style_kwds["edgecolor"]
                 axes[i, j].bar(x0, y0, h0 / 0.94, **param)
             else:
                 param = {
-                    "color": color_dict(style_kwds, 1),
+                    "color": get_color(style_kwds, 1),
                     "edgecolor": "black",
                     "alpha": 0.9,
                     "s": 40,
@@ -548,12 +551,12 @@ def scatter(
     if not (ax):
         if n == 2:
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(8, 6)
             ax.grid()
             ax.set_axisbelow(True)
         else:
-            if isnotebook():
+            if ISNOTEBOOK:
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
     all_scatter, others = [], []
@@ -617,7 +620,7 @@ def scatter(
                 others += [f"{catcol} != '{category_str}'"]
             condition += [f"AND {catcol} = '{category_str}'"]
             title = f" (category = '{category}')"
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=query.format(*condition), title=title, method="fetchall",
         )
         args = [

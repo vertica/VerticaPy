@@ -34,9 +34,11 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
+from verticapy.utils._gen import gen_tmp_name
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
+from verticapy.sql._utils._format import schema_relation
+from verticapy.sql.read import _executeSQL
 
 # Statistical Tests & Tools
 
@@ -230,7 +232,7 @@ tablesample
         else ts,
         vdf.__genSQL__(),
     )
-    executeSQL(query, print_time_sql=False)
+    _executeSQL(query, print_time_sql=False)
     model = LinearRegression(name, solver="Newton", max_iter=1000)
     predictors = ["lag1"] + [f"delta{i}" for i in range(1, p + 1)]
     if with_trend:
@@ -332,7 +334,7 @@ model
     query = "SELECT /*+LABEL('stats.tools.cochrane_orcutt')*/ SUM(num) / SUM(den) FROM (SELECT {0} * LAG({0}) OVER (ORDER BY {1}) AS num,  POWER({0}, 2) AS den FROM {2}) x".format(
         eps_name, ts, vdf_tmp.__genSQL__()
     )
-    pho = executeSQL(
+    pho = _executeSQL(
         query, title="Computing the Cochrane Orcutt pho.", method="fetchfirstelem"
     )
     for predictor in X + [y]:
@@ -381,7 +383,7 @@ float
         (", " + ", ".join(by)) if (by) else "",
         vdf.__genSQL__(),
     )
-    d = executeSQL(
+    d = _executeSQL(
         "SELECT /*+LABEL('stats.tools.durbin_watson')*/ SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(
             query
         ),
@@ -880,7 +882,7 @@ tablesample
     column, ts = vdf.format_colnames(column, ts)
     table = f"(SELECT {column}, {ts} FROM {vdf.__genSQL__()})"
     query = f"SELECT /*+LABEL('stats.tools.mkt')*/ SUM(SIGN(y.{column} - x.{column})) FROM {table} x CROSS JOIN {table} y WHERE y.{ts} > x.{ts}"
-    S = executeSQL(
+    S = _executeSQL(
         query, title="Computing the Mann Kendall S.", method="fetchfirstelem"
     )
     try:
@@ -891,7 +893,7 @@ tablesample
     query = "SELECT /*+LABEL('stats.tools.mkt')*/ SQRT(({0} * ({0} - 1) * (2 * {0} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {1}) AS row FROM {2}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
         n, column, vdf.__genSQL__()
     )
-    STDS = executeSQL(
+    STDS = _executeSQL(
         query,
         title="Computing the Mann Kendall S standard deviation.",
         method="fetchfirstelem",

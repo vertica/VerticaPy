@@ -70,8 +70,23 @@ from verticapy.errors import (
     ParsingError,
     QueryError,
 )
-from verticapy.utils._toolbox import *
+from verticapy._config._random import current_random
+from verticapy.utils._cast import to_category, to_varchar
+from verticapy.utils._gen import gen_name, gen_tmp_name
+from verticapy.sql.read import _executeSQL
+from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy.plotting._colors import gen_colors, gen_cmap
+from verticapy.core.str_sql import str_sql
+from verticapy.sql._utils._format import (
+    format_magic,
+    quote_ident,
+    schema_relation,
+    format_schema_table,
+    clean_query,
+)
+from verticapy.core._utils._merge import gen_coalesce, group_similar_names
+from verticapy.core._utils._map import verticapy_agg_name
+from verticapy.connect.connect import EXTERNAL_CONNECTION
 
 ###
 #                                           _____
@@ -233,7 +248,7 @@ vColumns : vColumn
             else:
                 query = sql
 
-            if symbol in vp.OPTIONS["external_connection"]:
+            if symbol in EXTERNAL_CONNECTION:
                 sql = symbol * 3 + query + symbol * 3
 
             else:
@@ -350,7 +365,7 @@ vColumns : vColumn
                         f"its alias was changed using underscores '_' to {column_str}."
                     )
                     warnings.warn(warning_message, Warning)
-                category = get_category_from_vertica_type(dtype)
+                category = to_category(dtype)
                 if (dtype.lower()[0:12] in ("long varbina", "long varchar")) and (
                     isflex
                     or util.isvmap(
@@ -442,7 +457,7 @@ vColumns : vColumn
                     columns[idx] = f"{elem}::float"
             if index < 0:
                 index += self.shape()[0]
-            return executeSQL(
+            return _executeSQL(
                 query=f"""
                     SELECT /*+LABEL('vDataframe.__getitem__')*/ 
                         {', '.join(columns)} 
@@ -708,7 +723,7 @@ vColumns : vColumn
                     WHERE {columns[0]} IS NOT NULL 
                       AND {columns[1]} IS NOT NULL 
                     GROUP BY 1"""
-                n, k, r = executeSQL(
+                n, k, r = _executeSQL(
                     query=f"""
                         SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
                             COUNT(*) AS n, 
@@ -734,7 +749,7 @@ vColumns : vColumn
                          ON table_0_1.{columns[0]} = table_0.{columns[0]}) x 
                          LEFT JOIN ({table_1}) table_1 
                          ON x.{columns[1]} = table_1.{columns[1]}"""
-                result = executeSQL(
+                result = _executeSQL(
                     chi2,
                     title=(
                         f"Computing the CramerV correlation between {columns[0]} "
@@ -792,7 +807,7 @@ vColumns : vColumn
                     f"Computing the covariance between {columns[0]} and {columns[1]}."
                 )
             try:
-                result = executeSQL(
+                result = _executeSQL(
                     query=query,
                     title=title,
                     method="fetchfirstelem",
@@ -835,7 +850,7 @@ vColumns : vColumn
                     )
                     table = f"(SELECT {columns_str} FROM {self.__genSQL__()}) spearman_table"
                 util.vertica_version(condition=[9, 2, 1])
-                result = executeSQL(
+                result = _executeSQL(
                     query=f"""SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
                                 CORR_MATRIX({', '.join(columns)}) 
                                 OVER () 
@@ -949,7 +964,7 @@ vColumns : vColumn
                     else:
                         table = self.__genSQL__()
                     if nb_precomputed == nb_loop:
-                        result = executeSQL(
+                        result = _executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
@@ -958,7 +973,7 @@ vColumns : vColumn
                             method="fetchrow",
                         )
                     else:
-                        result = executeSQL(
+                        result = _executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
@@ -1169,7 +1184,7 @@ vColumns : vColumn
                 else:
                     table = self.__genSQL__()
                 if nb_precomputed == len(cols):
-                    result = executeSQL(
+                    result = _executeSQL(
                         query=f"""
                             SELECT 
                                 /*+LABEL('vDataframe.__aggregate_vector__')*/ 
@@ -1178,7 +1193,7 @@ vColumns : vColumn
                         print_time_sql=False,
                     )
                 else:
-                    result = executeSQL(
+                    result = _executeSQL(
                         query=f"""
                             SELECT 
                                 /*+LABEL('vDataframe.__aggregate_vector__')*/ 
@@ -1367,7 +1382,7 @@ vColumns : vColumn
             "___VERTICAPY_UNDEFINED___",
         ]:
             table = table.replace(vml_undefined, "")
-        random_func = get_random_function()
+        random_func = current_random()
         split = f", {random_func} AS __verticapy_split__" if (split) else ""
         if (where_final == "") and (order_final == ""):
             if split:
@@ -1407,12 +1422,12 @@ vColumns : vColumn
                 return "VERTICAPY_NOT_PRECOMPUTED"
             return total
         elif method:
-            method = get_verticapy_function(method.lower())
+            method = verticapy_agg_name(method.lower())
             if columns[1] in self[columns[0]].catalog[method]:
                 return self[columns[0]].catalog[method][columns[1]]
             else:
                 return "VERTICAPY_NOT_PRECOMPUTED"
-        key = get_verticapy_function(key.lower())
+        key = verticapy_agg_name(key.lower())
         column = self.format_colnames(column)
         try:
             if (key == "approx_unique") and ("unique" in self[column].catalog):
@@ -1508,7 +1523,7 @@ vColumns : vColumn
                 self[column].catalog = copy.deepcopy(agg_dict)
             self._VERTICAPY_VARIABLES_["count"] = -1
         elif matrix:
-            matrix = get_verticapy_function(matrix.lower())
+            matrix = verticapy_agg_name(matrix.lower())
             if matrix in agg_dict:
                 for elem in values:
                     val = values[elem]
@@ -1524,7 +1539,7 @@ vColumns : vColumn
                 for i in range(len(values["index"])):
                     key, val = values["index"][i].lower(), values[column][i]
                     if key not in ["listagg"]:
-                        key = get_verticapy_function(key)
+                        key = verticapy_agg_name(key)
                         try:
                             val = float(val)
                             if val - int(val) == 0:
@@ -1581,6 +1596,8 @@ vColumns : vColumn
     str / list
         Formatted columns' names.
         """
+        from verticapy.stats._utils import levenshtein
+
         if argv:
             result = []
             for arg in argv:
@@ -1684,6 +1701,8 @@ vColumns : vColumn
     tuple
         (nearest column, levenstein distance)
         """
+        from verticapy.stats._utils import levenshtein
+
         columns = self.get_columns()
         col = column.replace('"', "").lower()
         result = (columns[0], levenshtein(col, columns[0].replace('"', "").lower()))
@@ -2408,7 +2427,7 @@ vColumns : vColumn
         try:
 
             if nb_precomputed == len(func) * len(columns):
-                res = executeSQL(
+                res = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataframe.aggregate')*/ 
@@ -2417,7 +2436,7 @@ vColumns : vColumn
                     method="fetchrow",
                 )
             else:
-                res = executeSQL(
+                res = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataframe.aggregate')*/ 
@@ -2465,9 +2484,9 @@ vColumns : vColumn
                             /*+LABEL('vDataframe.aggregate')*/ * 
                          FROM {self.__genSQL__()}) {query}"""
                 if nb_precomputed == len(func) * len(columns):
-                    result = executeSQL(query, print_time_sql=False, method="fetchall")
+                    result = _executeSQL(query, print_time_sql=False, method="fetchall")
                 else:
-                    result = executeSQL(
+                    result = _executeSQL(
                         query,
                         title="Computing the different aggregations using UNION ALL.",
                         method="fetchall",
@@ -2493,7 +2512,7 @@ vColumns : vColumn
                                         for item in elem
                                     ]
                                 )
-                                executeSQL(
+                                _executeSQL(
                                     query=f"""
                                         SELECT 
                                             /*+LABEL('vDataframe.aggregate')*/ 
@@ -2524,7 +2543,7 @@ vColumns : vColumn
                         for j, agg_fun in enumerate(elem):
                             pre_comp = self.__get_catalog_value__(columns[i], func[j])
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
-                                result = executeSQL(
+                                result = _executeSQL(
                                     query=f"""
                                         SELECT 
                                             /*+LABEL('vDataframe.aggregate')*/ 
@@ -2693,7 +2712,7 @@ vColumns : vColumn
         by = ", ".join(by)
         by = f"PARTITION BY {by}" if (by) else ""
         order_by = self.__get_sort_syntax__(order_by)
-        func = get_verticapy_function(func.lower(), method="vertica")
+        func = verticapy_agg_name(func.lower(), method="vertica")
         if func in (
             "max",
             "min",
@@ -3810,7 +3829,7 @@ vColumns : vColumn
         columns = []
         for column in self.get_columns():
             if (self[column].category() == "int") and not (self[column].isbool()):
-                is_cat = executeSQL(
+                is_cat = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataframe.catcol')*/ 
@@ -3947,6 +3966,8 @@ vColumns : vColumn
         An independent model containing the result. For more information, see
         learn.memmodel.
         """
+        from verticapy.machine_learning._utils import get_match_index
+
         if "process" not in kwds or kwds["process"]:
             if isinstance(columns, str):
                 columns = [columns]
@@ -4003,7 +4024,7 @@ vColumns : vColumn
                     column += f"ELSE NULL END)::{ctype} AS {split_predictor}"
                 else:
                     column = split_predictor
-                result = executeSQL(
+                result = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataframe.chaid')*/ 
@@ -4356,7 +4377,7 @@ vColumns : vColumn
                 /*+LABEL('vDataframe.corr_pvalue')*/ COUNT(*) 
             FROM {self.__genSQL__()} 
             WHERE {column1} IS NOT NULL AND {column2} IS NOT NULL;"""
-        n = executeSQL(
+        n = _executeSQL(
             sql,
             title="Computing the number of elements.",
             method="fetchfirstelem",
@@ -4398,7 +4419,7 @@ vColumns : vColumn
                 (SELECT 
                     {", ".join([column1, column2])} 
                  FROM {self.__genSQL__()}) y"""
-            nc, nd = executeSQL(
+            nc, nd = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('vDataframe.corr_pvalue')*/ 
@@ -4414,7 +4435,7 @@ vColumns : vColumn
                 val = (nc - nd) / (n * (n - 1) / 2)
                 Z = 3 * (nc - nd) / math.sqrt(n * (n - 1) * (2 * n + 5) / 2)
             elif kendall_type in ("b", "c"):
-                vt, v1_0, v2_0 = executeSQL(
+                vt, v1_0, v2_0 = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataframe.corr_pvalue')*/
@@ -4432,7 +4453,7 @@ vColumns : vColumn
                     sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
                     symbol=self._VERTICAPY_VARIABLES_["symbol"],
                 )
-                vu, v1_1, v2_1 = executeSQL(
+                vu, v1_1, v2_1 = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataframe.corr_pvalue')*/
@@ -4455,7 +4476,7 @@ vColumns : vColumn
                 v2 = v2_0 * v2_1 / (9 * n * (n - 1) * (n - 2))
                 Z = (nc - nd) / math.sqrt((v0 - vt - vu) / 18 + v1 + v2)
                 if kendall_type == "c":
-                    k, r = executeSQL(
+                    k, r = _executeSQL(
                         query=f"""
                             SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                                 APPROXIMATE_COUNT_DISTINCT({column1}) AS k, 
@@ -4472,7 +4493,7 @@ vColumns : vColumn
                     val = 2 * (nc - nd) / (n * n * (m - 1) / m)
             pvalue = 2 * scipy_st.norm.sf(abs(Z))
         elif method == "cramer":
-            k, r = executeSQL(
+            k, r = _executeSQL(
                 query=f"""
                     SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                         APPROXIMATE_COUNT_DISTINCT({column1}) AS k, 
@@ -4799,6 +4820,8 @@ vColumns : vColumn
     str
         The formatted current vDataFrame relation.
         """
+        from verticapy.sql._utils._format import indentSQL
+
         if reindent:
             return indentSQL(self.__genSQL__())
         else:
@@ -5072,7 +5095,7 @@ vColumns : vColumn
                         for col in col_to_compute
                     ]
                     cols_to_compute_str = ", ".join(cols_to_compute_str)
-                    query_result = executeSQL(
+                    query_result = _executeSQL(
                         query=f"""
                             SELECT 
                                 /*+LABEL('vDataframe.describe')*/ 
@@ -5485,7 +5508,7 @@ vColumns : vColumn
              FROM {self.__genSQL__()}) duplicated_index_table 
              WHERE duplicated_index > 1"""
         if count:
-            total = executeSQL(
+            total = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
@@ -5507,7 +5530,7 @@ vColumns : vColumn
             sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
             symbol=self._VERTICAPY_VARIABLES_["symbol"],
         )
-        result.count = executeSQL(
+        result.count = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
@@ -5587,7 +5610,7 @@ vColumns : vColumn
             category = "vmap"
             ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
         else:
-            category = get_category_from_vertica_type(ctype=ctype)
+            category = to_category(ctype=ctype)
         all_cols, max_floor = self.get_columns(), 0
         for column in all_cols:
             column_str = column.replace('"', "")
@@ -5749,7 +5772,7 @@ vColumns : vColumn
     str
         explain plan
         """
-        result = executeSQL(
+        result = _executeSQL(
             query=f"""
                 EXPLAIN 
                 SELECT 
@@ -5880,7 +5903,7 @@ vColumns : vColumn
             new_count = self.shape()[0]
             self._VERTICAPY_VARIABLES_["where"] += [(conditions, max_pos)]
             try:
-                new_count = executeSQL(
+                new_count = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataframe.filter')*/ 
@@ -5945,7 +5968,7 @@ vColumns : vColumn
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
         ts = self.format_colnames(ts)
-        first_date = executeSQL(
+        first_date = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.first')*/ 
@@ -6719,7 +6742,7 @@ vColumns : vColumn
             columns = self.get_columns()
         all_columns = []
         for column in columns:
-            cast = bin_spatial_to_str(self[column].category(), column)
+            cast = to_varchar(self[column].category(), column)
             all_columns += [f"{cast} AS {column}"]
         title = (
             "Reads the final relation using a limit "
@@ -7063,7 +7086,7 @@ vColumns : vColumn
     vDataFrame.filter       : Filters the data using the input expression.
         """
         ts = self.format_colnames(ts)
-        last_date = executeSQL(
+        last_date = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.last')*/ 
@@ -7671,7 +7694,7 @@ vColumns : vColumn
                 query = f"""
                     CREATE VIEW {tmp_view_name} 
                         AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"""
-                executeSQL(query, print_time_sql=False)
+                _executeSQL(query, print_time_sql=False)
                 vdf = vDataFrame(tmp_view_name)
                 util.drop(tmp_lr0_name, method="model")
                 model = vp.learn.linear_model.LinearRegression(
@@ -8191,9 +8214,7 @@ vColumns : vColumn
             q = [q]
         prefix = "approx_" if approx else ""
         return self.aggregate(
-            func=[
-                get_verticapy_function(prefix + f"{float(item) * 100}%") for item in q
-            ],
+            func=[verticapy_agg_name(prefix + f"{float(item) * 100}%") for item in q],
             columns=columns,
             **agg_kwds,
         )
@@ -8496,7 +8517,7 @@ vColumns : vColumn
                     ]
         try:
             if nb_precomputed == n * n:
-                result = executeSQL(
+                result = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataframe.regr')*/ 
@@ -8505,7 +8526,7 @@ vColumns : vColumn
                     method="fetchrow",
                 )
             else:
-                result = executeSQL(
+                result = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataframe.regr')*/
@@ -8524,7 +8545,7 @@ vColumns : vColumn
             for i in range(0, n):
                 for j in range(0, n):
                     result += [
-                        executeSQL(
+                        _executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vDataframe.regr')*/ 
@@ -8700,7 +8721,7 @@ vColumns : vColumn
             order_by = f" ORDER BY {columns[0]}"
         else:
             order_by = self.__get_sort_syntax__(order_by)
-        func = get_verticapy_function(func.lower(), method="vertica")
+        func = verticapy_agg_name(func.lower(), method="vertica")
         windows_frame = f""" 
             OVER ({by}{order_by} 
             {method.upper()} 
@@ -9304,7 +9325,7 @@ vColumns : vColumn
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return (pre_comp, m)
-        self._VERTICAPY_VARIABLES_["count"] = executeSQL(
+        self._VERTICAPY_VARIABLES_["count"] = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.shape')*/ COUNT(*) 
@@ -9666,7 +9687,7 @@ vColumns : vColumn
                         for column in columns
                     ]
                 )
-            result = executeSQL(
+            result = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('vDataframe.to_csv')*/ 
@@ -9791,7 +9812,7 @@ vColumns : vColumn
                 select += [column]
             select = ", ".join(select)
         insert_usecols = ", ".join([quote_ident(column) for column in usecols])
-        random_func = get_random_function(nb_split)
+        random_func = current_random(nb_split)
         nb_split = f", {random_func} AS _verticapy_split_" if (nb_split > 0) else ""
         if isinstance(db_filter, Iterable) and not (isinstance(db_filter, str)):
             db_filter = " AND ".join([f"({elem})" for elem in db_filter])
@@ -9819,12 +9840,12 @@ vColumns : vColumn
                 FROM {self.__genSQL__()}
                 {db_filter}
                 {self.__get_last_order_by__()}"""
-        executeSQL(
+        _executeSQL(
             query=query,
             title=f"Creating a new {relation_type} to save the vDataFrame.",
         )
         if relation_type == "insert":
-            executeSQL(query="COMMIT;", title="Commit.")
+            _executeSQL(query="COMMIT;", title="Commit.")
         self.__add_to_history__(
             "[Save]: The vDataFrame was saved into a "
             f"{relation_type} named '{name}'."
@@ -9878,7 +9899,7 @@ vColumns : vColumn
                 /*+LABEL('vDataframe.to_geopandas')*/ {columns} 
             FROM {self.__genSQL__()}
             {self.__get_last_order_by__()}"""
-        data = executeSQL(
+        data = _executeSQL(
             query, title="Getting the vDataFrame values.", method="fetchall"
         )
         column_names = [column[0] for column in vp.current_cursor().description]
@@ -9971,7 +9992,7 @@ vColumns : vColumn
             json_files = []
         while current_nb_rows_written < total:
             json_file = "[\n"
-            result = executeSQL(
+            result = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('vDataframe.to_json')*/ 
@@ -10026,7 +10047,7 @@ vColumns : vColumn
     List
         The list of the current vDataFrame relation.
         """
-        result = executeSQL(
+        result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.to_list')*/ * 
@@ -10073,7 +10094,7 @@ vColumns : vColumn
     pandas.DataFrame
         The pandas.DataFrame of the current vDataFrame relation.
         """
-        data = executeSQL(
+        data = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.to_pandas')*/ * 
@@ -10271,7 +10292,7 @@ vColumns : vColumn
                 /*+LABEL('vDataframe.to_shp')*/ 
                 STV_SetExportShapefileDirectory(
                 USING PARAMETERS path = '{path}');"""
-        executeSQL(query=query, title="Setting SHP Export directory.")
+        _executeSQL(query=query, title="Setting SHP Export directory.")
         columns = (
             self.get_columns()
             if not (usecols)
@@ -10287,7 +10308,7 @@ vColumns : vColumn
                                  shape = '{shape}') 
                 OVER() 
             FROM {self.__genSQL__()};"""
-        executeSQL(query=query, title="Exporting the SHP.")
+        _executeSQL(query=query, title="Exporting the SHP.")
         return self
 
     @save_verticapy_logs
@@ -10332,7 +10353,7 @@ vColumns : vColumn
             else random.randint(-10e6, 10e6)
         )
         random_func = f"SEEDED_RANDOM({random_seed})"
-        q = executeSQL(
+        q = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.train_test_split')*/ 

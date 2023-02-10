@@ -37,7 +37,7 @@ from verticapy.utils._decorators import (
 from verticapy import vDataFrame
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
+from verticapy.sql.read import _executeSQL
 
 #
 # Function used to simplify the code
@@ -89,7 +89,7 @@ float or tuple of floats
         method = "fetchfirstelem"
     else:
         method = "fetchrow"
-    return executeSQL(
+    return _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('learn.metrics.compute_metric_query')*/ 
@@ -225,7 +225,7 @@ tablesample
         relation = input_relation
     else:
         relation = input_relation.__genSQL__()
-    n, avg = executeSQL(
+    n, avg = _executeSQL(
         query=f"""
         SELECT /*+LABEL('learn.metrics.anova_table')*/
             COUNT(*), 
@@ -236,7 +236,7 @@ tablesample
         title="Computing n and the average of y.",
         method="fetchrow",
     )[0:2]
-    SSR, SSE, SST = executeSQL(
+    SSR, SSE, SST = _executeSQL(
         query=f"""
             SELECT /*+LABEL('learn.metrics.anova_table')*/
                 SUM(POWER({y_score} - {avg}, 2)), 
@@ -535,7 +535,7 @@ float
         "Computing the R2 Score.",
     )
     if adj and k > 0:
-        n = executeSQL(
+        n = _executeSQL(
             query=f"""
                 SELECT /*+LABEL('learn.metrics.r2_score')*/ COUNT(*) 
                 FROM {input_relation} 
@@ -603,7 +603,7 @@ tablesample
             "bic",
         ]
     }
-    result = executeSQL(
+    result = _executeSQL(
         query, title="Computing the Regression Report.", method="fetchrow"
     )
     n = result[5]

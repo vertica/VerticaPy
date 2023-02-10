@@ -23,9 +23,11 @@ permissions and limitations under the License.
 import math
 
 # VerticaPy Modules
-from verticapy.utils._toolbox import executeSQL, quote_ident, bin_spatial_to_str
+from verticapy.utils._cast import to_varchar
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 import verticapy
+from verticapy.sql._utils._format import quote_ident
 
 #
 ##
@@ -129,7 +131,7 @@ def compute_plot_variables(
                 if of:
                     enum_trans += f" , {of}"
                 table = f"(SELECT {enum_trans + other_columns} FROM {table}) enum_table"
-            cast_alias = bin_spatial_to_str(vdf.category(), vdf.alias)
+            cast_alias = to_varchar(vdf.category(), vdf.alias)
             query = f"""
                 (SELECT 
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/ 
@@ -153,7 +155,7 @@ def compute_plot_variables(
                       GROUP BY {vdf.alias}
                       ORDER BY {aggregate} DESC
                       LIMIT {max_cardinality}))"""
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=query, title="Computing the histogram heights", method="fetchall"
         )
         if query_result[-1][1] == None:
@@ -172,7 +174,7 @@ def compute_plot_variables(
         if (h <= 0) and (nbins <= 0):
             h = vdf.numh()
         elif nbins > 0:
-            query_result = executeSQL(
+            query_result = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
@@ -184,7 +186,7 @@ def compute_plot_variables(
             h = float(query_result[0]) / nbins
         min_date = vdf.min()
         converted_date = f"DATEDIFF('second', '{min_date}', {vdf.alias})"
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
@@ -219,7 +221,7 @@ def compute_plot_variables(
                 query += f" UNION {query_tmp.format('')}"
         query += ")"
         h = 0.94 * h
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query, title="Computing the datetime intervals.", method="fetchall"
         )
         z = [item[0] for item in query_result]
@@ -233,7 +235,7 @@ def compute_plot_variables(
             h = float(vdf.max() - vdf.min()) / nbins
         if (vdf.ctype == "int") or (h == 0):
             h = max(1.0, h)
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
                 SELECT
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
@@ -255,3 +257,22 @@ def compute_plot_variables(
         h = 0.94 * h
         z = None
     return [x, y, z, h, is_categorical]
+
+
+def updated_dict(
+    d1: dict, d2: dict, color_idx: int = 0,
+):
+    d = {}
+    for elem in d1:
+        d[elem] = d1[elem]
+    for elem in d2:
+        if elem == "color":
+            if isinstance(d2["color"], str):
+                d["color"] = d2["color"]
+            elif color_idx < 0:
+                d["color"] = [elem for elem in d2["color"]]
+            else:
+                d["color"] = d2["color"][color_idx % len(d2["color"])]
+        else:
+            d[elem] = d2[elem]
+    return d

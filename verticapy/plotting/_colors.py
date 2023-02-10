@@ -46,6 +46,16 @@ COLORS_OPTIONS = {
 }
 
 
+def get_color(d: dict, idx: int = 0):
+    if "color" in d:
+        if isinstance(d["color"], str):
+            return d["color"]
+        else:
+            return d["color"][idx % len(d["color"])]
+    else:
+        return gen_colors()[idx % len(gen_colors())]
+
+
 def gen_cmap(color: str = "", reverse: bool = False):
     if not (color):
         cm1 = LinearSegmentedColormap.from_list(

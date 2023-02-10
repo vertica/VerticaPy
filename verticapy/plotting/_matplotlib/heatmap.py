@@ -27,9 +27,14 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, quote_ident
+from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy.utils._cast import to_varchar
+from verticapy._config._notebook import ISNOTEBOOK
+from verticapy.sql.read import _executeSQL
+from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, gen_cmap
+from verticapy.sql._utils._format import quote_ident
 
 
 def cmatrix(
@@ -78,7 +83,7 @@ def cmatrix(
             columns_x.reverse()
     if not (ax):
         fig, ax = plt.subplots()
-        if (isnotebook() and not (inverse)) or is_pivot:
+        if (ISNOTEBOOK and not (inverse)) or is_pivot:
             fig.set_size_inches(min(m, 500), min(n, 500))
         else:
             fig.set_size_inches(8, 6)
@@ -291,7 +296,7 @@ def hexbin(
         over = "/" + str(float(count))
     else:
         over = ""
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT
                 /*+LABEL('plotting._matplotlib.hexbin')*/
@@ -314,7 +319,7 @@ def hexbin(
                 column3 += [float(item[2]) / 2] * 2
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(9, 7)
         ax.set_facecolor("white")
     else:
@@ -457,14 +462,14 @@ def pivot_table(
             distinct = vdf[column].topk(max_cardinality[idx]).values["index"]
             distinct = ["'" + str(c).replace("'", "''") + "'" for c in distinct]
             if len(distinct) < max_cardinality[idx]:
-                cast = bin_spatial_to_str(vdf[column].category(), column)
+                cast = to_varchar(vdf[column].category(), column)
                 where += [f"({cast} IN ({', '.join(distinct)}))"]
             else:
                 where += [f"({column} IS NOT NULL)"]
     where = f" WHERE {' AND '.join(where)}"
     over = "/" + str(vdf.shape()[0]) if (method == "density") else ""
     if len(columns) == 1:
-        cast = bin_spatial_to_str(vdf[columns[0]].category(), all_columns[-1])
+        cast = to_varchar(vdf[columns[0]].category(), all_columns[-1])
         return to_tablesample(
             query=f"""
                 SELECT 
@@ -481,8 +486,8 @@ def pivot_table(
             cols += [f"{timestampadd[i]} AS {columns[i]}"]
         else:
             cols += [columns[i]]
-        cast += [bin_spatial_to_str(vdf[columns[i]].category(), columns[i])]
-    query_result = executeSQL(
+        cast += [to_varchar(vdf[columns[i]].category(), columns[i])]
+    query_result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.pivot_table')*/

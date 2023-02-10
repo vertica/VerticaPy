@@ -20,9 +20,16 @@ import os, warnings
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utils._toolbox import *
+from verticapy.utils._gen import gen_tmp_name
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
-from ..flex import compute_flextable_keys
+from verticapy.sql.flex import compute_flextable_keys
+from verticapy.sql._utils._format import (
+    quote_ident,
+    format_schema_table,
+    clean_query,
+)
+from verticapy.sql.parsers._utils import extract_compression
 
 
 def pjson(path: str, ingest_local: bool = True):
@@ -47,10 +54,10 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    from ..utilities import drop
+    from verticapy.sql.drop import drop
 
     flex_name = gen_tmp_name(name="flex")[1:-1]
-    executeSQL(
+    _executeSQL(
         query=f"""
             CREATE FLEX LOCAL TEMP TABLE {flex_name}
             (x int) ON COMMIT PRESERVE ROWS;""",
@@ -58,7 +65,7 @@ read_json : Ingests a JSON file into the Vertica database.
     )
     path_str = path.replace("'", "''")
     local = " LOCAL" if ingest_local else ""
-    executeSQL(
+    _executeSQL(
         query=f"""
             COPY {flex_name} FROM{local} '{path_str}' 
             PARSER FJSONPARSER();""",
@@ -203,7 +210,7 @@ See Also
 read_csv : Ingests a CSV file into the Vertica database.
 	"""
     from verticapy import vDataFrame
-    from ..utilities import drop
+    from verticapy.sql.drop import drop
 
     if use_complex_dt:
         assert not (new_name), ParameterError(
@@ -259,7 +266,7 @@ read_csv : Ingests a CSV file into the Vertica database.
     if not (genSQL):
         table_name_str = table_name.replace("'", "''")
         schema_str = schema.replace("'", "''")
-        column_name = executeSQL(
+        column_name = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('utilities.{label}')*/ 
@@ -348,10 +355,10 @@ read_csv : Ingests a CSV file into the Vertica database.
         elif genSQL and not (materialize):
             return all_queries
         if not (insert):
-            executeSQL(
+            _executeSQL(
                 query, title="Creating flex table.",
             )
-        executeSQL(
+        _executeSQL(
             query2, title="Ingesting the data in the flex table.",
         )
         if not (materialize):
@@ -360,7 +367,7 @@ read_csv : Ingests a CSV file into the Vertica database.
         dtype = {}
         for column_dtype in result:
             try:
-                executeSQL(
+                _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('utilities.{label}')*/ 
@@ -400,7 +407,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             all_queries = all_queries + [clean_query(query3)]
             if genSQL:
                 return all_queries
-            executeSQL(
+            _executeSQL(
                 query3, title="Creating table.",
             )
             if not (temporary_local_table) and vp.OPTIONS["print_info"]:
@@ -436,7 +443,7 @@ read_csv : Ingests a CSV file into the Vertica database.
                 FROM {flex_name}"""
             if genSQL:
                 return [clean_query(query)]
-            executeSQL(
+            _executeSQL(
                 query, title="Inserting data into table.",
             )
         drop(name=flex_name, method="table")

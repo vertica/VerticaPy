@@ -25,7 +25,7 @@ import os
 # VerticaPy
 import vertica_python, verticapy
 from verticapy import vDataFrame, set_option
-from verticapy.connect import current_cursor
+from verticapy.connect import current_cursor, SESSION_IDENTIFIER
 from verticapy.utilities import *
 from verticapy.datasets import (
     load_cities,
@@ -545,7 +545,7 @@ class TestUtilities:
         )
         for query in queries:
             current_cursor().execute(
-                query.replace("tmp_flex_dbadmin", "tmp_flex_test_read_json")
+                query.replace("tmp_flex", "tmp_flex_test_read_json")
             )
         vdf = vDataFrame("public.laliga_verticapy_test_json")
         assert vdf.shape() == (452, 40)
@@ -867,7 +867,7 @@ class TestUtilities:
         assert (
             q2
             == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "verticapy_id": "'
-            + str(verticapy.OPTIONS["identifier"])
+            + str(SESSION_IDENTIFIER)
             + '", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
         )
         current_cursor().execute(

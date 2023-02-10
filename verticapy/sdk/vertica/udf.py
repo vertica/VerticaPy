@@ -30,9 +30,8 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
-
-#
+from verticapy.sql.read import _executeSQL
+from verticapy.sql.sys import current_session, username
 
 
 @save_verticapy_logs
@@ -68,7 +67,7 @@ bool
     True if the installation was a success, False otherwise.
 	"""
     directory = os.path.dirname(vp.__file__)
-    session_name = get_session()
+    session_name = f"{current_session()}_{username()}"
     file_name = f"{library_name}_{session_name}.py"
     try:
         os.remove(f"{directory}/{file_name}")
@@ -82,7 +81,7 @@ bool
     f.close()
     try:
         for idx, query in enumerate(sql):
-            executeSQL(query, title=f"UDF installation. [step {idx}]")
+            _executeSQL(query, title=f"UDF installation. [step {idx}]")
         return True
     except Exception as e:
         warnings.warn(e, Warning)

@@ -36,8 +36,14 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
+from verticapy.utils._cast import to_category, to_varchar
+from verticapy.utils._gen import gen_tmp_name
+from verticapy.sql.read import _executeSQL
+from verticapy.core.str_sql import str_sql
 from verticapy.errors import *
+from verticapy.sql._utils._format import quote_ident, clean_query
+from verticapy.utils._cast import to_sql_dtype
+from verticapy.plotting._matplotlib.core import updated_dict
 
 # Other modules
 import numpy as np
@@ -198,7 +204,7 @@ Attributes
                 cast = "::float" if self.category() == "float" else ""
                 if index < 0:
                     index += self.parent.shape()[0]
-                return executeSQL(
+                return _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vColumn.__getitem__')*/ 
@@ -440,7 +446,7 @@ Attributes
                     LIMIT 0""",
                 column="apply_test_feature",
             )
-            category = get_category_from_vertica_type(ctype=ctype)
+            category = to_category(ctype=ctype)
             all_cols, max_floor = self.parent.get_columns(), 0
             for column in all_cols:
                 try:
@@ -630,7 +636,7 @@ Attributes
 	--------
 	vDataFrame.astype : Converts the vColumns to the input type.
 		"""
-        dtype = get_vertica_type(dtype)
+        dtype = to_sql_dtype(dtype)
         try:
             if (
                 dtype == "array" or str(dtype).startswith("vmap")
@@ -643,10 +649,12 @@ Attributes
                     FROM {self.parent.__genSQL__()} 
                     ORDER BY LENGTH({self.alias}) DESC 
                     LIMIT 1"""
-                biggest_str = executeSQL(
+                biggest_str = _executeSQL(
                     query, title="getting the biggest string", method="fetchfirstelem",
                 )
                 biggest_str = biggest_str.strip()
+                from verticapy.sql.parsers.csv import guess_sep
+
                 sep = guess_sep(biggest_str)
                 if str(dtype).startswith("vmap"):
                     if len(biggest_str) > 2 and (
@@ -709,14 +717,14 @@ Attributes
                 FROM {self.parent.__genSQL__()} 
                 WHERE {self.alias} IS NOT NULL 
                 LIMIT 20"""
-            executeSQL(
+            _executeSQL(
                 query,
                 title="Testing the Type casting.",
                 sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
                 symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             self.transformations += [
-                (transformation[1], dtype, get_category_from_vertica_type(ctype=dtype),)
+                (transformation[1], dtype, to_category(ctype=dtype),)
             ]
             self.parent.__add_to_history__(
                 f"[AsType]: The vColumn {self.alias} was converted to {dtype}."
@@ -1245,7 +1253,7 @@ Attributes
                 if category in ("None", None):
                     tmp_query += f" WHERE {self.alias} IS NULL"
                 else:
-                    alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
+                    alias_sql_repr = to_varchar(self.category(), self.alias)
                     tmp_query += f" WHERE {alias_sql_repr} = '{category}'"
                 query += [lp + tmp_query + rp]
             values = to_tablesample(
@@ -1285,7 +1293,7 @@ Attributes
                          ORDER BY COUNT(*) DESC 
                          OFFSET {max_cardinality + 1}) VERTICAPY_SUBTABLE) 
                      ORDER BY count DESC"""
-            query_result = executeSQL(
+            query_result = _executeSQL(
                 query=f"""
                     WITH vdf_table AS 
                         (SELECT 
@@ -1441,7 +1449,7 @@ Attributes
                         WHERE split_value IS NOT NULL 
                         GROUP BY 1 ORDER BY 2 DESC LIMIT {nbins - 1}) VERTICAPY_SUBTABLE 
                     ORDER BY split_value::float"""
-                result = executeSQL(
+                result = _executeSQL(
                     query=query,
                     title="Computing the optimized histogram nbins using Random Forest.",
                     method="fetchall",
@@ -1459,7 +1467,7 @@ Attributes
                 "case of discretization using the method 'topk'"
             )
             distinct = self.topk(k).values["index"]
-            category_str = bin_spatial_to_str(self.category())
+            category_str = to_varchar(self.category())
             X_str = ", ".join([f"""'{str(x).replace("'", "''")}'""" for x in distinct])
             new_category_str = new_category.replace("'", "''")
             trans = (
@@ -1495,7 +1503,7 @@ Attributes
                         ROW_NUMBER() OVER (ORDER BY {self.alias}) AS _verticapy_row_nb_ 
                       FROM {self.parent.__genSQL__()} 
                       WHERE {self.alias} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
-            result = executeSQL(
+            result = _executeSQL(
                 query=query,
                 title="Computing the equal frequency histogram bins.",
                 method="fetchall",
@@ -1575,7 +1583,7 @@ Attributes
 	--------
 	vDataFrame.topk : Returns the vColumn most occurent elements.
 		"""
-        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
+        alias_sql_repr = to_varchar(self.category(), self.alias)
         if "agg" not in kwargs:
             query = f"""
                 SELECT 
@@ -1597,7 +1605,7 @@ Attributes
                      WHERE {self.alias} IS NOT NULL 
                      GROUP BY 1) x 
                 ORDER BY verticapy_agg DESC"""
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=query,
             title=f"Computing the distinct categories of {self.alias}.",
             method="fetchall",
@@ -1657,7 +1665,7 @@ Attributes
                 column for column in self.parent._VERTICAPY_VARIABLES_["columns"]
             ]
             force_columns.remove(self.alias)
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('vColumn.drop')*/ * 
@@ -1797,7 +1805,7 @@ Attributes
                     PERCENTILE_CONT({alpha}) WITHIN GROUP (ORDER BY {self.alias}) OVER (), 
                     PERCENTILE_CONT(1 - {alpha}) WITHIN GROUP (ORDER BY {self.alias}) OVER () 
                 FROM {self.parent.__genSQL__()} LIMIT 1"""
-            p_alpha, p_1_alpha = executeSQL(
+            p_alpha, p_1_alpha = _executeSQL(
                 query=query,
                 title=f"Computing the quantiles of {self.alias}.",
                 method="fetchrow",
@@ -1825,7 +1833,7 @@ Attributes
                     FROM vdf_table WHERE {self.alias} > {p_1_alpha})"""
             mean_alpha, mean_1_alpha = [
                 item[0]
-                for item in executeSQL(
+                for item in _executeSQL(
                     query=query,
                     title=f"Computing the average of the {self.alias}'s lower and upper outliers.",
                     method="fetchall",
@@ -1945,7 +1953,7 @@ Attributes
                             {fun}({self.alias})
                         FROM {self.parent.__genSQL__()} 
                         GROUP BY {by[0]};"""
-                    result = executeSQL(
+                    result = _executeSQL(
                         query=query,
                         title="Computing the different aggregations.",
                         method="fetchall",
@@ -1961,7 +1969,7 @@ Attributes
                         result[idx][1] = "NULL" if (x[1] == None) else str(x[1])
                     val = ", ".join([f"{x[0]}, {x[1]}" for x in result])
                     new_column = f"COALESCE({{}}, DECODE({by[0]}, {val}, NULL))"
-                    executeSQL(
+                    _executeSQL(
                         query=f"""
                             SELECT 
                                 /*+LABEL('vColumn.fillna')*/ 
@@ -2311,7 +2319,7 @@ Attributes
         if offset < 0:
             offset = max(0, self.parent.shape()[0] - limit)
         title = f"Reads {self.alias}."
-        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
+        alias_sql_repr = to_varchar(self.category(), self.alias)
         tail = to_tablesample(
             query=f"""
                 SELECT 
@@ -2759,7 +2767,7 @@ Attributes
                     return pre_comp
         assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
         where = f" WHERE {self.alias} IS NOT NULL " if (dropna) else " "
-        result = executeSQL(
+        result = _executeSQL(
             f"""
             SELECT 
                 /*+LABEL('vColumn.mode')*/ {self.alias} 
@@ -2902,7 +2910,7 @@ Attributes
                         return self
                 elif (n == 1) and (self.parent[by[0]].nunique() < 50):
                     try:
-                        result = executeSQL(
+                        result = _executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vColumn.normalize')*/ {by[0]}, 
@@ -2936,7 +2944,7 @@ Attributes
                                 f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
                             ]
                         avg, stddev = avg_stddev
-                        executeSQL(
+                        _executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vColumn.normalize')*/ 
@@ -3009,7 +3017,7 @@ Attributes
                         return self
                 elif n == 1:
                     try:
-                        result = executeSQL(
+                        result = _executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vColumn.normalize')*/ {by[0]}, 
@@ -3039,7 +3047,7 @@ Attributes
                                 f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
                             ]
                         cmin, cmax = cmin_cmax
-                        executeSQL(
+                        _executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vColumn.normalize')*/ 
@@ -3210,7 +3218,7 @@ Attributes
                 result[7],
             )
         elif self.isdate():
-            result = executeSQL(
+            result = _executeSQL(
                 f"""
                 SELECT 
                     /*+LABEL('vColumn.numh')*/ COUNT({self.alias}) AS NAs, 
@@ -3693,8 +3701,8 @@ Attributes
         pre_comp = self.parent.__get_catalog_value__(self.alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return pre_comp
-        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
-        store_usage = executeSQL(
+        alias_sql_repr = to_varchar(self.category(), self.alias)
+        store_usage = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vColumn.storage_usage')*/ 
@@ -3949,8 +3957,8 @@ Attributes
             topk_cat = k
         if dropna:
             where = f" WHERE {self.alias} IS NOT NULL"
-        alias_sql_repr = bin_spatial_to_str(self.category(), self.alias)
-        result = executeSQL(
+        alias_sql_repr = to_varchar(self.category(), self.alias)
+        result = _executeSQL(
             query=f"""
             SELECT 
                 /*+LABEL('vColumn.topk')*/

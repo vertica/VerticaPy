@@ -20,7 +20,7 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import statistics, random, time
+import statistics, random, time, math
 import numpy as np
 from collections.abc import Iterable
 from itertools import product
@@ -34,15 +34,20 @@ from verticapy.utils._decorators import (
 )
 from verticapy import vDataFrame
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
+from verticapy._config._notebook import ISNOTEBOOK
+from verticapy.utils._gen import gen_tmp_name
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
-from verticapy.plotting._colors import gen_colors
+from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.learn.tools import does_model_exist
 from verticapy.plotting._matplotlib import (
     plot_bubble_ml,
     plot_stepwise_ml,
     plot_importance,
 )
+from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy.sql._utils._format import quote_ident, schema_relation
+from verticapy.machine_learning._utils import reverse_score
 
 # Other Python Modules
 import matplotlib.pyplot as plt
@@ -203,7 +208,7 @@ tablesample
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
     drop(relation, method="table")
-    executeSQL(f"CREATE TABLE {relation} AS {result}", print_time_sql=False)
+    _executeSQL(f"CREATE TABLE {relation} AS {result}", print_time_sql=False)
     if print_info:
         print(
             f"\033[1m\033[4mStep 2 - Fitting the RF model with "
@@ -759,7 +764,7 @@ tablesample
         model.drop()
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
     param = {
@@ -2028,7 +2033,7 @@ tablesample
     decision_boundary.reverse()
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Cumulative Data Fraction")
     max_value = max([0 if elem != elem else elem for elem in lift])
@@ -2041,7 +2046,7 @@ tablesample
         positive_prediction_ratio,
         **updated_dict(param2, style_kwds, 1),
     )
-    color1, color2 = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
+    color1, color2 = get_color(style_kwds, 0), get_color(style_kwds, 1)
     if color1 == color2:
         color2 = gen_colors()[1]
     ax.fill_between(
@@ -2149,7 +2154,7 @@ tablesample
             "confidence": pacf.values["confidence"],
         }
     )
-    fig = plt.figure(figsize=(10, 6)) if isnotebook() else plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(10, 6)) if ISNOTEBOOK else plt.figure(figsize=(10, 6))
     plt.rcParams["axes.facecolor"] = "#FCFCFC"
     ax1 = fig.add_subplot(211)
     x, y, confidence = (
@@ -2251,17 +2256,17 @@ tablesample
         return auc
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
-    param = {"color": color_dict(style_kwds, 0)}
+    param = {"color": get_color(style_kwds, 0)}
     ax.plot(recall, precision, **updated_dict(param, style_kwds))
     ax.fill_between(
         recall,
         [0 for item in recall],
         precision,
-        facecolor=color_dict(style_kwds, 0),
+        facecolor=get_color(style_kwds, 0),
         alpha=0.1,
     )
     ax.set_ylim(0, 1)
@@ -2381,6 +2386,8 @@ tablesample
     elif metric == "auto":
         metric = "logloss"
     if len(X) < 20:
+        from verticapy.stats._utils import all_comb
+
         all_configuration = all_comb(X)
         if len(all_configuration) > comb_limit and comb_limit > 0:
             all_configuration = random.sample(all_configuration, comb_limit)
@@ -2688,9 +2695,9 @@ tablesample
         return best
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
-    color1, color2 = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
+    color1, color2 = get_color(style_kwds, 0), get_color(style_kwds, 1)
     if color1 == color2:
         color2 = gen_colors()[1]
     if cutoff_curve:
@@ -2829,7 +2836,7 @@ tablesample
         if isinstance(input_relation, str)
         else input_relation.__genSQL__()
     )
-    avg = executeSQL(
+    avg = _executeSQL(
         f"SELECT /*+LABEL('learn.model_selection.stepwise')*/ AVG({y}) FROM {table}",
         method="fetchfirstelem",
         print_time_sql=False,
@@ -3138,7 +3145,7 @@ def compute_function_metrics(
         X = ["decision_boundary", "recall", "precision"]
     else:
         X = ["*"]
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT
                 {', '.join(X)}

@@ -39,7 +39,7 @@ class TestConnect:
         change_auto_connection("vp_test_config")
         # read_auto_connect
         read_auto_connect()
-        cur = vp.OPTIONS["connection"]["conn"].cursor()
+        cur = CONNECTION["conn"].cursor()
         cur.execute("SELECT 1;")
         result2 = cur.fetchone()
         assert result2 == [1]
@@ -51,7 +51,7 @@ class TestConnect:
         )
         label = current_cursor().fetchone()[0].split("-")
         assert label[1] == vp.__version__
-        assert label[2] == str(vp.OPTIONS["identifier"])
+        assert label[2] == str(SESSION_IDENTIFIER)
 
     def test_vertica_connection(self, base):
         cur = vertica_connection(

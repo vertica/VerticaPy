@@ -34,7 +34,7 @@ identifies which function to save to the QUERY PROFILES table.
     @wraps(func)
     def func_prec_save_logs(*args, **kwargs):
 
-        from verticapy.utilities import save_to_query_profile
+        from verticapy.utils._collect import save_to_query_profile
 
         name = func.__name__
         path = func.__module__.replace("verticapy.", "")
@@ -77,7 +77,7 @@ feature is available in the user's version.
         if len(args) > 0:
             object_name = type(args[0]).__name__
         name = object_name if fun_name == "__init__" else fun_name
-        vertica_version(vp.MINIMUM_VERSION[name])
+        vertica_version(vp.MINIMUM_VERTICA_VERSION[name])
 
         return func(*args, **kwargs)
 

@@ -22,14 +22,14 @@ import pytest
 import os
 
 # Other Modules
-from highcharts.highcharts.highcharts import Highchart
-from highcharts.highstock.highstock import Highstock
+from vertica_highcharts.highcharts.highcharts import Highchart
+from vertica_highcharts.highstock.highstock import Highstock
 
 # VerticaPy
 import verticapy
 from verticapy import drop, set_option
 from verticapy.datasets import load_titanic, load_amazon
-from verticapy.hchart import hchart
+from verticapy.jupyter.extensions.hchart_magic import hchart_magic as hchart
 
 set_option("print_info", False)
 

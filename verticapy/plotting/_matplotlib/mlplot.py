@@ -21,6 +21,7 @@ permissions and limitations under the License.
 #
 # Standard Python Modules
 import math, collections
+from typing import Union
 
 # Other Python Modules
 import matplotlib.pyplot as plt
@@ -35,9 +36,12 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.utilities import *
-from verticapy.utils._toolbox import *
+from verticapy._config._notebook import ISNOTEBOOK
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
-from verticapy.plotting._colors import gen_colors
+from verticapy.plotting._colors import gen_colors, get_color
+from verticapy.sql._utils._format import quote_ident
+from verticapy.plotting._matplotlib.core import updated_dict
 
 
 def logit_plot(
@@ -76,14 +80,14 @@ def logit_plot(
              WHERE {X[0]} IS NOT NULL 
                AND {y} = {{}} 
             LIMIT {int(max_nb_points / 2)})"""
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"{query.format(0)} UNION ALL {query.format(1)}",
             method="fetchall",
             print_time_sql=False,
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.grid()
@@ -138,7 +142,7 @@ def logit_plot(
              WHERE {X[0]} IS NOT NULL
                AND {X[1]} IS NOT NULL
                AND {y} = {{}} LIMIT {int(max_nb_points / 2)})"""
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"{query.format(0)} UNION {query.format(1)}",
             method="fetchall",
             print_time_sql=False,
@@ -177,7 +181,7 @@ def logit_plot(
             )
         )
         if not (ax):
-            if isnotebook():
+            if ISNOTEBOOK:
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
         ax.plot_surface(
@@ -263,7 +267,7 @@ def lof_plot(
     }
     if len(columns) == 1:
         column = quote_ident(columns[0])
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('plotting._matplotlib.lof_plot')*/ 
@@ -281,7 +285,7 @@ def lof_plot(
         column2 = [0] * len(column1)
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(8, 2)
             ax.set_axisbelow(True)
             ax.grid()
@@ -300,7 +304,7 @@ def lof_plot(
         )
     elif len(columns) == 2:
         columns = [quote_ident(column) for column in columns]
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.lof_plot')*/ 
@@ -320,7 +324,7 @@ def lof_plot(
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.grid()
@@ -339,7 +343,7 @@ def lof_plot(
             color=colors[1],
         )
     elif len(columns) == 3:
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.lof_plot')*/ 
@@ -361,7 +365,7 @@ def lof_plot(
             [float(item[3]) for item in query_result],
         )
         if not (ax):
-            if isnotebook():
+            if ISNOTEBOOK:
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
         ax.set_xlabel(columns[0])
@@ -405,16 +409,16 @@ def plot_importance(
     )
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(12, int(len(importances) / 2) + 1)
         ax.set_axisbelow(True)
         ax.grid()
     color = []
     for item in signs:
         color += (
-            [color_dict(style_kwds, 0)] if (item == 1) else [color_dict(style_kwds, 1)]
+            [get_color(style_kwds, 0)] if (item == 1) else [get_color(style_kwds, 1)]
         )
-    plus, minus = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
+    plus, minus = get_color(style_kwds, 0), get_color(style_kwds, 1)
     param = {"alpha": 0.86}
     style_kwds = updated_dict(param, style_kwds)
     style_kwds["color"] = color
@@ -447,7 +451,7 @@ def plot_stepwise_ml(
     colors = gen_colors()
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
         ax.set_axisbelow(True)
@@ -559,7 +563,7 @@ def plot_bubble_ml(
     colors = gen_colors()
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
         ax.set_axisbelow(True)
@@ -714,7 +718,7 @@ def plot_pca_circle(
     circle1 = plt.Circle((0, 0), 1, edgecolor=colors[0], facecolor="none")
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(6, 6)
         ax.set_axisbelow(True)
     n = len(x)
@@ -758,7 +762,7 @@ def plot_var(
         colors[0] = style_kwds["color"]
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(6, 6)
         ax.set_axisbelow(True)
         ax.grid()
@@ -820,7 +824,7 @@ def regression_plot(
         "edgecolors": "black",
     }
     if len(X) == 1:
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.regression_plot')*/ 
@@ -834,7 +838,7 @@ def regression_plot(
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.grid()
@@ -852,7 +856,7 @@ def regression_plot(
         ax.set_xlabel(X[0])
         ax.set_ylabel(y)
     elif len(X) == 2:
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"""
             (SELECT 
                 /*+LABEL('plotting._matplotlib.regression_plot')*/ 
@@ -889,7 +893,7 @@ def regression_plot(
         X_reg, Y_reg = np.meshgrid(X_reg, Y_reg)
         Z_reg = coefficients[0] + coefficients[1] * X_reg + coefficients[2] * Y_reg
         if not (ax):
-            if isnotebook():
+            if ISNOTEBOOK:
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
         ax.plot_surface(
@@ -914,7 +918,7 @@ def regression_tree_plot(
     ax=None,
     **style_kwds,
 ):
-    all_points = executeSQL(
+    all_points = _executeSQL(
         query=f"""
         SELECT 
             /*+LABEL('plotting._matplotlib.regression_tree_plot')*/ 
@@ -932,7 +936,7 @@ def regression_tree_plot(
     )
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.set_axisbelow(True)
         ax.grid()
@@ -992,14 +996,14 @@ def svm_classifier_plot(
              WHERE {X[0]} IS NOT NULL 
                AND {y} = {{}}
              LIMIT {int(max_nb_points / 2)})"""
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"{query.format(0)} UNION ALL {query.format(1)}",
             method="fetchall",
             print_time_sql=False,
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.grid()
@@ -1042,14 +1046,14 @@ def svm_classifier_plot(
                AND {X[1]} IS NOT NULL 
                AND {y} = {{}} 
              LIMIT {int(max_nb_points / 2)})"""
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"{query.format(0)} UNION {query.format(1)}",
             method="fetchall",
             print_time_sql=False,
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.grid()
@@ -1097,7 +1101,7 @@ def svm_classifier_plot(
                AND {X[2]} IS NOT NULL 
                AND {y} = {{}} 
              LIMIT {int(max_nb_points / 2)})"""
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"{query.format(0)} UNION {query.format(1)}",
             method="fetchall",
             print_time_sql=False,
@@ -1129,7 +1133,7 @@ def svm_classifier_plot(
         X_svm, Y_svm = np.meshgrid(X_svm, Y_svm)
         Z_svm = coefficients[0] + coefficients[1] * X_svm + coefficients[2] * Y_svm
         if not (ax):
-            if isnotebook():
+            if ISNOTEBOOK:
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
         ax.plot_surface(
@@ -1204,7 +1208,7 @@ def voronoi_plot(
     ax.xlim(min_x - 0.05 * (max_x - min_x), max_x + 0.05 * (max_x - min_x))
     ax.ylim(min_y - 0.05 * (max_y - min_y), max_y + 0.05 * (max_y - min_y))
     if max_nb_points > 0:
-        all_points = executeSQL(
+        all_points = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('plotting._matplotlib.voronoi_plot')*/ 

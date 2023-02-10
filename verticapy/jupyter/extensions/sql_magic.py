@@ -40,23 +40,20 @@ import pandas as pd
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.errors import QueryError, ParameterError, ParsingError
-from verticapy import (
-    executeSQL,
-    vDataFrameSQL,
-    get_magic_options,
-    vDataFrame,
-    set_option,
-    tablesample,
-    clean_query,
-    replace_vars_in_query,
-    save_verticapy_logs,
-    replace_external_queries_in_query,
-)
+from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
+from verticapy.sql._utils._format import replace_vars_in_query, clean_query
+from verticapy.utils._decorators import save_verticapy_logs
+from verticapy.core.tablesample import tablesample
+from verticapy.sql.read import _executeSQL
 
 
 @save_verticapy_logs
 @needs_local_scope
 def sql_magic(line, cell="", local_ns=None):
+    from verticapy import vDataFrameSQL
+    from verticapy.jupyter.extensions._utils import get_magic_options
+    from verticapy._config.config import set_option
+    from verticapy.core.vdataframe import vDataFrame
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.
@@ -232,7 +229,7 @@ def sql_magic(line, cell="", local_ns=None):
                 if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
                     file_name = file_name[1:-1]
 
-                executeSQL(query, method="copy", path=file_name, print_time_sql=False)
+                _executeSQL(query, method="copy", path=file_name, print_time_sql=False)
 
             elif (i < n - 1) or (
                 (i == n - 1)
@@ -242,7 +239,7 @@ def sql_magic(line, cell="", local_ns=None):
                 error = ""
 
                 try:
-                    executeSQL(query, print_time_sql=False)
+                    _executeSQL(query, print_time_sql=False)
 
                 except Exception as e:
                     error = str(e)
@@ -276,7 +273,7 @@ def sql_magic(line, cell="", local_ns=None):
                 except:
 
                     try:
-                        final_result = executeSQL(
+                        final_result = _executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
                         )
                         if final_result and vp.OPTIONS["print_info"]:
@@ -324,3 +321,8 @@ def sql_magic(line, cell="", local_ns=None):
         # we load the previous configuration before returning the result.
         set_option("sql_on", sql_on)
         set_option("time_on", time_on)
+
+
+def load_ipython_extension(ipython):
+    ipython.register_magic_function(sql_magic, "cell", "sql")
+    ipython.register_magic_function(sql_magic, "line", "sql")

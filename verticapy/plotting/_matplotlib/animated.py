@@ -27,7 +27,9 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, quote_ident
+from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy._config._notebook import ISNOTEBOOK
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_cmap, gen_colors
 
@@ -107,7 +109,7 @@ def animated_bar(
     if order_by_end:
         order_by_end_str = f" AND {order_by} < '{order_by_end}'"
     condition = " AND ".join([f"{column} IS NOT NULL" for column in columns])
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.animated_bar')*/ * 
@@ -154,7 +156,7 @@ def animated_bar(
             current_ts, ts_idx = elem, idx
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             if pie:
                 fig.set_size_inches(11, min(limit_over, 600))
             else:
@@ -298,7 +300,7 @@ def animated_bar(
         blit=False,
         repeat=repeat,
     )
-    if isnotebook() and return_html:
+    if ISNOTEBOOK and return_html:
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
@@ -375,7 +377,7 @@ def animated_bubble_plot(
     count = vdf.shape()[0]
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(12, 8)
         ax.grid()
         ax.set_axisbelow(True)
@@ -387,7 +389,7 @@ def animated_bubble_plot(
         min_size = float(vdf[columns[2]].min())
     where = f" AND {order_by} > '{order_by_start}'" if (order_by_start) else ""
     where += f" AND {order_by} < '{order_by_end}'" if (order_by_end) else ""
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.animated_bubble_plot')*/ * 
@@ -567,7 +569,7 @@ def animated_bubble_plot(
         blit=False,
         repeat=repeat,
     )
-    if isnotebook() and return_html:
+    if ISNOTEBOOK and return_html:
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
@@ -614,7 +616,7 @@ def animated_ts_plot(
     if limit:
         limit_str = f" LIMIT {limit}"
     condition = " AND ".join([f"{column} IS NOT NULL" for column in columns])
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.animated_ts_plot')*/ 
@@ -637,7 +639,7 @@ def animated_ts_plot(
     alpha = 0.3
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
         ax.set_axisbelow(True)
@@ -693,7 +695,7 @@ def animated_ts_plot(
         blit=False,
         repeat=repeat,
     )
-    if isnotebook() and return_html:
+    if ISNOTEBOOK and return_html:
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)

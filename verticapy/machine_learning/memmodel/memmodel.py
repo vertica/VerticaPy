@@ -26,8 +26,8 @@ from typing import Union, Literal
 
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utils._toolbox import *
 from verticapy.errors import *
+from verticapy.sql._utils._format import clean_query
 
 # other modules:
 try:
@@ -36,6 +36,18 @@ try:
     GRAPHVIZ_ON = True
 except:
     GRAPHVIZ_ON = False
+
+
+def flat_dict(d: dict) -> str:
+    # converts dictionary to string with a specific format
+    res = []
+    for key in d:
+        q = '"' if isinstance(d[key], str) else ""
+        res += [f"{key}={q}{d[key]}{q}"]
+    res = ", ".join(res)
+    if res:
+        res = f", {res}"
+    return res
 
 
 def predict_from_nb(
@@ -515,6 +527,7 @@ def predict_from_binary_tree(
     numpy.array
         Predicted values
     """
+    from verticapy.stats._utils import heuristic_length
 
     def predict_tree(
         children_left, children_right, feature, threshold, value, node_id, X
@@ -627,6 +640,7 @@ def sql_from_binary_tree(
     str / list
         SQL code
     """
+    from verticapy.stats._utils import heuristic_length
 
     def predict_tree(
         children_left, children_right, feature, threshold, value, node_id, X, prob_ID=0,
@@ -773,6 +787,8 @@ def binary_tree_to_graphviz(
     str
         Graphviz code.
     """
+    from verticapy.stats._utils import heuristic_length
+
     empty_color = False
     if len(classes_color) == 0:
         empty_color = True

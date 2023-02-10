@@ -23,7 +23,8 @@ import matplotlib.pyplot as plt
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, quote_ident
+from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import compute_plot_variables
 from verticapy.plotting._colors import gen_colors
@@ -44,7 +45,7 @@ def bar(
     )
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(10, min(int(len(x) / 1.8) + 1, 600))
         ax.xaxis.grid()
         ax.set_axisbelow(True)
@@ -115,7 +116,7 @@ def bar2D(
     bar_width = 0.5
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             if density:
                 fig.set_size_inches(10, min(m * 3, 600) / 8 + 1)
             else:
@@ -267,7 +268,7 @@ def hist(
     is_numeric = vdf.isnum()
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(min(int(len(x) / 1.8) + 1, 600), 6)
         ax.set_axisbelow(True)
         ax.yaxis.grid()
@@ -322,7 +323,7 @@ def hist2D(
     bar_width = 0.5
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(min(600, 3 * m) / 2 + 1, 6)
         ax.set_axisbelow(True)
         ax.yaxis.grid()
@@ -408,7 +409,7 @@ def multiple_hist(
     else:
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.yaxis.grid()

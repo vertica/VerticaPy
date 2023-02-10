@@ -22,9 +22,12 @@ import matplotlib.pyplot as plt
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import executeSQL, quote_ident
+from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy._config._notebook import ISNOTEBOOK
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.plotting._colors import gen_colors
+from verticapy.plotting._colors import get_color, gen_colors
+from verticapy.sql._utils._format import quote_ident
 
 # Optional
 try:
@@ -61,7 +64,7 @@ def acf_plot(
         color = gen_colors()[0]
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(10, 3)
     if type_bar:
         ax.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
@@ -143,7 +146,7 @@ def multi_ts_plot(
     if order_by_end:
         order_by_end_str = f" AND {order_by} < '{order_by_end}'"
     condition = " AND " + " AND ".join([f"{column} IS NOT NULL" for column in columns])
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.multi_ts_plot')*/ 
@@ -162,7 +165,7 @@ def multi_ts_plot(
     alpha = 0.3
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
         ax.set_axisbelow(True)
@@ -209,7 +212,7 @@ def multi_ts_plot(
                 }
         param["color"] = color
         if "color" in style_kwds and len(order_by_values) < 20:
-            param["markerfacecolor"] = color_dict(style_kwds, i)
+            param["markerfacecolor"] = get_color(style_kwds, i)
         if kind == "step":
             ax.step(order_by_values, points, **param)
         else:
@@ -254,7 +257,7 @@ def range_curve(
 ):
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid()
     for i, y in enumerate(Y):
@@ -266,9 +269,9 @@ def range_curve(
             alpha1, alpha2 = 0.3, 0.5
         else:
             alpha1, alpha2 = 0.5, 0.9
-        param = {"facecolor": color_dict(style_kwds, i)}
+        param = {"facecolor": get_color(style_kwds, i)}
         ax.fill_between(X, y[0], y[2], alpha=alpha1, **param)
-        param = {"color": color_dict(style_kwds, i)}
+        param = {"color": get_color(style_kwds, i)}
         for j in [0, 2]:
             ax.plot(
                 X, y[j], alpha=alpha2, **updated_dict(param, style_kwds, i),
@@ -306,7 +309,7 @@ def range_curve_vdf(
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
     if order_by_end:
         order_by_end_str = f" AND {order_by} < '{order_by_end}'"
-    query_result = executeSQL(
+    query_result = _executeSQL(
         query=f"""
         SELECT 
             /*+LABEL('plotting._matplotlib.range_curve_vdf')*/ 
@@ -380,7 +383,7 @@ def ts_plot(
     title = "Selecting points to draw the curve"
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
     colors = gen_colors()
@@ -392,7 +395,7 @@ def ts_plot(
         "markeredgecolor": "black",
     }
     if not (by):
-        query_result = executeSQL(
+        query_result = _executeSQL(
             query=query.format(""), title=title, method="fetchall",
         )
         order_by_values = [item[0] for item in query_result]
@@ -425,7 +428,7 @@ def ts_plot(
         all_data = []
         for column in cat:
             column_str = str(column).replace("'", "''")
-            query_result = executeSQL(
+            query_result = _executeSQL(
                 query=query.format(f"AND {by} = '{column_str}'"),
                 title=title,
                 method="fetchall",
@@ -447,7 +450,7 @@ def ts_plot(
                     **param,
                     "markerfacecolor": colors[idx % len(colors)],
                 }
-            param["markerfacecolor"] = color_dict(style_kwds, idx)
+            param["markerfacecolor"] = get_color(style_kwds, idx)
             plot_fun(d[0], d[1], label=d[2], **updated_dict(param, style_kwds, idx))
         ax.set_xlabel(order_by)
         ax.set_ylabel(vdf.alias)

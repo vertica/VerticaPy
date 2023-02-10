@@ -28,7 +28,6 @@ import pandas
 # VerticaPy
 from verticapy import (
     vDataFrame,
-    get_session,
     drop,
     set_option,
     read_shp,
@@ -38,6 +37,7 @@ from verticapy import (
 from verticapy.connect import current_cursor
 import verticapy.stats as st
 from verticapy.datasets import load_titanic, load_cities, load_amazon, load_world
+from verticapy.sql.sys import current_session, username
 
 set_option("print_info", False)
 
@@ -192,7 +192,7 @@ class TestvDFUtilities:
         os.rmdir("titanic_verticapy_test_to_csv")
 
     def test_vDF_to_parquet(self, titanic_vd):
-        session_id = get_session()
+        session_id = f"{current_session()}_{username()}"
         name = "parquet_test_{}".format(session_id)
         result = titanic_vd.to_parquet(name)
         assert result["Rows Exported"][0] == 1234
@@ -290,7 +290,7 @@ class TestvDFUtilities:
         drop("verticapy_titanic_tmp")
 
     def test_vDF_to_json(self, titanic_vd):
-        session_id = get_session()
+        session_id = f"{current_session()}_{username()}"
         titanic_vd.copy().select(["age", "fare"]).sort({"age": "desc", "fare": "desc"})[
             0:2
         ].to_json("verticapy_test_to_json.json")

@@ -20,14 +20,12 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import os
+import os, uuid
 from configparser import ConfigParser
 from typing import Literal
 
 # VerticaPy Modules
-import verticapy as vp
-import verticapy._config.config as vp_config
-
+from verticapy._version import __version__
 from verticapy.errors import ConnectionError, ParameterError
 
 # Vertica Modules
@@ -35,8 +33,12 @@ import vertica_python
 
 # Global Variables
 VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
-SESSION_LABEL = f"verticapy-{vp.__version__}-{vp_config.OPTIONS['identifier']}"
-CONNECTION = vp_config.OPTIONS["connection"]
+CONNECTION = {
+    "conn": None,
+    "section": None,
+    "dsn": None,
+}
+EXTERNAL_CONNECTION = {}
 SPECIAL_SYMBOLS = [
     "$",
     "€",
@@ -49,8 +51,8 @@ SPECIAL_SYMBOLS = [
     "?",
     "!",
 ]
-
-#
+SESSION_IDENTIFIER = str(uuid.uuid1()).replace("-", "")
+SESSION_LABEL = f"verticapy-{__version__}-{SESSION_IDENTIFIER}"
 
 
 def available_connections():
@@ -128,6 +130,7 @@ dsn: str, optional
     Path to the file containing the credentials. If empty, the 
     Connection File will be used.
     """
+    global CONNECTION
     prev_conn = CONNECTION["conn"]
     if not (dsn):
         dsn = get_connection_file()
@@ -161,7 +164,7 @@ stored credentials. If this also fails, VerticaPy attempts to connect using
 an auto connection. Otherwise, VerticaPy attempts to connect to a 
 VerticaLab Environment.
     """
-
+    global CONNECTION
     # Look if the connection does not exist or is closed
     if not (CONNECTION["conn"]) or CONNECTION["conn"].closed():
 
@@ -472,6 +475,7 @@ Parameters
 conn: object
     Connection object.
     """
+    global CONNECTION
     try:
         conn.cursor().execute("SELECT /*+LABEL('connect.set_connection')*/ 1;")
         res = conn.cursor().fetchone()[0]
@@ -506,8 +510,9 @@ symbol: str, optional
     with the input cid by writing $$$QUERY$$$, where QUERY represents 
     a custom query.
     """
-    if isinstance(cid, str) and isinstance(rowset, int):
-        vp_config.OPTIONS["external_connection"][symbol] = {
+    global EXTERNAL_CONNECTION
+    if isinstance(cid, str) and isinstance(rowset, int) and symbol in SPECIAL_SYMBOLS:
+        EXTERNAL_CONNECTION[symbol] = {
             "cid": cid,
             "rowset": rowset,
         }

@@ -25,9 +25,62 @@ import os, warnings
 # VerticaPy Modules
 import verticapy as vp
 from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utils._toolbox import *
+from verticapy.utils._gen import gen_tmp_name
+from verticapy.sql.read import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
-from ..flex import compute_flextable_keys
+from verticapy.sql.flex import compute_flextable_keys
+from verticapy.sql._utils._format import format_schema_table, clean_query
+from verticapy.sql.parsers._utils import extract_compression, get_first_file
+from verticapy.sql._utils._format import quote_ident
+
+
+def guess_sep(file_str: str):
+    sep = ","
+    max_occur = file_str.count(",")
+    for s in ("|", ";"):
+        total_occurences = file_str.count(s)
+        if total_occurences > max_occur:
+            max_occur = total_occurences
+            sep = s
+    return sep
+
+
+def erase_space_start_end_in_list_values(L: list):
+    L_tmp = [elem for elem in L]
+    for idx in range(len(L_tmp)):
+        L_tmp[idx] = L_tmp[idx].strip()
+    return L_tmp
+
+
+def get_header_name_csv(path: str, sep: str):
+    f = open(path, "r")
+    file_header = f.readline().replace("\n", "").replace('"', "")
+    if not (sep):
+        sep = guess_sep(file_header)
+    file_header = file_header.split(sep)
+    f.close()
+    for idx, col in enumerate(file_header):
+        if col == "":
+            if idx == 0:
+                position = "beginning"
+            elif idx == len(file_header) - 1:
+                position = "end"
+            else:
+                position = "middle"
+            file_header[idx] = f"col{idx}"
+            warning_message = (
+                f"An inconsistent name was found in the {position} of the "
+                "file header (isolated separator). It will be replaced "
+                f"by col{idx}."
+            )
+            if idx == 0:
+                warning_message += (
+                    "\nThis can happen when exporting a pandas DataFrame "
+                    "to CSV while retaining its indexes.\nTip: Use "
+                    "index=False when exporting with pandas.DataFrame.to_csv."
+                )
+            warnings.warn(warning_message, Warning)
+    return erase_space_start_end_in_list_values(file_header)
 
 
 def pcsv(
@@ -105,7 +158,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    from ..utilities import drop
+    from verticapy.sql.drop import drop
 
     if record_terminator == "\n":
         record_terminator = "\\n"
@@ -141,17 +194,17 @@ read_json : Ingests a JSON file into the Vertica database.
        NULL '{na_rep}';"""
     if genSQL:
         return [clean_query(query), clean_query(query2)]
-    executeSQL(
+    _executeSQL(
         query=query, title="Creating flex table to identify the data types.",
     )
-    executeSQL(
+    _executeSQL(
         query=query2, title="Parsing the data.",
     )
     result = compute_flextable_keys(flex_name)
     dtype = {}
     for column_dtype in result:
         try:
-            executeSQL(
+            _executeSQL(
                 query=f"""
                     SELECT /*+LABEL('utilities.pcsv')*/
                         (CASE 
@@ -285,7 +338,7 @@ See Also
 read_json : Ingests a JSON file into the Vertica database.
 	"""
     from verticapy import vDataFrame
-    from ..utilities import create_table
+    from verticapy.sql.create import create_table
 
     if schema:
         temporary_local_table = False
@@ -324,7 +377,7 @@ read_json : Ingests a JSON file into the Vertica database.
     if not (genSQL):
         table_name_str = table_name.replace("'", "''")
         schema_str = schema.replace("'", "''")
-        result = executeSQL(
+        result = _executeSQL(
             query=f"""
                 SELECT /*+LABEL('utilities.read_csv')*/
                     column_name 
@@ -422,10 +475,10 @@ read_json : Ingests a JSON file into the Vertica database.
             elif genSQL:
                 return [clean_query(query2)]
             if not (insert):
-                executeSQL(
+                _executeSQL(
                     query, title="Creating the flex table.",
                 )
-            executeSQL(
+            _executeSQL(
                 query2, title="Copying the data.",
             )
             return vDataFrame(table_name, schema=schema)
@@ -461,8 +514,13 @@ read_json : Ingests a JSON file into the Vertica database.
             if parse_nrows > 0:
                 os.remove(path_test)
             dtype_sorted = {}
-            for elem in header_names:
-                key = find_val_in_dict(elem, dtype, return_key=True)
+            for name in header_names:
+                key = None
+                for col in dtype:
+                    if quote_ident(name).lower() == quote_ident(col).lower():
+                        key = col
+                if key == None:
+                    raise KeyError(f"'{name}'")
                 dtype_sorted[key] = dtype[key]
             query1 = create_table(
                 table_name,
@@ -489,8 +547,8 @@ read_json : Ingests a JSON file into the Vertica database.
                 return [clean_query(query1), clean_query(query2)]
         else:
             if not (insert):
-                executeSQL(query1, title="Creating the table.")
-            executeSQL(
+                _executeSQL(query1, title="Creating the table.")
+            _executeSQL(
                 query2, title="Ingesting the data.",
             )
             if (

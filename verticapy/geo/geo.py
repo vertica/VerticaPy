@@ -28,8 +28,9 @@ import verticapy.stats as st
 import verticapy.datasets as vp_datasets
 from verticapy.vdataframe import vDataFrame
 from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utilities import tablesample, to_tablesample, vDataFrameSQL
-from verticapy.utils._toolbox import executeSQL
+from verticapy.utilities import tablesample
+from verticapy.sql.read import to_tablesample, vDataFrameSQL
+from verticapy.sql.read import _executeSQL
 
 
 @save_verticapy_logs
@@ -262,7 +263,7 @@ bool
 
     try:
 
-        executeSQL(
+        _executeSQL(
             query=f"""
                 SELECT /*+LABEL(rename_index)*/ 
                     STV_Rename_Index(
@@ -313,7 +314,7 @@ vDataFrame
                         STV_PolygonPoint(geom) OVER() 
                    FROM (SELECT ST_GeomFromText('{p}') 
                                 AS geom) x) y"""
-    min_x, max_x, min_y, max_y = executeSQL(
+    min_x, max_x, min_y, max_y = _executeSQL(
         sql, title="Computing min & max: x & y.", method="fetchrow"
     )
 
