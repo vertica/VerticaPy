@@ -39,7 +39,7 @@ class TestConnect:
         change_auto_connection("vp_test_config")
         # read_auto_connect
         read_auto_connect()
-        cur = CONNECTION.cursor()
+        cur = CONNECTION["conn"].cursor()
         cur.execute("SELECT 1;")
         result2 = cur.fetchone()
         assert result2 == [1]
