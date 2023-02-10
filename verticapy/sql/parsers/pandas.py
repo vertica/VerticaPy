@@ -17,6 +17,7 @@ permissions and limitations under the License.
 
 # Standard Python Modules
 import os, csv
+import pandas as pd
 
 # VerticaPy Modules
 import verticapy as vp
