@@ -34,6 +34,7 @@ from verticapy.sql.read import _executeSQL
 from verticapy import vDataFrame
 from verticapy.learn.vmodel import *
 from verticapy.sql._utils._format import quote_ident, schema_relation, clean_query
+from verticapy.sql.insert import insert_verticapy_schema
 
 
 @check_minimum_version

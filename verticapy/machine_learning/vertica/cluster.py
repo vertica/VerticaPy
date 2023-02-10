@@ -38,6 +38,7 @@ from verticapy.errors import *
 from verticapy.learn.vmodel import *
 from verticapy.learn.tools import *
 from verticapy.sql._utils._format import quote_ident, schema_relation
+from verticapy.sql.insert import insert_verticapy_schema
 
 
 class BisectingKMeans(Clustering, Tree):
