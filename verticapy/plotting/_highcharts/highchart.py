@@ -24,10 +24,10 @@ from collections.abc import Iterable
 
 # High Chart
 try:
-    from highcharts import Highchart, Highstock
+    from vertica_highcharts import Highchart, Highstock
 except:
     raise ImportError(
-        "The highcharts module doesn't seem to be installed in your environment.\n"
+        "The vertica_highcharts module doesn't seem to be installed in your environment.\n"
         "To be able to use this method, you'll have to install it.\n[Tips] Run: "
         "'pip3 install python-highcharts' in your terminal to install the module."
     )

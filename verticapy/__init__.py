@@ -91,3 +91,4 @@ import verticapy.learn
 
 # Version
 from verticapy._version import *
+from verticapy._version import __version__
