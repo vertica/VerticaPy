@@ -337,7 +337,7 @@ See Also
 --------
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    from verticapy import vDataFrame
+    from verticapy.core.vdataframe import vDataFrame
     from verticapy.sql.create import create_table
 
     if schema:

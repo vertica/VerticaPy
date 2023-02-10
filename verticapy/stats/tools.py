@@ -36,7 +36,7 @@ from verticapy.core.tablesample import tablesample
 from verticapy.sql.dtypes import get_data_types
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.learn.linear_model import LinearRegression
-from verticapy import vDataFrame
+from verticapy.core.vdataframe import vDataFrame
 from verticapy.sql._utils._format import schema_relation
 from verticapy.sql.read import _executeSQL
 

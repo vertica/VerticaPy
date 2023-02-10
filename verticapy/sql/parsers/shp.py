@@ -63,6 +63,6 @@ vDataFrame
     )
     _executeSQL(query, title="Ingesting the data.")
     print(f'The table "{schema}"."{table_name}" has been successfully created.')
-    from verticapy import vDataFrame
+    from verticapy.core.vdataframe import vDataFrame
 
     return vDataFrame(table_name, schema=schema)

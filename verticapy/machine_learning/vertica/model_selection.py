@@ -32,7 +32,7 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
-from verticapy import vDataFrame
+from verticapy.core.vdataframe import vDataFrame
 from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
 from verticapy.core.tablesample import tablesample
@@ -40,7 +40,7 @@ from verticapy.core.tablesample import tablesample
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
-from verticapy.errors import *
+from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.learn.tools import does_model_exist
 from verticapy.plotting._matplotlib import (

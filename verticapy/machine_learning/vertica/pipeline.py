@@ -21,12 +21,11 @@ permissions and limitations under the License.
 #
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs
-from verticapy import vDataFrame
+from verticapy.core.vdataframe import vDataFrame
 from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
 from verticapy.sql.dtypes import get_data_types
-from verticapy.errors import *
-from verticapy.learn.vmodel import *
+from verticapy.errors import ParameterError, ModelError
 
 # Standard Python Modules
 from typing import Union

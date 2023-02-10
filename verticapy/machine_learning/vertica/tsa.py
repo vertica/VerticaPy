@@ -29,11 +29,11 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 import verticapy.learn.metrics as mt
-from verticapy.learn.vmodel import *
+from verticapy.learn.vmodel import Regressor
 from verticapy.learn.linear_model import LinearRegression
-from verticapy import vDataFrame, save_verticapy_logs
+from verticapy.core.vdataframe import vDataFrame, save_verticapy_logs
 from verticapy.plotting._colors import gen_colors
-from verticapy.learn.tools import *
+from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql.insert import insert_verticapy_schema
 from verticapy.sql.read import _executeSQL

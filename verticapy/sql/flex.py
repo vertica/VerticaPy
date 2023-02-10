@@ -89,7 +89,7 @@ Returns
 List of tuples
     List of virtual column names and their respective frequencies.
     """
-    from verticapy import vDataFrame
+    from verticapy.core.vdataframe import vDataFrame
 
     vmap = quote_ident(vmap_col)
     if isinstance(expr, vDataFrame):

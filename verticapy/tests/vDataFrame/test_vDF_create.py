@@ -19,7 +19,7 @@ permissions and limitations under the License.
 import pytest
 
 # VerticaPy
-from verticapy import vDataFrame, drop, set_option, tablesample
+from verticapy.core.vdataframe import vDataFrame, drop, set_option, tablesample
 from verticapy.datasets import load_titanic
 
 # Other Modules

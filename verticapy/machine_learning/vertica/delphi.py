@@ -29,13 +29,13 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
-from verticapy import vDataFrame
+from verticapy.core.vdataframe import vDataFrame
 
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
 from verticapy.utils._gen import gen_tmp_name
-from verticapy.errors import *
+from verticapy.errors import ParameterError
 from verticapy.learn.ensemble import *
 from verticapy.learn.naive_bayes import *
 from verticapy.learn.linear_model import *
@@ -44,7 +44,7 @@ from verticapy.learn.cluster import *
 from verticapy.learn.neighbors import *
 from verticapy.learn.svm import *
 from verticapy.plotting._matplotlib import plot_bubble_ml
-from verticapy.learn.vmodel import *
+from verticapy.learn.vmodel import vModel
 from verticapy.sql._utils._format import schema_relation
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.sql.read import _executeSQL
@@ -53,23 +53,7 @@ from verticapy.sql.read import _executeSQL
 from tqdm.auto import tqdm
 
 
-class vAuto(vModel):
-    def set_params(self, parameters: dict = {}):
-        """
-    Sets the parameters of the model.
-
-    Parameters
-    ----------
-    parameters: dict, optional
-        New parameters.
-        """
-        for elem in self.parameters:
-            if elem not in parameters:
-                parameters[elem] = self.parameters[elem]
-        self.__init__(self.name, **parameters)
-
-
-class AutoDataPrep(vAuto):
+class AutoDataPrep(vModel):
     """
 Automatically find relations between the different features to preprocess
 the data according to each column type.
@@ -387,7 +371,7 @@ final_relation_: vDataFrame
         return self.final_relation_
 
 
-class AutoClustering(vAuto):
+class AutoClustering(vModel):
     """
 Automatically creates k different groups with which to generalize the data.
 
@@ -538,7 +522,7 @@ model_: object
         return self.model_
 
 
-class AutoML(vAuto):
+class AutoML(vModel):
     """
 Tests multiple models to find those that maximize the input score.
 

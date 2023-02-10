@@ -34,8 +34,6 @@ from numpy import eye, asarray, dot, sum, diag
 from numpy.linalg import svd
 from typing import Union
 
-#
-
 
 def does_model_exist(
     name: str, raise_error: bool = False, return_model_type: bool = False

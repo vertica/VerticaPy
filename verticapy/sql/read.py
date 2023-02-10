@@ -236,7 +236,7 @@ vDataFrame
     The vDataFrame associated to the input relation.
     """
     # Initialization
-    from verticapy import vDataFrame
+    from verticapy.core.vdataframe import vDataFrame
     from verticapy.sql.flex import isvmap
     from verticapy.sql.dtypes import get_data_types
     from verticapy.utils._cast import to_category

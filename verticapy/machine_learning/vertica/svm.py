@@ -24,7 +24,7 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
-from verticapy.learn.vmodel import *
+from verticapy.learn.vmodel import BinaryClassifier, Regressor
 
 # Standard Modules
 from typing import Literal

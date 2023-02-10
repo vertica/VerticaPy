@@ -20,14 +20,14 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy import vDataFrame
+from verticapy.core.vdataframe import vDataFrame
 from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
 from verticapy._version import vertica_version
-from verticapy.errors import *
-from verticapy.learn.vmodel import *
+from verticapy.errors import ParameterError
+from verticapy.learn.vmodel import Regressor, BinaryClassifier
 
 # Standard Module
 from typing import Literal

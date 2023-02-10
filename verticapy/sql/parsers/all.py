@@ -106,7 +106,7 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
-    from verticapy import vDataFrame
+    from verticapy.core.vdataframe import vDataFrame
 
     assert not (ingest_local) or insert, ParameterError(
         "Ingest local to create new relations is not yet supported for 'read_file'"

@@ -26,7 +26,7 @@ from typing import Union, Literal
 
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.errors import *
+from verticapy.errors import ParameterError, FunctionError
 from verticapy.sql._utils._format import clean_query
 
 # other modules:

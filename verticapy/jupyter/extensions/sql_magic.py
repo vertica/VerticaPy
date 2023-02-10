@@ -50,7 +50,7 @@ from verticapy.sql.read import _executeSQL
 @save_verticapy_logs
 @needs_local_scope
 def sql_magic(line, cell="", local_ns=None):
-    from verticapy import vDataFrameSQL
+    from verticapy.sql.read import vDataFrameSQL
     from verticapy.jupyter.extensions._utils import get_magic_options
     from verticapy._config.config import set_option
     from verticapy.core.vdataframe import vDataFrame

@@ -30,8 +30,8 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
-from verticapy import vDataFrame
-from verticapy.plotting._matplotlib import *
+from verticapy.core.vdataframe import vDataFrame
+from verticapy.plotting._matplotlib import plot_importance, regression_tree_plot, lof_plot, plot_pca_circle
 from verticapy.learn.model_selection import *
 from verticapy.sql.drop import drop
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
@@ -39,10 +39,10 @@ from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
 from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
-from verticapy.errors import *
+from verticapy.errors import FunctionError, ParameterError, ModelError, ConversionError
 import verticapy.learn.metrics as mt
 from verticapy.learn.metrics import *
-from verticapy.learn.tools import *
+from verticapy.learn.tools import does_model_exist
 from verticapy.learn.memmodel import *
 from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation
 from verticapy.machine_learning._utils import get_match_index

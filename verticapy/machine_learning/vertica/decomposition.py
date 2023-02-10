@@ -27,7 +27,7 @@ from verticapy.utils._decorators import (
 from verticapy._version import vertica_version
 from verticapy.plotting._matplotlib.mlplot import plot_var
 from verticapy.plotting._colors import gen_colors, gen_cmap
-from verticapy.learn.vmodel import *
+from verticapy.learn.vmodel import Decomposition
 
 # Standard Module
 from typing import Literal

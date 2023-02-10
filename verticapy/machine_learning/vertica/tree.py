@@ -24,7 +24,7 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
-from verticapy.learn.vmodel import *
+from verticapy.learn.vmodel import MulticlassClassifier, Regressor, Tree
 from verticapy.sql._utils._format import quote_ident
 
 # Standard Python Modules

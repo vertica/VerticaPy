@@ -29,12 +29,12 @@ from verticapy.core.tablesample import tablesample
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
-from verticapy import vDataFrame
+from verticapy.core.vdataframe import vDataFrame
 from verticapy.plotting._matplotlib import *
 from verticapy.learn.model_selection import *
-from verticapy.errors import *
-from verticapy.learn.vmodel import *
-from verticapy.learn.tools import *
+from verticapy.errors import ParameterError
+from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree
+from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql._utils._format import clean_query
 from verticapy.plotting._matplotlib.core import updated_dict
