@@ -24,7 +24,8 @@ import numpy as np
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.sql._utils._format import quote_ident
-from verticapy.utils._toolbox import updated_dict, isnotebook
+from verticapy.utils._toolbox import updated_dict
+from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import compute_plot_variables
@@ -66,7 +67,7 @@ def nested_pie(
         vdf_tmp[column].discretize(method="topk", k=max_cardinality[idx])
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
     all_colors_dict, all_categories, all_categories_col = {}, {}, []
     for i in range(0, n):
@@ -178,7 +179,7 @@ def pie(
     if not (rose):
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(8, 6)
         param = {
             "autopct": autopct,

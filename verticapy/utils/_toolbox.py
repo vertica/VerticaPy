@@ -77,89 +77,6 @@ def find_val_in_dict(x: str, d: dict, return_key: bool = False):
     raise NameError(f'Key "{x}" was not found in {d}.')
 
 
-def gen_name(L: list):
-    return "_".join(
-        [
-            "".join(ch for ch in str(elem).lower() if ch.isalnum() or ch == "_")
-            for elem in L
-        ]
-    )
-
-
-def gen_tmp_name(schema: str = "", name: str = ""):
-    from verticapy.sql.sys import current_session, username
-
-    session_user = f"{current_session()}_{username()}"
-    L = session_user.split("_")
-    L[0] = "".join(filter(str.isalnum, L[0]))
-    L[1] = "".join(filter(str.isalnum, L[1]))
-    random_int = random.randint(0, 10e9)
-    name = f'"_verticapy_tmp_{name.lower()}_{L[0]}_{L[1]}_{random_int}_"'
-    if schema:
-        name = f"{quote_ident(schema)}.{name}"
-    return name
-
-
-def get_category_from_vertica_type(ctype: str = ""):
-    ctype = ctype.lower().strip()
-    if ctype != "":
-        if (ctype[0:5] == "array") or (ctype[0:3] == "row") or (ctype[0:3] == "set"):
-            return "complex"
-        elif (
-            (ctype[0:4] == "date")
-            or (ctype[0:4] == "time")
-            or (ctype == "smalldatetime")
-            or (ctype[0:8] == "interval")
-        ):
-            return "date"
-        elif (
-            (ctype[0:3] == "int")
-            or (ctype[0:4] == "bool")
-            or (ctype in ("tinyint", "smallint", "bigint"))
-        ):
-            return "int"
-        elif (
-            (ctype[0:3] == "num")
-            or (ctype[0:5] == "float")
-            or (ctype[0:7] == "decimal")
-            or (ctype == "money")
-            or (ctype[0:6] == "double")
-            or (ctype[0:4] == "real")
-        ):
-            return "float"
-        elif ctype[0:3] == "geo":
-            return "spatial"
-        elif ("byte" in ctype) or (ctype == "raw") or ("binary" in ctype):
-            return "binary"
-        elif "uuid" in ctype:
-            return "uuid"
-        elif ctype.startswith("vmap"):
-            return "vmap"
-        else:
-            return "text"
-    else:
-        return "undefined"
-
-
-def get_final_vertica_type(
-    type_name: str, display_size: int = 0, precision: int = 0, scale: int = 0
-):
-    """
-Takes as input the Vertica Python type code and returns its corresponding data type.
-    """
-    result = type_name
-    has_precision_scale = (
-        (type_name[0:4].lower() not in ("uuid", "date", "bool"))
-        and (type_name[0:5].lower() != "array")
-        and (type_name[0:3].lower() not in ("set", "row", "map", "int"))
-    )
-    if display_size and has_precision_scale:
-        result += f"({display_size})"
-    elif scale and precision and has_precision_scale:
-        result += f"({precision},{scale})"
-    return result
-
-
 def get_match_index(x: str, col_list: list, str_check: bool = True):
     for idx, col in enumerate(col_list):
         if (str_check and quote_ident(x.lower()) == quote_ident(col.lower())) or (
@@ -167,34 +84,6 @@ def get_match_index(x: str, col_list: list, str_check: bool = True):
         ):
             return idx
     return None
-
-
-def get_random_function(rand_int=None):
-    random_state = vp.OPTIONS["random_state"]
-    if isinstance(rand_int, int):
-        if isinstance(random_state, int):
-            random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
-        else:
-            random_func = f"RANDOMINT({rand_int})"
-    else:
-        if isinstance(random_state, int):
-            random_func = f"SEEDED_RANDOM({random_state})"
-        else:
-            random_func = "RANDOM()"
-    return random_func
-
-
-def isnotebook():
-    try:
-        shell = get_ipython().__class__.__name__
-        if shell == "ZMQInteractiveShell":
-            return True  # Jupyter notebook or qtconsole
-        elif shell == "TerminalInteractiveShell":
-            return False  # Terminal running IPython
-        else:
-            return False  # Other type (?)
-    except NameError:
-        return False  # Probably standard Python interpreter
 
 
 def updated_dict(

@@ -37,11 +37,13 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.utils._cast import sql_dtype_category
+from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import *
 from verticapy.sql._utils._format import quote_ident, clean_query
-from verticapy.utils._map import python_to_sql_dtype
+from verticapy.utils._cast import python_to_sql_dtype
 
 # Other modules
 import numpy as np
@@ -444,7 +446,7 @@ Attributes
                     LIMIT 0""",
                 column="apply_test_feature",
             )
-            category = get_category_from_vertica_type(ctype=ctype)
+            category = sql_dtype_category(ctype=ctype)
             all_cols, max_floor = self.parent.get_columns(), 0
             for column in all_cols:
                 try:
@@ -722,7 +724,7 @@ Attributes
                 symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
             self.transformations += [
-                (transformation[1], dtype, get_category_from_vertica_type(ctype=dtype),)
+                (transformation[1], dtype, sql_dtype_category(ctype=dtype),)
             ]
             self.parent.__add_to_history__(
                 f"[AsType]: The vColumn {self.alias} was converted to {dtype}."

@@ -22,7 +22,8 @@ import matplotlib.pyplot as plt
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import color_dict, updated_dict, isnotebook
+from verticapy.utils._toolbox import color_dict, updated_dict
+from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors
@@ -63,7 +64,7 @@ def acf_plot(
         color = gen_colors()[0]
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(10, 3)
     if type_bar:
         ax.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
@@ -164,7 +165,7 @@ def multi_ts_plot(
     alpha = 0.3
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
         ax.set_axisbelow(True)
@@ -256,7 +257,7 @@ def range_curve(
 ):
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid()
     for i, y in enumerate(Y):
@@ -382,7 +383,7 @@ def ts_plot(
     title = "Selecting points to draw the curve"
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
     colors = gen_colors()

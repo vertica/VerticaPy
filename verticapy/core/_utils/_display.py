@@ -28,7 +28,7 @@ def print_table(
     percent: dict = {},
 ):
     import verticapy as vp
-    from verticapy.utils._toolbox import get_category_from_vertica_type
+    from verticapy.utils._cast import sql_dtype_category
 
     if not (return_html):
         data_columns_rep = [] + data_columns
@@ -166,7 +166,7 @@ def print_table(
                         ):
                             if dtype[data_columns[j][0]] != "undefined":
                                 type_val = dtype[data_columns[j][0]].capitalize()
-                                category = get_category_from_vertica_type(type_val)
+                                category = sql_dtype_category(type_val)
                                 if (category == "spatial") or (
                                     (
                                         "lat" in val.lower().split(" ")

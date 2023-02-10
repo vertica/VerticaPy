@@ -28,10 +28,10 @@ import numpy as np
 from verticapy.utilities import *
 from verticapy.utils._toolbox import (
     updated_dict,
-    get_random_function,
     color_dict,
-    isnotebook,
 )
+from verticapy.utils._random import current_random
+from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._matplotlib.core import compute_plot_variables
@@ -97,7 +97,7 @@ def bubble(
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(10, 6)
             ax.grid()
             ax.set_axisbelow(True)
@@ -149,7 +149,7 @@ def bubble(
         count = vdf.shape()[0]
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(12, 7)
             ax.grid()
             ax.set_axisbelow(True)
@@ -348,7 +348,7 @@ def outliers_contour_plot(
     xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
     if len(columns) == 1:
         if isinstance(cmap, str):
@@ -461,13 +461,13 @@ def scatter_matrix(
     elif len(columns) == 1:
         return vdf[columns[0]].hist()
     n = len(columns)
-    if isnotebook():
+    if ISNOTEBOOK:
         figsize = min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
     else:
         figsize = min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
-    random_func = get_random_function()
+    random_func = current_random()
     all_scatter_points = _executeSQL(
         query=f"""
             SELECT 
@@ -554,12 +554,12 @@ def scatter(
     if not (ax):
         if n == 2:
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(8, 6)
             ax.grid()
             ax.set_axisbelow(True)
         else:
-            if isnotebook():
+            if ISNOTEBOOK:
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
     all_scatter, others = [], []

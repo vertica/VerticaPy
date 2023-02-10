@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.utils._toolbox import isnotebook
+from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.utils._logo import gen_verticapy_logo_html, gen_verticapy_logo_str
 
 
@@ -25,7 +25,7 @@ VERTICAPY Interactive Help (FAQ).
     path = os.path.dirname(vp.__file__)
     img1 = vp.gen_verticapy_logo_html(size="10%")
     img2 = vp.gen_verticapy_logo_str()
-    message = img1 if (isnotebook()) else img2
+    message = img1 if (ISNOTEBOOK) else img2
     message += (
         "\n\n&#128226; Welcome to the <b>VerticaPy</b> help module."
         "\n\nThis module can help you connect to Vertica, "
@@ -40,9 +40,9 @@ VERTICAPY Interactive Help (FAQ).
         "- <b>[Enter  6]</b> Write SQL queries in Jupyter\n "
         "- <b>[Enter -1]</b> Exit"
     )
-    if not (isnotebook()):
+    if not (ISNOTEBOOK):
         message = message.replace("<b>", "").replace("</b>", "")
-    display(Markdown(message)) if (isnotebook()) else print(message)
+    display(Markdown(message)) if (ISNOTEBOOK) else print(message)
     try:
         response = int(input())
     except:
@@ -78,11 +78,11 @@ VERTICAPY Interactive Help (FAQ).
     else:
         message = "Invalid choice.\nPlease enter a number between -1 and 6."
     if 0 <= response <= 6:
-        if not (isnotebook()):
+        if not (ISNOTEBOOK):
             message = f"Please go to {link}"
         else:
             message = f"Please go to <a href='{link}'>{link}</a>"
-    display(Markdown(message)) if (isnotebook()) else print(message)
+    display(Markdown(message)) if (ISNOTEBOOK) else print(message)
 
 
 vHelp = help_start

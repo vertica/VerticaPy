@@ -35,6 +35,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy.utils._gen import gen_tmp_name
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 from verticapy.sql._utils._format import schema_relation

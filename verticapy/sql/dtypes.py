@@ -19,10 +19,8 @@ import warnings, datetime
 
 # VerticaPy Modules
 import vertica_python
-from verticapy.utils._toolbox import (
-    get_final_vertica_type,
-    gen_tmp_name,
-)
+from verticapy.utils._cast import vertica_python_dtype
+from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.sql._utils._format import quote_ident, format_schema_table
 from verticapy.errors import ParameterError
@@ -100,7 +98,7 @@ list of tuples
                 ctype += [
                     [
                         d[0],
-                        get_final_vertica_type(
+                        vertica_python_dtype(
                             type_name=d.type_name,
                             display_size=d[2],
                             precision=d[4],

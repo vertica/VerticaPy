@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import isnotebook
+from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors
@@ -55,7 +55,7 @@ def boxplot(
     if by == "":
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(6, 4)
             ax.xaxis.grid()
         if not (vdf.isnum()):
@@ -186,7 +186,7 @@ def boxplot(
                 labels = cat_priority
             if not (ax):
                 fig, ax = plt.subplots()
-                if isnotebook():
+                if ISNOTEBOOK:
                     fig.set_size_inches(10, 6)
                 ax.yaxis.grid()
             ax.set_ylabel(vdf.alias)
@@ -294,7 +294,7 @@ def boxplot2D(
             del result[0]
             if not (ax):
                 fig, ax = plt.subplots()
-                if isnotebook():
+                if ISNOTEBOOK:
                     fig.set_size_inches(10, 6)
             box = ax.boxplot(
                 result,

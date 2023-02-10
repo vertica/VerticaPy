@@ -27,6 +27,8 @@ from verticapy.utils._decorators import (
 from verticapy.learn.metrics import *
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy._config._notebook import ISNOTEBOOK
+from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy import vDataFrame
 from verticapy.plotting._matplotlib import *
@@ -1155,7 +1157,7 @@ xlim: list, optional
                 x, y = [v[0] for v in self.verticapy_x], self.verticapy_y
             if not (ax):
                 fig, ax = plt.subplots()
-                if isnotebook():
+                if ISNOTEBOOK:
                     fig.set_size_inches(7, 5)
                 ax.grid()
                 ax.set_axisbelow(True)
@@ -1201,7 +1203,7 @@ xlim: list, optional
                 idx += n + 1
             if not (ax):
                 fig, ax = plt.subplots()
-                if isnotebook():
+                if ISNOTEBOOK:
                     fig.set_size_inches(8, 6)
             else:
                 fig = plt

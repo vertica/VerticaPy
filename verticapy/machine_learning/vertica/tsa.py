@@ -36,6 +36,8 @@ from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import *
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql.read import _executeSQL
+from verticapy.utils._gen import gen_tmp_name
+from verticapy._config._notebook import ISNOTEBOOK
 
 # Other Python Modules
 from dateutil.parser import parse
@@ -822,7 +824,7 @@ papprox_ma: int, optional
         alpha = 0.3
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(10, 6)
             ax.grid()
         colors = gen_colors()
@@ -1565,7 +1567,7 @@ solver: str, optional
         alpha = 0.3
         if not (ax):
             fig, ax = plt.subplots()
-            if isnotebook():
+            if ISNOTEBOOK:
                 fig.set_size_inches(10, 6)
             ax.grid()
         colors = gen_colors()

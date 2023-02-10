@@ -27,7 +27,8 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
-from verticapy.utils._toolbox import bin_spatial_to_str, updated_dict, isnotebook
+from verticapy.utils._toolbox import bin_spatial_to_str, updated_dict
+from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
@@ -81,7 +82,7 @@ def cmatrix(
             columns_x.reverse()
     if not (ax):
         fig, ax = plt.subplots()
-        if (isnotebook() and not (inverse)) or is_pivot:
+        if (ISNOTEBOOK and not (inverse)) or is_pivot:
             fig.set_size_inches(min(m, 500), min(n, 500))
         else:
             fig.set_size_inches(8, 6)
@@ -317,7 +318,7 @@ def hexbin(
                 column3 += [float(item[2]) / 2] * 2
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(9, 7)
         ax.set_facecolor("white")
     else:

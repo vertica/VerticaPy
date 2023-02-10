@@ -14,55 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime
-import numpy as np
-
-
-def python_to_dtype_category(expr):
-    try:
-        category = expr.category()
-    except:
-        if isinstance(expr, float):
-            category = "float"
-        elif isinstance(expr, int):
-            category = "int"
-        elif isinstance(expr, str):
-            category = "text"
-        elif isinstance(expr, (datetime.date, datetime.datetime)):
-            category = "date"
-        elif isinstance(expr, (dict, list, np.ndarray)):
-            category = "complex"
-        else:
-            category = ""
-    return category
-
-
-def python_to_sql_dtype(dtype):
-    if dtype in (str, "str", "string"):
-        dtype = "varchar"
-    elif dtype == float:
-        dtype = "float"
-    elif dtype == int:
-        dtype = "integer"
-    elif dtype == datetime.datetime:
-        dtype = "datetime"
-    elif dtype == datetime.date:
-        dtype = "date"
-    elif dtype == datetime.time:
-        dtype = "time"
-    elif dtype == datetime.timedelta:
-        dtype = "interval"
-    elif dtype == datetime.timezone:
-        dtype = "timestamptz"
-    elif dtype in (np.ndarray, np.array, list):
-        dtype = "array"
-    elif dtype == dict:
-        dtype = "row"
-    elif dtype == tuple:
-        dtype = "set"
-    elif isinstance(dtype, str):
-        dtype = dtype.lower().strip()
-    return dtype
 
 
 def verticapy_agg_name(key: str, method: str = ""):

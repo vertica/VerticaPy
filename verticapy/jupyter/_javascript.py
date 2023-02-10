@@ -27,7 +27,7 @@ import datetime
 
 # VerticaPy Modules
 import verticapy
-from verticapy.utils._toolbox import get_category_from_vertica_type
+from verticapy.utils._cast import sql_dtype_category
 
 #
 #
@@ -158,7 +158,7 @@ def beautiful_header(
         if val in dtype:
             if dtype[val] != "undefined":
                 type_val = dtype[val].capitalize()
-                category = get_category_from_vertica_type(type_val)
+                category = sql_dtype_category(type_val)
                 if (category == "spatial") or (
                     (
                         "lat" in val.lower().split(" ")

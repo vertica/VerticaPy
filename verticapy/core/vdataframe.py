@@ -71,6 +71,9 @@ from verticapy.errors import (
     QueryError,
 )
 from verticapy.utils._toolbox import *
+from verticapy.utils._random import current_random
+from verticapy.utils._cast import sql_dtype_category
+from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.core.str_sql import str_sql
@@ -82,7 +85,7 @@ from verticapy.sql._utils._format import (
     clean_query,
 )
 from verticapy.core._utils._merge import gen_coalesce, group_similar_names
-from verticapy.utils._map import verticapy_agg_name
+from verticapy.core._utils._map import verticapy_agg_name
 from verticapy.connect.connect import EXTERNAL_CONNECTION
 
 ###
@@ -362,7 +365,7 @@ vColumns : vColumn
                         f"its alias was changed using underscores '_' to {column_str}."
                     )
                     warnings.warn(warning_message, Warning)
-                category = get_category_from_vertica_type(dtype)
+                category = sql_dtype_category(dtype)
                 if (dtype.lower()[0:12] in ("long varbina", "long varchar")) and (
                     isflex
                     or util.isvmap(
@@ -1379,7 +1382,7 @@ vColumns : vColumn
             "___VERTICAPY_UNDEFINED___",
         ]:
             table = table.replace(vml_undefined, "")
-        random_func = get_random_function()
+        random_func = current_random()
         split = f", {random_func} AS __verticapy_split__" if (split) else ""
         if (where_final == "") and (order_final == ""):
             if split:
@@ -5605,7 +5608,7 @@ vColumns : vColumn
             category = "vmap"
             ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
         else:
-            category = get_category_from_vertica_type(ctype=ctype)
+            category = sql_dtype_category(ctype=ctype)
         all_cols, max_floor = self.get_columns(), 0
         for column in all_cols:
             column_str = column.replace('"', "")
@@ -9807,7 +9810,7 @@ vColumns : vColumn
                 select += [column]
             select = ", ".join(select)
         insert_usecols = ", ".join([quote_ident(column) for column in usecols])
-        random_func = get_random_function(nb_split)
+        random_func = current_random(nb_split)
         nb_split = f", {random_func} AS _verticapy_split_" if (nb_split > 0) else ""
         if isinstance(db_filter, Iterable) and not (isinstance(db_filter, str)):
             db_filter = " AND ".join([f"({elem})" for elem in db_filter])

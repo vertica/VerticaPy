@@ -35,6 +35,8 @@ from verticapy.utils._decorators import (
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.utils._toolbox import *
+from verticapy._config._notebook import ISNOTEBOOK
+from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import *
 from verticapy.plotting._colors import gen_colors
@@ -762,7 +764,7 @@ tablesample
         model.drop()
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
     param = {
@@ -2031,7 +2033,7 @@ tablesample
     decision_boundary.reverse()
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Cumulative Data Fraction")
     max_value = max([0 if elem != elem else elem for elem in lift])
@@ -2152,7 +2154,7 @@ tablesample
             "confidence": pacf.values["confidence"],
         }
     )
-    fig = plt.figure(figsize=(10, 6)) if isnotebook() else plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(10, 6)) if ISNOTEBOOK else plt.figure(figsize=(10, 6))
     plt.rcParams["axes.facecolor"] = "#FCFCFC"
     ax1 = fig.add_subplot(211)
     x, y, confidence = (
@@ -2254,7 +2256,7 @@ tablesample
         return auc
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
@@ -2693,7 +2695,7 @@ tablesample
         return best
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
     color1, color2 = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
     if color1 == color2:
