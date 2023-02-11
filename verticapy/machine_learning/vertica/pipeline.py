@@ -27,6 +27,7 @@ from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
 from verticapy.sql.dtypes import get_data_types
 from verticapy.errors import ParameterError, ModelError
+from verticapy.machine_learning.vertica.vmodel import Regressor
 
 # Standard Python Modules
 from typing import Union

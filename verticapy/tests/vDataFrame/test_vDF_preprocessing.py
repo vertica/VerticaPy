@@ -441,7 +441,7 @@ class TestvDFPreprocessing:
 
         ### Testing vDataFrame[].astype
         # expected exception
-        with pytest.raises(errors.ConversionError) as exception_info:
+        with pytest.raises(ConversionError) as exception_info:
             titanic_copy["sex"].astype("int")
         # checking the error message
         assert exception_info.match(
