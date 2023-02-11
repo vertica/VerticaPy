@@ -66,7 +66,7 @@ __license__ = "Apache License, Version 2.0"
 # VerticaPy Modules IMPORT
 
 # Logo
-from verticapy.utils._logo import *
+from verticapy._utils._logo import *
 
 # Connect
 from verticapy.connect import *
@@ -99,7 +99,6 @@ from verticapy.sql.read import readSQL, to_tablesample, vDataFrameSQL
 from verticapy.sql.insert import insert_into, insert_verticapy_schema
 from verticapy._help import help_start, vHelp
 from verticapy._version import vertica_version
-from verticapy.utils._collect import save_to_query_profile
 from verticapy.core.tablesample import tablesample
 from verticapy.sql.dtypes import get_data_types
 

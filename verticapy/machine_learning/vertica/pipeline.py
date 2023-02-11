@@ -20,7 +20,7 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import save_verticapy_logs
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.sql.read import vDataFrameSQL
 from verticapy.errors import ParameterError, ModelError

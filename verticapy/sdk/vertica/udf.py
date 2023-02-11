@@ -25,8 +25,8 @@ from typing import Union, Literal
 
 # VerticaPy Modules
 import verticapy as vp
-from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql import _executeSQL
 from verticapy.sql.sys import current_session, username
 
 

@@ -57,7 +57,7 @@ from verticapy.core.vcolumn import vColumn
 import verticapy.plotting._matplotlib as plt
 from verticapy.learn.memmodel import memModel
 from verticapy.plotting._highcharts import hchart_from_vdf
-from verticapy.utils._decorators import save_verticapy_logs
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import (
     ConnectionError,
     EmptyParameter,
@@ -73,10 +73,10 @@ from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import isvmap, isflextable, compute_flextable_keys
 from verticapy._version import vertica_version
 from verticapy._config.config import current_random
-from verticapy.utils._cast import to_category, to_varchar
-from verticapy.utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._cast import to_category, to_varchar
+from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import to_tablesample, vDataFrameSQL, readSQL
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._sql import _executeSQL
 from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.core.str_sql import str_sql

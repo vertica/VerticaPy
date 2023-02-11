@@ -24,10 +24,8 @@ import math
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
 import verticapy.learn.metrics as mt
 from verticapy.learn.vmodel import Regressor
 from verticapy.learn.linear_model import LinearRegression
@@ -36,8 +34,8 @@ from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql.insert import insert_verticapy_schema
-from verticapy.utils._sql import _executeSQL
-from verticapy.utils._gen import gen_tmp_name
+from verticapy._utils._sql import _executeSQL
+from verticapy._utils._gen import gen_tmp_name
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy.sql.drop import drop

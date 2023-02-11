@@ -15,14 +15,14 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings, sys, time
-from verticapy.utils._decorators import save_verticapy_logs
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import MissingRelation
 from verticapy.sql._utils._format import (
     format_schema_table,
     clean_query,
     quote_ident,
 )
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._sql import _executeSQL
 from verticapy._config.config import OPTIONS
 from verticapy.sql._utils._format import quote_ident
 

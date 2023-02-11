@@ -24,12 +24,12 @@ import datetime
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.utils._decorators import save_verticapy_logs
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
-from verticapy.utils._gen import gen_tmp_name
+from verticapy._utils._gen import gen_tmp_name
 from verticapy.errors import ParameterError
 from verticapy.learn.ensemble import (
     RandomForestRegressor,
@@ -53,7 +53,7 @@ from verticapy.plotting._matplotlib import plot_bubble_ml
 from verticapy.learn.vmodel import vModel
 from verticapy.sql._utils._format import schema_relation
 from verticapy.machine_learning._utils import reverse_score
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._sql import _executeSQL
 from verticapy._config.config import OPTIONS
 
 # Other Modules

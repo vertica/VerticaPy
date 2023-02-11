@@ -23,13 +23,11 @@ permissions and limitations under the License.
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.sql.read import vDataFrameSQL
-from verticapy.utils._gen import gen_tmp_name
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.learn.vmodel import Preprocessing, vModel
 from verticapy.sql._utils._format import quote_ident, schema_relation, clean_query

@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import os
 from verticapy._config.config import ISNOTEBOOK
-from verticapy.utils._logo import gen_verticapy_logo_html, gen_verticapy_logo_str
+from verticapy._utils._logo import gen_verticapy_logo_html, gen_verticapy_logo_str
 
 
 def help_start():

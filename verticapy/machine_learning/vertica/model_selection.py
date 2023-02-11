@@ -26,18 +26,15 @@ from collections.abc import Iterable
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
 from verticapy.core.tablesample import tablesample
-
 from verticapy._config.config import ISNOTEBOOK
-from verticapy.utils._gen import gen_tmp_name
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.learn.tools import does_model_exist
@@ -2091,7 +2088,8 @@ list of dict
     List of the different combinations.
     """
     return [
-        dict(zip(param_grid.keys(), values)) for values in product(*param_grid.values())
+        dict(zip(param_grid.keys(), values))
+        for values in itertools.product(*param_grid.values())
     ]
 
 

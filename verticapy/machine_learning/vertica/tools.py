@@ -20,8 +20,8 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql import _executeSQL
 from verticapy.sql.read import to_tablesample
 from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
@@ -729,7 +729,8 @@ model
             np.dot(
                 Phi.T,
                 np.asarray(Lambda) ** 3
-                - (gamma / p) * dot(Lambda, np.diag(np.diag(np.dot(Lambda.T, Lambda)))),
+                - (gamma / p)
+                * np.dot(Lambda, np.diag(np.diag(np.dot(Lambda.T, Lambda)))),
             )
         )
         R = np.dot(u, vh)

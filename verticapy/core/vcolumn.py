@@ -27,20 +27,20 @@ from typing import Union, Literal
 # VerticaPy Modules
 import verticapy.plotting._matplotlib as plt
 from verticapy.plotting._colors import gen_colors, gen_cmap
-from verticapy.utils._decorators import save_verticapy_logs
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.sql.flex import isvmap
 from verticapy.sql.drop import drop
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
 from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
 from verticapy.sql.dtypes import get_data_types
-from verticapy.utils._cast import to_category, to_varchar
-from verticapy.utils._gen import gen_tmp_name
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._cast import to_category, to_varchar
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import QueryError, ConversionError, ParameterError
 from verticapy.sql._utils._format import quote_ident, clean_query
-from verticapy.utils._cast import to_sql_dtype
+from verticapy._utils._cast import to_sql_dtype
 from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy._config.config import OPTIONS
 

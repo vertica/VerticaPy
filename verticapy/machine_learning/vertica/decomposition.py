@@ -20,10 +20,8 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.plotting._matplotlib.mlplot import plot_var
 from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.learn.vmodel import Decomposition

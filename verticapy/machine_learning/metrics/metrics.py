@@ -29,15 +29,13 @@ import numpy as np
 from scipy.stats import f
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.learn.model_selection import lift_chart, prc_curve, roc_curve
 from verticapy.sql.read import to_tablesample
 from verticapy.core.tablesample import tablesample
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._sql import _executeSQL
 
 #
 # Function used to simplify the code

@@ -25,15 +25,13 @@ from typing import Literal, Union
 
 # VerticaPy Modules
 import vertica_python
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.sql.drop import drop
-from verticapy.utils._gen import gen_tmp_name
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.learn.vmodel import Clustering, Tree, vModel
 from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation

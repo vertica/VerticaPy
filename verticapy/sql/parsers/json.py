@@ -18,9 +18,9 @@ permissions and limitations under the License.
 import os
 
 # VerticaPy Modules
-from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utils._gen import gen_tmp_name
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 from verticapy.sql.flex import compute_flextable_keys
 from verticapy.sql._utils._format import (

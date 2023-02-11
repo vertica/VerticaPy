@@ -20,15 +20,15 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import save_verticapy_logs
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.learn.metrics import *
 from verticapy.sql.drop import drop
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
 from verticapy.sql.insert import insert_verticapy_schema
 from verticapy.core.tablesample import tablesample
 from verticapy._config.config import ISNOTEBOOK
-from verticapy.utils._gen import gen_name, gen_tmp_name
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.learn.model_selection import roc_curve, prc_curve
 from verticapy.machine_learning.metrics import (

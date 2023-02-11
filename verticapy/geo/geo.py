@@ -27,10 +27,10 @@ from typing import Union
 import verticapy.stats as st
 from verticapy.datasets import gen_meshgrid
 from verticapy.vdataframe import vDataFrame
-from verticapy.utils._decorators import save_verticapy_logs
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.tablesample import tablesample
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._sql import _executeSQL
 
 
 @save_verticapy_logs

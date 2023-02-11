@@ -25,7 +25,7 @@ import numpy as np
 from typing import Union, Literal, get_type_hints
 
 # VerticaPy Modules
-from verticapy.utils._decorators import check_minimum_version
+from verticapy._version import check_minimum_version
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.plotting._matplotlib.mlplot import (
     plot_importance,
@@ -40,8 +40,8 @@ from verticapy.sql.drop import drop
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
 from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
-from verticapy.utils._gen import gen_name, gen_tmp_name
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.errors import FunctionError, ParameterError, ModelError, ConversionError
 from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation
@@ -2876,7 +2876,7 @@ class Regressor(Supervised):
             }
             result = tablesample(values)
             for idx, y in enumerate(self.X):
-                result.values[y] = regression_report(
+                result.values[y] = mt.regression_report(
                     y,
                     self.deploySQL()[idx],
                     relation,
@@ -2888,7 +2888,7 @@ class Regressor(Supervised):
         else:
             test_relation = self.test_relation
         if method == "metrics":
-            return regression_report(self.y, prediction, test_relation, len(self.X))
+            return mt.regression_report(self.y, prediction, test_relation, len(self.X))
         elif method == "anova":
             return anova_table(self.y, prediction, test_relation, len(self.X))
         elif method == "details":

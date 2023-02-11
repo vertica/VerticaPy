@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy._config.config import OPTIONS
+from functools import wraps
 
 
 def save_to_query_profile(
@@ -51,7 +52,7 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
-    from verticapy.utils._sql import _executeSQL
+    from verticapy._utils._sql import _executeSQL
     from verticapy.connect.connect import SESSION_IDENTIFIER
 
     if not (OPTIONS["save_query_profile"]) or (
@@ -117,3 +118,37 @@ bool
         return True
     except:
         return False
+
+
+def save_verticapy_logs(func):
+    """
+save_verticapy_logs decorator. It simplifies the code and automatically
+identifies which function to save to the QUERY PROFILES table.
+    """
+
+    @wraps(func)
+    def func_prec_save_logs(*args, **kwargs):
+
+        name = func.__name__
+        path = func.__module__.replace("verticapy.", "")
+        json_dict = {}
+        var_names = func.__code__.co_varnames
+        if len(args) == len(var_names):
+            for idx, arg in enumerate(args):
+                if var_names[idx] != "self":
+                    if (
+                        var_names[idx] == "steps"
+                        and path == "pipeline"
+                        and isinstance(arg, list)
+                    ):
+                        json_dict[var_names[idx]] = [item[1].type for item in arg]
+                    else:
+                        json_dict[var_names[idx]] = arg
+                else:
+                    path += "." + type(arg).__name__
+        json_dict = {**json_dict, **kwargs}
+        save_to_query_profile(name=name, path=path, json_dict=json_dict)
+
+        return func(*args, **kwargs)
+
+    return func_prec_save_logs

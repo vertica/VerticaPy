@@ -25,13 +25,11 @@ import random
 import numpy as np
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy._version import vertica_version
-from verticapy.utils._gen import gen_name
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._gen import gen_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.learn.vmodel import Clustering, Tree, MulticlassClassifier, Regressor
 from verticapy.learn.tree import get_tree_list_of_arrays

@@ -42,7 +42,7 @@ def erase_label(query: str):
 
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
     from verticapy.core.str_sql import str_sql
-    from verticapy.utils._cast import to_dtype_category
+    from verticapy._utils._cast import to_dtype_category
     from verticapy.core.vcolumn import vColumn
 
     if isinstance(x, vColumn):

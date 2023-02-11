@@ -21,7 +21,7 @@ from verticapy.sql._utils._format import (
     schema_relation,
     format_schema_table,
 )
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._sql import _executeSQL
 
 
 def drop(

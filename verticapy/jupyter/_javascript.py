@@ -25,8 +25,8 @@ import os, uuid, json
 import datetime
 
 # VerticaPy Modules
-from verticapy.utils._logo import gen_verticapy_logo_html
-from verticapy.utils._cast import to_category
+from verticapy._utils._logo import gen_verticapy_logo_html
+from verticapy._utils._cast import to_category
 
 #
 #

@@ -23,8 +23,8 @@ permissions and limitations under the License.
 import math
 
 # VerticaPy Modules
-from verticapy.utils._cast import to_varchar
-from verticapy.utils._sql import _executeSQL
+from verticapy._utils._cast import to_varchar
+from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.sql._utils._format import quote_ident
 
