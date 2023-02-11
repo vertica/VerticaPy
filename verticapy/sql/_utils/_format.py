@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import re
 import pandas as pd
+from verticapy._config.config import OPTIONS
 
 
 def clean_query(query: str):

@@ -23,7 +23,7 @@ import matplotlib.colors as plt_colors
 from matplotlib.colors import LinearSegmentedColormap
 
 # VerticaPy Modules
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import OPTIONS, COLORS_OPTIONS
 
 
 def get_color(d: dict, idx: int = 0):
