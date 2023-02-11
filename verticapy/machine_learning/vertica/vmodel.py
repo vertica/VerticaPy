@@ -31,7 +31,12 @@ from verticapy.utils._decorators import (
     check_minimum_version,
 )
 from verticapy.core.vdataframe import vDataFrame
-from verticapy.plotting._matplotlib import plot_importance, regression_tree_plot, lof_plot, plot_pca_circle
+from verticapy.plotting._matplotlib import (
+    plot_importance,
+    regression_tree_plot,
+    lof_plot,
+    plot_pca_circle,
+)
 from verticapy.learn.model_selection import *
 from verticapy.sql.drop import drop
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
