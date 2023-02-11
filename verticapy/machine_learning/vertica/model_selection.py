@@ -20,10 +20,9 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import statistics, random, time, math
+import statistics, random, time, math, itertools
 import numpy as np
 from collections.abc import Iterable
-from itertools import product
 from typing import Union, Literal
 
 # VerticaPy Modules
@@ -2386,9 +2385,12 @@ tablesample
     elif metric == "auto":
         metric = "logloss"
     if len(X) < 20:
-        from verticapy.stats._utils import all_comb
-
-        all_configuration = all_comb(X)
+        all_configuration = []
+        for r in range(len(X) + 1):
+            combinations_object = itertools.combinations(X, r)
+            combinations_list = list(combinations_object)
+            if combinations_list[0]:
+                all_configuration += combinations_list
         if len(all_configuration) > comb_limit and comb_limit > 0:
             all_configuration = random.sample(all_configuration, comb_limit)
     else:

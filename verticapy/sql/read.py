@@ -25,6 +25,7 @@ from verticapy.sql.dtypes import vertica_python_dtype
 from verticapy.sql.flex import isvmap
 from verticapy.sql.dtypes import get_data_types
 from verticapy.utils._cast import to_category
+from verticapy.utils._sql import _executeSQL
 
 
 @save_verticapy_logs
