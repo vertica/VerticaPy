@@ -134,7 +134,7 @@ def sql_magic(line, cell="", local_ns=None):
         queries = replace_external_queries_in_query(queries)
 
         # Looking at very specific external queries symbols
-        for s in vp.SPECIAL_SYMBOLS:
+        for s in SPECIAL_SYMBOLS:
 
             external_queries = re.findall(
                 f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries

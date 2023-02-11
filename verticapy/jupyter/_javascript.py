@@ -26,7 +26,7 @@ from json import JSONEncoder
 import datetime
 
 # VerticaPy Modules
-import verticapy
+from verticapy.utils._logo import gen_verticapy_logo_html
 from verticapy.utils._cast import to_category
 
 #
@@ -47,7 +47,7 @@ def _table_header(
     thead_style_first = "border: 1px solid #AAAAAA; min-width: 95px; max-width: 95px;"
     for i in range(0, len(head)):
         if i == 0:
-            logo = f'<div style="padding-left: 15px;">{verticapy.gen_verticapy_logo_html(size="45px")}</div>'
+            logo = f'<div style="padding-left: 15px;">{gen_verticapy_logo_html(size="45px")}</div>'
             thead += f'<td style="{thead_style_first}">{logo}</td>'
         else:
             thead += f'<td style="{thead_style}">{head[i]}</td>'
