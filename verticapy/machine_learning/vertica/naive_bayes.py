@@ -29,7 +29,7 @@ from verticapy.sql._utils._format import quote_ident
 from verticapy.sql.read import vDataFrameSQL
 
 # Standard Modules
-from typing import Literal
+from typing import Literal, Union
 
 
 class NaiveBayes(MulticlassClassifier):

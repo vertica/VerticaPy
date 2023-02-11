@@ -21,7 +21,7 @@ permissions and limitations under the License.
 #
 # Standard Python Modules
 import os
-from typing import Literal
+from typing import Literal, Union
 
 # VerticaPy Modules
 import vertica_python, verticapy

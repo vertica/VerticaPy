@@ -27,7 +27,7 @@ from verticapy.utils._decorators import (
 from verticapy.learn.vmodel import BinaryClassifier, Regressor
 
 # Standard Modules
-from typing import Literal
+from typing import Literal, Union
 
 
 class LinearSVC(BinaryClassifier):
