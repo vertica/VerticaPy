@@ -20,7 +20,7 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import math, decimal, datetime
+import math, datetime
 from typing import Union, Literal
 
 # Other Python Modules
@@ -32,7 +32,6 @@ from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
 from verticapy.core.tablesample import tablesample
-from verticapy.sql.dtypes import get_data_types
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.learn.linear_model import LinearRegression
 from verticapy.core.vdataframe import vDataFrame

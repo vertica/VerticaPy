@@ -20,13 +20,12 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import math, collections
+import math
 from typing import Union
 
 # Other Python Modules
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.lines import Line2D
 import numpy as np
 

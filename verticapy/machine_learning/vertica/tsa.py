@@ -20,7 +20,7 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import math, warnings
+import math
 from typing import Union, Literal
 
 # VerticaPy Modules
@@ -47,7 +47,10 @@ from verticapy._config.config import OPTIONS
 from verticapy.plotting._matplotlib.mlplot import plot_importance
 
 # Other Python Modules
-from dateutil.parser import parse
+try:
+    from dateutil.parser import parse
+except:
+    pass
 import matplotlib.pyplot as plt
 
 

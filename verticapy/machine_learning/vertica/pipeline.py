@@ -22,9 +22,7 @@ permissions and limitations under the License.
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.core.vdataframe import vDataFrame
-from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
-from verticapy.sql.dtypes import get_data_types
 from verticapy.errors import ParameterError, ModelError
 from verticapy.machine_learning.vertica.vmodel import Regressor
 from verticapy._config.config import OPTIONS

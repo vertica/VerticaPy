@@ -34,16 +34,12 @@ from IPython.display import HTML, display
 # Standard Python Modules
 import warnings, re, time
 
-# Other modules
-import pandas as pd
-
 # VerticaPy Modules
 from verticapy.connect.connect import SPECIAL_SYMBOLS
-from verticapy.errors import QueryError, ParameterError, ParsingError
+from verticapy.errors import QueryError, ParameterError
 from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
 from verticapy.sql._utils._format import replace_vars_in_query, clean_query
 from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.core.tablesample import tablesample
 from verticapy.sql.read import _executeSQL, vDataFrameSQL
 from verticapy._config.config import OPTIONS
 from verticapy.jupyter.extensions._utils import get_magic_options

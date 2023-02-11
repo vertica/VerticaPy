@@ -22,7 +22,6 @@ import matplotlib.pyplot as plt
 
 # VerticaPy Modules
 from verticapy.plotting._matplotlib.core import updated_dict
-from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors
 

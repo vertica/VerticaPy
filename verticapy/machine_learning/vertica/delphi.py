@@ -20,28 +20,35 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import random, datetime
-import numpy as np
+import datetime
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.errors import ParameterError
-from verticapy.learn.ensemble import *
-from verticapy.learn.naive_bayes import *
-from verticapy.learn.linear_model import *
-from verticapy.learn.decomposition import *
-from verticapy.learn.cluster import *
-from verticapy.learn.neighbors import *
-from verticapy.learn.svm import *
+from verticapy.learn.ensemble import (
+    RandomForestRegressor,
+    RandomForestClassifier,
+    XGBoostClassifier,
+    XGBoostRegressor,
+)
+from verticapy.learn.naive_bayes import NaiveBayes
+from verticapy.learn.linear_model import (
+    LogisticRegression,
+    LinearRegression,
+    ElasticNet,
+    Lasso,
+    Ridge,
+)
+from verticapy.learn.decomposition import PCA
+from verticapy.learn.cluster import KMeans, KPrototypes
+from verticapy.learn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from verticapy.learn.svm import LinearSVC, LinearSVR
 from verticapy.plotting._matplotlib import plot_bubble_ml
 from verticapy.learn.vmodel import vModel
 from verticapy.sql._utils._format import schema_relation

@@ -22,7 +22,6 @@ permissions and limitations under the License.
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.sql.read import _executeSQL
-from verticapy.sql.drop import drop
 from verticapy.sql.read import to_tablesample
 from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
@@ -30,7 +29,6 @@ from verticapy.sql._utils._format import quote_ident, schema_relation
 
 # Standard Python Modules
 import numpy as np
-from numpy import eye, asarray, dot, sum, diag
 from numpy.linalg import svd
 from typing import Union
 
@@ -722,20 +720,20 @@ model
     """
     Phi = np.array(Phi)
     p, k = Phi.shape
-    R = eye(k)
+    R = np.eye(k)
     d = 0
     for i in range(q):
         d_old = d
-        Lambda = dot(Phi, R)
+        Lambda = np.dot(Phi, R)
         u, s, vh = svd(
-            dot(
+            np.dot(
                 Phi.T,
-                asarray(Lambda) ** 3
-                - (gamma / p) * dot(Lambda, diag(diag(dot(Lambda.T, Lambda)))),
+                np.asarray(Lambda) ** 3
+                - (gamma / p) * dot(Lambda, np.diag(np.diag(np.dot(Lambda.T, Lambda)))),
             )
         )
-        R = dot(u, vh)
-        d = sum(s)
+        R = np.dot(u, vh)
+        d = np.sum(s)
         if d_old != 0 and d / d_old < 1 + tol:
             break
-    return dot(Phi, R)
+    return np.dot(Phi, R)

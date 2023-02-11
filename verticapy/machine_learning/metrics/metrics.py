@@ -29,13 +29,12 @@ import numpy as np
 from scipy.stats import f
 
 # VerticaPy Modules
-from verticapy import *
 from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
 from verticapy.core.vdataframe import vDataFrame
-from verticapy.learn.model_selection import *
+from verticapy.learn.model_selection import lift_chart, prc_curve, roc_curve
 from verticapy.sql.read import to_tablesample
 from verticapy.core.tablesample import tablesample
 from verticapy.sql.read import _executeSQL

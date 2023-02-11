@@ -30,8 +30,12 @@ from verticapy._config.config import ISNOTEBOOK
 from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
-from verticapy.plotting._matplotlib import *
-from verticapy.learn.model_selection import *
+from verticapy.learn.model_selection import (
+    confusion_matrix,
+    roc_curve,
+    prc_curve,
+    multilabel_confusion_matrix,
+)
 from verticapy.errors import ParameterError
 from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree
 from verticapy.learn.tools import does_model_exist

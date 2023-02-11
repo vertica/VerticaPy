@@ -43,7 +43,6 @@ from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.learn.tools import does_model_exist
 from verticapy.plotting._matplotlib import (
-    plot_bubble_ml,
     plot_stepwise_ml,
     plot_importance,
 )

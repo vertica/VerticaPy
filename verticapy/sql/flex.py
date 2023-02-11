@@ -20,6 +20,7 @@ from verticapy.sql._utils._format import quote_ident
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
 from verticapy.utils._decorators import save_verticapy_logs
+from verticapy.connect import current_cursor
 
 from typing import Union
 
@@ -158,7 +159,6 @@ bool
     """
     # -#
     from verticapy.vdataframe import vDataFrame
-    from verticapy.connect import current_cursor
 
     column = quote_ident(column)
     if isinstance(expr, vDataFrame):

@@ -20,7 +20,6 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import random
 from typing import Union, Literal
 
 # VerticaPy Modules

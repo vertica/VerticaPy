@@ -32,10 +32,8 @@ from verticapy.core.vdataframe import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
-from verticapy.sql.read import vDataFrameSQL
+from verticapy.sql.read import vDataFrameSQL, _executeSQL
 from verticapy.sql.insert import insert_into
-
-from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.sql._utils._format import quote_ident
 

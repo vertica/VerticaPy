@@ -25,11 +25,11 @@ from collections.abc import Iterable
 from typing import Union, Literal
 
 # VerticaPy Modules
-import verticapy.stats as st
+from verticapy.stats import decode
 import verticapy.plotting._matplotlib as plt
 from verticapy.plotting._colors import gen_colors, gen_cmap
-import verticapy.learn.ensemble as vpy_ensemble
-import verticapy.learn.neighbors as vpy_neighbors
+from verticapy.learn.ensemble import RandomForestRegressor, RandomForestClassifier
+from verticapy.learn import KernelDensity
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.sql.flex import isvmap
 from verticapy.sql.drop import drop
@@ -41,14 +41,13 @@ from verticapy.utils._cast import to_category, to_varchar
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.core.str_sql import str_sql
-from verticapy.errors import *
+from verticapy.errors import QueryError, ConversionError, ParameterError
 from verticapy.sql._utils._format import quote_ident, clean_query
 from verticapy.utils._cast import to_sql_dtype
 from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy._config.config import OPTIONS
 
 # Other modules
-import numpy as np
 from matplotlib.lines import Line2D
 
 ##
@@ -1058,7 +1057,7 @@ Attributes
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
-        return self.apply(func=st.decode(str_sql("{}"), *argv))
+        return self.apply(func=decode(str_sql("{}"), *argv))
 
     @save_verticapy_logs
     def density(
@@ -1155,7 +1154,7 @@ Attributes
             xlim_tmp = [xlim]
         else:
             xlim_tmp = []
-        model = vpy_neighbors.KernelDensity(
+        model = KernelDensity(
             name,
             bandwidth=bandwidth,
             kernel=kernel,
@@ -1423,9 +1422,9 @@ Attributes
             self.parent.to_db(tmp_view_name)
             drop(tmp_model_name, method="model")
             if self.parent[response].category() == "float":
-                model = vpy_ensemble.RandomForestRegressor(tmp_model_name)
+                model = RandomForestRegressor(tmp_model_name)
             else:
-                model = vpy_ensemble.RandomForestClassifier(tmp_model_name)
+                model = RandomForestClassifier(tmp_model_name)
             model.set_params({"n_estimators": 20, "max_depth": 8, "nbins": 100})
             model.set_params(RFmodel_params)
             parameters = model.get_params()

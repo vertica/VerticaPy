@@ -20,15 +20,12 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import os, warnings, typing, copy
+import warnings, copy
 import numpy as np
-from typing import Union, Literal
+from typing import Union, Literal, get_type_hints
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy.utils._decorators import check_minimum_version
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.plotting._matplotlib.mlplot import (
     plot_importance,
@@ -39,7 +36,6 @@ from verticapy.plotting._matplotlib.mlplot import (
     svm_classifier_plot,
     regression_plot,
 )
-from verticapy.learn.model_selection import *
 from verticapy.sql.drop import drop
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
 from verticapy._version import vertica_version
@@ -47,13 +43,13 @@ from verticapy.core.tablesample import tablesample
 from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import FunctionError, ParameterError, ModelError, ConversionError
-import verticapy.learn.metrics as mt
-from verticapy.learn.metrics import *
 from verticapy.learn.tools import does_model_exist
-from verticapy.learn.memmodel import *
 from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation
 from verticapy.machine_learning._utils import get_match_index
 from verticapy._config.config import OPTIONS
+import verticapy.learn.metrics as mt
+from verticapy.learn.memmodel import *
+from verticapy.learn.model_selection import *
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -584,7 +580,7 @@ Main Class for Vertica Model
 	dict
 		model parameters
 		"""
-        all_init_params = list(typing.get_type_hints(self.__init__).keys())
+        all_init_params = list(get_type_hints(self.__init__).keys())
         parameters = copy.deepcopy(self.parameters)
         parameters_keys = list(parameters.keys())
         for p in parameters_keys:
@@ -801,7 +797,7 @@ Main Class for Vertica Model
 	parameters: dict, optional
 		New parameters.
 		"""
-        all_init_params = list(typing.get_type_hints(self.__init__).keys())
+        all_init_params = list(get_type_hints(self.__init__).keys())
         new_parameters = copy.deepcopy(self.parameters)
         new_parameters_keys = list(new_parameters.keys())
         for p in new_parameters_keys:

@@ -22,7 +22,6 @@ permissions and limitations under the License.
 # Standard Python Modules
 import numpy as np
 import os, uuid, json
-from json import JSONEncoder
 import datetime
 
 # VerticaPy Modules
@@ -225,7 +224,7 @@ def find_package_file(*path):
 
 
 # subclass JSONEncoder
-class DateTimeEncoder(JSONEncoder):
+class DateTimeEncoder(json.JSONEncoder):
     # Override the default method
     def default(self, obj):
         if isinstance(obj, (datetime.date, datetime.datetime)):

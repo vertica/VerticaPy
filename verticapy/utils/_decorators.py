@@ -21,7 +21,6 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import typing, warnings, sys, inspect
 from functools import wraps
 
 from verticapy._version import vertica_version, MINIMUM_VERTICA_VERSION
