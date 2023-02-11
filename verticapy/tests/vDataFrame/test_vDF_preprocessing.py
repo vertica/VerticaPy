@@ -20,7 +20,7 @@ import pytest
 
 # VerticaPy
 from verticapy.core.vdataframe import vDataFrame
-from verticapy.utilities import drop, set_option, tablesample
+from verticapy.utilities import drop, tablesample
 from errors import *
 from verticapy.datasets import load_titanic, load_iris, load_market
 from verticapy._config.config import set_option
