@@ -41,6 +41,8 @@ from verticapy.sql.read import _executeSQL
 from verticapy.utils._gen import gen_tmp_name
 from verticapy._config._notebook import ISNOTEBOOK
 from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy.sql.drop import drop
+from verticapy.core.tablesample import tablesample
 
 # Other Python Modules
 from dateutil.parser import parse
