@@ -25,11 +25,8 @@ from collections.abc import Iterable
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.stats import decode
 import verticapy.plotting._matplotlib as plt
 from verticapy.plotting._colors import gen_colors, gen_cmap
-from verticapy.learn.ensemble import RandomForestRegressor, RandomForestClassifier
-from verticapy.learn import KernelDensity
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.sql.flex import isvmap
 from verticapy.sql.drop import drop
@@ -39,7 +36,7 @@ from verticapy.core.tablesample import tablesample
 from verticapy.sql.dtypes import get_data_types
 from verticapy.utils._cast import to_category, to_varchar
 from verticapy.utils._gen import gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import QueryError, ConversionError, ParameterError
 from verticapy.sql._utils._format import quote_ident, clean_query
@@ -1057,6 +1054,8 @@ Attributes
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
+        from verticapy.stats import decode
+
         return self.apply(func=decode(str_sql("{}"), *argv))
 
     @save_verticapy_logs
@@ -1105,6 +1104,8 @@ Attributes
 	--------
 	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
+        from verticapy.learn import KernelDensity
+
         if by:
             by = self.parent.format_colnames(by)
             colors = plt.gen_colors()
@@ -1403,6 +1404,11 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
+        from verticapy.learn.ensemble import (
+            RandomForestRegressor,
+            RandomForestClassifier,
+        )
+
         if self.isnum() and method == "smart":
             schema = OPTIONS["temp_schema"]
             if not (schema):

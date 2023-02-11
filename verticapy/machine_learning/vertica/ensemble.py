@@ -31,7 +31,7 @@ from verticapy.utils._decorators import (
 )
 from verticapy._version import vertica_version
 from verticapy.utils._gen import gen_name
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.learn.vmodel import Clustering, Tree, MulticlassClassifier, Regressor
 from verticapy.learn.tree import get_tree_list_of_arrays

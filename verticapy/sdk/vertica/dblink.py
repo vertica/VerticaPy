@@ -42,7 +42,7 @@ def get_dblink_fun(query: str, symbol: str = "$"):
 
 def replace_external_queries_in_query(query: str):
     from verticapy.utils._gen import gen_tmp_name
-    from verticapy.sql.read import _executeSQL
+    from verticapy.utils._sql import _executeSQL
 
     sql_keyword = (
         "select ",

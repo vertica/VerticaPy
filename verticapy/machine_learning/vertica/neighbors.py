@@ -28,7 +28,7 @@ from verticapy.sql.insert import insert_verticapy_schema
 from verticapy.core.tablesample import tablesample
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.utils._gen import gen_name, gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.learn.model_selection import (
     confusion_matrix,

@@ -20,7 +20,7 @@ import warnings
 # VerticaPy Modules
 import vertica_python
 from verticapy.utils._gen import gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.sql._utils._format import quote_ident, format_schema_table
 from verticapy.errors import ParameterError
 from verticapy.sql.drop import drop

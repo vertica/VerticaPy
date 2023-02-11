@@ -36,7 +36,7 @@ from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql.insert import insert_verticapy_schema
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.utils._gen import gen_tmp_name
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.plotting._matplotlib.core import updated_dict

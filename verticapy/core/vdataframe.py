@@ -53,10 +53,6 @@ except:
 # VerticaPy Modules
 from verticapy.sql.parsers.pandas import pandas_to_vertica
 from verticapy.core.tablesample import tablesample
-from verticapy.machine_learning.vertica.metrics import FUNCTIONS_DICTIONNARY
-from verticapy.machine_learning.vertica.linear_model import LinearRegression
-from verticapy.machine_learning.vertica.decomposition import PCA
-from verticapy.stats.math.math import case_when
 from verticapy.core.vcolumn import vColumn
 import verticapy.plotting._matplotlib as plt
 from verticapy.learn.memmodel import memModel
@@ -79,7 +75,8 @@ from verticapy._version import vertica_version
 from verticapy._config.config import current_random
 from verticapy.utils._cast import to_category, to_varchar
 from verticapy.utils._gen import gen_name, gen_tmp_name
-from verticapy.sql.read import _executeSQL, to_tablesample, vDataFrameSQL, readSQL
+from verticapy.sql.read import to_tablesample, vDataFrameSQL, readSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.core.str_sql import str_sql
@@ -4199,6 +4196,8 @@ vColumns : vColumn
     vDataFrame[].decode : Encodes the vColumn using a User Defined Encoding.
     vDataFrame.eval : Evaluates a customized expression.
         """
+        from verticapy.stats.math.math import case_when
+
         return self.eval(name=name, expr=case_when(*argv))
 
     @save_verticapy_logs
@@ -7660,6 +7659,8 @@ vColumns : vColumn
     vDataFrame.corr   : Computes the correlation matrix of a vDataFrame.
     vDataFrame.cov    : Computes the covariance matrix of the vDataFrame.
         """
+        from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
         if isinstance(by, str):
             by = [by]
         if isinstance(p, Iterable) and (len(p) == 1):
@@ -8992,6 +8993,8 @@ vColumns : vColumn
     vDataFrame.bubble      : Draws the bubble plot of the input vColumns.
     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
+        from verticapy.machine_learning.vertica.decomposition import PCA
+
         if len(columns) > 3 and dimensions == None:
             dimensions = (1, 2)
         if isinstance(dimensions, Iterable):
@@ -9243,7 +9246,7 @@ vColumns : vColumn
         self,
         y_true: str,
         y_score: str,
-        method: Literal[tuple(FUNCTIONS_DICTIONNARY)],
+        method: str,  # TODO Literal[tuple(FUNCTIONS_DICTIONNARY)]
         nbins: int = 30,
     ):
         """
@@ -9296,6 +9299,8 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
+        from verticapy.machine_learning.metrics import FUNCTIONS_DICTIONNARY
+
         y_true, y_score = self.format_colnames(y_true, y_score)
         fun = FUNCTIONS_DICTIONNARY[method]
         argv = [y_true, y_score, self.__genSQL__()]

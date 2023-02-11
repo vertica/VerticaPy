@@ -53,7 +53,7 @@ from verticapy.plotting._matplotlib import plot_bubble_ml
 from verticapy.learn.vmodel import vModel
 from verticapy.sql._utils._format import schema_relation
 from verticapy.machine_learning._utils import reverse_score
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy._config.config import OPTIONS
 
 # Other Modules

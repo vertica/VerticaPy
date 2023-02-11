@@ -22,7 +22,7 @@ from verticapy.sql._utils._format import (
     clean_query,
     quote_ident,
 )
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy._config.config import OPTIONS
 from verticapy.sql._utils._format import quote_ident
 

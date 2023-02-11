@@ -38,7 +38,7 @@ from verticapy.core.tablesample import tablesample
 
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.utils._gen import gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.learn.tools import does_model_exist

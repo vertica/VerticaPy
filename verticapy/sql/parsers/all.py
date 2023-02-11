@@ -21,7 +21,7 @@ import warnings
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs, check_minimum_version
 from verticapy.utils._gen import gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError
 from verticapy.sql._utils._format import (
     quote_ident,

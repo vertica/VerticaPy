@@ -30,7 +30,7 @@ from verticapy.vdataframe import vDataFrame
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.core.tablesample import tablesample
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 
 
 @save_verticapy_logs

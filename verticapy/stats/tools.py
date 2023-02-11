@@ -33,10 +33,9 @@ from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
 from verticapy.core.tablesample import tablesample
 from verticapy.utils._gen import gen_tmp_name
-from verticapy.learn.linear_model import LinearRegression
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.sql._utils._format import schema_relation
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy._config.config import OPTIONS
 
 # Statistical Tests & Tools
@@ -79,6 +78,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
     def critical_value(alpha, N, with_trend):
         if not (with_trend):
@@ -410,6 +410,8 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
     eps, X = vdf.format_colnames(eps, X)
     name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
@@ -532,6 +534,8 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
     eps, X = vdf.format_colnames(eps, X)
     name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
@@ -601,6 +605,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
     def model_fit(input_relation, X, y, model):
         mse = []
@@ -658,6 +663,8 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
     eps, X = vdf.format_colnames(eps, X)
     X_0 = ["1"] + X
     variables = []
@@ -1015,6 +1022,8 @@ Returns
 vDataFrame
     object containing (ts, column, TS seasonal part, TS trend, TS noise).
     """
+    from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
     if isinstance(by, str):
         by = [by]
     assert period > 0 or polynomial_order > 0, ParameterError(
@@ -1174,6 +1183,8 @@ Returns
 float
     VIF.
     """
+    from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
     X, X_idx = vdf.format_colnames(X, X_idx)
 
     if isinstance(X_idx, str):

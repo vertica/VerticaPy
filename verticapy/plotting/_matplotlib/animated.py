@@ -28,7 +28,7 @@ import numpy as np
 # VerticaPy Modules
 from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy._config.config import ISNOTEBOOK
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.plotting._colors import gen_cmap, gen_colors
 
 if ISNOTEBOOK:

@@ -31,7 +31,7 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy._config.config import ISNOTEBOOK
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.sql._utils._format import quote_ident

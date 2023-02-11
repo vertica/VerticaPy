@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.sql._utils._format import quote_ident
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError

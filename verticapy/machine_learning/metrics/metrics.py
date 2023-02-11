@@ -37,7 +37,7 @@ from verticapy.core.vdataframe import vDataFrame
 from verticapy.learn.model_selection import lift_chart, prc_curve, roc_curve
 from verticapy.sql.read import to_tablesample
 from verticapy.core.tablesample import tablesample
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 
 #
 # Function used to simplify the code

@@ -15,65 +15,16 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import time
-from typing import Union, Literal
+from typing import Union
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.core.str_sql import str_sql
 from verticapy._config.config import OPTIONS
-from verticapy.connect.connect import SPECIAL_SYMBOLS, current_cursor
-from verticapy.sql._utils._format import clean_query, erase_label, quote_ident
+from verticapy.sql._utils._format import quote_ident
 from verticapy.sql._utils._display import print_query, print_time
 from verticapy.sql.dtypes import vertica_python_dtype
 from verticapy.sql.flex import isvmap
 from verticapy.sql.dtypes import get_data_types
 from verticapy.utils._cast import to_category
-
-
-def _executeSQL(
-    query: str,
-    title: str = "",
-    data: list = [],
-    method: Literal[
-        "cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"
-    ] = "cursor",
-    path: str = "",
-    print_time_sql: bool = True,
-    sql_push_ext: bool = False,
-    symbol: str = "$",
-):
-    from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-
-    # Cleaning the query
-    if sql_push_ext and (symbol in SPECIAL_SYMBOLS):
-        query = erase_label(query)
-        query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
-
-    elif sql_push_ext and (symbol not in SPECIAL_SYMBOLS):
-        raise ParameterError(f"Symbol '{symbol}' is not supported.")
-
-    query = replace_external_queries_in_query(query)
-    query = clean_query(query)
-
-    cursor = current_cursor()
-    if OPTIONS["sql_on"] and print_time_sql:
-        print_query(query, title)
-    start_time = time.time()
-    if data:
-        cursor.executemany(query, data)
-    elif method == "copy":
-        with open(path, "r") as fs:
-            cursor.copy(query, fs)
-    else:
-        cursor.execute(query)
-    elapsed_time = time.time() - start_time
-    if OPTIONS["time_on"] and print_time_sql:
-        print_time(elapsed_time)
-    if method == "fetchrow":
-        return cursor.fetchone()
-    elif method == "fetchfirstelem":
-        return cursor.fetchone()[0]
-    elif method == "fetchall":
-        return cursor.fetchall()
-    return cursor
 
 
 @save_verticapy_logs
@@ -99,9 +50,9 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         query = query[:-1]
     if OPTIONS["count_on"]:
         count = _executeSQL(
-            f"""SELECT 
-                    /*+LABEL('utilities.readSQL')*/ COUNT(*) 
-                FROM ({query}) VERTICAPY_SUBTABLE""",
+            query=f"""SELECT 
+                        /*+LABEL('utilities.readSQL')*/ COUNT(*) 
+                      FROM ({query}) VERTICAPY_SUBTABLE""",
             method="fetchfirstelem",
             print_time_sql=False,
         )

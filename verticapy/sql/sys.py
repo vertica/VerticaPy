@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 
 
 def current_session():

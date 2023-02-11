@@ -30,7 +30,8 @@ from verticapy.core.tablesample import tablesample
 from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy.utils._cast import to_varchar
 from verticapy._config.config import ISNOTEBOOK
-from verticapy.sql.read import _executeSQL, to_tablesample
+from verticapy.sql.read import to_tablesample
+from verticapy.utils._sql import _executeSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, gen_cmap

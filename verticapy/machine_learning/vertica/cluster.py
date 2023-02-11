@@ -33,7 +33,7 @@ from verticapy.core.vdataframe import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.sql.drop import drop
 from verticapy.utils._gen import gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.learn.vmodel import Clustering, Tree, vModel
 from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation

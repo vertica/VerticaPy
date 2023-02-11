@@ -25,7 +25,7 @@ import os, warnings
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._gen import gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 from verticapy.sql.flex import compute_flextable_keys
 from verticapy.sql._utils._format import format_schema_table, clean_query

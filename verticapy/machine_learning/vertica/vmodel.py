@@ -41,7 +41,7 @@ from verticapy.sql.read import to_tablesample, vDataFrameSQL
 from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
 from verticapy.utils._gen import gen_name, gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.errors import FunctionError, ParameterError, ModelError, ConversionError
 from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation

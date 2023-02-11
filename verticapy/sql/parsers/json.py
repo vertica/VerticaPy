@@ -15,12 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 # Standard Python Modules
-import os, warnings
+import os
 
 # VerticaPy Modules
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._gen import gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy.utils._sql import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 from verticapy.sql.flex import compute_flextable_keys
 from verticapy.sql._utils._format import (
