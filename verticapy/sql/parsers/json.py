@@ -18,7 +18,6 @@ permissions and limitations under the License.
 import os, warnings
 
 # VerticaPy Modules
-import verticapy as vp
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
@@ -30,6 +29,7 @@ from verticapy.sql._utils._format import (
     clean_query,
 )
 from verticapy.sql.parsers._utils import extract_compression
+from verticapy._config.config import OPTIONS
 
 
 def pjson(path: str, ingest_local: bool = True):
@@ -410,7 +410,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             _executeSQL(
                 query3, title="Creating table.",
             )
-            if not (temporary_local_table) and vp.OPTIONS["print_info"]:
+            if not (temporary_local_table) and OPTIONS["print_info"]:
                 print(f"The table {input_relation} has been successfully created.")
         else:
             column_name_dtype = {}

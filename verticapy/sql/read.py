@@ -18,6 +18,10 @@ import time
 from typing import Union, Literal
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.core.str_sql import str_sql
+from verticapy._config.config import OPTIONS
+from verticapy.connect.connect import SPECIAL_SYMBOLS, current_cursor
+from verticapy.sql._utils._format import clean_query, erase_label
+from verticapy.sql._utils._display import print_query
 
 
 def _executeSQL(
@@ -32,24 +36,21 @@ def _executeSQL(
     sql_push_ext: bool = False,
     symbol: str = "$",
 ):
-    import verticapy as vp
     from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-    from verticapy.sql._utils._format import clean_query, erase_label
-    from verticapy.sql._utils._display import print_query
 
     # Cleaning the query
-    if sql_push_ext and (symbol in vp.SPECIAL_SYMBOLS):
+    if sql_push_ext and (symbol in SPECIAL_SYMBOLS):
         query = erase_label(query)
         query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
 
-    elif sql_push_ext and (symbol not in vp.SPECIAL_SYMBOLS):
+    elif sql_push_ext and (symbol not in SPECIAL_SYMBOLS):
         raise ParameterError(f"Symbol '{symbol}' is not supported.")
 
     query = replace_external_queries_in_query(query)
     query = clean_query(query)
 
-    cursor = vp.current_cursor()
-    if vp.OPTIONS["sql_on"] and print_time_sql:
+    cursor = current_cursor()
+    if OPTIONS["sql_on"] and print_time_sql:
         print_query(query, title)
     start_time = time.time()
     if data:
@@ -60,7 +61,7 @@ def _executeSQL(
     else:
         cursor.execute(query)
     elapsed_time = time.time() - start_time
-    if vp.OPTIONS["time_on"] and print_time_sql:
+    if OPTIONS["time_on"] and print_time_sql:
         print_time(elapsed_time)
     if method == "fetchrow":
         return cursor.fetchone()
@@ -90,12 +91,9 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     tablesample
         Result of the query.
     """
-    from verticapy.sql.read import _executeSQL
-    import verticapy as vp
-
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
-    if vp.OPTIONS["count_on"]:
+    if OPTIONS["count_on"]:
         count = _executeSQL(
             f"""SELECT 
                     /*+LABEL('utilities.readSQL')*/ COUNT(*) 
@@ -105,20 +103,20 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         )
     else:
         count = -1
-    sql_on_init = vp.OPTIONS["sql_on"]
-    time_on_init = vp.OPTIONS["time_on"]
+    sql_on_init = OPTIONS["sql_on"]
+    time_on_init = OPTIONS["time_on"]
     try:
-        vp.OPTIONS["time_on"] = time_on
-        vp.OPTIONS["sql_on"] = False
+        OPTIONS["time_on"] = time_on
+        OPTIONS["sql_on"] = False
         try:
             result = to_tablesample(f"{query} LIMIT {limit}")
         except:
             result = to_tablesample(query)
     finally:
-        vp.OPTIONS["time_on"] = time_on_init
-        vp.OPTIONS["sql_on"] = sql_on_init
+        OPTIONS["time_on"] = time_on_init
+        OPTIONS["sql_on"] = sql_on_init
     result.count = count
-    if vp.OPTIONS["percent_bar"]:
+    if OPTIONS["percent_bar"]:
         vdf = vDataFrameSQL(f"({query}) VERTICAPY_SUBTABLE")
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
@@ -164,13 +162,11 @@ def to_tablesample(
     --------
     tablesample : Object in memory created for rendering purposes.
     """
-    import verticapy as vp
     from verticapy.core.tablesample import tablesample
-    from verticapy.sql.read import _executeSQL
     from verticapy.sql.dtypes import vertica_python_dtype
     from verticapy.sql._utils._display import print_query, print_time
 
-    if vp.OPTIONS["sql_on"]:
+    if OPTIONS["sql_on"]:
         print_query(query, title)
     start_time = time.time()
     cursor = _executeSQL(
@@ -185,7 +181,7 @@ def to_tablesample(
             scale=elem[5],
         )
     elapsed_time = time.time() - start_time
-    if vp.OPTIONS["time_on"]:
+    if OPTIONS["time_on"]:
         print_time(elapsed_time)
     result = cursor.fetchall()
     columns = [column[0] for column in cursor.description]

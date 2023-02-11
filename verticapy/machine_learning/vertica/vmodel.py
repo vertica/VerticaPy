@@ -25,13 +25,12 @@ import numpy as np
 from typing import Union, Literal
 
 # VerticaPy Modules
-import verticapy
 from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
 from verticapy.core.vdataframe import vDataFrame
-from verticapy.plotting._matplotlib import (
+from verticapy.plotting._matplotlib.mlplot import (
     plot_importance,
     regression_tree_plot,
     lof_plot,
@@ -54,6 +53,7 @@ from verticapy.learn.tools import does_model_exist
 from verticapy.learn.memmodel import *
 from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation
 from verticapy.machine_learning._utils import get_match_index
+from verticapy._config.config import OPTIONS
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -1466,7 +1466,7 @@ class Supervised(vModel):
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -1496,7 +1496,7 @@ class Supervised(vModel):
             "RandomForestRegressor",
             "XGBoostClassifier",
             "XGBoostRegressor",
-        ) and isinstance(verticapy.OPTIONS["random_state"], int):
+        ) and isinstance(OPTIONS["random_state"], int):
             id_column = f""", 
                 ROW_NUMBER() OVER 
                 (ORDER BY {', '.join(X)}) 
@@ -1560,9 +1560,9 @@ class Supervised(vModel):
             "RandomForestRegressor",
             "XGBoostClassifier",
             "XGBoostRegressor",
-        ) and isinstance(verticapy.OPTIONS["random_state"], int):
+        ) and isinstance(OPTIONS["random_state"], int):
             query += f""", 
-                seed={verticapy.OPTIONS['random_state']}, 
+                seed={OPTIONS['random_state']}, 
                 id_column='{id_column_name}'"""
         query += ")"
         try:
@@ -3020,13 +3020,13 @@ class Unsupervised(vModel):
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
         if self.type in ("BisectingKMeans", "IsolationForest") and isinstance(
-            verticapy.OPTIONS["random_state"], int
+            OPTIONS["random_state"], int
         ):
             X_str = ", ".join([quote_ident(x) for x in X])
             id_column = f", ROW_NUMBER() OVER (ORDER BY {X_str}) AS {id_column_name}"
@@ -3128,15 +3128,13 @@ class Unsupervised(vModel):
             del parameters["init_method"]
             query += f"init_method = '{self.parameters['init']}', "
         query += ", ".join([f"{p} = {parameters[p]}" for p in parameters])
-        if self.type == "BisectingKMeans" and isinstance(
-            verticapy.OPTIONS["random_state"], int
-        ):
-            query += f", kmeans_seed={verticapy.OPTIONS['random_state']}"
+        if self.type == "BisectingKMeans" and isinstance(OPTIONS["random_state"], int):
+            query += f", kmeans_seed={OPTIONS['random_state']}"
             query += f", id_column='{id_column_name}'"
         elif self.type == "IsolationForest" and isinstance(
-            verticapy.OPTIONS["random_state"], int
+            OPTIONS["random_state"], int
         ):
-            query += f", seed={verticapy.OPTIONS['random_state']}"
+            query += f", seed={OPTIONS['random_state']}"
             query += f", id_column='{id_column_name}'"
         query += ")"
         try:

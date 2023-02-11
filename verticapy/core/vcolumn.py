@@ -25,7 +25,6 @@ from collections.abc import Iterable
 from typing import Union, Literal
 
 # VerticaPy Modules
-import verticapy as vp
 import verticapy.stats as st
 import verticapy.plotting._matplotlib as plt
 from verticapy.plotting._colors import gen_colors, gen_cmap
@@ -46,6 +45,7 @@ from verticapy.errors import *
 from verticapy.sql._utils._format import quote_ident, clean_query
 from verticapy.utils._cast import to_sql_dtype
 from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy._config.config import OPTIONS
 
 # Other modules
 import numpy as np
@@ -246,10 +246,10 @@ Attributes
         return self.count() > 0
 
     def __repr__(self):
-        return self.head(limit=vp.OPTIONS["max_rows"]).__repr__()
+        return self.head(limit=OPTIONS["max_rows"]).__repr__()
 
     def _repr_html_(self):
-        return self.head(limit=vp.OPTIONS["max_rows"])._repr_html_()
+        return self.head(limit=OPTIONS["max_rows"])._repr_html_()
 
     def __setattr__(self, attr, val):
         self.__dict__[attr] = val
@@ -1147,7 +1147,7 @@ Attributes
             ax.set_xlabel(self.alias)
             return ax
         kernel = kernel.lower()
-        schema = vp.OPTIONS["temp_schema"]
+        schema = OPTIONS["temp_schema"]
         if not (schema):
             schema = "public"
         name = gen_tmp_name(schema=schema, name="kde")
@@ -1405,7 +1405,7 @@ Attributes
 	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
         if self.isnum() and method == "smart":
-            schema = vp.OPTIONS["temp_schema"]
+            schema = OPTIONS["temp_schema"]
             if not (schema):
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
@@ -2042,13 +2042,13 @@ Attributes
                 pass
             total = int(total)
             conj = "s were " if total > 1 else " was "
-            if vp.OPTIONS["print_info"]:
+            if OPTIONS["print_info"]:
                 print(f"{total} element{conj}filled.")
             self.parent.__add_to_history__(
                 f"[Fillna]: {total} {self.alias} missing value{conj} filled."
             )
         else:
-            if vp.OPTIONS["print_info"]:
+            if OPTIONS["print_info"]:
                 print("Nothing was filled.")
             self.transformations = [t for t in copy_trans]
             for s in sauv:
@@ -2672,7 +2672,7 @@ Attributes
             f"[Mean Encode]: The vColumn {self.alias} was transformed "
             f"using a mean encoding with {response} as Response Column."
         )
-        if vp.OPTIONS["print_info"]:
+        if OPTIONS["print_info"]:
             print("The mean encoding was successfully done.")
         return self.parent
 

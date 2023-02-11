@@ -20,7 +20,6 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-import verticapy
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.sql.drop import drop
@@ -28,6 +27,7 @@ from verticapy.sql.read import vDataFrameSQL
 from verticapy.sql.dtypes import get_data_types
 from verticapy.errors import ParameterError, ModelError
 from verticapy.machine_learning.vertica.vmodel import Regressor
+from verticapy._config.config import OPTIONS
 
 # Standard Python Modules
 from typing import Union
@@ -125,7 +125,7 @@ steps: list
             vdf = vDataFrameSQL(relation=input_relation)
         else:
             vdf = input_relation
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)

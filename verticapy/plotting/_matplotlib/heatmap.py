@@ -29,7 +29,7 @@ import numpy as np
 from verticapy.core.tablesample import tablesample
 from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy.utils._cast import to_varchar
-from verticapy._config._notebook import ISNOTEBOOK
+from verticapy._config.config import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL, to_tablesample
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError

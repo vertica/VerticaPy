@@ -28,7 +28,6 @@ from scipy.stats import chi2, norm, f
 import numpy as np
 
 # VerticaPy Modules
-import verticapy
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
@@ -39,6 +38,7 @@ from verticapy.learn.linear_model import LinearRegression
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.sql._utils._format import schema_relation
 from verticapy.sql.read import _executeSQL
+from verticapy._config.config import OPTIONS
 
 # Statistical Tests & Tools
 
@@ -194,10 +194,8 @@ tablesample
                     return -3.41
 
     ts, column, by = vdf.format_colnames(ts, column, by)
-    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
-    relation_name = gen_tmp_name(
-        schema=verticapy.OPTIONS["temp_schema"], name="linear_reg_view"
-    )
+    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+    relation_name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg_view")
     drop(name, method="model")
     drop(relation_name, method="view")
     lag = [
@@ -322,11 +320,11 @@ model
     model_tmp = type(model)(name)
     model_tmp.set_params(param)
     X, y = model.X, model.y
-    print_info = verticapy.OPTIONS["print_info"]
-    verticapy.OPTIONS["print_info"] = False
+    print_info = OPTIONS["print_info"]
+    OPTIONS["print_info"] = False
     if prais_winsten:
         vdf_tmp = vdf_tmp[X + [y, ts]].dropna()
-    verticapy.OPTIONS["print_info"] = print_info
+    OPTIONS["print_info"] = print_info
     prediction_name = gen_tmp_name(name="prediction")[1:-1]
     eps_name = gen_tmp_name(name="eps")[1:-1]
     model.predict(vdf_tmp, X=X, name=prediction_name)
@@ -414,7 +412,7 @@ tablesample
     utilities.tablesample.
     """
     eps, X = vdf.format_colnames(eps, X)
-    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         model.fit(vdf, X, eps)
@@ -484,7 +482,7 @@ tablesample
         ", ".join(X), vdf.__genSQL__()
     )
     vdf_lags = vDataFrameSQL(query)
-    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
@@ -536,7 +534,7 @@ tablesample
     utilities.tablesample.
     """
     eps, X = vdf.format_colnames(eps, X)
-    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     vdf_copy = vdf.copy()
     vdf_copy["v_eps2"] = vdf_copy[eps] ** 2
@@ -618,7 +616,7 @@ tablesample
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
-    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
@@ -674,7 +672,7 @@ tablesample
         ", ".join(variables), eps, vdf.__genSQL__()
     )
     vdf_white = vDataFrameSQL(query)
-    name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         model.fit(vdf_white, variables_names, "v_eps2")
@@ -1058,7 +1056,7 @@ vDataFrame
         for i in range(1, polynomial_order + 1):
             vdf_poly[f"t_{i}"] = f"POWER(ROW_NUMBER() OVER ({by}ORDER BY {ts}), {i})"
             X += [f"t_{i}"]
-        name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_poly, X, column)
@@ -1100,7 +1098,7 @@ vDataFrame
             "t_sin"
         ] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
         X = ["t_cos", "t_sin"]
-        name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_seasonality, X, seasonal_name)
@@ -1190,7 +1188,7 @@ float
             if i != X_idx:
                 X_r += [X[i]]
         y_r = X[X_idx]
-        name = gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
         model = LinearRegression(name)
         try:
             model.fit(vdf, X_r, y_r)

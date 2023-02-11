@@ -31,7 +31,7 @@ from matplotlib.lines import Line2D
 import numpy as np
 
 # VerticaPy Modules
-from verticapy._config._notebook import ISNOTEBOOK
+from verticapy._config.config import ISNOTEBOOK
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, get_color

@@ -24,7 +24,7 @@ import os
 from typing import Literal, Union
 
 # VerticaPy Modules
-import vertica_python, verticapy
+import vertica_python
 from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
@@ -38,6 +38,7 @@ from verticapy.learn.vmodel import Clustering, Tree, vModel
 from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql.insert import insert_verticapy_schema
+from verticapy._config.config import OPTIONS
 
 
 class BisectingKMeans(Clustering, Tree):
@@ -198,7 +199,7 @@ p: int, optional
             key_columns = [key_columns]
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -266,7 +267,7 @@ p: int, optional
                       {name_main} AS x 
                       CROSS JOIN 
                       {name_main} AS y) distance_table"""
-            if isinstance(verticapy.OPTIONS["random_state"], int):
+            if isinstance(OPTIONS["random_state"], int):
                 order_by = "ORDER BY node_id, nn_id"
             else:
                 order_by = ""

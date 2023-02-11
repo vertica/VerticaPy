@@ -24,7 +24,6 @@ import random
 from typing import Union, Literal
 
 # VerticaPy Modules
-import verticapy
 from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
@@ -36,6 +35,7 @@ from verticapy.core.vdataframe import vDataFrame
 from verticapy.learn.vmodel import Preprocessing, vModel
 from verticapy.sql._utils._format import quote_ident, schema_relation, clean_query
 from verticapy.sql.insert import insert_verticapy_schema
+from verticapy._config.config import OPTIONS
 
 
 @check_minimum_version
@@ -212,7 +212,7 @@ max_text_size: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)

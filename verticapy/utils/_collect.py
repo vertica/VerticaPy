@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy._config.config import OPTIONS
 
 
 def save_to_query_profile(
@@ -50,13 +51,12 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
-    import verticapy as vp
     from verticapy.sql.read import _executeSQL
     from verticapy.connect.connect import SESSION_IDENTIFIER
 
-    if not (vp.OPTIONS["save_query_profile"]) or (
-        isinstance(vp.OPTIONS["save_query_profile"], list)
-        and name not in vp.OPTIONS["save_query_profile"]
+    if not (OPTIONS["save_query_profile"]) or (
+        isinstance(OPTIONS["save_query_profile"], list)
+        and name not in OPTIONS["save_query_profile"]
     ):
         return False
     try:

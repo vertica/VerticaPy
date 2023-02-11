@@ -23,7 +23,6 @@ permissions and limitations under the License.
 import os, warnings
 
 # VerticaPy Modules
-import verticapy as vp
 from verticapy.utils._decorators import save_verticapy_logs
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
@@ -32,6 +31,7 @@ from verticapy.sql.flex import compute_flextable_keys
 from verticapy.sql._utils._format import format_schema_table, clean_query
 from verticapy.sql.parsers._utils import extract_compression, get_first_file
 from verticapy.sql._utils._format import quote_ident
+from verticapy._config.config import OPTIONS
 
 
 def guess_sep(file_str: str):
@@ -551,10 +551,6 @@ read_json : Ingests a JSON file into the Vertica database.
             _executeSQL(
                 query2, title="Ingesting the data.",
             )
-            if (
-                not (insert)
-                and not (temporary_local_table)
-                and vp.OPTIONS["print_info"]
-            ):
+            if not (insert) and not (temporary_local_table) and OPTIONS["print_info"]:
                 print(f"The table {input_relation} has been successfully created.")
             return vDataFrame(table_name, schema=schema)

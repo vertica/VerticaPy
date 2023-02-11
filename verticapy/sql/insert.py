@@ -22,6 +22,7 @@ from verticapy.sql._utils._format import (
     clean_query,
     quote_ident,
 )
+from verticapy._config.config import OPTIONS
 
 
 @save_verticapy_logs
@@ -63,11 +64,10 @@ See Also
 --------
 pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     """
-    import verticapy as vp
     from verticapy.sql.read import _executeSQL
 
     if not (schema):
-        schema = vp.OPTIONS["temp_schema"]
+        schema = OPTIONS["temp_schema"]
     input_relation = format_schema_table(schema, table_name)
     if not (column_names):
         result = _executeSQL(

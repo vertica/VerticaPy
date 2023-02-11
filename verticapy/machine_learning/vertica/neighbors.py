@@ -26,7 +26,7 @@ from verticapy.sql.drop import drop
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
 from verticapy.sql.insert import insert_verticapy_schema
 from verticapy.core.tablesample import tablesample
-from verticapy._config._notebook import ISNOTEBOOK
+from verticapy._config.config import ISNOTEBOOK
 from verticapy.utils._gen import gen_name, gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
@@ -38,6 +38,7 @@ from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql._utils._format import clean_query
 from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy._config.config import OPTIONS
 
 # Standard Python Modules
 import warnings, itertools
@@ -97,7 +98,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -296,7 +297,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -947,7 +948,7 @@ xlim: list, optional
         """
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -1357,7 +1358,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -1515,7 +1516,7 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)

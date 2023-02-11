@@ -27,7 +27,6 @@ from itertools import product
 from typing import Union, Literal
 
 # VerticaPy Modules
-import verticapy
 from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
@@ -37,7 +36,7 @@ from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
 from verticapy.core.tablesample import tablesample
 
-from verticapy._config._notebook import ISNOTEBOOK
+from verticapy._config.config import ISNOTEBOOK
 from verticapy.utils._gen import gen_tmp_name
 from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
@@ -51,6 +50,7 @@ from verticapy.plotting._matplotlib import (
 from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.machine_learning._utils import reverse_score
+from verticapy._config.config import OPTIONS
 
 # Other Python Modules
 import matplotlib.pyplot as plt
@@ -207,7 +207,7 @@ tablesample
             elif elem == "max":
                 result["max_features"][idx] = int(len(X))
     result = tablesample(result).to_sql()
-    schema = verticapy.OPTIONS["temp_schema"]
+    schema = OPTIONS["temp_schema"]
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
     drop(relation, method="table")
@@ -217,7 +217,7 @@ tablesample
             f"\033[1m\033[4mStep 2 - Fitting the RF model with "
             "the hyperparameters data\033[0m\033[0m\n"
         )
-    if verticapy.OPTIONS["tqdm"] and print_info:
+    if OPTIONS["tqdm"] and print_info:
         loop = tqdm(range(1))
     else:
         loop = range(1)
@@ -374,9 +374,9 @@ int
         L.sort()
     schema, relation = schema_relation(input_relation)
     if not (schema):
-        schema = verticapy.OPTIONS["temp_schema"]
+        schema = OPTIONS["temp_schema"]
     schema = quote_ident(schema)
-    if verticapy.OPTIONS["tqdm"] and (
+    if OPTIONS["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         loop = tqdm(L)
@@ -524,7 +524,7 @@ tablesample
     if training_score:
         result_train = {"index": final_metrics}
     total_time = []
-    if verticapy.OPTIONS["tqdm"] and (
+    if OPTIONS["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         loop = tqdm(range(cv))
@@ -535,7 +535,7 @@ tablesample
             estimator.drop()
         except:
             pass
-        random_state = verticapy.OPTIONS["random_state"]
+        random_state = OPTIONS["random_state"]
         random_state = (
             random.randint(-10e6, 10e6) if not (random_state) else random_state + i
         )
@@ -751,7 +751,7 @@ tablesample
     else:
         L = n_cluster
         L.sort()
-    if verticapy.OPTIONS["tqdm"]:
+    if OPTIONS["tqdm"]:
         loop = tqdm(L)
     else:
         loop = L
@@ -879,12 +879,10 @@ tablesample
             estimator_type = "enet"
     if estimator_type == "logit":
         estimator = LogisticRegression(
-            gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="logit")
+            gen_tmp_name(schema=OPTIONS["temp_schema"], name="logit")
         )
     else:
-        estimator = ElasticNet(
-            gen_tmp_name(schema=verticapy.OPTIONS["temp_schema"], name="enet")
-        )
+        estimator = ElasticNet(gen_tmp_name(schema=OPTIONS["temp_schema"], name="enet"))
     result = bayesian_search_cv(
         estimator,
         input_relation,
@@ -1642,7 +1640,7 @@ tablesample
     if all_configuration == []:
         all_configuration = [{}]
     if (
-        verticapy.OPTIONS["tqdm"]
+        OPTIONS["tqdm"]
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
@@ -1865,7 +1863,7 @@ tablesample
         input_relation = vDataFrameSQL(input_relation)
     lc_result_final = []
     sizes = sorted(set(sizes))
-    if verticapy.OPTIONS["tqdm"]:
+    if OPTIONS["tqdm"]:
         loop = tqdm(sizes)
     else:
         loop = sizes
@@ -2401,7 +2399,7 @@ tablesample
             if config not in all_configuration:
                 all_configuration += [config]
     if (
-        verticapy.OPTIONS["tqdm"]
+        OPTIONS["tqdm"]
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
@@ -2831,7 +2829,7 @@ tablesample
     if isinstance(X, str):
         X = [X]
     assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
-    if not (verticapy.OPTIONS["overwrite_model"]):
+    if not (OPTIONS["overwrite_model"]):
         does_model_exist(name=estimator.name, raise_error=True)
     result, current_step = [], 0
     table = (
@@ -2862,7 +2860,7 @@ tablesample
             X.reverse()
     if print_info:
         print("\033[1m\033[4mStarting Stepwise\033[0m\033[0m")
-    if verticapy.OPTIONS["tqdm"] and print_info:
+    if OPTIONS["tqdm"] and print_info:
         loop = tqdm(range(len(X)))
     else:
         loop = range(len(X))

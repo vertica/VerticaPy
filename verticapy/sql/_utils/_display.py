@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import shutil
 from verticapy.sql._utils._format import indentSQL
-from verticapy._config._notebook import ISNOTEBOOK
+from verticapy._config.config import ISNOTEBOOK
 
 
 def print_query(query: str, title: str = ""):
