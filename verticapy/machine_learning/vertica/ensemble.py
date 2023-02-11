@@ -35,6 +35,7 @@ from verticapy.sql.read import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.learn.vmodel import Clustering, Tree, MulticlassClassifier, Regressor
 from verticapy.learn.tree import get_tree_list_of_arrays
+from verticapy.sql._utils._format import quote_ident
 
 
 class XGBoost:

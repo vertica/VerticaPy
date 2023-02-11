@@ -36,6 +36,9 @@ from verticapy.plotting._matplotlib import (
     regression_tree_plot,
     lof_plot,
     plot_pca_circle,
+    logit_plot,
+    svm_classifier_plot,
+    regression_plot,
 )
 from verticapy.learn.model_selection import *
 from verticapy.sql.drop import drop

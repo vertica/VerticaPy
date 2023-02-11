@@ -28,6 +28,7 @@ from verticapy.utils._decorators import (
     save_verticapy_logs,
     check_minimum_version,
 )
+import verticapy
 import verticapy.learn.metrics as mt
 from verticapy.learn.vmodel import Regressor
 from verticapy.learn.linear_model import LinearRegression
