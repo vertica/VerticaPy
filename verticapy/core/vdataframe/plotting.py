@@ -19,6 +19,8 @@ from typing import Union, Literal
 import verticapy.plotting._matplotlib as plt
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._collect import save_verticapy_logs
+from collections.abc import Iterable
+from verticapy._config.config import OPTIONS
 
 
 class vDFPLOT:
@@ -455,6 +457,288 @@ class vDFPLOT:
         """
         columns = self.format_colnames(columns, expected_nb_of_cols=2)
         return plt.contour_plot(self, columns, func, nbins, ax=ax, **style_kwds,)
+
+    @save_verticapy_logs
+    def density(
+        self,
+        columns: Union[str, list] = [],
+        bandwidth: float = 1.0,
+        kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
+        nbins: int = 50,
+        xlim: tuple = None,
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    Draws the vColumns Density Plot.
+
+    Parameters
+    ----------
+    columns: str / list, optional
+        List of the vColumns names. If empty, all numerical vColumns will 
+        be selected.
+    bandwidth: float, optional
+        The bandwidth of the kernel.
+    kernel: str, optional
+        The method used for the plot.
+            gaussian  : Gaussian Kernel.
+            logistic  : Logistic Kernel.
+            sigmoid   : Sigmoid Kernel.
+            silverman : Silverman Kernel.
+    nbins: int, optional
+        Maximum number of points to use to evaluate the approximate density function.
+        Increasing this parameter will increase the precision but will also increase 
+        the time of the learning and the scoring phases.
+    xlim: tuple, optional
+        Set the x limits of the current axes.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        columns = self.format_colnames(columns)
+        if not (columns):
+            columns = self.numcol()
+        else:
+            for column in columns:
+                assert self[column].isnum(), TypeError(
+                    f"vColumn {column} is not numerical to draw KDE"
+                )
+        assert columns, EmptyParameter("No Numerical Columns found to draw KDE.")
+        colors = gen_colors()
+        min_max = self.agg(func=["min", "max"], columns=columns)
+        if not xlim:
+            xmin = min(min_max["min"])
+            xmax = max(min_max["max"])
+        else:
+            xmin, xmax = xlim
+        custom_lines = []
+        for idx, column in enumerate(columns):
+            param = {"color": colors[idx % len(colors)]}
+            ax = self[column].density(
+                bandwidth=bandwidth,
+                kernel=kernel,
+                nbins=nbins,
+                xlim=(xmin, xmax),
+                ax=ax,
+                **updated_dict(param, style_kwds, idx),
+            )
+            custom_lines += [
+                Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
+            ]
+        ax.legend(custom_lines, columns, loc="center left", bbox_to_anchor=[1, 0.5])
+        ax.set_ylim(bottom=0)
+        return ax
+
+    @save_verticapy_logs
+    def hchart(
+        self,
+        x: Union[str, list] = None,
+        y: Union[str, list] = None,
+        z: Union[str, list] = None,
+        c: Union[str, list] = None,
+        aggregate: bool = True,
+        kind: Literal[
+            "area",
+            "area_range",
+            "area_ts",
+            "bar",
+            "boxplot",
+            "bubble",
+            "candlestick",
+            "donut",
+            "donut3d",
+            "heatmap",
+            "hist",
+            "line",
+            "negative_bar",
+            "pie",
+            "pie_half",
+            "pie3d",
+            "scatter",
+            "spider",
+            "spline",
+            "stacked_bar",
+            "stacked_hist",
+            "pearson",
+            "kendall",
+            "cramer",
+            "biserial",
+            "spearman",
+            "spearmand",
+        ] = "boxplot",
+        width: int = 600,
+        height: int = 400,
+        options: dict = {},
+        h: float = -1,
+        max_cardinality: int = 10,
+        limit: int = 10000,
+        drilldown: bool = False,
+        stock: bool = False,
+        alpha: float = 0.25,
+    ):
+        """
+    [Beta Version]
+    Draws responsive charts using the High Chart API: 
+    https://api.highcharts.com/highcharts/
+
+    The returned object can be customized using the API parameters and the 
+    'set_dict_options' method.
+
+    \u26A0 Warning : This function uses the unsupported HighChart Python API. 
+                     For more information, see python-hicharts repository:
+                     https://github.com/kyper-data/python-highcharts
+
+    Parameters
+    ----------
+    x / y / z / c: str / list
+        The vColumns and aggregations used to draw the chart. These will depend 
+        on the chart type. You can also specify an expression, but it must be a SQL 
+        statement. For example: AVG(column1) + SUM(column2) AS new_name.
+
+            area / area_ts / line / spline
+                x: numerical or type date like vColumn.
+                y: a single expression or list of expressions used to draw the plot
+                z: [OPTIONAL] vColumn representing the different categories 
+                    (only if y is a single vColumn)
+            area_range
+                x: numerical or date type vColumn.
+                y: list of three expressions [expression, lower bound, upper bound]
+            bar (single) / donut / donut3d / hist (single) / pie / pie_half / pie3d
+                x: vColumn used to compute the categories.
+                y: [OPTIONAL] numerical expression representing the categories values. 
+                    If empty, COUNT(*) is used as the default aggregation.
+            bar (double / drilldown) / hist (double / drilldown) / pie (drilldown) 
+            / stacked_bar / stacked_hist
+                x: vColumn used to compute the first category.
+                y: vColumn used to compute the second category.
+                z: [OPTIONAL] numerical expression representing the different categories 
+                    values. 
+                    If empty, COUNT(*) is used as the default aggregation.
+            biserial / boxplot / pearson / kendall / pearson / spearman / spearmanD
+                x: list of the vColumns used to draw the Chart.
+            bubble / scatter
+                x: numerical vColumn.
+                y: numerical vColumn.
+                z: numerical vColumn (bubble size in case of bubble plot, third 
+                     dimension in case of scatter plot)
+                c: [OPTIONAL] vColumn used to compute the different categories.
+            candlestick
+                x: date type vColumn.
+                y: Can be a numerical vColumn or list of 5 expressions 
+                    [last quantile, maximum, minimum, first quantile, volume]
+            negative_bar
+                x: binary vColumn used to compute the first category.
+                y: vColumn used to compute the second category.
+                z: [OPTIONAL] numerical expression representing the categories values. 
+                    If empty, COUNT(*) is used as the default aggregation.
+            spider
+                x: vColumn used to compute the different categories.
+                y: [OPTIONAL] Can be a list of the expressions used to draw the Plot 
+                    or a single expression. 
+                    If empty, COUNT(*) is used as the default aggregation.
+    aggregate: bool, optional
+        If set to True, the input vColumns will be aggregated.
+    kind: str, optional
+        Chart Type.
+            area         : Area Chart
+            area_range   : Area Range Chart
+            area_ts      : Area Chart with Time Series Design
+            bar          : Bar Chart
+            biserial     : Biserial Point Matrix (Correlation between binary
+                             variables and numerical)
+            boxplot      : Box Plot
+            bubble       : Bubble Plot
+            candlestick  : Candlestick and Volumes (Time Series Special Plot)
+            cramer       : Cramer's V Matrix (Correlation between categories)
+            donut        : Donut Chart
+            donut3d      : 3D Donut Chart
+            heatmap      : Heatmap
+            hist         : Histogram
+            kendall      : Kendall Correlation Matrix. The method will compute the Tau-B 
+                           coefficients.
+                           \u26A0 Warning : This method uses a CROSS JOIN during computation 
+                                            and is therefore computationally expensive at 
+                                            O(n * n), where n is the total count of the 
+                                            vDataFrame.
+            line         : Line Plot
+            negative_bar : Multi Bar Chart for binary classes
+            pearson      : Pearson Correlation Matrix
+            pie          : Pie Chart
+            pie_half     : Half Pie Chart
+            pie3d        : 3D Pie Chart
+            scatter      : Scatter Plot
+            spider       : Spider Chart
+            spline       : Spline Plot
+            stacked_bar  : Stacked Bar Chart
+            stacked_hist : Stacked Histogram
+            spearman     : Spearman's Correlation Matrix
+            spearmanD    : Spearman's Correlation Matrix using the DENSE RANK
+                           function instead of the RANK function.
+    width: int, optional
+        Chart Width.
+    height: int, optional
+        Chart Height.
+    options: dict, optional
+        High Chart Dictionary to use to customize the Chart. Look at the API 
+        documentation to know the different options.
+    h: float, optional
+        Interval width of the bar. If empty, an optimized value will be used.
+    max_cardinality: int, optional
+        Maximum number of the vColumn distinct elements.
+    limit: int, optional
+        Maximum number of elements to draw.
+    drilldown: bool, optional
+        Drilldown Chart: Only possible for Bars, Histograms, donuts and pies.
+                          Instead of drawing 2D charts, this option allows you
+                          to add a drilldown effect to 1D Charts.
+    stock: bool, optional
+        Stock Chart: Only possible for Time Series. The design of the Time
+                     Series is dragable and have multiple options.
+    alpha: float, optional
+        Value used to determine the position of the upper and lower quantile 
+        (Used when kind is set to 'candlestick')
+
+    Returns
+    -------
+    Highchart
+        Chart Object
+        """
+        kind = str(kind).lower()
+        params = [
+            self,
+            x,
+            y,
+            z,
+            c,
+            aggregate,
+            kind,
+            width,
+            height,
+            options,
+            h,
+            max_cardinality,
+            limit,
+            drilldown,
+            stock,
+            alpha,
+        ]
+        try:
+            return hchart_from_vdf(*params)
+        except:
+            params[5] = not (params[5])
+            return hchart_from_vdf(*params)
 
     @save_verticapy_logs
     def heatmap(

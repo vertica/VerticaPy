@@ -1572,3 +1572,61 @@ class vDFCORR:
                     val[column2] = values[column1][idx]
                 self.__update_catalog__(values=val, matrix=method, column=column1)
         return tablesample(values=values).decimal_to_float()
+
+    @save_verticapy_logs
+    def iv_woe(
+        self,
+        y: str,
+        columns: Union[str, list] = [],
+        nbins: int = 10,
+        show: bool = True,
+        ax=None,
+    ):
+        """
+    Computes the Information Value (IV) Table. It tells the predictive power of 
+    an independent variable in relation to the dependent variable.
+
+    Parameters
+    ----------
+    y: str
+        Response vColumn.
+    columns: str / list, optional
+        List of the vColumns names. If empty, all vColumns except the response 
+        will be used.
+    nbins: int, optional
+        Maximum number of bins used for the discretization (must be > 1).
+    show: bool, optional
+        If set to True, the IV Plot will be drawn using Matplotlib.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame[].iv_woe : Computes the Information Value (IV) / 
+        Weight Of Evidence (WOE) Table.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        columns, y = self.format_colnames(columns, y)
+        if not (columns):
+            columns = self.get_columns(exclude_columns=[y])
+        coeff_importances = {}
+        for elem in columns:
+            coeff_importances[elem] = self[elem].iv_woe(y=y, nbins=nbins)["iv"][-1]
+        if show:
+            ax = plt.plot_importance(coeff_importances, print_legend=False, ax=ax)
+            ax.set_xlabel("IV")
+        index = [elem for elem in coeff_importances]
+        iv = [coeff_importances[elem] for elem in coeff_importances]
+        data = [(index[i], iv[i]) for i in range(len(iv))]
+        data = sorted(data, key=lambda tup: tup[1], reverse=True)
+        return tablesample(
+            {"index": [elem[0] for elem in data], "iv": [elem[1] for elem in data],}
+        )
