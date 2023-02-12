@@ -17,6 +17,7 @@ permissions and limitations under the License.
 from typing import Union, Literal
 import verticapy.plotting._matplotlib as plt
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._collect import save_verticapy_logs
 
 
 class vDFPLOT:
