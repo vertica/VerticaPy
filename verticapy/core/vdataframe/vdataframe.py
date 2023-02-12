@@ -22,7 +22,7 @@ permissions and limitations under the License.
 import random, time, re, decimal, warnings, pickle, datetime, math, os, copy, sys
 from collections.abc import Iterable
 from itertools import combinations_with_replacement
-from typing import Union
+from typing import Union, Literal
 
 pickle.DEFAULT_PROTOCOL = 4
 
