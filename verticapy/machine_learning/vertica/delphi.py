@@ -58,7 +58,7 @@ from verticapy.machine_learning.vertica.neighbors import (
     KNeighborsRegressor,
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
-from verticapy.plotting._matplotlib import plot_bubble_ml
+from verticapy.plotting._matplotlib.mlplot import plot_bubble_ml, plot_stepwise_ml
 from verticapy.machine_learning.vertica.vmodel import vModel
 from verticapy.sql._utils._format import schema_relation
 from verticapy.machine_learning._utils import reverse_score
