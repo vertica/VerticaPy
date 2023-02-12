@@ -46,6 +46,7 @@ from verticapy._config.config import OPTIONS
 # Standard Python Modules
 import warnings, itertools
 from typing import Union, Literal
+import matplotlib.pyplot as plt
 
 
 class NearestCentroid(MulticlassClassifier):

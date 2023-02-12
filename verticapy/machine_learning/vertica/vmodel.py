@@ -2890,7 +2890,7 @@ class Regressor(Supervised):
         if method == "metrics":
             return mt.regression_report(self.y, prediction, test_relation, len(self.X))
         elif method == "anova":
-            return anova_table(self.y, prediction, test_relation, len(self.X))
+            return mt.anova_table(self.y, prediction, test_relation, len(self.X))
         elif method == "details":
             vdf = vDataFrameSQL(
                 f"""
@@ -2904,7 +2904,7 @@ class Regressor(Supervised):
             jb = vdf[self.y].agg(["jb"])[self.y][0]
             R2 = self.score()
             R2_adj = 1 - ((1 - R2) * (n - 1) / (n - len(self.X) - 1))
-            anova_T = anova_table(self.y, prediction, test_relation, len(self.X))
+            anova_T = mt.anova_table(self.y, prediction, test_relation, len(self.X))
             F = anova_T["F"][0]
             p_F = anova_T["p_value"][0]
             return tablesample(

@@ -31,26 +31,30 @@ from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
 from verticapy._utils._gen import gen_tmp_name
 from verticapy.errors import ParameterError
-from verticapy.learn.ensemble import (
+from verticapy.machine_learning.vertica.ensemble import (
     RandomForestRegressor,
     RandomForestClassifier,
     XGBoostClassifier,
     XGBoostRegressor,
 )
-from verticapy.learn.naive_bayes import NaiveBayes
-from verticapy.learn.linear_model import (
+from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
+from verticapy.machine_learning.vertica.linear_model import (
     LogisticRegression,
     LinearRegression,
     ElasticNet,
     Lasso,
     Ridge,
 )
-from verticapy.learn.decomposition import PCA
-from verticapy.learn.cluster import KMeans, KPrototypes
-from verticapy.learn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from verticapy.learn.svm import LinearSVC, LinearSVR
+from verticapy.machine_learning.vertica.model_selection import best_k
+from verticapy.machine_learning.vertica.decomposition import PCA
+from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
+from verticapy.machine_learning.vertica.neighbors import (
+    KNeighborsClassifier,
+    KNeighborsRegressor,
+)
+from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 from verticapy.plotting._matplotlib import plot_bubble_ml
-from verticapy.learn.vmodel import vModel
+from verticapy.machine_learning.vertica.vmodel import vModel
 from verticapy.sql._utils._format import schema_relation
 from verticapy.machine_learning._utils import reverse_score
 from verticapy._utils._sql import _executeSQL

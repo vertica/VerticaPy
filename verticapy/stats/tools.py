@@ -469,6 +469,8 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
     eps, ts, by = vdf.format_colnames(eps, ts, by)
     X = []
     X_names = []
