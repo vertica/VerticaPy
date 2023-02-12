@@ -15,7 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Union, Literal
-import pickle
+from collections.abc import Iterable
+import pickle, decimal
 
 pickle.DEFAULT_PROTOCOL = 4
 
@@ -28,6 +29,7 @@ from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ParameterError, ParsingError
 from verticapy.sql._utils._format import quote_ident
 from verticapy.connect.connect import current_cursor
+from verticapy._config.config import current_random
 
 # Geopandas - Optional
 try:
