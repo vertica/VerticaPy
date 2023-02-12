@@ -30,7 +30,7 @@ from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
-from verticapy.learn.model_selection import roc_curve, prc_curve
+from verticapy.learn.model_selection import roc_curve, prc_curve, lift_chart
 from verticapy.errors import ParameterError
 from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree
 from verticapy.learn.tools import does_model_exist
@@ -372,7 +372,7 @@ p: int, optional
             labels = [labels]
         if not (labels):
             labels = self.classes_
-        return classification_report(cutoff=cutoff, estimator=self, labels=labels)
+        return mt.classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
     report = classification_report
 

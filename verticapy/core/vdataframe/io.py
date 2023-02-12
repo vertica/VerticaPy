@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Union, Literal
 from collections.abc import Iterable
-import pickle, decimal
+import pickle, decimal, os
 
 pickle.DEFAULT_PROTOCOL = 4
 
