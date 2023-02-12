@@ -22,6 +22,7 @@ pickle.DEFAULT_PROTOCOL = 4
 import pandas as pd
 import numpy as np
 
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.sql.read import to_tablesample
 from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ParameterError, ParsingError
