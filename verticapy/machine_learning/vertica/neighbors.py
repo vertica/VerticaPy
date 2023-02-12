@@ -42,6 +42,7 @@ from verticapy._config.config import OPTIONS
 # Standard Python Modules
 import warnings, itertools
 from typing import Union, Literal
+from collections.abc import Iterable
 import matplotlib.pyplot as plt
 
 

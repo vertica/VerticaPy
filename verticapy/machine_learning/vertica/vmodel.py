@@ -23,6 +23,7 @@ permissions and limitations under the License.
 import warnings, copy
 import numpy as np
 from typing import Union, Literal, get_type_hints
+from collections.abc import Iterable
 
 # VerticaPy Modules
 from verticapy._version import check_minimum_version
