@@ -45,7 +45,7 @@ from verticapy._config.config import OPTIONS
 
 
 class vDFAGG:
-	@save_verticapy_logs
+    @save_verticapy_logs
     def groupby(
         self,
         columns: Union[str, list],
@@ -178,7 +178,7 @@ class vDFAGG:
             "groupby",
             f"[Groupby]: The columns were grouped by {rollup_expr_str}",
         )
-        
+
     @save_verticapy_logs
     def aggregate(
         self,

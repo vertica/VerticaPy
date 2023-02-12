@@ -37,8 +37,9 @@ from verticapy.plotting._colors import gen_cmap
 from verticapy.sql._utils._format import quote_ident
 from verticapy._config.config import OPTIONS
 
+
 class vDFCORR:
-	def __aggregate_matrix__(
+    def __aggregate_matrix__(
         self,
         method: str = "pearson",
         columns: list = [],

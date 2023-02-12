@@ -7206,18 +7206,6 @@ vColumns : vColumn
             vDataFrameSQL(relation=test_table),
         )
 
-    def vertica_version(self):
-        """
-    Returns the version of Vertica.
-
-    Returns
-    -------
-    list
-        List containing the version information.
-        [MAJOR, MINOR, PATCH, POST]
-        """
-        return vertica_version()
-
     @save_verticapy_logs
     def iv_woe(
         self,
