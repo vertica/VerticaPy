@@ -7919,8 +7919,6 @@ vColumns : vColumn
         )
         return (self._VERTICAPY_VARIABLES_["count"], m)
 
-    skew = skewness
-
     @save_verticapy_logs
     def sort(self, columns: Union[str, dict, list]):
         """

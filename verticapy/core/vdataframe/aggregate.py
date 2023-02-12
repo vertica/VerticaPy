@@ -1499,6 +1499,8 @@ class vDFAGG:
         """
         return self.aggregate(func=["skewness"], columns=columns, **agg_kwds,)
 
+    skew = skewness
+
     @save_verticapy_logs
     def std(
         self, columns: list = [], **agg_kwds,
