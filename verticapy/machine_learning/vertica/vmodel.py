@@ -48,8 +48,7 @@ from verticapy.sql._utils._format import clean_query, quote_ident, schema_relati
 from verticapy.machine_learning._utils import get_match_index
 from verticapy._config.config import OPTIONS
 import verticapy.learn.metrics as mt
-from verticapy.learn.memmodel import *
-from verticapy.learn.model_selection import *
+import verticapy.learn.model_selection as ms
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -1886,7 +1885,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return lift_chart(
+        return ms.lift_chart(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -1914,7 +1913,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return prc_curve(
+        return ms.prc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2056,7 +2055,7 @@ class BinaryClassifier(Classifier):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        return roc_curve(
+        return ms.roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2085,7 +2084,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return roc_curve(
+        return ms.roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2286,7 +2285,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return roc_curve(
+        return ms.roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2427,7 +2426,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return lift_chart(
+        return ms.lift_chart(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2478,7 +2477,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return prc_curve(
+        return ms.prc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2662,7 +2661,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return roc_curve(
+        return ms.roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
