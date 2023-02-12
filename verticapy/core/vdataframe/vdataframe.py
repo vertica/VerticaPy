@@ -46,7 +46,6 @@ from verticapy.sql.parsers.pandas import pandas_to_vertica
 from verticapy.core.tablesample import tablesample
 from verticapy.core.vcolumn import vColumn
 from verticapy.learn.memmodel import memModel
-from verticapy.plotting._highcharts import hchart_from_vdf
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import (
     ConnectionError,

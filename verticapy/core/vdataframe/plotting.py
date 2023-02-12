@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import datetime
 from typing import Union, Literal
 import verticapy.plotting._matplotlib as plt
+from verticapy.plotting._highcharts import hchart_from_vdf
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._collect import save_verticapy_logs
 from collections.abc import Iterable
