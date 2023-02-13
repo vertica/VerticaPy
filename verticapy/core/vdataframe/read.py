@@ -23,7 +23,6 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import OPTIONS
 from verticapy.sql.read import readSQL, vDataFrameSQL
 from verticapy.core.str_sql import str_sql
-from verticapy.core.vcolumn import vColumn
 
 
 # Jupyter - Optional
@@ -39,6 +38,7 @@ class vDFREAD:
         return (col for col in columns)
 
     def __getitem__(self, index):
+        from verticapy.core.vcolumn import vColumn
 
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
