@@ -14,6 +14,18 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy.core.str_sql import str_sql
+
+from verticapy.core.vdataframe.aggregate import vDCAGG
+from verticapy.core.vdataframe.plot import vDCPLOT
+from verticapy.core.vdataframe.math import vDCMATH
+from verticapy.core.vdataframe.typing import vDCTYPING
+from verticapy.core.vdataframe.filter import vDCFILTER
+from verticapy.core.vdataframe.preprocessing import vDCPREP
+from verticapy.core.vdataframe.read import vDCREAD
+from verticapy.core.vdataframe.sys import vDCSYS
+from verticapy.core.vdataframe.text import vDCTEXT
+from verticapy.core.vdataframe.corr import vDCCORR
 
 ##
 #
@@ -24,7 +36,7 @@ permissions and limitations under the License.
 #    \/_/      \/_____/   \/_____/   \/_____/   \/_____/   \/_/  \/_/   \/_/ \/_/
 #
 ##
-from verticapy.core.str_sql import str_sql
+
 
 class vColumn(
     str_sql,
