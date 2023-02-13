@@ -648,6 +648,8 @@ class vDCSYS:
     --------
     vDataFrame.eval : Evaluates a customized expression.
         """
+        from verticapy.core.vcolumn import vColumn
+        
         name = quote_ident(name.replace('"', "_"))
         assert name.replace('"', ""), EmptyParameter(
             "The parameter 'name' must not be empty"

@@ -19,6 +19,8 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql import _executeSQL
 from verticapy.core.tablesample import tablesample
 from verticapy._utils._cast import to_sql_dtype
+from verticapy.errors import ConversionError
+from verticapy.sql._utils._format import clean_query
 
 
 class vDFTYPING:

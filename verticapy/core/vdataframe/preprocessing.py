@@ -23,7 +23,7 @@ from typing import Union, Literal
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import EmptyParameter, ParameterError, QueryError
 from verticapy.sql.flex import compute_vmap_keys, isvmap
-from verticapy._utils._cast import to_category
+from verticapy._utils._cast import to_category, to_varchar
 from verticapy._version import vertica_version
 from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import quote_ident
