@@ -77,6 +77,8 @@ class vDFPREP:
     vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
         analytical function on a specific vColumn.
         """
+        from verticapy.core.vcolumn import vColumn
+        
         if isinstance(expr, str_sql):
             expr = str(expr)
         name = quote_ident(name.replace('"', "_"))
@@ -1844,7 +1846,7 @@ class vDCPREP:
     vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
         """
         from verticapy.core.vcolumn import vColumn
-        
+
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
             all_new_features = []
