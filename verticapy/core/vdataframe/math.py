@@ -23,6 +23,39 @@ from verticapy._utils._collect import save_verticapy_logs
 
 
 class vDFMATH:
+    def __abs__(self):
+        return self.copy().abs()
+
+    def __ceil__(self, n):
+        vdf = self.copy()
+        columns = vdf.numcol()
+        for elem in columns:
+            if vdf[elem].category() == "float":
+                vdf[elem].apply_fun(func="ceil", x=n)
+        return vdf
+
+    def __floor__(self, n):
+        vdf = self.copy()
+        columns = vdf.numcol()
+        for elem in columns:
+            if vdf[elem].category() == "float":
+                vdf[elem].apply_fun(func="floor", x=n)
+        return vdf
+
+    def __len__(self):
+        return int(self.shape()[0])
+
+    def __nonzero__(self):
+        return self.shape()[0] > 0 and not (self.empty())
+
+    def __round__(self, n):
+        vdf = self.copy()
+        columns = vdf.numcol()
+        for elem in columns:
+            if vdf[elem].category() == "float":
+                vdf[elem].apply_fun(func="round", x=n)
+        return vdf
+
     @save_verticapy_logs
     def abs(self, columns: Union[str, list] = []):
         """

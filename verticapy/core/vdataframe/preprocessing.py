@@ -15,22 +15,121 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 # Standard Python Modules
-import warnings, datetime, math
+import warnings, datetime, math, re
 from itertools import combinations_with_replacement
 from typing import Union, Literal
 
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import EmptyParameter, ParameterError
-from verticapy.sql.flex import compute_vmap_keys
+from verticapy.errors import EmptyParameter, ParameterError, QueryError
+from verticapy.sql.flex import compute_vmap_keys, isvmap
+from verticapy._utils._cast import to_category
 from verticapy._version import vertica_version
 from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import quote_ident
 from verticapy.core._utils._merge import gen_coalesce, group_similar_names
 from verticapy._config.config import OPTIONS
+from verticapy.core.vcolumn import vColumn
 
 
-class vDFTRANSFJOIN:
+class vDFPREP:
+    def __setattr__(self, attr, val):
+        if isinstance(val, (str, str_sql, int, float)) and not isinstance(val, vColumn):
+            val = str(val)
+            if self.is_colname_in(attr):
+                self[attr].apply(func=val)
+            else:
+                self.eval(name=attr, expr=val)
+        elif isinstance(val, vColumn) and not (val.init):
+            final_trans, n = val.init_transf, len(val.transformations)
+            for i in range(1, n):
+                final_trans = val.transformations[i][0].replace("{}", final_trans)
+            self.eval(name=attr, expr=final_trans)
+        else:
+            self.__dict__[attr] = val
+
+    def __setitem__(self, index, val):
+        setattr(self, index, val)
+
+    @save_verticapy_logs
+    def eval(self, name: str, expr: Union[str, str_sql]):
+        """
+    Evaluates a customized expression.
+
+    Parameters
+    ----------
+    name: str
+        Name of the new vColumn.
+    expr: str
+        Expression in pure SQL to use to compute the new feature.
+        For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
+        'POWER("column", 2)' will work.
+
+    Returns
+    -------
+    vDataFrame
+        self
+
+    See Also
+    --------
+    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vColumn.
+        """
+        if isinstance(expr, str_sql):
+            expr = str(expr)
+        name = quote_ident(name.replace('"', "_"))
+        if self.is_colname_in(name):
+            raise NameError(
+                f"A vColumn has already the alias {name}.\n"
+                "By changing the parameter 'name', you'll "
+                "be able to solve this issue."
+            )
+        try:
+            query = f"SELECT {expr} AS {name} FROM {self.__genSQL__()} LIMIT 0"
+            ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
+        except:
+            raise QueryError(
+                f"The expression '{expr}' seems to be incorrect.\nBy "
+                "turning on the SQL with the 'set_option' function, "
+                "you'll print the SQL code generation and probably "
+                "see why the evaluation didn't work."
+            )
+        if not (ctype):
+            ctype = "undefined"
+        elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
+            self._VERTICAPY_VARIABLES_["isflex"]
+            or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
+        ):
+            category = "vmap"
+            ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
+        else:
+            category = to_category(ctype=ctype)
+        all_cols, max_floor = self.get_columns(), 0
+        for column in all_cols:
+            column_str = column.replace('"', "")
+            if (quote_ident(column) in expr) or (
+                re.search(re.compile(f"\\b{column_str}\\b"), expr)
+            ):
+                max_floor = max(len(self[column].transformations), max_floor)
+        transformations = [
+            (
+                "___VERTICAPY_UNDEFINED___",
+                "___VERTICAPY_UNDEFINED___",
+                "___VERTICAPY_UNDEFINED___",
+            )
+            for i in range(max_floor)
+        ] + [(expr, ctype, category)]
+        new_vColumn = vColumn(name, parent=self, transformations=transformations)
+        setattr(self, name, new_vColumn)
+        setattr(self, name.replace('"', ""), new_vColumn)
+        new_vColumn.init = False
+        new_vColumn.init_transf = name
+        self._VERTICAPY_VARIABLES_["columns"] += [name]
+        self.__add_to_history__(
+            f"[Eval]: A new vColumn {name} was added to the vDataFrame."
+        )
+        return self
+
     @save_verticapy_logs
     def add_duplicates(self, weight: Union[int, str], use_gcd: bool = True):
         """
@@ -999,3 +1098,82 @@ class vDFTRANSFJOIN:
                   > '{session_threshold}') 
                   OVER ({partition} ORDER BY {ts})"""
         return self.eval(name=name, expr=expr)
+
+    @save_verticapy_logs
+    def sort(self, columns: Union[str, dict, list]):
+        """
+    Sorts the vDataFrame using the input vColumns.
+
+    Parameters
+    ----------
+    columns: str / dict / list
+        List of the vColumns to use to sort the data using asc order or
+        dictionary of all sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+
+    Returns
+    -------
+    vDataFrame
+        self
+
+    See Also
+    --------
+    vDataFrame.append  : Merges the vDataFrame with another relation.
+    vDataFrame.groupby : Aggregates the vDataFrame.
+    vDataFrame.join    : Joins the vDataFrame with another relation.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        columns = self.format_colnames(columns)
+        max_pos = 0
+        columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+        for column in columns_tmp:
+            max_pos = max(max_pos, len(self[column].transformations) - 1)
+        self._VERTICAPY_VARIABLES_["order_by"][max_pos] = self.__get_sort_syntax__(
+            columns
+        )
+        return self
+
+    @save_verticapy_logs
+    def swap(self, column1: Union[int, str], column2: Union[int, str]):
+        """
+    Swap the two input vColumns.
+
+    Parameters
+    ----------
+    column1: str / int
+        The first vColumn or its index to swap.
+    column2: str / int
+        The second vColumn or its index to swap.
+
+    Returns
+    -------
+    vDataFrame
+        self
+        """
+        if isinstance(column1, int):
+            assert column1 < self.shape()[1], ParameterError(
+                "The parameter 'column1' is incorrect, it is greater or equal "
+                f"to the vDataFrame number of columns: {column1}>={self.shape()[1]}"
+                "\nWhen this parameter type is 'integer', it must represent the index "
+                "of the column to swap."
+            )
+            column1 = self.get_columns()[column1]
+        if isinstance(column2, int):
+            assert column2 < self.shape()[1], ParameterError(
+                "The parameter 'column2' is incorrect, it is greater or equal "
+                f"to the vDataFrame number of columns: {column2}>={self.shape()[1]}"
+                "\nWhen this parameter type is 'integer', it must represent the "
+                "index of the column to swap."
+            )
+            column2 = self.get_columns()[column2]
+        column1, column2 = self.format_colnames(column1, column2)
+        columns = self._VERTICAPY_VARIABLES_["columns"]
+        all_cols = {}
+        for idx, elem in enumerate(columns):
+            all_cols[elem] = idx
+        columns[all_cols[column1]], columns[all_cols[column2]] = (
+            columns[all_cols[column2]],
+            columns[all_cols[column1]],
+        )
+        return self

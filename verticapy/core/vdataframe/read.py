@@ -15,14 +15,134 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Union
+from collections.abc import Iterable
 from verticapy._utils._cast import to_varchar
 from verticapy.sql.read import to_tablesample
 from verticapy._utils._sql import _executeSQL
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import OPTIONS
+from verticapy.sql.read import readSQL, vDataFrameSQL
+
+
+# Jupyter - Optional
+try:
+    from IPython.display import HTML, display
+except:
+    pass
 
 
 class vDFREAD:
+    def __iter__(self):
+        columns = self.get_columns()
+        return (col for col in columns)
+
+    def __getitem__(self, index):
+
+        if isinstance(index, slice):
+            assert index.step in (1, None), ValueError(
+                "vDataFrame doesn't allow slicing having steps different than 1."
+            )
+            index_stop = index.stop
+            index_start = index.start
+            if not (isinstance(index_start, int)):
+                index_start = 0
+            if index_start < 0:
+                index_start += self.shape()[0]
+            if isinstance(index_stop, int):
+                if index_stop < 0:
+                    index_stop += self.shape()[0]
+                limit = index_stop - index_start
+                if limit <= 0:
+                    limit = 0
+                limit = f" LIMIT {limit}"
+            else:
+                limit = ""
+            query = f"""
+                (SELECT * 
+                FROM {self.__genSQL__()}
+                {self.__get_last_order_by__()} 
+                OFFSET {index_start}{limit}) VERTICAPY_SUBTABLE"""
+            return vDataFrameSQL(query)
+
+        elif isinstance(index, int):
+            columns = self.get_columns()
+            for idx, elem in enumerate(columns):
+                if self[elem].category() == "float":
+                    columns[idx] = f"{elem}::float"
+            if index < 0:
+                index += self.shape()[0]
+            return _executeSQL(
+                query=f"""
+                    SELECT /*+LABEL('vDataframe.__getitem__')*/ 
+                        {', '.join(columns)} 
+                    FROM {self.__genSQL__()}
+                    {self.__get_last_order_by__()} 
+                    OFFSET {index} LIMIT 1""",
+                title="Getting the vDataFrame element.",
+                method="fetchrow",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            )
+
+        elif isinstance(index, (str, str_sql)):
+            is_sql = False
+            if isinstance(index, vColumn):
+                index = index.alias
+            elif isinstance(index, str_sql):
+                index = str(index)
+                is_sql = True
+            try:
+                new_index = self.format_colnames(index)
+                return getattr(self, new_index)
+            except:
+                if is_sql:
+                    return self.search(conditions=index)
+                else:
+                    return getattr(self, index)
+
+        elif isinstance(index, Iterable):
+            try:
+                return self.select(columns=[str(col) for col in index])
+            except:
+                return self.search(conditions=[str(col) for col in index])
+
+        else:
+            return getattr(self, index)
+
+    def __repr__(self):
+        if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (
+            self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"
+        ):
+            return readSQL(
+                self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
+                OPTIONS["time_on"],
+                OPTIONS["max_rows"],
+            ).__repr__()
+        max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
+        if max_rows <= 0:
+            max_rows = OPTIONS["max_rows"]
+        return self.head(limit=max_rows).__repr__()
+
+    def _repr_html_(self, interactive=False):
+        if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (
+            self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"
+        ):
+            self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
+            return readSQL(
+                self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
+                OPTIONS["time_on"],
+                OPTIONS["max_rows"],
+            )._repr_html_(interactive)
+        max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
+        if max_rows <= 0:
+            max_rows = OPTIONS["max_rows"]
+        return self.head(limit=max_rows)._repr_html_(interactive)
+
+    def idisplay(self):
+        """This method displays the interactive table. It is used when 
+        you don't want to activate interactive table for all vDataFrames."""
+        return display(HTML(self.copy()._repr_html_(interactive=True)))
+
     def get_columns(self, exclude_columns: Union[str, list] = []):
         """
     Returns the vDataFrame vColumns.

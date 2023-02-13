@@ -19,19 +19,12 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import warnings, copy, re
-from collections.abc import Iterable
+import warnings
 from typing import Union, Literal
 
 # Other modules
 import pandas as pd
 import numpy as np
-
-# Jupyter - Optional
-try:
-    from IPython.display import HTML, display
-except:
-    pass
 
 # VerticaPy Modules
 from verticapy.sql.parsers.pandas import pandas_to_vertica
@@ -40,7 +33,6 @@ from verticapy.core.vcolumn import vColumn
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import (
     ConnectionError,
-    MissingColumn,
     MissingRelation,
     ParameterError,
     QueryError,
@@ -52,8 +44,7 @@ from verticapy.sql.flex import (
     compute_flextable_keys,
 )
 from verticapy._utils._cast import to_category
-from verticapy._utils._gen import gen_name
-from verticapy.sql.read import vDataFrameSQL, readSQL
+from verticapy.sql.read import vDataFrameSQL
 from verticapy._utils._sql import _executeSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import (
@@ -74,12 +65,14 @@ from verticapy.core.vdataframe.io import vDFIO
 from verticapy.core.vdataframe.rolling import vDFROLL
 from verticapy.core.vdataframe.plotting import vDFPLOT
 from verticapy.core.vdataframe.filter import vDFFILTER
-from verticapy.core.vdataframe.transform_join import vDFTRANSFJOIN
+from verticapy.core.vdataframe.transform_join import vDFPREP
 from verticapy.core.vdataframe.machine_learning import vDFML
 from verticapy.core.vdataframe.math import vDFMATH
 from verticapy.core.vdataframe.sys import vDFSYS
 from verticapy.core.vdataframe.typing import vDFTYPING
 from verticapy.core.vdataframe.read import vDFREAD
+from verticapy.core.vdataframe.text import vDFTEXT
+from verticapy.core.vdataframe.utils import vDFUTILS
 
 
 ###
@@ -95,6 +88,7 @@ from verticapy.core.vdataframe.read import vDFREAD
 #       \ |     | /  |           | / |     |/
 #        \|_____|/   |___________|/  |_____|
 #
+###
 
 
 class vDataFrame(
@@ -104,12 +98,14 @@ class vDataFrame(
     vDFROLL,
     vDFPLOT,
     vDFFILTER,
-    vDFTRANSFJOIN,
+    vDFPREP,
     vDFML,
     vDFMATH,
     vDFSYS,
     vDFTYPING,
     vDFREAD,
+    vDFTEXT,
+    vDFUTILS,
 ):
     """
 An object that records all user modifications, allowing users to 
@@ -409,573 +405,3 @@ vColumns : vColumn
                 **self._VERTICAPY_VARIABLES_,
                 **other_parameters,
             }
-
-    def __abs__(self):
-        return self.copy().abs()
-
-    def __ceil__(self, n):
-        vdf = self.copy()
-        columns = vdf.numcol()
-        for elem in columns:
-            if vdf[elem].category() == "float":
-                vdf[elem].apply_fun(func="ceil", x=n)
-        return vdf
-
-    def __floor__(self, n):
-        vdf = self.copy()
-        columns = vdf.numcol()
-        for elem in columns:
-            if vdf[elem].category() == "float":
-                vdf[elem].apply_fun(func="floor", x=n)
-        return vdf
-
-    def __getitem__(self, index):
-
-        if isinstance(index, slice):
-            assert index.step in (1, None), ValueError(
-                "vDataFrame doesn't allow slicing having steps different than 1."
-            )
-            index_stop = index.stop
-            index_start = index.start
-            if not (isinstance(index_start, int)):
-                index_start = 0
-            if index_start < 0:
-                index_start += self.shape()[0]
-            if isinstance(index_stop, int):
-                if index_stop < 0:
-                    index_stop += self.shape()[0]
-                limit = index_stop - index_start
-                if limit <= 0:
-                    limit = 0
-                limit = f" LIMIT {limit}"
-            else:
-                limit = ""
-            query = f"""
-                (SELECT * 
-                FROM {self.__genSQL__()}
-                {self.__get_last_order_by__()} 
-                OFFSET {index_start}{limit}) VERTICAPY_SUBTABLE"""
-            return vDataFrameSQL(query)
-
-        elif isinstance(index, int):
-            columns = self.get_columns()
-            for idx, elem in enumerate(columns):
-                if self[elem].category() == "float":
-                    columns[idx] = f"{elem}::float"
-            if index < 0:
-                index += self.shape()[0]
-            return _executeSQL(
-                query=f"""
-                    SELECT /*+LABEL('vDataframe.__getitem__')*/ 
-                        {', '.join(columns)} 
-                    FROM {self.__genSQL__()}
-                    {self.__get_last_order_by__()} 
-                    OFFSET {index} LIMIT 1""",
-                title="Getting the vDataFrame element.",
-                method="fetchrow",
-                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self._VERTICAPY_VARIABLES_["symbol"],
-            )
-
-        elif isinstance(index, (str, str_sql)):
-            is_sql = False
-            if isinstance(index, vColumn):
-                index = index.alias
-            elif isinstance(index, str_sql):
-                index = str(index)
-                is_sql = True
-            try:
-                new_index = self.format_colnames(index)
-                return getattr(self, new_index)
-            except:
-                if is_sql:
-                    return self.search(conditions=index)
-                else:
-                    return getattr(self, index)
-
-        elif isinstance(index, Iterable):
-            try:
-                return self.select(columns=[str(col) for col in index])
-            except:
-                return self.search(conditions=[str(col) for col in index])
-
-        else:
-            return getattr(self, index)
-
-    def __iter__(self):
-        columns = self.get_columns()
-        return (col for col in columns)
-
-    def __len__(self):
-        return int(self.shape()[0])
-
-    def __nonzero__(self):
-        return self.shape()[0] > 0 and not (self.empty())
-
-    def __repr__(self):
-        if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (
-            self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"
-        ):
-            return readSQL(
-                self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
-                OPTIONS["time_on"],
-                OPTIONS["max_rows"],
-            ).__repr__()
-        max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
-        if max_rows <= 0:
-            max_rows = OPTIONS["max_rows"]
-        return self.head(limit=max_rows).__repr__()
-
-    def _repr_html_(self, interactive=False):
-        if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (
-            self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"
-        ):
-            self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
-            return readSQL(
-                self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
-                OPTIONS["time_on"],
-                OPTIONS["max_rows"],
-            )._repr_html_(interactive)
-        max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
-        if max_rows <= 0:
-            max_rows = OPTIONS["max_rows"]
-        return self.head(limit=max_rows)._repr_html_(interactive)
-
-    def __round__(self, n):
-        vdf = self.copy()
-        columns = vdf.numcol()
-        for elem in columns:
-            if vdf[elem].category() == "float":
-                vdf[elem].apply_fun(func="round", x=n)
-        return vdf
-
-    def __setattr__(self, attr, val):
-        if isinstance(val, (str, str_sql, int, float)) and not isinstance(val, vColumn):
-            val = str(val)
-            if self.is_colname_in(attr):
-                self[attr].apply(func=val)
-            else:
-                self.eval(name=attr, expr=val)
-        elif isinstance(val, vColumn) and not (val.init):
-            final_trans, n = val.init_transf, len(val.transformations)
-            for i in range(1, n):
-                final_trans = val.transformations[i][0].replace("{}", final_trans)
-            self.eval(name=attr, expr=final_trans)
-        else:
-            self.__dict__[attr] = val
-
-    def __setitem__(self, index, val):
-        setattr(self, index, val)
-
-    #
-    # Methods used to check & format the inputs
-    #
-
-    def format_colnames(
-        self,
-        *argv,
-        columns: Union[str, list, dict] = [],
-        expected_nb_of_cols: Union[int, list] = [],
-        raise_error: bool = True,
-    ):
-        """
-    Method used to format the input columns by using the vDataFrame columns' names.
-
-    Parameters
-    ----------
-    *argv: str / list / dict, optional
-        List of columns' names to format. It allows to use as input multiple
-        objects and to get all of them formatted.
-        Example: self.format_colnames(x0, x1, x2) will return x0_f, x1_f, 
-        x2_f where xi_f represents xi correctly formatted.
-    columns: str / list / dict, optional
-        List of columns' names to format.
-    expected_nb_of_cols: int / list
-        [Only used for the function first argument]
-        List of the expected number of columns.
-        Example: If expected_nb_of_cols is set to [2, 3], the parameters
-        'columns' or the first argument of argv should have exactly 2 or
-        3 elements. Otherwise, the function will raise an error.
-    raise_error: bool, optional
-        If set to True and if there is an error, it will be raised.
-
-    Returns
-    -------
-    str / list
-        Formatted columns' names.
-        """
-        from verticapy.stats._utils import levenshtein
-
-        if argv:
-            result = []
-            for arg in argv:
-                result += [self.format_colnames(columns=arg, raise_error=raise_error)]
-            if len(argv) == 1:
-                result = result[0]
-        else:
-            if not (columns) or isinstance(columns, (int, float)):
-                return copy.deepcopy(columns)
-            if raise_error:
-                if isinstance(columns, str):
-                    cols_to_check = [columns]
-                else:
-                    cols_to_check = copy.deepcopy(columns)
-                all_columns = self.get_columns()
-                for column in cols_to_check:
-                    result = []
-                    if column not in all_columns:
-                        min_distance, min_distance_op = 1000, ""
-                        is_error = True
-                        for col in all_columns:
-                            if quote_ident(column).lower() == quote_ident(col).lower():
-                                is_error = False
-                                break
-                            else:
-                                ldistance = levenshtein(column, col)
-                                if ldistance < min_distance:
-                                    min_distance, min_distance_op = ldistance, col
-                        if is_error:
-                            error_message = (
-                                f"The Virtual Column '{column}' doesn't exist."
-                            )
-                            if min_distance < 10:
-                                error_message += f"\nDid you mean '{min_distance_op}' ?"
-                            raise MissingColumn(error_message)
-
-            if isinstance(columns, str):
-                result = columns
-                vdf_columns = self.get_columns()
-                for col in vdf_columns:
-                    if quote_ident(columns).lower() == quote_ident(col).lower():
-                        result = col
-                        break
-            elif isinstance(columns, dict):
-                result = {}
-                for col in columns:
-                    key = self.format_colnames(col, raise_error=raise_error)
-                    result[key] = columns[col]
-            else:
-                result = []
-                for col in columns:
-                    result += [self.format_colnames(col, raise_error=raise_error)]
-        if raise_error:
-            if isinstance(expected_nb_of_cols, int):
-                expected_nb_of_cols = [expected_nb_of_cols]
-            if len(expected_nb_of_cols) > 0:
-                if len(argv) > 0:
-                    columns = argv[0]
-                n = len(columns)
-                if n not in expected_nb_of_cols:
-                    x = "|".join([str(nb) for nb in expected_nb_of_cols])
-                    raise ParameterError(
-                        f"The number of Virtual Columns expected is [{x}], found {n}."
-                    )
-        return result
-
-    def is_colname_in(self, column: str):
-        """
-    Method used to check if the input column name is used by the vDataFrame.
-    If not, the function raises an error.
-
-    Parameters
-    ----------
-    column: str
-        Input column.
-
-    Returns
-    -------
-    bool
-        True if the column is used by the vDataFrame
-        False otherwise.
-        """
-        columns = self.get_columns()
-        column = quote_ident(column).lower()
-        for col in columns:
-            if column == quote_ident(col).lower():
-                return True
-        return False
-
-    def get_nearest_column(self, column: str):
-        """
-    Method used to find the nearest column's name to the input one.
-
-    Parameters
-    ----------
-    column: str
-        Input column.
-
-    Returns
-    -------
-    tuple
-        (nearest column, levenstein distance)
-        """
-        from verticapy.stats._utils import levenshtein
-
-        columns = self.get_columns()
-        col = column.replace('"', "").lower()
-        result = (columns[0], levenshtein(col, columns[0].replace('"', "").lower()))
-        if len(columns) == 1:
-            return result
-        for col in columns:
-            if col != result[0]:
-                current_col = col.replace('"', "").lower()
-                d = levenshtein(current_col, col)
-                if result[1] > d:
-                    result = (col, d)
-        return result
-
-    #
-    # Interactive display
-    #
-
-    def idisplay(self):
-        """This method displays the interactive table. It is used when 
-        you don't want to activate interactive table for all vDataFrames."""
-        return display(HTML(self.copy()._repr_html_(interactive=True)))
-
-    #
-    # Methods
-    #
-
-    @save_verticapy_logs
-    def regexp(
-        self,
-        column: str,
-        pattern: str,
-        method: Literal[
-            "count",
-            "ilike",
-            "instr",
-            "like",
-            "not_ilike",
-            "not_like",
-            "replace",
-            "substr",
-        ] = "substr",
-        position: int = 1,
-        occurrence: int = 1,
-        replacement: str = "",
-        return_position: int = 0,
-        name: str = "",
-    ):
-        """
-    Computes a new vColumn based on regular expressions. 
-
-    Parameters
-    ----------
-    column: str
-        Input vColumn to use to compute the regular expression.
-    pattern: str
-        The regular expression.
-    method: str, optional
-        Method to use to compute the regular expressions.
-            count     : Returns the number times a regular expression matches 
-                each element of the input vColumn. 
-            ilike     : Returns True if the vColumn element contains a match 
-                for the regular expression.
-            instr     : Returns the starting or ending position in a vColumn 
-                element where a regular expression matches. 
-            like      : Returns True if the vColumn element matches the regular 
-                expression.
-            not_ilike : Returns True if the vColumn element does not match the 
-                case-insensitive regular expression.
-            not_like  : Returns True if the vColumn element does not contain a 
-                match for the regular expression.
-            replace   : Replaces all occurrences of a substring that match a 
-                regular expression with another substring.
-            substr    : Returns the substring that matches a regular expression 
-                within a vColumn.
-    position: int, optional
-        The number of characters from the start of the string where the function 
-        should start searching for matches.
-    occurrence: int, optional
-        Controls which occurrence of a pattern match in the string to return.
-    replacement: str, optional
-        The string to replace matched substrings.
-    return_position: int, optional
-        Sets the position within the string to return.
-    name: str, optional
-        New feature name. If empty, a name will be generated.
-
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.eval : Evaluates a customized expression.
-        """
-        column = self.format_colnames(column)
-        pattern_str = pattern.replace("'", "''")
-        expr = f"REGEXP_{method.upper()}({column}, '{pattern_str}'"
-        if method == "replace":
-            replacement_str = replacement.replace("'", "''")
-            expr += f", '{replacement_str}'"
-        if method in ("count", "instr", "replace", "substr"):
-            expr += f", {position}"
-        if method in ("instr", "replace", "substr"):
-            expr += f", {occurrence}"
-        if method == "instr":
-            expr += f", {return_position}"
-        expr += ")"
-        gen_name([method, column])
-        return self.eval(name=name, expr=expr)
-
-    @save_verticapy_logs
-    def swap(self, column1: Union[int, str], column2: Union[int, str]):
-        """
-    Swap the two input vColumns.
-
-    Parameters
-    ----------
-    column1: str / int
-        The first vColumn or its index to swap.
-    column2: str / int
-        The second vColumn or its index to swap.
-
-    Returns
-    -------
-    vDataFrame
-        self
-        """
-        if isinstance(column1, int):
-            assert column1 < self.shape()[1], ParameterError(
-                "The parameter 'column1' is incorrect, it is greater or equal "
-                f"to the vDataFrame number of columns: {column1}>={self.shape()[1]}"
-                "\nWhen this parameter type is 'integer', it must represent the index "
-                "of the column to swap."
-            )
-            column1 = self.get_columns()[column1]
-        if isinstance(column2, int):
-            assert column2 < self.shape()[1], ParameterError(
-                "The parameter 'column2' is incorrect, it is greater or equal "
-                f"to the vDataFrame number of columns: {column2}>={self.shape()[1]}"
-                "\nWhen this parameter type is 'integer', it must represent the "
-                "index of the column to swap."
-            )
-            column2 = self.get_columns()[column2]
-        column1, column2 = self.format_colnames(column1, column2)
-        columns = self._VERTICAPY_VARIABLES_["columns"]
-        all_cols = {}
-        for idx, elem in enumerate(columns):
-            all_cols[elem] = idx
-        columns[all_cols[column1]], columns[all_cols[column2]] = (
-            columns[all_cols[column2]],
-            columns[all_cols[column1]],
-        )
-        return self
-
-    @save_verticapy_logs
-    def sort(self, columns: Union[str, dict, list]):
-        """
-    Sorts the vDataFrame using the input vColumns.
-
-    Parameters
-    ----------
-    columns: str / dict / list
-        List of the vColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.append  : Merges the vDataFrame with another relation.
-    vDataFrame.groupby : Aggregates the vDataFrame.
-    vDataFrame.join    : Joins the vDataFrame with another relation.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        columns = self.format_colnames(columns)
-        max_pos = 0
-        columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
-        for column in columns_tmp:
-            max_pos = max(max_pos, len(self[column].transformations) - 1)
-        self._VERTICAPY_VARIABLES_["order_by"][max_pos] = self.__get_sort_syntax__(
-            columns
-        )
-        return self
-
-    @save_verticapy_logs
-    def eval(self, name: str, expr: Union[str, str_sql]):
-        """
-    Evaluates a customized expression.
-
-    Parameters
-    ----------
-    name: str
-        Name of the new vColumn.
-    expr: str
-        Expression in pure SQL to use to compute the new feature.
-        For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
-        'POWER("column", 2)' will work.
-
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
-        analytical function on a specific vColumn.
-        """
-        if isinstance(expr, str_sql):
-            expr = str(expr)
-        name = quote_ident(name.replace('"', "_"))
-        if self.is_colname_in(name):
-            raise NameError(
-                f"A vColumn has already the alias {name}.\n"
-                "By changing the parameter 'name', you'll "
-                "be able to solve this issue."
-            )
-        try:
-            query = f"SELECT {expr} AS {name} FROM {self.__genSQL__()} LIMIT 0"
-            ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
-        except:
-            raise QueryError(
-                f"The expression '{expr}' seems to be incorrect.\nBy "
-                "turning on the SQL with the 'set_option' function, "
-                "you'll print the SQL code generation and probably "
-                "see why the evaluation didn't work."
-            )
-        if not (ctype):
-            ctype = "undefined"
-        elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
-            self._VERTICAPY_VARIABLES_["isflex"]
-            or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
-        ):
-            category = "vmap"
-            ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
-        else:
-            category = to_category(ctype=ctype)
-        all_cols, max_floor = self.get_columns(), 0
-        for column in all_cols:
-            column_str = column.replace('"', "")
-            if (quote_ident(column) in expr) or (
-                re.search(re.compile(f"\\b{column_str}\\b"), expr)
-            ):
-                max_floor = max(len(self[column].transformations), max_floor)
-        transformations = [
-            (
-                "___VERTICAPY_UNDEFINED___",
-                "___VERTICAPY_UNDEFINED___",
-                "___VERTICAPY_UNDEFINED___",
-            )
-            for i in range(max_floor)
-        ] + [(expr, ctype, category)]
-        new_vColumn = vColumn(name, parent=self, transformations=transformations)
-        setattr(self, name, new_vColumn)
-        setattr(self, name.replace('"', ""), new_vColumn)
-        new_vColumn.init = False
-        new_vColumn.init_transf = name
-        self._VERTICAPY_VARIABLES_["columns"] += [name]
-        self.__add_to_history__(
-            f"[Eval]: A new vColumn {name} was added to the vDataFrame."
-        )
-        return self
