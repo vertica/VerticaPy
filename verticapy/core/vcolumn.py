@@ -43,6 +43,7 @@ from verticapy.sql._utils._format import quote_ident, clean_query
 from verticapy._utils._cast import to_sql_dtype
 from verticapy.plotting._matplotlib.core import updated_dict
 from verticapy._config.config import OPTIONS
+from verticapy.core.vdataframe.aggregate import vDCAgg
 
 # Other modules
 from matplotlib.lines import Line2D
@@ -58,7 +59,7 @@ from matplotlib.lines import Line2D
 #
 
 
-class vColumn(str_sql):
+class vColumn(str_sql, vDCAgg):
     """
 Python object which that stores all user transformations. If the vDataFrame
 represents the entire relation, a vColumn can be seen as one column of that
@@ -255,22 +256,6 @@ Attributes
     #
 
     @save_verticapy_logs
-    def aad(self):
-        """
-    Aggregates the vColumn using 'aad' (Average Absolute Deviation).
-
-    Returns
-    -------
-    float
-        aad
-
-    See Also
-    --------
-    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-        """
-        return self.aggregate(["aad"]).values[self.alias][0]
-
-    @save_verticapy_logs
     def abs(self):
         """
 	Applies the absolute value function to the input vColumn. 
@@ -351,59 +336,6 @@ Attributes
             f"named {name} was added to the vDataFrame."
         )
         return self.parent
-
-    @save_verticapy_logs
-    def aggregate(self, func: list):
-        """
-	Aggregates the vColumn using the input functions.
-
-	Parameters
- 	----------
- 	func: list
- 		List of the different aggregation.
-            aad            : average absolute deviation
- 			approx_unique  : approximative cardinality
- 			count          : number of non-missing elements
-			cvar           : conditional value at risk
-			dtype          : vColumn type
-			iqr            : interquartile range
-			kurtosis       : kurtosis
-			jb             : Jarque-Bera index 
-			mad            : median absolute deviation
-			max            : maximum
-			mean           : average
-			median         : median
-			min            : minimum
-			mode           : most occurent element
-			percent        : percent of non-missing elements
-			q%             : q quantile (ex: 50% for the median)
-			prod           : product
-			range          : difference between the max and the min
-			sem            : standard error of the mean
-			skewness       : skewness
-			sum            : sum
-			std            : standard deviation
-			topk           : kth most occurent element (ex: top1 for the mode)
-			topk_percent   : kth most occurent element density
-			unique         : cardinality (count distinct)
-			var            : variance
-				Other aggregations could work if it is part of 
-				the DB version you are using.
-
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
-
- 	See Also
- 	--------
- 	vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
- 		analytical function on a specific vColumn.
-		"""
-        return self.parent.aggregate(func=func, columns=[self.alias]).transpose()
-
-    agg = aggregate
 
     @save_verticapy_logs
     def apply(self, func: Union[str, str_sql], copy_name: str = ""):
@@ -734,24 +666,6 @@ Attributes
             )
 
     @save_verticapy_logs
-    def avg(self):
-        """
-	Aggregates the vColumn using 'avg' (Average).
-
- 	Returns
- 	-------
- 	float
- 		average
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["avg"]).values[self.alias][0]
-
-    mean = avg
-
-    @save_verticapy_logs
     def bar(
         self,
         method: str = "density",
@@ -910,22 +824,6 @@ Attributes
         func = f"(CASE {lower_when}{upper_when}ELSE {{}} END)"
         self.apply(func=func)
         return self.parent
-
-    @save_verticapy_logs
-    def count(self):
-        """
-	Aggregates the vColumn using 'count' (Number of non-Missing elements).
-
- 	Returns
- 	-------
- 	int
- 		number of non-Missing elements.
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["count"]).values[self.alias][0]
 
     @save_verticapy_logs
     def cut(
@@ -1170,178 +1068,6 @@ Attributes
             return result
         finally:
             model.drop()
-
-    @save_verticapy_logs
-    def describe(
-        self,
-        method: Literal["auto", "numerical", "categorical", "cat_stats"] = "auto",
-        max_cardinality: int = 6,
-        numcol: str = "",
-    ):
-        """
-	Aggregates the vColumn using multiple statistical aggregations: 
-	min, max, median, unique... depending on the input method.
-
-	Parameters
- 	----------
- 	method: str, optional
- 		The describe method.
- 			auto 	    : Sets the method to 'numerical' if the vColumn is numerical
- 				, 'categorical' otherwise.
-			categorical : Uses only categorical aggregations during the computation.
-			cat_stats   : Computes statistics of a numerical column for each vColumn
-				category. In this case, the parameter 'numcol' must be defined.
- 			numerical   : Uses popular numerical aggregations during the computation.
- 	max_cardinality: int, optional
- 		Cardinality threshold to use to determine if the vColumn will be considered
- 		as categorical.
- 	numcol: str, optional
- 		Numerical vColumn to use when the parameter method is set to 'cat_stats'.
-
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        assert (method != "cat_stats") or (numcol), ParameterError(
-            "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
-        )
-        distinct_count, is_numeric, is_date = (
-            self.nunique(),
-            self.isnum(),
-            self.isdate(),
-        )
-        if (is_date) and not (method == "categorical"):
-            result = self.aggregate(["count", "min", "max"])
-            index = result.values["index"]
-            result = result.values[self.alias]
-        elif (method == "cat_stats") and (numcol != ""):
-            numcol = self.parent.format_colnames(numcol)
-            assert self.parent[numcol].category() in ("float", "int"), TypeError(
-                "The column 'numcol' must be numerical"
-            )
-            cast = "::int" if (self.parent[numcol].isbool()) else ""
-            query, cat = [], self.distinct()
-            if len(cat) == 1:
-                lp, rp = "(", ")"
-            else:
-                lp, rp = "", ""
-            for category in cat:
-                tmp_query = f"""
-                    SELECT 
-                        '{category}' AS 'index', 
-                        COUNT({self.alias}) AS count, 
-                        100 * COUNT({self.alias}) / {self.parent.shape()[0]} AS percent, 
-                        AVG({numcol}{cast}) AS mean, 
-                        STDDEV({numcol}{cast}) AS std, 
-                        MIN({numcol}{cast}) AS min, 
-                        APPROXIMATE_PERCENTILE ({numcol}{cast} 
-                            USING PARAMETERS percentile = 0.1) AS 'approx_10%', 
-                        APPROXIMATE_PERCENTILE ({numcol}{cast} 
-                            USING PARAMETERS percentile = 0.25) AS 'approx_25%', 
-                        APPROXIMATE_PERCENTILE ({numcol}{cast} 
-                            USING PARAMETERS percentile = 0.5) AS 'approx_50%', 
-                        APPROXIMATE_PERCENTILE ({numcol}{cast} 
-                            USING PARAMETERS percentile = 0.75) AS 'approx_75%', 
-                        APPROXIMATE_PERCENTILE ({numcol}{cast} 
-                            USING PARAMETERS percentile = 0.9) AS 'approx_90%', 
-                        MAX({numcol}{cast}) AS max 
-                   FROM vdf_table"""
-                if category in ("None", None):
-                    tmp_query += f" WHERE {self.alias} IS NULL"
-                else:
-                    alias_sql_repr = to_varchar(self.category(), self.alias)
-                    tmp_query += f" WHERE {alias_sql_repr} = '{category}'"
-                query += [lp + tmp_query + rp]
-            values = to_tablesample(
-                query=f"""
-                    WITH vdf_table AS 
-                        (SELECT 
-                            * 
-                        FROM {self.parent.__genSQL__()}) 
-                        {' UNION ALL '.join(query)}""",
-                title=f"Describes the statics of {numcol} partitioned by {self.alias}.",
-                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
-            ).values
-        elif (
-            ((distinct_count < max_cardinality + 1) and (method != "numerical"))
-            or not (is_numeric)
-            or (method == "categorical")
-        ):
-            query = f"""(SELECT 
-                            {self.alias} || '', 
-                            COUNT(*) 
-                        FROM vdf_table 
-                        GROUP BY {self.alias} 
-                        ORDER BY COUNT(*) DESC 
-                        LIMIT {max_cardinality})"""
-            if distinct_count > max_cardinality:
-                query += f"""
-                    UNION ALL 
-                    (SELECT 
-                        'Others', SUM(count) 
-                     FROM 
-                        (SELECT 
-                            COUNT(*) AS count 
-                         FROM vdf_table 
-                         WHERE {self.alias} IS NOT NULL 
-                         GROUP BY {self.alias} 
-                         ORDER BY COUNT(*) DESC 
-                         OFFSET {max_cardinality + 1}) VERTICAPY_SUBTABLE) 
-                     ORDER BY count DESC"""
-            query_result = _executeSQL(
-                query=f"""
-                    WITH vdf_table AS 
-                        (SELECT 
-                            /*+LABEL('vColumn.describe')*/ * 
-                         FROM {self.parent.__genSQL__()}) {query}""",
-                title=f"Computing the descriptive statistics of {self.alias}.",
-                method="fetchall",
-                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
-            )
-            result = [distinct_count, self.count()] + [item[1] for item in query_result]
-            index = ["unique", "count"] + [item[0] for item in query_result]
-        else:
-            result = (
-                self.parent.describe(
-                    method="numerical", columns=[self.alias], unique=False
-                )
-                .transpose()
-                .values[self.alias]
-            )
-            result = [distinct_count] + result
-            index = [
-                "unique",
-                "count",
-                "mean",
-                "std",
-                "min",
-                "approx_25%",
-                "approx_50%",
-                "approx_75%",
-                "max",
-            ]
-        if method != "cat_stats":
-            values = {
-                "index": ["name", "dtype"] + index,
-                "value": [self.alias, self.ctype()] + result,
-            }
-            if ((is_date) and not (method == "categorical")) or (
-                method == "is_numeric"
-            ):
-                self.parent.__update_catalog__({"index": index, self.alias: result})
-        for elem in values:
-            for i in range(len(values[elem])):
-                if isinstance(values[elem][i], decimal.Decimal):
-                    values[elem][i] = float(values[elem][i])
-        return tablesample(values)
 
     @save_verticapy_logs
     def discretize(
@@ -2546,24 +2272,6 @@ Attributes
         return result
 
     @save_verticapy_logs
-    def kurtosis(self):
-        """
-	Aggregates the vColumn using 'kurtosis'.
-
- 	Returns
- 	-------
- 	float
- 		kurtosis
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["kurtosis"]).values[self.alias][0]
-
-    kurt = kurtosis
-
-    @save_verticapy_logs
     def label_encode(self):
         """
 	Encodes the vColumn using a bijection from the different categories to
@@ -2604,38 +2312,6 @@ Attributes
                 f" {self.alias} using the following mapping:{text_info}"
             )
         return self.parent
-
-    @save_verticapy_logs
-    def mad(self):
-        """
-	Aggregates the vColumn using 'mad' (median absolute deviation).
-
- 	Returns
- 	-------
- 	float
- 		mad
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["mad"]).values[self.alias][0]
-
-    @save_verticapy_logs
-    def max(self):
-        """
-	Aggregates the vColumn using 'max' (Maximum).
-
- 	Returns
- 	-------
- 	float/str
- 		maximum
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["max"]).values[self.alias][0]
 
     @save_verticapy_logs
     def mean_encode(self, response: str):
@@ -2682,30 +2358,6 @@ Attributes
         return self.parent
 
     @save_verticapy_logs
-    def median(
-        self, approx: bool = True,
-    ):
-        """
-	Aggregates the vColumn using 'median'.
-
-    Parameters
-    ----------
-    approx: bool, optional
-        If set to True, the approximate median is returned. By setting this 
-        parameter to False, the function's performance can drastically decrease.
-
- 	Returns
- 	-------
- 	float/str
- 		median
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.quantile(0.5, approx=approx)
-
-    @save_verticapy_logs
     def memory_usage(self):
         """
 	Returns the vColumn memory usage. 
@@ -2728,99 +2380,6 @@ Attributes
         for elem in self.catalog:
             total += sys.getsizeof(elem)
         return total
-
-    @save_verticapy_logs
-    def min(self):
-        """
-	Aggregates the vColumn using 'min' (Minimum).
-
- 	Returns
- 	-------
- 	float/str
- 		minimum
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["min"]).values[self.alias][0]
-
-    @save_verticapy_logs
-    def mode(self, dropna: bool = False, n: int = 1):
-        """
-	Returns the nth most occurent element.
-
-	Parameters
- 	----------
- 	dropna: bool, optional
- 		If set to True, NULL values will not be considered during the computation.
- 	n: int, optional
- 		Integer corresponding to the offset. For example, if n = 1 then this
- 		method will return the mode of the vColumn.
-
- 	Returns
- 	-------
- 	str/float/int
- 		vColumn nth most occurent element.
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        if n == 1:
-            pre_comp = self.parent.__get_catalog_value__(self.alias, "top")
-            if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
-                if not (dropna) and (pre_comp != None):
-                    return pre_comp
-        assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
-        where = f" WHERE {self.alias} IS NOT NULL " if (dropna) else " "
-        result = _executeSQL(
-            f"""
-            SELECT 
-                /*+LABEL('vColumn.mode')*/ {self.alias} 
-            FROM (
-                SELECT 
-                    {self.alias}, 
-                    COUNT(*) AS _verticapy_cnt_ 
-                FROM {self.parent.__genSQL__()}
-                {where}GROUP BY {self.alias} 
-                ORDER BY _verticapy_cnt_ DESC 
-                LIMIT {n}) VERTICAPY_SUBTABLE 
-                ORDER BY _verticapy_cnt_ ASC 
-                LIMIT 1""",
-            title="Computing the mode.",
-            method="fetchall",
-            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
-        )
-        top = None if not (result) else result[0][0]
-        if not (dropna):
-            n = "" if (n == 1) else str(int(n))
-            if isinstance(top, decimal.Decimal):
-                top = float(top)
-            self.parent.__update_catalog__({"index": [f"top{n}"], self.alias: [top]})
-        return top
-
-    @save_verticapy_logs
-    def mul(self, x: Union[int, float]):
-        """
-	Multiplies the vColumn by the input element.
-
-	Parameters
- 	----------
- 	x: int / float
- 		Input number.
-
- 	Returns
- 	-------
- 	vDataFrame
-		self.parent
-
-	See Also
-	--------
-	vDataFrame[].apply : Applies a function to the input vColumn.
-		"""
-        return self.apply(func=f"{{}} * ({x})")
 
     @save_verticapy_logs
     def nlargest(self, n: int = 10):
@@ -3264,32 +2823,6 @@ Attributes
         return best_h
 
     @save_verticapy_logs
-    def nunique(self, approx: bool = True):
-        """
-	Aggregates the vColumn using 'unique' (cardinality).
-
-	Parameters
- 	----------
- 	approx: bool, optional
- 		If set to True, the approximate cardinality is returned. By setting 
-        this parameter to False, the function's performance can drastically 
-        decrease.
-
- 	Returns
- 	-------
- 	int
- 		vColumn cardinality (or approximate cardinality).
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        if approx:
-            return self.aggregate(func=["approx_unique"]).values[self.alias][0]
-        else:
-            return self.aggregate(func=["unique"]).values[self.alias][0]
-
-    @save_verticapy_logs
     def pie(
         self,
         method: str = "density",
@@ -3400,50 +2933,6 @@ Attributes
         )
 
     @save_verticapy_logs
-    def product(self):
-        """
-	Aggregates the vColumn using 'product'.
-
- 	Returns
- 	-------
- 	float
- 		product
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(func=["prod"]).values[self.alias][0]
-
-    prod = product
-
-    @save_verticapy_logs
-    def quantile(self, x: Union[int, float], approx: bool = True):
-        """
-	Aggregates the vColumn using an input 'quantile'.
-
-	Parameters
- 	----------
- 	x: int / float
- 		A float between 0 and 1 that represents the quantile.
-        For example: 0.25 represents Q1.
-    approx: bool, optional
-        If set to True, the approximate quantile is returned. By setting this 
-        parameter to False, the function's performance can drastically decrease.
-
- 	Returns
- 	-------
- 	float
- 		quantile (or approximate quantile).
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        prefix = "approx_" if approx else ""
-        return self.aggregate(func=[f"{prefix}{x * 100}%"]).values[self.alias][0]
-
-    @save_verticapy_logs
     def range_plot(
         self,
         ts: str,
@@ -3551,40 +3040,6 @@ Attributes
         return self.apply(func=f"ROUND({{}}, {n})")
 
     @save_verticapy_logs
-    def sem(self):
-        """
-	Aggregates the vColumn using 'sem' (standard error of mean).
-
- 	Returns
- 	-------
- 	float
- 		sem
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["sem"]).values[self.alias][0]
-
-    @save_verticapy_logs
-    def skewness(self):
-        """
-	Aggregates the vColumn using 'skewness'.
-
- 	Returns
- 	-------
- 	float
- 		skewness
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["skewness"]).values[self.alias][0]
-
-    skew = skewness
-
-    @save_verticapy_logs
     def slice(self, length: int, unit: str = "second", start: bool = True):
         """
 	Slices and transforms the vColumn using a time series rule.
@@ -3672,24 +3127,6 @@ Attributes
         return plt.spider(
             self.parent, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
         )
-
-    @save_verticapy_logs
-    def std(self):
-        """
-	Aggregates the vColumn using 'std' (Standard Deviation).
-
- 	Returns
- 	-------
- 	float
- 		std
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["stddev"]).values[self.alias][0]
-
-    stddev = std
 
     @save_verticapy_logs
     def store_usage(self):
@@ -3899,22 +3336,6 @@ Attributes
         else:
             return self.apply(func=f"{{}} - ({x})")
 
-    @save_verticapy_logs
-    def sum(self):
-        """
-	Aggregates the vColumn using 'sum'.
-
- 	Returns
- 	-------
- 	float
- 		sum
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["sum"]).values[self.alias][0]
-
     def tail(self, limit: int = 5):
         """
 	Returns the tail of the vColumn.
@@ -3935,97 +3356,3 @@ Attributes
 	vDataFrame[].head : Returns the head of the vColumn.
 		"""
         return self.iloc(limit=limit, offset=-1)
-
-    @save_verticapy_logs
-    def topk(self, k: int = -1, dropna: bool = True):
-        """
-	Returns the k most occurent elements and their distributions as percents.
-
-	Parameters
- 	----------
- 	k: int, optional
- 		Number of most occurent elements to return.
- 	dropna: bool, optional
- 		If set to True, NULL values will not be considered during the computation.
-
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
-
-	See Also
-	--------
-	vDataFrame[].describe : Computes the vColumn descriptive statistics.
-		"""
-        limit, where, topk_cat = "", "", ""
-        if k >= 1:
-            limit = f"LIMIT {k}"
-            topk_cat = k
-        if dropna:
-            where = f" WHERE {self.alias} IS NOT NULL"
-        alias_sql_repr = to_varchar(self.category(), self.alias)
-        result = _executeSQL(
-            query=f"""
-            SELECT 
-                /*+LABEL('vColumn.topk')*/
-                {alias_sql_repr} AS {self.alias},
-                COUNT(*) AS _verticapy_cnt_,
-                100 * COUNT(*) / {self.parent.shape()[0]} AS percent
-            FROM {self.parent.__genSQL__()}
-            {where} 
-            GROUP BY {alias_sql_repr} 
-            ORDER BY _verticapy_cnt_ DESC
-            {limit}""",
-            title=f"Computing the top{topk_cat} categories of {self.alias}.",
-            method="fetchall",
-            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
-        )
-        values = {
-            "index": [item[0] for item in result],
-            "count": [int(item[1]) for item in result],
-            "percent": [float(round(item[2], 3)) for item in result],
-        }
-        return tablesample(values)
-
-    @save_verticapy_logs
-    def value_counts(self, k: int = 30):
-        """
-	Returns the k most occurent elements, how often they occur, and other
-	statistical information.
-
-	Parameters
- 	----------
- 	k: int, optional
- 		Number of most occurent elements to return.
-
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
-
-	See Also
-	--------
-	vDataFrame[].describe : Computes the vColumn descriptive statistics.
-		"""
-        return self.describe(method="categorical", max_cardinality=k)
-
-    @save_verticapy_logs
-    def var(self):
-        """
-	Aggregates the vColumn using 'var' (Variance).
-
- 	Returns
- 	-------
- 	float
- 		var
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(["variance"]).values[self.alias][0]
-
-    variance = var

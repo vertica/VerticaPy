@@ -65,7 +65,7 @@ from verticapy.core.vdataframe.io import vDFIO
 from verticapy.core.vdataframe.rolling import vDFROLL
 from verticapy.core.vdataframe.plotting import vDFPLOT
 from verticapy.core.vdataframe.filter import vDFFILTER
-from verticapy.core.vdataframe.transform_join import vDFPREP
+from verticapy.core.vdataframe.preprocessing import vDFPREP
 from verticapy.core.vdataframe.machine_learning import vDFML
 from verticapy.core.vdataframe.math import vDFMATH
 from verticapy.core.vdataframe.sys import vDFSYS
