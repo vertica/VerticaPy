@@ -390,6 +390,39 @@ class vDFFILTER:
         return self
 
     @save_verticapy_logs
+    def isin(self, val: dict):
+        """
+    Looks if some specific records are in the vDataFrame and it returns the new 
+    vDataFrame of the search.
+
+    Parameters
+    ----------
+    val: dict
+        Dictionary of the different records. Each key of the dictionary must 
+        represent a vColumn. For example, to check if Badr Ouali and 
+        Fouad Teban are in the vDataFrame. You can write the following dict:
+        {"name": ["Teban", "Ouali"], "surname": ["Fouad", "Badr"]}
+
+    Returns
+    -------
+    vDataFrame
+        The vDataFrame of the search.
+        """
+        val = self.format_colnames(val)
+        n = len(val[list(val.keys())[0]])
+        result = []
+        for i in range(n):
+            tmp_query = []
+            for column in val:
+                if val[column][i] == None:
+                    tmp_query += [f"{quote_ident(column)} IS NULL"]
+                else:
+                    val_str = str(val[column][i]).replace("'", "''")
+                    tmp_query += [f"{quote_ident(column)} = '{val_str}'"]
+            result += [" AND ".join(tmp_query)]
+        return self.search(" OR ".join(result))
+
+    @save_verticapy_logs
     def last(self, ts: str, offset: str):
         """
     Filters the vDataFrame by only keeping the last records.

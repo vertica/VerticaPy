@@ -42,6 +42,7 @@ from verticapy.sql._utils._format import (
 from verticapy.core._utils._map import verticapy_agg_name
 from verticapy.connect.connect import current_cursor
 from verticapy._config.config import OPTIONS
+from verticapy.sql.read import to_tablesample
 
 
 class vDFAGG:
@@ -178,6 +179,84 @@ class vDFAGG:
             "groupby",
             f"[Groupby]: The columns were grouped by {rollup_expr_str}",
         )
+
+    @save_verticapy_logs
+    def duplicated(
+        self, columns: Union[str, list] = [], count: bool = False, limit: int = 30
+    ):
+        """
+    Returns the duplicated values.
+
+    Parameters
+    ----------
+    columns: str / list, optional
+        List of the vColumns names. If empty, all vColumns will be selected.
+    count: bool, optional
+        If set to True, the method will also return the count of each duplicates.
+    limit: int, optional
+        The limited number of elements to be displayed.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame.drop_duplicates : Filters the duplicated values.
+        """
+        if not (columns):
+            columns = self.get_columns()
+        elif isinstance(columns, str):
+            columns = [columns]
+        columns = self.format_colnames(columns)
+        columns = ", ".join(columns)
+        main_table = f"""
+            (SELECT 
+                *, 
+                ROW_NUMBER() OVER (PARTITION BY {columns}) AS duplicated_index 
+             FROM {self.__genSQL__()}) duplicated_index_table 
+             WHERE duplicated_index > 1"""
+        if count:
+            total = _executeSQL(
+                query=f"""
+                    SELECT 
+                        /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
+                    FROM {main_table}""",
+                title="Computing the number of duplicates.",
+                method="fetchfirstelem",
+                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            )
+            return total
+        result = to_tablesample(
+            query=f"""
+                SELECT 
+                    {columns},
+                    MAX(duplicated_index) AS occurrence 
+                FROM {main_table} 
+                GROUP BY {columns} 
+                ORDER BY occurrence DESC LIMIT {limit}""",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+        )
+        result.count = _executeSQL(
+            query=f"""
+                SELECT 
+                    /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
+                FROM 
+                    (SELECT 
+                        {columns}, 
+                        MAX(duplicated_index) AS occurrence 
+                     FROM {main_table} 
+                     GROUP BY {columns}) t""",
+            title="Computing the number of distinct duplicates.",
+            method="fetchfirstelem",
+            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+        )
+        return result
 
     @save_verticapy_logs
     def aggregate(
