@@ -19,7 +19,7 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import warnings
+import warnings, decimal
 import multiprocessing
 from typing import Union, Literal
 
