@@ -19,18 +19,13 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import random, time, re, decimal, warnings, pickle, datetime, math, os, copy, sys
+import warnings, copy
 from collections.abc import Iterable
-from itertools import combinations_with_replacement
 from typing import Union, Literal
 
-pickle.DEFAULT_PROTOCOL = 4
-
 # Other modules
-from tqdm.auto import tqdm
 import pandas as pd
 import numpy as np
-from matplotlib.lines import Line2D
 
 # Jupyter - Optional
 try:
@@ -45,39 +40,28 @@ from verticapy.core.vcolumn import vColumn
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import (
     ConnectionError,
-    EmptyParameter,
-    FunctionError,
     MissingColumn,
     MissingRelation,
     ParameterError,
     QueryError,
 )
-from verticapy.sql.drop import drop
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import (
     isvmap,
     isflextable,
     compute_flextable_keys,
-    compute_vmap_keys,
 )
-from verticapy._version import vertica_version
-from verticapy._config.config import current_random
-from verticapy._utils._cast import to_category, to_varchar
-from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy.sql.read import to_tablesample, vDataFrameSQL, readSQL
+from verticapy._utils._cast import to_category
+from verticapy._utils._gen import gen_name
+from verticapy.sql.read import vDataFrameSQL, readSQL
 from verticapy._utils._sql import _executeSQL
-from verticapy.plotting._matplotlib.core import updated_dict
-from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import (
-    format_magic,
     quote_ident,
     schema_relation,
     format_schema_table,
     clean_query,
 )
-from verticapy.core._utils._merge import gen_coalesce, group_similar_names
-from verticapy.core._utils._map import verticapy_agg_name
 from verticapy.connect.connect import (
     EXTERNAL_CONNECTION,
     SPECIAL_SYMBOLS,
@@ -93,6 +77,9 @@ from verticapy.core.vdataframe.filter import vDFFILTER
 from verticapy.core.vdataframe.transform_join import vDFTRANSFJOIN
 from verticapy.core.vdataframe.machine_learning import vDFML
 from verticapy.core.vdataframe.math import vDFMATH
+from verticapy.core.vdataframe.sys import vDFSYS
+from verticapy.core.vdataframe.typing import vDFTYPING
+from verticapy.core.vdataframe.read import vDFREAD
 
 
 ###
@@ -111,7 +98,18 @@ from verticapy.core.vdataframe.math import vDFMATH
 
 
 class vDataFrame(
-    vDFAGG, vDFCORR, vDFIO, vDFROLL, vDFPLOT, vDFFILTER, vDFTRANSFJOIN, vDFML, vDFMATH
+    vDFAGG,
+    vDFCORR,
+    vDFIO,
+    vDFROLL,
+    vDFPLOT,
+    vDFFILTER,
+    vDFTRANSFJOIN,
+    vDFML,
+    vDFMATH,
+    vDFSYS,
+    vDFTYPING,
+    vDFREAD,
 ):
     """
 An object that records all user modifications, allowing users to 
@@ -570,305 +568,6 @@ vColumns : vColumn
         setattr(self, index, val)
 
     #
-    # Semi Special Methods
-    #
-
-    def __add_to_history__(self, message: str):
-        """
-    VERTICAPY stores the user modification and help the user to look at 
-    what he/she did. This method is to use to add a customized message in the 
-    vDataFrame history attribute.
-        """
-        self._VERTICAPY_VARIABLES_["history"] += [
-            "{" + time.strftime("%c") + "}" + " " + message
-        ]
-        return self
-
-    def __genSQL__(
-        self, split: bool = False, transformations: dict = {}, force_columns: list = [],
-    ):
-        """
-    Method to use to generate the SQL final relation. It will look at all 
-    transformations to build a nested query where each transformation will 
-    be associated to a specific floor.
-
-    Parameters
-    ----------
-    split: bool, optional
-        Adds a split column __verticapy_split__ in the relation 
-        which can be to use to downsample the data.
-    transformations: dict, optional
-        Dictionary of columns and their respective transformation. It 
-        will be to use to test if an expression is correct and can be 
-        added it in the final relation.
-    force_columns: list, optional
-        Columns to use to generate the final relation.
-
-    Returns
-    -------
-    str
-        The SQL final relation.
-        """
-        # The First step is to find the Max Floor
-        all_imputations_grammar = []
-        force_columns_copy = [col for col in force_columns]
-        if not (force_columns):
-            force_columns = [col for col in self._VERTICAPY_VARIABLES_["columns"]]
-        for column in force_columns:
-            all_imputations_grammar += [
-                [transformation[0] for transformation in self[column].transformations]
-            ]
-        for column in transformations:
-            all_imputations_grammar += [transformations[column]]
-        max_transformation_floor = len(max(all_imputations_grammar, key=len))
-        # We complete all virtual columns transformations which do not have enough floors
-        # with the identity transformation x :-> x in order to generate the correct SQL query
-        for imputations in all_imputations_grammar:
-            diff = max_transformation_floor - len(imputations)
-            if diff > 0:
-                imputations += ["{}"] * diff
-        # We find the position of all filters in order to write them at the correct floor
-        where_positions = [item[1] for item in self._VERTICAPY_VARIABLES_["where"]]
-        max_where_pos = max(where_positions + [0])
-        all_where = [[] for item in range(max_where_pos + 1)]
-        for i in range(0, len(self._VERTICAPY_VARIABLES_["where"])):
-            all_where[where_positions[i]] += [self._VERTICAPY_VARIABLES_["where"][i][0]]
-        all_where = [
-            " AND ".join([f"({elem})" for elem in condition]) for condition in all_where
-        ]
-        for i in range(len(all_where)):
-            if all_where[i] != "":
-                all_where[i] = f" WHERE {all_where[i]}"
-        # We compute the first floor
-        columns = force_columns + [column for column in transformations]
-        first_values = [item[0] for item in all_imputations_grammar]
-        transformations_first_floor = False
-        for i in range(0, len(first_values)):
-            if (first_values[i] != "___VERTICAPY_UNDEFINED___") and (
-                first_values[i] != columns[i]
-            ):
-                first_values[i] = f"{first_values[i]} AS {columns[i]}"
-                transformations_first_floor = True
-        if (transformations_first_floor) or (
-            self._VERTICAPY_VARIABLES_["allcols_ind"] != len(first_values)
-        ):
-            table = f"""
-                SELECT 
-                    {', '.join(first_values)} 
-                FROM {self._VERTICAPY_VARIABLES_['main_relation']}"""
-        else:
-            table = f"""SELECT * FROM {self._VERTICAPY_VARIABLES_["main_relation"]}"""
-        # We compute the other floors
-        for i in range(1, max_transformation_floor):
-            values = [item[i] for item in all_imputations_grammar]
-            for j in range(0, len(values)):
-                if values[j] == "{}":
-                    values[j] = columns[j]
-                elif values[j] != "___VERTICAPY_UNDEFINED___":
-                    values_str = values[j].replace("{}", columns[j])
-                    values[j] = f"{values_str} AS {columns[j]}"
-            table = f"SELECT {', '.join(values)} FROM ({table}) VERTICAPY_SUBTABLE"
-            if len(all_where) > i - 1:
-                table += all_where[i - 1]
-            if (i - 1) in self._VERTICAPY_VARIABLES_["order_by"]:
-                table += self._VERTICAPY_VARIABLES_["order_by"][i - 1]
-        where_final = (
-            all_where[max_transformation_floor - 1]
-            if (len(all_where) > max_transformation_floor - 1)
-            else ""
-        )
-        # Only the last order_by matters as the order_by will never change
-        # the final relation
-        try:
-            order_final = self._VERTICAPY_VARIABLES_["order_by"][
-                max_transformation_floor - 1
-            ]
-        except:
-            order_final = ""
-        for vml_undefined in [
-            ", ___VERTICAPY_UNDEFINED___",
-            "___VERTICAPY_UNDEFINED___, ",
-            "___VERTICAPY_UNDEFINED___",
-        ]:
-            table = table.replace(vml_undefined, "")
-        random_func = current_random()
-        split = f", {random_func} AS __verticapy_split__" if (split) else ""
-        if (where_final == "") and (order_final == ""):
-            if split:
-                table = f"SELECT *{split} FROM ({table}) VERTICAPY_SUBTABLE"
-            table = f"({table}) VERTICAPY_SUBTABLE"
-        else:
-            table = f"({table}) VERTICAPY_SUBTABLE{where_final}{order_final}"
-            table = f"(SELECT *{split} FROM {table}) VERTICAPY_SUBTABLE"
-        if (self._VERTICAPY_VARIABLES_["exclude_columns"]) and not (split):
-            if not (force_columns_copy):
-                force_columns_copy = self.get_columns()
-            force_columns_copy = ", ".join(force_columns_copy)
-            table = f"""
-                (SELECT 
-                    {force_columns_copy}{split} 
-                FROM {table}) VERTICAPY_SUBTABLE"""
-        main_relation = self._VERTICAPY_VARIABLES_["main_relation"]
-        all_main_relation = f"(SELECT * FROM {main_relation}) VERTICAPY_SUBTABLE"
-        table = table.replace(all_main_relation, main_relation)
-        return table
-
-    def __get_catalog_value__(
-        self, column: str = "", key: str = "", method: str = "", columns: list = []
-    ):
-        """
-    VERTICAPY stores the already computed aggregations to avoid useless 
-    computations. This method returns the stored aggregation if it was already 
-    computed.
-        """
-        if not (OPTIONS["cache"]):
-            return "VERTICAPY_NOT_PRECOMPUTED"
-        if column == "VERTICAPY_COUNT":
-            if self._VERTICAPY_VARIABLES_["count"] < 0:
-                return "VERTICAPY_NOT_PRECOMPUTED"
-            total = self._VERTICAPY_VARIABLES_["count"]
-            if not (isinstance(total, (int, float))):
-                return "VERTICAPY_NOT_PRECOMPUTED"
-            return total
-        elif method:
-            method = verticapy_agg_name(method.lower())
-            if columns[1] in self[columns[0]].catalog[method]:
-                return self[columns[0]].catalog[method][columns[1]]
-            else:
-                return "VERTICAPY_NOT_PRECOMPUTED"
-        key = verticapy_agg_name(key.lower())
-        column = self.format_colnames(column)
-        try:
-            if (key == "approx_unique") and ("unique" in self[column].catalog):
-                key = "unique"
-            result = (
-                "VERTICAPY_NOT_PRECOMPUTED"
-                if key not in self[column].catalog
-                else self[column].catalog[key]
-            )
-        except:
-            result = "VERTICAPY_NOT_PRECOMPUTED"
-        if result != result:
-            result = None
-        if ("top" not in key) and (result == None):
-            return "VERTICAPY_NOT_PRECOMPUTED"
-        return result
-
-    def __get_last_order_by__(self):
-        """
-    Returns the last column used to sort the data.
-        """
-        max_pos, order_by = 0, ""
-        columns_tmp = [elem for elem in self.get_columns()]
-        for column in columns_tmp:
-            max_pos = max(max_pos, len(self[column].transformations) - 1)
-        if max_pos in self._VERTICAPY_VARIABLES_["order_by"]:
-            order_by = self._VERTICAPY_VARIABLES_["order_by"][max_pos]
-        return order_by
-
-    def __get_sort_syntax__(self, columns: list):
-        """
-    Returns the SQL syntax to use to sort the input columns.
-        """
-        if not (columns):
-            return ""
-        if isinstance(columns, dict):
-            order_by = []
-            for col in columns:
-                column_name = self.format_colnames(col)
-                if columns[col].lower() not in ("asc", "desc"):
-                    warning_message = (
-                        f"Method of {column_name} must be in (asc, desc), "
-                        f"found '{columns[col].lower()}'\nThis column was ignored."
-                    )
-                    warnings.warn(warning_message, Warning)
-                else:
-                    order_by += [f"{column_name} {columns[col].upper()}"]
-        else:
-            order_by = [quote_ident(col) for col in columns]
-        return f" ORDER BY {', '.join(order_by)}"
-
-    def __isexternal__(self):
-        """
-    Returns true if it is an external vDataFrame.
-        """
-        return self._VERTICAPY_VARIABLES_["external"]
-
-    def __update_catalog__(
-        self,
-        values: dict = {},
-        erase: bool = False,
-        columns: list = [],
-        matrix: str = "",
-        column: str = "",
-    ):
-        """
-    VERTICAPY stores the already computed aggregations to avoid useless 
-    computations. This method stores the input aggregation in the vColumn catalog.
-        """
-        columns = self.format_colnames(columns)
-        agg_dict = {
-            "cov": {},
-            "pearson": {},
-            "spearman": {},
-            "spearmand": {},
-            "kendall": {},
-            "cramer": {},
-            "biserial": {},
-            "regr_avgx": {},
-            "regr_avgy": {},
-            "regr_count": {},
-            "regr_intercept": {},
-            "regr_r2": {},
-            "regr_slope": {},
-            "regr_sxx": {},
-            "regr_sxy": {},
-            "regr_syy": {},
-        }
-        if erase:
-            if not (columns):
-                columns = self.get_columns()
-            for column in columns:
-                self[column].catalog = copy.deepcopy(agg_dict)
-            self._VERTICAPY_VARIABLES_["count"] = -1
-        elif matrix:
-            matrix = verticapy_agg_name(matrix.lower())
-            if matrix in agg_dict:
-                for elem in values:
-                    val = values[elem]
-                    try:
-                        val = float(val)
-                    except:
-                        pass
-                    self[column].catalog[matrix][elem] = val
-        else:
-            columns = [elem for elem in values]
-            columns.remove("index")
-            for column in columns:
-                for i in range(len(values["index"])):
-                    key, val = values["index"][i].lower(), values[column][i]
-                    if key not in ["listagg"]:
-                        key = verticapy_agg_name(key)
-                        try:
-                            val = float(val)
-                            if val - int(val) == 0:
-                                val = int(val)
-                        except:
-                            pass
-                        if val != val:
-                            val = None
-                        self[column].catalog[key] = val
-
-    def __vDataFrameSQL__(self, table: str, func: str, history: str):
-        """
-    This method is to use to build a vDataFrame based on a relation
-        """
-        schema = self._VERTICAPY_VARIABLES_["schema"]
-        history = self._VERTICAPY_VARIABLES_["history"] + [history]
-        saving = self._VERTICAPY_VARIABLES_["saving"]
-        return vDataFrameSQL(table, func, schema, history, saving)
-
-    #
     # Methods used to check & format the inputs
     #
 
@@ -1039,647 +738,6 @@ vColumns : vColumn
     #
 
     @save_verticapy_logs
-    def astype(self, dtype: dict):
-        """
-    Converts the vColumns to the input types.
-
-    Parameters
-    ----------
-    dtype: dict
-        Dictionary of the different types. Each key of the dictionary must 
-        represent a vColumn. The dictionary must be similar to the 
-        following: {"column1": "type1", ... "columnk": "typek"}
-
-    Returns
-    -------
-    vDataFrame
-        self
-        """
-        for column in dtype:
-            self[self.format_colnames(column)].astype(dtype=dtype[column])
-        return self
-
-    @save_verticapy_logs
-    def bool_to_int(self):
-        """
-    Converts all booleans vColumns to integers.
-
-    Returns
-    -------
-    vDataFrame
-        self
-    
-    See Also
-    --------
-    vDataFrame.astype : Converts the vColumns to the input types.
-        """
-        columns = self.get_columns()
-        for column in columns:
-            if self[column].isbool():
-                self[column].astype("int")
-        return self
-
-    def catcol(self, max_cardinality: int = 12):
-        """
-    Returns the vDataFrame categorical vColumns.
-    
-    Parameters
-    ----------
-    max_cardinality: int, optional
-        Maximum number of unique values to consider integer vColumns as categorical.
-
-    Returns
-    -------
-    List
-        List of the categorical vColumns names.
-    
-    See Also
-    --------
-    vDataFrame.get_columns : Returns a list of names of the vColumns in the vDataFrame.
-    vDataFrame.numcol      : Returns a list of names of the numerical vColumns in the 
-                             vDataFrame.
-        """
-        # -#
-        columns = []
-        for column in self.get_columns():
-            if (self[column].category() == "int") and not (self[column].isbool()):
-                is_cat = _executeSQL(
-                    query=f"""
-                        SELECT 
-                            /*+LABEL('vDataframe.catcol')*/ 
-                            (APPROXIMATE_COUNT_DISTINCT({column}) < {max_cardinality}) 
-                        FROM {self.__genSQL__()}""",
-                    title="Looking at columns with low cardinality.",
-                    method="fetchfirstelem",
-                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
-                )
-            elif self[column].category() == "float":
-                is_cat = False
-            else:
-                is_cat = True
-            if is_cat:
-                columns += [column]
-        return columns
-
-    def copy(self):
-        """
-    Returns a deep copy of the vDataFrame.
-
-    Returns
-    -------
-    vDataFrame
-        The copy of the vDataFrame.
-        """
-        return copy.deepcopy(self)
-
-    def current_relation(self, reindent: bool = True):
-        """
-    Returns the current vDataFrame relation.
-
-    Parameters
-    ----------
-    reindent: bool, optional
-        Reindent the text to be more readable. 
-
-    Returns
-    -------
-    str
-        The formatted current vDataFrame relation.
-        """
-        from verticapy.sql._utils._format import indentSQL
-
-        if reindent:
-            return indentSQL(self.__genSQL__())
-        else:
-            return self.__genSQL__()
-
-    def datecol(self):
-        """
-    Returns a list of the vColumns of type date in the vDataFrame.
-
-    Returns
-    -------
-    List
-        List of all vColumns of type date.
-
-    See Also
-    --------
-    vDataFrame.catcol : Returns a list of the categorical vColumns in the vDataFrame.
-    vDataFrame.numcol : Returns a list of names of the numerical vColumns in the 
-                        vDataFrame.
-        """
-        columns = []
-        cols = self.get_columns()
-        for column in cols:
-            if self[column].isdate():
-                columns += [column]
-        return columns
-
-    def del_catalog(self):
-        """
-    Deletes the current vDataFrame catalog.
-
-    Returns
-    -------
-    vDataFrame
-        self
-        """
-        self.__update_catalog__(erase=True)
-        return self
-
-    @save_verticapy_logs
-    def dtypes(self):
-        """
-    Returns the different vColumns types.
-
-    Returns
-    -------
-    tablesample
-        An object containing the result. For more information, see
-        utilities.tablesample.
-        """
-        values = {"index": [], "dtype": []}
-        for column in self.get_columns():
-            values["index"] += [column]
-            values["dtype"] += [self[column].ctype()]
-        return tablesample(values)
-
-    def empty(self):
-        """
-    Returns True if the vDataFrame is empty.
-
-    Returns
-    -------
-    bool
-        True if the vDataFrame has no vColumns.
-        """
-        return not (self.get_columns())
-
-    @save_verticapy_logs
-    def eval(self, name: str, expr: Union[str, str_sql]):
-        """
-    Evaluates a customized expression.
-
-    Parameters
-    ----------
-    name: str
-        Name of the new vColumn.
-    expr: str
-        Expression in pure SQL to use to compute the new feature.
-        For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
-        'POWER("column", 2)' will work.
-
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
-        analytical function on a specific vColumn.
-        """
-        if isinstance(expr, str_sql):
-            expr = str(expr)
-        name = quote_ident(name.replace('"', "_"))
-        if self.is_colname_in(name):
-            raise NameError(
-                f"A vColumn has already the alias {name}.\n"
-                "By changing the parameter 'name', you'll "
-                "be able to solve this issue."
-            )
-        try:
-            query = f"SELECT {expr} AS {name} FROM {self.__genSQL__()} LIMIT 0"
-            ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
-        except:
-            raise QueryError(
-                f"The expression '{expr}' seems to be incorrect.\nBy "
-                "turning on the SQL with the 'set_option' function, "
-                "you'll print the SQL code generation and probably "
-                "see why the evaluation didn't work."
-            )
-        if not (ctype):
-            ctype = "undefined"
-        elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
-            self._VERTICAPY_VARIABLES_["isflex"]
-            or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
-        ):
-            category = "vmap"
-            ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
-        else:
-            category = to_category(ctype=ctype)
-        all_cols, max_floor = self.get_columns(), 0
-        for column in all_cols:
-            column_str = column.replace('"', "")
-            if (quote_ident(column) in expr) or (
-                re.search(re.compile(f"\\b{column_str}\\b"), expr)
-            ):
-                max_floor = max(len(self[column].transformations), max_floor)
-        transformations = [
-            (
-                "___VERTICAPY_UNDEFINED___",
-                "___VERTICAPY_UNDEFINED___",
-                "___VERTICAPY_UNDEFINED___",
-            )
-            for i in range(max_floor)
-        ] + [(expr, ctype, category)]
-        new_vColumn = vColumn(name, parent=self, transformations=transformations)
-        setattr(self, name, new_vColumn)
-        setattr(self, name.replace('"', ""), new_vColumn)
-        new_vColumn.init = False
-        new_vColumn.init_transf = name
-        self._VERTICAPY_VARIABLES_["columns"] += [name]
-        self.__add_to_history__(
-            f"[Eval]: A new vColumn {name} was added to the vDataFrame."
-        )
-        return self
-
-    @save_verticapy_logs
-    def expected_store_usage(self, unit: str = "b"):
-        """
-    Returns the vDataFrame expected store usage. 
-
-    Parameters
-    ----------
-    unit: str, optional
-        unit used for the computation
-        b : byte
-        kb: kilo byte
-        gb: giga byte
-        tb: tera byte
-
-    Returns
-    -------
-    tablesample
-        An object containing the result. For more information, see
-        utilities.tablesample.
-
-    See Also
-    --------
-    vDataFrame.memory_usage : Returns the vDataFrame memory usage.
-        """
-        if unit.lower() == "kb":
-            div_unit = 1024
-        elif unit.lower() == "mb":
-            div_unit = 1024 * 1024
-        elif unit.lower() == "gb":
-            div_unit = 1024 * 1024 * 1024
-        elif unit.lower() == "tb":
-            div_unit = 1024 * 1024 * 1024 * 1024
-        else:
-            unit, div_unit = "b", 1
-        total, total_expected = 0, 0
-        columns = self.get_columns()
-        values = self.aggregate(func=["count"], columns=columns).transpose().values
-        values["index"] = [
-            f"expected_size ({unit})",
-            f"max_size ({unit})",
-            "type",
-        ]
-        for column in columns:
-            ctype = self[column].ctype()
-            if (
-                (ctype[0:4] == "date")
-                or (ctype[0:4] == "time")
-                or (ctype[0:8] == "interval")
-                or (ctype == "smalldatetime")
-            ):
-                maxsize, expsize = 8, 8
-            elif "int" in ctype:
-                maxsize, expsize = 8, self[column].store_usage()
-            elif ctype[0:4] == "bool":
-                maxsize, expsize = 1, 1
-            elif (
-                (ctype[0:5] == "float")
-                or (ctype[0:6] == "double")
-                or (ctype[0:4] == "real")
-            ):
-                maxsize, expsize = 8, 8
-            elif (
-                (ctype[0:7] in ("numeric", "decimal"))
-                or (ctype[0:6] == "number")
-                or (ctype[0:5] == "money")
-            ):
-                try:
-                    size = sum(
-                        [
-                            int(item)
-                            for item in ctype.split("(")[1].split(")")[0].split(",")
-                        ]
-                    )
-                except:
-                    size = 38
-                maxsize, expsize = size, size
-            elif ctype[0:7] == "varchar":
-                try:
-                    size = int(ctype.split("(")[1].split(")")[0])
-                except:
-                    size = 80
-                maxsize, expsize = size, self[column].store_usage()
-            elif (ctype[0:4] == "char") or (ctype[0:3] == "geo") or ("binary" in ctype):
-                try:
-                    size = int(ctype.split("(")[1].split(")")[0])
-                    maxsize, expsize = size, size
-                except:
-                    if ctype[0:3] == "geo":
-                        maxsize, expsize = 10000000, 10000
-                    elif "long" in ctype:
-                        maxsize, expsize = 32000000, 10000
-                    else:
-                        maxsize, expsize = 65000, 1000
-            elif ctype[0:4] == "uuid":
-                maxsize, expsize = 16, 16
-            else:
-                maxsize, expsize = 80, self[column].store_usage()
-            maxsize /= div_unit
-            expsize /= div_unit
-            values[column] = [expsize, values[column][0] * maxsize, ctype]
-            total_expected += values[column][0]
-            total += values[column][1]
-        values["separator"] = [
-            len(columns) * self.shape()[0] / div_unit,
-            len(columns) * self.shape()[0] / div_unit,
-            "",
-        ]
-        total += values["separator"][0]
-        total_expected += values["separator"][0]
-        values["header"] = [
-            (sum([len(item) for item in columns]) + len(columns)) / div_unit,
-            (sum([len(item) for item in columns]) + len(columns)) / div_unit,
-            "",
-        ]
-        total += values["header"][0]
-        total_expected += values["header"][0]
-        values["rawsize"] = [total_expected, total, ""]
-        return tablesample(values=values).transpose()
-
-    @save_verticapy_logs
-    def explain(self, digraph: bool = False):
-        """
-    Provides information on how Vertica is computing the current vDataFrame
-    relation.
-
-    Parameters
-    ----------
-    digraph: bool, optional
-        If set to True, returns only the digraph of the explain plan.
-
-    Returns
-    -------
-    str
-        explain plan
-        """
-        result = _executeSQL(
-            query=f"""
-                EXPLAIN 
-                SELECT 
-                    /*+LABEL('vDataframe.explain')*/ * 
-                FROM {self.__genSQL__()}""",
-            title="Explaining the Current Relation",
-            method="fetchall",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
-        )
-        result = [elem[0] for elem in result]
-        result = "\n".join(result)
-        if not (digraph):
-            result = result.replace("------------------------------\n", "")
-            result = result.replace("\\n", "\n\t")
-            result = result.replace(", ", ",").replace(",", ", ").replace("\n}", "}")
-        else:
-            result = "digraph G {" + result.split("digraph G {")[1]
-        return result
-
-    def get_columns(self, exclude_columns: Union[str, list] = []):
-        """
-    Returns the vDataFrame vColumns.
-
-    Parameters
-    ----------
-    exclude_columns: str / list, optional
-        List of the vColumns names to exclude from the final list. 
-
-    Returns
-    -------
-    List
-        List of all vDataFrame columns.
-
-    See Also
-    --------
-    vDataFrame.catcol  : Returns all categorical vDataFrame vColumns.
-    vDataFrame.datecol : Returns all vDataFrame vColumns of type date.
-    vDataFrame.numcol  : Returns all numerical vDataFrame vColumns.
-        """
-        # -#
-        if isinstance(exclude_columns, str):
-            exclude_columns = [columns]
-        columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
-        result = []
-        exclude_columns = [elem for elem in exclude_columns]
-        exclude_columns += [
-            elem for elem in self._VERTICAPY_VARIABLES_["exclude_columns"]
-        ]
-        exclude_columns = [elem.replace('"', "").lower() for elem in exclude_columns]
-        for column in columns:
-            if column.replace('"', "").lower() not in exclude_columns:
-                result += [column]
-        return result
-
-    def head(self, limit: int = 5):
-        """
-    Returns the vDataFrame head.
-
-    Parameters
-    ----------
-    limit: int, optional
-        Number of elements to display.
-
-    Returns
-    -------
-    tablesample
-        An object containing the result. For more information, see
-        utilities.tablesample.
-
-    See Also
-    --------
-    vDataFrame.tail : Returns the vDataFrame tail.
-        """
-        return self.iloc(limit=limit, offset=0)
-
-    def iloc(self, limit: int = 5, offset: int = 0, columns: Union[str, list] = []):
-        """
-    Returns a part of the vDataFrame (delimited by an offset and a limit).
-
-    Parameters
-    ----------
-    limit: int, optional
-        Number of elements to display.
-    offset: int, optional
-        Number of elements to skip.
-    columns: str / list, optional
-        A list containing the names of the vColumns to include in the result. 
-        If empty, all vColumns will be selected.
-
-
-    Returns
-    -------
-    tablesample
-        An object containing the result. For more information, see
-        utilities.tablesample.
-
-    See Also
-    --------
-    vDataFrame.head : Returns the vDataFrame head.
-    vDataFrame.tail : Returns the vDataFrame tail.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        if offset < 0:
-            offset = max(0, self.shape()[0] - limit)
-        columns = self.format_colnames(columns)
-        if not (columns):
-            columns = self.get_columns()
-        all_columns = []
-        for column in columns:
-            cast = to_varchar(self[column].category(), column)
-            all_columns += [f"{cast} AS {column}"]
-        title = (
-            "Reads the final relation using a limit "
-            f"of {limit} and an offset of {offset}."
-        )
-        result = to_tablesample(
-            query=f"""
-                SELECT 
-                    {', '.join(all_columns)} 
-                FROM {self.__genSQL__()}
-                {self.__get_last_order_by__()} 
-                LIMIT {limit} OFFSET {offset}""",
-            title=title,
-            max_columns=self._VERTICAPY_VARIABLES_["max_columns"],
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
-        )
-        pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
-        if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
-            result.count = pre_comp
-        elif OPTIONS["count_on"]:
-            result.count = self.shape()[0]
-        result.offset = offset
-        result.name = self._VERTICAPY_VARIABLES_["input_relation"]
-        columns = self.get_columns()
-        all_percent = True
-        for column in columns:
-            if not ("percent" in self[column].catalog):
-                all_percent = False
-        all_percent = (all_percent or (OPTIONS["percent_bar"] == True)) and (
-            OPTIONS["percent_bar"] != False
-        )
-        if all_percent:
-            percent = self.aggregate(["percent"], columns).transpose().values
-        for column in result.values:
-            result.dtype[column] = self[column].ctype()
-            if all_percent:
-                result.percent[column] = percent[self.format_colnames(column)][0]
-        return result
-
-    def info(self):
-        """
-    Displays information about the different vDataFrame transformations.
-
-    Returns
-    -------
-    str
-        information on the vDataFrame modifications
-        """
-        if len(self._VERTICAPY_VARIABLES_["history"]) == 0:
-            result = "The vDataFrame was never modified."
-        elif len(self._VERTICAPY_VARIABLES_["history"]) == 1:
-            result = "The vDataFrame was modified with only one action: "
-            result += "\n * " + self._VERTICAPY_VARIABLES_["history"][0]
-        else:
-            result = "The vDataFrame was modified many times: "
-            for modif in self._VERTICAPY_VARIABLES_["history"]:
-                result += "\n * " + modif
-        return result
-
-    @save_verticapy_logs
-    def load(self, offset: int = -1):
-        """
-    Loads a previous structure of the vDataFrame. 
-
-    Parameters
-    ----------
-    offset: int, optional
-        offset of the saving. Example: -1 to load the last saving.
-
-    Returns
-    -------
-    vDataFrame
-        vDataFrame of the loading.
-
-    See Also
-    --------
-    vDataFrame.save : Saves the current vDataFrame structure.
-        """
-        save = self._VERTICAPY_VARIABLES_["saving"][offset]
-        vdf = pickle.loads(save)
-        return vdf
-
-    @save_verticapy_logs
-    def memory_usage(self):
-        """
-    Returns the vDataFrame memory usage. 
-
-    Returns
-    -------
-    tablesample
-        An object containing the result. For more information, see
-        utilities.tablesample.
-
-    See Also
-    --------
-    vDataFrame.expected_store_usage : Returns the expected store usage.
-        """
-        total = sum(
-            [sys.getsizeof(elem) for elem in self._VERTICAPY_VARIABLES_]
-        ) + sys.getsizeof(self)
-        values = {"index": ["object"], "value": [total]}
-        columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
-        for column in columns:
-            values["index"] += [column]
-            values["value"] += [self[column].memory_usage()]
-            total += self[column].memory_usage()
-        values["index"] += ["total"]
-        values["value"] += [total]
-        return tablesample(values=values)
-
-    def numcol(self, exclude_columns: list = []):
-        """
-    Returns a list of names of the numerical vColumns in the vDataFrame.
-
-    Parameters
-    ----------
-    exclude_columns: list, optional
-        List of the vColumns names to exclude from the final list. 
-
-    Returns
-    -------
-    List
-        List of numerical vColumns names. 
-    
-    See Also
-    --------
-    vDataFrame.catcol      : Returns the categorical type vColumns in the vDataFrame.
-    vDataFrame.get_columns : Returns the vColumns of the vDataFrame.
-        """
-        columns, cols = [], self.get_columns(exclude_columns=exclude_columns)
-        for column in cols:
-            if self[column].isnum():
-                columns += [column]
-        return columns
-
-    @save_verticapy_logs
     def regexp(
         self,
         column: str,
@@ -1765,86 +823,6 @@ vColumns : vColumn
         return self.eval(name=name, expr=expr)
 
     @save_verticapy_logs
-    def save(self):
-        """
-    Saves the current structure of the vDataFrame. 
-    This function is useful for loading previous transformations.
-
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.load : Loads a saving.
-        """
-        vdf = self.copy()
-        self._VERTICAPY_VARIABLES_["saving"] += [pickle.dumps(vdf)]
-        return self
-
-    def shape(self):
-        """
-    Returns the number of rows and columns of the vDataFrame.
-
-    Returns
-    -------
-    tuple
-        (number of lines, number of columns)
-        """
-        m = len(self.get_columns())
-        pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
-        if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
-            return (pre_comp, m)
-        self._VERTICAPY_VARIABLES_["count"] = _executeSQL(
-            query=f"""
-                SELECT 
-                    /*+LABEL('vDataframe.shape')*/ COUNT(*) 
-                FROM {self.__genSQL__()} LIMIT 1
-            """,
-            title="Computing the total number of elements (COUNT(*))",
-            method="fetchfirstelem",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
-        )
-        return (self._VERTICAPY_VARIABLES_["count"], m)
-
-    @save_verticapy_logs
-    def sort(self, columns: Union[str, dict, list]):
-        """
-    Sorts the vDataFrame using the input vColumns.
-
-    Parameters
-    ----------
-    columns: str / dict / list
-        List of the vColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.append  : Merges the vDataFrame with another relation.
-    vDataFrame.groupby : Aggregates the vDataFrame.
-    vDataFrame.join    : Joins the vDataFrame with another relation.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        columns = self.format_colnames(columns)
-        max_pos = 0
-        columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
-        for column in columns_tmp:
-            max_pos = max(max_pos, len(self[column].transformations) - 1)
-        self._VERTICAPY_VARIABLES_["order_by"][max_pos] = self.__get_sort_syntax__(
-            columns
-        )
-        return self
-
-    @save_verticapy_logs
     def swap(self, column1: Union[int, str], column2: Union[int, str]):
         """
     Swap the two input vColumns.
@@ -1888,23 +866,116 @@ vColumns : vColumn
         )
         return self
 
-    def tail(self, limit: int = 5):
+    @save_verticapy_logs
+    def sort(self, columns: Union[str, dict, list]):
         """
-    Returns the tail of the vDataFrame.
+    Sorts the vDataFrame using the input vColumns.
 
     Parameters
     ----------
-    limit: int, optional
-        Number of elements to display.
+    columns: str / dict / list
+        List of the vColumns to use to sort the data using asc order or
+        dictionary of all sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
 
     Returns
     -------
-    tablesample
-        An object containing the result. For more information, see
-        utilities.tablesample.
+    vDataFrame
+        self
 
     See Also
     --------
-    vDataFrame.head : Returns the vDataFrame head.
+    vDataFrame.append  : Merges the vDataFrame with another relation.
+    vDataFrame.groupby : Aggregates the vDataFrame.
+    vDataFrame.join    : Joins the vDataFrame with another relation.
         """
-        return self.iloc(limit=limit, offset=-1)
+        if isinstance(columns, str):
+            columns = [columns]
+        columns = self.format_colnames(columns)
+        max_pos = 0
+        columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+        for column in columns_tmp:
+            max_pos = max(max_pos, len(self[column].transformations) - 1)
+        self._VERTICAPY_VARIABLES_["order_by"][max_pos] = self.__get_sort_syntax__(
+            columns
+        )
+        return self
+
+    @save_verticapy_logs
+    def eval(self, name: str, expr: Union[str, str_sql]):
+        """
+    Evaluates a customized expression.
+
+    Parameters
+    ----------
+    name: str
+        Name of the new vColumn.
+    expr: str
+        Expression in pure SQL to use to compute the new feature.
+        For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
+        'POWER("column", 2)' will work.
+
+    Returns
+    -------
+    vDataFrame
+        self
+
+    See Also
+    --------
+    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vColumn.
+        """
+        if isinstance(expr, str_sql):
+            expr = str(expr)
+        name = quote_ident(name.replace('"', "_"))
+        if self.is_colname_in(name):
+            raise NameError(
+                f"A vColumn has already the alias {name}.\n"
+                "By changing the parameter 'name', you'll "
+                "be able to solve this issue."
+            )
+        try:
+            query = f"SELECT {expr} AS {name} FROM {self.__genSQL__()} LIMIT 0"
+            ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
+        except:
+            raise QueryError(
+                f"The expression '{expr}' seems to be incorrect.\nBy "
+                "turning on the SQL with the 'set_option' function, "
+                "you'll print the SQL code generation and probably "
+                "see why the evaluation didn't work."
+            )
+        if not (ctype):
+            ctype = "undefined"
+        elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
+            self._VERTICAPY_VARIABLES_["isflex"]
+            or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
+        ):
+            category = "vmap"
+            ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
+        else:
+            category = to_category(ctype=ctype)
+        all_cols, max_floor = self.get_columns(), 0
+        for column in all_cols:
+            column_str = column.replace('"', "")
+            if (quote_ident(column) in expr) or (
+                re.search(re.compile(f"\\b{column_str}\\b"), expr)
+            ):
+                max_floor = max(len(self[column].transformations), max_floor)
+        transformations = [
+            (
+                "___VERTICAPY_UNDEFINED___",
+                "___VERTICAPY_UNDEFINED___",
+                "___VERTICAPY_UNDEFINED___",
+            )
+            for i in range(max_floor)
+        ] + [(expr, ctype, category)]
+        new_vColumn = vColumn(name, parent=self, transformations=transformations)
+        setattr(self, name, new_vColumn)
+        setattr(self, name.replace('"', ""), new_vColumn)
+        new_vColumn.init = False
+        new_vColumn.init_transf = name
+        self._VERTICAPY_VARIABLES_["columns"] += [name]
+        self.__add_to_history__(
+            f"[Eval]: A new vColumn {name} was added to the vDataFrame."
+        )
+        return self

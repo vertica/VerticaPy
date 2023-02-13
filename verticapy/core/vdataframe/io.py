@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Union, Literal
 from collections.abc import Iterable
-import pickle, decimal, os
+import pickle, decimal, os, copy
 
 pickle.DEFAULT_PROTOCOL = 4
 
@@ -42,6 +42,59 @@ except:
 
 
 class vDFIO:
+    def copy(self):
+        """
+    Returns a deep copy of the vDataFrame.
+
+    Returns
+    -------
+    vDataFrame
+        The copy of the vDataFrame.
+        """
+        return copy.deepcopy(self)
+
+    @save_verticapy_logs
+    def load(self, offset: int = -1):
+        """
+    Loads a previous structure of the vDataFrame. 
+
+    Parameters
+    ----------
+    offset: int, optional
+        offset of the saving. Example: -1 to load the last saving.
+
+    Returns
+    -------
+    vDataFrame
+        vDataFrame of the loading.
+
+    See Also
+    --------
+    vDataFrame.save : Saves the current vDataFrame structure.
+        """
+        save = self._VERTICAPY_VARIABLES_["saving"][offset]
+        vdf = pickle.loads(save)
+        return vdf
+
+    @save_verticapy_logs
+    def save(self):
+        """
+    Saves the current structure of the vDataFrame. 
+    This function is useful for loading previous transformations.
+
+    Returns
+    -------
+    vDataFrame
+        self
+
+    See Also
+    --------
+    vDataFrame.load : Loads a saving.
+        """
+        vdf = self.copy()
+        self._VERTICAPY_VARIABLES_["saving"] += [pickle.dumps(vdf)]
+        return self
+
     @save_verticapy_logs
     def to_csv(
         self,
