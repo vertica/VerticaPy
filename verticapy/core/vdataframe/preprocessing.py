@@ -30,6 +30,7 @@ from verticapy.sql._utils._format import quote_ident
 from verticapy.core._utils._merge import gen_coalesce, group_similar_names
 from verticapy._config.config import OPTIONS
 from verticapy.core.vcolumn import vColumn
+from verticapy.sql.dtypes import get_data_types
 
 
 class vDFPREP:
