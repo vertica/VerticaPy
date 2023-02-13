@@ -1805,7 +1805,7 @@ class vDFAGG:
     variance = var
 
 
-class vDCAgg:
+class vDCAGG:
     @save_verticapy_logs
     def describe(
         self,
