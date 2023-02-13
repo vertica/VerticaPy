@@ -19,6 +19,7 @@ from verticapy._utils._cast import to_varchar
 from verticapy.sql.read import to_tablesample
 from verticapy._utils._sql import _executeSQL
 from verticapy._utils._collect import save_verticapy_logs
+from verticapy._config.config import OPTIONS
 
 
 class vDFREAD:

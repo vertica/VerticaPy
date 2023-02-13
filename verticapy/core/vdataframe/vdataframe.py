@@ -19,7 +19,7 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import warnings, copy
+import warnings, copy, re
 from collections.abc import Iterable
 from typing import Union, Literal
 
