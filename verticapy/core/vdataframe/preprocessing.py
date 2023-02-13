@@ -29,12 +29,13 @@ from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import quote_ident
 from verticapy.core._utils._merge import gen_coalesce, group_similar_names
 from verticapy._config.config import OPTIONS
-from verticapy.core.vcolumn import vColumn
 from verticapy.sql.dtypes import get_data_types
 
 
 class vDFPREP:
     def __setattr__(self, attr, val):
+        from verticapy.core.vcolumn import vColumn
+
         if isinstance(val, (str, str_sql, int, float)) and not isinstance(val, vColumn):
             val = str(val)
             if self.is_colname_in(attr):
@@ -1842,6 +1843,8 @@ class vDCPREP:
     vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
     vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
         """
+        from verticapy.core.vcolumn import vColumn
+        
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
             all_new_features = []
