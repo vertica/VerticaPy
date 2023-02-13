@@ -39,7 +39,6 @@ from verticapy.core.vdataframe.corr import vDCCORR
 
 
 class vColumn(
-    str_sql,
     vDCAGG,
     vDCPLOT,
     vDCMATH,
@@ -50,6 +49,7 @@ class vColumn(
     vDCSYS,
     vDCTEXT,
     vDCCORR,
+    str_sql,
 ):
     """
 Python object which that stores all user transformations. If the vDataFrame
