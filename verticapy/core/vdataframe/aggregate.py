@@ -43,6 +43,10 @@ from verticapy.core._utils._map import verticapy_agg_name
 from verticapy.connect.connect import current_cursor
 from verticapy._config.config import OPTIONS
 from verticapy.sql.read import to_tablesample
+from verticapy.core.vdataframe.multiprocessing import (
+    aggregate_parallel_block,
+    describe_parallel_block,
+)
 
 
 class vDFAGG:
@@ -1799,6 +1803,7 @@ class vDFAGG:
 
     variance = var
 
+
 class vDCAgg:
     @save_verticapy_logs
     def describe(
@@ -2473,30 +2478,3 @@ class vDCAgg:
             "percent": [float(round(item[2], 3)) for item in result],
         }
         return tablesample(values)
-
-
-#
-# Multiprocessing
-#
-
-#
-# Functions used to send multiple queries at the same time.
-#
-
-# Aggregate
-def aggregate_parallel_block(vdf, func: list, columns: list, ncols_block: int, i: int):
-    return vdf.aggregate(
-        func=func, columns=columns[i : i + ncols_block], ncols_block=ncols_block
-    )
-
-
-# Describe
-def describe_parallel_block(
-    vdf, method: str, columns: list, unique: bool, ncols_block: int, i: int,
-):
-    return vdf.describe(
-        method=method,
-        columns=columns[i : i + ncols_block],
-        unique=unique,
-        ncols_block=ncols_block,
-    )
