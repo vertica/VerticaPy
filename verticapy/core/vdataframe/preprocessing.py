@@ -78,7 +78,7 @@ class vDFPREP:
         analytical function on a specific vColumn.
         """
         from verticapy.core.vcolumn import vColumn
-        
+
         if isinstance(expr, str_sql):
             expr = str(expr)
         name = quote_ident(name.replace('"', "_"))
