@@ -125,6 +125,8 @@ class vDFTRANSFJOIN:
     vDataFrame.join    : Joins the vDataFrame with another relation.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
+        from verticapy.core.vdataframe.vdataframe import vDataFrame
+
         if isinstance(expr1, str):
             expr1 = [expr1]
         if isinstance(expr2, str):
@@ -507,6 +509,8 @@ class vDFTRANSFJOIN:
     vDataFrame.groupby : Aggregates the vDataFrame.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
+        from verticapy.core.vdataframe.vdataframe import vDataFrame
+        
         if isinstance(expr1, str):
             expr1 = [expr1]
         if isinstance(expr2, str):
