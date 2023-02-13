@@ -46,7 +46,6 @@ from verticapy.sql.flex import (
 from verticapy._utils._cast import to_category
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._utils._sql import _executeSQL
-from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import (
     quote_ident,
     schema_relation,

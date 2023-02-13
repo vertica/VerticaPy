@@ -22,6 +22,7 @@ from verticapy._utils._sql import _executeSQL
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import OPTIONS
 from verticapy.sql.read import readSQL, vDataFrameSQL
+from verticapy.core.str_sql import str_sql
 
 
 # Jupyter - Optional
