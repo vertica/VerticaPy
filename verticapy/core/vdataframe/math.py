@@ -18,9 +18,10 @@ from typing import Union, Literal
 import random
 from verticapy.sql._utils._format import quote_ident
 from verticapy.core._utils._map import verticapy_agg_name
-from verticapy.errors import MissingColumn, ParameterError
+from verticapy.errors import MissingColumn, ParameterError, QueryError
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.str_sql import str_sql
+from verticapy.sql.dtypes import get_data_types
 
 
 class vDFMATH:
