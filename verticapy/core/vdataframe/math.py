@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union
+from typing import Union, Literal
 import random
 from verticapy.sql._utils._format import quote_ident
 from verticapy.core._utils._map import verticapy_agg_name
