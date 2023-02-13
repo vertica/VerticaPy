@@ -1369,3 +1369,610 @@ class vDFPLOT:
         return plt.multi_ts_plot(
             self, ts, columns, start_date, end_date, kind=kind, ax=ax, **style_kwds,
         )
+
+
+class vDCPLOT:
+    def numh(
+        self, method: Literal["sturges", "freedman_diaconis", "fd", "auto"] = "auto"
+    ):
+        """
+    Computes the optimal vColumn bar width.
+
+    Parameters
+    ----------
+    method: str, optional
+        Method to use to compute the optimal h.
+            auto              : Combination of Freedman Diaconis and Sturges.
+            freedman_diaconis : Freedman Diaconis [2 * IQR / n ** (1 / 3)]
+            sturges           : Sturges [CEIL(log2(n)) + 1]
+
+    Returns
+    -------
+    float
+        optimal bar width.
+        """
+        if method == "auto":
+            pre_comp = self.parent.__get_catalog_value__(self.alias, "numh")
+            if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
+                return pre_comp
+        assert self.isnum() or self.isdate(), ParameterError(
+            "numh is only available on type numeric|date"
+        )
+        if self.isnum():
+            result = (
+                self.parent.describe(
+                    method="numerical", columns=[self.alias], unique=False
+                )
+                .transpose()
+                .values[self.alias]
+            )
+            count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = (
+                result[0],
+                result[3],
+                result[4],
+                result[6],
+                result[7],
+            )
+        elif self.isdate():
+            result = _executeSQL(
+                f"""
+                SELECT 
+                    /*+LABEL('vColumn.numh')*/ COUNT({self.alias}) AS NAs, 
+                    MIN({self.alias}) AS min, 
+                    APPROXIMATE_PERCENTILE({self.alias} 
+                        USING PARAMETERS percentile = 0.25) AS Q1, 
+                    APPROXIMATE_PERCENTILE({self.alias} 
+                        USING PARAMETERS percentile = 0.75) AS Q3, 
+                    MAX({self.alias}) AS max 
+                FROM 
+                    (SELECT 
+                        DATEDIFF('second', 
+                                 '{self.min()}'::timestamp, 
+                                 {self.alias}) AS {self.alias} 
+                    FROM {self.parent.__genSQL__()}) VERTICAPY_OPTIMAL_H_TABLE""",
+                title="Different aggregations to compute the optimal h.",
+                method="fetchrow",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            )
+            count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result
+        sturges = max(
+            float(vColumn_max - vColumn_min) / int(math.floor(math.log(count, 2) + 2)),
+            1e-99,
+        )
+        fd = max(2.0 * (vColumn_075 - vColumn_025) / (count) ** (1.0 / 3.0), 1e-99)
+        if method.lower() == "sturges":
+            best_h = sturges
+        elif method.lower() in ("freedman_diaconis", "fd"):
+            best_h = fd
+        else:
+            best_h = max(sturges, fd)
+            self.parent.__update_catalog__({"index": ["numh"], self.alias: [best_h]})
+        if self.category() == "int":
+            best_h = max(math.floor(best_h), 1)
+        return best_h
+
+    @save_verticapy_logs
+    def bar(
+        self,
+        method: str = "density",
+        of: str = "",
+        max_cardinality: int = 6,
+        nbins: int = 0,
+        h: Union[int, float] = 0,
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    Draws the bar chart of the vColumn based on an aggregation.
+
+    Parameters
+    ----------
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vColumn 'of'.
+            min     : Minimum of the vColumn 'of'.
+            max     : Maximum of the vColumn 'of'.
+            sum     : Sum of the vColumn 'of'.
+            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
+    of: str, optional
+        The vColumn to use to compute the aggregation.
+    max_cardinality: int, optional
+        Maximum number of the vColumn distinct elements to be used as categorical 
+        (No h will be picked or computed)
+    nbins: int, optional
+        Number of nbins. If empty, an optimized number of nbins will be computed.
+    h: int / float, optional
+        Interval width of the bar. If empty, an optimized h will be computed.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
+        """
+        of = self.parent.format_colnames(of)
+        return plt.bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
+
+    @save_verticapy_logs
+    def boxplot(
+        self,
+        by: str = "",
+        h: Union[int, float] = 0,
+        max_cardinality: int = 8,
+        cat_priority: Union[str, int, datetime.datetime, datetime.date, list] = [],
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    Draws the box plot of the vColumn.
+
+    Parameters
+    ----------
+    by: str, optional
+        vColumn to use to partition the data.
+    h: int / float, optional
+        Interval width if the vColumn is numerical or of type date like. Optimized 
+        h will be computed if the parameter is empty or invalid.
+    max_cardinality: int, optional
+        Maximum number of vColumn distinct elements to be used as categorical. 
+        The less frequent elements will be gathered together to create a new 
+        category : 'Others'.
+    cat_priority: str / int / date / list, optional
+        List of the different categories to consider when drawing the box plot.
+        The other categories will be filtered.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame.boxplot : Draws the Box Plot of the input vColumns. 
+        """
+        if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
+            cat_priority = [cat_priority]
+        by = self.parent.format_colnames(by)
+        return plt.boxplot(
+            self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds
+        )
+
+    @save_verticapy_logs
+    def density(
+        self,
+        by: str = "",
+        bandwidth: Union[int, float] = 1.0,
+        kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
+        nbins: int = 200,
+        xlim: tuple = None,
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    Draws the vColumn Density Plot.
+
+    Parameters
+    ----------
+    by: str, optional
+        vColumn to use to partition the data.
+    bandwidth: int / float, optional
+        The bandwidth of the kernel.
+    kernel: str, optional
+        The method used for the plot.
+            gaussian  : Gaussian kernel.
+            logistic  : Logistic kernel.
+            sigmoid   : Sigmoid kernel.
+            silverman : Silverman kernel.
+    nbins: int, optional
+        Maximum number of points to use to evaluate the approximate density function.
+        Increasing this parameter will increase the precision but will also increase 
+        the time of the learning and scoring phases.
+    xlim: tuple, optional
+        Set the x limits of the current axes.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
+        """
+        from verticapy.learn import KernelDensity
+
+        if by:
+            by = self.parent.format_colnames(by)
+            colors = plt.gen_colors()
+            if not xlim:
+                xmin = self.min()
+                xmax = self.max()
+            else:
+                xmin, xmax = xlim
+            custom_lines = []
+            columns = self.parent[by].distinct()
+            for idx, column in enumerate(columns):
+                param = {"color": colors[idx % len(colors)]}
+                ax = self.parent.search(f"{self.parent[by].alias} = '{column}'")[
+                    self.alias
+                ].density(
+                    bandwidth=bandwidth,
+                    kernel=kernel,
+                    nbins=nbins,
+                    xlim=(xmin, xmax),
+                    ax=ax,
+                    **updated_dict(param, style_kwds, idx),
+                )
+                custom_lines += [
+                    Line2D(
+                        [0],
+                        [0],
+                        color=updated_dict(param, style_kwds, idx)["color"],
+                        lw=4,
+                    ),
+                ]
+            ax.set_title("KernelDensity")
+            ax.legend(
+                custom_lines,
+                columns,
+                title=by,
+                loc="center left",
+                bbox_to_anchor=[1, 0.5],
+            )
+            ax.set_xlabel(self.alias)
+            return ax
+        kernel = kernel.lower()
+        schema = OPTIONS["temp_schema"]
+        if not (schema):
+            schema = "public"
+        name = gen_tmp_name(schema=schema, name="kde")
+        if isinstance(xlim, (tuple, list)):
+            xlim_tmp = [xlim]
+        else:
+            xlim_tmp = []
+        model = KernelDensity(
+            name,
+            bandwidth=bandwidth,
+            kernel=kernel,
+            nbins=nbins,
+            xlim=xlim_tmp,
+            store=False,
+        )
+        try:
+            result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(
+                ax=ax, **style_kwds
+            )
+            return result
+        finally:
+            model.drop()
+
+    @save_verticapy_logs
+    def geo_plot(self, *args, **kwargs):
+        """
+    Draws the Geospatial object.
+
+    Parameters
+    ----------
+    *args / **kwargs
+        Any optional parameter to pass to the geopandas plot function.
+        For more information, see: 
+        https://geopandas.readthedocs.io/en/latest/docs/reference/api/
+                geopandas.GeoDataFrame.plot.html
+    
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        columns = [self.alias]
+        check = True
+        if len(args) > 0:
+            column = args[0]
+        elif "column" in kwargs:
+            column = kwargs["column"]
+        else:
+            check = False
+        if check:
+            column = self.parent.format_colnames(column)
+            columns += [column]
+            if not ("cmap" in kwargs):
+                kwargs["cmap"] = gen_cmap()[0]
+        else:
+            if not ("color" in kwargs):
+                kwargs["color"] = gen_colors()[0]
+        if not ("legend" in kwargs):
+            kwargs["legend"] = True
+        if not ("figsize" in kwargs):
+            kwargs["figsize"] = (14, 10)
+        return self.parent[columns].to_geopandas(self.alias).plot(*args, **kwargs)
+
+    @save_verticapy_logs
+    def hist(
+        self,
+        method: str = "density",
+        of: str = "",
+        max_cardinality: int = 6,
+        nbins: int = 0,
+        h: Union[int, float] = 0,
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    Draws the histogram of the vColumn based on an aggregation.
+
+    Parameters
+    ----------
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vColumn 'of'.
+            min     : Minimum of the vColumn 'of'.
+            max     : Maximum of the vColumn 'of'.
+            sum     : Sum of the vColumn 'of'.
+            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
+    of: str, optional
+        The vColumn to use to compute the aggregation.
+    max_cardinality: int, optional
+        Maximum number of the vColumn distinct elements to be used as categorical 
+        (No h will be picked or computed)
+    nbins: int, optional
+        Number of bins. If empty, an optimized number of bins will be computed.
+    h: int / float, optional
+        Interval width of the bar. If empty, an optimized h will be computed.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame[].bar : Draws the Bar Chart of vColumn based on an aggregation.
+        """
+        of = self.parent.format_colnames(of)
+        return plt.hist(
+            self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds
+        )
+
+    @save_verticapy_logs
+    def pie(
+        self,
+        method: str = "density",
+        of: str = "",
+        max_cardinality: int = 6,
+        h: Union[int, float] = 0,
+        pie_type: Literal["auto", "donut", "rose"] = "auto",
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    Draws the pie chart of the vColumn based on an aggregation.
+
+    Parameters
+    ----------
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vColumn 'of'.
+            min     : Minimum of the vColumn 'of'.
+            max     : Maximum of the vColumn 'of'.
+            sum     : Sum of the vColumn 'of'.
+            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
+    of: str, optional
+        The vColumn to use to compute the aggregation.
+    max_cardinality: int, optional
+        Maximum number of the vColumn distinct elements to be used as categorical 
+        (No h will be picked or computed)
+    h: int / float, optional
+        Interval width of the bar. If empty, an optimized h will be computed.
+    pie_type: str, optional
+        The type of pie chart.
+            auto   : Regular pie chart.
+            donut  : Donut chart.
+            rose   : Rose chart.
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame.donut : Draws the donut chart of the vColumn based on an aggregation.
+        """
+        donut, rose = (pie_type == "donut"), (pie_type == "rose")
+        of = self.parent.format_colnames(of)
+        return plt.pie(
+            self, method, of, max_cardinality, h, donut, rose, ax=None, **style_kwds,
+        )
+
+    @save_verticapy_logs
+    def plot(
+        self,
+        ts: str,
+        by: str = "",
+        start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        area: bool = False,
+        step: bool = False,
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    Draws the Time Series of the vColumn.
+
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vColumn to use to order the data. The vColumn type must be
+        date like (date, datetime, timestamp...) or numerical.
+    by: str, optional
+        vColumn to use to partition the TS.
+    start_date: str / int / float / date, optional
+        Input Start Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is lesser than November 1993 the 3rd.
+    end_date: str / int / float / date, optional
+        Input End Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is greater than November 1993 the 3rd.
+    area: bool, optional
+        If set to True, draw an Area Plot.
+    step: bool, optional
+        If set to True, draw a Step Plot.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame.plot : Draws the time series.
+        """
+        ts, by = self.parent.format_colnames(ts, by)
+        return plt.ts_plot(
+            self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwds,
+        )
+
+    @save_verticapy_logs
+    def range_plot(
+        self,
+        ts: str,
+        q: Union[tuple, list] = (0.25, 0.75),
+        start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        plot_median: bool = False,
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    Draws the range plot of the vColumn. The aggregations used are the median 
+    and two input quantiles.
+
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vColumn to use to order the data. The vColumn type must be
+        date like (date, datetime, timestamp...) or numerical.
+    q: tuple / list, optional
+        Tuple including the 2 quantiles used to draw the Plot.
+    start_date: str / int / float / date, optional
+        Input Start Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is lesser than November 1993 the 3rd.
+    end_date: str / int / float / date, optional
+        Input End Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is greater than November 1993 the 3rd.
+    plot_median: bool, optional
+        If set to True, the Median will be drawn.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame.plot : Draws the time series.
+        """
+        ts = self.parent.format_colnames(ts)
+        return plt.range_curve_vdf(
+            self, ts, q, start_date, end_date, plot_median, ax=ax, **style_kwds,
+        )
+
+    @save_verticapy_logs
+    def spider(
+        self,
+        by: str = "",
+        method: str = "density",
+        of: str = "",
+        max_cardinality: Union[int, tuple, list] = (6, 6),
+        h: Union[int, float, tuple, list] = (None, None),
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    Draws the spider plot of the input vColumn based on an aggregation.
+
+    Parameters
+    ----------
+    by: str, optional
+        vColumn to use to partition the data.
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vColumn 'of'.
+            min     : Minimum of the vColumn 'of'.
+            max     : Maximum of the vColumn 'of'.
+            sum     : Sum of the vColumn 'of'.
+            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
+    of: str, optional
+        The vColumn to use to compute the aggregation.
+    h: int / float / tuple / list, optional
+        Interval width of the vColumns 1 and 2 bars. It is only valid if the 
+        vColumns are numerical. Optimized h will be computed if the parameter 
+        is empty or invalid.
+    max_cardinality: int / tuple / list, optional
+        Maximum number of distinct elements for vColumns 1 and 2 to be used as 
+        categorical (No h will be picked or computed)
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame.bar : Draws the Bar Chart of the input vColumns based on an aggregation.
+        """
+        by, of = self.parent.format_colnames(by, of)
+        columns = [self.alias]
+        if by:
+            columns += [by]
+        return plt.spider(
+            self.parent, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
+        )

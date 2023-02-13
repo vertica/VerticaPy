@@ -1135,46 +1135,1155 @@ class vDFPREP:
         )
         return self
 
+
+class vDCPREP:
+    def __setattr__(self, attr, val):
+        self.__dict__[attr] = val
+
     @save_verticapy_logs
-    def swap(self, column1: Union[int, str], column2: Union[int, str]):
+    def clip(
+        self,
+        lower: Union[int, float, datetime.datetime, datetime.date] = None,
+        upper: Union[int, float, datetime.datetime, datetime.date] = None,
+    ):
         """
-    Swap the two input vColumns.
+    Clips the vColumn by transforming the values lesser than the lower bound to 
+    the lower bound itself and the values higher than the upper bound to the upper 
+    bound itself.
 
     Parameters
     ----------
-    column1: str / int
-        The first vColumn or its index to swap.
-    column2: str / int
-        The second vColumn or its index to swap.
+    lower: int / float / date, optional
+        Lower bound.
+    upper: int / float / date, optional
+        Upper bound.
 
     Returns
     -------
     vDataFrame
-        self
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].fill_outliers : Fills the vColumn outliers using the input method.
         """
-        if isinstance(column1, int):
-            assert column1 < self.shape()[1], ParameterError(
-                "The parameter 'column1' is incorrect, it is greater or equal "
-                f"to the vDataFrame number of columns: {column1}>={self.shape()[1]}"
-                "\nWhen this parameter type is 'integer', it must represent the index "
-                "of the column to swap."
-            )
-            column1 = self.get_columns()[column1]
-        if isinstance(column2, int):
-            assert column2 < self.shape()[1], ParameterError(
-                "The parameter 'column2' is incorrect, it is greater or equal "
-                f"to the vDataFrame number of columns: {column2}>={self.shape()[1]}"
-                "\nWhen this parameter type is 'integer', it must represent the "
-                "index of the column to swap."
-            )
-            column2 = self.get_columns()[column2]
-        column1, column2 = self.format_colnames(column1, column2)
-        columns = self._VERTICAPY_VARIABLES_["columns"]
-        all_cols = {}
-        for idx, elem in enumerate(columns):
-            all_cols[elem] = idx
-        columns[all_cols[column1]], columns[all_cols[column2]] = (
-            columns[all_cols[column2]],
-            columns[all_cols[column1]],
+        assert (lower != None) or (upper != None), ParameterError(
+            "At least 'lower' or 'upper' must have a numerical value"
         )
-        return self
+        lower_when = (
+            f"WHEN {{}} < {lower} THEN {lower} "
+            if (isinstance(lower, (float, int)))
+            else ""
+        )
+        upper_when = (
+            f"WHEN {{}} > {upper} THEN {upper} "
+            if (isinstance(upper, (float, int)))
+            else ""
+        )
+        func = f"(CASE {lower_when}{upper_when}ELSE {{}} END)"
+        self.apply(func=func)
+        return self.parent
+
+    @save_verticapy_logs
+    def cut(
+        self,
+        breaks: list,
+        labels: list = [],
+        include_lowest: bool = True,
+        right: bool = True,
+    ):
+        """
+    Discretizes the vColumn using the input list. 
+
+    Parameters
+    ----------
+    breaks: list
+        List of values used to cut the vColumn.
+    labels: list, optional
+        Labels used to name the new categories. If empty, names will be generated.
+    include_lowest: bool, optional
+        If set to True, the lowest element of the list will be included.
+    right: bool, optional
+        How the intervals should be closed. If set to True, the intervals will be
+        closed on the right.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].apply : Applies a function to the input vColumn.
+        """
+        assert self.isnum() or self.isdate(), TypeError(
+            "cut only works on numerical / date-like vColumns."
+        )
+        assert len(breaks) >= 2, ParameterError(
+            "Length of parameter 'breaks' must be greater or equal to 2."
+        )
+        assert len(breaks) == len(labels) + 1 or not (labels), ParameterError(
+            "Length of parameter breaks must be equal to the length of parameter "
+            "'labels' + 1 or parameter 'labels' must be empty."
+        )
+        conditions, column = [], self.alias
+        for idx in range(len(breaks) - 1):
+            first_elem, second_elem = breaks[idx], breaks[idx + 1]
+            if right:
+                op1, op2, close_l, close_r = "<", "<=", "]", "]"
+            else:
+                op1, op2, close_l, close_r = "<=", "<", "[", "["
+            if idx == 0 and include_lowest:
+                op1, close_l = "<=", "["
+            elif idx == 0:
+                op1, close_l = "<", "]"
+            if labels:
+                label = labels[idx]
+            else:
+                label = f"{close_l}{first_elem};{second_elem}{close_r}"
+            conditions += [
+                f"'{first_elem}' {op1} {column} AND {column} {op2} '{second_elem}' THEN '{label}'"
+            ]
+        expr = "CASE WHEN " + " WHEN ".join(conditions) + " END"
+        self.apply(func=expr)
+
+    @save_verticapy_logs
+    def date_part(self, field: str):
+        """
+    Extracts a specific TS field from the vColumn (only if the vColumn type is 
+    date like). The vColumn will be transformed.
+
+    Parameters
+    ----------
+    field: str
+        The field to extract. It must be one of the following: 
+        CENTURY / DAY / DECADE / DOQ / DOW / DOY / EPOCH / HOUR / ISODOW / ISOWEEK /
+        ISOYEAR / MICROSECONDS / MILLENNIUM / MILLISECONDS / MINUTE / MONTH / QUARTER / 
+        SECOND / TIME ZONE / TIMEZONE_HOUR / TIMEZONE_MINUTE / WEEK / YEAR
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].slice : Slices the vColumn using a time series rule.
+        """
+        return self.apply(func=f"DATE_PART('{field}', {{}})")
+
+    @save_verticapy_logs
+    def discretize(
+        self,
+        method: Literal["auto", "smart", "same_width", "same_freq", "topk"] = "auto",
+        h: Union[int, float] = 0,
+        nbins: int = -1,
+        k: int = 6,
+        new_category: str = "Others",
+        RFmodel_params: dict = {},
+        response: str = "",
+        return_enum_trans: bool = False,
+    ):
+        """
+    Discretizes the vColumn using the input method.
+
+    Parameters
+    ----------
+    method: str, optional
+        The method to use to discretize the vColumn.
+            auto       : Uses method 'same_width' for numerical vColumns, cast 
+                the other types to varchar.
+            same_freq  : Computes bins with the same number of elements.
+            same_width : Computes regular width bins.
+            smart      : Uses the Random Forest on a response column to find the most 
+                relevant interval to use for the discretization.
+            topk       : Keeps the topk most frequent categories and merge the other 
+                into one unique category.
+    h: int / float, optional
+        The interval size to convert to use to convert the vColumn. If this parameter 
+        is equal to 0, an optimised interval will be computed.
+    nbins: int, optional
+        Number of bins used for the discretization (must be > 1)
+    k: int, optional
+        The integer k of the 'topk' method.
+    new_category: str, optional
+        The name of the merging category when using the 'topk' method.
+    RFmodel_params: dict, optional
+        Dictionary of the Random Forest model parameters used to compute the best splits 
+        when 'method' is set to 'smart'. A RF Regressor will be trained if the response
+        is numerical (except ints and bools), a RF Classifier otherwise.
+        Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
+        20 trees and a maximum depth of 10.
+    response: str, optional
+        Response vColumn when method is set to 'smart'.
+    return_enum_trans: bool, optional
+        Returns the transformation instead of the vDataFrame parent and do not apply
+        it. This parameter is very useful for testing to be able to look at the final 
+        transformation.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].decode       : Encodes the vColumn with user defined Encoding.
+    vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
+    vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
+    vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
+        """
+        from verticapy.learn.ensemble import (
+            RandomForestRegressor,
+            RandomForestClassifier,
+        )
+
+        if self.isnum() and method == "smart":
+            schema = OPTIONS["temp_schema"]
+            if not (schema):
+                schema = "public"
+            tmp_view_name = gen_tmp_name(schema=schema, name="view")
+            tmp_model_name = gen_tmp_name(schema=schema, name="model")
+            assert nbins >= 2, ParameterError(
+                "Parameter 'nbins' must be greater or equals to 2 in case "
+                "of discretization using the method 'smart'."
+            )
+            assert response, ParameterError(
+                "Parameter 'response' can not be empty in case of "
+                "discretization using the method 'smart'."
+            )
+            response = self.parent.format_colnames(response)
+            drop(tmp_view_name, method="view")
+            self.parent.to_db(tmp_view_name)
+            drop(tmp_model_name, method="model")
+            if self.parent[response].category() == "float":
+                model = RandomForestRegressor(tmp_model_name)
+            else:
+                model = RandomForestClassifier(tmp_model_name)
+            model.set_params({"n_estimators": 20, "max_depth": 8, "nbins": 100})
+            model.set_params(RFmodel_params)
+            parameters = model.get_params()
+            try:
+                model.fit(tmp_view_name, [self.alias], response)
+                query = [
+                    f"""
+                    (SELECT 
+                        READ_TREE(USING PARAMETERS 
+                            model_name = '{tmp_model_name}', 
+                            tree_id = {i}, 
+                            format = 'tabular'))"""
+                    for i in range(parameters["n_estimators"])
+                ]
+                query = f"""
+                    SELECT 
+                        /*+LABEL('vColumn.discretize')*/ split_value 
+                    FROM 
+                        (SELECT 
+                            split_value, 
+                            MAX(weighted_information_gain) 
+                        FROM ({' UNION ALL '.join(query)}) VERTICAPY_SUBTABLE 
+                        WHERE split_value IS NOT NULL 
+                        GROUP BY 1 ORDER BY 2 DESC LIMIT {nbins - 1}) VERTICAPY_SUBTABLE 
+                    ORDER BY split_value::float"""
+                result = _executeSQL(
+                    query=query,
+                    title="Computing the optimized histogram nbins using Random Forest.",
+                    method="fetchall",
+                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                )
+                result = [x[0] for x in result]
+            finally:
+                drop(tmp_view_name, method="view")
+                drop(tmp_model_name, method="model")
+            result = [self.min()] + result + [self.max()]
+        elif method == "topk":
+            assert k >= 2, ParameterError(
+                "Parameter 'k' must be greater or equals to 2 in "
+                "case of discretization using the method 'topk'"
+            )
+            distinct = self.topk(k).values["index"]
+            category_str = to_varchar(self.category())
+            X_str = ", ".join([f"""'{str(x).replace("'", "''")}'""" for x in distinct])
+            new_category_str = new_category.replace("'", "''")
+            trans = (
+                f"""(CASE 
+                        WHEN {category_str} IN ({X_str})
+                        THEN {category_str} || '' 
+                        ELSE '{new_category_str}' 
+                     END)""",
+                "varchar",
+                "text",
+            )
+        elif self.isnum() and method == "same_freq":
+            assert nbins >= 2, ParameterError(
+                "Parameter 'nbins' must be greater or equals to 2 in case "
+                "of discretization using the method 'same_freq'"
+            )
+            count = self.count()
+            nb = int(float(count / int(nbins)))
+            assert nb != 0, Exception(
+                "Not enough values to compute the Equal Frequency discretization"
+            )
+            total, query, nth_elems = nb, [], []
+            while total < int(float(count / int(nbins))) * int(nbins):
+                nth_elems += [str(total)]
+                total += nb
+            possibilities = ", ".join(["1"] + nth_elems + [str(count)])
+            where = f"WHERE _verticapy_row_nb_ IN ({possibilities})"
+            query = f"""
+                SELECT /*+LABEL('vColumn.discretize')*/ 
+                    {self.alias} 
+                FROM (SELECT 
+                        {self.alias}, 
+                        ROW_NUMBER() OVER (ORDER BY {self.alias}) AS _verticapy_row_nb_ 
+                      FROM {self.parent.__genSQL__()} 
+                      WHERE {self.alias} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
+            result = _executeSQL(
+                query=query,
+                title="Computing the equal frequency histogram bins.",
+                method="fetchall",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            )
+            result = [elem[0] for elem in result]
+        elif self.isnum() and method in ("same_width", "auto"):
+            if not (h) or h <= 0:
+                if nbins <= 0:
+                    h = self.numh()
+                else:
+                    h = (self.max() - self.min()) * 1.01 / nbins
+                if h > 0.01:
+                    h = round(h, 2)
+                elif h > 0.0001:
+                    h = round(h, 4)
+                elif h > 0.000001:
+                    h = round(h, 6)
+                if self.category() == "int":
+                    h = int(max(math.floor(h), 1))
+            floor_end = -1 if (self.category() == "int") else ""
+            if (h > 1) or (self.category() == "float"):
+                trans = (
+                    f"'[' || FLOOR({{}} / {h}) * {h} || ';' || (FLOOR({{}} / {h}) * {h} + {h}{floor_end}) || ']'",
+                    "varchar",
+                    "text",
+                )
+            else:
+                trans = ("FLOOR({}) || ''", "varchar", "text")
+        else:
+            trans = ("{} || ''", "varchar", "text")
+        if (self.isnum() and method == "same_freq") or (
+            self.isnum() and method == "smart"
+        ):
+            n = len(result)
+            trans = "(CASE "
+            for i in range(1, n):
+                trans += f"""
+                    WHEN {{}} 
+                        BETWEEN {result[i - 1]} 
+                        AND {result[i]} 
+                    THEN '[{result[i - 1]};{result[i]}]' """
+            trans += " ELSE NULL END)"
+            trans = (trans, "varchar", "text")
+        if return_enum_trans:
+            return trans
+        else:
+            self.transformations += [trans]
+            sauv = {}
+            for elem in self.catalog:
+                sauv[elem] = self.catalog[elem]
+            self.parent.__update_catalog__(erase=True, columns=[self.alias])
+            try:
+                if "count" in sauv:
+                    self.catalog["count"] = sauv["count"]
+                    self.catalog["percent"] = (
+                        100 * sauv["count"] / self.parent.shape()[0]
+                    )
+            except:
+                pass
+            self.parent.__add_to_history__(
+                f"[Discretize]: The vColumn {self.alias} was discretized."
+            )
+        return self.parent
+
+    @save_verticapy_logs
+    def fill_outliers(
+        self,
+        method: Literal["winsorize", "null", "mean"] = "winsorize",
+        threshold: Union[int, float] = 4.0,
+        use_threshold: bool = True,
+        alpha: Union[int, float] = 0.05,
+    ):
+        """
+    Fills the vColumns outliers using the input method.
+
+    Parameters
+        ----------
+        method: str, optional
+            Method to use to fill the vColumn outliers.
+                mean      : Replaces the upper and lower outliers by their respective 
+                    average. 
+                null      : Replaces the outliers by the NULL value.
+                winsorize : Clips the vColumn using as lower bound quantile(alpha) and as 
+                    upper bound quantile(1-alpha) if 'use_threshold' is set to False else 
+                    the lower and upper ZScores.
+        threshold: int / float, optional
+            Uses the Gaussian distribution to define the outliers. After normalizing the 
+            data (Z-Score), if the absolute value of the record is greater than the 
+            threshold it will be considered as an outlier.
+        use_threshold: bool, optional
+            Uses the threshold instead of the 'alpha' parameter.
+        alpha: int / float, optional
+            Number representing the outliers threshold. Values lesser than quantile(alpha) 
+            or greater than quantile(1-alpha) will be filled.
+
+        Returns
+        -------
+        vDataFrame
+            self.parent
+
+    See Also
+    --------
+    vDataFrame[].drop_outliers : Drops outliers in the vColumn.
+    vDataFrame.outliers      : Adds a new vColumn labeled with 0 and 1 
+        (1 meaning global outlier).
+        """
+        if use_threshold:
+            result = self.aggregate(func=["std", "avg"]).transpose().values
+            p_alpha, p_1_alpha = (
+                -threshold * result["std"][0] + result["avg"][0],
+                threshold * result["std"][0] + result["avg"][0],
+            )
+        else:
+            query = f"""
+                SELECT /*+LABEL('vColumn.fill_outliers')*/ 
+                    PERCENTILE_CONT({alpha}) WITHIN GROUP (ORDER BY {self.alias}) OVER (), 
+                    PERCENTILE_CONT(1 - {alpha}) WITHIN GROUP (ORDER BY {self.alias}) OVER () 
+                FROM {self.parent.__genSQL__()} LIMIT 1"""
+            p_alpha, p_1_alpha = _executeSQL(
+                query=query,
+                title=f"Computing the quantiles of {self.alias}.",
+                method="fetchrow",
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            )
+        if method == "winsorize":
+            self.clip(lower=p_alpha, upper=p_1_alpha)
+        elif method == "null":
+            self.apply(
+                func=f"(CASE WHEN ({{}} BETWEEN {p_alpha} AND {p_1_alpha}) THEN {{}} ELSE NULL END)"
+            )
+        elif method == "mean":
+            query = f"""
+                WITH vdf_table AS 
+                    (SELECT 
+                        /*+LABEL('vColumn.fill_outliers')*/ * 
+                    FROM {self.parent.__genSQL__()}) 
+                    (SELECT 
+                        AVG({self.alias}) 
+                    FROM vdf_table WHERE {self.alias} < {p_alpha}) 
+                    UNION ALL 
+                    (SELECT 
+                        AVG({self.alias}) 
+                    FROM vdf_table WHERE {self.alias} > {p_1_alpha})"""
+            mean_alpha, mean_1_alpha = [
+                item[0]
+                for item in _executeSQL(
+                    query=query,
+                    title=f"Computing the average of the {self.alias}'s lower and upper outliers.",
+                    method="fetchall",
+                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                )
+            ]
+            if mean_alpha == None:
+                mean_alpha = "NULL"
+            if mean_1_alpha == None:
+                mean_alpha = "NULL"
+            self.apply(
+                func=f"""
+                    (CASE 
+                        WHEN {{}} < {p_alpha} 
+                        THEN {mean_alpha} 
+                        WHEN {{}} > {p_1_alpha} 
+                        THEN {mean_1_alpha} 
+                        ELSE {{}} 
+                    END)"""
+            )
+        return self.parent
+
+    @save_verticapy_logs
+    def fillna(
+        self,
+        val: Union[int, float, str, datetime.datetime, datetime.date] = None,
+        method: Literal[
+            "auto",
+            "mode",
+            "0ifnull",
+            "mean",
+            "avg",
+            "median",
+            "ffill",
+            "pad",
+            "bfill",
+            "backfill",
+        ] = "auto",
+        expr: Union[str, str_sql] = "",
+        by: Union[str, list] = [],
+        order_by: Union[str, list] = [],
+    ):
+        """
+    Fills missing elements in the vColumn with a user-specified rule.
+
+    Parameters
+    ----------
+    val: int / float / str / date, optional
+        Value to use to impute the vColumn.
+    method: dict, optional
+        Method to use to impute the missing values.
+            auto    : Mean for the numerical and Mode for the categorical vColumns.
+            bfill   : Back Propagation of the next element (Constant Interpolation).
+            ffill   : Propagation of the first element (Constant Interpolation).
+            mean    : Average.
+            median  : median.
+            mode    : mode (most occurent element).
+            0ifnull : 0 when the vColumn is null, 1 otherwise.
+    expr: str, optional
+        SQL expression.
+    by: str / list, optional
+        vColumns used in the partition.
+    order_by: str / list, optional
+        List of the vColumns to use to sort the data when using TS methods.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].dropna : Drops the vColumn missing values.
+        """
+        by, order_by = self.parent.format_colnames(by, order_by)
+        if isinstance(by, str):
+            by = [by]
+        if isinstance(order_by, str):
+            order_by = [order_by]
+        method = method.lower()
+        if method == "auto":
+            method = "mean" if (self.isnum() and self.nunique(True) > 6) else "mode"
+        total = self.count()
+        if (method == "mode") and (val == None):
+            val = self.mode(dropna=True)
+            if val == None:
+                warning_message = (
+                    f"The vColumn {self.alias} has no mode "
+                    "(only missing values).\nNothing was filled."
+                )
+                warnings.warn(warning_message, Warning)
+                return self.parent
+        if isinstance(val, str):
+            val = val.replace("'", "''")
+        if val != None:
+            new_column = f"COALESCE({{}}, '{val}')"
+        elif expr:
+            new_column = f"COALESCE({{}}, {expr})"
+        elif method == "0ifnull":
+            new_column = "DECODE({}, NULL, 0, 1)"
+        elif method in ("mean", "avg", "median"):
+            fun = "MEDIAN" if (method == "median") else "AVG"
+            if by == []:
+                if fun == "AVG":
+                    val = self.avg()
+                elif fun == "MEDIAN":
+                    val = self.median()
+                new_column = f"COALESCE({{}}, {val})"
+            elif (len(by) == 1) and (self.parent[by[0]].nunique() < 50):
+                try:
+                    if fun == "MEDIAN":
+                        fun = "APPROXIMATE_MEDIAN"
+                    query = f"""
+                        SELECT 
+                            /*+LABEL('vColumn.fillna')*/ {by[0]}, 
+                            {fun}({self.alias})
+                        FROM {self.parent.__genSQL__()} 
+                        GROUP BY {by[0]};"""
+                    result = _executeSQL(
+                        query=query,
+                        title="Computing the different aggregations.",
+                        method="fetchall",
+                        sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                    )
+                    for idx, x in enumerate(result):
+                        if x[0] == None:
+                            result[idx][0] = "NULL"
+                        else:
+                            x0 = str(x[0]).replace("'", "''")
+                            result[idx][0] = f"'{x0}'"
+                        result[idx][1] = "NULL" if (x[1] == None) else str(x[1])
+                    val = ", ".join([f"{x[0]}, {x[1]}" for x in result])
+                    new_column = f"COALESCE({{}}, DECODE({by[0]}, {val}, NULL))"
+                    _executeSQL(
+                        query=f"""
+                            SELECT 
+                                /*+LABEL('vColumn.fillna')*/ 
+                                {new_column.format(self.alias)} 
+                            FROM {self.parent.__genSQL__()} 
+                            LIMIT 1""",
+                        print_time_sql=False,
+                        sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                        symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                    )
+                except:
+                    new_column = f"""
+                        COALESCE({{}}, {fun}({{}}) 
+                            OVER (PARTITION BY {', '.join(by)}))"""
+            else:
+                new_column = f"""
+                    COALESCE({{}}, {fun}({{}}) 
+                        OVER (PARTITION BY {', '.join(by)}))"""
+        elif method in ("ffill", "pad", "bfill", "backfill"):
+            assert order_by, ParameterError(
+                "If the method is in ffill|pad|bfill|backfill then 'order_by'"
+                " must be a list of at least one element to use to order the data"
+            )
+            desc = "" if (method in ("ffill", "pad")) else " DESC"
+            partition_by = f"PARTITION BY {', '.join(by)}" if (by) else ""
+            order_by_ts = ", ".join([quote_ident(column) + desc for column in order_by])
+            new_column = f"""
+                COALESCE({{}}, LAST_VALUE({{}} IGNORE NULLS) 
+                    OVER ({partition_by} 
+                    ORDER BY {order_by_ts}))"""
+        if method in ("mean", "median") or isinstance(val, float):
+            category, ctype = "float", "float"
+        elif method == "0ifnull":
+            category, ctype = "int", "bool"
+        else:
+            category, ctype = self.category(), self.ctype()
+        copy_trans = [elem for elem in self.transformations]
+        total = self.count()
+        if method not in ["mode", "0ifnull"]:
+            max_floor = 0
+            all_partition = by
+            if method in ["ffill", "pad", "bfill", "backfill"]:
+                all_partition += [elem for elem in order_by]
+            for elem in all_partition:
+                if len(self.parent[elem].transformations) > max_floor:
+                    max_floor = len(self.parent[elem].transformations)
+            max_floor -= len(self.transformations)
+            for k in range(max_floor):
+                self.transformations += [("{}", self.ctype(), self.category())]
+        self.transformations += [(new_column, ctype, category)]
+        try:
+            sauv = {}
+            for elem in self.catalog:
+                sauv[elem] = self.catalog[elem]
+            self.parent.__update_catalog__(erase=True, columns=[self.alias])
+            total = abs(self.count() - total)
+        except Exception as e:
+            self.transformations = [elem for elem in copy_trans]
+            raise QueryError(f"{e}\nAn Error happened during the filling.")
+        if total > 0:
+            try:
+                if "count" in sauv:
+                    self.catalog["count"] = int(sauv["count"]) + total
+                    self.catalog["percent"] = (
+                        100 * (int(sauv["count"]) + total) / self.parent.shape()[0]
+                    )
+            except:
+                pass
+            total = int(total)
+            conj = "s were " if total > 1 else " was "
+            if OPTIONS["print_info"]:
+                print(f"{total} element{conj}filled.")
+            self.parent.__add_to_history__(
+                f"[Fillna]: {total} {self.alias} missing value{conj} filled."
+            )
+        else:
+            if OPTIONS["print_info"]:
+                print("Nothing was filled.")
+            self.transformations = [t for t in copy_trans]
+            for s in sauv:
+                self.catalog[s] = sauv[s]
+        return self.parent
+
+    @save_verticapy_logs
+    def one_hot_encode(
+        self,
+        prefix: str = "",
+        prefix_sep: str = "_",
+        drop_first: bool = True,
+        use_numbers_as_suffix: bool = False,
+    ):
+        """
+    Encodes the vColumn with the One-Hot Encoding algorithm.
+
+    Parameters
+    ----------
+    prefix: str, optional
+        Prefix of the dummies.
+    prefix_sep: str, optional
+        Prefix delimitor of the dummies.
+    drop_first: bool, optional
+        Drops the first dummy to avoid the creation of correlated features.
+    use_numbers_as_suffix: bool, optional
+        Uses numbers as suffix instead of the vColumns categories.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].decode       : Encodes the vColumn with user defined Encoding.
+    vDataFrame[].discretize   : Discretizes the vColumn.
+    vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
+    vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
+        """
+        distinct_elements = self.distinct()
+        if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
+            all_new_features = []
+            if not (prefix):
+                prefix = self.alias.replace('"', "") + prefix_sep.replace('"', "_")
+            else:
+                prefix = prefix.replace('"', "_") + prefix_sep.replace('"', "_")
+            n = 1 if drop_first else 0
+            for k in range(len(distinct_elements) - n):
+                distinct_elements_k = str(distinct_elements[k]).replace('"', "_")
+                if use_numbers_as_suffix:
+                    name = f'"{prefix}{k}"'
+                else:
+                    name = f'"{prefix}{distinct_elements_k}"'
+                assert not (self.parent.is_colname_in(name)), NameError(
+                    "A vColumn has already the alias of one of "
+                    f"the dummies ({name}).\nIt can be the result "
+                    "of using previously the method on the vColumn "
+                    "or simply because of ambiguous columns naming."
+                    "\nBy changing one of the parameters ('prefix', "
+                    "'prefix_sep'), you'll be able to solve this "
+                    "issue."
+                )
+            for k in range(len(distinct_elements) - n):
+                distinct_elements_k = str(distinct_elements[k]).replace("'", "''")
+                if use_numbers_as_suffix:
+                    name = f'"{prefix}{k}"'
+                else:
+                    name = f'"{prefix}{distinct_elements_k}"'
+                name = (
+                    name.replace(" ", "_")
+                    .replace("/", "_")
+                    .replace(",", "_")
+                    .replace("'", "_")
+                )
+                expr = f"DECODE({{}}, '{distinct_elements_k}', 1, 0)"
+                transformations = self.transformations + [(expr, "bool", "int")]
+                new_vColumn = vColumn(
+                    name,
+                    parent=self.parent,
+                    transformations=transformations,
+                    catalog={
+                        "min": 0,
+                        "max": 1,
+                        "count": self.parent.shape()[0],
+                        "percent": 100.0,
+                        "unique": 2,
+                        "approx_unique": 2,
+                        "prod": 0,
+                    },
+                )
+                setattr(self.parent, name, new_vColumn)
+                setattr(self.parent, name.replace('"', ""), new_vColumn)
+                self.parent._VERTICAPY_VARIABLES_["columns"] += [name]
+                all_new_features += [name]
+            conj = "s were " if len(all_new_features) > 1 else " was "
+            self.parent.__add_to_history__(
+                "[Get Dummies]: One hot encoder was applied to the vColumn "
+                f"{self.alias}\n{len(all_new_features)} feature{conj}created: "
+                f"{', '.join(all_new_features)}."
+            )
+        return self.parent
+
+    get_dummies = one_hot_encode
+
+    @save_verticapy_logs
+    def label_encode(self):
+        """
+    Encodes the vColumn using a bijection from the different categories to
+    [0, n - 1] (n being the vColumn cardinality).
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].decode       : Encodes the vColumn with a user defined Encoding.
+    vDataFrame[].discretize   : Discretizes the vColumn.
+    vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
+    vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
+        """
+        if self.category() in ["date", "float"]:
+            warning_message = (
+                "label_encode is only available for categorical variables."
+            )
+            warnings.warn(warning_message, Warning)
+        else:
+            distinct_elements = self.distinct()
+            expr = ["DECODE({}"]
+            text_info = "\n"
+            for k in range(len(distinct_elements)):
+                distinct_elements_k = str(distinct_elements[k]).replace("'", "''")
+                expr += [f"'{distinct_elements_k}', {k}"]
+                text_info += f"\t{distinct_elements[k]} => {k}"
+            expr = f"{', '.join(expr)}, {len(distinct_elements)})"
+            self.transformations += [(expr, "int", "int")]
+            self.parent.__update_catalog__(erase=True, columns=[self.alias])
+            self.catalog["count"] = self.parent.shape()[0]
+            self.catalog["percent"] = 100
+            self.parent.__add_to_history__(
+                "[Label Encoding]: Label Encoding was applied to the vColumn"
+                f" {self.alias} using the following mapping:{text_info}"
+            )
+        return self.parent
+
+    @save_verticapy_logs
+    def mean_encode(self, response: str):
+        """
+    Encodes the vColumn using the average of the response partitioned by the 
+    different vColumn categories.
+
+    Parameters
+    ----------
+    response: str
+        Response vColumn.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].decode       : Encodes the vColumn using a user-defined encoding.
+    vDataFrame[].discretize   : Discretizes the vColumn.
+    vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
+    vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
+        """
+        response = self.parent.format_colnames(response)
+        assert self.parent[response].isnum(), TypeError(
+            "The response column must be numerical to use a mean encoding"
+        )
+        max_floor = len(self.parent[response].transformations) - len(
+            self.transformations
+        )
+        for k in range(max_floor):
+            self.transformations += [("{}", self.ctype(), self.category())]
+        self.transformations += [
+            (f"AVG({response}) OVER (PARTITION BY {{}})", "int", "float",)
+        ]
+        self.parent.__update_catalog__(erase=True, columns=[self.alias])
+        self.parent.__add_to_history__(
+            f"[Mean Encode]: The vColumn {self.alias} was transformed "
+            f"using a mean encoding with {response} as Response Column."
+        )
+        if OPTIONS["print_info"]:
+            print("The mean encoding was successfully done.")
+        return self.parent
+
+    @save_verticapy_logs
+    def normalize(
+        self,
+        method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
+        by: Union[str, list] = [],
+        return_trans: bool = False,
+    ):
+        """
+    Normalizes the input vColumns using the input method.
+
+    Parameters
+    ----------
+    method: str, optional
+        Method to use to normalize.
+            zscore        : Normalization using the Z-Score (avg and std).
+                (x - avg) / std
+            robust_zscore : Normalization using the Robust Z-Score (median and mad).
+                (x - median) / (1.4826 * mad)
+            minmax        : Normalization using the MinMax (min and max).
+                (x - min) / (max - min)
+    by: str / list, optional
+        vColumns used in the partition.
+    return_trans: bool, optimal
+        If set to True, the method will return the transformation used instead of
+        the parent vDataFrame. This parameter is used for testing purpose.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame.outliers : Computes the vDataFrame Global Outliers.
+        """
+        if isinstance(by, str):
+            by = [by]
+        method = method.lower()
+        by = self.parent.format_colnames(by)
+        nullifzero, n = 1, len(by)
+        if self.isbool():
+
+            warning_message = "Normalize doesn't work on booleans"
+            warnings.warn(warning_message, Warning)
+
+        elif self.isnum():
+
+            if method == "zscore":
+
+                if n == 0:
+                    nullifzero = 0
+                    avg, stddev = self.aggregate(["avg", "std"]).values[self.alias]
+                    if stddev == 0:
+                        warning_message = (
+                            f"Can not normalize {self.alias} using a "
+                            "Z-Score - The Standard Deviation is null !"
+                        )
+                        warnings.warn(warning_message, Warning)
+                        return self
+                elif (n == 1) and (self.parent[by[0]].nunique() < 50):
+                    try:
+                        result = _executeSQL(
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vColumn.normalize')*/ {by[0]}, 
+                                    AVG({self.alias}), 
+                                    STDDEV({self.alias}) 
+                                FROM {self.parent.__genSQL__()} GROUP BY {by[0]}""",
+                            title="Computing the different categories to normalize.",
+                            method="fetchall",
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                        )
+                        for i in range(len(result)):
+                            if result[i][2] == None:
+                                pass
+                            elif math.isnan(result[i][2]):
+                                result[i][2] = None
+                        avg_stddev = []
+                        for i in range(1, 3):
+                            if x[0] != None:
+                                x0 = f"""'{str(x[0]).replace("'", "''")}'"""
+                            else:
+                                x0 = "NULL"
+                            x_tmp = [
+                                f"""{x0}, {x[i] if x[i] != None else "NULL"}"""
+                                for x in result
+                                if x[i] != None
+                            ]
+                            avg_stddev += [
+                                f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
+                            ]
+                        avg, stddev = avg_stddev
+                        _executeSQL(
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vColumn.normalize')*/ 
+                                    {avg},
+                                    {stddev} 
+                                FROM {self.parent.__genSQL__()} 
+                                LIMIT 1""",
+                            print_time_sql=False,
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                        )
+                    except:
+                        avg, stddev = (
+                            f"AVG({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                            f"STDDEV({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                        )
+                else:
+                    avg, stddev = (
+                        f"AVG({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                        f"STDDEV({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                    )
+                nullifzero = "NULLIFZERO" if (nullifzero) else ""
+                if return_trans:
+                    return f"({self.alias} - {avg}) / {nullifzero}({stddev})"
+                else:
+                    final_transformation = [
+                        (f"({{}} - {avg}) / {nullifzero}({stddev})", "float", "float",)
+                    ]
+
+            elif method == "robust_zscore":
+
+                if n > 0:
+                    warning_message = (
+                        "The method 'robust_zscore' is available only if the "
+                        "parameter 'by' is empty\nIf you want to normalize by "
+                        "grouping by elements, please use a method in zscore|minmax"
+                    )
+                    warnings.warn(warning_message, Warning)
+                    return self
+                mad, med = self.aggregate(["mad", "approx_median"]).values[self.alias]
+                mad *= 1.4826
+                if mad != 0:
+                    if return_trans:
+                        return f"({self.alias} - {med}) / ({mad})"
+                    else:
+                        final_transformation = [
+                            (f"({{}} - {med}) / ({mad})", "float", "float",)
+                        ]
+                else:
+                    warning_message = (
+                        f"Can not normalize {self.alias} using a "
+                        "Robust Z-Score - The MAD is null !"
+                    )
+                    warnings.warn(warning_message, Warning)
+                    return self
+
+            elif method == "minmax":
+
+                if n == 0:
+                    nullifzero = 0
+                    cmin, cmax = self.aggregate(["min", "max"]).values[self.alias]
+                    if cmax - cmin == 0:
+                        warning_message = (
+                            f"Can not normalize {self.alias} using "
+                            "the MIN and the MAX. MAX = MIN !"
+                        )
+                        warnings.warn(warning_message, Warning)
+                        return self
+                elif n == 1:
+                    try:
+                        result = _executeSQL(
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vColumn.normalize')*/ {by[0]}, 
+                                    MIN({self.alias}), 
+                                    MAX({self.alias})
+                                FROM {self.parent.__genSQL__()} 
+                                GROUP BY {by[0]}""",
+                            title=f"Computing the different categories {by[0]} to normalize.",
+                            method="fetchall",
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                        )
+                        cmin_cmax = []
+                        for i in range(1, 3):
+                            if x[0] != None:
+                                x0 = f"""'{str(x[0]).replace("'", "''")}'"""
+                            else:
+                                x0 = "NULL"
+                            x_tmp = [
+                                f"""{x0}, {x[i] if x[i] != None else "NULL"}"""
+                                for x in result
+                                if x[i] != None
+                            ]
+                            cmin_cmax += [
+                                f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
+                            ]
+                        cmin, cmax = cmin_cmax
+                        _executeSQL(
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vColumn.normalize')*/ 
+                                    {cmin_cmax[1]}, 
+                                    {cmin_cmax[0]} 
+                                FROM {self.parent.__genSQL__()} 
+                                LIMIT 1""",
+                            print_time_sql=False,
+                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
+                                "sql_push_ext"
+                            ],
+                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                        )
+                    except:
+                        cmax, cmin = (
+                            f"MAX({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                            f"MIN({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                        )
+                else:
+                    cmax, cmin = (
+                        f"MAX({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                        f"MIN({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                    )
+                nullifzero = "NULLIFZERO" if (nullifzero) else ""
+                if return_trans:
+                    return f"({self.alias} - {cmin}) / {nullifzero}({cmax} - {cmin})"
+                else:
+                    final_transformation = [
+                        (
+                            f"({{}} - {cmin}) / {nullifzero}({cmax} - {cmin})",
+                            "float",
+                            "float",
+                        )
+                    ]
+
+            if method != "robust_zscore":
+                max_floor = 0
+                for elem in by:
+                    if len(self.parent[elem].transformations) > max_floor:
+                        max_floor = len(self.parent[elem].transformations)
+                max_floor -= len(self.transformations)
+                for k in range(max_floor):
+                    self.transformations += [("{}", self.ctype(), self.category())]
+            self.transformations += final_transformation
+            sauv = {}
+            for elem in self.catalog:
+                sauv[elem] = self.catalog[elem]
+            self.parent.__update_catalog__(erase=True, columns=[self.alias])
+            try:
+
+                if "count" in sauv:
+                    self.catalog["count"] = sauv["count"]
+                    self.catalog["percent"] = (
+                        100 * sauv["count"] / self.parent.shape()[0]
+                    )
+
+                for elem in sauv:
+
+                    if "top" in elem:
+
+                        if "percent" in elem:
+                            self.catalog[elem] = sauv[elem]
+                        elif elem == None:
+                            self.catalog[elem] = None
+                        elif method == "robust_zscore":
+                            self.catalog[elem] = (sauv[elem] - sauv["approx_50%"]) / (
+                                1.4826 * sauv["mad"]
+                            )
+                        elif method == "zscore":
+                            self.catalog[elem] = (sauv[elem] - sauv["mean"]) / sauv[
+                                "std"
+                            ]
+                        elif method == "minmax":
+                            self.catalog[elem] = (sauv[elem] - sauv["min"]) / (
+                                sauv["max"] - sauv["min"]
+                            )
+
+            except:
+                pass
+            if method == "robust_zscore":
+                self.catalog["median"] = 0
+                self.catalog["mad"] = 1 / 1.4826
+            elif method == "zscore":
+                self.catalog["mean"] = 0
+                self.catalog["std"] = 1
+            elif method == "minmax":
+                self.catalog["min"] = 0
+                self.catalog["max"] = 1
+            self.parent.__add_to_history__(
+                f"[Normalize]: The vColumn '{self.alias}' was "
+                f"normalized with the method '{method}'."
+            )
+        else:
+            raise TypeError("The vColumn must be numerical for Normalization")
+        return self.parent

@@ -543,3 +543,412 @@ class vDFMATH:
         from verticapy.stats.math.math import case_when
 
         return self.eval(name=name, expr=case_when(*argv))
+
+
+class vDCMATH:
+    def __len__(self):
+        return int(self.count())
+
+    def __nonzero__(self):
+        return self.count() > 0
+
+    @save_verticapy_logs
+    def abs(self):
+        """
+    Applies the absolute value function to the input vColumn. 
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].apply : Applies a function to the input vColumn.
+        """
+        return self.apply(func="ABS({})")
+
+    @save_verticapy_logs
+    def add(self, x: Union[int, float]):
+        """
+    Adds the input element to the vColumn.
+
+    Parameters
+    ----------
+    x: float
+        If the vColumn type is date like (date, datetime ...), the parameter 'x' 
+        will represent the number of seconds, otherwise it will represent a number.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].apply : Applies a function to the input vColumn.
+        """
+        if self.isdate():
+            return self.apply(func=f"TIMESTAMPADD(SECOND, {x}, {{}})")
+        else:
+            return self.apply(func=f"{{}} + ({x})")
+
+    @save_verticapy_logs
+    def apply(self, func: Union[str, str_sql], copy_name: str = ""):
+        """
+    Applies a function to the vColumn.
+
+    Parameters
+    ----------
+    func: str,
+        Function in pure SQL used to transform the vColumn.
+        The function variable must be composed of two flower brackets {}. For 
+        example to apply the function: x -> x^2 + 2 use "POWER({}, 2) + 2".
+    copy_name: str, optional
+        If not empty, a copy will be created using the input Name.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame.apply    : Applies functions to the input vColumns.
+    vDataFrame.applymap : Applies a function to all the vColumns.
+    vDataFrame.eval     : Evaluates a customized expression.
+        """
+        if isinstance(func, str_sql):
+            func = str(func)
+        func_apply = func.replace("{}", self.alias)
+        alias_sql_repr = self.alias.replace('"', "")
+        try:
+            ctype = get_data_types(
+                expr=f"""
+                    SELECT 
+                        {func_apply} AS apply_test_feature 
+                    FROM {self.parent.__genSQL__()} 
+                    WHERE {self.alias} IS NOT NULL 
+                    LIMIT 0""",
+                column="apply_test_feature",
+            )
+            category = to_category(ctype=ctype)
+            all_cols, max_floor = self.parent.get_columns(), 0
+            for column in all_cols:
+                try:
+                    column_str = column.replace('"', "")
+                    if (quote_ident(column) in func) or (
+                        re.search(re.compile(f"\\b{column_str}\\b"), func,)
+                    ):
+                        max_floor = max(
+                            len(self.parent[column].transformations), max_floor
+                        )
+                except:
+                    pass
+            max_floor -= len(self.transformations)
+            if copy_name:
+                copy_name_str = copy_name.replace('"', "")
+                self.add_copy(name=copy_name)
+                for k in range(max_floor):
+                    self.parent[copy_name].transformations += [
+                        ("{}", self.ctype(), self.category())
+                    ]
+                self.parent[copy_name].transformations += [(func, ctype, category)]
+                self.parent[copy_name].catalog = self.catalog
+            else:
+                for k in range(max_floor):
+                    self.transformations += [("{}", self.ctype(), self.category())]
+                self.transformations += [(func, ctype, category)]
+                self.parent.__update_catalog__(erase=True, columns=[self.alias])
+            self.parent.__add_to_history__(
+                f"[Apply]: The vColumn '{alias_sql_repr}' was "
+                f"transformed with the func 'x -> {func_apply}'."
+            )
+            return self.parent
+        except Exception as e:
+            raise QueryError(
+                f"{e}\nError when applying the func 'x -> {func_apply}' "
+                f"to '{alias_sql_repr}'"
+            )
+
+    @save_verticapy_logs
+    def apply_fun(
+        self,
+        func: Literal[
+            "abs",
+            "acos",
+            "asin",
+            "atan",
+            "avg",
+            "cbrt",
+            "ceil",
+            "contain",
+            "count",
+            "cos",
+            "cosh",
+            "cot",
+            "dim",
+            "exp",
+            "find",
+            "floor",
+            "len",
+            "length",
+            "ln",
+            "log",
+            "log10",
+            "max",
+            "mean",
+            "mod",
+            "min",
+            "pow",
+            "round",
+            "sign",
+            "sin",
+            "sinh",
+            "sum",
+            "sqrt",
+            "tan",
+            "tanh",
+        ],
+        x: Union[str, int, float] = 2,
+    ):
+        """
+    Applies a default function to the vColumn.
+
+    Parameters
+    ----------
+    func: str
+        Function to use to transform the vColumn.
+            abs          : absolute value
+            acos         : trigonometric inverse cosine
+            asin         : trigonometric inverse sine
+            atan         : trigonometric inverse tangent
+            avg / mean   : average
+            cbrt         : cube root
+            ceil         : value up to the next whole number
+            contain      : checks if 'x' is in the collection
+            count        : number of non-null elements
+            cos          : trigonometric cosine
+            cosh         : hyperbolic cosine
+            cot          : trigonometric cotangent
+            dim          : dimension (only for arrays)
+            exp          : exponential function
+            find         : returns the ordinal position of a specified element 
+                           in an array (only for arrays)
+            floor        : value down to the next whole number
+            len / length : length
+            ln           : natural logarithm
+            log          : logarithm
+            log10        : base 10 logarithm
+            max          : maximum
+            min          : minimum
+            mod          : remainder of a division operation
+            pow          : number raised to the power of another number
+            round        : rounds a value to a specified number of decimal places
+            sign         : arithmetic sign
+            sin          : trigonometric sine
+            sinh         : hyperbolic sine
+            sqrt         : arithmetic square root
+            sum          : sum
+            tan          : trigonometric tangent
+            tanh         : hyperbolic tangent
+    x: int / float / str, optional
+        If the function has two arguments (example, power or mod), 'x' represents 
+        the second argument.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].apply : Applies a function to the vColumn.
+        """
+        if func == "mean":
+            func = "avg"
+        elif func == "length":
+            func = "len"
+        cat = self.category()
+        if func == "len":
+            if cat == "vmap":
+                func = "MAPSIZE"
+            elif cat == "complex":
+                func = "APPLY_COUNT_ELEMENTS"
+            else:
+                func = "LENTGH"
+        elif func in ("max", "min", "sum", "avg", "count"):
+            func = "APPLY_" + func
+        elif func == "dim":
+            func = "ARRAY_DIMS"
+        if func not in ("log", "mod", "pow", "round", "contain", "find"):
+            expr = f"{func.upper()}({{}})"
+        elif func in ("log", "mod", "pow", "round"):
+            expr = f"{func.upper()}({{}}, {x})"
+        elif func in ("contain", "find"):
+            if func == "contain":
+                if cat == "vmap":
+                    f = "MAPCONTAINSVALUE"
+                else:
+                    f = "CONTAINS"
+            elif func == "find":
+                f = "ARRAY_FIND"
+            if isinstance(x, str):
+                x = "'" + str(x).replace("'", "''") + "'"
+            expr = f"{f}({{}}, {x})"
+        return self.apply(func=expr)
+
+    @save_verticapy_logs
+    def decode(self, *argv):
+        """
+    Encodes the vColumn using a user-defined encoding.
+
+    Parameters
+    ----------
+    argv: object
+        Any amount of expressions.
+        The expression generated will look like:
+        even: CASE ... WHEN vColumn = argv[2 * i] THEN argv[2 * i + 1] ... END
+        odd : CASE ... WHEN vColumn = argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame.case_when      : Creates a new feature by evaluating some conditions.
+    vDataFrame[].discretize   : Discretizes the vColumn.
+    vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
+    vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
+    vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
+        """
+        from verticapy.stats import decode
+
+        return self.apply(func=decode(str_sql("{}"), *argv))
+
+    @save_verticapy_logs
+    def div(self, x: Union[int, float]):
+        """
+    Divides the vColumn by the input element.
+
+    Parameters
+    ----------
+    x: int / float
+        Input number.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].apply : Applies a function to the input vColumn.
+        """
+        assert x != 0, ValueError("Division by 0 is forbidden !")
+        return self.apply(func=f"{{}} / ({x})")
+
+    def get_len(self):
+        """
+    Returns a new vColumn that represents the length of each element.
+
+    Returns
+    -------
+    vColumn
+        vColumn that includes the length of each element.
+        """
+        cat = self.category()
+        if cat == "vmap":
+            fun = "MAPSIZE"
+        elif cat == "complex":
+            fun = "APPLY_COUNT_ELEMENTS"
+        else:
+            fun = "LENGTH"
+        elem_to_select = f"{fun}({self.alias})"
+        init_transf = f"{fun}({self.init_transf})"
+        new_alias = quote_ident(self.alias[1:-1] + ".length")
+        query = f"""
+            (SELECT 
+                {elem_to_select} AS {new_alias} 
+            FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
+        vcol = vDataFrameSQL(query)[new_alias]
+        vcol.init_transf = init_transf
+        return vcol
+
+    @save_verticapy_logs
+    def round(self, n: int):
+        """
+    Rounds the vColumn by keeping only the input number of digits after the comma.
+
+    Parameters
+    ----------
+    n: int
+        Number of digits to keep after the comma.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].apply : Applies a function to the input vColumn.
+        """
+        return self.apply(func=f"ROUND({{}}, {n})")
+
+    @save_verticapy_logs
+    def slice(self, length: int, unit: str = "second", start: bool = True):
+        """
+    Slices and transforms the vColumn using a time series rule.
+
+    Parameters
+    ----------
+    length: int
+        Slice size.
+    unit: str, optional
+        Slice size unit. For example, it can be 'minute' 'hour'...
+    start: bool, optional
+        If set to True, the record will be sliced using the floor of the slicing
+        instead of the ceiling.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].date_part : Extracts a specific TS field from the vColumn.
+        """
+        start_or_end = "START" if (start) else "END"
+        unit = unit.upper()
+        return self.apply(
+            func=f"TIME_SLICE({{}}, {length}, '{unit}', '{start_or_end}')"
+        )
+
+    @save_verticapy_logs
+    def sub(self, x: Union[int, float]):
+        """
+    Subtracts the input element from the vColumn.
+
+    Parameters
+    ----------
+    x: int / float
+        If the vColumn type is date like (date, datetime ...), the parameter 'x' 
+        will represent the number of seconds, otherwise it will represent a number.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].apply : Applies a function to the input vColumn.
+        """
+        if self.isdate():
+            return self.apply(func=f"TIMESTAMPADD(SECOND, -({x}), {{}})")
+        else:
+            return self.apply(func=f"{{}} - ({x})")

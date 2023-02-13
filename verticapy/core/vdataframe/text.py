@@ -104,3 +104,154 @@ class vDFTEXT:
         expr += ")"
         gen_name([method, column])
         return self.eval(name=name, expr=expr)
+
+
+class vDCTEXT:
+    @save_verticapy_logs
+    def str_contains(self, pat: str):
+        """
+    Verifies if the regular expression is in each of the vColumn records. 
+    The vColumn will be transformed.
+
+    Parameters
+    ----------
+    pat: str
+        Regular expression.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].str_count   : Computes the number of matches for the regular expression
+        in each record of the vColumn.
+    vDataFrame[].extract     : Extracts the regular expression in each record of the 
+        vColumn.
+    vDataFrame[].str_replace : Replaces the regular expression matches in each of the 
+        vColumn records by an input value.
+    vDataFrame[].str_slice   : Slices the vColumn.
+        """
+        pat = pat.replace("'", "''")
+        return self.apply(func=f"REGEXP_COUNT({{}}, '{pat}') > 0")
+
+    @save_verticapy_logs
+    def str_count(self, pat: str):
+        """
+    Computes the number of matches for the regular expression in each record of 
+    the vColumn. The vColumn will be transformed.
+
+    Parameters
+    ----------
+    pat: str
+        regular expression.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].str_contains : Verifies if the regular expression is in each of the 
+        vColumn records. 
+    vDataFrame[].extract      : Extracts the regular expression in each record of the 
+        vColumn.
+    vDataFrame[].str_replace  : Replaces the regular expression matches in each of the 
+        vColumn records by an input value.
+    vDataFrame[].str_slice    : Slices the vColumn.
+        """
+        pat = pat.replace("'", "''")
+        return self.apply(func=f"REGEXP_COUNT({{}}, '{pat}')")
+
+    @save_verticapy_logs
+    def str_extract(self, pat: str):
+        """
+    Extracts the regular expression in each record of the vColumn.
+    The vColumn will be transformed.
+
+    Parameters
+    ----------
+    pat: str
+        regular expression.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].str_contains : Verifies if the regular expression is in each of the 
+        vColumn records. 
+    vDataFrame[].str_count    : Computes the number of matches for the regular expression
+        in each record of the vColumn.
+    vDataFrame[].str_replace  : Replaces the regular expression matches in each of the 
+        vColumn records by an input value.
+    vDataFrame[].str_slice    : Slices the vColumn.
+        """
+        pat = pat.replace("'", "''")
+        return self.apply(func=f"REGEXP_SUBSTR({{}}, '{pat}')")
+
+    @save_verticapy_logs
+    def str_replace(self, to_replace: str, value: str = ""):
+        """
+    Replaces the regular expression matches in each of the vColumn record by an
+    input value. The vColumn will be transformed.
+
+    Parameters
+    ----------
+    to_replace: str
+        Regular expression to replace.
+    value: str, optional
+        New value.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].str_contains : Verifies if the regular expression is in each of the 
+        vColumn records. 
+    vDataFrame[].str_count    : Computes the number of matches for the regular expression
+        in each record of the vColumn.
+    vDataFrame[].extract      : Extracts the regular expression in each record of the 
+        vColumn.
+    vDataFrame[].str_slice    : Slices the vColumn.
+        """
+        to_replace = to_replace.replace("'", "''")
+        value = value.replace("'", "''")
+        return self.apply(func=f"REGEXP_REPLACE({{}}, '{to_replace}', '{value}')")
+
+    @save_verticapy_logs
+    def str_slice(self, start: int, step: int):
+        """
+    Slices the vColumn. The vColumn will be transformed.
+
+    Parameters
+    ----------
+    start: int
+        Start of the slicing.
+    step: int
+        Size of the slicing.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].str_contains : Verifies if the regular expression is in each of the 
+        vColumn records. 
+    vDataFrame[].str_count    : Computes the number of matches for the regular expression
+        in each record of the vColumn.
+    vDataFrame[].extract      : Extracts the regular expression in each record of the 
+        vColumn.
+    vDataFrame[].str_replace  : Replaces the regular expression matches in each of the 
+        vColumn records by an input value.
+        """
+        return self.apply(func=f"SUBSTR({{}}, {start}, {step})")

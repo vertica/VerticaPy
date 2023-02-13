@@ -370,3 +370,274 @@ class vDFREAD:
         return self.__vDataFrameSQL__(
             table, self._VERTICAPY_VARIABLES_["input_relation"], ""
         )
+
+
+class vDCREAD:
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            assert index.step in (1, None), ValueError(
+                "vColumn doesn't allow slicing having steps different than 1."
+            )
+            index_stop = index.stop
+            index_start = index.start
+            if not (isinstance(index_start, int)):
+                index_start = 0
+            if self.isarray():
+                vertica_version(condition=[10, 0, 0])
+                if index_start < 0:
+                    index_start_str = f"{index_start} + APPLY_COUNT_ELEMENTS({{}})"
+                else:
+                    index_start_str = str(index_start)
+                if isinstance(index_stop, int):
+                    if index_stop < 0:
+                        index_stop_str = f"{index_stop} + APPLY_COUNT_ELEMENTS({{}})"
+                    else:
+                        index_stop_str = str(index_stop)
+                else:
+                    index_stop_str = "1 + APPLY_COUNT_ELEMENTS({})"
+                elem_to_select = f"{self.alias}[{index_start_str}:{index_stop_str}]"
+                elem_to_select = elem_to_select.replace("{}", self.alias)
+                new_alias = quote_ident(
+                    f"{self.alias[1:-1]}.{index_start}:{index_stop}"
+                )
+                query = f"""
+                    (SELECT 
+                        {elem_to_select} AS {new_alias} 
+                    FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
+                vcol = vDataFrameSQL(query)[new_alias]
+                vcol.transformations[-1] = (
+                    new_alias,
+                    self.ctype(),
+                    self.category(),
+                )
+                vcol.init_transf = (
+                    f"{self.init_transf}[{index_start_str}:{index_stop_str}]"
+                )
+                vcol.init_transf = vcol.init_transf.replace("{}", self.init_transf)
+                return vcol
+            else:
+                if index_start < 0:
+                    index_start += self.parent.shape()[0]
+                if isinstance(index_stop, int):
+                    if index_stop < 0:
+                        index_stop += self.parent.shape()[0]
+                    limit = index_stop - index_start
+                    if limit <= 0:
+                        limit = 0
+                    limit = f" LIMIT {limit}"
+                else:
+                    limit = ""
+                query = f"""
+                    (SELECT 
+                        {self.alias} 
+                    FROM {self.parent.__genSQL__()}
+                    {self.parent.__get_last_order_by__()} 
+                    OFFSET {index_start}
+                    {limit}) VERTICAPY_SUBTABLE"""
+                return vDataFrameSQL(query)
+        elif isinstance(index, int):
+            if self.isarray():
+                vertica_version(condition=[9, 3, 0])
+                elem_to_select = f"{self.alias}[{index}]"
+                new_alias = quote_ident(f"{self.alias[1:-1]}.{index}")
+                query = f"""
+                    (SELECT 
+                        {elem_to_select} AS {new_alias} 
+                    FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
+                vcol = vDataFrameSQL(query)[new_alias]
+                vcol.init_transf = f"{self.init_transf}[{index}]"
+                return vcol
+            else:
+                cast = "::float" if self.category() == "float" else ""
+                if index < 0:
+                    index += self.parent.shape()[0]
+                return _executeSQL(
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('vColumn.__getitem__')*/ 
+                            {self.alias}{cast} 
+                        FROM {self.parent.__genSQL__()}
+                        {self.parent.__get_last_order_by__()} 
+                        OFFSET {index} 
+                        LIMIT 1""",
+                    title="Getting the vColumn element.",
+                    method="fetchfirstelem",
+                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                )
+        elif isinstance(index, str):
+            if self.category() == "vmap":
+                index_str = index.replace("'", "''")
+                elem_to_select = f"MAPLOOKUP({self.alias}, '{index_str}')"
+                init_transf = f"MAPLOOKUP({self.init_transf}, '{index_str}')"
+            else:
+                vertica_version(condition=[10, 0, 0])
+                elem_to_select = f"{self.alias}.{quote_ident(index)}"
+                init_transf = f"{self.init_transf}.{quote_ident(index)}"
+            query = f"""
+                (SELECT 
+                    {elem_to_select} AS {quote_ident(index)} 
+                FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
+            vcol = vDataFrameSQL(query)[index]
+            vcol.init_transf = init_transf
+            return vcol
+        else:
+            return getattr(self, index)
+
+    def __repr__(self):
+        return self.head(limit=OPTIONS["max_rows"]).__repr__()
+
+    def _repr_html_(self):
+        return self.head(limit=OPTIONS["max_rows"])._repr_html_()
+
+    def head(self, limit: int = 5):
+        """
+    Returns the head of the vColumn.
+
+    Parameters
+    ----------
+    limit: int, optional
+        Number of elements to display.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame[].tail : Returns the a part of the vColumn.
+        """
+        return self.iloc(limit=limit)
+
+    def iloc(self, limit: int = 5, offset: int = 0):
+        """
+    Returns a part of the vColumn (delimited by an offset and a limit).
+
+    Parameters
+    ----------
+    limit: int, optional
+        Number of elements to display.
+    offset: int, optional
+        Number of elements to skip.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame[].head : Returns the head of the vColumn.
+    vDataFrame[].tail : Returns the tail of the vColumn.
+        """
+        if offset < 0:
+            offset = max(0, self.parent.shape()[0] - limit)
+        title = f"Reads {self.alias}."
+        alias_sql_repr = to_varchar(self.category(), self.alias)
+        tail = to_tablesample(
+            query=f"""
+                SELECT 
+                    {alias_sql_repr} AS {self.alias} 
+                FROM {self.parent.__genSQL__()}
+                {self.parent.__get_last_order_by__()} 
+                LIMIT {limit} 
+                OFFSET {offset}""",
+            title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
+        tail.count = self.parent.shape()[0]
+        tail.offset = offset
+        tail.dtype[self.alias] = self.ctype()
+        tail.name = self.alias
+        return tail
+
+    @save_verticapy_logs
+    def nlargest(self, n: int = 10):
+        """
+    Returns the n largest vColumn elements.
+
+    Parameters
+    ----------
+    n: int, optional
+        Offset.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame[].nsmallest : Returns the n smallest elements in the vColumn.
+        """
+        query = f"""
+            SELECT 
+                * 
+            FROM {self.parent.__genSQL__()} 
+            WHERE {self.alias} IS NOT NULL 
+            ORDER BY {self.alias} DESC LIMIT {n}"""
+        title = f"Reads {self.alias} {n} largest elements."
+        return to_tablesample(
+            query,
+            title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
+
+    @save_verticapy_logs
+    def nsmallest(self, n: int = 10):
+        """
+    Returns the n smallest elements in the vColumn.
+
+    Parameters
+    ----------
+    n: int, optional
+        Offset.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame[].nlargest : Returns the n largest vColumn elements.
+        """
+        return to_tablesample(
+            f"""
+            SELECT 
+                * 
+            FROM {self.parent.__genSQL__()} 
+            WHERE {self.alias} IS NOT NULL 
+            ORDER BY {self.alias} ASC LIMIT {n}""",
+            title=f"Reads {n} {self.alias} smallest elements.",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
+
+    def tail(self, limit: int = 5):
+        """
+    Returns the tail of the vColumn.
+
+    Parameters
+    ----------
+    limit: int, optional
+        Number of elements to display.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame[].head : Returns the head of the vColumn.
+        """
+        return self.iloc(limit=limit, offset=-1)

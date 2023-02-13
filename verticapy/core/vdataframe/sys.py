@@ -582,3 +582,185 @@ class vDFSYS:
         values["index"] += ["total"]
         values["value"] += [total]
         return tablesample(values=values)
+
+    @save_verticapy_logs
+    def swap(self, column1: Union[int, str], column2: Union[int, str]):
+        """
+    Swap the two input vColumns.
+
+    Parameters
+    ----------
+    column1: str / int
+        The first vColumn or its index to swap.
+    column2: str / int
+        The second vColumn or its index to swap.
+
+    Returns
+    -------
+    vDataFrame
+        self
+        """
+        if isinstance(column1, int):
+            assert column1 < self.shape()[1], ParameterError(
+                "The parameter 'column1' is incorrect, it is greater or equal "
+                f"to the vDataFrame number of columns: {column1}>={self.shape()[1]}"
+                "\nWhen this parameter type is 'integer', it must represent the index "
+                "of the column to swap."
+            )
+            column1 = self.get_columns()[column1]
+        if isinstance(column2, int):
+            assert column2 < self.shape()[1], ParameterError(
+                "The parameter 'column2' is incorrect, it is greater or equal "
+                f"to the vDataFrame number of columns: {column2}>={self.shape()[1]}"
+                "\nWhen this parameter type is 'integer', it must represent the "
+                "index of the column to swap."
+            )
+            column2 = self.get_columns()[column2]
+        column1, column2 = self.format_colnames(column1, column2)
+        columns = self._VERTICAPY_VARIABLES_["columns"]
+        all_cols = {}
+        for idx, elem in enumerate(columns):
+            all_cols[elem] = idx
+        columns[all_cols[column1]], columns[all_cols[column2]] = (
+            columns[all_cols[column2]],
+            columns[all_cols[column1]],
+        )
+        return self
+
+
+class vDCSYS:
+    def add_copy(self, name: str):
+        """
+    Adds a copy vColumn to the parent vDataFrame.
+
+    Parameters
+    ----------
+    name: str
+        Name of the copy.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame.eval : Evaluates a customized expression.
+        """
+        name = quote_ident(name.replace('"', "_"))
+        assert name.replace('"', ""), EmptyParameter(
+            "The parameter 'name' must not be empty"
+        )
+        assert not (self.parent.is_colname_in(name)), NameError(
+            f"A vColumn has already the alias {name}.\nBy changing "
+            "the parameter 'name', you'll be able to solve this issue."
+        )
+        new_vColumn = vColumn(
+            name,
+            parent=self.parent,
+            transformations=[item for item in self.transformations],
+            catalog=self.catalog,
+        )
+        setattr(self.parent, name, new_vColumn)
+        setattr(self.parent, name[1:-1], new_vColumn)
+        self.parent._VERTICAPY_VARIABLES_["columns"] += [name]
+        self.parent.__add_to_history__(
+            f"[Add Copy]: A copy of the vColumn {self.alias} "
+            f"named {name} was added to the vDataFrame."
+        )
+        return self.parent
+
+    @save_verticapy_logs
+    def memory_usage(self):
+        """
+    Returns the vColumn memory usage. 
+
+    Returns
+    -------
+    float
+        vColumn memory usage (byte)
+
+    See Also
+    --------
+    vDataFrame.memory_usage : Returns the vDataFrame memory usage.
+        """
+        total = (
+            sys.getsizeof(self)
+            + sys.getsizeof(self.alias)
+            + sys.getsizeof(self.transformations)
+            + sys.getsizeof(self.catalog)
+        )
+        for elem in self.catalog:
+            total += sys.getsizeof(elem)
+        return total
+
+    @save_verticapy_logs
+    def store_usage(self):
+        """
+    Returns the vColumn expected store usage (unit: b).
+
+    Returns
+    -------
+    int
+        vColumn expected store usage.
+
+    See Also
+    --------
+    vDataFrame.expected_store_usage : Returns the vDataFrame expected store usage.
+        """
+        pre_comp = self.parent.__get_catalog_value__(self.alias, "store_usage")
+        if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
+            return pre_comp
+        alias_sql_repr = to_varchar(self.category(), self.alias)
+        store_usage = _executeSQL(
+            query=f"""
+                SELECT 
+                    /*+LABEL('vColumn.storage_usage')*/ 
+                    ZEROIFNULL(SUM(LENGTH({alias_sql_repr}::varchar))) 
+                FROM {self.parent.__genSQL__()}""",
+            title=f"Computing the Store Usage of the vColumn {self.alias}.",
+            method="fetchfirstelem",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
+        self.parent.__update_catalog__(
+            {"index": ["store_usage"], self.alias: [store_usage]}
+        )
+        return store_usage
+
+    def rename(self, new_name: str):
+        """
+    Renames the vColumn by dropping the current vColumn and creating a copy with 
+    the specified name.
+
+    \u26A0 Warning : SQL code generation will be slower if the vDataFrame has been 
+                     transformed multiple times, so it's better practice to use 
+                     this method when first preparing your data.
+
+    Parameters
+    ----------
+    new_name: str
+        The new vColumn alias.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame.add_copy : Creates a copy of the vColumn.
+        """
+        old_name = quote_ident(self.alias)
+        new_name = new_name.replace('"', "")
+        assert not (self.parent.is_colname_in(new_name)), NameError(
+            f"A vColumn has already the alias {new_name}.\n"
+            "By changing the parameter 'new_name', you'll "
+            "be able to solve this issue."
+        )
+        self.add_copy(new_name)
+        parent = self.drop(add_history=False)
+        parent.__add_to_history__(
+            f"[Rename]: The vColumn {old_name} was renamed '{new_name}'."
+        )
+        return parent

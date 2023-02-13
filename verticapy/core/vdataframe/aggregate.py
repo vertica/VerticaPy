@@ -2081,6 +2081,50 @@ class vDCAgg:
         """
         return self.aggregate(["count"]).values[self.alias][0]
 
+    def distinct(self, **kwargs):
+        """
+    Returns the distinct categories of the vColumn.
+
+    Returns
+    -------
+    list
+        Distinct caterogies of the vColumn.
+
+    See Also
+    --------
+    vDataFrame.topk : Returns the vColumn most occurent elements.
+        """
+        alias_sql_repr = to_varchar(self.category(), self.alias)
+        if "agg" not in kwargs:
+            query = f"""
+                SELECT 
+                    /*+LABEL('vColumn.distinct')*/ 
+                    {alias_sql_repr} AS {self.alias} 
+                FROM {self.parent.__genSQL__()} 
+                WHERE {self.alias} IS NOT NULL 
+                GROUP BY {self.alias} 
+                ORDER BY {self.alias}"""
+        else:
+            query = f"""
+                SELECT 
+                    /*+LABEL('vColumn.distinct')*/ {self.alias} 
+                FROM 
+                    (SELECT 
+                        {alias_sql_repr} AS {self.alias}, 
+                        {kwargs['agg']} AS verticapy_agg 
+                     FROM {self.parent.__genSQL__()} 
+                     WHERE {self.alias} IS NOT NULL 
+                     GROUP BY 1) x 
+                ORDER BY verticapy_agg DESC"""
+        query_result = _executeSQL(
+            query=query,
+            title=f"Computing the distinct categories of {self.alias}.",
+            method="fetchall",
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
+        return [item for sublist in query_result for item in sublist]
+
     @save_verticapy_logs
     def kurtosis(self):
         """

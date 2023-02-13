@@ -1630,3 +1630,102 @@ class vDFCORR:
         return tablesample(
             {"index": [elem[0] for elem in data], "iv": [elem[1] for elem in data],}
         )
+
+
+class vDCCORR:
+    @save_verticapy_logs
+    def iv_woe(self, y: str, nbins: int = 10):
+        """
+    Computes the Information Value (IV) / Weight Of Evidence (WOE) Table. It tells 
+    the predictive power of an independent variable in relation to the dependent 
+    variable.
+
+    Parameters
+    ----------
+    y: str
+        Response vColumn.
+    nbins: int, optional
+        Maximum number of nbins used for the discretization (must be > 1)
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame.iv_woe : Computes the Information Value (IV) Table.
+        """
+        y = self.parent.format_colnames(y)
+        assert self.parent[y].nunique() == 2, TypeError(
+            f"vColumn {y} must be binary to use iv_woe."
+        )
+        response_cat = self.parent[y].distinct()
+        response_cat.sort()
+        assert response_cat == [0, 1], TypeError(
+            f"vColumn {y} must be binary to use iv_woe."
+        )
+        self.parent[y].distinct()
+        trans = self.discretize(
+            method="same_width" if self.isnum() else "topk",
+            nbins=nbins,
+            k=nbins,
+            new_category="Others",
+            return_enum_trans=True,
+        )[0].replace("{}", self.alias)
+        query = f"""
+            SELECT 
+                {trans} AS {self.alias}, 
+                {self.alias} AS ord, 
+                {y}::int AS {y} 
+            FROM {self.parent.__genSQL__()}"""
+        query = f"""
+            SELECT 
+                {self.alias}, 
+                MIN(ord) AS ord, 
+                SUM(1 - {y}) AS non_events, 
+                SUM({y}) AS events 
+            FROM ({query}) x GROUP BY 1"""
+        query = f"""
+            SELECT 
+                {self.alias}, 
+                ord, 
+                non_events, 
+                events, 
+                non_events / NULLIFZERO(SUM(non_events) OVER ()) AS pt_non_events, 
+                events / NULLIFZERO(SUM(events) OVER ()) AS pt_events 
+            FROM ({query}) x"""
+        query = f"""
+            SELECT 
+                {self.alias} AS index, 
+                non_events, 
+                events, 
+                pt_non_events, 
+                pt_events, 
+                CASE 
+                    WHEN non_events = 0 OR events = 0 THEN 0 
+                    ELSE ZEROIFNULL(LN(pt_non_events / NULLIFZERO(pt_events))) 
+                END AS woe, 
+                CASE 
+                    WHEN non_events = 0 OR events = 0 THEN 0 
+                    ELSE (pt_non_events - pt_events) 
+                        * ZEROIFNULL(LN(pt_non_events 
+                        / NULLIFZERO(pt_events))) 
+                END AS iv 
+            FROM ({query}) x ORDER BY ord"""
+        title = f"Computing WOE & IV of {self.alias} (response = {y})."
+        result = to_tablesample(
+            query,
+            title=title,
+            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+        )
+        result.values["index"] += ["total"]
+        result.values["non_events"] += [sum(result["non_events"])]
+        result.values["events"] += [sum(result["events"])]
+        result.values["pt_non_events"] += [""]
+        result.values["pt_events"] += [""]
+        result.values["woe"] += [""]
+        result.values["iv"] += [sum(result["iv"])]
+        return result

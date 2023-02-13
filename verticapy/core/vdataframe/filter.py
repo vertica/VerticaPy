@@ -613,3 +613,151 @@ class vDFFILTER:
         if usecols:
             result = result.select(usecols)
         return result.sort(order_by)
+
+
+class vDCFILTER:
+    @save_verticapy_logs
+    def drop(self, add_history: bool = True):
+        """
+    Drops the vColumn from the vDataFrame. Dropping a vColumn means simply
+    not selecting it in the final generated SQL code.
+    
+    Note: Dropping a vColumn can make the vDataFrame "heavier" if it is used
+    to compute other vColumns.
+
+    Parameters
+    ----------
+    add_history: bool, optional
+        If set to True, the information will be stored in the vDataFrame history.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame.drop: Drops the input vColumns from the vDataFrame.
+        """
+        try:
+            parent = self.parent
+            force_columns = [
+                column for column in self.parent._VERTICAPY_VARIABLES_["columns"]
+            ]
+            force_columns.remove(self.alias)
+            _executeSQL(
+                query=f"""
+                    SELECT 
+                        /*+LABEL('vColumn.drop')*/ * 
+                    FROM {self.parent.__genSQL__(force_columns=force_columns)} 
+                    LIMIT 10""",
+                print_time_sql=False,
+                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
+                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            )
+            self.parent._VERTICAPY_VARIABLES_["columns"].remove(self.alias)
+            delattr(self.parent, self.alias)
+        except:
+            self.parent._VERTICAPY_VARIABLES_["exclude_columns"] += [self.alias]
+        if add_history:
+            self.parent.__add_to_history__(
+                f"[Drop]: vColumn {self.alias} was deleted from the vDataFrame."
+            )
+        return parent
+
+    @save_verticapy_logs
+    def drop_outliers(
+        self,
+        threshold: Union[int, float] = 4.0,
+        use_threshold: bool = True,
+        alpha: Union[int, float] = 0.05,
+    ):
+        """
+    Drops outliers in the vColumn.
+
+    Parameters
+    ----------
+    threshold: int / float, optional
+        Uses the Gaussian distribution to identify outliers. After normalizing 
+        the data (Z-Score), if the absolute value of the record is greater than 
+        the threshold, it will be considered as an outlier.
+    use_threshold: bool, optional
+        Uses the threshold instead of the 'alpha' parameter.
+    alpha: int / float, optional
+        Number representing the outliers threshold. Values lesser than 
+        quantile(alpha) or greater than quantile(1-alpha) will be dropped.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame.fill_outliers : Fills the outliers in the vColumn.
+    vDataFrame.outliers      : Adds a new vColumn labeled with 0 and 1 
+        (1 meaning global outlier).
+        """
+        if use_threshold:
+            result = self.aggregate(func=["std", "avg"]).transpose().values
+            self.parent.filter(
+                f"""
+                    ABS({self.alias} - {result["avg"][0]}) 
+                  / {result["std"][0]} < {threshold}"""
+            )
+        else:
+            p_alpha, p_1_alpha = (
+                self.parent.quantile([alpha, 1 - alpha], [self.alias])
+                .transpose()
+                .values[self.alias]
+            )
+            self.parent.filter(f"({self.alias} BETWEEN {p_alpha} AND {p_1_alpha})")
+        return self.parent
+
+    @save_verticapy_logs
+    def dropna(self):
+        """
+    Filters the vDataFrame where the vColumn is missing.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame.filter: Filters the data using the input expression.
+        """
+        self.parent.filter(f"{self.alias} IS NOT NULL")
+        return self.parent
+
+    @save_verticapy_logs
+    def isin(
+        self,
+        val: Union[str, int, float, datetime.datetime, datetime.date, list],
+        *args,
+    ):
+        """
+    Looks if some specific records are in the vColumn and it returns the new 
+    vDataFrame of the search.
+
+    Parameters
+    ----------
+    val: str / int / float / date / list
+        List of the different records. For example, to check if Badr and Fouad  
+        are in the vColumn. You can write the following list: ["Fouad", "Badr"]
+
+    Returns
+    -------
+    vDataFrame
+        The vDataFrame of the search.
+
+    See Also
+    --------
+    vDataFrame.isin : Looks if some specific records are in the vDataFrame.
+        """
+        if isinstance(val, str) or not (isinstance(val, Iterable)):
+            val = [val]
+        val += list(args)
+        val = {self.alias: val}
+        return self.parent.isin(val)
