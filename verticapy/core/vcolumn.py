@@ -24,7 +24,7 @@ permissions and limitations under the License.
 #    \/_/      \/_____/   \/_____/   \/_____/   \/_____/   \/_/  \/_/   \/_/ \/_/
 #
 ##
-
+from verticapy.core.str_sql import str_sql
 
 class vColumn(
     str_sql,
