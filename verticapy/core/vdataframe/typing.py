@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Union
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql import _executeSQL
 from verticapy.core.tablesample import tablesample
