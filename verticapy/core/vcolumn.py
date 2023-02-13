@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from verticapy.core.str_sql import str_sql
 
 from verticapy.core.vdataframe.aggregate import vDCAGG
-from verticapy.core.vdataframe.plot import vDCPLOT
+from verticapy.core.vdataframe.plotting import vDCPLOT
 from verticapy.core.vdataframe.math import vDCMATH
 from verticapy.core.vdataframe.typing import vDCTYPING
 from verticapy.core.vdataframe.filter import vDCFILTER
