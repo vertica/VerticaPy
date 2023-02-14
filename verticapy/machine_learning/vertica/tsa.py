@@ -37,7 +37,7 @@ from verticapy.sql.insert import insert_verticapy_schema
 from verticapy._utils._sql import _executeSQL
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._config.config import ISNOTEBOOK
-from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.sql.drop import drop
 from verticapy.core.tablesample import tablesample
 from verticapy.sql.read import vDataFrameSQL

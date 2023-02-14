@@ -36,7 +36,7 @@ from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree
 from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql._utils._format import clean_query
-from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import OPTIONS
 
 # Standard Python Modules

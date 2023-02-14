@@ -99,9 +99,6 @@ from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
 from verticapy.sql.dtypes import get_data_types
 
-# SQL Functions
-import verticapy.stats
-
 # Learn
 import verticapy.learn
 

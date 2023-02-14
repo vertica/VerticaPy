@@ -25,12 +25,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # VerticaPy Modules
-from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import current_random
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.plotting._matplotlib.core import compute_plot_variables
+from verticapy.plotting._matplotlib.base import compute_plot_variables
 from verticapy.plotting._colors import gen_colors, gen_cmap, get_color
 
 # Global Variables

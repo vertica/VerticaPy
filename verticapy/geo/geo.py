@@ -24,7 +24,7 @@ import warnings
 from typing import Union
 
 # VerticaPy Modules
-import verticapy.stats as st
+import verticapy.sql.functions.math as mt
 from verticapy.datasets import gen_meshgrid
 from verticapy.vdataframe import vDataFrame
 from verticapy._utils._collect import save_verticapy_logs
@@ -134,15 +134,15 @@ vDataFrame
 
     if reverse:
 
-        result[x] = result[x] / earth_radius * 180 / st.PI + x0
+        result[x] = result[x] / earth_radius * 180 / mt.PI + x0
         result[y] = (
-            (st.atan(st.exp(result[y] / earth_radius)) - st.PI / 4) / st.PI * 360
+            (mt.atan(mt.exp(result[y] / earth_radius)) - mt.PI / 4) / mt.PI * 360
         )
 
     else:
 
-        result[x] = earth_radius * ((result[x] - x0) * st.PI / 180)
-        result[y] = earth_radius * st.ln(st.tan(result[y] * st.PI / 360 + st.PI / 4))
+        result[x] = earth_radius * ((result[x] - x0) * mt.PI / 180)
+        result[y] = earth_radius * mt.ln(mt.tan(result[y] * mt.PI / 360 + mt.PI / 4))
 
     return result
 

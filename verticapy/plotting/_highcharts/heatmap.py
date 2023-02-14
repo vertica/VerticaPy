@@ -30,7 +30,7 @@ def heatmap(
     width: int = 600,
     height: int = 400,
 ):
-    from verticapy.plotting._highcharts.highchart import data_to_columns
+    from verticapy.plotting._highcharts.base import data_to_columns
 
     chart = Highchart(width=width, height=height)
     default_options = {

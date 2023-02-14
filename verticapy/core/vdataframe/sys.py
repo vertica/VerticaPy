@@ -25,7 +25,6 @@ from verticapy.sql.flex import isvmap
 from verticapy._config.config import current_random
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._utils._sql import _executeSQL
-from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import quote_ident
 from verticapy.core._utils._map import verticapy_agg_name
 from verticapy._config.config import OPTIONS

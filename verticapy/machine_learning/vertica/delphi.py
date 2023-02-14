@@ -45,7 +45,7 @@ from verticapy.machine_learning.vertica.linear_model import (
     Lasso,
     Ridge,
 )
-from verticapy.machine_learning.vertica.model_selection import (
+from verticapy.machine_learning.model_selection.model_selection import (
     best_k,
     gen_params_grid,
     grid_search_cv,

@@ -24,7 +24,7 @@ from verticapy.plotting._colors import gen_colors
 
 
 def negative_bar(query: str, options: dict = {}, width: int = 600, height: int = 400):
-    from verticapy.plotting._highcharts.highchart import data_to_columns, sort_classes
+    from verticapy.plotting._highcharts.base import data_to_columns, sort_classes
 
     data = _executeSQL(
         query,

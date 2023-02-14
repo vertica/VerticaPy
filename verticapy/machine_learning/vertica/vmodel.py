@@ -48,8 +48,8 @@ from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation
 from verticapy.machine_learning._utils import get_match_index
 from verticapy._config.config import OPTIONS
-import verticapy.learn.metrics as mt
-import verticapy.learn.model_selection as ms
+import verticapy.machine_learning.metrics.metrics as mt
+import verticapy.machine_learning.model_selection.model_selection as ms
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___

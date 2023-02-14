@@ -30,7 +30,7 @@ def bar(
     height: int = 400,
     chart_type: str = "regular",
 ):
-    from verticapy.plotting._highcharts.highchart import data_to_columns, sort_classes
+    from verticapy.plotting._highcharts.base import data_to_columns, sort_classes
 
     is_stacked = "stacked" in chart_type
     if chart_type == "stacked_hist":

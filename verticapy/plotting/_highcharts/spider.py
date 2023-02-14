@@ -24,7 +24,7 @@ from verticapy.plotting._colors import gen_colors
 
 
 def spider(query: str, options: dict = {}, width: int = 600, height: int = 400):
-    from verticapy.plotting._highcharts.highchart import data_to_columns
+    from verticapy.plotting._highcharts.base import data_to_columns
 
     data = _executeSQL(
         query,

@@ -24,6 +24,7 @@ from verticapy.core.str_sql import str_sql
 from verticapy.sql.dtypes import get_data_types
 from verticapy._utils._cast import to_category
 from verticapy.sql.read import vDataFrameSQL
+from verticapy.sql.functions.conditional import decode
 
 
 class vDFMATH:
@@ -544,7 +545,7 @@ class vDFMATH:
     vDataFrame[].decode : Encodes the vDataColumn using a User Defined Encoding.
     vDataFrame.eval : Evaluates a customized expression.
         """
-        from verticapy.stats.math.math import case_when
+        from verticapy.sql.functions import case_when
 
         return self.eval(name=name, expr=case_when(*argv))
 
@@ -853,8 +854,6 @@ class vDCMATH:
     vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
     vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
-        from verticapy.stats import decode
-
         return self.apply(func=decode(str_sql("{}"), *argv))
 
     @save_verticapy_logs

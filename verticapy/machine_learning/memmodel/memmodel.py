@@ -28,6 +28,7 @@ from typing import Union, Literal
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import ParameterError, FunctionError
 from verticapy.sql._utils._format import clean_query
+from verticapy._utils.math import heuristic_length
 
 # other modules:
 try:
@@ -527,7 +528,6 @@ def predict_from_binary_tree(
     numpy.array
         Predicted values
     """
-    from verticapy.stats._utils import heuristic_length
 
     def predict_tree(
         children_left, children_right, feature, threshold, value, node_id, X
@@ -640,7 +640,6 @@ def sql_from_binary_tree(
     str / list
         SQL code
     """
-    from verticapy.stats._utils import heuristic_length
 
     def predict_tree(
         children_left, children_right, feature, threshold, value, node_id, X, prob_ID=0,
@@ -787,8 +786,6 @@ def binary_tree_to_graphviz(
     str
         Graphviz code.
     """
-    from verticapy.stats._utils import heuristic_length
-
     empty_color = False
     if len(classes_color) == 0:
         empty_color = True
