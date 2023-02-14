@@ -77,9 +77,6 @@ from verticapy._config.config import *
 # vDataFrame
 from verticapy.vdataframe import *
 
-# vDataFrame
-from verticapy.core.vcolumn import *
-
 # Utilities
 from verticapy.sql.parsers.csv import read_csv
 from verticapy.sql.parsers.json import read_json
