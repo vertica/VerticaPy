@@ -29,7 +29,6 @@ import numpy as np
 # VerticaPy Modules
 from verticapy.sql.parsers.pandas import pandas_to_vertica
 from verticapy.core.tablesample import tablesample
-from verticapy.core.vdataframe.vdataframe import vDataColumn
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import (
     ConnectionError,
