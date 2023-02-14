@@ -57,6 +57,7 @@ from verticapy.sql.functions.date import (
     week,
     year,
 )
+from verticapy.sql.functions.math import PI, E, TAU, INF, NAN
 from verticapy.sql.functions.math import (
     apply,
     abs,

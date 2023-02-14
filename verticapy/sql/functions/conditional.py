@@ -60,6 +60,7 @@ str_sql
     expr += " END"
     return str_sql(expr, category)
 
+
 def decode(expr, *argv):
     """
 Compares expression to each search value one by one.
