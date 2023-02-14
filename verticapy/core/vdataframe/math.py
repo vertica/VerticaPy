@@ -803,6 +803,31 @@ class vDCMATH:
         return self.apply(func=expr)
 
     @save_verticapy_logs
+    def date_part(self, field: str):
+        """
+    Extracts a specific TS field from the vColumn (only if the vColumn type is 
+    date like). The vColumn will be transformed.
+
+    Parameters
+    ----------
+    field: str
+        The field to extract. It must be one of the following: 
+        CENTURY / DAY / DECADE / DOQ / DOW / DOY / EPOCH / HOUR / ISODOW / ISOWEEK /
+        ISOYEAR / MICROSECONDS / MILLENNIUM / MILLISECONDS / MINUTE / MONTH / QUARTER / 
+        SECOND / TIME ZONE / TIMEZONE_HOUR / TIMEZONE_MINUTE / WEEK / YEAR
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].slice : Slices the vColumn using a time series rule.
+        """
+        return self.apply(func=f"DATE_PART('{field}', {{}})")
+
+    @save_verticapy_logs
     def decode(self, *argv):
         """
     Encodes the vColumn using a user-defined encoding.

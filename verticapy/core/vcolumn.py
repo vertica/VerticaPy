@@ -21,11 +21,14 @@ from verticapy.core.vdataframe.plotting import vDCPLOT
 from verticapy.core.vdataframe.math import vDCMATH
 from verticapy.core.vdataframe.typing import vDCTYPING
 from verticapy.core.vdataframe.filter import vDCFILTER
-from verticapy.core.vdataframe.preprocessing import vDCPREP
 from verticapy.core.vdataframe.read import vDCREAD
 from verticapy.core.vdataframe.sys import vDCSYS
 from verticapy.core.vdataframe.text import vDCTEXT
 from verticapy.core.vdataframe.corr import vDCCORR
+from verticapy.core.vdataframe.encoding import vDCENCODE
+from verticapy.core.vdataframe.normalize import vDCNORM
+from verticapy.core.vdataframe.eval import vDCEVAL
+from verticapy.core.vdataframe.fill import vDCFILL
 
 ##
 #
@@ -44,11 +47,14 @@ class vColumn(
     vDCMATH,
     vDCTYPING,
     vDCFILTER,
-    vDCPREP,
     vDCREAD,
     vDCSYS,
     vDCTEXT,
     vDCCORR,
+    vDCENCODE,
+    vDCNORM,
+    vDCEVAL,
+    vDCFILL,
     str_sql,
 ):
     """

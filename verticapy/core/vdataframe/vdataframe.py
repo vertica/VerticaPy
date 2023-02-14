@@ -64,7 +64,7 @@ from verticapy.core.vdataframe.io import vDFIO
 from verticapy.core.vdataframe.rolling import vDFROLL
 from verticapy.core.vdataframe.plotting import vDFPLOT
 from verticapy.core.vdataframe.filter import vDFFILTER
-from verticapy.core.vdataframe.preprocessing import vDFPREP
+from verticapy.core.vdataframe.join_union_sort import vDFJUS
 from verticapy.core.vdataframe.machine_learning import vDFML
 from verticapy.core.vdataframe.math import vDFMATH
 from verticapy.core.vdataframe.sys import vDFSYS
@@ -72,6 +72,11 @@ from verticapy.core.vdataframe.typing import vDFTYPING
 from verticapy.core.vdataframe.read import vDFREAD
 from verticapy.core.vdataframe.text import vDFTEXT
 from verticapy.core.vdataframe.utils import vDFUTILS
+from verticapy.core.vdataframe.encoding import vDFENCODE
+from verticapy.core.vdataframe.normalize import vDFNORM
+from verticapy.core.vdataframe.eval import vDFEVAL
+from verticapy.core.vdataframe.fill import vDFFILL
+from verticapy.core.vdataframe.pivot import vDFPIVOT
 
 
 ###
@@ -97,7 +102,7 @@ class vDataFrame(
     vDFROLL,
     vDFPLOT,
     vDFFILTER,
-    vDFPREP,
+    vDFJUS,
     vDFML,
     vDFMATH,
     vDFSYS,
@@ -105,6 +110,11 @@ class vDataFrame(
     vDFREAD,
     vDFTEXT,
     vDFUTILS,
+    vDFENCODE,
+    vDFNORM,
+    vDFEVAL,
+    vDFFILL,
+    vDFPIVOT,
 ):
     """
 An object that records all user modifications, allowing users to 

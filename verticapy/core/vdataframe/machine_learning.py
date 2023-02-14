@@ -17,6 +17,7 @@ permissions and limitations under the License.
 # Standard Python Modules
 import random, warnings, datetime
 from typing import Union, Literal
+from itertools import combinations_with_replacement
 
 # Other modules
 import numpy as np
@@ -34,6 +35,131 @@ from verticapy._config.config import OPTIONS
 
 
 class vDFML:
+    @save_verticapy_logs
+    def add_duplicates(self, weight: Union[int, str], use_gcd: bool = True):
+        """
+    Duplicates the vDataFrame using the input weight.
+
+    Parameters
+    ----------
+    weight: str / integer
+        vColumn or integer representing the weight.
+    use_gcd: bool
+        If set to True, uses the GCD (Greatest Common Divisor) to reduce all 
+        common weights to avoid unnecessary duplicates.
+
+    Returns
+    -------
+    vDataFrame
+        the output vDataFrame
+        """
+        if isinstance(weight, str):
+            weight = self.format_colnames(weight)
+            assert self[weight].category() == "int", TypeError(
+                "The weight vColumn category must be "
+                f"'integer', found {self[weight].category()}."
+            )
+            L = sorted(self[weight].distinct())
+            gcd, max_value, n = L[0], L[-1], len(L)
+            assert gcd >= 0, ValueError(
+                "The weight vColumn must only include positive integers."
+            )
+            if use_gcd:
+                if gcd != 1:
+                    for i in range(1, n):
+                        if gcd != 1:
+                            gcd = math.gcd(gcd, L[i])
+                        else:
+                            break
+            else:
+                gcd = 1
+            columns = self.get_columns(exclude_columns=[weight])
+            vdf = self.search(self[weight] != 0, usecols=columns)
+            for i in range(2, int(max_value / gcd) + 1):
+                vdf = vdf.append(
+                    self.search((self[weight] / gcd) >= i, usecols=columns)
+                )
+        else:
+            assert weight >= 2 and isinstance(weight, int), ValueError(
+                "The weight must be an integer greater or equal to 2."
+            )
+            vdf = self.copy()
+            for i in range(2, weight + 1):
+                vdf = vdf.append(self)
+        return vdf
+
+    @save_verticapy_logs
+    def cdt(
+        self,
+        columns: Union[str, list] = [],
+        max_cardinality: int = 20,
+        nbins: int = 10,
+        tcdt: bool = True,
+        drop_transf_cols: bool = True,
+    ):
+        """
+    Returns the complete disjunctive table of the vDataFrame.
+    Numerical features are transformed to categorical using
+    the 'discretize' method. Applying PCA on TCDT leads to MCA 
+    (Multiple correspondence analysis).
+
+    \u26A0 Warning : This method can become computationally expensive when
+                     used with categorical variables with many categories.
+
+    Parameters
+    ----------
+    columns: str / list, optional
+        List of the vColumns names.
+    max_cardinality: int, optional
+        For any categorical variable, keeps the most frequent categories and 
+        merges the less frequent categories into a new unique category.
+    nbins: int, optional
+        Number of bins used for the discretization (must be > 1).
+    tcdt: bool, optional
+        If set to True, returns the transformed complete disjunctive table 
+        (TCDT). 
+    drop_transf_cols: bool, optional
+        If set to True, drops the columns used during the transformation.
+
+    Returns
+    -------
+    vDataFrame
+        the CDT relation.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        if columns:
+            columns = self.format_colnames(columns)
+        else:
+            columns = self.get_columns()
+        vdf = self.copy()
+        columns_to_drop = []
+        for elem in columns:
+            if vdf[elem].isbool():
+                vdf[elem].astype("int")
+            elif vdf[elem].isnum():
+                vdf[elem].discretize(nbins=nbins)
+                columns_to_drop += [elem]
+            elif vdf[elem].isdate():
+                vdf[elem].drop()
+            else:
+                vdf[elem].discretize(method="topk", k=max_cardinality)
+                columns_to_drop += [elem]
+        new_columns = vdf.get_columns()
+        vdf.one_hot_encode(
+            columns=columns,
+            max_cardinality=max(max_cardinality, nbins) + 2,
+            drop_first=False,
+        )
+        new_columns = vdf.get_columns(exclude_columns=new_columns)
+        if drop_transf_cols:
+            vdf.drop(columns=columns_to_drop)
+        if tcdt:
+            for elem in new_columns:
+                sum_cat = vdf[elem].sum()
+                vdf[elem].apply(f"{{}} / {sum_cat} - 1")
+        return vdf
+
     @save_verticapy_logs
     def chaid(
         self,
@@ -441,6 +567,38 @@ class vDFML:
         return tablesample(result)
 
     @save_verticapy_logs
+    def polynomial_comb(self, columns: Union[str, list] = [], r: int = 2):
+        """
+    Returns a vDataFrame containing different product combination of the 
+    input vColumns. This function is ideal for bivariate analysis.
+
+    Parameters
+    ----------
+    columns: str / list, optional
+        List of the vColumns names. If empty, all numerical vColumns will be 
+        used.
+    r: int, optional
+        Degree of the polynomial.
+
+    Returns
+    -------
+    vDataFrame
+        the Polynomial object.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        if not (columns):
+            numcol = self.numcol()
+        else:
+            numcol = self.format_colnames(columns)
+        vdf = self.copy()
+        all_comb = combinations_with_replacement(numcol, r=r)
+        for elem in all_comb:
+            name = "_".join(elem)
+            vdf.eval(name.replace('"', ""), expr=" * ".join(elem))
+        return vdf
+
+    @save_verticapy_logs
     def recommend(
         self,
         unique_id: str,
@@ -622,6 +780,55 @@ class vDFML:
         elif method in ("roc_curve", "roc", "prc_curve", "prc", "lift_chart", "lift"):
             kwds["nbins"] = nbins
         return FUNCTIONS_DICTIONNARY[method](*argv, **kwds)
+
+    @save_verticapy_logs
+    def sessionize(
+        self,
+        ts: str,
+        by: Union[str, list] = [],
+        session_threshold: str = "30 minutes",
+        name: str = "session_id",
+    ):
+        """
+    Adds a new vColumn to the vDataFrame which will correspond to sessions 
+    (user activity during a specific time). A session ends when ts - lag(ts) 
+    is greater than a specific threshold.
+
+    Parameters
+    ----------
+    ts: str
+        vColumn used as timeline. It will be to use to order the data. It can be
+        a numerical or type date like (date, datetime, timestamp...) vColumn.
+    by: str / list, optional
+        vColumns used in the partition.
+    session_threshold: str, optional
+        This parameter is the threshold which will determine the end of the 
+        session. For example, if it is set to '10 minutes' the session ends
+        after 10 minutes of inactivity.
+    name: str, optional
+        The session name.
+
+    Returns
+    -------
+    vDataFrame
+        self
+
+    See Also
+    --------
+    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vColumn.
+        """
+        if isinstance(by, str):
+            by = [by]
+        by, ts = self.format_colnames(by, ts)
+        partition = ""
+        if by:
+            partition = f"PARTITION BY {', '.join(by)}"
+        expr = f"""CONDITIONAL_TRUE_EVENT(
+                    {ts}::timestamp - LAG({ts}::timestamp) 
+                  > '{session_threshold}') 
+                  OVER ({partition} ORDER BY {ts})"""
+        return self.eval(name=name, expr=expr)
 
     @save_verticapy_logs
     def train_test_split(
