@@ -619,9 +619,3 @@ class TestvDFUtilities:
         result.swap("pclass", "sex")
         assert result.get_columns()[0].replace('"', "") == "pclass"
         assert result.get_columns()[1].replace('"', "") == "sex"
-
-    def test_vDF_vertica_version(self, titanic_vd):
-        result = titanic_vd.vertica_version()
-        assert 3 <= len(result) <= 4
-        assert 6 < result[0] < 20
-        assert 0 <= result[1] < 5

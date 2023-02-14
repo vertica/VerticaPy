@@ -19,8 +19,12 @@ permissions and limitations under the License.
 import pytest
 
 # VerticaPy
-from verticapy import vDataFrame, drop, errors, set_option, tablesample
+from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.utilities import drop, tablesample
+from verticapy.errors import ConversionError
 from verticapy.datasets import load_titanic, load_iris, load_market
+from verticapy._config.config import set_option
+
 
 set_option("print_info", False)
 
@@ -437,7 +441,7 @@ class TestvDFPreprocessing:
 
         ### Testing vDataFrame[].astype
         # expected exception
-        with pytest.raises(errors.ConversionError) as exception_info:
+        with pytest.raises(ConversionError) as exception_info:
             titanic_copy["sex"].astype("int")
         # checking the error message
         assert exception_info.match(

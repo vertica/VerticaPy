@@ -14,18 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import itertools
-import numpy as np
-
-
-def all_comb(X: list):
-    all_configuration = []
-    for r in range(len(X) + 1):
-        combinations_object = itertools.combinations(X, r)
-        combinations_list = list(combinations_object)
-        if combinations_list[0]:
-            all_configuration += combinations_list
-    return all_configuration
+import math
 
 
 def heuristic_length(i: int):
@@ -33,7 +22,7 @@ def heuristic_length(i: int):
     if i == 2:
         return 1
     elif i > 2:
-        return 2 * (np.log(i - 1) + GAMMA) - 2 * (i - 1) / i
+        return 2 * (math.log(i - 1) + GAMMA) - 2 * (i - 1) / i
     else:
         return 0
 

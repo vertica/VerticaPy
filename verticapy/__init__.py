@@ -66,7 +66,7 @@ __license__ = "Apache License, Version 2.0"
 # VerticaPy Modules IMPORT
 
 # Logo
-from verticapy.utils._logo import *
+from verticapy._utils._logo import *
 
 # Connect
 from verticapy.connect import *
@@ -81,7 +81,26 @@ from verticapy.vdataframe import *
 from verticapy.core.vcolumn import *
 
 # Utilities
-from verticapy.utilities import *
+from verticapy.sql.parsers.csv import read_csv
+from verticapy.sql.parsers.json import read_json
+from verticapy.sql.parsers.avro import read_avro
+from verticapy.sql.parsers.shp import read_shp
+from verticapy.sql.parsers.all import read_file
+from verticapy.sql.parsers.pandas import pandas_to_vertica
+from verticapy.sql.flex import (
+    compute_flextable_keys,
+    compute_vmap_keys,
+    isflextable,
+    isvmap,
+)
+from verticapy.sql.create import create_schema, create_table, create_verticapy_schema
+from verticapy.sql.drop import drop
+from verticapy.sql.read import readSQL, to_tablesample, vDataFrameSQL
+from verticapy.sql.insert import insert_into, insert_verticapy_schema
+from verticapy._help import help_start, vHelp
+from verticapy._version import vertica_version
+from verticapy.core.tablesample import tablesample
+from verticapy.sql.dtypes import get_data_types
 
 # SQL Functions
 import verticapy.stats

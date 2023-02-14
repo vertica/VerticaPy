@@ -24,15 +24,16 @@ import os, datetime
 
 # VerticaPy Modules
 import verticapy, vertica_python
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy import vDataFrame
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.connect import current_cursor
-from verticapy.utilities import *
-from verticapy.sql.read import _executeSQL
-from verticapy.errors import *
+from verticapy.sql.create import create_table
+from verticapy.sql.drop import drop
+from verticapy.sql.read import vDataFrameSQL
+from verticapy._utils._sql import _executeSQL
+from verticapy.sql.insert import insert_into
+from verticapy.errors import ParameterError
 from verticapy.sql._utils._format import quote_ident
 
 

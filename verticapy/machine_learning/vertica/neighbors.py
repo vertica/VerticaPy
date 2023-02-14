@@ -20,28 +20,30 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.learn.metrics import *
-from verticapy.utilities import *
-from verticapy._config._notebook import ISNOTEBOOK
-from verticapy.utils._gen import gen_name, gen_tmp_name
-from verticapy.sql.read import _executeSQL
-from verticapy import vDataFrame
-from verticapy.plotting._matplotlib import *
-from verticapy.learn.model_selection import *
-from verticapy.errors import *
-from verticapy.learn.vmodel import *
-from verticapy.learn.tools import *
+from verticapy._utils._collect import save_verticapy_logs
+import verticapy.learn.metrics as mt
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample, vDataFrameSQL
+from verticapy.sql.insert import insert_verticapy_schema
+from verticapy.core.tablesample import tablesample
+from verticapy._config.config import ISNOTEBOOK
+from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._sql import _executeSQL
+from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.learn.model_selection import roc_curve, prc_curve, lift_chart
+from verticapy.errors import ParameterError
+from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree
+from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql._utils._format import clean_query
 from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy._config.config import OPTIONS
 
 # Standard Python Modules
 import warnings, itertools
 from typing import Union, Literal
+from collections.abc import Iterable
+import matplotlib.pyplot as plt
 
 
 class NearestCentroid(MulticlassClassifier):
@@ -97,7 +99,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -296,7 +298,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -370,7 +372,7 @@ p: int, optional
             labels = [labels]
         if not (labels):
             labels = self.classes_
-        return classification_report(cutoff=cutoff, estimator=self, labels=labels)
+        return mt.classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
     report = classification_report
 
@@ -444,7 +446,7 @@ p: int, optional
             )
             y_score = f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
             y_true = f"DECODE({self.y}, '{pos_label}', 1, 0)"
-            result = confusion_matrix(y_true, y_score, input_relation)
+            result = mt.confusion_matrix(y_true, y_score, input_relation)
             if pos_label == 1:
                 return result
             else:
@@ -462,7 +464,7 @@ p: int, optional
                     ROW_NUMBER() OVER(PARTITION BY {", ".join(self.X)}, row_id 
                                       ORDER BY proba_predict DESC) AS pos 
                  FROM {self.deploySQL()}) neighbors_table WHERE pos = 1"""
-            return multilabel_confusion_matrix(
+            return mt.multilabel_confusion_matrix(
                 self.y, "predict_neighbors", input_relation, self.classes_
             )
 
@@ -816,44 +818,44 @@ p: int, optional
             cutoff = self.score(pos_label=pos_label, cutoff=0.5, method="best_cutoff")
         if method in ("accuracy", "acc"):
             if pos_label not in self.classes_:
-                return accuracy_score(
+                return mt.accuracy_score(
                     self.y,
                     "predict_neighbors",
                     self.deploySQL(predict=True),
                     pos_label=None,
                 )
             else:
-                return accuracy_score(
+                return mt.accuracy_score(
                     y_true, y_score, input_relation, pos_label=pos_label
                 )
         elif method == "auc":
-            return auc(y_true, y_proba, input_relation, nbins=nbins)
+            return mt.auc(y_true, y_proba, input_relation, nbins=nbins)
         elif method == "prc_auc":
-            return prc_auc(y_true, y_proba, input_relation, nbins=nbins)
+            return mt.prc_auc(y_true, y_proba, input_relation, nbins=nbins)
         elif method in ("best_cutoff", "best_threshold"):
-            return roc_curve(
+            return mt.roc_curve(
                 y_true, y_proba, input_relation, best_threshold=True, nbins=nbins
             )
         elif method in ("recall", "tpr"):
-            return recall_score(y_true, y_score, input_relation)
+            return mt.recall_score(y_true, y_score, input_relation)
         elif method in ("precision", "ppv"):
-            return precision_score(y_true, y_score, input_relation)
+            return mt.precision_score(y_true, y_score, input_relation)
         elif method in ("specificity", "tnr"):
-            return specificity_score(y_true, y_score, input_relation)
+            return mt.specificity_score(y_true, y_score, input_relation)
         elif method in ("negative_predictive_value", "npv"):
-            return precision_score(y_true, y_score, input_relation)
+            return mt.precision_score(y_true, y_score, input_relation)
         elif method in ("log_loss", "logloss"):
-            return log_loss(y_true, y_proba, input_relation)
+            return mt.log_loss(y_true, y_proba, input_relation)
         elif method == "f1":
-            return f1_score(y_true, y_score, input_relation)
+            return mt.f1_score(y_true, y_score, input_relation)
         elif method == "mcc":
-            return matthews_corrcoef(y_true, y_score, input_relation)
+            return mt.matthews_corrcoef(y_true, y_score, input_relation)
         elif method in ("bm", "informedness"):
-            return informedness(y_true, y_score, input_relation)
+            return mt.informedness(y_true, y_score, input_relation)
         elif method in ("mk", "markedness"):
-            return markedness(y_true, y_score, input_relation)
+            return mt.markedness(y_true, y_score, input_relation)
         elif method in ("csi", "critical_success_index"):
-            return critical_success_index(y_true, y_score, input_relation)
+            return mt.critical_success_index(y_true, y_score, input_relation)
         else:
             raise ParameterError(
                 "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|"
@@ -947,7 +949,7 @@ xlim: list, optional
         """
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -1357,7 +1359,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -1515,7 +1517,7 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)

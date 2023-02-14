@@ -25,12 +25,12 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy.stats as st
-import verticapy.datasets as vp_datasets
+from verticapy.datasets import gen_meshgrid
 from verticapy.vdataframe import vDataFrame
-from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utilities import tablesample
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy.core.tablesample import tablesample
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
-from verticapy.sql.read import _executeSQL
+from verticapy._utils._sql import _executeSQL
 
 
 @save_verticapy_logs
@@ -319,7 +319,7 @@ vDataFrame
     )
 
     delta_x, delta_y = (max_x - min_x) / nbins, (max_y - min_y) / nbins
-    vdf = vp_datasets.gen_meshgrid(
+    vdf = gen_meshgrid(
         {
             "x": {"type": float, "range": [min_x, max_x], "nbins": nbins},
             "y": {"type": float, "range": [min_y, max_y], "nbins": nbins},

@@ -20,13 +20,13 @@ import os, csv
 import pandas as pd
 
 # VerticaPy Modules
-import verticapy as vp
-from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.utils._gen import gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.sql.parsers.csv import read_csv
 from verticapy.sql._utils._format import format_schema_table
+from verticapy._config.config import OPTIONS
 
 
 @save_verticapy_logs
@@ -86,7 +86,7 @@ read_csv  : Ingests a  CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
     if not (schema):
-        schema = vp.OPTIONS["temp_schema"]
+        schema = OPTIONS["temp_schema"]
     assert name or not (insert), ParameterError(
         "Parameter 'name' can not be empty when parameter 'insert' is set to True."
     )
@@ -142,7 +142,7 @@ read_json : Ingests a JSON file into the Vertica database.
                     SKIP 1;""",
                 title="Inserting the pandas.DataFrame.",
             )
-            from verticapy import vDataFrame
+            from verticapy.core.vdataframe.vdataframe import vDataFrame
 
             vdf = vDataFrame(name, schema=schema)
         elif tmp_name:

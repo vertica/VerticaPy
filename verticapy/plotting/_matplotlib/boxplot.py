@@ -21,10 +21,8 @@ import math, warnings
 import matplotlib.pyplot as plt
 
 # VerticaPy Modules
-from verticapy.utilities import *
-from verticapy._config._notebook import ISNOTEBOOK
-from verticapy.sql.read import _executeSQL
-from verticapy.errors import ParameterError
+from verticapy._config.config import ISNOTEBOOK
+from verticapy._utils._sql import _executeSQL
 from verticapy.plotting._colors import gen_colors
 
 

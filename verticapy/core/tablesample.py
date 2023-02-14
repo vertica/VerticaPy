@@ -24,12 +24,12 @@ import math, decimal, datetime, copy
 import numpy as np
 
 # VerticaPy Modules
-import verticapy as vp
 from verticapy.core._utils._display import print_table
 from verticapy.jupyter._javascript import datatables_repr
 from verticapy.errors import ParameterError, MissingColumn
 from verticapy._version import vertica_version
 from verticapy.sql._utils._format import quote_ident
+from verticapy._config.config import OPTIONS
 
 
 class tablesample:
@@ -101,7 +101,7 @@ The tablesample attributes are the same as the parameters.
         n = len(self.values)
         dtype = self.dtype
         max_columns = (
-            self.max_columns if self.max_columns > 0 else vp.OPTIONS["max_columns"]
+            self.max_columns if self.max_columns > 0 else OPTIONS["max_columns"]
         )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
@@ -123,7 +123,7 @@ The tablesample attributes are the same as the parameters.
                 break
         formatted_text = ""
         # get interactive table if condition true
-        if vp.OPTIONS["interactive"] or interactive:
+        if OPTIONS["interactive"] or interactive:
             formatted_text = datatables_repr(
                 data_columns,
                 repeat_first_column=("index" in self.values),
@@ -140,7 +140,7 @@ The tablesample attributes are the same as the parameters.
                 dtype=dtype,
                 percent=percent,
             )
-        if vp.OPTIONS["footer_on"]:
+        if OPTIONS["footer_on"]:
             formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
             if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
                 rows = self.count
@@ -177,7 +177,7 @@ The tablesample attributes are the same as the parameters.
         n = len(self.values)
         dtype = self.dtype
         max_columns = (
-            self.max_columns if self.max_columns > 0 else vp.OPTIONS["max_columns"]
+            self.max_columns if self.max_columns > 0 else OPTIONS["max_columns"]
         )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]

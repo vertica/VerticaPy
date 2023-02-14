@@ -14,16 +14,43 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Libraries
-import verticapy.plotting._colors as vp_colors
 
 # Standard Python Modules
 import warnings
 from typing import Union, Literal, overload
 
 # VerticaPy
-from verticapy.sql.read import _executeSQL
 from verticapy.errors import ParameterError
+
+ISNOTEBOOK = False
+try:
+    import IPython
+
+    shell = get_ipython().__class__.__name__
+    if shell == "ZMQInteractiveShell":
+        ISNOTEBOOK = True  # Jupyter notebook or qtconsole
+except:
+    pass
+
+COLORS_OPTIONS = {
+    "rgb": ["red", "green", "blue", "orange", "yellow", "gray"],
+    "sunset": ["#36688D", "#F3CD05", "#F49F05", "#F18904", "#BDA589"],
+    "retro": ["#A7414A", "#282726", "#6A8A82", "#A37C27", "#563838"],
+    "shimbg": ["#0444BF", "#0584F2", "#0AAFF1", "#EDF259", "#A79674"],
+    "swamp": ["#6465A5", "#6975A6", "#F3E96B", "#F28A30", "#F05837"],
+    "med": ["#ABA6BF", "#595775", "#583E2E", "#F1E0D6", "#BF9887"],
+    "orchid": ["#192E5B", "#1D65A6", "#72A2C0", "#00743F", "#F2A104"],
+    "magenta": ["#DAA2DA", "#DBB4DA", "#DE8CF0", "#BED905", "#93A806"],
+    "orange": ["#A3586D", "#5C4A72", "#F3B05A", "#F4874B", "#F46A4E"],
+    "vintage": ["#80ADD7", "#0ABDA0", "#EBF2EA", "#D4DCA9", "#BF9D7A"],
+    "vivid": ["#C0334D", "#D6618F", "#F3D4A0", "#F1931B", "#8F715B"],
+    "berries": ["#BB1924", "#EE6C81", "#F092A5", "#777CA8", "#AFBADC"],
+    "refreshing": ["#003D73", "#0878A4", "#1ECFD6", "#EDD170", "#C05640"],
+    "summer": ["#728CA3", "#73C0F4", "#E6EFF3", "#F3E4C6", "#8F4F06"],
+    "tropical": ["#7B8937", "#6B7436", "#F4D9C1", "#D72F01", "#F09E8C"],
+    "india": ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625"],
+    "default": ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"],
+}
 
 OPTIONS = {
     "cache": True,
@@ -46,14 +73,55 @@ OPTIONS = {
 }
 
 
+def current_random(rand_int: int = None):
+    """
+    TODO 
+    """
+    random_state = OPTIONS["random_state"]
+    if isinstance(rand_int, int):
+        if isinstance(random_state, int):
+            random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
+        else:
+            random_func = f"RANDOMINT({rand_int})"
+    else:
+        if isinstance(random_state, int):
+            random_func = f"SEEDED_RANDOM({random_state})"
+        else:
+            random_func = "RANDOM()"
+    return random_func
+
+
 def init_interactive_mode(all_interactive=False):
     """Activate the datatables representation for all the vDataFrames."""
     set_option("interactive", all_interactive)
 
 
+def get_option(
+    option: Literal[
+        "cache",
+        "colors",
+        "interactive",
+        "count_on",
+        "footer_on",
+        "max_columns",
+        "max_rows",
+        "mode",
+        "overwrite_model",
+        "percent_bar",
+        "print_info",
+        "save_query_profile",
+        "sql_on",
+        "temp_schema",
+        "time_on",
+        "tqdm",
+    ],
+) -> Union[bool, int, str, list, None]:
+    return OPTIONS[option]
+
+
 @overload
 def set_option(
-    option: Literal["color_style"], value: Literal[tuple(vp_colors.COLORS_OPTIONS)]
+    option: Literal["color_style"], value: Literal[tuple(COLORS_OPTIONS)]
 ) -> None:
     ...
 
@@ -152,6 +220,8 @@ def set_option(
     value: object, optional
         New value of option.
     """
+    from verticapy._utils._sql import _executeSQL
+
     wrong_value = False
     if option == "colors":
         if isinstance(value, list):
@@ -161,8 +231,8 @@ def set_option(
     elif option == "color_style":
         if value == None:
             value = "default"
-        if value in vp_colors.COLORS_OPTIONS:
-            OPTIONS["colors"] = vp_colors.COLORS_OPTIONS[value]
+        if value in COLORS_OPTIONS:
+            OPTIONS["colors"] = COLORS_OPTIONS[value]
         else:
             wrong_value = True
     elif option == "max_columns":

@@ -20,15 +20,14 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.learn.vmodel import *
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy.learn.vmodel import MulticlassClassifier
 from verticapy.sql._utils._format import quote_ident
+from verticapy.sql.read import vDataFrameSQL
 
 # Standard Modules
-from typing import Literal
+from typing import Literal, Union
 
 
 class NaiveBayes(MulticlassClassifier):
@@ -81,8 +80,6 @@ nbtype: str, optional
     def get_var_info(self):
         # Returns a list of dictionary for each of the NB variables.
         # It is used to translate NB to Python
-        from verticapy.utilities import vDataFrameSQL
-
         vdf = vDataFrameSQL(self.input_relation)
         var_info = {}
         gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0

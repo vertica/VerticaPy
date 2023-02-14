@@ -20,11 +20,9 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.learn.vmodel import *
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy.learn.vmodel import MulticlassClassifier, Regressor, Tree
 from verticapy.sql._utils._format import quote_ident
 
 # Standard Python Modules

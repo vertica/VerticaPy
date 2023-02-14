@@ -14,23 +14,4 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-
-def current_random(rand_int: int = None):
-    """
-    TODO 
-    """
-    import verticapy as vp
-
-    random_state = vp.OPTIONS["random_state"]
-    if isinstance(rand_int, int):
-        if isinstance(random_state, int):
-            random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
-        else:
-            random_func = f"RANDOMINT({rand_int})"
-    else:
-        if isinstance(random_state, int):
-            random_func = f"SEEDED_RANDOM({random_state})"
-        else:
-            random_func = "RANDOM()"
-    return random_func
+from verticapy.core.vdataframe.vdataframe import vDataFrame

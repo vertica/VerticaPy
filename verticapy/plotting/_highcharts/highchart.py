@@ -34,8 +34,8 @@ except:
 
 # VerticaPy Modules
 from verticapy.connect import current_cursor
-from verticapy.utilities import *
-from verticapy.sql.read import _executeSQL
+from verticapy.sql.read import vDataFrameSQL
+from verticapy._utils._sql import _executeSQL
 from verticapy.plotting._colors import gen_colors
 
 #

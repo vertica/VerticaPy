@@ -15,6 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
+import pandas as pd
+from verticapy._config.config import OPTIONS
 
 
 def clean_query(query: str):
@@ -40,10 +42,10 @@ def erase_label(query: str):
 
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
     from verticapy.core.str_sql import str_sql
-    from verticapy.utils._cast import to_dtype_category
-    import verticapy as vp
+    from verticapy._utils._cast import to_dtype_category
+    from verticapy.core.vcolumn import vColumn
 
-    if isinstance(x, vp.vColumn):
+    if isinstance(x, vColumn):
         val = x.alias
     elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
         x, str_sql
@@ -129,7 +131,9 @@ def quote_ident(column: str):
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):
-    import verticapy as vp
+    from verticapy.core.vdataframe.vdataframe import vDataFrame
+    from verticapy.core.tablesample import tablesample
+    from verticapy.sql.parsers.pandas import pandas_to_vertica
 
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
@@ -160,12 +164,12 @@ def replace_vars_in_query(query: str, locals_dict: dict):
                 warnings.warn(warning_message, Warning)
                 fail = True
         if not (fail):
-            if isinstance(val, vp.vDataFrame):
+            if isinstance(val, vDataFrame):
                 val = val.__genSQL__()
-            elif isinstance(val, vp.tablesample):
+            elif isinstance(val, tablesample):
                 val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
             elif isinstance(val, pd.DataFrame):
-                val = vp.pandas_to_vertica(val).__genSQL__()
+                val = pandas_to_vertica(val).__genSQL__()
             elif isinstance(val, list):
                 val = ", ".join(["NULL" if elem is None else str(elem) for elem in val])
             query_tmp = query_tmp.replace(v, str(val))
@@ -173,10 +177,10 @@ def replace_vars_in_query(query: str, locals_dict: dict):
 
 
 def schema_relation(relation):
-    import verticapy as vp
+    from verticapy.core.vdataframe.vdataframe import vDataFrame
 
-    if isinstance(relation, vp.vDataFrame):
-        schema, relation = vp.OPTIONS["temp_schema"], ""
+    if isinstance(relation, vDataFrame):
+        schema, relation = OPTIONS["temp_schema"], ""
     else:
         quote_nb = relation.count('"')
         if quote_nb not in (0, 2, 4):

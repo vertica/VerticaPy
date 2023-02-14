@@ -20,53 +20,56 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import random, datetime
-import numpy as np
+import datetime
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.sql.read import vDataFrameSQL
+from verticapy._version import vertica_version
+from verticapy.core.tablesample import tablesample
+from verticapy._utils._gen import gen_tmp_name
+from verticapy.errors import ParameterError
+from verticapy.machine_learning.vertica.ensemble import (
+    RandomForestRegressor,
+    RandomForestClassifier,
+    XGBoostClassifier,
+    XGBoostRegressor,
 )
-from verticapy import vDataFrame
-from verticapy.utilities import *
-from verticapy.utils._gen import gen_tmp_name
-from verticapy.errors import *
-from verticapy.learn.ensemble import *
-from verticapy.learn.naive_bayes import *
-from verticapy.learn.linear_model import *
-from verticapy.learn.decomposition import *
-from verticapy.learn.cluster import *
-from verticapy.learn.neighbors import *
-from verticapy.learn.svm import *
-from verticapy.plotting._matplotlib import plot_bubble_ml
-from verticapy.learn.vmodel import *
+from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
+from verticapy.machine_learning.vertica.linear_model import (
+    LogisticRegression,
+    LinearRegression,
+    ElasticNet,
+    Lasso,
+    Ridge,
+)
+from verticapy.machine_learning.vertica.model_selection import (
+    best_k,
+    gen_params_grid,
+    grid_search_cv,
+    stepwise,
+)
+from verticapy.machine_learning.vertica.decomposition import PCA
+from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
+from verticapy.machine_learning.vertica.neighbors import (
+    KNeighborsClassifier,
+    KNeighborsRegressor,
+)
+from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
+from verticapy.plotting._matplotlib.mlplot import plot_bubble_ml, plot_stepwise_ml
+from verticapy.machine_learning.vertica.vmodel import vModel
 from verticapy.sql._utils._format import schema_relation
 from verticapy.machine_learning._utils import reverse_score
-from verticapy.sql.read import _executeSQL
+from verticapy._utils._sql import _executeSQL
+from verticapy._config.config import OPTIONS
 
 # Other Modules
 from tqdm.auto import tqdm
 
 
-class vAuto(vModel):
-    def set_params(self, parameters: dict = {}):
-        """
-    Sets the parameters of the model.
-
-    Parameters
-    ----------
-    parameters: dict, optional
-        New parameters.
-        """
-        for elem in self.parameters:
-            if elem not in parameters:
-                parameters[elem] = self.parameters[elem]
-        self.__init__(self.name, **parameters)
-
-
-class AutoDataPrep(vAuto):
+class AutoDataPrep(vModel):
     """
 Automatically find relations between the different features to preprocess
 the data according to each column type.
@@ -160,9 +163,7 @@ final_relation_: vDataFrame
     ):
         self.type, self.name = "AutoDataPrep", name
         if not (self.name):
-            self.name = gen_tmp_name(
-                schema=verticapy.OPTIONS["temp_schema"], name="autodataprep"
-            )
+            self.name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="autodataprep")
         self.parameters = {
             "cat_method": cat_method,
             "num_method": num_method,
@@ -206,12 +207,12 @@ final_relation_: vDataFrame
     object
         the cleaned relation
         """
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
-        current_print_info = verticapy.OPTIONS["print_info"]
-        verticapy.OPTIONS["print_info"] = False
+        current_print_info = OPTIONS["print_info"]
+        OPTIONS["print_info"] = False
         assert not (by) or (ts), ParameterError(
             "Parameter 'by' must be empty if 'ts' is not defined."
         )
@@ -380,11 +381,11 @@ final_relation_: vDataFrame
         if self.parameters["save"]:
             vdf.to_db(name=self.name, relation_type="table", inplace=True)
         self.final_relation_ = vdf
-        verticapy.OPTIONS["print_info"] = current_print_info
+        OPTIONS["print_info"] = current_print_info
         return self.final_relation_
 
 
-class AutoClustering(vAuto):
+class AutoClustering(vModel):
     """
 Automatically creates k different groups with which to generalize the data.
 
@@ -477,7 +478,7 @@ model_: object
     object
         clustering model
         """
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -509,7 +510,7 @@ model_: object
             )
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mBuilding the Final Model\033[0m\033[0m\n")
-        if verticapy.OPTIONS["tqdm"] and self.parameters["print_info"]:
+        if OPTIONS["tqdm"] and self.parameters["print_info"]:
             loop = tqdm(range(1))
         else:
             loop = range(1)
@@ -535,7 +536,7 @@ model_: object
         return self.model_
 
 
-class AutoML(vAuto):
+class AutoML(vModel):
     """
 Tests multiple models to find those that maximize the input score.
 
@@ -694,7 +695,7 @@ model_grid_ : tablesample
     object
         model grid
         """
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -867,7 +868,7 @@ model_grid_ : tablesample
             self.preprocess_ = None
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoML\033[0m\033[0m\n")
-        if verticapy.OPTIONS["tqdm"] and self.parameters["print_info"]:
+        if OPTIONS["tqdm"] and self.parameters["print_info"]:
             loop = tqdm(self.parameters["estimator"])
         else:
             loop = self.parameters["estimator"]

@@ -20,12 +20,12 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.utilities import *
-from verticapy.learn.vmodel import *
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy.plotting._matplotlib.mlplot import plot_var
+from verticapy.plotting._colors import gen_colors, gen_cmap
+from verticapy.learn.vmodel import Decomposition
+from verticapy.core.tablesample import tablesample
 
 # Standard Module
 from typing import Literal
@@ -110,8 +110,6 @@ name: str
                 ]
             style_kwds["c"] = c
             if "cmap" not in style_kwds:
-                from verticapy.plotting._colors import gen_colors, gen_cmap
-
                 style_kwds["cmap"] = gen_cmap(
                     color=[gen_colors()[0], gen_colors()[1], gen_colors()[2]]
                 )

@@ -21,6 +21,7 @@ from verticapy.sql._utils._format import (
     schema_relation,
     format_schema_table,
 )
+from verticapy._utils._sql import _executeSQL
 
 
 def drop(
@@ -57,8 +58,6 @@ Returns
 bool
     True if the relation was dropped, False otherwise.
     """
-    from verticapy.sql.read import _executeSQL
-
     if "relation_type" in kwds and method == "auto":
         method = kwds["relation_type"]
     schema, relation = schema_relation(name)

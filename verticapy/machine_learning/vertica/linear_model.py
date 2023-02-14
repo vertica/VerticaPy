@@ -20,17 +20,14 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy import vDataFrame
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.utilities import *
-from verticapy.errors import *
-from verticapy.learn.vmodel import *
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._version import vertica_version
+from verticapy.errors import ParameterError
+from verticapy.learn.vmodel import Regressor, BinaryClassifier
 
 # Standard Module
-from typing import Literal
+from typing import Literal, Union
 
 
 class ElasticNet(Regressor):

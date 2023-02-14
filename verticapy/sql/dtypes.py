@@ -15,14 +15,15 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 # Standard Python Modules
-import warnings, datetime
+import warnings
 
 # VerticaPy Modules
 import vertica_python
-from verticapy.utils._gen import gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.sql._utils._format import quote_ident, format_schema_table
 from verticapy.errors import ParameterError
+from verticapy.sql.drop import drop
 
 
 def vertica_python_dtype(
@@ -79,8 +80,6 @@ Returns
 list of tuples
     The list of the different columns and their respective type.
     """
-    from verticapy.sql.drop import drop
-
     assert expr or table_name, ParameterError(
         "Missing parameter: 'expr' and 'table_name' can not both be empty."
     )

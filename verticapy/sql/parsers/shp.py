@@ -15,8 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 # VerticaPy Modules
-from verticapy.utils._decorators import save_verticapy_logs
-from verticapy.sql.read import _executeSQL
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ExtensionError
 
 
@@ -63,6 +63,6 @@ vDataFrame
     )
     _executeSQL(query, title="Ingesting the data.")
     print(f'The table "{schema}"."{table_name}" has been successfully created.')
-    from verticapy import vDataFrame
+    from verticapy.core.vdataframe.vdataframe import vDataFrame
 
     return vDataFrame(table_name, schema=schema)

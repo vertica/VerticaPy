@@ -20,25 +20,19 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import math, collections
+import math
 from typing import Union
 
 # Other Python Modules
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.lines import Line2D
 import numpy as np
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.utilities import *
-from verticapy._config._notebook import ISNOTEBOOK
-from verticapy.sql.read import _executeSQL
-from verticapy.errors import *
+from verticapy._config.config import ISNOTEBOOK
+from verticapy._utils._sql import _executeSQL
+from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.sql._utils._format import quote_ident
 from verticapy.plotting._matplotlib.core import updated_dict

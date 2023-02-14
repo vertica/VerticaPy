@@ -20,15 +20,10 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.utilities import *
-from verticapy.stats.tools import *
+from verticapy._version import check_minimum_version
 from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import format_magic, clean_query
-from verticapy.utils._cast import to_dtype_category
+from verticapy._utils._cast import to_dtype_category
 
 #
 # Global Variables

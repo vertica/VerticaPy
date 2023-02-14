@@ -15,13 +15,16 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings, sys, time
-from verticapy.utils._decorators import save_verticapy_logs
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import MissingRelation
 from verticapy.sql._utils._format import (
     format_schema_table,
     clean_query,
     quote_ident,
 )
+from verticapy._utils._sql import _executeSQL
+from verticapy._config.config import OPTIONS
+from verticapy.sql._utils._format import quote_ident
 
 
 @save_verticapy_logs
@@ -63,11 +66,8 @@ See Also
 --------
 pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     """
-    import verticapy as vp
-    from verticapy.sql.read import _executeSQL
-
     if not (schema):
-        schema = vp.OPTIONS["temp_schema"]
+        schema = OPTIONS["temp_schema"]
     input_relation = format_schema_table(schema, table_name)
     if not (column_names):
         result = _executeSQL(
@@ -146,9 +146,6 @@ def insert_verticapy_schema(
     model_save: dict,
     category: str = "VERTICAPY_MODELS",
 ):
-    from verticapy.sql._utils._format import quote_ident
-    from verticapy.sql.read import _executeSQL
-
     sql = "SELECT /*+LABEL(insert_verticapy_schema)*/ * FROM columns WHERE table_schema='verticapy';"
     result = _executeSQL(sql, method="fetchrow", print_time_sql=False)
     if not (result):

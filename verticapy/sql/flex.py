@@ -15,11 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
-from verticapy.sql.read import _executeSQL
+from verticapy._utils._sql import _executeSQL
 from verticapy.sql._utils._format import quote_ident
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
-from verticapy.utils._decorators import save_verticapy_logs
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy.connect import current_cursor
 
 from typing import Union
 
@@ -89,7 +90,7 @@ Returns
 List of tuples
     List of virtual column names and their respective frequencies.
     """
-    from verticapy import vDataFrame
+    from verticapy.core.vdataframe.vdataframe import vDataFrame
 
     vmap = quote_ident(vmap_col)
     if isinstance(expr, vDataFrame):
@@ -158,7 +159,6 @@ bool
     """
     # -#
     from verticapy.vdataframe import vDataFrame
-    from verticapy.connect import current_cursor
 
     column = quote_ident(column)
     if isinstance(expr, vDataFrame):

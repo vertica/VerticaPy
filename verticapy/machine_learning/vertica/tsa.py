@@ -20,28 +20,35 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import math, warnings
+import math
 from typing import Union, Literal
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
 import verticapy.learn.metrics as mt
-from verticapy.learn.vmodel import *
+from verticapy.learn.vmodel import Regressor
 from verticapy.learn.linear_model import LinearRegression
-from verticapy import vDataFrame, save_verticapy_logs
+from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.plotting._colors import gen_colors
-from verticapy.learn.tools import *
+from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation
-from verticapy.sql.read import _executeSQL
-from verticapy.utils._gen import gen_tmp_name
-from verticapy._config._notebook import ISNOTEBOOK
+from verticapy.sql.insert import insert_verticapy_schema
+from verticapy._utils._sql import _executeSQL
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._config.config import ISNOTEBOOK
 from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy.sql.drop import drop
+from verticapy.core.tablesample import tablesample
+from verticapy.sql.read import vDataFrameSQL
+from verticapy._config.config import OPTIONS
+from verticapy.plotting._matplotlib.mlplot import plot_importance
 
 # Other Python Modules
-from dateutil.parser import parse
+try:
+    from dateutil.parser import parse
+except:
+    pass
 import matplotlib.pyplot as plt
 
 
@@ -306,7 +313,7 @@ papprox_ma: int, optional
         model
         """
         # Initialization
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -754,8 +761,8 @@ papprox_ma: int, optional
             vdf=vdf, y=y, ts=ts, X=X, nlead=0, name="_verticapy_prediction_"
         )
         error_eps = 1.96 * math.sqrt(self.score(method="mse"))
-        print_info = verticapy.OPTIONS["print_info"]
-        verticapy.OPTIONS["print_info"] = False
+        print_info = OPTIONS["print_info"]
+        OPTIONS["print_info"] = False
         try:
             result = (
                 result.select([ts, y, "_verticapy_prediction_"])
@@ -765,9 +772,9 @@ papprox_ma: int, optional
                 .values
             )
         except:
-            verticapy.OPTIONS["print_info"] = print_info
+            OPTIONS["print_info"] = print_info
             raise
-        verticapy.OPTIONS["print_info"] = print_info
+        OPTIONS["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1276,7 +1283,7 @@ solver: str, optional
     object
         self
         """
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -1492,8 +1499,8 @@ solver: str, optional
         )
         y, prediction = X[X_idx], "_verticapy_prediction_{}_".format(X_idx)
         error_eps = 1.96 * math.sqrt(self.score(method="mse").values["mse"][X_idx])
-        print_info = verticapy.OPTIONS["print_info"]
-        verticapy.OPTIONS["print_info"] = False
+        print_info = OPTIONS["print_info"]
+        OPTIONS["print_info"] = False
         try:
             result = (
                 result_all.select([ts, y, prediction])
@@ -1503,9 +1510,9 @@ solver: str, optional
                 .values
             )
         except:
-            verticapy.OPTIONS["print_info"] = print_info
+            OPTIONS["print_info"] = print_info
             raise
-        verticapy.OPTIONS["print_info"] = print_info
+        OPTIONS["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1522,16 +1529,16 @@ solver: str, optional
             ],
         )
         if dynamic:
-            print_info = verticapy.OPTIONS["print_info"]
-            verticapy.OPTIONS["print_info"] = False
+            print_info = OPTIONS["print_info"]
+            OPTIONS["print_info"] = False
             try:
                 result = (
                     result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
                 )
             except:
-                verticapy.OPTIONS["print_info"] = print_info
+                OPTIONS["print_info"] = print_info
                 raise
-            verticapy.OPTIONS["print_info"] = print_info
+            OPTIONS["print_info"] = print_info
             columns = [elem for elem in result]
             if isinstance(result[columns[0]][0], str):
                 result[columns[0]] = [parse(elem) for elem in result[columns[0]]]

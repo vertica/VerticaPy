@@ -14,11 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy._utils._sql import _executeSQL
 
 
 def current_session():
-    from verticapy.sql.read import _executeSQL
-
     res = _executeSQL(
         query="SELECT /*+LABEL(current_session)*/ CURRENT_SESSION();",
         method="fetchfirstelem",
@@ -28,8 +27,6 @@ def current_session():
 
 
 def username():
-    from verticapy.sql.read import _executeSQL
-
     res = _executeSQL(
         query="SELECT /*+LABEL(username)*/ USERNAME();",
         method="fetchfirstelem",

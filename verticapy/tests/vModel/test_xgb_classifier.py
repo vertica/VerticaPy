@@ -28,7 +28,9 @@ import xgboost as xgb
 # VerticaPy
 import verticapy
 from verticapy.tests.conftest import get_version
-from verticapy import vDataFrame, drop, set_option
+from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.utilities import drop
+from verticapy._config.config import set_option
 from verticapy.connect import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_cl
 from verticapy.learn.ensemble import XGBoostClassifier

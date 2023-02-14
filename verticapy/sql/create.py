@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql import _executeSQL
 
 
 def create_schema(
@@ -34,9 +36,6 @@ Returns
 bool
     True if the schema was successfully created, False otherwise.
     """
-    from verticapy.sql.read import _executeSQL
-    from verticapy.sql._utils._format import quote_ident
-
     try:
         _executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
         return True
@@ -84,9 +83,6 @@ Returns
 bool
     True if the table was successfully created, False otherwise.
     """
-    from verticapy.sql.read import _executeSQL
-    from verticapy.sql._utils._format import quote_ident
-
     if schema.lower() == "v_temp_schema":
         schema = ""
         temporary_local_table = True
@@ -116,8 +112,6 @@ def create_verticapy_schema():
     """
 Creates a schema named 'verticapy' used to store VerticaPy extended models.
     """
-    from verticapy.sql.read import _executeSQL
-
     sql = "CREATE SCHEMA IF NOT EXISTS verticapy;"
     _executeSQL(sql, title="Creating VerticaPy schema.")
     sql = """CREATE TABLE IF NOT EXISTS verticapy.models (model_name VARCHAR(128), 

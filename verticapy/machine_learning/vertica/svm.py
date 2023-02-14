@@ -20,14 +20,12 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.learn.vmodel import *
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy.learn.vmodel import BinaryClassifier, Regressor
 
 # Standard Modules
-from typing import Literal
+from typing import Literal, Union
 
 
 class LinearSVC(BinaryClassifier):

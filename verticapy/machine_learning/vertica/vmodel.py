@@ -20,29 +20,36 @@ permissions and limitations under the License.
 # Modules
 #
 # Standard Python Modules
-import os, warnings, typing, copy
+import warnings, copy
 import numpy as np
-from typing import Union, Literal
+from typing import Union, Literal, get_type_hints
+from collections.abc import Iterable
 
 # VerticaPy Modules
-import verticapy
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
+from verticapy._version import check_minimum_version
+from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.plotting._matplotlib.mlplot import (
+    plot_importance,
+    regression_tree_plot,
+    lof_plot,
+    plot_pca_circle,
+    logit_plot,
+    svm_classifier_plot,
+    regression_plot,
 )
-from verticapy import vDataFrame
-from verticapy.plotting._matplotlib import *
-from verticapy.learn.model_selection import *
-from verticapy.utilities import *
-from verticapy.utils._gen import gen_name, gen_tmp_name
-from verticapy.sql.read import _executeSQL
-from verticapy.errors import *
-import verticapy.learn.metrics as mt
-from verticapy.learn.metrics import *
-from verticapy.learn.tools import *
-from verticapy.learn.memmodel import *
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample, vDataFrameSQL
+from verticapy._version import vertica_version
+from verticapy.core.tablesample import tablesample
+from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._sql import _executeSQL
+from verticapy.errors import FunctionError, ParameterError, ModelError, ConversionError
+from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation
 from verticapy.machine_learning._utils import get_match_index
+from verticapy._config.config import OPTIONS
+import verticapy.learn.metrics as mt
+import verticapy.learn.model_selection as ms
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -573,7 +580,7 @@ Main Class for Vertica Model
 	dict
 		model parameters
 		"""
-        all_init_params = list(typing.get_type_hints(self.__init__).keys())
+        all_init_params = list(get_type_hints(self.__init__).keys())
         parameters = copy.deepcopy(self.parameters)
         parameters_keys = list(parameters.keys())
         for p in parameters_keys:
@@ -790,7 +797,7 @@ Main Class for Vertica Model
 	parameters: dict, optional
 		New parameters.
 		"""
-        all_init_params = list(typing.get_type_hints(self.__init__).keys())
+        all_init_params = list(get_type_hints(self.__init__).keys())
         new_parameters = copy.deepcopy(self.parameters)
         new_parameters_keys = list(new_parameters.keys())
         for p in new_parameters_keys:
@@ -1455,7 +1462,7 @@ class Supervised(vModel):
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
@@ -1485,7 +1492,7 @@ class Supervised(vModel):
             "RandomForestRegressor",
             "XGBoostClassifier",
             "XGBoostRegressor",
-        ) and isinstance(verticapy.OPTIONS["random_state"], int):
+        ) and isinstance(OPTIONS["random_state"], int):
             id_column = f""", 
                 ROW_NUMBER() OVER 
                 (ORDER BY {', '.join(X)}) 
@@ -1549,9 +1556,9 @@ class Supervised(vModel):
             "RandomForestRegressor",
             "XGBoostClassifier",
             "XGBoostRegressor",
-        ) and isinstance(verticapy.OPTIONS["random_state"], int):
+        ) and isinstance(OPTIONS["random_state"], int):
             query += f""", 
-                seed={verticapy.OPTIONS['random_state']}, 
+                seed={OPTIONS['random_state']}, 
                 id_column='{id_column_name}'"""
         query += ")"
         try:
@@ -1879,7 +1886,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return lift_chart(
+        return ms.lift_chart(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -1907,7 +1914,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return prc_curve(
+        return ms.prc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2049,7 +2056,7 @@ class BinaryClassifier(Classifier):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        return roc_curve(
+        return ms.roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2078,7 +2085,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return roc_curve(
+        return ms.roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2279,7 +2286,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return roc_curve(
+        return ms.roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2420,7 +2427,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return lift_chart(
+        return ms.lift_chart(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2471,7 +2478,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return prc_curve(
+        return ms.prc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2655,7 +2662,7 @@ class MulticlassClassifier(Classifier):
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        return roc_curve(
+        return ms.roc_curve(
             self.y,
             deploySQL_str,
             self.test_relation,
@@ -2869,7 +2876,7 @@ class Regressor(Supervised):
             }
             result = tablesample(values)
             for idx, y in enumerate(self.X):
-                result.values[y] = regression_report(
+                result.values[y] = mt.regression_report(
                     y,
                     self.deploySQL()[idx],
                     relation,
@@ -2881,9 +2888,9 @@ class Regressor(Supervised):
         else:
             test_relation = self.test_relation
         if method == "metrics":
-            return regression_report(self.y, prediction, test_relation, len(self.X))
+            return mt.regression_report(self.y, prediction, test_relation, len(self.X))
         elif method == "anova":
-            return anova_table(self.y, prediction, test_relation, len(self.X))
+            return mt.anova_table(self.y, prediction, test_relation, len(self.X))
         elif method == "details":
             vdf = vDataFrameSQL(
                 f"""
@@ -2897,7 +2904,7 @@ class Regressor(Supervised):
             jb = vdf[self.y].agg(["jb"])[self.y][0]
             R2 = self.score()
             R2_adj = 1 - ((1 - R2) * (n - 1) / (n - len(self.X) - 1))
-            anova_T = anova_table(self.y, prediction, test_relation, len(self.X))
+            anova_T = mt.anova_table(self.y, prediction, test_relation, len(self.X))
             F = anova_T["F"][0]
             p_F = anova_T["p_value"][0]
             return tablesample(
@@ -3009,13 +3016,13 @@ class Unsupervised(vModel):
 		"""
         if isinstance(X, str):
             X = [X]
-        if verticapy.OPTIONS["overwrite_model"]:
+        if OPTIONS["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
         if self.type in ("BisectingKMeans", "IsolationForest") and isinstance(
-            verticapy.OPTIONS["random_state"], int
+            OPTIONS["random_state"], int
         ):
             X_str = ", ".join([quote_ident(x) for x in X])
             id_column = f", ROW_NUMBER() OVER (ORDER BY {X_str}) AS {id_column_name}"
@@ -3117,15 +3124,13 @@ class Unsupervised(vModel):
             del parameters["init_method"]
             query += f"init_method = '{self.parameters['init']}', "
         query += ", ".join([f"{p} = {parameters[p]}" for p in parameters])
-        if self.type == "BisectingKMeans" and isinstance(
-            verticapy.OPTIONS["random_state"], int
-        ):
-            query += f", kmeans_seed={verticapy.OPTIONS['random_state']}"
+        if self.type == "BisectingKMeans" and isinstance(OPTIONS["random_state"], int):
+            query += f", kmeans_seed={OPTIONS['random_state']}"
             query += f", id_column='{id_column_name}'"
         elif self.type == "IsolationForest" and isinstance(
-            verticapy.OPTIONS["random_state"], int
+            OPTIONS["random_state"], int
         ):
-            query += f", seed={verticapy.OPTIONS['random_state']}"
+            query += f", seed={OPTIONS['random_state']}"
             query += f", id_column='{id_column_name}'"
         query += ")"
         try:

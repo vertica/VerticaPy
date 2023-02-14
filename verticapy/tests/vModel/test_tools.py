@@ -36,7 +36,8 @@ from verticapy.learn.neighbors import *
 from verticapy.learn.decomposition import *
 from verticapy.learn.preprocessing import *
 from verticapy.learn.tsa import *
-from verticapy.learn.tools import *
+from verticapy.learn.tools import does_model_exist, load_model, matrix_rotation
+from verticapy.sql.create import create_verticapy_schema
 
 set_option("print_info", False)
 set_option("random_state", 0)

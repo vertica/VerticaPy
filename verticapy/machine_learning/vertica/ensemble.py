@@ -25,22 +25,18 @@ import random
 import numpy as np
 
 # VerticaPy Modules
-from verticapy.utils._decorators import (
-    save_verticapy_logs,
-    check_minimum_version,
-)
-from verticapy.learn.metrics import *
-from verticapy.plotting._matplotlib import *
-from verticapy.utilities import *
-from verticapy.utils._gen import gen_name
-from verticapy.sql.read import _executeSQL
-from verticapy import vDataFrame
-from verticapy.errors import *
-from verticapy.learn.vmodel import *
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._version import vertica_version
+from verticapy._utils._gen import gen_name
+from verticapy._utils._sql import _executeSQL
+from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.learn.vmodel import Clustering, Tree, MulticlassClassifier, Regressor
 from verticapy.learn.tree import get_tree_list_of_arrays
+from verticapy.sql._utils._format import quote_ident
 
 
-class XGBoost_utils:
+class XGBoost:
     # Class:
     # - to export Vertica XGBoost to the Python XGBoost JSON format.
     # - to get the XGB priors
@@ -353,7 +349,7 @@ class XGBoost_utils:
         v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
         query = f"""
             SELECT 
-                /*+LABEL('learn.ensemble.XGBoost_utils.get_prior')*/ 
+                /*+LABEL('learn.ensemble.XGBoost.get_prior')*/ 
                 {{}}
             FROM {self.input_relation} 
             WHERE {' AND '.join(condition)}{{}}"""
@@ -730,7 +726,7 @@ nbins: int, optional
         }
 
 
-class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost_utils):
+class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost):
     """
 Creates an XGBoostClassifier object using the Vertica XGB_CLASSIFIER 
 algorithm.
@@ -817,7 +813,7 @@ col_sample_by_node: float, optional
         self.parameters = params
 
 
-class XGBoostRegressor(Regressor, Tree, XGBoost_utils):
+class XGBoostRegressor(Regressor, Tree, XGBoost):
     """
 Creates an XGBoostRegressor object using the Vertica XGB_REGRESSOR 
 algorithm.

@@ -14,12 +14,20 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-ISNOTEBOOK = False
-try:
-    import IPython
 
-    shell = get_ipython().__class__.__name__
-    if shell == "ZMQInteractiveShell":
-        ISNOTEBOOK = True  # Jupyter notebook or qtconsole
-except:
-    pass
+
+def aggregate_parallel_block(vdf, func: list, columns: list, ncols_block: int, i: int):
+    return vdf.aggregate(
+        func=func, columns=columns[i : i + ncols_block], ncols_block=ncols_block
+    )
+
+
+def describe_parallel_block(
+    vdf, method: str, columns: list, unique: bool, ncols_block: int, i: int,
+):
+    return vdf.describe(
+        method=method,
+        columns=columns[i : i + ncols_block],
+        unique=unique,
+        ncols_block=ncols_block,
+    )

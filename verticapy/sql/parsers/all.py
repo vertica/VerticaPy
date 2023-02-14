@@ -19,9 +19,10 @@ permissions and limitations under the License.
 import warnings
 
 # VerticaPy Modules
-from verticapy.utils._decorators import save_verticapy_logs, check_minimum_version
-from verticapy.utils._gen import gen_tmp_name
-from verticapy.sql.read import _executeSQL
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError
 from verticapy.sql._utils._format import (
     quote_ident,
@@ -106,7 +107,7 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
-    from verticapy import vDataFrame
+    from verticapy.core.vdataframe.vdataframe import vDataFrame
 
     assert not (ingest_local) or insert, ParameterError(
         "Ingest local to create new relations is not yet supported for 'read_file'"
