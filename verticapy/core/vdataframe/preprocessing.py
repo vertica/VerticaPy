@@ -30,6 +30,7 @@ from verticapy.sql._utils._format import quote_ident
 from verticapy.core._utils._merge import gen_coalesce, group_similar_names
 from verticapy._config.config import OPTIONS
 from verticapy.sql.dtypes import get_data_types
+from verticapy.sql.drop import drop
 from verticapy._utils._sql import _executeSQL
 from verticapy._utils._gen import gen_tmp_name
 
