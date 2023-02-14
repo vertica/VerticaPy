@@ -209,7 +209,7 @@ vDataFrame
     dtypes = get_data_types(f"SELECT * FROM {relation} LIMIT 0")
     vdf._VERTICAPY_VARIABLES_["columns"] = ['"' + item[0] + '"' for item in dtypes]
 
-    # Creating the vColumns
+    # Creating the vDataColumns
     for column, ctype in dtypes:
         if '"' in column:
             column_str = column.replace('"', "_")
@@ -218,7 +218,7 @@ vDataFrame
                 f"alias was changed using underscores '_' to {column_str}"
             )
             warnings.warn(warning_message, Warning)
-        from verticapy.core.vcolumn import vColumn
+        from verticapy.core.vdataframe.vdataframe import vDataColumn
 
         column_name = '"' + column.replace('"', "_") + '"'
         category = to_category(ctype)
@@ -227,14 +227,14 @@ vDataFrame
         ):
             category = "vmap"
             ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
-        new_vColumn = vColumn(
+        new_vDataColumn = vDataColumn(
             column_name,
             parent=vdf,
             transformations=[(quote_ident(column), ctype, category,)],
         )
-        setattr(vdf, column_name, new_vColumn)
-        setattr(vdf, column_name[1:-1], new_vColumn)
-        new_vColumn.init = False
+        setattr(vdf, column_name, new_vDataColumn)
+        setattr(vdf, column_name[1:-1], new_vDataColumn)
+        new_vDataColumn.init = False
 
     return vdf
 

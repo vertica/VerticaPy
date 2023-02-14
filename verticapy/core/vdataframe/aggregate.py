@@ -65,7 +65,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: str / list
-        List of the vColumns used to group the elements or a customized expression. 
+        List of the vDataColumns used to group the elements or a customized expression. 
         If rollup is set to True, this can be a list of tuples.
     expr: str / list, optional
         List of the different aggregations in pure SQL. Aliases can be used.
@@ -92,8 +92,8 @@ class vDFAGG:
     See Also
     --------
     vDataFrame.append   : Merges the vDataFrame with another relation.
-    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
-        analytical function on a specific vColumn.
+    vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vDataColumn.
     vDataFrame.join     : Joins the vDataFrame with another relation.
     vDataFrame.sort     : Sorts the vDataFrame.
         """
@@ -195,7 +195,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all vColumns will be selected.
+        List of the vDataColumns names. If empty, all vDataColumns will be selected.
     count: bool, optional
         If set to True, the method will also return the count of each duplicates.
     limit: int, optional
@@ -312,8 +312,8 @@ class vDFAGG:
                 Other aggregations will work if supported by your version of 
                 the database.
     columns: str / list, optional
-        List of the vColumn's names. If empty, depending on the aggregations,
-        all or only numerical vColumns will be used.
+        List of the vDataColumn's names. If empty, depending on the aggregations,
+        all or only numerical vDataColumns will be used.
     ncols_block: int, optional
         Number of columns used per query. Setting this parameter divides
         what would otherwise be one large query into many smaller queries called
@@ -333,8 +333,8 @@ class vDFAGG:
 
     See Also
     --------
-    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
-        analytical function on a specific vColumn.
+    vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vDataColumn.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -788,7 +788,7 @@ class vDFAGG:
                                         FROM {self.__genSQL__()}""",
                                     title=(
                                         "Computing the different aggregations one "
-                                        "vColumn at a time."
+                                        "vDataColumn at a time."
                                     ),
                                     sql_push_ext=self._VERTICAPY_VARIABLES_[
                                         "sql_push_ext"
@@ -819,7 +819,7 @@ class vDFAGG:
                                         FROM {self.__genSQL__()}""",
                                     title=(
                                         "Computing the different aggregations one "
-                                        "vColumn & one agg at a time."
+                                        "vDataColumn & one agg at a time."
                                     ),
                                     method="fetchfirstelem",
                                     sql_push_ext=self._VERTICAPY_VARIABLES_[
@@ -854,7 +854,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -881,7 +881,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list
-        List of the vColumns names.
+        List of the vDataColumns names.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
 
@@ -908,7 +908,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list
-        List of the vColumns names.
+        List of the vDataColumns names.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
 
@@ -934,7 +934,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -964,7 +964,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all vColumns will be used.
+        List of the vDataColumns names. If empty, all vDataColumns will be used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
 
@@ -995,7 +995,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: str / list, optional
-        List of vColumn names. If empty, all vColumns will be used.
+        List of vDataColumn names. If empty, all vDataColumns will be used.
     sort_result: bool, optional
         If set to True, the result will be sorted.
     desc: bool, optional
@@ -1032,20 +1032,20 @@ class vDFAGG:
     ):
         """
     Aggregates the vDataFrame using multiple statistical aggregations: min, 
-    max, median, unique... depending on the types of the vColumns.
+    max, median, unique... depending on the types of the vDataColumns.
 
     Parameters
     ----------
     method: str, optional
         The describe method.
-            all         : Aggregates all selected vDataFrame vColumns different 
-                methods depending on the vColumn type (numerical dtype: numerical; 
+            all         : Aggregates all selected vDataFrame vDataColumns different 
+                methods depending on the vDataColumn type (numerical dtype: numerical; 
                 timestamp dtype: range; categorical dtype: length)
-            auto        : Sets the method to 'numerical' if at least one vColumn 
+            auto        : Sets the method to 'numerical' if at least one vDataColumn 
                 of the vDataFrame is numerical, 'categorical' otherwise.
             categorical : Uses only categorical aggregations.
             length      : Aggregates the vDataFrame using numerical aggregation 
-                on the length of all selected vColumns.
+                on the length of all selected vDataColumns.
             numerical   : Uses only numerical descriptive statistics which are 
                  computed in a faster way than the 'aggregate' method.
             range       : Aggregates the vDataFrame using multiple statistical
@@ -1053,7 +1053,7 @@ class vDFAGG:
             statistics  : Aggregates the vDataFrame using multiple statistical 
                 aggregations - kurtosis, skewness, min, max...
     columns: str / list, optional
-        List of the vColumns names. If empty, the vColumns will be selected
+        List of the vDataColumns names. If empty, the vDataColumns will be selected
         depending on the parameter 'method'.
     unique: bool, optional
         If set to True, the cardinality of each element will be computed.
@@ -1094,7 +1094,7 @@ class vDFAGG:
             else:
                 for column in columns:
                     assert self[column].isnum(), TypeError(
-                        f"vColumn {column} must be numerical to run describe"
+                        f"vDataColumn {column} must be numerical to run describe"
                         " using parameter method = 'numerical'"
                     )
             assert columns, EmptyParameter(
@@ -1154,7 +1154,7 @@ class vDFAGG:
                                 break
                     elif OPTIONS["print_info"]:
                         warning_message = (
-                            f"The vColumn {column} is not numerical, it was ignored."
+                            f"The vDataColumn {column} is not numerical, it was ignored."
                             "\nTo get statistical information about all different "
                             "variables, please use the parameter method = 'categorical'."
                         )
@@ -1430,7 +1430,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1459,7 +1459,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1486,7 +1486,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1513,7 +1513,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     approx: bool, optional
         If set to True, the approximate median is returned. By setting this 
@@ -1543,7 +1543,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1570,7 +1570,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all vColumns will be used.
+        List of the vDataColumns names. If empty, all vDataColumns will be used.
     approx: bool, optional
         If set to True, the approximate cardinality is returned. By setting 
         this parameter to False, the function's performance can drastically 
@@ -1601,7 +1601,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumn names. If empty, all numerical vColumns will be used.
+        List of the vDataColumn names. If empty, all numerical vDataColumns will be used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
 
@@ -1636,7 +1636,7 @@ class vDFAGG:
         List of the different quantiles. They must be numbers between 0 and 1.
         For example [0.25, 0.75] will return Q1 and Q3.
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     approx: bool, optional
         If set to True, the approximate quantile is returned. By setting this 
@@ -1673,7 +1673,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1700,7 +1700,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1729,7 +1729,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1758,7 +1758,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1785,7 +1785,7 @@ class vDFAGG:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1814,24 +1814,24 @@ class vDCAGG:
         numcol: str = "",
     ):
         """
-    Aggregates the vColumn using multiple statistical aggregations: 
+    Aggregates the vDataColumn using multiple statistical aggregations: 
     min, max, median, unique... depending on the input method.
 
     Parameters
     ----------
     method: str, optional
         The describe method.
-            auto        : Sets the method to 'numerical' if the vColumn is numerical
+            auto        : Sets the method to 'numerical' if the vDataColumn is numerical
                 , 'categorical' otherwise.
             categorical : Uses only categorical aggregations during the computation.
-            cat_stats   : Computes statistics of a numerical column for each vColumn
+            cat_stats   : Computes statistics of a numerical column for each vDataColumn
                 category. In this case, the parameter 'numcol' must be defined.
             numerical   : Uses popular numerical aggregations during the computation.
     max_cardinality: int, optional
-        Cardinality threshold to use to determine if the vColumn will be considered
+        Cardinality threshold to use to determine if the vDataColumn will be considered
         as categorical.
     numcol: str, optional
-        Numerical vColumn to use when the parameter method is set to 'cat_stats'.
+        Numerical vDataColumn to use when the parameter method is set to 'cat_stats'.
 
     Returns
     -------
@@ -1934,7 +1934,7 @@ class vDCAGG:
                 query=f"""
                     WITH vdf_table AS 
                         (SELECT 
-                            /*+LABEL('vColumn.describe')*/ * 
+                            /*+LABEL('vDataColumn.describe')*/ * 
                          FROM {self.parent.__genSQL__()}) {query}""",
                 title=f"Computing the descriptive statistics of {self.alias}.",
                 method="fetchall",
@@ -1981,7 +1981,7 @@ class vDCAGG:
     @save_verticapy_logs
     def aad(self):
         """
-    Aggregates the vColumn using 'aad' (Average Absolute Deviation).
+    Aggregates the vDataColumn using 'aad' (Average Absolute Deviation).
 
     Returns
     -------
@@ -1997,7 +1997,7 @@ class vDCAGG:
     @save_verticapy_logs
     def aggregate(self, func: list):
         """
-    Aggregates the vColumn using the input functions.
+    Aggregates the vDataColumn using the input functions.
 
     Parameters
     ----------
@@ -2007,7 +2007,7 @@ class vDCAGG:
             approx_unique  : approximative cardinality
             count          : number of non-missing elements
             cvar           : conditional value at risk
-            dtype          : vColumn type
+            dtype          : vDataColumn type
             iqr            : interquartile range
             kurtosis       : kurtosis
             jb             : Jarque-Bera index 
@@ -2040,8 +2040,8 @@ class vDCAGG:
 
     See Also
     --------
-    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
-        analytical function on a specific vColumn.
+    vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vDataColumn.
         """
         return self.parent.aggregate(func=func, columns=[self.alias]).transpose()
 
@@ -2050,7 +2050,7 @@ class vDCAGG:
     @save_verticapy_logs
     def avg(self):
         """
-    Aggregates the vColumn using 'avg' (Average).
+    Aggregates the vDataColumn using 'avg' (Average).
 
     Returns
     -------
@@ -2068,7 +2068,7 @@ class vDCAGG:
     @save_verticapy_logs
     def count(self):
         """
-    Aggregates the vColumn using 'count' (Number of non-Missing elements).
+    Aggregates the vDataColumn using 'count' (Number of non-Missing elements).
 
     Returns
     -------
@@ -2083,22 +2083,22 @@ class vDCAGG:
 
     def distinct(self, **kwargs):
         """
-    Returns the distinct categories of the vColumn.
+    Returns the distinct categories of the vDataColumn.
 
     Returns
     -------
     list
-        Distinct caterogies of the vColumn.
+        Distinct caterogies of the vDataColumn.
 
     See Also
     --------
-    vDataFrame.topk : Returns the vColumn most occurent elements.
+    vDataFrame.topk : Returns the vDataColumn most occurent elements.
         """
         alias_sql_repr = to_varchar(self.category(), self.alias)
         if "agg" not in kwargs:
             query = f"""
                 SELECT 
-                    /*+LABEL('vColumn.distinct')*/ 
+                    /*+LABEL('vDataColumn.distinct')*/ 
                     {alias_sql_repr} AS {self.alias} 
                 FROM {self.parent.__genSQL__()} 
                 WHERE {self.alias} IS NOT NULL 
@@ -2107,7 +2107,7 @@ class vDCAGG:
         else:
             query = f"""
                 SELECT 
-                    /*+LABEL('vColumn.distinct')*/ {self.alias} 
+                    /*+LABEL('vDataColumn.distinct')*/ {self.alias} 
                 FROM 
                     (SELECT 
                         {alias_sql_repr} AS {self.alias}, 
@@ -2128,7 +2128,7 @@ class vDCAGG:
     @save_verticapy_logs
     def kurtosis(self):
         """
-    Aggregates the vColumn using 'kurtosis'.
+    Aggregates the vDataColumn using 'kurtosis'.
 
     Returns
     -------
@@ -2146,7 +2146,7 @@ class vDCAGG:
     @save_verticapy_logs
     def mad(self):
         """
-    Aggregates the vColumn using 'mad' (median absolute deviation).
+    Aggregates the vDataColumn using 'mad' (median absolute deviation).
 
     Returns
     -------
@@ -2162,7 +2162,7 @@ class vDCAGG:
     @save_verticapy_logs
     def max(self):
         """
-    Aggregates the vColumn using 'max' (Maximum).
+    Aggregates the vDataColumn using 'max' (Maximum).
 
     Returns
     -------
@@ -2180,7 +2180,7 @@ class vDCAGG:
         self, approx: bool = True,
     ):
         """
-    Aggregates the vColumn using 'median'.
+    Aggregates the vDataColumn using 'median'.
 
     Parameters
     ----------
@@ -2202,7 +2202,7 @@ class vDCAGG:
     @save_verticapy_logs
     def min(self):
         """
-    Aggregates the vColumn using 'min' (Minimum).
+    Aggregates the vDataColumn using 'min' (Minimum).
 
     Returns
     -------
@@ -2226,12 +2226,12 @@ class vDCAGG:
         If set to True, NULL values will not be considered during the computation.
     n: int, optional
         Integer corresponding to the offset. For example, if n = 1 then this
-        method will return the mode of the vColumn.
+        method will return the mode of the vDataColumn.
 
     Returns
     -------
     str/float/int
-        vColumn nth most occurent element.
+        vDataColumn nth most occurent element.
 
     See Also
     --------
@@ -2247,7 +2247,7 @@ class vDCAGG:
         result = _executeSQL(
             f"""
             SELECT 
-                /*+LABEL('vColumn.mode')*/ {self.alias} 
+                /*+LABEL('vDataColumn.mode')*/ {self.alias} 
             FROM (
                 SELECT 
                     {self.alias}, 
@@ -2274,7 +2274,7 @@ class vDCAGG:
     @save_verticapy_logs
     def mul(self, x: Union[int, float]):
         """
-    Multiplies the vColumn by the input element.
+    Multiplies the vDataColumn by the input element.
 
     Parameters
     ----------
@@ -2288,14 +2288,14 @@ class vDCAGG:
 
     See Also
     --------
-    vDataFrame[].apply : Applies a function to the input vColumn.
+    vDataFrame[].apply : Applies a function to the input vDataColumn.
         """
         return self.apply(func=f"{{}} * ({x})")
 
     @save_verticapy_logs
     def nunique(self, approx: bool = True):
         """
-    Aggregates the vColumn using 'unique' (cardinality).
+    Aggregates the vDataColumn using 'unique' (cardinality).
 
     Parameters
     ----------
@@ -2307,7 +2307,7 @@ class vDCAGG:
     Returns
     -------
     int
-        vColumn cardinality (or approximate cardinality).
+        vDataColumn cardinality (or approximate cardinality).
 
     See Also
     --------
@@ -2321,7 +2321,7 @@ class vDCAGG:
     @save_verticapy_logs
     def product(self):
         """
-    Aggregates the vColumn using 'product'.
+    Aggregates the vDataColumn using 'product'.
 
     Returns
     -------
@@ -2339,7 +2339,7 @@ class vDCAGG:
     @save_verticapy_logs
     def quantile(self, x: Union[int, float], approx: bool = True):
         """
-    Aggregates the vColumn using an input 'quantile'.
+    Aggregates the vDataColumn using an input 'quantile'.
 
     Parameters
     ----------
@@ -2365,7 +2365,7 @@ class vDCAGG:
     @save_verticapy_logs
     def sem(self):
         """
-    Aggregates the vColumn using 'sem' (standard error of mean).
+    Aggregates the vDataColumn using 'sem' (standard error of mean).
 
     Returns
     -------
@@ -2381,7 +2381,7 @@ class vDCAGG:
     @save_verticapy_logs
     def skewness(self):
         """
-    Aggregates the vColumn using 'skewness'.
+    Aggregates the vDataColumn using 'skewness'.
 
     Returns
     -------
@@ -2399,7 +2399,7 @@ class vDCAGG:
     @save_verticapy_logs
     def std(self):
         """
-    Aggregates the vColumn using 'std' (Standard Deviation).
+    Aggregates the vDataColumn using 'std' (Standard Deviation).
 
     Returns
     -------
@@ -2417,7 +2417,7 @@ class vDCAGG:
     @save_verticapy_logs
     def sum(self):
         """
-    Aggregates the vColumn using 'sum'.
+    Aggregates the vDataColumn using 'sum'.
 
     Returns
     -------
@@ -2433,7 +2433,7 @@ class vDCAGG:
     @save_verticapy_logs
     def var(self):
         """
-    Aggregates the vColumn using 'var' (Variance).
+    Aggregates the vDataColumn using 'var' (Variance).
 
     Returns
     -------
@@ -2467,7 +2467,7 @@ class vDCAGG:
 
     See Also
     --------
-    vDataFrame[].describe : Computes the vColumn descriptive statistics.
+    vDataFrame[].describe : Computes the vDataColumn descriptive statistics.
         """
         return self.describe(method="categorical", max_cardinality=k)
 
@@ -2491,7 +2491,7 @@ class vDCAGG:
 
     See Also
     --------
-    vDataFrame[].describe : Computes the vColumn descriptive statistics.
+    vDataFrame[].describe : Computes the vDataColumn descriptive statistics.
         """
         limit, where, topk_cat = "", "", ""
         if k >= 1:
@@ -2503,7 +2503,7 @@ class vDCAGG:
         result = _executeSQL(
             query=f"""
             SELECT 
-                /*+LABEL('vColumn.topk')*/
+                /*+LABEL('vDataColumn.topk')*/
                 {alias_sql_repr} AS {self.alias},
                 COUNT(*) AS _verticapy_cnt_,
                 100 * COUNT(*) / {self.parent.shape()[0]} AS percent

@@ -98,7 +98,7 @@ outliers_threshold: float, optional
 na_method: str, optional
     Method for handling missing values.
         auto: Mean for the numerical features and creates a new category for the 
-              categorical vColumns. For time series datasets, 'constant' interpolation 
+              categorical vDataColumns. For time series datasets, 'constant' interpolation 
               is used for categorical features and 'linear' for the others.
         drop: Drops the missing values.
 cat_topk: int, optional

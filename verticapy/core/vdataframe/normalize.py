@@ -32,12 +32,12 @@ class vDFNORM:
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
     ):
         """
-    Normalizes the input vColumns using the input method.
+    Normalizes the input vDataColumns using the input method.
 
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     method: str, optional
         Method to use to normalize.
@@ -56,7 +56,7 @@ class vDFNORM:
     See Also
     --------
     vDataFrame.outliers    : Computes the vDataFrame Global Outliers.
-    vDataFrame[].normalize : Normalizes the vColumn. This method is more complete 
+    vDataFrame[].normalize : Normalizes the vDataColumn. This method is more complete 
         than the vDataFrame.normalize method by allowing more parameters.
         """
         if isinstance(columns, str):
@@ -70,7 +70,7 @@ class vDFNORM:
                 pass
             elif OPTIONS["print_info"]:
                 warning_message = (
-                    f"The vColumn {column} was skipped.\n"
+                    f"The vDataColumn {column} was skipped.\n"
                     "Normalize only accept numerical data types."
                 )
                 warnings.warn(warning_message, Warning)
@@ -86,7 +86,7 @@ class vDCNORM:
         return_trans: bool = False,
     ):
         """
-    Normalizes the input vColumns using the input method.
+    Normalizes the input vDataColumns using the input method.
 
     Parameters
     ----------
@@ -99,7 +99,7 @@ class vDCNORM:
             minmax        : Normalization using the MinMax (min and max).
                 (x - min) / (max - min)
     by: str / list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     return_trans: bool, optimal
         If set to True, the method will return the transformation used instead of
         the parent vDataFrame. This parameter is used for testing purpose.
@@ -142,7 +142,7 @@ class vDCNORM:
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vColumn.normalize')*/ {by[0]}, 
+                                    /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
                                     AVG({self.alias}), 
                                     STDDEV({self.alias}) 
                                 FROM {self.parent.__genSQL__()} GROUP BY {by[0]}""",
@@ -176,7 +176,7 @@ class vDCNORM:
                         _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vColumn.normalize')*/ 
+                                    /*+LABEL('vDataColumn.normalize')*/ 
                                     {avg},
                                     {stddev} 
                                 FROM {self.parent.__genSQL__()} 
@@ -249,7 +249,7 @@ class vDCNORM:
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vColumn.normalize')*/ {by[0]}, 
+                                    /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
                                     MIN({self.alias}), 
                                     MAX({self.alias})
                                 FROM {self.parent.__genSQL__()} 
@@ -279,7 +279,7 @@ class vDCNORM:
                         _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vColumn.normalize')*/ 
+                                    /*+LABEL('vDataColumn.normalize')*/ 
                                     {cmin_cmax[1]}, 
                                     {cmin_cmax[0]} 
                                 FROM {self.parent.__genSQL__()} 
@@ -366,9 +366,9 @@ class vDCNORM:
                 self.catalog["min"] = 0
                 self.catalog["max"] = 1
             self.parent.__add_to_history__(
-                f"[Normalize]: The vColumn '{self.alias}' was "
+                f"[Normalize]: The vDataColumn '{self.alias}' was "
                 f"normalized with the method '{method}'."
             )
         else:
-            raise TypeError("The vColumn must be numerical for Normalization")
+            raise TypeError("The vDataColumn must be numerical for Normalization")
         return self.parent

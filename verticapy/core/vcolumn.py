@@ -41,7 +41,7 @@ from verticapy.core.vdataframe.fill import vDCFILL
 ##
 
 
-class vColumn(
+class vDataColumn(
     vDCAGG,
     vDCPLOT,
     vDCMATH,
@@ -59,29 +59,29 @@ class vColumn(
 ):
     """
 Python object which that stores all user transformations. If the vDataFrame
-represents the entire relation, a vColumn can be seen as one column of that
-relation. vColumns simplify several processes with its abstractions.
+represents the entire relation, a vDataColumn can be seen as one column of that
+relation. vDataColumns simplify several processes with its abstractions.
 
 Parameters
 ----------
 alias: str
-	vColumn alias.
+	vDataColumn alias.
 transformations: list, optional
 	List of the different transformations. Each transformation must be similar
 	to the following: (function, type, category)  
 parent: vDataFrame, optional
-	Parent of the vColumn. One vDataFrame can have multiple children vColumns 
-	whereas one vColumn can only have one parent.
+	Parent of the vDataColumn. One vDataFrame can have multiple children vDataColumns 
+	whereas one vDataColumn can only have one parent.
 catalog: dict, optional
-	Catalog where each key corresponds to an aggregation. vColumns will memorize
+	Catalog where each key corresponds to an aggregation. vDataColumns will memorize
 	the already computed aggregations to gain in performance. The catalog will
 	be updated when the parent vDataFrame is modified.
 
 Attributes
 ----------
-	alias, str           : vColumn alias.
+	alias, str           : vDataColumn alias.
 	catalog, dict        : Catalog of pre-computed aggregations.
-	parent, vDataFrame   : Parent of the vColumn.
+	parent, vDataFrame   : Parent of the vDataColumn.
 	transformations, str : List of the different transformations.
 	"""
 

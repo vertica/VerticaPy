@@ -36,8 +36,8 @@ class vDFROLL:
         name: str = "",
     ):
         """
-    Adds a new vColumn to the vDataFrame by using an advanced analytical window 
-    function on one or two specific vColumns.
+    Adds a new vDataColumn to the vDataFrame by using an advanced analytical window 
+    function on one or two specific vDataColumns.
 
     \u26A0 Warning : Some window functions can make the vDataFrame structure 
                      heavier. It is recommended to always check the current structure 
@@ -50,10 +50,10 @@ class vDFROLL:
     func: str
         Function to use.
             aad         : average absolute deviation
-            beta        : Beta Coefficient between 2 vColumns
+            beta        : Beta Coefficient between 2 vDataColumns
             count       : number of non-missing elements
-            corr        : Pearson correlation between 2 vColumns
-            cov         : covariance between 2 vColumns
+            corr        : Pearson correlation between 2 vDataColumns
+            cov         : covariance between 2 vDataColumns
             kurtosis    : kurtosis
             jb          : Jarque-Bera index
             max         : maximum
@@ -75,15 +75,15 @@ class vDFROLL:
         take 5 rows preceding and one following. If set to ('- 5 minutes', '0 minutes'),
         the moving window will take all elements of the last 5 minutes.
     columns: str / list
-        Input vColumns. It can be a list of one or two elements.
+        Input vDataColumns. It can be a list of one or two elements.
     by: str / list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     order_by: dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
     name: str, optional
-        Name of the new vColumn. If empty, a default name will be generated.
+        Name of the new vDataColumn. If empty, a default name will be generated.
 
     Returns
     -------
@@ -93,8 +93,8 @@ class vDFROLL:
     See Also
     --------
     vDataFrame.eval     : Evaluates a customized expression.
-    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
-        analytical function on a specific vColumn.
+    vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vDataColumn.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -253,21 +253,21 @@ class vDFROLL:
         name: str = "",
     ):
         """
-    Adds a new vColumn to the vDataFrame by computing the cumulative maximum of
-    the input vColumn.
+    Adds a new vDataColumn to the vDataFrame by computing the cumulative maximum of
+    the input vDataColumn.
 
     Parameters
     ----------
     column: str
-        Input vColumn.
+        Input vDataColumn.
     by: list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     order_by: dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
     name: str, optional
-        Name of the new vColumn. If empty, a default name will be generated.
+        Name of the new vDataColumn. If empty, a default name will be generated.
 
     Returns
     -------
@@ -296,21 +296,21 @@ class vDFROLL:
         name: str = "",
     ):
         """
-    Adds a new vColumn to the vDataFrame by computing the cumulative minimum of
-    the input vColumn.
+    Adds a new vDataColumn to the vDataFrame by computing the cumulative minimum of
+    the input vDataColumn.
 
     Parameters
     ----------
     column: str
-        Input vColumn.
+        Input vDataColumn.
     by: list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     order_by: dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
     name: str, optional
-        Name of the new vColumn. If empty, a default name will be generated.
+        Name of the new vDataColumn. If empty, a default name will be generated.
 
     Returns
     -------
@@ -339,21 +339,21 @@ class vDFROLL:
         name: str = "",
     ):
         """
-    Adds a new vColumn to the vDataFrame by computing the cumulative product of 
-    the input vColumn.
+    Adds a new vDataColumn to the vDataFrame by computing the cumulative product of 
+    the input vDataColumn.
 
     Parameters
     ----------
     column: str
-        Input vColumn.
+        Input vDataColumn.
     by: list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     order_by: dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
     name: str, optional
-        Name of the new vColumn. If empty, a default name will be generated.
+        Name of the new vDataColumn. If empty, a default name will be generated.
 
     Returns
     -------
@@ -382,21 +382,21 @@ class vDFROLL:
         name: str = "",
     ):
         """
-    Adds a new vColumn to the vDataFrame by computing the cumulative sum of the 
-    input vColumn.
+    Adds a new vDataColumn to the vDataFrame by computing the cumulative sum of the 
+    input vDataColumn.
 
     Parameters
     ----------
     column: str
-        Input vColumn.
+        Input vDataColumn.
     by: list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     order_by: dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
     name: str, optional
-        Name of the new vColumn. If empty, a default name will be generated.
+        Name of the new vDataColumn. If empty, a default name will be generated.
 
     Returns
     -------

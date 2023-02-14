@@ -46,7 +46,7 @@ class vDFJUS:
     expr1: str / list, optional
         List of pure-SQL expressions from the current vDataFrame to use during merging.
         For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and 'POWER("column", 2)' 
-        will work. If empty, all vDataFrame vColumns will be used. Aliases are 
+        will work. If empty, all vDataFrame vDataColumns will be used. Aliases are 
         recommended to avoid auto-naming.
     expr2: str / list, optional
         List of pure-SQL expressions from the input relation to use during the merging.
@@ -295,12 +295,12 @@ class vDFJUS:
     @save_verticapy_logs
     def sort(self, columns: Union[str, dict, list]):
         """
-    Sorts the vDataFrame using the input vColumns.
+    Sorts the vDataFrame using the input vDataColumns.
 
     Parameters
     ----------
     columns: str / dict / list
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
 

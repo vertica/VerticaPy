@@ -29,7 +29,7 @@ import numpy as np
 # VerticaPy Modules
 from verticapy.sql.parsers.pandas import pandas_to_vertica
 from verticapy.core.tablesample import tablesample
-from verticapy.core.vcolumn import vColumn
+from verticapy.core.vdataframe.vdataframe import vDataColumn
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import (
     ConnectionError,
@@ -58,24 +58,25 @@ from verticapy.connect.connect import (
 )
 from verticapy._config.config import OPTIONS
 
-from verticapy.core.vdataframe.aggregate import vDFAGG
-from verticapy.core.vdataframe.corr import vDFCORR
+from verticapy.core.str_sql import str_sql
+from verticapy.core.vdataframe.aggregate import vDFAGG, vDCAGG
+from verticapy.core.vdataframe.corr import vDFCORR, vDCCORR
 from verticapy.core.vdataframe.io import vDFIO
 from verticapy.core.vdataframe.rolling import vDFROLL
-from verticapy.core.vdataframe.plotting import vDFPLOT
-from verticapy.core.vdataframe.filter import vDFFILTER
+from verticapy.core.vdataframe.plotting import vDFPLOT, vDCPLOT
+from verticapy.core.vdataframe.filter import vDFFILTER, vDCFILTER
 from verticapy.core.vdataframe.join_union_sort import vDFJUS
 from verticapy.core.vdataframe.machine_learning import vDFML
-from verticapy.core.vdataframe.math import vDFMATH
-from verticapy.core.vdataframe.sys import vDFSYS
-from verticapy.core.vdataframe.typing import vDFTYPING
-from verticapy.core.vdataframe.read import vDFREAD
-from verticapy.core.vdataframe.text import vDFTEXT
+from verticapy.core.vdataframe.math import vDFMATH, vDCMATH
+from verticapy.core.vdataframe.sys import vDFSYS, vDCSYS
+from verticapy.core.vdataframe.typing import vDFTYPING, vDCTYPING
+from verticapy.core.vdataframe.read import vDFREAD, vDCREAD
+from verticapy.core.vdataframe.text import vDFTEXT, vDCTEXT
 from verticapy.core.vdataframe.utils import vDFUTILS
-from verticapy.core.vdataframe.encoding import vDFENCODE
-from verticapy.core.vdataframe.normalize import vDFNORM
-from verticapy.core.vdataframe.eval import vDFEVAL
-from verticapy.core.vdataframe.fill import vDFFILL
+from verticapy.core.vdataframe.encoding import vDFENCODE, vDCENCODE
+from verticapy.core.vdataframe.normalize import vDFNORM, vDCNORM
+from verticapy.core.vdataframe.eval import vDFEVAL, vDCEVAL
+from verticapy.core.vdataframe.fill import vDFFILL, vDCFILL
 from verticapy.core.vdataframe.pivot import vDFPIVOT
 
 
@@ -121,7 +122,7 @@ An object that records all user modifications, allowing users to
 manipulate the relation without mutating the underlying data in Vertica. 
 When changes are made, the vDataFrame queries the Vertica database, which 
 aggregates and returns the final result. The vDataFrame creates, for each ]
-column of the relation, a Virtual Column (vColumn) that stores the column 
+column of the relation, a Virtual Column (vDataColumn) that stores the column 
 alias an all user transformations. 
 
 Parameters
@@ -176,10 +177,10 @@ _VERTICAPY_VARIABLES_: dict
     Dictionary containing all vDataFrame attributes.
         allcols_ind, int      : Integer, used to optimize the SQL 
                                 code generation.
-        columns, list         : List of the vColumn names.
+        columns, list         : List of the vDataColumn names.
         count, int            : Number of elements of the vDataFrame 
                                 (catalog).
-        exclude_columns, list : vColumns to exclude from the final 
+        exclude_columns, list : vDataColumns to exclude from the final 
                                 relation.
         external, bool        : True if it is an External vDataFrame.
         history, list         : vDataFrame history (user modifications).
@@ -196,9 +197,9 @@ _VERTICAPY_VARIABLES_: dict
                                 vDataFrame.
         max_colums, int       : Maximum number of columns to display.
         max_rows, int         : Maximum number of rows to display.
-vColumns : vColumn
-    Each vColumn of the vDataFrame is accessible by by specifying its name 
-    between brackets. For example, to access the vColumn "myVC": 
+vDataColumns : vDataColumn
+    Each vDataColumn of the vDataFrame is accessible by by specifying its name 
+    between brackets. For example, to access the vDataColumn "myVC": 
     vDataFrame["myVC"].
     """
 
@@ -391,14 +392,14 @@ vColumns : vColumn
                         else "VMAP"
                     )
                 column_name = '"' + column.replace('"', "_") + '"'
-                new_vColumn = vColumn(
+                new_vDataColumn = vDataColumn(
                     column_name,
                     parent=self,
                     transformations=[(quote_ident(column), dtype, category,)],
                 )
-                setattr(self, column_name, new_vColumn)
-                setattr(self, column_name[1:-1], new_vColumn)
-                new_vColumn.init = False
+                setattr(self, column_name, new_vDataColumn)
+                setattr(self, column_name[1:-1], new_vDataColumn)
+                new_vDataColumn.init = False
             other_parameters = {
                 "exclude_columns": [],
                 "where": [],
@@ -414,3 +415,96 @@ vColumns : vColumn
                 **self._VERTICAPY_VARIABLES_,
                 **other_parameters,
             }
+
+
+##
+#
+#   __   ___  ______     ______     __         __  __     __    __     __   __
+#  /\ \ /  / /\  ___\   /\  __ \   /\ \       /\ \/\ \   /\ "-./  \   /\ "-.\ \
+#  \ \ \' /  \ \ \____  \ \ \/\ \  \ \ \____  \ \ \_\ \  \ \ \-./\ \  \ \ \-.  \
+#   \ \__/    \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_\\"\_\
+#    \/_/      \/_____/   \/_____/   \/_____/   \/_____/   \/_/  \/_/   \/_/ \/_/
+#
+##
+
+
+class vDataColumn(
+    vDCAGG,
+    vDCPLOT,
+    vDCMATH,
+    vDCTYPING,
+    vDCFILTER,
+    vDCREAD,
+    vDCSYS,
+    vDCTEXT,
+    vDCCORR,
+    vDCENCODE,
+    vDCNORM,
+    vDCEVAL,
+    vDCFILL,
+    str_sql,
+):
+    """
+Python object which that stores all user transformations. If the vDataFrame
+represents the entire relation, a vDataColumn can be seen as one column of that
+relation. vDataColumns simplify several processes with its abstractions.
+
+Parameters
+----------
+alias: str
+    vDataColumn alias.
+transformations: list, optional
+    List of the different transformations. Each transformation must be similar
+    to the following: (function, type, category)  
+parent: vDataFrame, optional
+    Parent of the vDataColumn. One vDataFrame can have multiple children vDataColumns 
+    whereas one vDataColumn can only have one parent.
+catalog: dict, optional
+    Catalog where each key corresponds to an aggregation. vDataColumns will memorize
+    the already computed aggregations to gain in performance. The catalog will
+    be updated when the parent vDataFrame is modified.
+
+Attributes
+----------
+    alias, str           : vDataColumn alias.
+    catalog, dict        : Catalog of pre-computed aggregations.
+    parent, vDataFrame   : Parent of the vDataColumn.
+    transformations, str : List of the different transformations.
+    """
+
+    #
+    # Special Methods
+    #
+
+    def __init__(
+        self, alias: str, transformations: list = [], parent=None, catalog: dict = {},
+    ):
+        self.parent, self.alias, self.transformations = (
+            parent,
+            alias,
+            [elem for elem in transformations],
+        )
+        self.catalog = {
+            "cov": {},
+            "pearson": {},
+            "spearman": {},
+            "spearmand": {},
+            "kendall": {},
+            "cramer": {},
+            "biserial": {},
+            "regr_avgx": {},
+            "regr_avgy": {},
+            "regr_count": {},
+            "regr_intercept": {},
+            "regr_r2": {},
+            "regr_slope": {},
+            "regr_sxx": {},
+            "regr_sxy": {},
+            "regr_syy": {},
+        }
+        for elem in catalog:
+            self.catalog[elem] = catalog[elem]
+        self.init_transf = self.transformations[0][0]
+        if self.init_transf == "___VERTICAPY_UNDEFINED___":
+            self.init_transf = self.alias
+        self.init = True

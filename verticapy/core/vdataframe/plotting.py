@@ -56,12 +56,12 @@ class vDFPLOT:
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to order the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     columns: str / list, optional
-        List of the vColumns names.
+        List of the vDataColumns names.
     by: str, optional
-        Categorical vColumn used in the partition.
+        Categorical vDataColumn used in the partition.
     start_date: str / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
@@ -96,11 +96,11 @@ class vDFPLOT:
     fixed_xy_lim: bool, optional
         If set to True, the xlim and ylim will be fixed.
     date_in_title: bool, optional
-        If set to True, the ts vColumn will be displayed in the title section.
+        If set to True, the ts vDataColumn will be displayed in the title section.
     date_f: function, optional
-        Function used to display the ts vColumn.
+        Function used to display the ts vDataColumn.
     date_style_dict: dict, optional
-        Style Dictionary used to display the ts vColumn when date_in_title = False.
+        Style Dictionary used to display the ts vDataColumn when date_in_title = False.
     interval: int, optional
         Number of ms between each update.
     repeat: bool, optional
@@ -135,7 +135,7 @@ class vDFPLOT:
             and self[columns[0]].isnum()
             and self[columns[1]].isnum()
         ) or kind != "bubble", ParameterError(
-            f"Parameter 'columns' must include at least 2 numerical vColumns and maximum 4 vColumns when using kind = '{kind}'."
+            f"Parameter 'columns' must include at least 2 numerical vDataColumns and maximum 4 vDataColumns when using kind = '{kind}'."
         )
         columns, ts, by = self.format_colnames(columns, ts, by)
         if kind == "bubble":
@@ -250,39 +250,39 @@ class vDFPLOT:
         **style_kwds,
     ):
         """
-    Draws the bar chart of the input vColumns based on an aggregation.
+    Draws the bar chart of the input vDataColumns based on an aggregation.
 
     Parameters
     ----------
     columns: str / list
-        List of the vColumns names. The list must have one or two elements.
+        List of the vDataColumns names. The list must have one or two elements.
     method: str, optional
         The method to use to aggregate the data.
             count   : Number of elements.
             density : Percentage of the distribution.
-            mean    : Average of the vColumn 'of'.
-            min     : Minimum of the vColumn 'of'.
-            max     : Maximum of the vColumn 'of'.
-            sum     : Sum of the vColumn 'of'.
-            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
+            mean    : Average of the vDataColumn 'of'.
+            min     : Minimum of the vDataColumn 'of'.
+            max     : Maximum of the vDataColumn 'of'.
+            sum     : Sum of the vDataColumn 'of'.
+            q%      : q Quantile of the vDataColumn 'of' (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
-         The vColumn to use to compute the aggregation.
+         The vDataColumn to use to compute the aggregation.
     h: tuple, optional
-        Interval width of the vColumns 1 and 2 bars. It is only valid if the 
-        vColumns are numerical. Optimized h will be computed if the parameter 
+        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
+        vDataColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
     max_cardinality: tuple, optional
-        Maximum number of distinct elements for vColumns 1 and 2 to be used as 
+        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     hist_type: str, optional
         The Histogram Type.
-            auto          : Regular Bar Chart based on 1 or 2 vColumns.
+            auto          : Regular Bar Chart based on 1 or 2 vDataColumns.
             pyramid       : Pyramid Density Bar Chart. Only works if one of
-                            the two vColumns is binary and the 'method' is 
+                            the two vDataColumns is binary and the 'method' is 
                             set to 'density'.
-            stacked       : Stacked Bar Chart based on 2 vColumns.
-            fully_stacked : Fully Stacked Bar Chart based on 2 vColumns.
+            stacked       : Stacked Bar Chart based on 2 vDataColumns.
+            fully_stacked : Fully Stacked Bar Chart based on 2 vDataColumns.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
@@ -295,10 +295,10 @@ class vDFPLOT:
 
      See Also
      --------
-     vDataFrame.boxplot     : Draws the Box Plot of the input vColumns.
-     vDataFrame.hist        : Draws the histogram of the input vColumns based 
+     vDataFrame.boxplot     : Draws the Box Plot of the input vDataColumns.
+     vDataFrame.hist        : Draws the histogram of the input vDataColumns based 
                               on an aggregation.
-     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an 
+     vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an 
                               aggregation.
         """
         if isinstance(columns, str):
@@ -331,12 +331,12 @@ class vDFPLOT:
     @save_verticapy_logs
     def boxplot(self, columns: Union[str, list] = [], ax=None, **style_kwds):
         """
-    Draws the Box Plot of the input vColumns. 
+    Draws the Box Plot of the input vDataColumns. 
 
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all numerical vColumns will 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will 
         be used.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -350,12 +350,12 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame.bar         : Draws the bar chart of the input vColumns based 
+    vDataFrame.bar         : Draws the bar chart of the input vDataColumns based 
                              on an aggregation.
-    vDataFrame.boxplot     : Draws the vColumn box plot.
-    vDataFrame.hist        : Draws the histogram of the input vColumns based 
+    vDataFrame.boxplot     : Draws the vDataColumn box plot.
+    vDataFrame.hist        : Draws the histogram of the input vDataColumns based 
                              on an aggregation.
-    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an 
+    vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an 
                              aggregation.
         """
         if isinstance(columns, str):
@@ -377,14 +377,14 @@ class vDFPLOT:
         **style_kwds,
     ):
         """
-    Draws the bubble plot of the input vColumns.
+    Draws the bubble plot of the input vDataColumns.
 
     Parameters
     ----------
     columns: str / list
-        List of the vColumns names. The list must have two elements.
+        List of the vDataColumns names. The list must have two elements.
     size_bubble_col: str
-        Numerical vColumn to use to represent the Bubble size.
+        Numerical vDataColumn to use to represent the Bubble size.
     catcol: str, optional
         Categorical column used as color.
     cmap_col: str, optional
@@ -408,7 +408,7 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame.scatter : Draws the scatter plot of the input vColumns.
+    vDataFrame.scatter : Draws the scatter plot of the input vDataColumns.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -430,17 +430,17 @@ class vDFPLOT:
     @save_verticapy_logs
     def contour(self, columns: list, func, nbins: int = 100, ax=None, **style_kwds):
         """
-    Draws the contour plot of the input function two input vColumns.
+    Draws the contour plot of the input function two input vDataColumns.
 
     Parameters
     ----------
     columns: list
-        List of the vColumns names. The list must have two elements.
+        List of the vDataColumns names. The list must have two elements.
     func: function / str
         Function used to compute the contour score. It can also be a SQL
         expression.
     nbins: int, optional
-        Number of bins used to discretize the two input numerical vColumns.
+        Number of bins used to discretize the two input numerical vDataColumns.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
@@ -453,9 +453,9 @@ class vDFPLOT:
 
      See Also
      --------
-     vDataFrame.boxplot     : Draws the Box Plot of the input vColumns.
-     vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
-     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
+     vDataFrame.boxplot     : Draws the Box Plot of the input vDataColumns.
+     vDataFrame.hist        : Draws the histogram of the input vDataColumns based on an aggregation.
+     vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
         columns = self.format_colnames(columns, expected_nb_of_cols=2)
         return plt.contour_plot(self, columns, func, nbins, ax=ax, **style_kwds,)
@@ -472,12 +472,12 @@ class vDFPLOT:
         **style_kwds,
     ):
         """
-    Draws the vColumns Density Plot.
+    Draws the vDataColumns Density Plot.
 
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all numerical vColumns will 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will 
         be selected.
     bandwidth: float, optional
         The bandwidth of the kernel.
@@ -505,7 +505,7 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
+    vDataFrame[].hist : Draws the histogram of the vDataColumn based on an aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -515,7 +515,7 @@ class vDFPLOT:
         else:
             for column in columns:
                 assert self[column].isnum(), TypeError(
-                    f"vColumn {column} is not numerical to draw KDE"
+                    f"vDataColumn {column} is not numerical to draw KDE"
                 )
         assert columns, EmptyParameter("No Numerical Columns found to draw KDE.")
         colors = gen_colors()
@@ -605,53 +605,53 @@ class vDFPLOT:
     Parameters
     ----------
     x / y / z / c: str / list
-        The vColumns and aggregations used to draw the chart. These will depend 
+        The vDataColumns and aggregations used to draw the chart. These will depend 
         on the chart type. You can also specify an expression, but it must be a SQL 
         statement. For example: AVG(column1) + SUM(column2) AS new_name.
 
             area / area_ts / line / spline
-                x: numerical or type date like vColumn.
+                x: numerical or type date like vDataColumn.
                 y: a single expression or list of expressions used to draw the plot
-                z: [OPTIONAL] vColumn representing the different categories 
-                    (only if y is a single vColumn)
+                z: [OPTIONAL] vDataColumn representing the different categories 
+                    (only if y is a single vDataColumn)
             area_range
-                x: numerical or date type vColumn.
+                x: numerical or date type vDataColumn.
                 y: list of three expressions [expression, lower bound, upper bound]
             bar (single) / donut / donut3d / hist (single) / pie / pie_half / pie3d
-                x: vColumn used to compute the categories.
+                x: vDataColumn used to compute the categories.
                 y: [OPTIONAL] numerical expression representing the categories values. 
                     If empty, COUNT(*) is used as the default aggregation.
             bar (double / drilldown) / hist (double / drilldown) / pie (drilldown) 
             / stacked_bar / stacked_hist
-                x: vColumn used to compute the first category.
-                y: vColumn used to compute the second category.
+                x: vDataColumn used to compute the first category.
+                y: vDataColumn used to compute the second category.
                 z: [OPTIONAL] numerical expression representing the different categories 
                     values. 
                     If empty, COUNT(*) is used as the default aggregation.
             biserial / boxplot / pearson / kendall / pearson / spearman / spearmanD
-                x: list of the vColumns used to draw the Chart.
+                x: list of the vDataColumns used to draw the Chart.
             bubble / scatter
-                x: numerical vColumn.
-                y: numerical vColumn.
-                z: numerical vColumn (bubble size in case of bubble plot, third 
+                x: numerical vDataColumn.
+                y: numerical vDataColumn.
+                z: numerical vDataColumn (bubble size in case of bubble plot, third 
                      dimension in case of scatter plot)
-                c: [OPTIONAL] vColumn used to compute the different categories.
+                c: [OPTIONAL] vDataColumn used to compute the different categories.
             candlestick
-                x: date type vColumn.
-                y: Can be a numerical vColumn or list of 5 expressions 
+                x: date type vDataColumn.
+                y: Can be a numerical vDataColumn or list of 5 expressions 
                     [last quantile, maximum, minimum, first quantile, volume]
             negative_bar
-                x: binary vColumn used to compute the first category.
-                y: vColumn used to compute the second category.
+                x: binary vDataColumn used to compute the first category.
+                y: vDataColumn used to compute the second category.
                 z: [OPTIONAL] numerical expression representing the categories values. 
                     If empty, COUNT(*) is used as the default aggregation.
             spider
-                x: vColumn used to compute the different categories.
+                x: vDataColumn used to compute the different categories.
                 y: [OPTIONAL] Can be a list of the expressions used to draw the Plot 
                     or a single expression. 
                     If empty, COUNT(*) is used as the default aggregation.
     aggregate: bool, optional
-        If set to True, the input vColumns will be aggregated.
+        If set to True, the input vDataColumns will be aggregated.
     kind: str, optional
         Chart Type.
             area         : Area Chart
@@ -698,7 +698,7 @@ class vDFPLOT:
     h: float, optional
         Interval width of the bar. If empty, an optimized value will be used.
     max_cardinality: int, optional
-        Maximum number of the vColumn distinct elements.
+        Maximum number of the vDataColumn distinct elements.
     limit: int, optional
         Maximum number of elements to draw.
     drilldown: bool, optional
@@ -753,26 +753,26 @@ class vDFPLOT:
         **style_kwds,
     ):
         """
-    Draws the Heatmap of the two input vColumns.
+    Draws the Heatmap of the two input vDataColumns.
 
     Parameters
     ----------
     columns: str / list
-        List of the vColumns names. The list must have two elements.
+        List of the vDataColumns names. The list must have two elements.
     method: str, optional
         The method to use to aggregate the data.
             count   : Number of elements.
             density : Percentage of the distribution.
-            mean    : Average of the vColumn 'of'.
-            min     : Minimum of the vColumn 'of'.
-            max     : Maximum of the vColumn 'of'.
-            sum     : Sum of the vColumn 'of'.
-            q%      : q Quantile of the vColumn 'of (ex: 50% to get the median).
+            mean    : Average of the vDataColumn 'of'.
+            min     : Minimum of the vDataColumn 'of'.
+            max     : Maximum of the vDataColumn 'of'.
+            sum     : Sum of the vDataColumn 'of'.
+            q%      : q Quantile of the vDataColumn 'of (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
-        The vColumn to use to compute the aggregation.
+        The vDataColumn to use to compute the aggregation.
     h: tuple, optional
-        Interval width of the vColumns 1 and 2 bars. Optimized h will be computed 
+        Interval width of the vDataColumns 1 and 2 bars. Optimized h will be computed 
         if the parameter is empty or invalid.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -786,14 +786,14 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame.pivot_table  : Draws the pivot table of vColumns based on an aggregation.
+    vDataFrame.pivot_table  : Draws the pivot table of vDataColumns based on an aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=2)
         for column in columns:
             assert self[column].isnum(), TypeError(
-                f"vColumn {column} must be numerical to draw the Heatmap."
+                f"vDataColumn {column} must be numerical to draw the Heatmap."
             )
         min_max = self.agg(func=["min", "max"], columns=columns).transpose()
         ax = plt.pivot_table(
@@ -825,22 +825,22 @@ class vDFPLOT:
         **style_kwds,
     ):
         """
-    Draws the Hexbin of the input vColumns based on an aggregation.
+    Draws the Hexbin of the input vDataColumns based on an aggregation.
 
     Parameters
     ----------
     columns: str / list
-        List of the vColumns names. The list must have two elements.
+        List of the vDataColumns names. The list must have two elements.
     method: str, optional
         The method to use to aggregate the data.
             count   : Number of elements.
             density : Percentage of the distribution.
-            mean    : Average of the vColumn 'of'.
-            min     : Minimum of the vColumn 'of'.
-            max     : Maximum of the vColumn 'of'.
-            sum     : Sum of the vColumn 'of'.
+            mean    : Average of the vDataColumn 'of'.
+            min     : Minimum of the vDataColumn 'of'.
+            max     : Maximum of the vDataColumn 'of'.
+            sum     : Sum of the vDataColumn 'of'.
     of: str, optional
-        The vColumn to use to compute the aggregation.
+        The vDataColumn to use to compute the aggregation.
     bbox: list, optional
         List of 4 elements to delimit the boundaries of the final Plot. 
         It must be similar the following list: [xmin, xmax, ymin, ymax]
@@ -858,7 +858,7 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
+    vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -878,36 +878,36 @@ class vDFPLOT:
         **style_kwds,
     ):
         """
-    Draws the histogram of the input vColumns based on an aggregation.
+    Draws the histogram of the input vDataColumns based on an aggregation.
 
     Parameters
     ----------
     columns: str / list
-        List of the vColumns names. The list must have less than 5 elements.
+        List of the vDataColumns names. The list must have less than 5 elements.
     method: str, optional
         The method to use to aggregate the data.
             count   : Number of elements.
             density : Percentage of the distribution.
-            mean    : Average of the vColumn 'of'.
-            min     : Minimum of the vColumn 'of'.
-            max     : Maximum of the vColumn 'of'.
-            sum     : Sum of the vColumn 'of'.
-            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
+            mean    : Average of the vDataColumn 'of'.
+            min     : Minimum of the vDataColumn 'of'.
+            max     : Maximum of the vDataColumn 'of'.
+            sum     : Sum of the vDataColumn 'of'.
+            q%      : q Quantile of the vDataColumn 'of' (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
-        The vColumn to use to compute the aggregation.
+        The vDataColumn to use to compute the aggregation.
     h: int/float/tuple, optional
-        Interval width of the vColumns 1 and 2 bars. It is only valid if the 
-        vColumns are numerical. Optimized h will be computed if the parameter 
+        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
+        vDataColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
     max_cardinality: tuple, optional
-        Maximum number of distinct elements for vColumns 1 and 2 to be used as 
+        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     hist_type: str, optional
         The Histogram Type.
-            auto    : Regular Histogram based on 1 or 2 vColumns.
-            multi   : Multiple Regular Histograms based on 1 to 5 vColumns.
-            stacked : Stacked Histogram based on 2 vColumns.
+            auto    : Regular Histogram based on 1 or 2 vDataColumns.
+            multi   : Multiple Regular Histograms based on 1 to 5 vDataColumns.
+            stacked : Stacked Histogram based on 2 vDataColumns.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
@@ -920,9 +920,9 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame.bar         : Draws the bar chart of the input vColumns based on an aggregation.
-    vDataFrame.boxplot     : Draws the Box Plot of the input vColumns.
-    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
+    vDataFrame.bar         : Draws the bar chart of the input vDataColumns based on an aggregation.
+    vDataFrame.boxplot     : Draws the Box Plot of the input vDataColumns.
+    vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -974,7 +974,7 @@ class vDFPLOT:
     Parameters
     ----------
     columns: str / list
-        List of one or two vColumn names.
+        List of one or two vDataColumn names.
     threshold: float, optional
         ZSCORE threshold used to detect outliers.
     color: str, optional
@@ -1023,14 +1023,14 @@ class vDFPLOT:
         **style_kwds,
     ):
         """
-    Draws the nested density pie chart of the input vColumns.
+    Draws the nested density pie chart of the input vDataColumns.
 
     Parameters
     ----------
     columns: list
-        List of the vColumns names.
+        List of the vDataColumns names.
     max_cardinality: int / tuple / list, optional
-        Maximum number of the vColumn distinct elements to be used as categorical 
+        Maximum number of the vDataColumn distinct elements to be used as categorical 
         (No h will be picked or computed).
         If of type tuple, it must represent each column 'max_cardinality'.
     h: float/tuple, optional
@@ -1048,7 +1048,7 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame[].pie : Draws the Pie Chart of the vColumn based on an aggregation.
+    vDataFrame[].pie : Draws the Pie Chart of the vDataColumn based on an aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -1075,25 +1075,25 @@ class vDFPLOT:
     Parameters
     ----------
     columns: str / list
-        List of the vColumns names. The list must have one or two elements.
+        List of the vDataColumns names. The list must have one or two elements.
     method: str, optional
         The method to use to aggregate the data.
             count   : Number of elements.
             density : Percentage of the distribution.
-            mean    : Average of the vColumn 'of'.
-            min     : Minimum of the vColumn 'of'.
-            max     : Maximum of the vColumn 'of'.
-            sum     : Sum of the vColumn 'of'.
-            q%      : q Quantile of the vColumn 'of (ex: 50% to get the median).
+            mean    : Average of the vDataColumn 'of'.
+            min     : Minimum of the vDataColumn 'of'.
+            max     : Maximum of the vDataColumn 'of'.
+            sum     : Sum of the vDataColumn 'of'.
+            q%      : q Quantile of the vDataColumn 'of (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
-        The vColumn to use to compute the aggregation.
+        The vDataColumn to use to compute the aggregation.
     max_cardinality: tuple, optional
-        Maximum number of distinct elements for vColumns 1 and 2 to be used as 
+        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     h: tuple, optional
-        Interval width of the vColumns 1 and 2 bars. It is only valid if the 
-        vColumns are numerical. Optimized h will be computed if the parameter 
+        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
+        vDataColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
     show: bool, optional
         If set to True, the result will be drawn using Matplotlib.
@@ -1114,7 +1114,7 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame.hexbin : Draws the Hexbin Plot of 2 vColumns based on an aggregation.
+    vDataFrame.hexbin : Draws the Hexbin Plot of 2 vDataColumns based on an aggregation.
     vDataFrame.pivot  : Returns the Pivot of the vDataFrame using the input aggregation.
         """
         if isinstance(columns, str):
@@ -1151,10 +1151,10 @@ class vDFPLOT:
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to order the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     start_date: str / int / float / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
@@ -1176,7 +1176,7 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame[].plot : Draws the Time Series of one vColumn.
+    vDataFrame[].plot : Draws the Time Series of one vDataColumn.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -1202,23 +1202,23 @@ class vDFPLOT:
         **style_kwds,
     ):
         """
-    Draws the scatter plot of the input vColumns.
+    Draws the scatter plot of the input vDataColumns.
 
     Parameters
     ----------
     columns: str, list
-        List of the vColumns names. 
+        List of the vDataColumns names. 
     catcol: str, optional
-        Categorical vColumn to use to label the data.
+        Categorical vDataColumn to use to label the data.
     max_cardinality: int, optional
         Maximum number of distinct elements for 'catcol' to be used as 
         categorical. The less frequent elements will be gathered together to 
         create a new category: 'Others'.
     cat_priority: list, optional
         List of the different categories to consider when labeling the data using
-        the vColumn 'catcol'. The other categories will be filtered.
+        the vDataColumn 'catcol'. The other categories will be filtered.
     with_others: bool, optional
-        If set to false and the cardinality of the vColumn 'catcol' is too big then
+        If set to false and the cardinality of the vDataColumn 'catcol' is too big then
         the less frequent element will not be merged to another category and they 
         will not be drawn.
     max_nb_points: int, optional
@@ -1244,8 +1244,8 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame.bubble      : Draws the bubble plot of the input vColumns.
-    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
+    vDataFrame.bubble      : Draws the bubble plot of the input vDataColumns.
+    vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
         from verticapy.machine_learning.vertica.decomposition import PCA
 
@@ -1297,7 +1297,7 @@ class vDFPLOT:
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1309,7 +1309,7 @@ class vDFPLOT:
 
     See Also
     --------
-    vDataFrame.scatter : Draws the scatter plot of the input vColumns.
+    vDataFrame.scatter : Draws the scatter plot of the input vDataColumns.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -1333,10 +1333,10 @@ class vDFPLOT:
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to order the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used. They must all include only positive values.
     start_date: int / float / str / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
@@ -1377,7 +1377,7 @@ class vDCPLOT:
         self, method: Literal["sturges", "freedman_diaconis", "fd", "auto"] = "auto"
     ):
         """
-    Computes the optimal vColumn bar width.
+    Computes the optimal vDataColumn bar width.
 
     Parameters
     ----------
@@ -1407,7 +1407,13 @@ class vDCPLOT:
                 .transpose()
                 .values[self.alias]
             )
-            count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = (
+            (
+                count,
+                vDataColumn_min,
+                vDataColumn_025,
+                vDataColumn_075,
+                vDataColumn_max,
+            ) = (
                 result[0],
                 result[3],
                 result[4],
@@ -1418,7 +1424,7 @@ class vDCPLOT:
             result = _executeSQL(
                 f"""
                 SELECT 
-                    /*+LABEL('vColumn.numh')*/ COUNT({self.alias}) AS NAs, 
+                    /*+LABEL('vDataColumn.numh')*/ COUNT({self.alias}) AS NAs, 
                     MIN({self.alias}) AS min, 
                     APPROXIMATE_PERCENTILE({self.alias} 
                         USING PARAMETERS percentile = 0.25) AS Q1, 
@@ -1436,12 +1442,21 @@ class vDCPLOT:
                 sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
                 symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
             )
-            count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result
+            (
+                count,
+                vDataColumn_min,
+                vDataColumn_025,
+                vDataColumn_075,
+                vDataColumn_max,
+            ) = result
         sturges = max(
-            float(vColumn_max - vColumn_min) / int(math.floor(math.log(count, 2) + 2)),
+            float(vDataColumn_max - vDataColumn_min)
+            / int(math.floor(math.log(count, 2) + 2)),
             1e-99,
         )
-        fd = max(2.0 * (vColumn_075 - vColumn_025) / (count) ** (1.0 / 3.0), 1e-99)
+        fd = max(
+            2.0 * (vDataColumn_075 - vDataColumn_025) / (count) ** (1.0 / 3.0), 1e-99
+        )
         if method.lower() == "sturges":
             best_h = sturges
         elif method.lower() in ("freedman_diaconis", "fd"):
@@ -1465,7 +1480,7 @@ class vDCPLOT:
         **style_kwds,
     ):
         """
-    Draws the bar chart of the vColumn based on an aggregation.
+    Draws the bar chart of the vDataColumn based on an aggregation.
 
     Parameters
     ----------
@@ -1473,16 +1488,16 @@ class vDCPLOT:
         The method to use to aggregate the data.
             count   : Number of elements.
             density : Percentage of the distribution.
-            mean    : Average of the vColumn 'of'.
-            min     : Minimum of the vColumn 'of'.
-            max     : Maximum of the vColumn 'of'.
-            sum     : Sum of the vColumn 'of'.
-            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
+            mean    : Average of the vDataColumn 'of'.
+            min     : Minimum of the vDataColumn 'of'.
+            max     : Maximum of the vDataColumn 'of'.
+            sum     : Sum of the vDataColumn 'of'.
+            q%      : q Quantile of the vDataColumn 'of' (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
-        The vColumn to use to compute the aggregation.
+        The vDataColumn to use to compute the aggregation.
     max_cardinality: int, optional
-        Maximum number of the vColumn distinct elements to be used as categorical 
+        Maximum number of the vDataColumn distinct elements to be used as categorical 
         (No h will be picked or computed)
     nbins: int, optional
         Number of nbins. If empty, an optimized number of nbins will be computed.
@@ -1500,7 +1515,7 @@ class vDCPLOT:
 
     See Also
     --------
-    vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
+    vDataFrame[].hist : Draws the histogram of the vDataColumn based on an aggregation.
         """
         of = self.parent.format_colnames(of)
         return plt.bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
@@ -1516,17 +1531,17 @@ class vDCPLOT:
         **style_kwds,
     ):
         """
-    Draws the box plot of the vColumn.
+    Draws the box plot of the vDataColumn.
 
     Parameters
     ----------
     by: str, optional
-        vColumn to use to partition the data.
+        vDataColumn to use to partition the data.
     h: int / float, optional
-        Interval width if the vColumn is numerical or of type date like. Optimized 
+        Interval width if the vDataColumn is numerical or of type date like. Optimized 
         h will be computed if the parameter is empty or invalid.
     max_cardinality: int, optional
-        Maximum number of vColumn distinct elements to be used as categorical. 
+        Maximum number of vDataColumn distinct elements to be used as categorical. 
         The less frequent elements will be gathered together to create a new 
         category : 'Others'.
     cat_priority: str / int / date / list, optional
@@ -1544,7 +1559,7 @@ class vDCPLOT:
 
     See Also
     --------
-    vDataFrame.boxplot : Draws the Box Plot of the input vColumns. 
+    vDataFrame.boxplot : Draws the Box Plot of the input vDataColumns. 
         """
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
@@ -1565,12 +1580,12 @@ class vDCPLOT:
         **style_kwds,
     ):
         """
-    Draws the vColumn Density Plot.
+    Draws the vDataColumn Density Plot.
 
     Parameters
     ----------
     by: str, optional
-        vColumn to use to partition the data.
+        vDataColumn to use to partition the data.
     bandwidth: int / float, optional
         The bandwidth of the kernel.
     kernel: str, optional
@@ -1597,7 +1612,7 @@ class vDCPLOT:
 
     See Also
     --------
-    vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
+    vDataFrame[].hist : Draws the histogram of the vDataColumn based on an aggregation.
         """
         from verticapy.learn import KernelDensity
 
@@ -1718,7 +1733,7 @@ class vDCPLOT:
         **style_kwds,
     ):
         """
-    Draws the histogram of the vColumn based on an aggregation.
+    Draws the histogram of the vDataColumn based on an aggregation.
 
     Parameters
     ----------
@@ -1726,16 +1741,16 @@ class vDCPLOT:
         The method to use to aggregate the data.
             count   : Number of elements.
             density : Percentage of the distribution.
-            mean    : Average of the vColumn 'of'.
-            min     : Minimum of the vColumn 'of'.
-            max     : Maximum of the vColumn 'of'.
-            sum     : Sum of the vColumn 'of'.
-            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
+            mean    : Average of the vDataColumn 'of'.
+            min     : Minimum of the vDataColumn 'of'.
+            max     : Maximum of the vDataColumn 'of'.
+            sum     : Sum of the vDataColumn 'of'.
+            q%      : q Quantile of the vDataColumn 'of' (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
-        The vColumn to use to compute the aggregation.
+        The vDataColumn to use to compute the aggregation.
     max_cardinality: int, optional
-        Maximum number of the vColumn distinct elements to be used as categorical 
+        Maximum number of the vDataColumn distinct elements to be used as categorical 
         (No h will be picked or computed)
     nbins: int, optional
         Number of bins. If empty, an optimized number of bins will be computed.
@@ -1753,7 +1768,7 @@ class vDCPLOT:
 
     See Also
     --------
-    vDataFrame[].bar : Draws the Bar Chart of vColumn based on an aggregation.
+    vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
         of = self.parent.format_colnames(of)
         return plt.hist(
@@ -1772,7 +1787,7 @@ class vDCPLOT:
         **style_kwds,
     ):
         """
-    Draws the pie chart of the vColumn based on an aggregation.
+    Draws the pie chart of the vDataColumn based on an aggregation.
 
     Parameters
     ----------
@@ -1780,16 +1795,16 @@ class vDCPLOT:
         The method to use to aggregate the data.
             count   : Number of elements.
             density : Percentage of the distribution.
-            mean    : Average of the vColumn 'of'.
-            min     : Minimum of the vColumn 'of'.
-            max     : Maximum of the vColumn 'of'.
-            sum     : Sum of the vColumn 'of'.
-            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
+            mean    : Average of the vDataColumn 'of'.
+            min     : Minimum of the vDataColumn 'of'.
+            max     : Maximum of the vDataColumn 'of'.
+            sum     : Sum of the vDataColumn 'of'.
+            q%      : q Quantile of the vDataColumn 'of' (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
-        The vColumn to use to compute the aggregation.
+        The vDataColumn to use to compute the aggregation.
     max_cardinality: int, optional
-        Maximum number of the vColumn distinct elements to be used as categorical 
+        Maximum number of the vDataColumn distinct elements to be used as categorical 
         (No h will be picked or computed)
     h: int / float, optional
         Interval width of the bar. If empty, an optimized h will be computed.
@@ -1811,7 +1826,7 @@ class vDCPLOT:
 
     See Also
     --------
-    vDataFrame.donut : Draws the donut chart of the vColumn based on an aggregation.
+    vDataFrame.donut : Draws the donut chart of the vDataColumn based on an aggregation.
         """
         donut, rose = (pie_type == "donut"), (pie_type == "rose")
         of = self.parent.format_colnames(of)
@@ -1832,15 +1847,15 @@ class vDCPLOT:
         **style_kwds,
     ):
         """
-    Draws the Time Series of the vColumn.
+    Draws the Time Series of the vDataColumn.
 
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to order the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     by: str, optional
-        vColumn to use to partition the TS.
+        vDataColumn to use to partition the TS.
     start_date: str / int / float / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
@@ -1882,13 +1897,13 @@ class vDCPLOT:
         **style_kwds,
     ):
         """
-    Draws the range plot of the vColumn. The aggregations used are the median 
+    Draws the range plot of the vDataColumn. The aggregations used are the median 
     and two input quantiles.
 
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to order the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     q: tuple / list, optional
         Tuple including the 2 quantiles used to draw the Plot.
@@ -1931,30 +1946,30 @@ class vDCPLOT:
         **style_kwds,
     ):
         """
-    Draws the spider plot of the input vColumn based on an aggregation.
+    Draws the spider plot of the input vDataColumn based on an aggregation.
 
     Parameters
     ----------
     by: str, optional
-        vColumn to use to partition the data.
+        vDataColumn to use to partition the data.
     method: str, optional
         The method to use to aggregate the data.
             count   : Number of elements.
             density : Percentage of the distribution.
-            mean    : Average of the vColumn 'of'.
-            min     : Minimum of the vColumn 'of'.
-            max     : Maximum of the vColumn 'of'.
-            sum     : Sum of the vColumn 'of'.
-            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
+            mean    : Average of the vDataColumn 'of'.
+            min     : Minimum of the vDataColumn 'of'.
+            max     : Maximum of the vDataColumn 'of'.
+            sum     : Sum of the vDataColumn 'of'.
+            q%      : q Quantile of the vDataColumn 'of' (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
-        The vColumn to use to compute the aggregation.
+        The vDataColumn to use to compute the aggregation.
     h: int / float / tuple / list, optional
-        Interval width of the vColumns 1 and 2 bars. It is only valid if the 
-        vColumns are numerical. Optimized h will be computed if the parameter 
+        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
+        vDataColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
     max_cardinality: int / tuple / list, optional
-        Maximum number of distinct elements for vColumns 1 and 2 to be used as 
+        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -1968,7 +1983,7 @@ class vDCPLOT:
 
     See Also
     --------
-    vDataFrame.bar : Draws the Bar Chart of the input vColumns based on an aggregation.
+    vDataFrame.bar : Draws the Bar Chart of the input vDataColumns based on an aggregation.
         """
         by, of = self.parent.format_colnames(by, of)
         columns = [self.alias]

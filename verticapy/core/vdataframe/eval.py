@@ -30,15 +30,17 @@ from verticapy.sql.dtypes import get_data_types
 
 class vDFEVAL:
     def __setattr__(self, attr, val):
-        from verticapy.core.vcolumn import vColumn
+        from verticapy.core.vdataframe.vdataframe import vDataColumn
 
-        if isinstance(val, (str, str_sql, int, float)) and not isinstance(val, vColumn):
+        if isinstance(val, (str, str_sql, int, float)) and not isinstance(
+            val, vDataColumn
+        ):
             val = str(val)
             if self.is_colname_in(attr):
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
-        elif isinstance(val, vColumn) and not (val.init):
+        elif isinstance(val, vDataColumn) and not (val.init):
             final_trans, n = val.init_transf, len(val.transformations)
             for i in range(1, n):
                 final_trans = val.transformations[i][0].replace("{}", final_trans)
@@ -57,7 +59,7 @@ class vDFEVAL:
     Parameters
     ----------
     name: str
-        Name of the new vColumn.
+        Name of the new vDataColumn.
     expr: str
         Expression in pure SQL to use to compute the new feature.
         For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
@@ -70,17 +72,17 @@ class vDFEVAL:
 
     See Also
     --------
-    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
-        analytical function on a specific vColumn.
+    vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vDataColumn.
         """
-        from verticapy.core.vcolumn import vColumn
+        from verticapy.core.vdataframe.vdataframe import vDataColumn
 
         if isinstance(expr, str_sql):
             expr = str(expr)
         name = quote_ident(name.replace('"', "_"))
         if self.is_colname_in(name):
             raise NameError(
-                f"A vColumn has already the alias {name}.\n"
+                f"A vDataColumn has already the alias {name}.\n"
                 "By changing the parameter 'name', you'll "
                 "be able to solve this issue."
             )
@@ -119,14 +121,16 @@ class vDFEVAL:
             )
             for i in range(max_floor)
         ] + [(expr, ctype, category)]
-        new_vColumn = vColumn(name, parent=self, transformations=transformations)
-        setattr(self, name, new_vColumn)
-        setattr(self, name.replace('"', ""), new_vColumn)
-        new_vColumn.init = False
-        new_vColumn.init_transf = name
+        new_vDataColumn = vDataColumn(
+            name, parent=self, transformations=transformations
+        )
+        setattr(self, name, new_vDataColumn)
+        setattr(self, name.replace('"', ""), new_vDataColumn)
+        new_vDataColumn.init = False
+        new_vDataColumn.init_transf = name
         self._VERTICAPY_VARIABLES_["columns"] += [name]
         self.__add_to_history__(
-            f"[Eval]: A new vColumn {name} was added to the vDataFrame."
+            f"[Eval]: A new vDataColumn {name} was added to the vDataFrame."
         )
         return self
 

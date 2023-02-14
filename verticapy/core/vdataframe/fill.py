@@ -39,27 +39,27 @@ class vDFFILL:
     @save_verticapy_logs
     def fillna(self, val: dict = {}, method: dict = {}, numeric_only: bool = False):
         """
-    Fills the vColumns missing elements using specific rules.
+    Fills the vDataColumns missing elements using specific rules.
 
     Parameters
     ----------
     val: dict, optional
         Dictionary of values. The dictionary must be similar to the following:
         {"column1": val1 ..., "columnk": valk}. Each key of the dictionary must
-        be a vColumn. The missing values of the input vColumns will be replaced
+        be a vDataColumn. The missing values of the input vDataColumns will be replaced
         by the input value.
     method: dict, optional
         Method to use to impute the missing values.
-            auto    : Mean for the numerical and Mode for the categorical vColumns.
+            auto    : Mean for the numerical and Mode for the categorical vDataColumns.
             mean    : Average.
             median  : Median.
             mode    : Mode (most occurent element).
-            0ifnull : 0 when the vColumn is null, 1 otherwise.
+            0ifnull : 0 when the vDataColumn is null, 1 otherwise.
                 More Methods are available on the vDataFrame[].fillna method.
     numeric_only: bool, optional
         If parameters 'val' and 'method' are empty and 'numeric_only' is set
-        to True then all numerical vColumns will be imputed by their average.
-        If set to False, all categorical vColumns will be also imputed by their
+        to True then all numerical vDataColumns will be imputed by their average.
+        If set to False, all categorical vDataColumns will be also imputed by their
         mode.
 
     Returns
@@ -69,7 +69,7 @@ class vDFFILL:
 
     See Also
     --------
-    vDataFrame[].fillna : Fills the vColumn missing values. This method is more 
+    vDataFrame[].fillna : Fills the vDataColumn missing values. This method is more 
         complete than the vDataFrame.fillna method by allowing more parameters.
         """
         print_info = OPTIONS["print_info"]
@@ -107,7 +107,7 @@ class vDFFILL:
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to order the data. The vColumn type 
+        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type 
         must be date like (date, datetime, timestamp...)
     rule: str / time
         Interval used to create the time slices. The final interpolation is 
@@ -121,7 +121,7 @@ class vDFFILL:
             ffill  : Interpolates with the first value of the time slice.
             linear : Linear interpolation.
     by: str / list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
 
     Returns
     -------
@@ -130,8 +130,8 @@ class vDFFILL:
 
     See Also
     --------
-    vDataFrame[].fillna  : Fills the vColumn missing values.
-    vDataFrame[].slice   : Slices the vColumn.
+    vDataFrame[].fillna  : Fills the vDataColumn missing values.
+    vDataFrame[].slice   : Slices the vDataColumn.
         """
         if isinstance(by, str):
             by = [by]
@@ -184,7 +184,7 @@ class vDCFILL:
         upper: Union[int, float, datetime.datetime, datetime.date] = None,
     ):
         """
-    Clips the vColumn by transforming the values lesser than the lower bound to 
+    Clips the vDataColumn by transforming the values lesser than the lower bound to 
     the lower bound itself and the values higher than the upper bound to the upper 
     bound itself.
 
@@ -202,7 +202,7 @@ class vDCFILL:
 
     See Also
     --------
-    vDataFrame[].fill_outliers : Fills the vColumn outliers using the input method.
+    vDataFrame[].fill_outliers : Fills the vDataColumn outliers using the input method.
         """
         assert (lower != None) or (upper != None), ParameterError(
             "At least 'lower' or 'upper' must have a numerical value"
@@ -230,16 +230,16 @@ class vDCFILL:
         alpha: Union[int, float] = 0.05,
     ):
         """
-    Fills the vColumns outliers using the input method.
+    Fills the vDataColumns outliers using the input method.
 
     Parameters
         ----------
         method: str, optional
-            Method to use to fill the vColumn outliers.
+            Method to use to fill the vDataColumn outliers.
                 mean      : Replaces the upper and lower outliers by their respective 
                     average. 
                 null      : Replaces the outliers by the NULL value.
-                winsorize : Clips the vColumn using as lower bound quantile(alpha) and as 
+                winsorize : Clips the vDataColumn using as lower bound quantile(alpha) and as 
                     upper bound quantile(1-alpha) if 'use_threshold' is set to False else 
                     the lower and upper ZScores.
         threshold: int / float, optional
@@ -259,8 +259,8 @@ class vDCFILL:
 
     See Also
     --------
-    vDataFrame[].drop_outliers : Drops outliers in the vColumn.
-    vDataFrame.outliers      : Adds a new vColumn labeled with 0 and 1 
+    vDataFrame[].drop_outliers : Drops outliers in the vDataColumn.
+    vDataFrame.outliers      : Adds a new vDataColumn labeled with 0 and 1 
         (1 meaning global outlier).
         """
         if use_threshold:
@@ -271,7 +271,7 @@ class vDCFILL:
             )
         else:
             query = f"""
-                SELECT /*+LABEL('vColumn.fill_outliers')*/ 
+                SELECT /*+LABEL('vDataColumn.fill_outliers')*/ 
                     PERCENTILE_CONT({alpha}) WITHIN GROUP (ORDER BY {self.alias}) OVER (), 
                     PERCENTILE_CONT(1 - {alpha}) WITHIN GROUP (ORDER BY {self.alias}) OVER () 
                 FROM {self.parent.__genSQL__()} LIMIT 1"""
@@ -292,7 +292,7 @@ class vDCFILL:
             query = f"""
                 WITH vdf_table AS 
                     (SELECT 
-                        /*+LABEL('vColumn.fill_outliers')*/ * 
+                        /*+LABEL('vDataColumn.fill_outliers')*/ * 
                     FROM {self.parent.__genSQL__()}) 
                     (SELECT 
                         AVG({self.alias}) 
@@ -348,27 +348,27 @@ class vDCFILL:
         order_by: Union[str, list] = [],
     ):
         """
-    Fills missing elements in the vColumn with a user-specified rule.
+    Fills missing elements in the vDataColumn with a user-specified rule.
 
     Parameters
     ----------
     val: int / float / str / date, optional
-        Value to use to impute the vColumn.
+        Value to use to impute the vDataColumn.
     method: dict, optional
         Method to use to impute the missing values.
-            auto    : Mean for the numerical and Mode for the categorical vColumns.
+            auto    : Mean for the numerical and Mode for the categorical vDataColumns.
             bfill   : Back Propagation of the next element (Constant Interpolation).
             ffill   : Propagation of the first element (Constant Interpolation).
             mean    : Average.
             median  : median.
             mode    : mode (most occurent element).
-            0ifnull : 0 when the vColumn is null, 1 otherwise.
+            0ifnull : 0 when the vDataColumn is null, 1 otherwise.
     expr: str, optional
         SQL expression.
     by: str / list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     order_by: str / list, optional
-        List of the vColumns to use to sort the data when using TS methods.
+        List of the vDataColumns to use to sort the data when using TS methods.
 
     Returns
     -------
@@ -377,7 +377,7 @@ class vDCFILL:
 
     See Also
     --------
-    vDataFrame[].dropna : Drops the vColumn missing values.
+    vDataFrame[].dropna : Drops the vDataColumn missing values.
         """
         by, order_by = self.parent.format_colnames(by, order_by)
         if isinstance(by, str):
@@ -392,7 +392,7 @@ class vDCFILL:
             val = self.mode(dropna=True)
             if val == None:
                 warning_message = (
-                    f"The vColumn {self.alias} has no mode "
+                    f"The vDataColumn {self.alias} has no mode "
                     "(only missing values).\nNothing was filled."
                 )
                 warnings.warn(warning_message, Warning)
@@ -419,7 +419,7 @@ class vDCFILL:
                         fun = "APPROXIMATE_MEDIAN"
                     query = f"""
                         SELECT 
-                            /*+LABEL('vColumn.fillna')*/ {by[0]}, 
+                            /*+LABEL('vDataColumn.fillna')*/ {by[0]}, 
                             {fun}({self.alias})
                         FROM {self.parent.__genSQL__()} 
                         GROUP BY {by[0]};"""
@@ -442,7 +442,7 @@ class vDCFILL:
                     _executeSQL(
                         query=f"""
                             SELECT 
-                                /*+LABEL('vColumn.fillna')*/ 
+                                /*+LABEL('vDataColumn.fillna')*/ 
                                 {new_column.format(self.alias)} 
                             FROM {self.parent.__genSQL__()} 
                             LIMIT 1""",

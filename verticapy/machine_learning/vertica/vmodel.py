@@ -2577,7 +2577,7 @@ class MulticlassClassifier(Classifier):
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
-        Name of the additional prediction vColumn. If unspecified, a name is 
+        Name of the additional prediction vDataColumn. If unspecified, a name is 
 	    generated based on the model and class names.
     pos_label: int / float / str, optional
         Class label, the class for which the probability is calculated. 

@@ -43,7 +43,7 @@ class vDFML:
     Parameters
     ----------
     weight: str / integer
-        vColumn or integer representing the weight.
+        vDataColumn or integer representing the weight.
     use_gcd: bool
         If set to True, uses the GCD (Greatest Common Divisor) to reduce all 
         common weights to avoid unnecessary duplicates.
@@ -56,13 +56,13 @@ class vDFML:
         if isinstance(weight, str):
             weight = self.format_colnames(weight)
             assert self[weight].category() == "int", TypeError(
-                "The weight vColumn category must be "
+                "The weight vDataColumn category must be "
                 f"'integer', found {self[weight].category()}."
             )
             L = sorted(self[weight].distinct())
             gcd, max_value, n = L[0], L[-1], len(L)
             assert gcd >= 0, ValueError(
-                "The weight vColumn must only include positive integers."
+                "The weight vDataColumn must only include positive integers."
             )
             if use_gcd:
                 if gcd != 1:
@@ -109,7 +109,7 @@ class vDFML:
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names.
+        List of the vDataColumns names.
     max_cardinality: int, optional
         For any categorical variable, keeps the most frequent categories and 
         merges the less frequent categories into a new unique category.
@@ -178,16 +178,16 @@ class vDFML:
     Parameters
     ----------
     response: str
-        Categorical response vColumn.
+        Categorical response vDataColumn.
     columns: str / list
-        List of the vColumn names. The maximum number of categories for each
+        List of the vDataColumn names. The maximum number of categories for each
         categorical column is 16; categorical columns with a higher cardinality
         are discarded.
     nbins: int, optional
         Integer in the range [2,16], the number of bins used 
         to discretize the numerical features.
     method: str, optional
-        The method with which to discretize the numerical vColumns, 
+        The method with which to discretize the numerical vDataColumns, 
         one of the following:
             same_width : Computes bins of regular width.
             smart      : Uses a random forest model on a response column to find the best
@@ -351,7 +351,7 @@ class vDFML:
     Parameters
     ----------
     columns: list
-        List of the vColumn names.
+        List of the vDataColumn names.
     max_cardinality: int, optional
         The maximum number of categories for each categorical column. Categorical 
         columns with a higher cardinality are discarded.
@@ -382,14 +382,14 @@ class vDFML:
                     remove_cols += [col]
                     if self[col].category() not in ("float", "int", "text"):
                         warning_message = (
-                            f"vColumn '{col}' is of category '{self[col].category()}'. "
+                            f"vDataColumn '{col}' is of category '{self[col].category()}'. "
                             "This method only accepts categorical & numerical inputs. "
-                            "This vColumn was ignored."
+                            "This vDataColumn was ignored."
                         )
                     else:
                         warning_message = (
-                            f"vColumn '{col}' has a too high cardinality "
-                            f"(> {max_cardinality}). This vColumn was ignored."
+                            f"vDataColumn '{col}' has a too high cardinality "
+                            f"(> {max_cardinality}). This vDataColumn was ignored."
                         )
                     warnings.warn(warning_message, Warning)
         for col in remove_cols:
@@ -405,16 +405,16 @@ class vDFML:
         robust: bool = False,
     ):
         """
-    Adds a new vColumn labeled with 0 and 1. 1 means that the record is a global 
+    Adds a new vDataColumn labeled with 0 and 1. 1 means that the record is a global 
     outlier.
 
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     name: str, optional
-        Name of the new vColumn.
+        Name of the new vDataColumn.
     threshold: float, optional
         Threshold equals to the critical score.
     robust: bool
@@ -428,7 +428,7 @@ class vDFML:
 
     See Also
     --------
-    vDataFrame.normalize : Normalizes the input vColumns.
+    vDataFrame.normalize : Normalizes the input vDataColumns.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -468,22 +468,22 @@ class vDFML:
         RFmodel_params: dict = {},
     ):
         """
-    Returns the chi-square term using the pivot table of the response vColumn 
-    against the input vColumns.
+    Returns the chi-square term using the pivot table of the response vDataColumn 
+    against the input vDataColumns.
 
     Parameters
     ----------
     response: str
-        Categorical response vColumn.
+        Categorical response vDataColumn.
     columns: str / list, optional
-        List of the vColumn names. The maximum number of categories for each
+        List of the vDataColumn names. The maximum number of categories for each
         categorical columns is 16. Categorical columns with a higher cardinality
         are discarded.
     nbins: int, optional
         Integer in the range [2,16], the number of bins used to discretize 
         the numerical features.
     method: str, optional
-        The method to use to discretize the numerical vColumns.
+        The method to use to discretize the numerical vDataColumns.
             same_width : Computes bins of regular width.
             smart      : Uses a random forest model on a response column to find the best
                 interval for discretization.
@@ -570,12 +570,12 @@ class vDFML:
     def polynomial_comb(self, columns: Union[str, list] = [], r: int = 2):
         """
     Returns a vDataFrame containing different product combination of the 
-    input vColumns. This function is ideal for bivariate analysis.
+    input vDataColumns. This function is ideal for bivariate analysis.
 
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     r: int, optional
         Degree of the polynomial.
@@ -617,9 +617,9 @@ class vDFML:
     Parameters
     ----------
     unique_id: str
-        Input vColumn corresponding to a unique ID. It is a primary key.
+        Input vDataColumn corresponding to a unique ID. It is a primary key.
     item_id: str
-        Input vColumn corresponding to an item ID. It is a secondary key used to 
+        Input vDataColumn corresponding to an item ID. It is a secondary key used to 
         compute the different pairs.
     method: str, optional
         Method used to recommend.
@@ -630,14 +630,14 @@ class vDFML:
             median : Each item will be recommended based on the median rating
                      of the different item pairs with a differing second element.
     rating: str / tuple, optional
-        Input vColumn including the items rating.
+        Input vDataColumn including the items rating.
         If the 'rating' type is 'tuple', it must composed of 3 elements: 
         (r_vdf, r_item_id, r_name) where:
             r_vdf is an input vDataFrame.
-            r_item_id is an input vColumn which must includes the same id as 'item_id'.
-            r_name is an input vColumn including the items rating. 
+            r_item_id is an input vDataColumn which must includes the same id as 'item_id'.
+            r_name is an input vDataColumn including the items rating. 
     ts: str, optional
-        TS (Time Series) vColumn to use to order the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     start_date: str / int / float / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
@@ -790,17 +790,17 @@ class vDFML:
         name: str = "session_id",
     ):
         """
-    Adds a new vColumn to the vDataFrame which will correspond to sessions 
+    Adds a new vDataColumn to the vDataFrame which will correspond to sessions 
     (user activity during a specific time). A session ends when ts - lag(ts) 
     is greater than a specific threshold.
 
     Parameters
     ----------
     ts: str
-        vColumn used as timeline. It will be to use to order the data. It can be
-        a numerical or type date like (date, datetime, timestamp...) vColumn.
+        vDataColumn used as timeline. It will be to use to order the data. It can be
+        a numerical or type date like (date, datetime, timestamp...) vDataColumn.
     by: str / list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     session_threshold: str, optional
         This parameter is the threshold which will determine the end of the 
         session. For example, if it is set to '10 minutes' the session ends
@@ -815,8 +815,8 @@ class vDFML:
 
     See Also
     --------
-    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
-        analytical function on a specific vColumn.
+    vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vDataColumn.
         """
         if isinstance(by, str):
             by = [by]
@@ -847,7 +847,7 @@ class vDFML:
     test_size: float, optional
         Proportion of the test set comparint to the training set.
     order_by: str / dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
         Without this parameter, the seeded random number used to split the data

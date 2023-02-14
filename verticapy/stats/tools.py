@@ -526,7 +526,7 @@ Parameters
 vdf: vDataFrame
     Input vDataFrame.
 eps: str
-    Input residual vColumn.
+    Input residual vDataColumn.
 X: list
     The exogenous variables to test.
 

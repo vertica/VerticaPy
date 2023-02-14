@@ -39,16 +39,16 @@ class vDFENCODE:
         use_numbers_as_suffix: bool = False,
     ):
         """
-    Encodes the vColumns using the One Hot Encoding algorithm.
+    Encodes the vDataColumns using the One Hot Encoding algorithm.
 
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns to use to train the One Hot Encoding model. If empty, 
-        only the vColumns having a cardinality lesser than 'max_cardinality' will 
+        List of the vDataColumns to use to train the One Hot Encoding model. If empty, 
+        only the vDataColumns having a cardinality lesser than 'max_cardinality' will 
         be used.
     max_cardinality: int, optional
-        Cardinality threshold to use to determine if the vColumn will be taken into
+        Cardinality threshold to use to determine if the vDataColumn will be taken into
         account during the encoding. This parameter is used only if the parameter 
         'columns' is empty.
     prefix_sep: str, optional
@@ -56,7 +56,7 @@ class vDFENCODE:
     drop_first: bool, optional
         Drops the first dummy to avoid the creation of correlated features.
     use_numbers_as_suffix: bool, optional
-        Uses numbers as suffix instead of the vColumns categories.
+        Uses numbers as suffix instead of the vDataColumns categories.
 
     Returns
     -------
@@ -65,11 +65,11 @@ class vDFENCODE:
 
     See Also
     --------
-    vDataFrame[].decode       : Encodes the vColumn using a user defined Encoding.
-    vDataFrame[].discretize   : Discretizes the vColumn.
-    vDataFrame[].get_dummies  : Computes the vColumns result of One Hot Encoding.
-    vDataFrame[].label_encode : Encodes the vColumn using the Label Encoding.
-    vDataFrame[].mean_encode  : Encodes the vColumn using the Mean Encoding of a response.
+    vDataFrame[].decode       : Encodes the vDataColumn using a user defined Encoding.
+    vDataFrame[].discretize   : Discretizes the vDataColumn.
+    vDataFrame[].get_dummies  : Computes the vDataColumns result of One Hot Encoding.
+    vDataFrame[].label_encode : Encodes the vDataColumn using the Label Encoding.
+    vDataFrame[].mean_encode  : Encodes the vDataColumn using the Mean Encoding of a response.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -84,10 +84,10 @@ class vDFENCODE:
                 )
             elif cols_hand and OPTIONS["print_info"]:
                 warning_message = (
-                    f"The vColumn '{column}' was ignored because of "
+                    f"The vDataColumn '{column}' was ignored because of "
                     "its high cardinality.\nIncrease the parameter "
                     "'max_cardinality' to solve this issue or use "
-                    "directly the vColumn get_dummies method."
+                    "directly the vDataColumn get_dummies method."
                 )
                 warnings.warn(warning_message, Warning)
         return self
@@ -105,12 +105,12 @@ class vDCENCODE:
         right: bool = True,
     ):
         """
-    Discretizes the vColumn using the input list. 
+    Discretizes the vDataColumn using the input list. 
 
     Parameters
     ----------
     breaks: list
-        List of values used to cut the vColumn.
+        List of values used to cut the vDataColumn.
     labels: list, optional
         Labels used to name the new categories. If empty, names will be generated.
     include_lowest: bool, optional
@@ -126,10 +126,10 @@ class vDCENCODE:
 
     See Also
     --------
-    vDataFrame[].apply : Applies a function to the input vColumn.
+    vDataFrame[].apply : Applies a function to the input vDataColumn.
         """
         assert self.isnum() or self.isdate(), TypeError(
-            "cut only works on numerical / date-like vColumns."
+            "cut only works on numerical / date-like vDataColumns."
         )
         assert len(breaks) >= 2, ParameterError(
             "Length of parameter 'breaks' must be greater or equal to 2."
@@ -172,13 +172,13 @@ class vDCENCODE:
         return_enum_trans: bool = False,
     ):
         """
-    Discretizes the vColumn using the input method.
+    Discretizes the vDataColumn using the input method.
 
     Parameters
     ----------
     method: str, optional
-        The method to use to discretize the vColumn.
-            auto       : Uses method 'same_width' for numerical vColumns, cast 
+        The method to use to discretize the vDataColumn.
+            auto       : Uses method 'same_width' for numerical vDataColumns, cast 
                 the other types to varchar.
             same_freq  : Computes bins with the same number of elements.
             same_width : Computes regular width bins.
@@ -187,7 +187,7 @@ class vDCENCODE:
             topk       : Keeps the topk most frequent categories and merge the other 
                 into one unique category.
     h: int / float, optional
-        The interval size to convert to use to convert the vColumn. If this parameter 
+        The interval size to convert to use to convert the vDataColumn. If this parameter 
         is equal to 0, an optimised interval will be computed.
     nbins: int, optional
         Number of bins used for the discretization (must be > 1)
@@ -202,7 +202,7 @@ class vDCENCODE:
         Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
         20 trees and a maximum depth of 10.
     response: str, optional
-        Response vColumn when method is set to 'smart'.
+        Response vDataColumn when method is set to 'smart'.
     return_enum_trans: bool, optional
         Returns the transformation instead of the vDataFrame parent and do not apply
         it. This parameter is very useful for testing to be able to look at the final 
@@ -215,10 +215,10 @@ class vDCENCODE:
 
     See Also
     --------
-    vDataFrame[].decode       : Encodes the vColumn with user defined Encoding.
-    vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
-    vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
-    vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
+    vDataFrame[].decode       : Encodes the vDataColumn with user defined Encoding.
+    vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
+    vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
+    vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
         from verticapy.learn.ensemble import (
             RandomForestRegressor,
@@ -263,7 +263,7 @@ class vDCENCODE:
                 ]
                 query = f"""
                     SELECT 
-                        /*+LABEL('vColumn.discretize')*/ split_value 
+                        /*+LABEL('vDataColumn.discretize')*/ split_value 
                     FROM 
                         (SELECT 
                             split_value, 
@@ -319,7 +319,7 @@ class vDCENCODE:
             possibilities = ", ".join(["1"] + nth_elems + [str(count)])
             where = f"WHERE _verticapy_row_nb_ IN ({possibilities})"
             query = f"""
-                SELECT /*+LABEL('vColumn.discretize')*/ 
+                SELECT /*+LABEL('vDataColumn.discretize')*/ 
                     {self.alias} 
                 FROM (SELECT 
                         {self.alias}, 
@@ -389,7 +389,7 @@ class vDCENCODE:
             except:
                 pass
             self.parent.__add_to_history__(
-                f"[Discretize]: The vColumn {self.alias} was discretized."
+                f"[Discretize]: The vDataColumn {self.alias} was discretized."
             )
         return self.parent
 
@@ -402,7 +402,7 @@ class vDCENCODE:
         use_numbers_as_suffix: bool = False,
     ):
         """
-    Encodes the vColumn with the One-Hot Encoding algorithm.
+    Encodes the vDataColumn with the One-Hot Encoding algorithm.
 
     Parameters
     ----------
@@ -413,7 +413,7 @@ class vDCENCODE:
     drop_first: bool, optional
         Drops the first dummy to avoid the creation of correlated features.
     use_numbers_as_suffix: bool, optional
-        Uses numbers as suffix instead of the vColumns categories.
+        Uses numbers as suffix instead of the vDataColumns categories.
 
     Returns
     -------
@@ -422,12 +422,12 @@ class vDCENCODE:
 
     See Also
     --------
-    vDataFrame[].decode       : Encodes the vColumn with user defined Encoding.
-    vDataFrame[].discretize   : Discretizes the vColumn.
-    vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
-    vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
+    vDataFrame[].decode       : Encodes the vDataColumn with user defined Encoding.
+    vDataFrame[].discretize   : Discretizes the vDataColumn.
+    vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
+    vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
-        from verticapy.core.vcolumn import vColumn
+        from verticapy.core.vdataframe.vdataframe import vDataColumn
 
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
@@ -444,9 +444,9 @@ class vDCENCODE:
                 else:
                     name = f'"{prefix}{distinct_elements_k}"'
                 assert not (self.parent.is_colname_in(name)), NameError(
-                    "A vColumn has already the alias of one of "
+                    "A vDataColumn has already the alias of one of "
                     f"the dummies ({name}).\nIt can be the result "
-                    "of using previously the method on the vColumn "
+                    "of using previously the method on the vDataColumn "
                     "or simply because of ambiguous columns naming."
                     "\nBy changing one of the parameters ('prefix', "
                     "'prefix_sep'), you'll be able to solve this "
@@ -466,7 +466,7 @@ class vDCENCODE:
                 )
                 expr = f"DECODE({{}}, '{distinct_elements_k}', 1, 0)"
                 transformations = self.transformations + [(expr, "bool", "int")]
-                new_vColumn = vColumn(
+                new_vDataColumn = vDataColumn(
                     name,
                     parent=self.parent,
                     transformations=transformations,
@@ -480,13 +480,13 @@ class vDCENCODE:
                         "prod": 0,
                     },
                 )
-                setattr(self.parent, name, new_vColumn)
-                setattr(self.parent, name.replace('"', ""), new_vColumn)
+                setattr(self.parent, name, new_vDataColumn)
+                setattr(self.parent, name.replace('"', ""), new_vDataColumn)
                 self.parent._VERTICAPY_VARIABLES_["columns"] += [name]
                 all_new_features += [name]
             conj = "s were " if len(all_new_features) > 1 else " was "
             self.parent.__add_to_history__(
-                "[Get Dummies]: One hot encoder was applied to the vColumn "
+                "[Get Dummies]: One hot encoder was applied to the vDataColumn "
                 f"{self.alias}\n{len(all_new_features)} feature{conj}created: "
                 f"{', '.join(all_new_features)}."
             )
@@ -497,8 +497,8 @@ class vDCENCODE:
     @save_verticapy_logs
     def label_encode(self):
         """
-    Encodes the vColumn using a bijection from the different categories to
-    [0, n - 1] (n being the vColumn cardinality).
+    Encodes the vDataColumn using a bijection from the different categories to
+    [0, n - 1] (n being the vDataColumn cardinality).
 
     Returns
     -------
@@ -507,10 +507,10 @@ class vDCENCODE:
 
     See Also
     --------
-    vDataFrame[].decode       : Encodes the vColumn with a user defined Encoding.
-    vDataFrame[].discretize   : Discretizes the vColumn.
-    vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
-    vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
+    vDataFrame[].decode       : Encodes the vDataColumn with a user defined Encoding.
+    vDataFrame[].discretize   : Discretizes the vDataColumn.
+    vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
+    vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
         if self.category() in ["date", "float"]:
             warning_message = (
@@ -531,7 +531,7 @@ class vDCENCODE:
             self.catalog["count"] = self.parent.shape()[0]
             self.catalog["percent"] = 100
             self.parent.__add_to_history__(
-                "[Label Encoding]: Label Encoding was applied to the vColumn"
+                "[Label Encoding]: Label Encoding was applied to the vDataColumn"
                 f" {self.alias} using the following mapping:{text_info}"
             )
         return self.parent
@@ -539,13 +539,13 @@ class vDCENCODE:
     @save_verticapy_logs
     def mean_encode(self, response: str):
         """
-    Encodes the vColumn using the average of the response partitioned by the 
-    different vColumn categories.
+    Encodes the vDataColumn using the average of the response partitioned by the 
+    different vDataColumn categories.
 
     Parameters
     ----------
     response: str
-        Response vColumn.
+        Response vDataColumn.
 
     Returns
     -------
@@ -554,10 +554,10 @@ class vDCENCODE:
 
     See Also
     --------
-    vDataFrame[].decode       : Encodes the vColumn using a user-defined encoding.
-    vDataFrame[].discretize   : Discretizes the vColumn.
-    vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
-    vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
+    vDataFrame[].decode       : Encodes the vDataColumn using a user-defined encoding.
+    vDataFrame[].discretize   : Discretizes the vDataColumn.
+    vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
+    vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
         """
         response = self.parent.format_colnames(response)
         assert self.parent[response].isnum(), TypeError(
@@ -573,7 +573,7 @@ class vDCENCODE:
         ]
         self.parent.__update_catalog__(erase=True, columns=[self.alias])
         self.parent.__add_to_history__(
-            f"[Mean Encode]: The vColumn {self.alias} was transformed "
+            f"[Mean Encode]: The vDataColumn {self.alias} was transformed "
             f"using a mean encoding with {response} as Response Column."
         )
         if OPTIONS["print_info"]:

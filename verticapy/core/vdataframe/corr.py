@@ -67,7 +67,7 @@ class vDFCORR:
         if method != "cramer":
             for column in columns:
                 assert self[column].isnum(), TypeError(
-                    f"vColumn {column} must be numerical to "
+                    f"vDataColumn {column} must be numerical to "
                     f"compute the {method_name} Matrix{method_type}."
                 )
         if len(columns) == 1:
@@ -572,7 +572,7 @@ class vDFCORR:
                 method_type = ""
             for column in cols:
                 assert self[column].isnum(), TypeError(
-                    f"vColumn '{column}' must be numerical to "
+                    f"vDataColumn '{column}' must be numerical to "
                     f"compute the {method_name} Vector{method_type}."
                 )
         if method in ("spearman", "spearmand", "pearson", "kendall", "cov") and (
@@ -755,7 +755,7 @@ class vDFCORR:
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     method: str, optional
         Method to use to compute the correlation.
@@ -774,7 +774,7 @@ class vDFCORR:
     round_nb: int, optional
         Rounds the coefficient using the input number of digits.
     focus: str, optional
-        Focus the computation on only one vColumn.
+        Focus the computation on only one vDataColumn.
     show: bool, optional
         If set to True, the Correlation Matrix will be drawn using Matplotlib.
     ax: Matplotlib axes object, optional
@@ -790,9 +790,9 @@ class vDFCORR:
 
     See Also
     --------
-    vDataFrame.acf  : Computes the correlations between a vColumn and its lags.
+    vDataFrame.acf  : Computes the correlations between a vDataColumn and its lags.
     vDataFrame.cov  : Computes the covariance matrix of the vDataFrame.
-    vDataFrame.pacf : Computes the partial autocorrelations of the input vColumn.
+    vDataFrame.pacf : Computes the partial autocorrelations of the input vDataColumn.
     vDataFrame.regr : Computes the regression matrix of the vDataFrame. 
         """
         method = str(method).lower()
@@ -832,14 +832,14 @@ class vDFCORR:
         ] = "pearson",
     ):
         """
-    Computes the Correlation Coefficient of the two input vColumns and its pvalue. 
+    Computes the Correlation Coefficient of the two input vDataColumns and its pvalue. 
 
     Parameters
     ----------
     column1: str
-        Input vColumn.
+        Input vDataColumn.
     column2: str
-        Input vColumn.
+        Input vDataColumn.
     method: str, optional
         Method to use to compute the correlation.
             pearson   : Pearson's correlation coefficient (linear).
@@ -1030,10 +1030,10 @@ class vDFCORR:
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     focus: str, optional
-        Focus the computation on only one vColumn.
+        Focus the computation on only one vDataColumn.
     show: bool, optional
         If set to True, the Covariance Matrix will be drawn using Matplotlib.
     ax: Matplotlib axes object, optional
@@ -1049,9 +1049,9 @@ class vDFCORR:
 
     See Also
     --------
-    vDataFrame.acf  : Computes the correlations between a vColumn and its lags.
+    vDataFrame.acf  : Computes the correlations between a vDataColumn and its lags.
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.pacf : Computes the partial autocorrelations of the input vColumn.
+    vDataFrame.pacf : Computes the partial autocorrelations of the input vDataColumn.
     vDataFrame.regr : Computes the regression matrix of the vDataFrame.
         """
         if isinstance(columns, str):
@@ -1093,17 +1093,17 @@ class vDFCORR:
         **style_kwds,
     ):
         """
-    Computes the correlations of the input vColumn and its lags. 
+    Computes the correlations of the input vDataColumn and its lags. 
 
     Parameters
     ----------
     column: str
-        Input vColumn to use to compute the Auto Correlation Plot.
+        Input vDataColumn to use to compute the Auto Correlation Plot.
     ts: str
-        TS (Time Series) vColumn to use to order the data. It can be of type date
-        or a numerical vColumn.
+        TS (Time Series) vDataColumn to use to order the data. It can be of type date
+        or a numerical vDataColumn.
     by: str / list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     p: int/list, optional
         Int equals to the maximum number of lag to consider during the computation
         or List of the different lags to include during the computation.
@@ -1160,7 +1160,7 @@ class vDFCORR:
     vDataFrame.corr        : Computes the Correlation Matrix of a vDataFrame.
     vDataFrame.cov         : Computes the covariance matrix of the vDataFrame.
     vDataFrame.pacf        : Computes the partial autocorrelations of the 
-                             input vColumn.
+                             input vDataColumn.
         """
         method = str(method).lower()
         if isinstance(by, str):
@@ -1244,17 +1244,17 @@ class vDFCORR:
         **style_kwds,
     ):
         """
-    Computes the partial autocorrelations of the input vColumn.
+    Computes the partial autocorrelations of the input vDataColumn.
 
     Parameters
     ----------
     column: str
-        Input vColumn to use to compute the partial autocorrelation plot.
+        Input vDataColumn to use to compute the partial autocorrelation plot.
     ts: str
-        TS (Time Series) vColumn to use to order the data. It can be of type date
-        or a numerical vColumn.
+        TS (Time Series) vDataColumn to use to order the data. It can be of type date
+        or a numerical vDataColumn.
     by: str / list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     p: int/list, optional
         Int equals to the maximum number of lag to consider during the computation
         or List of the different lags to include during the computation.
@@ -1284,7 +1284,7 @@ class vDFCORR:
 
     See Also
     --------
-    vDataFrame.acf    : Computes the correlations between a vColumn and its lags.
+    vDataFrame.acf    : Computes the correlations between a vDataColumn and its lags.
     vDataFrame.interpolate : Interpolates and computes a regular time interval vDataFrame.
     vDataFrame.corr   : Computes the correlation matrix of a vDataFrame.
     vDataFrame.cov    : Computes the covariance matrix of the vDataFrame.
@@ -1414,7 +1414,7 @@ class vDFCORR:
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     method: str, optional
         Method to use to compute the regression matrix.
@@ -1448,10 +1448,10 @@ class vDFCORR:
 
     See Also
     --------
-    vDataFrame.acf   : Computes the correlations between a vColumn and its lags.
+    vDataFrame.acf   : Computes the correlations between a vDataColumn and its lags.
     vDataFrame.cov   : Computes the covariance matrix of the vDataFrame.
     vDataFrame.corr  : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.pacf  : Computes the partial autocorrelations of the input vColumn.
+    vDataFrame.pacf  : Computes the partial autocorrelations of the input vDataColumn.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -1468,7 +1468,7 @@ class vDFCORR:
         columns = self.format_colnames(columns)
         for column in columns:
             assert self[column].isnum(), TypeError(
-                f"vColumn {column} must be numerical to compute the Regression Matrix."
+                f"vDataColumn {column} must be numerical to compute the Regression Matrix."
             )
         n = len(columns)
         all_list, nb_precomputed = [], 0
@@ -1590,9 +1590,9 @@ class vDFCORR:
     Parameters
     ----------
     y: str
-        Response vColumn.
+        Response vDataColumn.
     columns: str / list, optional
-        List of the vColumns names. If empty, all vColumns except the response 
+        List of the vDataColumns names. If empty, all vDataColumns except the response 
         will be used.
     nbins: int, optional
         Maximum number of bins used for the discretization (must be > 1).
@@ -1644,7 +1644,7 @@ class vDCCORR:
     Parameters
     ----------
     y: str
-        Response vColumn.
+        Response vDataColumn.
     nbins: int, optional
         Maximum number of nbins used for the discretization (must be > 1)
 
@@ -1660,12 +1660,12 @@ class vDCCORR:
         """
         y = self.parent.format_colnames(y)
         assert self.parent[y].nunique() == 2, TypeError(
-            f"vColumn {y} must be binary to use iv_woe."
+            f"vDataColumn {y} must be binary to use iv_woe."
         )
         response_cat = self.parent[y].distinct()
         response_cat.sort()
         assert response_cat == [0, 1], TypeError(
-            f"vColumn {y} must be binary to use iv_woe."
+            f"vDataColumn {y} must be binary to use iv_woe."
         )
         self.parent[y].distinct()
         trans = self.discretize(

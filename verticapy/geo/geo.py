@@ -112,9 +112,9 @@ Parameters
 vdf: vDataFrame
     input vDataFrame.
 x: str
-    vColumn used as the abscissa (longitude).
+    vDataColumn used as the abscissa (longitude).
 y: str
-    vColumn used as the ordinate (latitude).
+    vDataColumn used as the ordinate (latitude).
 x0: float, optional
     The initial abscissa.
 earth_radius: int / float, optional

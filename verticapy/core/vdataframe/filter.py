@@ -34,7 +34,7 @@ class vDFFILTER:
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to filter the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to filter the data. The vDataColumn type must be
         date like (date, datetime, timestamp...)
     time: str / time
         Input Time. For example, time = '12:00' will filter the data when time('ts') 
@@ -82,7 +82,7 @@ class vDFFILTER:
         The desired ratio between the majority class and minority classes.
         Only used when method is 'over' or 'under'.
     order_by: str / list, optional
-        vColumns used to sort the data.
+        vDataColumns used to sort the data.
 
     Returns
     -------
@@ -126,7 +126,7 @@ class vDFFILTER:
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to filter the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to filter the data. The vDataColumn type must be
         date like (date, datetime, timestamp...)
     start_time: str / time
         Input Start Time. For example, time = '12:00' will filter the data when 
@@ -155,15 +155,15 @@ class vDFFILTER:
     @save_verticapy_logs
     def drop(self, columns: Union[str, list] = []):
         """
-    Drops the input vColumns from the vDataFrame. Dropping vColumns means 
+    Drops the input vDataColumns from the vDataFrame. Dropping vDataColumns means 
     not selecting them in the final SQL code generation.
     Be Careful when using this method. It can make the vDataFrame structure 
-    heavier if some other vColumns are computed using the dropped vColumns.
+    heavier if some other vDataColumns are computed using the dropped vDataColumns.
 
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names.
+        List of the vDataColumns names.
 
     Returns
     -------
@@ -180,7 +180,7 @@ class vDFFILTER:
     @save_verticapy_logs
     def drop_duplicates(self, columns: Union[str, list] = []):
         """
-    Filters the duplicated using a partition by the input vColumns.
+    Filters the duplicated using a partition by the input vDataColumns.
 
     \u26A0 Warning : Dropping duplicates will make the vDataFrame structure 
                      heavier. It is recommended to always check the current structure 
@@ -191,7 +191,7 @@ class vDFFILTER:
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all vColumns will be selected.
+        List of the vDataColumns names. If empty, all vDataColumns will be selected.
 
     Returns
     -------
@@ -223,12 +223,12 @@ class vDFFILTER:
     @save_verticapy_logs
     def dropna(self, columns: Union[str, list] = []):
         """
-    Filters the vDataFrame where the input vColumns are missing.
+    Filters the vDataFrame where the input vDataColumns are missing.
 
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all vColumns will be selected.
+        List of the vDataColumns names. If empty, all vDataColumns will be selected.
 
     Returns
     -------
@@ -266,7 +266,7 @@ class vDFFILTER:
     ---------- 
     conditions: str / list, optional
         List of expressions. For example to keep only the records where the 
-        vColumn 'column' is greater than 5 and lesser than 10 you can write 
+        vDataColumn 'column' is greater than 5 and lesser than 10 you can write 
         ['"column" > 5', '"column" < 10'].
 
     Returns
@@ -357,7 +357,7 @@ class vDFFILTER:
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to filter the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to filter the data. The vDataColumn type must be
         date like (date, datetime, timestamp...)
     offset: str
         Interval offset. For example, to filter and keep only the first 6 months of
@@ -400,7 +400,7 @@ class vDFFILTER:
     ----------
     val: dict
         Dictionary of the different records. Each key of the dictionary must 
-        represent a vColumn. For example, to check if Badr Ouali and 
+        represent a vDataColumn. For example, to check if Badr Ouali and 
         Fouad Teban are in the vDataFrame. You can write the following dict:
         {"name": ["Teban", "Ouali"], "surname": ["Fouad", "Badr"]}
 
@@ -431,7 +431,7 @@ class vDFFILTER:
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to filter the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to filter the data. The vDataColumn type must be
         date like (date, datetime, timestamp...)
     offset: str
         Interval offset. For example, to filter and keep only the last 6 months of
@@ -491,7 +491,7 @@ class vDFFILTER:
             systematic : systematic sampling.
             stratified : stratified sampling.
     by: str / list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
 
     Returns
     -------
@@ -574,13 +574,13 @@ class vDFFILTER:
     conditions: str / list, optional
         Filters of the search. It can be a list of conditions or an expression.
     usecols: str / list, optional
-        vColumns to select from the final vDataFrame relation. If empty, all
-        vColumns will be selected.
+        vDataColumns to select from the final vDataFrame relation. If empty, all
+        vDataColumns will be selected.
     expr: str / list, optional
         List of customized expressions in pure SQL.
         For example: 'column1 * column2 AS my_name'.
     order_by: str / dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
 
@@ -592,7 +592,7 @@ class vDFFILTER:
     See Also
     --------
     vDataFrame.filter : Filters the vDataFrame using the input expressions.
-    vDataFrame.select : Returns a copy of the vDataFrame with only the selected vColumns.
+    vDataFrame.select : Returns a copy of the vDataFrame with only the selected vDataColumns.
         """
         if isinstance(order_by, str):
             order_by = [order_by]
@@ -619,11 +619,11 @@ class vDCFILTER:
     @save_verticapy_logs
     def drop(self, add_history: bool = True):
         """
-    Drops the vColumn from the vDataFrame. Dropping a vColumn means simply
+    Drops the vDataColumn from the vDataFrame. Dropping a vDataColumn means simply
     not selecting it in the final generated SQL code.
     
-    Note: Dropping a vColumn can make the vDataFrame "heavier" if it is used
-    to compute other vColumns.
+    Note: Dropping a vDataColumn can make the vDataFrame "heavier" if it is used
+    to compute other vDataColumns.
 
     Parameters
     ----------
@@ -637,7 +637,7 @@ class vDCFILTER:
 
     See Also
     --------
-    vDataFrame.drop: Drops the input vColumns from the vDataFrame.
+    vDataFrame.drop: Drops the input vDataColumns from the vDataFrame.
         """
         try:
             parent = self.parent
@@ -648,7 +648,7 @@ class vDCFILTER:
             _executeSQL(
                 query=f"""
                     SELECT 
-                        /*+LABEL('vColumn.drop')*/ * 
+                        /*+LABEL('vDataColumn.drop')*/ * 
                     FROM {self.parent.__genSQL__(force_columns=force_columns)} 
                     LIMIT 10""",
                 print_time_sql=False,
@@ -661,7 +661,7 @@ class vDCFILTER:
             self.parent._VERTICAPY_VARIABLES_["exclude_columns"] += [self.alias]
         if add_history:
             self.parent.__add_to_history__(
-                f"[Drop]: vColumn {self.alias} was deleted from the vDataFrame."
+                f"[Drop]: vDataColumn {self.alias} was deleted from the vDataFrame."
             )
         return parent
 
@@ -673,7 +673,7 @@ class vDCFILTER:
         alpha: Union[int, float] = 0.05,
     ):
         """
-    Drops outliers in the vColumn.
+    Drops outliers in the vDataColumn.
 
     Parameters
     ----------
@@ -694,8 +694,8 @@ class vDCFILTER:
 
     See Also
     --------
-    vDataFrame.fill_outliers : Fills the outliers in the vColumn.
-    vDataFrame.outliers      : Adds a new vColumn labeled with 0 and 1 
+    vDataFrame.fill_outliers : Fills the outliers in the vDataColumn.
+    vDataFrame.outliers      : Adds a new vDataColumn labeled with 0 and 1 
         (1 meaning global outlier).
         """
         if use_threshold:
@@ -717,7 +717,7 @@ class vDCFILTER:
     @save_verticapy_logs
     def dropna(self):
         """
-    Filters the vDataFrame where the vColumn is missing.
+    Filters the vDataFrame where the vDataColumn is missing.
 
     Returns
     -------
@@ -738,14 +738,14 @@ class vDCFILTER:
         *args,
     ):
         """
-    Looks if some specific records are in the vColumn and it returns the new 
+    Looks if some specific records are in the vDataColumn and it returns the new 
     vDataFrame of the search.
 
     Parameters
     ----------
     val: str / int / float / date / list
         List of the different records. For example, to check if Badr and Fouad  
-        are in the vColumn. You can write the following list: ["Fouad", "Badr"]
+        are in the vDataColumn. You can write the following list: ["Fouad", "Badr"]
 
     Returns
     -------

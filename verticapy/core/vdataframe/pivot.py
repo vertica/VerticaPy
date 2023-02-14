@@ -126,20 +126,20 @@ class vDFPIVOT:
         val_name: str = "value",
     ):
         """
-    Returns the Narrow Table of the vDataFrame using the input vColumns.
+    Returns the Narrow Table of the vDataFrame using the input vDataColumns.
 
     Parameters
     ----------
     index: str / list
         Index(es) used to identify the Row.
     columns: str / list, optional
-        List of the vColumns names. If empty, all vColumns except the index(es)
+        List of the vDataColumns names. If empty, all vDataColumns except the index(es)
         will be used.
     col_name: str, optional
-        Alias of the vColumn representing the different input vColumns names as 
+        Alias of the vDataColumn representing the different input vDataColumns names as 
         categories.
     val_name: str, optional
-        Alias of the vColumn representing the different input vColumns values.
+        Alias of the vDataColumn representing the different input vDataColumns values.
 
     Returns
     -------
@@ -205,12 +205,12 @@ class vDFPIVOT:
     Parameters
     ----------
     index: str
-        vColumn to use to group the elements.
+        vDataColumn to use to group the elements.
     columns: str
-        The vColumn used to compute the different categories, which then act 
+        The vDataColumn used to compute the different categories, which then act 
         as the columns in the pivot table.
     values: str
-        The vColumn whose values populate the new vDataFrame.
+        The vDataColumn whose values populate the new vDataFrame.
     aggr: str, optional
         Aggregation to use on 'values'. To use complex aggregations, 
         you must use braces: {}. For example, to aggregate using the 
