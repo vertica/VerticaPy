@@ -23,6 +23,7 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.str_sql import str_sql
 from verticapy.sql.dtypes import get_data_types
 from verticapy._utils._cast import to_category
+from verticapy.sql.read import vDataFrameSQL
 
 
 class vDFMATH:

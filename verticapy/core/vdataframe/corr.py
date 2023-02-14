@@ -26,6 +26,7 @@ import scipy.special as scipy_special
 
 # VerticaPy Modules
 from verticapy.core.tablesample import tablesample
+from verticapy.sql.read import to_tablesample
 import verticapy.plotting._matplotlib as plt
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import EmptyParameter
