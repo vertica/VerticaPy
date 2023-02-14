@@ -24,6 +24,7 @@ from verticapy._config.config import OPTIONS
 from verticapy.sql.read import readSQL, vDataFrameSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import quote_ident
+from verticapy._version import vertica_version
 
 
 # Jupyter - Optional

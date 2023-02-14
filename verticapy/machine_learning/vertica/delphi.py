@@ -25,7 +25,7 @@ from typing import Union, Literal
 
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe import vDataFrame
+from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample

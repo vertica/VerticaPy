@@ -186,7 +186,7 @@ vDataFrame
     The vDataFrame associated to the input relation.
     """
     # Initialization
-    from verticapy.core.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.vdataframe import vDataFrame
 
     if isinstance(vdf, vDataFrame):
         external = vdf._VERTICAPY_VARIABLES_["external"]

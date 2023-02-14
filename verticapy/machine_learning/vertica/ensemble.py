@@ -30,7 +30,7 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._version import vertica_version
 from verticapy._utils._gen import gen_name
 from verticapy._utils._sql import _executeSQL
-from verticapy.core.vdataframe import vDataFrame
+from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.learn.vmodel import Clustering, Tree, MulticlassClassifier, Regressor
 from verticapy.learn.tree import get_tree_list_of_arrays
 from verticapy.sql._utils._format import quote_ident

@@ -28,7 +28,7 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql import _executeSQL
-from verticapy.core.vdataframe import vDataFrame
+from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.learn.vmodel import Preprocessing, vModel
 from verticapy.sql._utils._format import quote_ident, schema_relation, clean_query
 from verticapy.sql.insert import insert_verticapy_schema

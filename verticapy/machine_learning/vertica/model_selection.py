@@ -28,7 +28,7 @@ from typing import Union, Literal
 # VerticaPy Modules
 from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe import vDataFrame
+from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
 from verticapy.core.tablesample import tablesample

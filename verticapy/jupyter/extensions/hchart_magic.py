@@ -25,7 +25,7 @@ import time, warnings
 # VerticaPy
 from verticapy.errors import ParameterError
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe import vDataFrame
+from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.core.tablesample import tablesample
 from verticapy.plotting._highcharts import hchartSQL
 from verticapy.sql._utils._format import replace_vars_in_query, clean_query

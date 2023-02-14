@@ -142,7 +142,7 @@ read_json : Ingests a JSON file into the Vertica database.
                     SKIP 1;""",
                 title="Inserting the pandas.DataFrame.",
             )
-            from verticapy.core.vdataframe import vDataFrame
+            from verticapy.core.vdataframe.vdataframe import vDataFrame
 
             vdf = vDataFrame(name, schema=schema)
         elif tmp_name:

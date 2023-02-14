@@ -209,7 +209,7 @@ See Also
 --------
 read_csv : Ingests a CSV file into the Vertica database.
 	"""
-    from verticapy.core.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.vdataframe import vDataFrame
     from verticapy.sql.drop import drop
 
     if use_complex_dt:

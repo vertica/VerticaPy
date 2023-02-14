@@ -27,7 +27,7 @@ from collections.abc import Iterable
 
 # VerticaPy Modules
 from verticapy._version import check_minimum_version
-from verticapy.core.vdataframe import vDataFrame
+from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.plotting._matplotlib.mlplot import (
     plot_importance,
     regression_tree_plot,

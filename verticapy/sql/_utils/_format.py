@@ -131,7 +131,7 @@ def quote_ident(column: str):
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):
-    from verticapy.core.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.vdataframe import vDataFrame
     from verticapy.core.tablesample import tablesample
     from verticapy.sql.parsers.pandas import pandas_to_vertica
 
@@ -177,7 +177,7 @@ def replace_vars_in_query(query: str, locals_dict: dict):
 
 
 def schema_relation(relation):
-    from verticapy.core.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.vdataframe import vDataFrame
 
     if isinstance(relation, vDataFrame):
         schema, relation = OPTIONS["temp_schema"], ""
