@@ -40,7 +40,7 @@ from verticapy.sql._utils._format import (
     quote_ident,
 )
 from verticapy.core._utils._map import verticapy_agg_name
-from verticapy.connect.connect import current_cursor
+from verticapy.connect import current_cursor
 from verticapy._config.config import OPTIONS
 from verticapy.sql.read import to_tablesample
 from verticapy._utils._cast import to_varchar

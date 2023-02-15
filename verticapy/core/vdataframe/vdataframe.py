@@ -51,7 +51,7 @@ from verticapy.sql._utils._format import (
     format_schema_table,
     clean_query,
 )
-from verticapy.connect.connect import (
+from verticapy.connect import (
     EXTERNAL_CONNECTION,
     SPECIAL_SYMBOLS,
 )

@@ -35,7 +35,7 @@ from IPython.display import HTML, display
 import warnings, re, time
 
 # VerticaPy Modules
-from verticapy.connect.connect import SPECIAL_SYMBOLS
+from verticapy.connect import SPECIAL_SYMBOLS
 from verticapy.errors import QueryError, ParameterError
 from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
 from verticapy.sql._utils._format import replace_vars_in_query, clean_query

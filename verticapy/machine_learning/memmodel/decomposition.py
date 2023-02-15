@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import numpy as np
 from typing import Union
+from numpy.linalg import svd
 
 # VerticaPy Modules
 from verticapy.errors import ParameterError

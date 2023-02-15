@@ -28,7 +28,7 @@ from verticapy.sql.read import to_tablesample
 from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ParameterError, ParsingError
 from verticapy.sql._utils._format import quote_ident
-from verticapy.connect.connect import current_cursor
+from verticapy.connect import current_cursor
 from verticapy._config.config import current_random
 
 # Geopandas - Optional

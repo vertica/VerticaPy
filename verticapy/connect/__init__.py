@@ -14,24 +14,28 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.connect.connect import (
-    CONNECTION,
+from verticapy.connect.external import (
     EXTERNAL_CONNECTION,
     SPECIAL_SYMBOLS,
+    set_external_connection,
+)
+from verticapy.connect.connect import (
+    VERTICAPY_AUTO_CONNECTION,
     SESSION_IDENTIFIER,
-    available_connections,
-    change_auto_connection,
+    SESSION_LABEL,
+    CONNECTION,
+    auto_connect,
     close_connection,
     connect,
     current_connection,
     current_cursor,
-    delete_connection,
-    get_connection_file,
-    new_connection,
-    read_auto_connect,
-    read_dsn,
     set_connection,
-    set_external_connection,
     vertica_connection,
     verticalab_connection,
 )
+from verticapy.connect.write import (
+    change_auto_connection,
+    delete_connection,
+    new_connection,
+)
+from verticapy.connect.read import available_connections, read_dsn
