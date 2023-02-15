@@ -15,3 +15,4 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy.machine_learning.model_management.read import *
+from verticapy.machine_learning.memmodel.memmodel import matrix_rotation
