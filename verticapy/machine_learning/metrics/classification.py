@@ -25,7 +25,7 @@ from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.learn.model_selection import prc_curve, roc_curve
 from verticapy.sql.read import to_tablesample
 from verticapy.core.tablesample import tablesample
-from verticapy.verticapy.machine_learning._utils import (
+from verticapy.machine_learning._utils import (
     _compute_tn_fn_fp_tp,
     _compute_metric_query,
 )

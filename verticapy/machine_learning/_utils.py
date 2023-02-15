@@ -50,7 +50,7 @@ Returns
 tuple
     tn, fn, fp, tp
     """
-    from verticapy.verticapy.machine_learning.metrics.classification import (
+    from verticapy.machine_learning.metrics.classification import (
         confusion_matrix,
     )
 
