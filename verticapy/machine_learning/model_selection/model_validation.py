@@ -30,6 +30,7 @@ from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import OPTIONS
 from verticapy.machine_learning._utils import compute_area
+from verticapy._utils._sql import _executeSQL
 
 # Other Python Modules
 import matplotlib.pyplot as plt
