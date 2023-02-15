@@ -50,9 +50,7 @@ Returns
 tuple
     tn, fn, fp, tp
     """
-    from verticapy.machine_learning.metrics.classification import (
-        confusion_matrix,
-    )
+    from verticapy.machine_learning.metrics.classification import confusion_matrix
 
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else f"Non-{pos_label}"
