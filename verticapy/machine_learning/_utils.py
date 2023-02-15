@@ -14,7 +14,24 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Union
+from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql import _executeSQL
+
+
+def compute_area(X: list, Y: list):
+    auc = 0
+    for i in range(len(Y) - 1):
+        if Y[i + 1] - Y[i] != 0.0:
+            a = (X[i + 1] - X[i]) / (Y[i + 1] - Y[i])
+            b = X[i + 1] - a * Y[i + 1]
+            auc = (
+                auc
+                + a * (Y[i + 1] * Y[i + 1] - Y[i] * Y[i]) / 2
+                + b * (Y[i + 1] - Y[i])
+            )
+    return min(-auc, 1.0)
 
 
 def reverse_score(metric: str):

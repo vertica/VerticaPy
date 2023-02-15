@@ -20,5 +20,5 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.machine_learning.model_selection.tools import *
+from verticapy.machine_learning.model_selection.statistical_tests import *
 from verticapy.sql.functions import *

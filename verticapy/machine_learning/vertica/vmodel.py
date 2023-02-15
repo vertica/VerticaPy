@@ -49,7 +49,7 @@ from verticapy.sql._utils._format import clean_query, quote_ident, schema_relati
 from verticapy.machine_learning._utils import get_match_index
 from verticapy._config.config import OPTIONS
 import verticapy.machine_learning.metrics.metrics as mt
-import verticapy.machine_learning.model_selection.model_selection as ms
+import verticapy.machine_learning.model_selection as ms
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___

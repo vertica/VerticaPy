@@ -14,25 +14,25 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.machine_learning.model_selection.hp_tuning import (
-    bayesian_search_cv,
-    enet_search_cv,
-    gen_params_grid,
-    grid_search_cv,
-    parameter_grid,
-    plot_acf_pacf,
-    randomized_search_cv,
+from verticapy.machine_learning.model_selection.statistical_tests.tsa import (
+    adfuller,
+    cochrane_orcutt,
+    durbin_watson,
+    het_arch,
+    ljungbox,
+    mkt,
+    seasonal_decompose,
 )
-from verticapy.machine_learning.model_selection.model_validation import (
-    cross_validate,
-    learning_curve,
-    lift_chart,
-    prc_curve,
-    roc_curve,
-    validation_curve,
+from verticapy.machine_learning.model_selection.statistical_tests.ols import (
+    endogtest,
+    het_breuschpagan,
+    het_goldfeldquandt,
+    het_white,
+    variance_inflation_factor,
 )
-from verticapy.machine_learning.model_selection.variables_selection import (
-    randomized_features_search_cv,
-    stepwise,
+from verticapy.machine_learning.model_selection.statistical_tests.norm import (
+    jarque_bera,
+    kurtosistest,
+    normaltest,
+    skewtest,
 )
-from verticapy.machine_learning.model_selection.kmeans import best_k, elbow
