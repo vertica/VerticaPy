@@ -24,7 +24,7 @@ from verticapy._config.config import ISNOTEBOOK
 from verticapy.plotting._colors import gen_colors
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import OPTIONS
-from verticapy.sql._utils._format import schema_relation #
+from verticapy.sql._utils._format import schema_relation
 
 # Other Python Modules
 import matplotlib.pyplot as plt
