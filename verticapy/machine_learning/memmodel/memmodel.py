@@ -21,6 +21,7 @@ permissions and limitations under the License.
 #
 # Standard Python Modules
 import numpy as np
+from numpy.linalg import svd
 from collections.abc import Iterable
 from typing import Union, Literal
 
@@ -37,6 +38,60 @@ try:
     GRAPHVIZ_ON = True
 except:
     GRAPHVIZ_ON = False
+
+# This piece of code was taken from
+# https://en.wikipedia.org/wiki/Talk:Varimax_rotation
+
+
+def matrix_rotation(
+    Phi: Union[list, np.ndarray],
+    gamma: Union[int, float] = 1.0,
+    q: int = 20,
+    tol: float = 1e-6,
+):
+    """
+Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
+PCA matrix.
+
+Parameters
+----------
+Phi: list / numpy.array
+    input matrix.
+gamma: float, optional
+    Oblimin rotation factor, determines the type of rotation.
+    It must be between 0.0 and 1.0.
+        gamma = 0.0 results in a Quartimax rotation.
+        gamma = 1.0 results in a Varimax rotation.
+q: int, optional
+    Maximum number of iterations.
+tol: float, optional
+    The algorithm stops when the Frobenius norm of gradient is less than tol.
+
+Returns
+-------
+model
+    The model.
+    """
+    Phi = np.array(Phi)
+    p, k = Phi.shape
+    R = np.eye(k)
+    d = 0
+    for i in range(q):
+        d_old = d
+        Lambda = np.dot(Phi, R)
+        u, s, vh = svd(
+            np.dot(
+                Phi.T,
+                np.asarray(Lambda) ** 3
+                - (gamma / p)
+                * np.dot(Lambda, np.diag(np.diag(np.dot(Lambda.T, Lambda)))),
+            )
+        )
+        R = np.dot(u, vh)
+        d = np.sum(s)
+        if d_old != 0 and d / d_old < 1 + tol:
+            break
+    return np.dot(Phi, R)
 
 
 def flat_dict(d: dict) -> str:
@@ -3088,8 +3143,6 @@ attributes: dict
     self
         memModel
         """
-        from verticapy.learn.tools import matrix_rotation
-
         if self.model_type_ == "PCA":
             principal_components = matrix_rotation(
                 self.get_attributes()["principal_components"], gamma, q, tol
