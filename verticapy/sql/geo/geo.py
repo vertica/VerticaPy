@@ -25,7 +25,7 @@ from typing import Union
 
 # VerticaPy Modules
 import verticapy.sql.functions.math as mt
-from verticapy.datasets import gen_meshgrid
+from verticapy.datasets.generators import gen_meshgrid
 from verticapy.vdataframe import vDataFrame
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.tablesample import tablesample

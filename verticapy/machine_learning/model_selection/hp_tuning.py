@@ -228,7 +228,7 @@ tablesample
             name=estimator.name, **RFmodel_params
         )
         hyper_param_estimator.fit(relation, all_params, "score")
-        from verticapy.datasets import gen_meshgrid, gen_dataset
+        from verticapy.datasets.generators import gen_meshgrid, gen_dataset
 
         if random_grid:
             vdf = gen_dataset(model_grid, nrows=nrows)
