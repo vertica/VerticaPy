@@ -1487,3 +1487,140 @@ tablesample
         "no_print",
         print_info,
     )
+
+
+@save_verticapy_logs
+def validation_curve(
+    estimator,
+    param_name: str,
+    param_range: list,
+    input_relation: Union[str, vDataFrame],
+    X: list,
+    y: str,
+    metric: str = "auto",
+    cv: int = 3,
+    pos_label: Union[int, float, str] = None,
+    cutoff: float = -1,
+    std_coeff: float = 1,
+    ax=None,
+    **style_kwds,
+):
+    """
+Draws the validation curve.
+
+Parameters
+----------
+estimator: object
+    Vertica estimator with a fit method.
+param_name: str
+    Parameter name.
+param_range: list
+    Parameter Range.
+input_relation: str/vDataFrame
+    Relation to use to train the model.
+X: list
+    List of the predictor columns.
+y: str
+    Response Column.
+metric: str, optional
+    Metric used to do the model evaluation.
+        auto: logloss for classification & rmse for regression.
+    For Classification:
+        accuracy    : Accuracy
+        auc         : Area Under the Curve (ROC)
+        bm          : Informedness = tpr + tnr - 1
+        csi         : Critical Success Index = tp / (tp + fn + fp)
+        f1          : F1 Score 
+        logloss     : Log Loss
+        mcc         : Matthews Correlation Coefficient 
+        mk          : Markedness = ppv + npv - 1
+        npv         : Negative Predictive Value = tn / (tn + fn)
+        prc_auc     : Area Under the Curve (PRC)
+        precision   : Precision = tp / (tp + fp)
+        recall      : Recall = tp / (tp + fn)
+        specificity : Specificity = tn / (tn + fp)
+    For Regression:
+        max    : Max error
+        mae    : Mean absolute error
+        median : Median absolute error
+        mse    : Mean squared error
+        msle   : Mean squared log error
+        r2     : R-squared coefficient
+        r2a    : R2 adjusted
+        rmse   : Root-mean-squared error
+        var    : Explained variance
+cv: int, optional
+    Number of folds.
+pos_label: int/float/str, optional
+    The main class to be considered as positive (classification only).
+cutoff: float, optional
+    The model cutoff (classification only).
+std_coeff: float, optional
+    Value of the standard deviation coefficient used to compute the area plot 
+    around each score.
+ax: Matplotlib axes object, optional
+    The axes to plot on.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
+        param_range = [param_range]
+    from verticapy.plotting._matplotlib import range_curve
+
+    gs_result = grid_search_cv(
+        estimator,
+        {param_name: param_range},
+        input_relation,
+        X,
+        y,
+        metric,
+        cv,
+        pos_label,
+        cutoff,
+        True,
+        False,
+        False,
+    )
+    gs_result_final = [
+        (
+            gs_result["parameters"][i][param_name],
+            gs_result["avg_score"][i],
+            gs_result["avg_train_score"][i],
+            gs_result["score_std"][i],
+            gs_result["score_train_std"][i],
+        )
+        for i in range(len(param_range))
+    ]
+    gs_result_final.sort(key=lambda tup: tup[0])
+    X = [elem[0] for elem in gs_result_final]
+    Y = [
+        [
+            [elem[2] - std_coeff * elem[4] for elem in gs_result_final],
+            [elem[2] for elem in gs_result_final],
+            [elem[2] + std_coeff * elem[4] for elem in gs_result_final],
+        ],
+        [
+            [elem[1] - std_coeff * elem[3] for elem in gs_result_final],
+            [elem[1] for elem in gs_result_final],
+            [elem[1] + std_coeff * elem[3] for elem in gs_result_final],
+        ],
+    ]
+    result = tablesample(
+        {
+            param_name: X,
+            "training_score_lower": Y[0][0],
+            "training_score": Y[0][1],
+            "training_score_upper": Y[0][2],
+            "test_score_lower": Y[1][0],
+            "test_score": Y[1][1],
+            "test_score_upper": Y[1][2],
+        }
+    )
+    range_curve(X, Y, param_name, metric, ax, ["train", "test"], **style_kwds)
+    return result
