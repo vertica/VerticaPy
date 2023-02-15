@@ -64,10 +64,7 @@ Returns
 list
 	all the available connections.
 	"""
-    path = get_connection_file()
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    confparser.read(path)
+    confparser = get_confparser()
     if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
         confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
     all_connections = confparser.sections()
@@ -86,16 +83,14 @@ Parameters
 name: str
 	Name of the new auto connection.
 	"""
-    path = get_connection_file()
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    confparser.read(path)
+    confparser = get_confparser()
 
     if confparser.has_section(name):
 
         confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
         confparser.add_section(VERTICAPY_AUTO_CONNECTION)
         confparser.set(VERTICAPY_AUTO_CONNECTION, "name", name)
+        path = get_connection_file()
         f = open(path, "w+")
         confparser.write(f)
         f.close()
@@ -214,10 +209,7 @@ Returns
 bool
     True if the connection was deleted, False otherwise.
     """
-    path = get_connection_file()
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    confparser.read(path)
+    confparser = get_confparser()
 
     if confparser.has_section(name):
 
@@ -226,6 +218,7 @@ bool
             name_auto = confparser.get(VERTICAPY_AUTO_CONNECTION, "name")
             if name_auto == name:
                 confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
+        path = get_connection_file()
         f = open(path, "w+")
         confparser.write(f)
         f.close()
@@ -235,6 +228,14 @@ bool
 
         warnings.warn(f"The connection {name} does not exist.", Warning)
         return False
+
+
+def get_confparser():
+    path = get_connection_file()
+    confparser = ConfigParser()
+    confparser.optionxform = str
+    confparser.read(path)
+    return confparser
 
 
 def get_connection_file():
@@ -304,9 +305,7 @@ env: bool, optional
     For example: {'user': 'ENV_USER', 'password': 'ENV_PASSWORD'}  
 	"""
     path = get_connection_file()
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    confparser.read(path)
+    confparser = get_confparser()
 
     if confparser.has_section(name):
 
@@ -338,9 +337,8 @@ def read_auto_connect():
 Automatically creates a connection using the auto-connection.
 	"""
     path = get_connection_file()
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    confparser.read(path)
+    confparser = get_confparser()
+
     if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
         section = confparser.get(VERTICAPY_AUTO_CONNECTION, "name")
     else:
