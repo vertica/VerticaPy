@@ -14,11 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.sql.geo.geo import (
-    create_index,
+from verticapy.sql.geo.functions import (
     coordinate_converter,
-    describe_index,
     intersect,
-    rename_index,
     split_polygon_n,
+)
+
+from verticapy.sql.geo.index import (
+    create_index,
+    describe_index,
+    rename_index,
 )
