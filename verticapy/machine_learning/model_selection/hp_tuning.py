@@ -34,6 +34,7 @@ from verticapy.learn.tools import does_model_exist
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.machine_learning._utils import reverse_score
 from verticapy._config.config import OPTIONS
+from verticapy.machine_learning.model_evaluation.model_validation import cross_validate
 
 # Other Python Modules
 import matplotlib.pyplot as plt
