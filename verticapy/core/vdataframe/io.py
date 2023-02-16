@@ -18,8 +18,6 @@ from typing import Union, Literal
 from collections.abc import Iterable
 import pickle, decimal, os, copy
 
-pickle.DEFAULT_PROTOCOL = 4
-
 import pandas as pd
 import numpy as np
 
@@ -29,16 +27,13 @@ from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ParameterError, ParsingError
 from verticapy.sql._utils._format import quote_ident
 from verticapy.connect import current_cursor
-from verticapy._config.config import current_random
+from verticapy._config.config import current_random, GEOPANDAS_ON
 
-# Geopandas - Optional
-try:
+if GEOPANDAS_ON:
     from geopandas import GeoDataFrame
     from shapely import wkt
 
-    GEOPANDAS_ON = True
-except:
-    GEOPANDAS_ON = False
+pickle.DEFAULT_PROTOCOL = 4
 
 
 class vDFIO:

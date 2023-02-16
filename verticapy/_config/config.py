@@ -14,13 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-# Standard Python Modules
 import warnings
 from typing import Union, Literal, overload
-
-# VerticaPy
 from verticapy.errors import ParameterError
+
+try:
+    from geopandas import GeoDataFrame
+    from shapely import wkt
+
+    GEOPANDAS_ON = True
+except:
+    GEOPANDAS_ON = False
 
 ISNOTEBOOK = False
 try:
@@ -31,6 +35,7 @@ try:
         ISNOTEBOOK = True  # Jupyter notebook or qtconsole
 except:
     pass
+
 
 COLORS_OPTIONS = {
     "rgb": ["red", "green", "blue", "orange", "yellow", "gray"],

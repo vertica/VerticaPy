@@ -183,6 +183,8 @@ Returns
 conn
     Database connection.
     """
+    from verticapy.connect.read import read_dsn
+
     return vertica_python.connect(**read_dsn(section, dsn))
 
 
