@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql.parsers.json import read_json
+from verticapy.sql.parsers import read_json
 
 
 @save_verticapy_logs

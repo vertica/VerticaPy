@@ -45,7 +45,7 @@ from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql import _executeSQL
 from verticapy.errors import FunctionError, ParameterError, ModelError, ConversionError
 from verticapy.learn.tools import does_model_exist
-from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation
+from verticapy.sql._utils import clean_query, quote_ident, schema_relation
 from verticapy.machine_learning._utils import get_match_index
 from verticapy._config.config import OPTIONS
 import verticapy.machine_learning.metrics as mt

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import format_magic
+from verticapy.sql._utils import format_magic
 
 PI = str_sql("PI()")
 E = str_sql("EXP(1)")

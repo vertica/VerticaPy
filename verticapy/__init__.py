@@ -91,15 +91,24 @@ from verticapy._version import vertica_version
 from verticapy._config.config import set_option
 from verticapy._utils._collect import save_to_query_profile
 
-from verticapy.sql.parsers.all import read_file
-from verticapy.sql.parsers.avro import read_avro
-from verticapy.sql.parsers.csv import read_csv
-from verticapy.sql.parsers.json import read_json
-from verticapy.sql.parsers.pandas import pandas_to_vertica
-from verticapy.sql.parsers.shp import read_shp
-from verticapy.sql.create import create_schema, create_table, create_verticapy_schema
-from verticapy.sql.drop import drop
-from verticapy.sql.dtypes import get_data_types
-from verticapy.sql.insert import insert_into
-from verticapy.sql.read import readSQL, to_tablesample, vDataFrameSQL
-from verticapy.sql.sys import current_session, username
+from verticapy.sql.parsers import (
+    read_file,
+    read_avro,
+    read_csv,
+    read_json,
+    read_pandas,
+    read_shp,
+)
+from verticapy.sql import (
+    create_schema,
+    create_table,
+    create_verticapy_schema,
+    current_session,
+    drop,
+    get_data_types,
+    insert_into,
+    readSQL,
+    to_tablesample,
+    username,
+    vDataFrameSQL,
+)

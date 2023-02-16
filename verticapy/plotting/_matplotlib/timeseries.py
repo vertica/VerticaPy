@@ -25,7 +25,7 @@ from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql import _executeSQL
 from verticapy.plotting._colors import get_color, gen_colors
-from verticapy.sql._utils._format import quote_ident
+from verticapy.sql._utils import quote_ident
 
 # Optional
 try:

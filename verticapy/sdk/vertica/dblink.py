@@ -14,10 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.errors import ConnectionError
 import re
-from verticapy.sql._utils._format import clean_query
+
 from verticapy.connect import EXTERNAL_CONNECTION
+from verticapy.errors import ConnectionError
+from verticapy.sql._utils import clean_query
 
 
 def get_dblink_fun(query: str, symbol: str = "$"):

@@ -34,7 +34,7 @@ from verticapy._config.config import set_option
 from verticapy.connect import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_cl
 from verticapy.learn.ensemble import XGBoostClassifier
-from verticapy.sql._utils._format import clean_query
+from verticapy.sql._utils import clean_query
 
 set_option("print_info", False)
 

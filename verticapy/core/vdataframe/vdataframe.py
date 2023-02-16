@@ -27,7 +27,7 @@ import pandas as pd
 import numpy as np
 
 # VerticaPy Modules
-from verticapy.sql.parsers.pandas import pandas_to_vertica
+from verticapy.sql.parsers import read_pandas
 from verticapy.core.tablesample import tablesample
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import (
@@ -45,7 +45,7 @@ from verticapy.sql.flex import (
 from verticapy._utils._cast import to_category
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import (
+from verticapy.sql._utils import (
     quote_ident,
     schema_relation,
     format_schema_table,

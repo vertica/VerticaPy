@@ -19,10 +19,10 @@ from typing import Union, Literal
 from collections.abc import Iterable
 from verticapy.errors import ParameterError
 from verticapy._config.config import OPTIONS
-from verticapy.sql._utils._format import clean_query
+from verticapy.sql._utils import clean_query
 from verticapy._utils._sql import _executeSQL
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql._utils._format import quote_ident
+from verticapy.sql._utils import quote_ident
 
 
 class vDFFILTER:

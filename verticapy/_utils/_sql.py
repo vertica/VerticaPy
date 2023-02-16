@@ -33,8 +33,8 @@ def _executeSQL(
     from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
     from verticapy._config.config import OPTIONS
     from verticapy.connect import SPECIAL_SYMBOLS, current_cursor
-    from verticapy.sql._utils._format import clean_query, erase_label
-    from verticapy.sql._utils._display import print_query, print_time
+    from verticapy.sql._utils import clean_query, erase_label
+    from verticapy.sql._utils import print_query, print_time
 
     # Cleaning the query
     if sql_push_ext and (symbol in SPECIAL_SYMBOLS):

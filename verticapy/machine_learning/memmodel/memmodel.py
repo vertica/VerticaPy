@@ -20,7 +20,7 @@ from typing import Union, Literal
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import ParameterError, FunctionError
-from verticapy.sql._utils._format import clean_query
+from verticapy.sql._utils import clean_query
 
 # other modules:
 try:

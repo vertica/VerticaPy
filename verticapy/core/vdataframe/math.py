@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Union, Literal
 import random
-from verticapy.sql._utils._format import quote_ident
+from verticapy.sql._utils import quote_ident
 from verticapy.core._utils._map import verticapy_agg_name
 from verticapy.errors import MissingColumn, ParameterError, QueryError
 from verticapy._utils._collect import save_verticapy_logs

@@ -24,7 +24,7 @@ from verticapy.errors import QueryError
 from verticapy.sql.flex import isvmap
 from verticapy._utils._cast import to_category
 from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import quote_ident
+from verticapy.sql._utils import quote_ident
 from verticapy.sql.dtypes import get_data_types
 
 

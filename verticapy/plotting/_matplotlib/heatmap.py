@@ -35,7 +35,7 @@ from verticapy._utils._sql import _executeSQL
 from verticapy.core.str_sql import str_sql
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, gen_cmap
-from verticapy.sql._utils._format import quote_ident
+from verticapy.sql._utils import quote_ident
 
 
 def cmatrix(

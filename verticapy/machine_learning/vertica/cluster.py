@@ -34,7 +34,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql import _executeSQL
 from verticapy.learn.vmodel import Clustering, Tree, vModel
 from verticapy.learn.tools import does_model_exist
-from verticapy.sql._utils._format import quote_ident, schema_relation
+from verticapy.sql._utils import quote_ident, schema_relation
 from verticapy.sql.insert import insert_verticapy_schema
 from verticapy._config.config import OPTIONS
 

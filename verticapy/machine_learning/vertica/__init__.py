@@ -14,3 +14,61 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy.machine_learning.vertica.cluster import (
+    BisectingKMeans,
+    DBSCAN,
+    KMeans,
+    KPrototypes,
+)
+from verticapy.machine_learning.vertica.decomposition import MCA, PCA, SVD
+from verticapy.machine_learning.vertica.delphi import (
+    AutoDataPrep,
+    AutoClustering,
+    AutoML,
+)
+from verticapy.machine_learning.vertica.ensemble import (
+    IsolationForest,
+    RandomForestClassifier,
+    RandomForestRegressor,
+    XGBoostClassifier,
+    XGBoostRegressor,
+)
+from verticapy.machine_learning.vertica.linear_model import (
+    ElasticNet,
+    Lasso,
+    LinearRegression,
+    LogisticRegression,
+    Ridge,
+)
+from verticapy.machine_learning.vertica.naive_bayes import (
+    NaiveBayes,
+    BernoulliNB,
+    CategoricalNB,
+    GaussianNB,
+    MultinomialNB,
+)
+from verticapy.machine_learning.vertica.neighbors import (
+    NearestCentroid,
+    KNeighborsClassifier,
+    KernelDensity,
+    KNeighborsRegressor,
+    LocalOutlierFactor,
+)
+from verticapy.machine_learning.vertica.pipeline import Pipeline
+from verticapy.machine_learning.vertica.preprocessing import (
+    Balance,
+    CountVectorizer,
+    Normalizer,
+    MinMaxScaler,
+    RobustScaler,
+    StandardScaler,
+    OneHotEncoder,
+)
+from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
+from verticapy.machine_learning.vertica.tree import (
+    DecisionTreeClassifier,
+    DecisionTreeRegressor,
+    DummyTreeClassifier,
+    DummyTreeRegressor,
+)
+from verticapy.machine_learning.vertica.tsa import SARIMAX, VAR

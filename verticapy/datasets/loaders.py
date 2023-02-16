@@ -30,7 +30,7 @@ from verticapy.connect import current_cursor
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
 from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import quote_ident
+from verticapy.sql._utils import quote_ident
 
 
 def load_dataset(

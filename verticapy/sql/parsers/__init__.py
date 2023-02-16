@@ -14,3 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy.sql.parsers.avro import read_avro
+from verticapy.sql.parsers.csv import read_csv
+from verticapy.sql.parsers.all import read_file
+from verticapy.sql.parsers.json import read_json
+from verticapy.sql.parsers.pandas import read_pandas
+from verticapy.sql.parsers.shp import read_shp

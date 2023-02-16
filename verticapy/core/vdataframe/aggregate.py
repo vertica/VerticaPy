@@ -35,7 +35,7 @@ from verticapy.errors import (
 )
 from verticapy._version import vertica_version
 from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import (
+from verticapy.sql._utils import (
     format_magic,
     quote_ident,
 )

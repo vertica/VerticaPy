@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import format_magic
+from verticapy.sql._utils import format_magic
 from verticapy._utils._cast import to_dtype_category
 
 

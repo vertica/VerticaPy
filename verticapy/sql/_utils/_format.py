@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import re
 import pandas as pd
+
 from verticapy._config.config import OPTIONS
 
 
@@ -62,6 +63,12 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
         return (val, to_dtype_category(x))
     else:
         return val
+
+
+def format_schema_table(schema: str, table_name: str):
+    if not (schema):
+        schema = "public"
+    return f"{quote_ident(schema)}.{quote_ident(table_name)}"
 
 
 def indentSQL(query: str):
@@ -133,7 +140,7 @@ def quote_ident(column: str):
 def replace_vars_in_query(query: str, locals_dict: dict):
     from verticapy.core.vdataframe.vdataframe import vDataFrame
     from verticapy.core.tablesample import tablesample
-    from verticapy.sql.parsers.pandas import pandas_to_vertica
+    from verticapy.sql.parsers import read_pandas
 
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
@@ -202,9 +209,3 @@ def schema_relation(relation):
         else:
             schema, relation = schema_input_relation[0], schema_input_relation[1]
     return (quote_ident(schema), quote_ident(relation))
-
-
-def format_schema_table(schema: str, table_name: str):
-    if not (schema):
-        schema = "public"
-    return f"{quote_ident(schema)}.{quote_ident(table_name)}"

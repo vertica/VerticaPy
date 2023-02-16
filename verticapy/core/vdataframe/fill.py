@@ -26,7 +26,7 @@ from verticapy.sql.flex import compute_vmap_keys, isvmap
 from verticapy._utils._cast import to_category, to_varchar
 from verticapy._version import vertica_version
 from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import quote_ident
+from verticapy.sql._utils import quote_ident
 from verticapy.core._utils._merge import gen_coalesce, group_similar_names
 from verticapy._config.config import OPTIONS
 from verticapy.sql.dtypes import get_data_types
