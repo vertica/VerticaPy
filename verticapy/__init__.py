@@ -97,3 +97,4 @@ from verticapy.sql.parsers.csv import read_csv
 from verticapy.sql.parsers.json import read_json
 from verticapy.sql.parsers.pandas import pandas_to_vertica
 from verticapy.sql.parsers.shp import read_shp
+from verticapy.sql.drop import drop
