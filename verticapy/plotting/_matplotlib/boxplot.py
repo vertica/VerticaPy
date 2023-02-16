@@ -14,15 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Modules
 import math, warnings
 
-# MATPLOTLIB
 import matplotlib.pyplot as plt
 
-# VerticaPy Modules
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._execute import _executeSQL
+
 from verticapy.plotting._colors import gen_colors
 
 

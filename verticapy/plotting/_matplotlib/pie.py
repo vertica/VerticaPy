@@ -14,17 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# MATPLOTLIB
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
-
-# NUMPY
 import numpy as np
 
-# VerticaPy Modules
-from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import ISNOTEBOOK
-from verticapy.plotting._matplotlib.base import compute_plot_variables
+
+from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 from verticapy.plotting._colors import gen_colors
 
 

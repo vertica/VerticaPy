@@ -15,9 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Union
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy._utils._sql._format import quote_ident
+
 from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import quote_ident
+
+from verticapy.core.vdataframe.base import vDataFrame
 
 
 def _compute_tn_fn_fp_tp(

@@ -14,10 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import numpy as np
 from typing import Union
+import numpy as np
 
-# VerticaPy Modules
 from verticapy._utils._sql._format import clean_query
 
 

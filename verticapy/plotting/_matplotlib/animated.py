@@ -14,33 +14,24 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard modules
 import warnings
-
-# MATPLOTLIB
-from matplotlib.lines import Line2D
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
-
-# NUMPY
 import numpy as np
 
-# VerticaPy Modules
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import ISNOTEBOOK
+import matplotlib.animation as animation
+from matplotlib.lines import Line2D
+import matplotlib.pyplot as plt
+
+from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
 from verticapy._utils._sql._execute import _executeSQL
+
 from verticapy.plotting._colors import gen_cmap, gen_colors
+from verticapy.plotting._matplotlib.base import updated_dict
 
 if ISNOTEBOOK:
     from IPython.display import HTML
 
-# Optional
-try:
+if PARSER_IMPORT:
     from dateutil.parser import parse
-
-    PARSER_IMPORT = True
-except:
-    PARSER_IMPORT = False
 
 
 def parse_datetime(D: list):

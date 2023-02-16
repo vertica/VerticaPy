@@ -14,28 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import math
 from typing import Literal
 
-# Other Python Modules
 from scipy.stats import chi2, f
 import numpy as np
 
-# VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample.base import tablesample
-from verticapy._utils._gen import gen_tmp_name
-from verticapy.core.vdataframe.base import vDataFrame
 from verticapy._config.config import OPTIONS
+from verticapy._utils._gen import gen_tmp_name
 
-# Statistical Tests & Tools
+from verticapy.core.tablesample.base import tablesample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.sql.read import vDataFrameSQL
+
 
 
 @save_verticapy_logs

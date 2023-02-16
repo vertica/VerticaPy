@@ -16,10 +16,8 @@ permissions and limitations under the License.
 """
 import datetime
 from typing import Union
-
-# Other Python Modules
-from scipy.stats import chi2, norm, f
 import numpy as np
+from scipy.stats import chi2, norm, f
 
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs

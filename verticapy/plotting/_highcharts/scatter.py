@@ -14,15 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
 from collections.abc import Iterable
 
-# High Chart
 from vertica_highcharts import Highchart
 
-# VerticaPy Modules
-from verticapy.connect import current_cursor
 from verticapy._utils._sql._execute import _executeSQL
+from verticapy.connect import current_cursor
+
 from verticapy.plotting._colors import gen_colors
 
 

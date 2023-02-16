@@ -16,16 +16,15 @@ permissions and limitations under the License.
 """
 import math
 from typing import Union
-
-# Other Modules
 import numpy as np
 from scipy.stats import f
 
-# VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.core.tablesample.base import tablesample
 from verticapy._utils._sql._execute import _executeSQL
+
+from verticapy.core.tablesample.base import tablesample
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.machine_learning._utils import _compute_metric_query
 
 

@@ -25,6 +25,20 @@ try:
     GEOPANDAS_ON = True
 except:
     GEOPANDAS_ON = False
+    
+try:
+    from dateutil.parser import parse
+
+    PARSER_IMPORT = True
+except:
+    PARSER_IMPORT = False
+
+try:
+    import graphviz
+
+    GRAPHVIZ_ON = True
+except:
+    GRAPHVIZ_ON = False
 
 ISNOTEBOOK = False
 try:

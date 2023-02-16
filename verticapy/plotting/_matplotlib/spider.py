@@ -14,16 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Modules
 import math
 
-# MATPLOTLIB
 import matplotlib.pyplot as plt
 
-# VerticaPy Modules
-from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.errors import ParameterError
+
 from verticapy.plotting._colors import gen_colors
+from verticapy.plotting._matplotlib.base import updated_dict
 
 
 def spider(

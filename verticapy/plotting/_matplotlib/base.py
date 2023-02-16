@@ -14,35 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Modules
 import math
 
-# VerticaPy Modules
 from verticapy._utils._cast import to_varchar
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy.errors import ParameterError
 from verticapy._utils._sql._format import quote_ident
-
-#
-##
-#   /$$$$$$$  /$$        /$$$$$$  /$$$$$$$$
-#  | $$__  $$| $$       /$$__  $$|__  $$__/
-#  | $$  \ $$| $$      | $$  \ $$   | $$
-#  | $$$$$$$/| $$      | $$  | $$   | $$
-#  | $$____/ | $$      | $$  | $$   | $$
-#  | $$      | $$      | $$  | $$   | $$
-#  | $$      | $$$$$$$$|  $$$$$$/   | $$
-#  |__/      |________/ \______/    |__/
-##
-#
-#
-# Functions used by vDataFrames to draw graphics which are not useful independently.
-#
+from verticapy.errors import ParameterError
 
 
 def compute_plot_variables(

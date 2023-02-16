@@ -14,19 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Modules
 import warnings
 
-# MATPLOTLIB
 import matplotlib.ticker as mticker
 import matplotlib.pyplot as plt
 
-# VerticaPy Modules
-from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.errors import ParameterError
-from verticapy.plotting._matplotlib.base import compute_plot_variables
+
 from verticapy.plotting._colors import gen_colors
+from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
 
 def bar(

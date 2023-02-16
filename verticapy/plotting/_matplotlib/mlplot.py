@@ -14,27 +14,20 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import math
 from typing import Union
+import numpy as np
 
-# Other Python Modules
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
-import numpy as np
 
-# VerticaPy Modules
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy.errors import ParameterError
-from verticapy.plotting._colors import gen_colors, get_color
 from verticapy._utils._sql._format import quote_ident
+from verticapy.errors import ParameterError
+
+from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.plotting._matplotlib.base import updated_dict
 
 

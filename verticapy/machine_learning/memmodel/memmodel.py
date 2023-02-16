@@ -17,18 +17,13 @@ permissions and limitations under the License.
 import numpy as np
 from typing import Union, Literal
 
-# VerticaPy Modules
+from verticapy._config.config import GRAPHVIZ_ON
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import ParameterError, FunctionError
 from verticapy._utils._sql._format import clean_query
 
-# other modules:
-try:
+if GRAPHVIZ_ON:
     import graphviz
-
-    GRAPHVIZ_ON = True
-except:
-    GRAPHVIZ_ON = False
 
 from verticapy.machine_learning.memmodel.cluster import (
     bisecting_kmeans_to_graphviz,
@@ -46,8 +41,6 @@ from verticapy.machine_learning.memmodel.decomposition import (
     transform_from_svd,
     sql_from_svd,
 )
-
-# from verticapy.machine_learning.memmodel.ensemble import
 from verticapy.machine_learning.memmodel.linear_model import (
     predict_from_coef,
     sql_from_coef,

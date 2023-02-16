@@ -17,9 +17,8 @@ permissions and limitations under the License.
 from typing import Union
 import numpy as np
 
-# VerticaPy Modules
-from verticapy.errors import ParameterError
 from verticapy._utils._sql._format import clean_query
+from verticapy.errors import ParameterError
 
 
 def flat_dict(d: dict) -> str:

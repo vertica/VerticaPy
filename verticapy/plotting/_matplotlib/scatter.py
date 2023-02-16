@@ -14,26 +14,20 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Modules
 import warnings, copy
-
-# MATPLOTLIB
-from matplotlib.lines import Line2D
-import matplotlib.pyplot as plt
-
-# NUMPY
 import numpy as np
 
-# VerticaPy Modules
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import current_random
-from verticapy._config.config import ISNOTEBOOK
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+
+
+from verticapy._config.config import current_random, ISNOTEBOOK
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.plotting._matplotlib.base import compute_plot_variables
-from verticapy.plotting._colors import gen_colors, gen_cmap, get_color
 
-# Global Variables
+from verticapy.plotting._colors import gen_cmap, gen_colors, get_color
+from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
+
 MARKERS = ["^", "o", "+", "*", "h", "x", "D", "1"]
 
 

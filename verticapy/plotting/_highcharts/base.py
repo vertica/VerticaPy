@@ -14,18 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 from collections.abc import Iterable
 
-# VerticaPy Modules
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.connect import current_cursor
 from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql._execute import _executeSQL
+
 from verticapy.plotting._colors import gen_colors
 
 from verticapy.plotting._highcharts.bar import bar
@@ -38,23 +32,6 @@ from verticapy.plotting._highcharts.negative_bar import negative_bar
 from verticapy.plotting._highcharts.pie import pie
 from verticapy.plotting._highcharts.scatter import scatter
 from verticapy.plotting._highcharts.spider import spider
-
-#
-##
-#
-#  ___  ___  ________  ___  ___  ________  ________  _________
-# |\  \|\  \|\   ____\|\  \|\  \|\   __  \|\   __  \|\___   ___\
-# \ \  \\\  \ \  \___|\ \  \\\  \ \  \|\  \ \  \|\  \|___ \  \_|
-#  \ \   __  \ \  \    \ \   __  \ \   __  \ \   _  _\   \ \  \
-#   \ \  \ \  \ \  \____\ \  \ \  \ \  \ \  \ \  \\  \|   \ \  \
-#    \ \__\ \__\ \_______\ \__\ \__\ \__\ \__\ \__\\ _\    \ \__\
-#     \|__|\|__|\|_______|\|__|\|__|\|__|\|__|\|__|\|__|    \|__|
-#
-##
-#
-# Functions used to simplify the code.
-#
-
 
 def sort_classes(categories):
     try:
@@ -81,12 +58,6 @@ def data_to_columns(data: list, n: int):
             except:
                 columns[i] = columns[i] + [elem[i]]
     return columns
-
-
-#
-# Functions used by vDataFrames to draw graphics using High Chart API.
-#
-
 
 def hchart_from_vdf(
     vdf,

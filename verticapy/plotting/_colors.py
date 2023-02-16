@@ -14,16 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Modules
 import copy
 from random import shuffle
 
-# MATPLOTLIB
 import matplotlib.colors as plt_colors
 from matplotlib.colors import LinearSegmentedColormap
 
-# VerticaPy Modules
-from verticapy._config.config import OPTIONS, COLORS_OPTIONS
+from verticapy._config.config import COLORS_OPTIONS, OPTIONS
 
 
 def get_color(d: dict, idx: int = 0):
