@@ -16,16 +16,19 @@ permissions and limitations under the License.
 """
 import time
 from typing import Union
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.str_sql import str_sql
+
 from verticapy._config.config import OPTIONS
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql import _executeSQL
+from verticapy._utils._cast import to_category
 from verticapy.sql._utils._format import quote_ident
 from verticapy.sql._utils._display import print_query, print_time
+
 from verticapy.sql.dtypes import vertica_python_dtype
 from verticapy.sql.flex import isvmap
 from verticapy.sql.dtypes import get_data_types
-from verticapy._utils._cast import to_category
-from verticapy._utils._sql import _executeSQL
+
+from verticapy.core.str_sql import str_sql
 
 
 @save_verticapy_logs
