@@ -21,11 +21,11 @@ permissions and limitations under the License.
 #
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.sql.read import to_tablesample
 from verticapy._version import vertica_version
-from verticapy.core.tablesample import tablesample
-from verticapy.sql._utils._format import quote_ident, schema_relation
+from verticapy.core.tablesample.base import tablesample
+from verticapy._utils._sql._format import quote_ident, schema_relation
 
 
 def does_model_exist(

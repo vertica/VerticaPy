@@ -19,9 +19,9 @@ import warnings
 # VerticaPy Modules
 from verticapy.vdataframe import vDataFrame
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 
 
 @save_verticapy_logs

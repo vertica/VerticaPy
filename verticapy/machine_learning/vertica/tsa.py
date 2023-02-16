@@ -32,14 +32,14 @@ from verticapy.learn.linear_model import LinearRegression
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import does_model_exist
-from verticapy.sql._utils._format import quote_ident, schema_relation
+from verticapy._utils._sql._format import quote_ident, schema_relation
 from verticapy.sql.insert import insert_verticapy_schema
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.sql.drop import drop
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._config.config import OPTIONS
 from verticapy.plotting._matplotlib.mlplot import plot_importance

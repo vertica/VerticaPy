@@ -26,16 +26,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # VerticaPy Modules
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._utils._cast import to_varchar
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.sql.read import to_tablesample
-from verticapy._utils._sql import _executeSQL
-from verticapy.core.str_sql import str_sql
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy.core.str_sql.base import str_sql
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, gen_cmap
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._format import quote_ident
 
 
 def cmatrix(

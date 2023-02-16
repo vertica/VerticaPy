@@ -21,8 +21,8 @@ from typing import Union, Literal
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import ParameterError
 from verticapy._version import vertica_version
-from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import quote_ident
+from verticapy.core.str_sql.base import str_sql
+from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._gen import gen_tmp_name
 
 

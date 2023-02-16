@@ -16,12 +16,12 @@ permissions and limitations under the License.
 """
 from typing import Literal
 
-from verticapy.sql._utils._format import (
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import (
     quote_ident,
     schema_relation,
     format_schema_table,
 )
-from verticapy._utils._sql import _executeSQL
 
 
 def drop(

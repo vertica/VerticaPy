@@ -23,9 +23,9 @@ import matplotlib.pyplot as plt
 # VerticaPy Modules
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.plotting._colors import get_color, gen_colors
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._format import quote_ident
 
 # Optional
 try:

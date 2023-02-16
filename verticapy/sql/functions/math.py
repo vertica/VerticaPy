@@ -14,8 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import format_magic
+from verticapy.core.str_sql.base import str_sql
+from verticapy._utils._sql._format import format_magic
 
 PI = str_sql("PI()")
 E = str_sql("EXP(1)")

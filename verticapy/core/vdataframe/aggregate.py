@@ -27,15 +27,15 @@ from typing import Union, Literal
 from tqdm.auto import tqdm
 
 # VerticaPy Modules
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import (
     EmptyParameter,
     FunctionError,
 )
 from verticapy._version import vertica_version
-from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import (
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import (
     format_magic,
     quote_ident,
 )

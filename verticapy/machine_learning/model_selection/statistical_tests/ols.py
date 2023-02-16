@@ -30,7 +30,7 @@ import numpy as np
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy._utils._gen import gen_tmp_name
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy._config.config import OPTIONS

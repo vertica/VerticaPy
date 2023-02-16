@@ -27,7 +27,7 @@ from verticapy.machine_learning.model_selection.model_validation import (
     roc_curve,
 )
 from verticapy.sql.read import to_tablesample
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy.machine_learning._utils import (
     _compute_tn_fn_fp_tp,
     _compute_metric_query,

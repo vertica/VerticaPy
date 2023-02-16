@@ -20,8 +20,8 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import format_magic, clean_query
+from verticapy.core.str_sql.base import str_sql
+from verticapy._utils._sql._format import format_magic, clean_query
 
 
 def date(expr):

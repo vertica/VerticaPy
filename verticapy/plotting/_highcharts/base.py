@@ -25,7 +25,7 @@ from collections.abc import Iterable
 # VerticaPy Modules
 from verticapy.connect import current_cursor
 from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.plotting._colors import gen_colors
 
 from verticapy.plotting._highcharts.bar import bar

@@ -28,7 +28,7 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.sql.parsers.pandas import read_pandas
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import (
     ConnectionError,
@@ -44,8 +44,8 @@ from verticapy.sql.flex import (
 )
 from verticapy._utils._cast import to_category
 from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import (
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import (
     quote_ident,
     schema_relation,
     format_schema_table,
@@ -57,7 +57,7 @@ from verticapy.connect import (
 )
 from verticapy._config.config import OPTIONS
 
-from verticapy.core.str_sql import str_sql
+from verticapy.core.str_sql.base import str_sql
 from verticapy.core.vdataframe.aggregate import vDFAGG, vDCAGG
 from verticapy.core.vdataframe.corr import vDFCORR, vDCCORR
 from verticapy.core.vdataframe.io import vDFIO

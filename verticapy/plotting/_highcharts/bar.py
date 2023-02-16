@@ -19,7 +19,7 @@ from vertica_highcharts import Highchart
 
 # VerticaPy Modules
 from verticapy.connect import current_cursor
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.plotting._colors import gen_colors
 
 

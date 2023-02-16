@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import re
 import pandas as pd
 from verticapy._config.config import OPTIONS
+from verticapy._utils._cast import to_dtype_category
 
 
 def clean_query(query: str):
@@ -41,8 +42,7 @@ def erase_label(query: str):
 
 
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
-    from verticapy.core.str_sql import str_sql
-    from verticapy._utils._cast import to_dtype_category
+    from verticapy.core.str_sql.base import str_sql
     from verticapy.core.vdataframe.base import vDataColumn
 
     if isinstance(x, vDataColumn):
@@ -132,7 +132,7 @@ def quote_ident(column: str):
 
 def replace_vars_in_query(query: str, locals_dict: dict):
     from verticapy.core.vdataframe.base import vDataFrame
-    from verticapy.core.tablesample import tablesample
+    from verticapy.core.tablesample.base import tablesample
     from verticapy.sql.parsers.pandas import read_pandas
 
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query

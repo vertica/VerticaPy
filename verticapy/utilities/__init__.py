@@ -39,4 +39,4 @@ from verticapy.sql.flex import (
     isvmap,
 )
 
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample

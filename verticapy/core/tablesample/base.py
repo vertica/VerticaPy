@@ -23,7 +23,7 @@ from verticapy.core._utils._display import print_table
 from verticapy.jupyter._javascript import datatables_repr
 from verticapy.errors import ParameterError, MissingColumn
 from verticapy._version import vertica_version
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._format import quote_ident
 from verticapy._config.config import OPTIONS
 
 

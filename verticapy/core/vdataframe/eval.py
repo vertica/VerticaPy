@@ -23,8 +23,8 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import QueryError
 from verticapy.sql.flex import isvmap
 from verticapy._utils._cast import to_category
-from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import quote_ident
+from verticapy.core.str_sql.base import str_sql
+from verticapy._utils._sql._format import quote_ident
 from verticapy.sql.dtypes import get_data_types
 
 

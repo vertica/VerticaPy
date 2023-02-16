@@ -19,7 +19,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_into
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._format import quote_ident
 
 
 def load_dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):

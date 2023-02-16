@@ -25,17 +25,17 @@ import verticapy.learn.metrics as mt
 from verticapy.sql.drop import drop
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
 from verticapy.sql.insert import insert_verticapy_schema
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.learn.model_selection import roc_curve, prc_curve, lift_chart
 from verticapy.errors import ParameterError
 from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree
 from verticapy.learn.tools import does_model_exist
-from verticapy.sql._utils._format import quote_ident, schema_relation
-from verticapy.sql._utils._format import clean_query
+from verticapy._utils._sql._format import quote_ident, schema_relation
+from verticapy._utils._sql._format import clean_query
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import OPTIONS
 
@@ -1280,7 +1280,7 @@ p: int, optional
     str/list
         the SQL code needed to deploy the model.
         """
-        from verticapy.sql._utils._format import clean_query
+        from verticapy._utils._sql._format import clean_query
 
         if isinstance(X, str):
             X = [X]

@@ -25,7 +25,7 @@ import scipy.stats as scipy_st
 import scipy.special as scipy_special
 
 # VerticaPy Modules
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy.sql.read import to_tablesample
 import verticapy.plotting._matplotlib as plt
 from verticapy._utils._collect import save_verticapy_logs
@@ -33,9 +33,9 @@ from verticapy.errors import EmptyParameter
 from verticapy.sql.drop import drop
 from verticapy._version import vertica_version
 from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.plotting._colors import gen_cmap
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._format import quote_ident
 from verticapy._config.config import OPTIONS
 
 

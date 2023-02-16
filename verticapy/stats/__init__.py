@@ -133,13 +133,13 @@ from verticapy.sql.functions.regexp import (
     regexp_substr,
 )
 from verticapy.sql.functions.string import (
-    length,
-    lower,
-    substr,
-    upper,
     edit_distance,
-    soundex,
-    soundex_matches,
     jaro_distance,
     jaro_winkler_distance,
+    length,
+    lower,
+    upper,
+    soundex,
+    soundex_matches,
+    substr,
 )

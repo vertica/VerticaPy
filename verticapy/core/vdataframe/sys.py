@@ -19,13 +19,13 @@ import time, re, warnings, copy
 from typing import Union
 
 # VerticaPy Modules
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.sql.flex import isvmap
 from verticapy._config.config import current_random
 from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import quote_ident
 from verticapy.core._utils._map import verticapy_agg_name
 from verticapy._config.config import OPTIONS
 from verticapy._utils._cast import to_varchar
@@ -349,7 +349,7 @@ class vDFSYS:
     str
         The formatted current vDataFrame relation.
         """
-        from verticapy.sql._utils._format import indentSQL
+        from verticapy._utils._sql._format import indentSQL
 
         if reindent:
             return indentSQL(self.__genSQL__())

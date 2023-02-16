@@ -21,7 +21,7 @@ from typing import Union, Literal
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import OPTIONS
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 
 
 class vDFNORM:

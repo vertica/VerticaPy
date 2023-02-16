@@ -25,7 +25,7 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy.plotting._matplotlib.mlplot import plot_var
 from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.learn.vmodel import Decomposition
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 
 # Standard Module
 from typing import Literal

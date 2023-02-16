@@ -31,10 +31,10 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, get_color
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._format import quote_ident
 from verticapy.plotting._matplotlib.base import updated_dict
 
 

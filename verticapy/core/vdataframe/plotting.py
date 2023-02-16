@@ -22,7 +22,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._collect import save_verticapy_logs
 from collections.abc import Iterable
 from verticapy._config.config import OPTIONS
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 
 
 class vDFPLOT:

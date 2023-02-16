@@ -23,7 +23,7 @@ permissions and limitations under the License.
 from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.learn.vmodel import MulticlassClassifier, Regressor, Tree
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._format import quote_ident
 
 # Standard Python Modules
 from typing import Union, Literal

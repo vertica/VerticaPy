@@ -24,9 +24,9 @@ import math
 
 # VerticaPy Modules
 from verticapy._utils._cast import to_varchar
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._format import quote_ident
 
 #
 ##

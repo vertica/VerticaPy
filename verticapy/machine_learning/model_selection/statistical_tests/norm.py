@@ -22,7 +22,7 @@ from scipy.stats import chi2, norm
 
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
 
 

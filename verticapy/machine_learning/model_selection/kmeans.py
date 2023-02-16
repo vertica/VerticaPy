@@ -19,12 +19,12 @@ from typing import Union, Literal
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.plotting._colors import gen_colors
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import OPTIONS
-from verticapy.sql._utils._format import schema_relation, quote_ident
+from verticapy._utils._sql._format import schema_relation, quote_ident
 from verticapy._utils._gen import gen_tmp_name
 
 # Other Python Modules

@@ -18,7 +18,7 @@ import os, warnings
 from typing import Union
 
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.sql.sys import current_session, username
 from verticapy.sdk.vertica.udf.gen import generate_lib_udf
 

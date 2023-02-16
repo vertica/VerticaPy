@@ -18,7 +18,7 @@ import numpy as np
 from typing import Union
 
 # VerticaPy Modules
-from verticapy.sql._utils._format import clean_query
+from verticapy._utils._sql._format import clean_query
 
 
 def predict_from_nb(

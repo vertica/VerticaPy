@@ -52,7 +52,7 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
-    from verticapy._utils._sql import _executeSQL
+    from verticapy._utils._sql._execute import _executeSQL
     from verticapy.connect import SESSION_IDENTIFIER
 
     if not (OPTIONS["save_query_profile"]) or (

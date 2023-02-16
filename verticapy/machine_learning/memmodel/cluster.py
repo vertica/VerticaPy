@@ -19,7 +19,7 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy.errors import ParameterError
-from verticapy.sql._utils._format import clean_query
+from verticapy._utils._sql._format import clean_query
 
 
 def flat_dict(d: dict) -> str:

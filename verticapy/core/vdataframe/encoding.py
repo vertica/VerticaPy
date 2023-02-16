@@ -24,7 +24,7 @@ from verticapy.errors import ParameterError
 from verticapy._utils._cast import to_varchar
 from verticapy._config.config import OPTIONS
 from verticapy.sql.drop import drop
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._gen import gen_tmp_name
 
 

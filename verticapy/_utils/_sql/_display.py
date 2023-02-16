@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import shutil
-from verticapy.sql._utils._format import indentSQL
+from verticapy._utils._sql._format import indentSQL
 from verticapy._config.config import ISNOTEBOOK
 
 

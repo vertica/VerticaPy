@@ -18,17 +18,16 @@ import time
 from typing import Union
 
 from verticapy._config.config import OPTIONS
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql import _executeSQL
 from verticapy._utils._cast import to_category
-from verticapy.sql._utils._format import quote_ident
-from verticapy.sql._utils._display import print_query, print_time
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._display import print_query, print_time
 
-from verticapy.sql.dtypes import vertica_python_dtype
+from verticapy.sql.dtypes import vertica_python_dtype, get_data_types
 from verticapy.sql.flex import isvmap
-from verticapy.sql.dtypes import get_data_types
 
-from verticapy.core.str_sql import str_sql
+from verticapy.core.str_sql.base import str_sql
 
 
 @save_verticapy_logs
@@ -121,7 +120,7 @@ def to_tablesample(
     --------
     tablesample : Object in memory created for rendering purposes.
     """
-    from verticapy.core.tablesample import tablesample
+    from verticapy.core.tablesample.base import tablesample
 
     if OPTIONS["sql_on"]:
         print_query(query, title)

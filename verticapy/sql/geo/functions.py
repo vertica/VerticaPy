@@ -22,7 +22,7 @@ from verticapy.datasets.generators import gen_meshgrid
 from verticapy.vdataframe import vDataFrame
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 
 
 @save_verticapy_logs

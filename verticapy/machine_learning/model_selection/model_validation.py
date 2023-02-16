@@ -23,14 +23,14 @@ from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample import tablesample
+from verticapy.core.tablesample.base import tablesample
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import OPTIONS
 from verticapy.machine_learning._utils import compute_area
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._execute import _executeSQL
 
 # Other Python Modules
 import matplotlib.pyplot as plt

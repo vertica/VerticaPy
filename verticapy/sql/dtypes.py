@@ -14,13 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
-import vertica_python
+import warnings, vertica_python
 
-from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import quote_ident, format_schema_table
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import quote_ident, format_schema_table
 from verticapy.errors import ParameterError
+
 from verticapy.sql.drop import drop
 
 

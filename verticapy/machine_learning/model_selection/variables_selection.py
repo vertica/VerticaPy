@@ -28,8 +28,8 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample import tablesample
-from verticapy._utils._sql import _executeSQL
+from verticapy.core.tablesample.base import tablesample
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.learn.tools import does_model_exist
 from verticapy.machine_learning._utils import reverse_score

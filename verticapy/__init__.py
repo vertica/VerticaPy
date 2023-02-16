@@ -84,8 +84,8 @@ from verticapy.connect.write import (
 from verticapy.connect.read import available_connections
 
 from verticapy.core.vdataframe import vDataFrame
-from verticapy.core.tablesample import tablesample
-from verticapy.core.str_sql import str_sql
+from verticapy.core.tablesample.base import tablesample
+from verticapy.core.str_sql.base import str_sql
 
 from verticapy._version import vertica_version
 from verticapy._config.config import set_option

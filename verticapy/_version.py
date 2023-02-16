@@ -107,7 +107,7 @@ list
     List containing the version information.
     [MAJOR, MINOR, PATCH, POST]
     """
-    from verticapy._utils._sql import _executeSQL
+    from verticapy._utils._sql._execute import _executeSQL
 
     global VERTICA_VERSION
 

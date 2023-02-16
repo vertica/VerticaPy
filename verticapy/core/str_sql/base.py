@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.sql._utils._format import format_magic
+from verticapy._utils._sql._format import format_magic
 from verticapy.errors import ParameterError
 from typing import Iterable
 

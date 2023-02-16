@@ -225,7 +225,7 @@ def set_option(
     value: object, optional
         New value of option.
     """
-    from verticapy._utils._sql import _executeSQL
+    from verticapy._utils._sql._execute import _executeSQL
 
     wrong_value = False
     if option == "colors":
