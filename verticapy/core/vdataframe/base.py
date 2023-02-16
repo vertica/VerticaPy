@@ -27,7 +27,7 @@ import pandas as pd
 import numpy as np
 
 # VerticaPy Modules
-from verticapy.sql.parsers.pandas import pandas_to_vertica
+from verticapy.sql.parsers.pandas import read_pandas
 from verticapy.core.tablesample import tablesample
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import (
@@ -319,9 +319,9 @@ vDataColumns : vDataColumn
         elif isinstance(input_relation, pd.DataFrame):
 
             if usecols:
-                df = pandas_to_vertica(input_relation[usecols])
+                df = read_pandas(input_relation[usecols])
             else:
-                df = pandas_to_vertica(input_relation)
+                df = read_pandas(input_relation)
             schema = df._VERTICAPY_VARIABLES_["schema"]
             input_relation = df._VERTICAPY_VARIABLES_["input_relation"]
             self.__init__(input_relation=input_relation, schema=schema)

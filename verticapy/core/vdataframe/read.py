@@ -40,7 +40,7 @@ class vDFREAD:
         return (col for col in columns)
 
     def __getitem__(self, index):
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
+        from verticapy.core.vdataframe.base import vDataColumn
 
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(

@@ -1290,7 +1290,7 @@ class vDFCORR:
     vDataFrame.cov    : Computes the covariance matrix of the vDataFrame.
         """
         from verticapy.machine_learning.vertica.linear_model import LinearRegression
-        from verticapy.core.vdataframe.vdataframe import vDataFrame
+        from verticapy.core.vdataframe.base import vDataFrame
 
         if isinstance(by, str):
             by = [by]

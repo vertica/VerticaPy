@@ -43,7 +43,7 @@ def erase_label(query: str):
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
     from verticapy.core.str_sql import str_sql
     from verticapy._utils._cast import to_dtype_category
-    from verticapy.core.vdataframe.vdataframe import vDataColumn
+    from verticapy.core.vdataframe.base import vDataColumn
 
     if isinstance(x, vDataColumn):
         val = x.alias
@@ -131,9 +131,9 @@ def quote_ident(column: str):
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame
     from verticapy.core.tablesample import tablesample
-    from verticapy.sql.parsers.pandas import pandas_to_vertica
+    from verticapy.sql.parsers.pandas import read_pandas
 
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
@@ -169,7 +169,7 @@ def replace_vars_in_query(query: str, locals_dict: dict):
             elif isinstance(val, tablesample):
                 val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
             elif isinstance(val, pd.DataFrame):
-                val = pandas_to_vertica(val).__genSQL__()
+                val = read_pandas(val).__genSQL__()
             elif isinstance(val, list):
                 val = ", ".join(["NULL" if elem is None else str(elem) for elem in val])
             query_tmp = query_tmp.replace(v, str(val))
@@ -177,7 +177,7 @@ def replace_vars_in_query(query: str, locals_dict: dict):
 
 
 def schema_relation(relation):
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame
 
     if isinstance(relation, vDataFrame):
         schema, relation = OPTIONS["temp_schema"], ""

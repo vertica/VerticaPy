@@ -30,7 +30,7 @@ from verticapy.sql.dtypes import get_data_types
 
 class vDFEVAL:
     def __setattr__(self, attr, val):
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
+        from verticapy.core.vdataframe.base import vDataColumn
 
         if isinstance(val, (str, str_sql, int, float)) and not isinstance(
             val, vDataColumn
@@ -75,7 +75,7 @@ class vDFEVAL:
     vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
         analytical function on a specific vDataColumn.
         """
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
+        from verticapy.core.vdataframe.base import vDataColumn
 
         if isinstance(expr, str_sql):
             expr = str(expr)

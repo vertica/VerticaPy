@@ -18,7 +18,7 @@ from typing import Union, Literal
 
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.core.tablesample import tablesample
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.plotting._colors import gen_colors

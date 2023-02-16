@@ -22,7 +22,7 @@ from verticapy.sql.parsers.all import read_file
 from verticapy.sql.parsers.avro import read_avro
 from verticapy.sql.parsers.csv import read_csv, pcsv
 from verticapy.sql.parsers.json import read_json, pjson
-from verticapy.sql.parsers.pandas import pandas_to_vertica
+from verticapy.sql.parsers.pandas import read_pandas as pandas_to_vertica, read_pandas
 from verticapy.sql.parsers.shp import read_shp
 from verticapy.sql.create import create_schema, create_table, create_verticapy_schema
 from verticapy.sql.drop import drop

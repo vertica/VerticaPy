@@ -68,7 +68,7 @@ bool
             json_dict: dict = {},
             add_identifier: bool = False,
         ):
-            from verticapy.core.vdataframe.vdataframe import vDataFrame
+            from verticapy.core.vdataframe.base import vDataFrame
             from verticapy.learn.vmodel import vModel
 
             json = "{"

@@ -27,7 +27,7 @@ from typing import Literal, Union
 import vertica_python
 from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.sql.drop import drop
 from verticapy._utils._gen import gen_tmp_name

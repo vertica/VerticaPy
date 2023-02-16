@@ -68,7 +68,7 @@ class vDFJUS:
     vDataFrame.join    : Joins the vDataFrame with another relation.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        from verticapy.core.vdataframe.vdataframe import vDataFrame
+        from verticapy.core.vdataframe.base import vDataFrame
 
         if isinstance(expr1, str):
             expr1 = [expr1]
@@ -184,7 +184,7 @@ class vDFJUS:
     vDataFrame.groupby : Aggregates the vDataFrame.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        from verticapy.core.vdataframe.vdataframe import vDataFrame
+        from verticapy.core.vdataframe.base import vDataFrame
 
         if isinstance(expr1, str):
             expr1 = [expr1]

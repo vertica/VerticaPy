@@ -19,7 +19,7 @@ permissions and limitations under the License.
 import pytest
 
 # VerticaPy
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.utilities import drop, tablesample
 from verticapy.errors import ConversionError
 from verticapy.datasets import load_titanic, load_iris, load_market

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 # VerticaPy Modules
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_into

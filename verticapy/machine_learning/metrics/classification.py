@@ -21,7 +21,7 @@ from typing import Union
 # VerticaPy Modules
 from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.machine_learning.model_selection.model_validation import (
     prc_curve,
     roc_curve,

@@ -28,7 +28,7 @@ import xgboost as xgb
 # VerticaPy
 import verticapy
 from verticapy.tests.conftest import get_version
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.utilities import drop
 from verticapy._config.config import set_option
 from verticapy.connect import current_cursor

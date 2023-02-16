@@ -25,7 +25,7 @@ import os
 # VerticaPy Modules
 import verticapy, vertica_python
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop

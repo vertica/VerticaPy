@@ -50,7 +50,7 @@ from verticapy._config.config import set_option
 @save_verticapy_logs
 @needs_local_scope
 def sql_magic(line, cell="", local_ns=None):
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.

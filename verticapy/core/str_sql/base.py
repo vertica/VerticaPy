@@ -38,7 +38,7 @@ class str_sql:
         return str_sql(f"ABS({self.init_transf})", self.category())
 
     def __add__(self, x):
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
+        from verticapy.core.vdataframe.base import vDataColumn
 
         if (isinstance(self, vDataColumn) and self.isarray()) and (
             isinstance(x, vDataColumn) and x.isarray()
@@ -53,7 +53,7 @@ class str_sql:
         return str_sql(f"({self.init_transf}) {op} ({val})", self.category())
 
     def __radd__(self, x):
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
+        from verticapy.core.vdataframe.base import vDataColumn
 
         if (isinstance(self, vDataColumn) and self.isarray()) and (
             isinstance(x, vDataColumn) and x.isarray()

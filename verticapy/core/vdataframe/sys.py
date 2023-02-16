@@ -647,7 +647,7 @@ class vDCSYS:
     --------
     vDataFrame.eval : Evaluates a customized expression.
         """
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
+        from verticapy.core.vdataframe.base import vDataColumn
 
         name = quote_ident(name.replace('"', "_"))
         assert name.replace('"', ""), EmptyParameter(

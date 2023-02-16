@@ -29,7 +29,7 @@ from verticapy.core.tablesample import tablesample
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql import _executeSQL
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.learn.model_selection import roc_curve, prc_curve, lift_chart
 from verticapy.errors import ParameterError
 from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree

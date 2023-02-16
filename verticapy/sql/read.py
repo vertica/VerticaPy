@@ -189,7 +189,7 @@ vDataFrame
     The vDataFrame associated to the input relation.
     """
     # Initialization
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame
 
     if isinstance(vdf, vDataFrame):
         external = vdf._VERTICAPY_VARIABLES_["external"]
@@ -221,7 +221,7 @@ vDataFrame
                 f"alias was changed using underscores '_' to {column_str}"
             )
             warnings.warn(warning_message, Warning)
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
+        from verticapy.core.vdataframe.base import vDataColumn
 
         column_name = '"' + column.replace('"', "_") + '"'
         category = to_category(ctype)

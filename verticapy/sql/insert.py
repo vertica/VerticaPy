@@ -64,7 +64,7 @@ int
 
 See Also
 --------
-pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
+read_pandas : Ingests a pandas DataFrame into the Vertica database.
     """
     if not (schema):
         schema = OPTIONS["temp_schema"]

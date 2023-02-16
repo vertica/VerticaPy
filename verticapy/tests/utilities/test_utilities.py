@@ -24,7 +24,7 @@ import os
 
 # VerticaPy
 import vertica_python, verticapy
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.connect import current_cursor, SESSION_IDENTIFIER
 from verticapy.utilities import *
 from verticapy.datasets import (
@@ -421,24 +421,24 @@ class TestUtilities:
         drop(name="public.iris", method="table")
         assert result == 150
 
-    def test_pandas_to_vertica(self, titanic_vd):
+    def test_read_pandas(self, titanic_vd):
         df = titanic_vd.to_pandas()
         drop("titanic_pandas")
-        vdf = pandas_to_vertica(df=df, name="titanic_pandas")
+        vdf = read_pandas(df=df, name="titanic_pandas")
         assert vdf.shape() == (1234, 14)
         drop("titanic_pandas")
-        vdf = pandas_to_vertica(df=df)
+        vdf = read_pandas(df=df)
         assert vdf.shape() == (1234, 14)
         drop("test_df")
-        pandas_to_vertica(df, name="test_df", schema="public")
-        pandas_to_vertica(df, name="test_df", schema="public", insert=True)
-        vdf = pandas_to_vertica(df, name="test_df", schema="public", insert=True)
+        read_pandas(df, name="test_df", schema="public")
+        read_pandas(df, name="test_df", schema="public", insert=True)
+        vdf = read_pandas(df, name="test_df", schema="public", insert=True)
         assert vdf.shape() == (3702, 14)
         drop("test_df")
         # Problem with '\'
         # d = {"col1": [1, 2, 3, 4], "col2": ["red", 'gre"en', "b\lue", 'p\i""nk']}
         # df = pd.DataFrame(data=d)
-        # vdf = pandas_to_vertica(df)
+        # vdf = read_pandas(df)
         # assert vdf.shape() == (4, 2)
 
     def test_pcsv(self):

@@ -30,7 +30,7 @@ from verticapy._config.config import OPTIONS
 
 
 @save_verticapy_logs
-def pandas_to_vertica(
+def read_pandas(
     df: pd.DataFrame,
     name: str = "",
     schema: str = "",
@@ -142,7 +142,7 @@ read_json : Ingests a JSON file into the Vertica database.
                     SKIP 1;""",
                 title="Inserting the pandas.DataFrame.",
             )
-            from verticapy.core.vdataframe.vdataframe import vDataFrame
+            from verticapy.core.vdataframe.base import vDataFrame
 
             vdf = vDataFrame(name, schema=schema)
         elif tmp_name:
