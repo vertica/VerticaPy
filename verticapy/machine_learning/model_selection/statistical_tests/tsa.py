@@ -28,7 +28,7 @@ from verticapy.sql.read import vDataFrameSQL
 from verticapy.core.tablesample import tablesample
 from verticapy._utils._gen import gen_tmp_name
 from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.sql._utils import schema_relation
+from verticapy.sql._utils._format import schema_relation
 from verticapy._utils._sql import _executeSQL
 from verticapy._config.config import OPTIONS
 

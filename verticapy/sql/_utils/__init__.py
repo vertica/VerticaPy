@@ -14,14 +14,3 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.sql._utils._display import print_query, print_time
-from verticapy.sql._utils._format import (
-    clean_query,
-    erase_label,
-    format_magic,
-    format_schema_table,
-    indentSQL,
-    quote_ident,
-    replace_vars_in_query,
-    schema_relation,
-)

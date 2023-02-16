@@ -20,7 +20,7 @@ from verticapy._utils._sql import _executeSQL
 from verticapy.core.tablesample import tablesample
 from verticapy._utils._cast import to_sql_dtype, to_category
 from verticapy.errors import ConversionError
-from verticapy.sql._utils import clean_query
+from verticapy.sql._utils._format import clean_query
 from verticapy._version import vertica_version
 from verticapy.sql.flex import isvmap
 

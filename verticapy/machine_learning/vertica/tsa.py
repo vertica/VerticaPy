@@ -32,7 +32,7 @@ from verticapy.learn.linear_model import LinearRegression
 from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.plotting._colors import gen_colors
 from verticapy.learn.tools import does_model_exist
-from verticapy.sql._utils import quote_ident, schema_relation
+from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql.insert import insert_verticapy_schema
 from verticapy._utils._sql import _executeSQL
 from verticapy._utils._gen import gen_tmp_name

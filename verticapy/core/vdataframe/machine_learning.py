@@ -30,7 +30,7 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import ParameterError
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils import quote_ident
+from verticapy.sql._utils._format import quote_ident
 from verticapy._config.config import OPTIONS
 
 

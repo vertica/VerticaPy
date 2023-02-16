@@ -19,7 +19,7 @@ from typing import Union
 
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import ParameterError
-from verticapy.sql._utils import quote_ident
+from verticapy.sql._utils._format import quote_ident
 from verticapy.core._utils._map import verticapy_agg_name
 from verticapy._utils._gen import gen_name
 

@@ -25,7 +25,7 @@ from verticapy._utils._sql import _executeSQL
 from verticapy.sql.read import to_tablesample
 from verticapy._version import vertica_version
 from verticapy.core.tablesample import tablesample
-from verticapy.sql._utils import quote_ident, schema_relation
+from verticapy.sql._utils._format import quote_ident, schema_relation
 
 
 def does_model_exist(

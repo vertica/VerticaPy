@@ -34,8 +34,8 @@ from verticapy.learn.model_selection import roc_curve, prc_curve, lift_chart
 from verticapy.errors import ParameterError
 from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree
 from verticapy.learn.tools import does_model_exist
-from verticapy.sql._utils import quote_ident, schema_relation
-from verticapy.sql._utils import clean_query
+from verticapy.sql._utils._format import quote_ident, schema_relation
+from verticapy.sql._utils._format import clean_query
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import OPTIONS
 
@@ -1280,7 +1280,7 @@ p: int, optional
     str/list
         the SQL code needed to deploy the model.
         """
-        from verticapy.sql._utils import clean_query
+        from verticapy.sql._utils._format import clean_query
 
         if isinstance(X, str):
             X = [X]

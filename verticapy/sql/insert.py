@@ -16,15 +16,15 @@ permissions and limitations under the License.
 """
 import warnings, sys, time
 
-from verticapy.errors import MissingRelation
 from verticapy._config.config import OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql._utils import (
+from verticapy._utils._sql import _executeSQL
+from verticapy.errors import MissingRelation
+from verticapy.sql._utils._format import (
     format_schema_table,
     clean_query,
     quote_ident,
 )
-from verticapy._utils._sql import _executeSQL
 
 
 @save_verticapy_logs

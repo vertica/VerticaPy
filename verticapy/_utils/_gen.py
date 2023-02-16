@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import random
 from verticapy.sql.sys import current_session, username
-from verticapy.sql._utils import quote_ident
+from verticapy.sql._utils._format import quote_ident
 
 
 def gen_name(L: list):

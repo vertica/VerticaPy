@@ -19,7 +19,7 @@ from collections.abc import Iterable
 from typing import Union
 
 # VerticaPy Modules
-from verticapy.sql._utils import clean_query
+from verticapy.sql._utils._format import clean_query
 from verticapy._utils.math import heuristic_length
 
 

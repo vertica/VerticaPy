@@ -30,7 +30,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql import _executeSQL
 from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.learn.vmodel import Preprocessing, vModel
-from verticapy.sql._utils import quote_ident, schema_relation, clean_query
+from verticapy.sql._utils._format import quote_ident, schema_relation, clean_query
 from verticapy.sql.insert import insert_verticapy_schema
 from verticapy._config.config import OPTIONS
 
@@ -321,11 +321,11 @@ method: str, optional
         self.parameters = {"method": str(method).lower()}
 
 
-class MinMaxScaler(Normalizer):
-    """i.e. Normalizer with param method = 'minmax'"""
+class StandardScaler(Normalizer):
+    """i.e. Normalizer with param method = 'zscore'"""
 
     def __init__(self, name: str):
-        super().__init__(name, "minmax")
+        super().__init__(name, "zscore")
 
 
 class RobustScaler(Normalizer):
@@ -335,11 +335,11 @@ class RobustScaler(Normalizer):
         super().__init__(name, "robust_zscore")
 
 
-class StandardScaler(Normalizer):
-    """i.e. Normalizer with param method = 'zscore'"""
+class MinMaxScaler(Normalizer):
+    """i.e. Normalizer with param method = 'minmax'"""
 
     def __init__(self, name: str):
-        super().__init__(name, "zscore")
+        super().__init__(name, "minmax")
 
 
 class OneHotEncoder(Preprocessing):

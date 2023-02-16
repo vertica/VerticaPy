@@ -25,12 +25,12 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ParameterError
 from verticapy.sql.parsers.csv import read_csv
-from verticapy.sql._utils import format_schema_table
+from verticapy.sql._utils._format import format_schema_table
 from verticapy._config.config import OPTIONS
 
 
 @save_verticapy_logs
-def read_pandas(
+def pandas_to_vertica(
     df: pd.DataFrame,
     name: str = "",
     schema: str = "",

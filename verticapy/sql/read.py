@@ -21,8 +21,8 @@ from verticapy._config.config import OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql import _executeSQL
 from verticapy._utils._cast import to_category
-from verticapy.sql._utils import quote_ident
-from verticapy.sql._utils import print_query, print_time
+from verticapy.sql._utils._format import quote_ident
+from verticapy.sql._utils._display import print_query, print_time
 
 from verticapy.sql.dtypes import vertica_python_dtype
 from verticapy.sql.flex import isvmap
