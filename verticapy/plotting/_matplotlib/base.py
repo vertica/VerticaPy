@@ -94,7 +94,7 @@ def compute_plot_variables(
             "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%]"
             f" or a customized aggregation. Found {method}."
         )
-    # depending on the cardinality, the type, the vColumn can be treated as categorical or not
+    # depending on the cardinality, the type, the vDataColumn can be treated as categorical or not
     cardinality, count, is_numeric, is_date, is_categorical = (
         vdf.nunique(True),
         vdf.parent.shape()[0],

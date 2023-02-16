@@ -21,7 +21,7 @@ import math
 import matplotlib.pyplot as plt
 
 # VerticaPy Modules
-from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.errors import ParameterError
 from verticapy.plotting._colors import gen_colors
 

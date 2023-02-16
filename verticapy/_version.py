@@ -14,10 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.errors import VersionError
 from functools import wraps
 
-# Global Variable
+from verticapy.errors import VersionError
+
 __version__ = "0.13.0"
 MINIMUM_VERTICA_VERSION = {
     "Balance": [8, 1, 1],
@@ -70,6 +70,25 @@ MINIMUM_VERTICA_VERSION = {
     "XGBoostRegressor": [10, 1, 0],
 }
 VERTICA_VERSION = None
+
+
+def check_minimum_version(func):
+    """
+check_minimum_version decorator. It simplifies the code by checking if the
+feature is available in the user's version.
+    """
+
+    @wraps(func)
+    def func_prec_check_minimum_version(*args, **kwargs):
+        fun_name, object_name, condition = func.__name__, "", []
+        if len(args) > 0:
+            object_name = type(args[0]).__name__
+        name = object_name if fun_name == "__init__" else fun_name
+        vertica_version(MINIMUM_VERTICA_VERSION[name])
+
+        return func(*args, **kwargs)
+
+    return func_prec_check_minimum_version
 
 
 def vertica_version(condition: list = []):
@@ -138,22 +157,3 @@ list
                 )
             )
     return result
-
-
-def check_minimum_version(func):
-    """
-check_minimum_version decorator. It simplifies the code by checking if the
-feature is available in the user's version.
-    """
-
-    @wraps(func)
-    def func_prec_check_minimum_version(*args, **kwargs):
-        fun_name, object_name, condition = func.__name__, "", []
-        if len(args) > 0:
-            object_name = type(args[0]).__name__
-        name = object_name if fun_name == "__init__" else fun_name
-        vertica_version(MINIMUM_VERTICA_VERSION[name])
-
-        return func(*args, **kwargs)
-
-    return func_prec_check_minimum_version

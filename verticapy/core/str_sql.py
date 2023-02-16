@@ -38,10 +38,10 @@ class str_sql:
         return str_sql(f"ABS({self.init_transf})", self.category())
 
     def __add__(self, x):
-        from verticapy.core.vcolumn import vColumn
+        from verticapy.core.vdataframe.vdataframe import vDataColumn
 
-        if (isinstance(self, vColumn) and self.isarray()) and (
-            isinstance(x, vColumn) and x.isarray()
+        if (isinstance(self, vDataColumn) and self.isarray()) and (
+            isinstance(x, vDataColumn) and x.isarray()
         ):
             return str_sql(
                 f"ARRAY_CAT({self.init_transf}, {x.init_transf})", "complex",
@@ -53,10 +53,10 @@ class str_sql:
         return str_sql(f"({self.init_transf}) {op} ({val})", self.category())
 
     def __radd__(self, x):
-        from verticapy.core.vcolumn import vColumn
+        from verticapy.core.vdataframe.vdataframe import vDataColumn
 
-        if (isinstance(self, vColumn) and self.isarray()) and (
-            isinstance(x, vColumn) and x.isarray()
+        if (isinstance(self, vDataColumn) and self.isarray()) and (
+            isinstance(x, vDataColumn) and x.isarray()
         ):
             return str_sql(
                 f"ARRAY_CAT({x.init_transf}, {self.init_transf})", "complex",

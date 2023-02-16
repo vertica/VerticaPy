@@ -63,51 +63,43 @@ __description__ = (
 __url__ = "https://github.com/vertica/verticapy/"
 __license__ = "Apache License, Version 2.0"
 
-# VerticaPy Modules IMPORT
+from verticapy._version import __version__, vertica_version
+from verticapy._config.config import set_option
+from verticapy._utils._logo import gen_verticapy_logo_html, gen_verticapy_logo_str
+from verticapy._help import help_start
 
-# Logo
-from verticapy._utils._logo import *
+from verticapy.connect.external import set_external_connection
+from verticapy.connect.connect import (
+    close_connection,
+    connect,
+    current_connection,
+    current_cursor,
+    set_connection,
+)
+from verticapy.connect.write import (
+    change_auto_connection,
+    delete_connection,
+    new_connection,
+)
+from verticapy.connect.read import available_connections
 
-# Connect
-from verticapy.connect import *
+from verticapy.core.vdataframe import vDataFrame
+from verticapy.core.tablesample import tablesample
+from verticapy.core.str_sql import str_sql
 
-# Config
-from verticapy._config.config import *
+from verticapy._version import vertica_version
+from verticapy._config.config import set_option
+from verticapy._utils._collect import save_to_query_profile
 
-# vDataFrame
-from verticapy.vdataframe import *
-
-# vDataFrame
-from verticapy.core.vcolumn import *
-
-# Utilities
+from verticapy.sql.parsers.all import read_file
+from verticapy.sql.parsers.avro import read_avro
 from verticapy.sql.parsers.csv import read_csv
 from verticapy.sql.parsers.json import read_json
-from verticapy.sql.parsers.avro import read_avro
-from verticapy.sql.parsers.shp import read_shp
-from verticapy.sql.parsers.all import read_file
 from verticapy.sql.parsers.pandas import pandas_to_vertica
-from verticapy.sql.flex import (
-    compute_flextable_keys,
-    compute_vmap_keys,
-    isflextable,
-    isvmap,
-)
+from verticapy.sql.parsers.shp import read_shp
 from verticapy.sql.create import create_schema, create_table, create_verticapy_schema
 from verticapy.sql.drop import drop
-from verticapy.sql.read import readSQL, to_tablesample, vDataFrameSQL
-from verticapy.sql.insert import insert_into, insert_verticapy_schema
-from verticapy._help import help_start, vHelp
-from verticapy._version import vertica_version
-from verticapy.core.tablesample import tablesample
 from verticapy.sql.dtypes import get_data_types
-
-# SQL Functions
-import verticapy.stats
-
-# Learn
-import verticapy.learn
-
-# Version
-from verticapy._version import *
-from verticapy._version import __version__
+from verticapy.sql.insert import insert_into
+from verticapy.sql.read import readSQL, to_tablesample, vDataFrameSQL
+from verticapy.sql.sys import current_session, username

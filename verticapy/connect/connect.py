@@ -14,100 +14,42 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import uuid
 
-#
-#
-# Modules
-#
-# Standard Python Modules
-import os, uuid
-from configparser import ConfigParser
-from typing import Literal
-
-# VerticaPy Modules
-from verticapy._version import __version__
 from verticapy.errors import ConnectionError, ParameterError
-
-# Vertica Modules
+from verticapy._version import __version__
 import vertica_python
+from verticapy.connect.utils import get_confparser, get_connection_file
 
 # Global Variables
 VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
+SESSION_IDENTIFIER = str(uuid.uuid1()).replace("-", "")
+SESSION_LABEL = f"verticapy-{__version__}-{SESSION_IDENTIFIER}"
 CONNECTION = {
     "conn": None,
     "section": None,
     "dsn": None,
 }
-EXTERNAL_CONNECTION = {}
-SPECIAL_SYMBOLS = [
-    "$",
-    "€",
-    "£",
-    "%",
-    "@",
-    "&",
-    "§",
-    "%",
-    "?",
-    "!",
-]
-SESSION_IDENTIFIER = str(uuid.uuid1()).replace("-", "")
-SESSION_LABEL = f"verticapy-{__version__}-{SESSION_IDENTIFIER}"
 
 
-def available_connections():
+def auto_connect():
     """
-Displays all the available connections.
+Automatically creates a connection using the auto-connection.
+    """
+    confparser = get_confparser()
 
-Returns
--------
-list
-	all the available connections.
-	"""
-    path = get_connection_file()
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    confparser.read(path)
     if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
-        confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
-    all_connections = confparser.sections()
-    return all_connections
-
-
-available_auto_connection = available_connections
-
-
-def change_auto_connection(name: str):
-    """
-Changes the current auto connection.
-
-Parameters
-----------
-name: str
-	Name of the new auto connection.
-	"""
-    path = get_connection_file()
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    confparser.read(path)
-
-    if confparser.has_section(name):
-
-        confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
-        confparser.add_section(VERTICAPY_AUTO_CONNECTION)
-        confparser.set(VERTICAPY_AUTO_CONNECTION, "name", name)
-        f = open(path, "w+")
-        confparser.write(f)
-        f.close()
-
+        section = confparser.get(VERTICAPY_AUTO_CONNECTION, "name")
     else:
-
-        raise NameError(
-            "The input name is incorrect. The connection "
-            f"'{name}' has never been created.\nUse the "
-            "new_connection function to create a new "
-            "connection."
+        raise ConnectionError(
+            "No Auto Connection available. You can create one using "
+            "the 'new_connection' function or set manually a connection"
+            " using the 'set_connection' function."
         )
+    connect(section)
+
+
+read_auto_connect = auto_connect
 
 
 def close_connection():
@@ -178,7 +120,7 @@ VerticaLab Environment.
 
             try:
                 # Connection using the Auto Connection
-                read_auto_connect()
+                auto_connect()
 
             except Exception as e:
 
@@ -198,269 +140,6 @@ def current_cursor():
 Returns the current database cursor.
     """
     return current_connection().cursor()
-
-
-def delete_connection(name: str):
-    """
-Deletes a specified connection from the connection file.
-
-Parameters
-----------
-name: str
-    Name of the connection.
-
-Returns
--------
-bool
-    True if the connection was deleted, False otherwise.
-    """
-    path = get_connection_file()
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    confparser.read(path)
-
-    if confparser.has_section(name):
-
-        confparser.remove_section(name)
-        if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
-            name_auto = confparser.get(VERTICAPY_AUTO_CONNECTION, "name")
-            if name_auto == name:
-                confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
-        f = open(path, "w+")
-        confparser.write(f)
-        f.close()
-        return True
-
-    else:
-
-        warnings.warn(f"The connection {name} does not exist.", Warning)
-        return False
-
-
-def get_connection_file():
-    """
-Gets (and creates, if necessary) the auto-connection file.
-If the environment variable 'VERTICAPY_CONNECTIONS' is set, it is assumed 
-to be the full path to the auto-connection file.
-Otherwise, we reference "connections.verticapy" in the hidden ".verticapy" 
-folder in the user's home directory.
-
-Returns
--------
-string
-    the full path to the auto-connection file.
-    """
-    if "VERTICAPY_CONNECTIONS" in os.environ:
-        return os.environ["VERTICAPY_CONNECTIONS"]
-    path = os.path.join(os.path.expanduser("~"), ".vertica")
-    os.makedirs(path, 0o700, exist_ok=True)
-    path = os.path.join(path, "connections.verticapy")
-    return path
-
-
-def new_connection(
-    conn_info: dict,
-    name: str = "vertica_connection",
-    auto: bool = True,
-    overwrite: bool = True,
-):
-    """
-Saves the new connection in the VerticaPy connection file.
-The information is saved plaintext in the local machine.
-The function 'get_connection_file' returns the associated connection file path.
-If you want a temporary connection, you can use the 'set_connection' function.
-
-Parameters
-----------
-conn_info: dict
-	Dictionnary containing the information to set up the connection.
-		database : Database Name.
-		host     : Server ID.
-		password : User Password.
-		port     : Database Port (optional, default: 5433).
-		user     : User ID (optional, default: dbadmin).
-        ...
-        env      : Bool to indicate whether the user and password are replaced 
-                   by the associated environment variables. If True, VerticaPy 
-                   reads the associated environment variables instead of 
-                   writing and directly using the username and password. 
-                   For example: {'user': 'ENV_USER', 'password': 'ENV_PASSWORD'}
-                   This works only for the user and password. The real values 
-                   of the other variables are stored plaintext in the VerticaPy 
-                   connection file. Using the enviornment variables hides the 
-                   username and password in cases where the local machine is 
-                   shared.
-name: str, optional
-	Name of the connection.
-auto: bool, optional
-    If set to True, the connection will become the new auto-connection.
-overwrite: bool, optional
-    If set to True and the connection already exists, it will be 
-    overwritten.
-env: bool, optional
-    If True, user and password are replaced by the associated environment 
-    variables. VerticaPy reads the associated environment variables instead 
-    of writing and directly using the username and password.
-    For example: {'user': 'ENV_USER', 'password': 'ENV_PASSWORD'}  
-	"""
-    path = get_connection_file()
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    confparser.read(path)
-
-    if confparser.has_section(name):
-
-        if not (overwrite):
-            raise ParserError(
-                f"The section '{name}' already exists. You "
-                "can overwrite it by setting the parameter "
-                "'overwrite' to True."
-            )
-        confparser.remove_section(name)
-
-    confparser.add_section(name)
-    for c in conn_info:
-        confparser.set(name, c, str(conn_info[c]))
-    f = open(path, "w+")
-    confparser.write(f)
-    f.close()
-    if auto:
-        change_auto_connection(name)
-
-    connect(name, path)
-
-
-new_auto_connection = new_connection
-
-
-def read_auto_connect():
-    """
-Automatically creates a connection using the auto-connection.
-	"""
-    path = get_connection_file()
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    confparser.read(path)
-    if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
-        section = confparser.get(VERTICAPY_AUTO_CONNECTION, "name")
-    else:
-        raise ConnectionError(
-            "No Auto Connection available. You can create one using "
-            "the 'new_connection' function or set manually a connection"
-            " using the 'set_connection' function."
-        )
-    connect(section, path)
-
-
-def read_dsn(section: str, dsn: str = ""):
-    """
-Reads the DSN information from the VERTICAPY_CONNECTIONS environment 
-variable or the input file.
-
-Parameters
-----------
-section: str
-    Name of the section in the configuration file.
-dsn: str, optional
-	Path to the file containing the credentials. If empty, the 
-    VERTICAPY_CONNECTIONS environment variable will be used.
-
-Returns
--------
-dict
-	dictionary with all the credentials.
-	"""
-    confparser = ConfigParser()
-    confparser.optionxform = str
-
-    if not dsn:
-        dsn = get_connection_file()
-
-    confparser.read(dsn)
-
-    if confparser.has_section(section):
-
-        options = confparser.items(section)
-        conn_info = {
-            "port": 5433,
-            "user": "dbadmin",
-            "session_label": SESSION_LABEL,
-        }
-
-        env = False
-        for option_name, option_val in options:
-            if option_name.lower().startswith("env"):
-                if option_val.lower() in ("true", "t", "yes", "y"):
-                    env = True
-                break
-
-        for option_name, option_val in options:
-
-            option_name = option_name.lower()
-
-            if option_name in ("pwd", "password", "uid", "user") and env:
-                if option_name == "pwd":
-                    option_name = "password"
-                elif option_name == "uid":
-                    option_name = "user"
-                if os.getenv(option_val) != None:
-                    conn_info[option_name] = os.getenv(option_val)
-                else:
-                    raise ParameterError(
-                        f"The '{option_name}' environment variable "
-                        f"'{option_val}' does not exist and the 'env' "
-                        "option is set to True.\nImpossible to set up "
-                        "the final DSN.\nTips: You can manually set "
-                        "it up by importing os and running the following "
-                        f"command:\nos.environ['{option_name}'] = '******'"
-                    )
-
-            elif option_name in ("servername", "server"):
-                conn_info["host"] = option_val
-
-            elif option_name == "uid":
-                conn_info["user"] = option_val
-
-            elif (option_name in ("port", "connection_timeout")) and (
-                option_val.isnumeric()
-            ):
-                conn_info[option_name] = int(option_val)
-
-            elif option_name == "pwd":
-                conn_info["password"] = option_val
-
-            elif option_name == "backup_server_node":
-                backup_server_node = {}
-                exec(f"id_port = '{option_val}'", {}, backup_server_node)
-                conn_info["backup_server_node"] = backup_server_node["id_port"]
-
-            elif option_name == "kerberosservicename":
-                conn_info["kerberos_service_name"] = option_val
-
-            elif option_name == "kerberoshostname":
-                conn_info["kerberos_host_name"] = option_val
-
-            elif "vp_test_" in option_name:
-                conn_info[option_name[8:]] = option_val
-
-            elif option_name in (
-                "ssl",
-                "autocommit",
-                "use_prepared_statements",
-                "connection_load_balance",
-                "disable_copy_local",
-            ):
-                option_val = option_val.lower()
-                conn_info[option_name] = option_val in ("true", "t", "yes", "y")
-
-            elif option_name != "session_label" and not (option_name.startswith("env")):
-                conn_info[option_name] = option_val
-
-        return conn_info
-
-    else:
-
-        raise NameError(f"The DSN Section '{section}' doesn't exist.")
 
 
 def set_connection(conn):
@@ -487,41 +166,6 @@ conn: object
     CONNECTION["section"] = None
 
 
-def set_external_connection(
-    cid: str, rowset: int = 500, symbol: Literal[tuple(SPECIAL_SYMBOLS)] = "$"
-):
-    """
-Sets a Connection Identifier Database. It connects to an external
-source using DBLINK. For more information, see:
-https://github.com/vertica/dblink
-
-Parameters
-----------
-cid: str
-    Connection Identifier Database.
-rowset: int, optional
-    Number of rows retrieved from the remote database during each 
-    SQLFetch() cycle.
-symbol: str, optional
-    One of the following:
-    "$", "€", "£", "%", "@", "&", "§", "?", "!"
-    A special character, to identify the connection. 
-    For example, if the symbol is '$', you can call external tables 
-    with the input cid by writing $$$QUERY$$$, where QUERY represents 
-    a custom query.
-    """
-    global EXTERNAL_CONNECTION
-    if isinstance(cid, str) and isinstance(rowset, int) and symbol in SPECIAL_SYMBOLS:
-        EXTERNAL_CONNECTION[symbol] = {
-            "cid": cid,
-            "rowset": rowset,
-        }
-    else:
-        raise ParameterError(
-            "Could not set the external connection. Found a wrong type."
-        )
-
-
 def vertica_connection(section: str, dsn: str = ""):
     """
 Reads the input DSN and creates a Vertica Database connection.
@@ -537,8 +181,10 @@ dsn: str, optional
 Returns
 -------
 conn
-	Database connection.
-	"""
+    Database connection.
+    """
+    from verticapy.connect.read import read_dsn
+
     return vertica_python.connect(**read_dsn(section, dsn))
 
 

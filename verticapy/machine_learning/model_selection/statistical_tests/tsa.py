@@ -14,14 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
-import math, datetime
-from typing import Union, Literal
+import datetime
+from typing import Union
 
 # Other Python Modules
 from scipy.stats import chi2, norm, f
@@ -37,8 +31,6 @@ from verticapy.core.vdataframe.vdataframe import vDataFrame
 from verticapy.sql._utils._format import schema_relation
 from verticapy._utils._sql import _executeSQL
 from verticapy._config.config import OPTIONS
-
-# Statistical Tests & Tools
 
 
 @save_verticapy_logs
@@ -221,7 +213,7 @@ tablesample
             column, column, "PARTITION BY {}".format(", ".join(by)) if (by) else "", ts,
         )
     ]
-    query = "CREATE VIEW {} AS SELECT /*+LABEL('stats.tools.adfuller')*/ {}, {} AS ts FROM {}".format(
+    query = "CREATE VIEW {} AS SELECT /*+LABEL('statistical_tests.adfuller')*/ {}, {} AS ts FROM {}".format(
         relation_name,
         ", ".join(lag),
         "TIMESTAMPDIFF(SECOND, {}, MIN({}) OVER ())".format(ts, ts)
@@ -328,7 +320,7 @@ model
     eps_name = gen_tmp_name(name="eps")[1:-1]
     model.predict(vdf_tmp, X=X, name=prediction_name)
     vdf_tmp[eps_name] = vdf_tmp[y] - vdf_tmp[prediction_name]
-    query = "SELECT /*+LABEL('stats.tools.cochrane_orcutt')*/ SUM(num) / SUM(den) FROM (SELECT {0} * LAG({0}) OVER (ORDER BY {1}) AS num,  POWER({0}, 2) AS den FROM {2}) x".format(
+    query = "SELECT /*+LABEL('statistical_tests.cochrane_orcutt')*/ SUM(num) / SUM(den) FROM (SELECT {0} * LAG({0}) OVER (ORDER BY {1}) AS num,  POWER({0}, 2) AS den FROM {2}) x".format(
         eps_name, ts, vdf_tmp.__genSQL__()
     )
     pho = _executeSQL(
@@ -381,67 +373,13 @@ float
         vdf.__genSQL__(),
     )
     d = _executeSQL(
-        "SELECT /*+LABEL('stats.tools.durbin_watson')*/ SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(
+        "SELECT /*+LABEL('statistical_tests.durbin_watson')*/ SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(
             query
         ),
         title="Computing the Durbin Watson d.",
         method="fetchfirstelem",
     )
     return d
-
-
-@save_verticapy_logs
-def endogtest(vdf: vDataFrame, eps: str, X: list):
-    """
-Endogeneity test.
-
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-eps: str
-    Input residual vcolumn.
-X: list
-    Input Variables to test the endogeneity on.
-
-Returns
--------
-tablesample
-    An object containing the result. For more information, see
-    utilities.tablesample.
-    """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
-    eps, X = vdf.format_colnames(eps, X)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
-    model = LinearRegression(name)
-    try:
-        model.fit(vdf, X, eps)
-        R2 = model.score("r2")
-    except:
-        model.set_params({"solver": "bfgs"})
-        model.fit(vdf, X, eps)
-        R2 = model.score("r2")
-    finally:
-        model.drop()
-    n = vdf.shape()[0]
-    k = len(X)
-    LM = n * R2
-    lm_pvalue = chi2.sf(LM, k)
-    F = (n - k - 1) * R2 / (1 - R2) / k
-    f_pvalue = f.sf(F, k, n - k - 1)
-    result = tablesample(
-        {
-            "index": [
-                "Lagrange Multiplier Statistic",
-                "lm_p_value",
-                "F Value",
-                "f_p_value",
-            ],
-            "value": [LM, lm_pvalue, F, f_pvalue],
-        }
-    )
-    return result
 
 
 @save_verticapy_logs
@@ -513,283 +451,6 @@ tablesample
             "value": [LM, lm_pvalue, F, f_pvalue],
         }
     )
-    return result
-
-
-@save_verticapy_logs
-def het_breuschpagan(vdf: vDataFrame, eps: str, X: list):
-    """
-Uses the Breusch-Pagan to test a model for heteroskedasticity.
-
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-eps: str
-    Input residual vColumn.
-X: list
-    The exogenous variables to test.
-
-Returns
--------
-tablesample
-    An object containing the result. For more information, see
-    utilities.tablesample.
-    """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
-    eps, X = vdf.format_colnames(eps, X)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
-    model = LinearRegression(name)
-    vdf_copy = vdf.copy()
-    vdf_copy["v_eps2"] = vdf_copy[eps] ** 2
-    try:
-        model.fit(vdf_copy, X, "v_eps2")
-        R2 = model.score("r2")
-    except:
-        model.set_params({"solver": "bfgs"})
-        model.fit(vdf_copy, X, "v_eps2")
-        R2 = model.score("r2")
-    finally:
-        model.drop()
-    n = vdf.shape()[0]
-    k = len(X)
-    LM = n * R2
-    lm_pvalue = chi2.sf(LM, k)
-    F = (n - k - 1) * R2 / (1 - R2) / k
-    f_pvalue = f.sf(F, k, n - k - 1)
-    result = tablesample(
-        {
-            "index": [
-                "Lagrange Multiplier Statistic",
-                "lm_p_value",
-                "F Value",
-                "f_p_value",
-            ],
-            "value": [LM, lm_pvalue, F, f_pvalue],
-        }
-    )
-    return result
-
-
-@save_verticapy_logs
-def het_goldfeldquandt(
-    vdf: vDataFrame,
-    y: str,
-    X: list,
-    idx: int = 0,
-    split: float = 0.5,
-    alternative: Literal["increasing", "decreasing", "two-sided"] = "increasing",
-):
-    """
-Goldfeld-Quandt homoscedasticity test.
-
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-y: str
-    Response Column.
-X: list
-    Exogenous Variables.
-idx: int, optional
-    Column index of variable according to which observations are sorted 
-    for the split.
-split: float, optional
-    Float to indicate where to split (Example: 0.5 to split on the median).
-alternative: str, optional
-    Specifies the alternative hypothesis for the p-value calculation,
-    one of the following variances: "increasing", "decreasing", "two-sided".
-
-Returns
--------
-tablesample
-    An object containing the result. For more information, see
-    utilities.tablesample.
-    """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
-    def model_fit(input_relation, X, y, model):
-        mse = []
-        for vdf_tmp in input_relation:
-            model.drop()
-            model.fit(vdf_tmp, X, y)
-            mse += [model.score(method="mse")]
-            model.drop()
-        return mse
-
-    y, X = vdf.format_colnames(y, X)
-    split_value = vdf[X[idx]].quantile(split)
-    vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
-    vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
-    model = LinearRegression(name)
-    try:
-        mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
-    except:
-        model.set_params({"solver": "bfgs"})
-        mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
-    finally:
-        model.drop()
-    n, m, k = vdf_0_half.shape()[0], vdf_1_half.shape()[0], len(X)
-    F = mse1 / mse0
-    if alternative.lower() in ["increasing"]:
-        f_pvalue = f.sf(F, n - k, m - k)
-    elif alternative.lower() in ["decreasing"]:
-        f_pvalue = f.sf(1.0 / F, m - k, n - k)
-    elif alternative.lower() in ["two-sided"]:
-        fpval_sm = f.cdf(F, m - k, n - k)
-        fpval_la = f.sf(F, m - k, n - k)
-        f_pvalue = 2 * min(fpval_sm, fpval_la)
-    result = tablesample({"index": ["F Value", "f_p_value"], "value": [F, f_pvalue]})
-    return result
-
-
-@save_verticapy_logs
-def het_white(vdf: vDataFrame, eps: str, X: list):
-    """
-White’s Lagrange Multiplier Test for heteroscedasticity.
-
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-eps: str
-    Input residual vcolumn.
-X: str
-    Exogenous Variables to test the heteroscedasticity on.
-
-Returns
--------
-tablesample
-    An object containing the result. For more information, see
-    utilities.tablesample.
-    """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
-    eps, X = vdf.format_colnames(eps, X)
-    X_0 = ["1"] + X
-    variables = []
-    variables_names = []
-    for i in range(len(X_0)):
-        for j in range(i, len(X_0)):
-            if i != 0 or j != 0:
-                variables += ["{} * {} AS var_{}_{}".format(X_0[i], X_0[j], i, j)]
-                variables_names += ["var_{}_{}".format(i, j)]
-    query = "(SELECT {}, POWER({}, 2) AS v_eps2 FROM {}) VERTICAPY_SUBTABLE".format(
-        ", ".join(variables), eps, vdf.__genSQL__()
-    )
-    vdf_white = vDataFrameSQL(query)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
-    model = LinearRegression(name)
-    try:
-        model.fit(vdf_white, variables_names, "v_eps2")
-        R2 = model.score("r2")
-    except:
-        model.set_params({"solver": "bfgs"})
-        model.fit(vdf_white, variables_names, "v_eps2")
-        R2 = model.score("r2")
-    finally:
-        model.drop()
-    n = vdf.shape()[0]
-    if len(X) > 1:
-        k = 2 * len(X) + math.factorial(len(X)) / 2 / (math.factorial(len(X) - 2))
-    else:
-        k = 1
-    LM = n * R2
-    lm_pvalue = chi2.sf(LM, k)
-    F = (n - k - 1) * R2 / (1 - R2) / k
-    f_pvalue = f.sf(F, k, n - k - 1)
-    result = tablesample(
-        {
-            "index": [
-                "Lagrange Multiplier Statistic",
-                "lm_p_value",
-                "F Value",
-                "f_p_value",
-            ],
-            "value": [LM, lm_pvalue, F, f_pvalue],
-        }
-    )
-    return result
-
-
-@save_verticapy_logs
-def jarque_bera(vdf: vDataFrame, column: str, alpha: Union[int, float] = 0.05):
-    """
-Jarque-Bera test (Distribution Normality).
-
-Parameters
-----------
-vdf: vDataFrame
-    input vDataFrame.
-column: str
-    Input vcolumn to test.
-alpha: int / float, optional
-    Significance Level. Probability to accept H0.
-
-Returns
--------
-tablesample
-    An object containing the result. For more information, see
-    utilities.tablesample.
-    """
-    column = vdf.format_colnames(column)
-    jb, kurtosis, skewness, n = (
-        vdf[column].agg(["jb", "kurtosis", "skewness", "count"]).values[column]
-    )
-    pvalue = chi2.sf(jb, 2)
-    result = False if pvalue < alpha else True
-    result = tablesample(
-        {
-            "index": [
-                "Jarque Bera Test Statistic",
-                "p_value",
-                "# Observations Used",
-                "Kurtosis - 3",
-                "Skewness",
-                "Distribution Normality",
-            ],
-            "value": [jb, pvalue, n, kurtosis, skewness, result],
-        }
-    )
-    return result
-
-
-@save_verticapy_logs
-def kurtosistest(vdf: vDataFrame, column: str):
-    """
-Test whether the kurtosis is different from the normal distribution.
-
-Parameters
-----------
-vdf: vDataFrame
-    input vDataFrame.
-column: str
-    Input vcolumn to test.
-
-Returns
--------
-tablesample
-    An object containing the result. For more information, see
-    utilities.tablesample.
-    """
-    column = vdf.format_colnames(column)
-    g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
-    mu1 = -6 / (n + 1)
-    mu2 = 24 * n * (n - 2) * (n - 3) / (((n + 1) ** 2) * (n + 3) * (n + 5))
-    gamma1 = (
-        6
-        * (n ** 2 - 5 * n + 2)
-        / ((n + 7) * (n + 9))
-        * math.sqrt(6 * (n + 3) * (n + 5) / (n * (n - 2) * (n - 3)))
-    )
-    A = 6 + 8 / gamma1 * (2 / gamma1 + math.sqrt(1 + 4 / (gamma1 ** 2)))
-    B = (1 - 2 / A) / (1 + (g2 - mu1) / math.sqrt(mu2) * math.sqrt(2 / (A - 4)))
-    B = B ** (1 / 3) if B > 0 else (-B) ** (1 / 3)
-    Z2 = math.sqrt(9 * A / 2) * (1 - 2 / (9 * A) - B)
-    pvalue = 2 * norm.sf(abs(Z2))
-    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z2, pvalue]})
     return result
 
 
@@ -887,7 +548,7 @@ tablesample
     """
     column, ts = vdf.format_colnames(column, ts)
     table = f"(SELECT {column}, {ts} FROM {vdf.__genSQL__()})"
-    query = f"SELECT /*+LABEL('stats.tools.mkt')*/ SUM(SIGN(y.{column} - x.{column})) FROM {table} x CROSS JOIN {table} y WHERE y.{ts} > x.{ts}"
+    query = f"SELECT /*+LABEL('statistical_tests.mkt')*/ SUM(SIGN(y.{column} - x.{column})) FROM {table} x CROSS JOIN {table} y WHERE y.{ts} > x.{ts}"
     S = _executeSQL(
         query, title="Computing the Mann Kendall S.", method="fetchfirstelem"
     )
@@ -896,7 +557,7 @@ tablesample
     except:
         S = None
     n = vdf[column].count()
-    query = "SELECT /*+LABEL('stats.tools.mkt')*/ SQRT(({0} * ({0} - 1) * (2 * {0} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {1}) AS row FROM {2}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
+    query = "SELECT /*+LABEL('statistical_tests.mkt')*/ SQRT(({0} * ({0} - 1) * (2 * {0} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {1}) AS row FROM {2}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
         n, column, vdf.__genSQL__()
     )
     STDS = _executeSQL(
@@ -940,34 +601,6 @@ tablesample
             "value": [ZMK, S, STDS, pvalue, result, trend],
         }
     )
-    return result
-
-
-@save_verticapy_logs
-def normaltest(vdf: vDataFrame, column: str):
-    """
-Test whether a sample differs from a normal distribution.
-
-Parameters
-----------
-vdf: vDataFrame
-    input vDataFrame.
-column: str
-    Input vcolumn to test.
-
-Returns
--------
-tablesample
-    An object containing the result. For more information, see
-    utilities.tablesample.
-    """
-    Z1, Z2 = (
-        skewtest(vdf, column)["value"][0],
-        kurtosistest(vdf, column)["value"][0],
-    )
-    Z = Z1 ** 2 + Z2 ** 2
-    pvalue = chi2.sf(Z, 2)
-    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z, pvalue]})
     return result
 
 
@@ -1127,100 +760,3 @@ vDataFrame
         )
     vdf_tmp["row_number_id"].drop()
     return vdf_tmp
-
-
-@save_verticapy_logs
-def skewtest(vdf: vDataFrame, column: str):
-    """
-Test whether the skewness is different from the normal distribution.
-
-Parameters
-----------
-vdf: vDataFrame
-    input vDataFrame.
-column: str
-    Input vcolumn to test.
-
-Returns
--------
-tablesample
-    An object containing the result. For more information, see
-    utilities.tablesample.
-    """
-    column = vdf.format_colnames(column)
-    g1, n = vdf[column].agg(["skewness", "count"]).values[column]
-    mu1 = 0
-    mu2 = 6 * (n - 2) / ((n + 1) * (n + 3))
-    gamma1 = 0
-    gamma2 = (
-        36 * (n - 7) * (n ** 2 + 2 * n - 5) / ((n - 2) * (n + 5) * (n + 7) * (n + 9))
-    )
-    W2 = math.sqrt(2 * gamma2 + 4) - 1
-    delta = 1 / math.sqrt(math.log(math.sqrt(W2)))
-    alpha2 = 2 / (W2 - 1)
-    Z1 = delta * math.asinh(g1 / math.sqrt(alpha2 * mu2))
-    pvalue = 2 * norm.sf(abs(Z1))
-    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z1, pvalue]})
-    return result
-
-
-@save_verticapy_logs
-def variance_inflation_factor(vdf: vDataFrame, X: list, X_idx: int = None):
-    """
-Computes the variance inflation factor (VIF). It can be used to detect
-multicollinearity in an OLS Regression Analysis.
-
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-X: list
-    Input Variables.
-X_idx: int
-    Index of the exogenous variable in X. If left to None, a tablesample will
-    be returned with all the variables VIF.
-
-Returns
--------
-float
-    VIF.
-    """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
-    X, X_idx = vdf.format_colnames(X, X_idx)
-
-    if isinstance(X_idx, str):
-        for i in range(len(X)):
-            if X[i] == X_idx:
-                X_idx = i
-                break
-    if isinstance(X_idx, (int, float)):
-        X_r = []
-        for i in range(len(X)):
-            if i != X_idx:
-                X_r += [X[i]]
-        y_r = X[X_idx]
-        name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
-        model = LinearRegression(name)
-        try:
-            model.fit(vdf, X_r, y_r)
-            R2 = model.score("r2")
-        except:
-            model.set_params({"solver": "bfgs"})
-            model.fit(vdf, X_r, y_r)
-            R2 = model.score("r2")
-        finally:
-            model.drop()
-        if 1 - R2 != 0:
-            return 1 / (1 - R2)
-        else:
-            return np.inf
-    elif X_idx == None:
-        VIF = []
-        for i in range(len(X)):
-            VIF += [variance_inflation_factor(vdf, X, i)]
-        return tablesample({"X_idx": X, "VIF": VIF})
-    else:
-        raise ParameterError(
-            f"Wrong type for Parameter X_idx.\nExpected integer, found {type(X_idx)}."
-        )

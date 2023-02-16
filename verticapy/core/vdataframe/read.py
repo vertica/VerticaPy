@@ -40,7 +40,7 @@ class vDFREAD:
         return (col for col in columns)
 
     def __getitem__(self, index):
-        from verticapy.core.vcolumn import vColumn
+        from verticapy.core.vdataframe.vdataframe import vDataColumn
 
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
@@ -90,7 +90,7 @@ class vDFREAD:
 
         elif isinstance(index, (str, str_sql)):
             is_sql = False
-            if isinstance(index, vColumn):
+            if isinstance(index, vDataColumn):
                 index = index.alias
             elif isinstance(index, str_sql):
                 index = str(index)
@@ -149,12 +149,12 @@ class vDFREAD:
 
     def get_columns(self, exclude_columns: Union[str, list] = []):
         """
-    Returns the vDataFrame vColumns.
+    Returns the vDataFrame vDataColumns.
 
     Parameters
     ----------
     exclude_columns: str / list, optional
-        List of the vColumns names to exclude from the final list. 
+        List of the vDataColumns names to exclude from the final list. 
 
     Returns
     -------
@@ -163,9 +163,9 @@ class vDFREAD:
 
     See Also
     --------
-    vDataFrame.catcol  : Returns all categorical vDataFrame vColumns.
-    vDataFrame.datecol : Returns all vDataFrame vColumns of type date.
-    vDataFrame.numcol  : Returns all numerical vDataFrame vColumns.
+    vDataFrame.catcol  : Returns all categorical vDataFrame vDataColumns.
+    vDataFrame.datecol : Returns all vDataFrame vDataColumns of type date.
+    vDataFrame.numcol  : Returns all numerical vDataFrame vDataColumns.
         """
         # -#
         if isinstance(exclude_columns, str):
@@ -214,8 +214,8 @@ class vDFREAD:
     offset: int, optional
         Number of elements to skip.
     columns: str / list, optional
-        A list containing the names of the vColumns to include in the result. 
-        If empty, all vColumns will be selected.
+        A list containing the names of the vDataColumns to include in the result. 
+        If empty, all vDataColumns will be selected.
 
 
     Returns
@@ -329,12 +329,12 @@ class vDFREAD:
     @save_verticapy_logs
     def select(self, columns: Union[str, list]):
         """
-    Returns a copy of the vDataFrame with only the selected vColumns.
+    Returns a copy of the vDataFrame with only the selected vDataColumns.
 
     Parameters
     ----------
     columns: str / list
-        List of the vColumns to select. It can also be customized expressions.
+        List of the vDataColumns to select. It can also be customized expressions.
 
     Returns
     -------
@@ -378,7 +378,7 @@ class vDCREAD:
     def __getitem__(self, index):
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
-                "vColumn doesn't allow slicing having steps different than 1."
+                "vDataColumn doesn't allow slicing having steps different than 1."
             )
             index_stop = index.stop
             index_start = index.start
@@ -456,13 +456,13 @@ class vDCREAD:
                 return _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('vColumn.__getitem__')*/ 
+                            /*+LABEL('vDataColumn.__getitem__')*/ 
                             {self.alias}{cast} 
                         FROM {self.parent.__genSQL__()}
                         {self.parent.__get_last_order_by__()} 
                         OFFSET {index} 
                         LIMIT 1""",
-                    title="Getting the vColumn element.",
+                    title="Getting the vDataColumn element.",
                     method="fetchfirstelem",
                     sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
                     symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
@@ -494,7 +494,7 @@ class vDCREAD:
 
     def head(self, limit: int = 5):
         """
-    Returns the head of the vColumn.
+    Returns the head of the vDataColumn.
 
     Parameters
     ----------
@@ -509,13 +509,13 @@ class vDCREAD:
 
     See Also
     --------
-    vDataFrame[].tail : Returns the a part of the vColumn.
+    vDataFrame[].tail : Returns the a part of the vDataColumn.
         """
         return self.iloc(limit=limit)
 
     def iloc(self, limit: int = 5, offset: int = 0):
         """
-    Returns a part of the vColumn (delimited by an offset and a limit).
+    Returns a part of the vDataColumn (delimited by an offset and a limit).
 
     Parameters
     ----------
@@ -532,8 +532,8 @@ class vDCREAD:
 
     See Also
     --------
-    vDataFrame[].head : Returns the head of the vColumn.
-    vDataFrame[].tail : Returns the tail of the vColumn.
+    vDataFrame[].head : Returns the head of the vDataColumn.
+    vDataFrame[].tail : Returns the tail of the vDataColumn.
         """
         if offset < 0:
             offset = max(0, self.parent.shape()[0] - limit)
@@ -560,7 +560,7 @@ class vDCREAD:
     @save_verticapy_logs
     def nlargest(self, n: int = 10):
         """
-    Returns the n largest vColumn elements.
+    Returns the n largest vDataColumn elements.
 
     Parameters
     ----------
@@ -575,7 +575,7 @@ class vDCREAD:
 
     See Also
     --------
-    vDataFrame[].nsmallest : Returns the n smallest elements in the vColumn.
+    vDataFrame[].nsmallest : Returns the n smallest elements in the vDataColumn.
         """
         query = f"""
             SELECT 
@@ -594,7 +594,7 @@ class vDCREAD:
     @save_verticapy_logs
     def nsmallest(self, n: int = 10):
         """
-    Returns the n smallest elements in the vColumn.
+    Returns the n smallest elements in the vDataColumn.
 
     Parameters
     ----------
@@ -609,7 +609,7 @@ class vDCREAD:
 
     See Also
     --------
-    vDataFrame[].nlargest : Returns the n largest vColumn elements.
+    vDataFrame[].nlargest : Returns the n largest vDataColumn elements.
         """
         return to_tablesample(
             f"""
@@ -625,7 +625,7 @@ class vDCREAD:
 
     def tail(self, limit: int = 5):
         """
-    Returns the tail of the vColumn.
+    Returns the tail of the vDataColumn.
 
     Parameters
     ----------
@@ -640,6 +640,6 @@ class vDCREAD:
 
     See Also
     --------
-    vDataFrame[].head : Returns the head of the vColumn.
+    vDataFrame[].head : Returns the head of the vDataColumn.
         """
         return self.iloc(limit=limit, offset=-1)

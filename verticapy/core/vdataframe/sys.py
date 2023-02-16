@@ -25,7 +25,6 @@ from verticapy.sql.flex import isvmap
 from verticapy._config.config import current_random
 from verticapy.sql.read import vDataFrameSQL
 from verticapy._utils._sql import _executeSQL
-from verticapy.core.str_sql import str_sql
 from verticapy.sql._utils._format import quote_ident
 from verticapy.core._utils._map import verticapy_agg_name
 from verticapy._config.config import OPTIONS
@@ -268,7 +267,7 @@ class vDFSYS:
     ):
         """
     VERTICAPY stores the already computed aggregations to avoid useless 
-    computations. This method stores the input aggregation in the vColumn catalog.
+    computations. This method stores the input aggregation in the vDataColumn catalog.
         """
         columns = self.format_colnames(columns)
         agg_dict = {
@@ -376,7 +375,7 @@ class vDFSYS:
     Returns
     -------
     bool
-        True if the vDataFrame has no vColumns.
+        True if the vDataFrame has no vDataColumns.
         """
         return not (self.get_columns())
 
@@ -587,14 +586,14 @@ class vDFSYS:
     @save_verticapy_logs
     def swap(self, column1: Union[int, str], column2: Union[int, str]):
         """
-    Swap the two input vColumns.
+    Swap the two input vDataColumns.
 
     Parameters
     ----------
     column1: str / int
-        The first vColumn or its index to swap.
+        The first vDataColumn or its index to swap.
     column2: str / int
-        The second vColumn or its index to swap.
+        The second vDataColumn or its index to swap.
 
     Returns
     -------
@@ -632,7 +631,7 @@ class vDFSYS:
 class vDCSYS:
     def add_copy(self, name: str):
         """
-    Adds a copy vColumn to the parent vDataFrame.
+    Adds a copy vDataColumn to the parent vDataFrame.
 
     Parameters
     ----------
@@ -648,27 +647,27 @@ class vDCSYS:
     --------
     vDataFrame.eval : Evaluates a customized expression.
         """
-        from verticapy.core.vcolumn import vColumn
-        
+        from verticapy.core.vdataframe.vdataframe import vDataColumn
+
         name = quote_ident(name.replace('"', "_"))
         assert name.replace('"', ""), EmptyParameter(
             "The parameter 'name' must not be empty"
         )
         assert not (self.parent.is_colname_in(name)), NameError(
-            f"A vColumn has already the alias {name}.\nBy changing "
+            f"A vDataColumn has already the alias {name}.\nBy changing "
             "the parameter 'name', you'll be able to solve this issue."
         )
-        new_vColumn = vColumn(
+        new_vDataColumn = vDataColumn(
             name,
             parent=self.parent,
             transformations=[item for item in self.transformations],
             catalog=self.catalog,
         )
-        setattr(self.parent, name, new_vColumn)
-        setattr(self.parent, name[1:-1], new_vColumn)
+        setattr(self.parent, name, new_vDataColumn)
+        setattr(self.parent, name[1:-1], new_vDataColumn)
         self.parent._VERTICAPY_VARIABLES_["columns"] += [name]
         self.parent.__add_to_history__(
-            f"[Add Copy]: A copy of the vColumn {self.alias} "
+            f"[Add Copy]: A copy of the vDataColumn {self.alias} "
             f"named {name} was added to the vDataFrame."
         )
         return self.parent
@@ -676,12 +675,12 @@ class vDCSYS:
     @save_verticapy_logs
     def memory_usage(self):
         """
-    Returns the vColumn memory usage. 
+    Returns the vDataColumn memory usage. 
 
     Returns
     -------
     float
-        vColumn memory usage (byte)
+        vDataColumn memory usage (byte)
 
     See Also
     --------
@@ -700,12 +699,12 @@ class vDCSYS:
     @save_verticapy_logs
     def store_usage(self):
         """
-    Returns the vColumn expected store usage (unit: b).
+    Returns the vDataColumn expected store usage (unit: b).
 
     Returns
     -------
     int
-        vColumn expected store usage.
+        vDataColumn expected store usage.
 
     See Also
     --------
@@ -718,10 +717,10 @@ class vDCSYS:
         store_usage = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('vColumn.storage_usage')*/ 
+                    /*+LABEL('vDataColumn.storage_usage')*/ 
                     ZEROIFNULL(SUM(LENGTH({alias_sql_repr}::varchar))) 
                 FROM {self.parent.__genSQL__()}""",
-            title=f"Computing the Store Usage of the vColumn {self.alias}.",
+            title=f"Computing the Store Usage of the vDataColumn {self.alias}.",
             method="fetchfirstelem",
             sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
             symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
@@ -733,7 +732,7 @@ class vDCSYS:
 
     def rename(self, new_name: str):
         """
-    Renames the vColumn by dropping the current vColumn and creating a copy with 
+    Renames the vDataColumn by dropping the current vDataColumn and creating a copy with 
     the specified name.
 
     \u26A0 Warning : SQL code generation will be slower if the vDataFrame has been 
@@ -743,7 +742,7 @@ class vDCSYS:
     Parameters
     ----------
     new_name: str
-        The new vColumn alias.
+        The new vDataColumn alias.
 
     Returns
     -------
@@ -752,18 +751,18 @@ class vDCSYS:
 
     See Also
     --------
-    vDataFrame.add_copy : Creates a copy of the vColumn.
+    vDataFrame.add_copy : Creates a copy of the vDataColumn.
         """
         old_name = quote_ident(self.alias)
         new_name = new_name.replace('"', "")
         assert not (self.parent.is_colname_in(new_name)), NameError(
-            f"A vColumn has already the alias {new_name}.\n"
+            f"A vDataColumn has already the alias {new_name}.\n"
             "By changing the parameter 'new_name', you'll "
             "be able to solve this issue."
         )
         self.add_copy(new_name)
         parent = self.drop(add_history=False)
         parent.__add_to_history__(
-            f"[Rename]: The vColumn {old_name} was renamed '{new_name}'."
+            f"[Rename]: The vDataColumn {old_name} was renamed '{new_name}'."
         )
         return parent

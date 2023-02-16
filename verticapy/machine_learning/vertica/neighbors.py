@@ -36,7 +36,7 @@ from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree
 from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import quote_ident, schema_relation
 from verticapy.sql._utils._format import clean_query
-from verticapy.plotting._matplotlib.core import updated_dict
+from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy._config.config import OPTIONS
 
 # Standard Python Modules
@@ -647,7 +647,7 @@ p: int, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
-        Name of the additional prediction vColumn. If unspecified, a name is 
+        Name of the additional prediction vDataColumn. If unspecified, a name is 
 	    generated based on the model and class names.
     pos_label: int / float / str, optional
         Class label, the class for which the probability is calculated. 

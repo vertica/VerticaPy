@@ -20,5 +20,126 @@ permissions and limitations under the License.
 # Modules
 #
 # VerticaPy Modules
-from verticapy.stats.tools import *
-from verticapy.stats.math import *
+from verticapy.machine_learning.model_selection.statistical_tests.tsa import (
+    adfuller,
+    cochrane_orcutt,
+    durbin_watson,
+    het_arch,
+    ljungbox,
+    mkt,
+    seasonal_decompose,
+)
+from verticapy.machine_learning.model_selection.statistical_tests.ols import (
+    endogtest,
+    het_breuschpagan,
+    het_goldfeldquandt,
+    het_white,
+    variance_inflation_factor,
+)
+from verticapy.machine_learning.model_selection.statistical_tests.norm import (
+    jarque_bera,
+    kurtosistest,
+    normaltest,
+    skewtest,
+)
+from verticapy.sql.functions.analytic import (
+    avg,
+    bool_and,
+    bool_or,
+    bool_xor,
+    conditional_change_event,
+    conditional_true_event,
+    count,
+    lag,
+    lead,
+    max,
+    median,
+    min,
+    nth_value,
+    quantile,
+    rank,
+    row_number,
+    std,
+    sum,
+    var,
+)
+from verticapy.sql.functions.conditional import case_when, decode
+from verticapy.sql.functions.date import (
+    date,
+    day,
+    dayofweek,
+    dayofyear,
+    extract,
+    getdate,
+    getutcdate,
+    hour,
+    interval,
+    minute,
+    microsecond,
+    month,
+    overlaps,
+    quarter,
+    round_date,
+    second,
+    timestamp,
+    week,
+    year,
+)
+from verticapy.sql.functions.math import PI, E, TAU, INF, NAN
+from verticapy.sql.functions.math import (
+    apply,
+    abs,
+    acos,
+    asin,
+    atan,
+    atan2,
+    cbrt,
+    ceil,
+    comb,
+    cos,
+    cosh,
+    cot,
+    degrees,
+    distance,
+    exp,
+    factorial,
+    floor,
+    gamma,
+    hash,
+    isfinite,
+    isinf,
+    isnan,
+    lgamma,
+    ln,
+    log,
+    radians,
+    round,
+    sign,
+    sin,
+    sinh,
+    sqrt,
+    tan,
+    tanh,
+    trunc,
+)
+from verticapy.sql.functions.null_handling import coalesce, nullifzero, zeroifnull
+from verticapy.sql.functions.random import random, randomint, seeded_random
+from verticapy.sql.functions.regexp import (
+    regexp_count,
+    regexp_ilike,
+    regexp_instr,
+    regexp_like,
+    regexp_replace,
+    regexp_substr,
+)
+from verticapy.sql.functions.string import (
+    length,
+    lower,
+    substr,
+    upper,
+    edit_distance,
+    soundex,
+    soundex_matches,
+    jaro_distance,
+    jaro_winkler_distance,
+)

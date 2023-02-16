@@ -14,8 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-# VerticaPy
+import os
 import verticapy as vp
 from verticapy.connect import *
 
@@ -23,7 +22,7 @@ from verticapy.connect import *
 class TestConnect:
     def test_auto_connection(self, base):
         # test for read_dsn / new_connection / available_connections /
-        #          read_auto_connect / change_auto_connection / delete_connection.
+        #          auto_connect / change_auto_connection / delete_connection.
         # read_dsn
         d = read_dsn(
             "vp_test_config",
@@ -37,8 +36,8 @@ class TestConnect:
         assert "vp_test_config" in result
         # change_auto_connection
         change_auto_connection("vp_test_config")
-        # read_auto_connect
-        read_auto_connect()
+        # auto_connect
+        auto_connect()
         cur = CONNECTION["conn"].cursor()
         cur.execute("SELECT 1;")
         result2 = cur.fetchone()

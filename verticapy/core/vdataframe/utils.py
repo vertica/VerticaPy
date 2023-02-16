@@ -18,6 +18,7 @@ import copy
 from typing import Union
 from verticapy.sql._utils._format import quote_ident
 from verticapy.errors import MissingColumn, ParameterError
+from verticapy._utils.math import levenshtein
 
 
 class vDFUTILS:
@@ -54,8 +55,6 @@ class vDFUTILS:
     str / list
         Formatted columns' names.
         """
-        from verticapy.stats._utils import levenshtein
-
         if argv:
             result = []
             for arg in argv:
@@ -159,8 +158,6 @@ class vDFUTILS:
     tuple
         (nearest column, levenstein distance)
         """
-        from verticapy.stats._utils import levenshtein
-
         columns = self.get_columns()
         col = column.replace('"', "").lower()
         result = (columns[0], levenshtein(col, columns[0].replace('"', "").lower()))

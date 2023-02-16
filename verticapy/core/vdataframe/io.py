@@ -18,8 +18,6 @@ from typing import Union, Literal
 from collections.abc import Iterable
 import pickle, decimal, os, copy
 
-pickle.DEFAULT_PROTOCOL = 4
-
 import pandas as pd
 import numpy as np
 
@@ -28,17 +26,14 @@ from verticapy.sql.read import to_tablesample
 from verticapy._utils._sql import _executeSQL
 from verticapy.errors import ParameterError, ParsingError
 from verticapy.sql._utils._format import quote_ident
-from verticapy.connect.connect import current_cursor
-from verticapy._config.config import current_random
+from verticapy.connect import current_cursor
+from verticapy._config.config import current_random, GEOPANDAS_ON
 
-# Geopandas - Optional
-try:
+if GEOPANDAS_ON:
     from geopandas import GeoDataFrame
     from shapely import wkt
 
-    GEOPANDAS_ON = True
-except:
-    GEOPANDAS_ON = False
+pickle.DEFAULT_PROTOCOL = 4
 
 
 class vDFIO:
@@ -124,14 +119,14 @@ class vDFIO:
     quotechar: str, optional
         Char which will enclose the str values.
     usecols: str / list, optional
-        vColumns to select from the final vDataFrame relation. If empty, all
-        vColumns will be selected.
+        vDataColumns to select from the final vDataFrame relation. If empty, all
+        vDataColumns will be selected.
     header: bool, optional
         If set to False, no header will be written in the CSV file.
     new_header: list, optional
-        List of columns to use to replace vColumns name in the CSV.
+        List of columns to use to replace vDataColumns name in the CSV.
     order_by: str / dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
     n_files: int, optional
@@ -267,8 +262,8 @@ class vDFIO:
         write '"my_schema"."my_relation"'. Use double quotes '"' to avoid errors
         due to special characters.
     usecols: str / list, optional
-        vColumns to select from the final vDataFrame relation. If empty, all
-        vColumns will be selected.
+        vDataColumns to select from the final vDataFrame relation. If empty, all
+        vDataColumns will be selected.
     relation_type: str, optional
         Type of the relation.
             view      : View
@@ -445,10 +440,10 @@ class vDFIO:
         File/Folder system path. Be careful: if a JSON file with the same name 
         exists, it will over-write it.
     usecols: str / list, optional
-        vColumns to select from the final vDataFrame relation. If empty, all
-        vColumns will be selected.
+        vDataColumns to select from the final vDataFrame relation. If empty, all
+        vDataColumns will be selected.
     order_by: str / dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
     n_files: int, optional
@@ -692,9 +687,9 @@ class vDFIO:
         Boolean, specifies whether to export timestamps as int96 physical type (True) or int64 
         physical type (False).
     by: str / list, optional
-        vColumns used in the partition.
+        vDataColumns used in the partition.
     order_by: str / dict / list, optional
-        If specified as a list: the list of vColumns useed to sort the data in ascending order.
+        If specified as a list: the list of vDataColumns useed to sort the data in ascending order.
         If specified as a dictionary: a dictionary of all sorting methods.
         For example, to sort by "column1" ASC and "column2" DESC: {"column1": "asc", "column2": "desc"}
 
@@ -785,8 +780,8 @@ class vDFIO:
     path: str
         Absolute path where the SHP file will be created.
     usecols: list, optional
-        vColumns to select from the final vDataFrame relation. If empty, all
-        vColumns will be selected.
+        vDataColumns to select from the final vDataFrame relation. If empty, all
+        vDataColumns will be selected.
     overwrite: bool, optional
         If set to True, the function will overwrite the index if an index exists.
     shape: str, optional

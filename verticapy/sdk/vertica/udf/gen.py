@@ -14,80 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import os
+from typing import Union
 
-#
-#
-# Modules
-#
-# Standard Python Modules
-import datetime, decimal, inspect, os, warnings
-from typing import Union, Literal
-
-# VerticaPy Modules
-import verticapy as vp
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql import _executeSQL
-from verticapy.sql.sys import current_session, username
+from verticapy.sdk.vertica.udf.utils import get_set_add_function
 
 
 @save_verticapy_logs
-def import_lib_udf(
-    udf_list: list, library_name: str, include_dependencies: Union[str, list] = []
-) -> bool:
-    """
-Install a library of Python functions in Vertica. This function will work only
-when it is executed directly in the server.
-
-Parameters
-----------
-udf_list: list
-	List of tuples including the different functions.
-		function     : [function] Python Function.
-	    arg_types    : [dict/list] List or dictionary of the function input types.
-	    			   Example: {"input1": int, "input2": float} or [int, float]
-	    return_type  : [type/dict] Function output type. In case of many outputs, 
-	    			   it must be a dictionary including all the outputs types and 
-	    			   names. Example: {"result1": int, "result2": float}
-	    parameters   : [dict] Dictionary of the function input optional parameters.
-	    			   Example: {"param1": int, "param2": str}
-	    new_name     : [str] New function name when installed in Vertica.
-library_name: str
-	Library Name.
-include_dependencies: str / list, optional
-	Library files dependencies. The function will copy paste the different files
-	in the UDF definition.
-
-Returns
--------
-bool
-    True if the installation was a success, False otherwise.
-	"""
-    directory = os.path.dirname(vp.__file__)
-    session_name = f"{current_session()}_{username()}"
-    file_name = f"{library_name}_{session_name}.py"
-    try:
-        os.remove(f"{directory}/{file_name}")
-    except:
-        pass
-    udx_str, sql = create_lib_udf(
-        udf_list, library_name, include_dependencies, f"{directory}/{file_name}"
-    )
-    f = open(f"{directory}/{file_name}", "w")
-    f.write(udx_str)
-    f.close()
-    try:
-        for idx, query in enumerate(sql):
-            _executeSQL(query, title=f"UDF installation. [step {idx}]")
-        return True
-    except Exception as e:
-        warnings.warn(e, Warning)
-        return False
-    finally:
-        os.remove(f"{directory}/{file_name}")
-
-
-@save_verticapy_logs
-def create_lib_udf(
+def generate_lib_udf(
     udf_list: list,
     library_name: str,
     include_dependencies: Union[str, list] = [],
@@ -169,7 +104,7 @@ udx_str, sql
     udx_str += "\n"
     sql = []
     for udf in udf_list:
-        tmp = create_udf(*udf, **{"library_name": library_name})
+        tmp = generate_udf(*udf, **{"library_name": library_name})
         udx_str += tmp[0]
         sql += [tmp[1]]
     sql_path = f"{library_name}.sql"
@@ -191,10 +126,7 @@ udx_str, sql
         return udx_str, sql
 
 
-# Functions used to create the 2 main ones.
-
-
-def create_udf(
+def generate_udf(
     function,
     arg_types: Union[list, dict],
     return_type: Union[type, dict],
@@ -346,81 +278,3 @@ def create_udf(
     )
 
     return udx_str, sql
-
-
-def get_func_info(func) -> tuple:
-    # TO COMPLETE - GUESS FUNCTIONS TYPES
-
-    name = func.__name__
-    argspec = inspect.getfullargspec(func)[6]
-    if "return" in argspec:
-        return_type = argspec["return"]
-        del argspec["return"]
-    else:
-        return_type = None
-
-    arg_types, parameters = {}, {}
-    for param in argspec:
-        if inspect.signature(func).parameters[param].default == inspect._empty:
-            arg_types[param] = argspec[param]
-        else:
-            parameters[param] = argspec[param]
-
-    return (func, arg_types, return_type, parameters)
-
-
-def get_module_func_info(module) -> list:
-    # TO COMPLETE - TRY AND RAISE THE APPROPRIATE ERROR
-
-    def get_list(module):
-        func_list = []
-        for func in dir(module):
-            if func[0] != "_":
-                func_list += [func]
-        return func_list
-
-    func_list = get_list(module)
-    func_info = []
-    for func in func_list:
-        ldic = locals()
-        exec(f"info = get_func_info(module.{func})", globals(), ldic)
-        func_info += [ldic["info"]]
-    return func_info
-
-
-def get_set_add_function(
-    ftype: type, func: Literal["get", "set", "add"] = "get"
-) -> str:
-    func = str(func).lower()
-    if ftype == bytes:
-        return f"{func}Binary"
-    elif ftype == bool:
-        return f"{func}Bool"
-    elif ftype == datetime.date:
-        return f"{func}Date"
-    elif ftype == float:
-        return f"{func}Float"
-    elif ftype == int:
-        return f"{func}Int"
-    elif ftype == datetime.timedelta:
-        return f"{func}Interval"
-    elif ftype == decimal.Decimal:
-        return f"{func}Numeric"
-    elif ftype == str:
-        if func == "add":
-            return f"{func}Varchar"
-        else:
-            return f"{func}String"
-    elif ftype == datetime.time:
-        return f"{func}Time"
-    elif ftype == (datetime.time, datetime.tzinfo):
-        return f"{func}TimeTz"
-    elif ftype == datetime.datetime:
-        return f"{func}Timestamp"
-    elif ftype == (datetime.datetime, datetime.tzinfo):
-        return f"{func}TimestampTz"
-    else:
-        raise (
-            "The input type is not managed by get_set_add_function. "
-            "Check the Vertica Python SDK for more information."
-        )

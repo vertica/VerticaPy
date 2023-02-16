@@ -48,8 +48,8 @@ from verticapy.learn.tools import does_model_exist
 from verticapy.sql._utils._format import clean_query, quote_ident, schema_relation
 from verticapy.machine_learning._utils import get_match_index
 from verticapy._config.config import OPTIONS
-import verticapy.learn.metrics as mt
-import verticapy.learn.model_selection as ms
+import verticapy.machine_learning.metrics as mt
+import verticapy.machine_learning.model_selection as ms
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -60,7 +60,7 @@ import verticapy.learn.model_selection as ms
 #     \\   /    |.  \    /:  | \        /  |:       :)(:      "|( \_|:  \
 #      \__/     |___|\__/|___|  \"_____/   (________/  \_______) \_______)
 #
-#
+##
 
 
 class vModel:
@@ -2577,7 +2577,7 @@ class MulticlassClassifier(Classifier):
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
-        Name of the additional prediction vColumn. If unspecified, a name is 
+        Name of the additional prediction vDataColumn. If unspecified, a name is 
 	    generated based on the model and class names.
     pos_label: int / float / str, optional
         Class label, the class for which the probability is calculated. 

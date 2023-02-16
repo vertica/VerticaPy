@@ -15,8 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 # Standard Python Modules
-import random, warnings, datetime
+import random, warnings, datetime, math
 from typing import Union, Literal
+from itertools import combinations_with_replacement
 
 # Other modules
 import numpy as np
@@ -35,6 +36,131 @@ from verticapy._config.config import OPTIONS
 
 class vDFML:
     @save_verticapy_logs
+    def add_duplicates(self, weight: Union[int, str], use_gcd: bool = True):
+        """
+    Duplicates the vDataFrame using the input weight.
+
+    Parameters
+    ----------
+    weight: str / integer
+        vDataColumn or integer representing the weight.
+    use_gcd: bool
+        If set to True, uses the GCD (Greatest Common Divisor) to reduce all 
+        common weights to avoid unnecessary duplicates.
+
+    Returns
+    -------
+    vDataFrame
+        the output vDataFrame
+        """
+        if isinstance(weight, str):
+            weight = self.format_colnames(weight)
+            assert self[weight].category() == "int", TypeError(
+                "The weight vDataColumn category must be "
+                f"'integer', found {self[weight].category()}."
+            )
+            L = sorted(self[weight].distinct())
+            gcd, max_value, n = L[0], L[-1], len(L)
+            assert gcd >= 0, ValueError(
+                "The weight vDataColumn must only include positive integers."
+            )
+            if use_gcd:
+                if gcd != 1:
+                    for i in range(1, n):
+                        if gcd != 1:
+                            gcd = math.gcd(gcd, L[i])
+                        else:
+                            break
+            else:
+                gcd = 1
+            columns = self.get_columns(exclude_columns=[weight])
+            vdf = self.search(self[weight] != 0, usecols=columns)
+            for i in range(2, int(max_value / gcd) + 1):
+                vdf = vdf.append(
+                    self.search((self[weight] / gcd) >= i, usecols=columns)
+                )
+        else:
+            assert weight >= 2 and isinstance(weight, int), ValueError(
+                "The weight must be an integer greater or equal to 2."
+            )
+            vdf = self.copy()
+            for i in range(2, weight + 1):
+                vdf = vdf.append(self)
+        return vdf
+
+    @save_verticapy_logs
+    def cdt(
+        self,
+        columns: Union[str, list] = [],
+        max_cardinality: int = 20,
+        nbins: int = 10,
+        tcdt: bool = True,
+        drop_transf_cols: bool = True,
+    ):
+        """
+    Returns the complete disjunctive table of the vDataFrame.
+    Numerical features are transformed to categorical using
+    the 'discretize' method. Applying PCA on TCDT leads to MCA 
+    (Multiple correspondence analysis).
+
+    \u26A0 Warning : This method can become computationally expensive when
+                     used with categorical variables with many categories.
+
+    Parameters
+    ----------
+    columns: str / list, optional
+        List of the vDataColumns names.
+    max_cardinality: int, optional
+        For any categorical variable, keeps the most frequent categories and 
+        merges the less frequent categories into a new unique category.
+    nbins: int, optional
+        Number of bins used for the discretization (must be > 1).
+    tcdt: bool, optional
+        If set to True, returns the transformed complete disjunctive table 
+        (TCDT). 
+    drop_transf_cols: bool, optional
+        If set to True, drops the columns used during the transformation.
+
+    Returns
+    -------
+    vDataFrame
+        the CDT relation.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        if columns:
+            columns = self.format_colnames(columns)
+        else:
+            columns = self.get_columns()
+        vdf = self.copy()
+        columns_to_drop = []
+        for elem in columns:
+            if vdf[elem].isbool():
+                vdf[elem].astype("int")
+            elif vdf[elem].isnum():
+                vdf[elem].discretize(nbins=nbins)
+                columns_to_drop += [elem]
+            elif vdf[elem].isdate():
+                vdf[elem].drop()
+            else:
+                vdf[elem].discretize(method="topk", k=max_cardinality)
+                columns_to_drop += [elem]
+        new_columns = vdf.get_columns()
+        vdf.one_hot_encode(
+            columns=columns,
+            max_cardinality=max(max_cardinality, nbins) + 2,
+            drop_first=False,
+        )
+        new_columns = vdf.get_columns(exclude_columns=new_columns)
+        if drop_transf_cols:
+            vdf.drop(columns=columns_to_drop)
+        if tcdt:
+            for elem in new_columns:
+                sum_cat = vdf[elem].sum()
+                vdf[elem].apply(f"{{}} / {sum_cat} - 1")
+        return vdf
+
+    @save_verticapy_logs
     def chaid(
         self,
         response: str,
@@ -52,16 +178,16 @@ class vDFML:
     Parameters
     ----------
     response: str
-        Categorical response vColumn.
+        Categorical response vDataColumn.
     columns: str / list
-        List of the vColumn names. The maximum number of categories for each
+        List of the vDataColumn names. The maximum number of categories for each
         categorical column is 16; categorical columns with a higher cardinality
         are discarded.
     nbins: int, optional
         Integer in the range [2,16], the number of bins used 
         to discretize the numerical features.
     method: str, optional
-        The method with which to discretize the numerical vColumns, 
+        The method with which to discretize the numerical vDataColumns, 
         one of the following:
             same_width : Computes bins of regular width.
             smart      : Uses a random forest model on a response column to find the best
@@ -225,7 +351,7 @@ class vDFML:
     Parameters
     ----------
     columns: list
-        List of the vColumn names.
+        List of the vDataColumn names.
     max_cardinality: int, optional
         The maximum number of categories for each categorical column. Categorical 
         columns with a higher cardinality are discarded.
@@ -256,14 +382,14 @@ class vDFML:
                     remove_cols += [col]
                     if self[col].category() not in ("float", "int", "text"):
                         warning_message = (
-                            f"vColumn '{col}' is of category '{self[col].category()}'. "
+                            f"vDataColumn '{col}' is of category '{self[col].category()}'. "
                             "This method only accepts categorical & numerical inputs. "
-                            "This vColumn was ignored."
+                            "This vDataColumn was ignored."
                         )
                     else:
                         warning_message = (
-                            f"vColumn '{col}' has a too high cardinality "
-                            f"(> {max_cardinality}). This vColumn was ignored."
+                            f"vDataColumn '{col}' has a too high cardinality "
+                            f"(> {max_cardinality}). This vDataColumn was ignored."
                         )
                     warnings.warn(warning_message, Warning)
         for col in remove_cols:
@@ -279,16 +405,16 @@ class vDFML:
         robust: bool = False,
     ):
         """
-    Adds a new vColumn labeled with 0 and 1. 1 means that the record is a global 
+    Adds a new vDataColumn labeled with 0 and 1. 1 means that the record is a global 
     outlier.
 
     Parameters
     ----------
     columns: str / list, optional
-        List of the vColumns names. If empty, all numerical vColumns will be 
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     name: str, optional
-        Name of the new vColumn.
+        Name of the new vDataColumn.
     threshold: float, optional
         Threshold equals to the critical score.
     robust: bool
@@ -302,7 +428,7 @@ class vDFML:
 
     See Also
     --------
-    vDataFrame.normalize : Normalizes the input vColumns.
+    vDataFrame.normalize : Normalizes the input vDataColumns.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -342,22 +468,22 @@ class vDFML:
         RFmodel_params: dict = {},
     ):
         """
-    Returns the chi-square term using the pivot table of the response vColumn 
-    against the input vColumns.
+    Returns the chi-square term using the pivot table of the response vDataColumn 
+    against the input vDataColumns.
 
     Parameters
     ----------
     response: str
-        Categorical response vColumn.
+        Categorical response vDataColumn.
     columns: str / list, optional
-        List of the vColumn names. The maximum number of categories for each
+        List of the vDataColumn names. The maximum number of categories for each
         categorical columns is 16. Categorical columns with a higher cardinality
         are discarded.
     nbins: int, optional
         Integer in the range [2,16], the number of bins used to discretize 
         the numerical features.
     method: str, optional
-        The method to use to discretize the numerical vColumns.
+        The method to use to discretize the numerical vDataColumns.
             same_width : Computes bins of regular width.
             smart      : Uses a random forest model on a response column to find the best
                 interval for discretization.
@@ -441,6 +567,38 @@ class vDFML:
         return tablesample(result)
 
     @save_verticapy_logs
+    def polynomial_comb(self, columns: Union[str, list] = [], r: int = 2):
+        """
+    Returns a vDataFrame containing different product combination of the 
+    input vDataColumns. This function is ideal for bivariate analysis.
+
+    Parameters
+    ----------
+    columns: str / list, optional
+        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
+        used.
+    r: int, optional
+        Degree of the polynomial.
+
+    Returns
+    -------
+    vDataFrame
+        the Polynomial object.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        if not (columns):
+            numcol = self.numcol()
+        else:
+            numcol = self.format_colnames(columns)
+        vdf = self.copy()
+        all_comb = combinations_with_replacement(numcol, r=r)
+        for elem in all_comb:
+            name = "_".join(elem)
+            vdf.eval(name.replace('"', ""), expr=" * ".join(elem))
+        return vdf
+
+    @save_verticapy_logs
     def recommend(
         self,
         unique_id: str,
@@ -459,9 +617,9 @@ class vDFML:
     Parameters
     ----------
     unique_id: str
-        Input vColumn corresponding to a unique ID. It is a primary key.
+        Input vDataColumn corresponding to a unique ID. It is a primary key.
     item_id: str
-        Input vColumn corresponding to an item ID. It is a secondary key used to 
+        Input vDataColumn corresponding to an item ID. It is a secondary key used to 
         compute the different pairs.
     method: str, optional
         Method used to recommend.
@@ -472,14 +630,14 @@ class vDFML:
             median : Each item will be recommended based on the median rating
                      of the different item pairs with a differing second element.
     rating: str / tuple, optional
-        Input vColumn including the items rating.
+        Input vDataColumn including the items rating.
         If the 'rating' type is 'tuple', it must composed of 3 elements: 
         (r_vdf, r_item_id, r_name) where:
             r_vdf is an input vDataFrame.
-            r_item_id is an input vColumn which must includes the same id as 'item_id'.
-            r_name is an input vColumn including the items rating. 
+            r_item_id is an input vDataColumn which must includes the same id as 'item_id'.
+            r_name is an input vDataColumn including the items rating. 
     ts: str, optional
-        TS (Time Series) vColumn to use to order the data. The vColumn type must be
+        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     start_date: str / int / float / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
@@ -624,6 +782,55 @@ class vDFML:
         return FUNCTIONS_DICTIONNARY[method](*argv, **kwds)
 
     @save_verticapy_logs
+    def sessionize(
+        self,
+        ts: str,
+        by: Union[str, list] = [],
+        session_threshold: str = "30 minutes",
+        name: str = "session_id",
+    ):
+        """
+    Adds a new vDataColumn to the vDataFrame which will correspond to sessions 
+    (user activity during a specific time). A session ends when ts - lag(ts) 
+    is greater than a specific threshold.
+
+    Parameters
+    ----------
+    ts: str
+        vDataColumn used as timeline. It will be to use to order the data. It can be
+        a numerical or type date like (date, datetime, timestamp...) vDataColumn.
+    by: str / list, optional
+        vDataColumns used in the partition.
+    session_threshold: str, optional
+        This parameter is the threshold which will determine the end of the 
+        session. For example, if it is set to '10 minutes' the session ends
+        after 10 minutes of inactivity.
+    name: str, optional
+        The session name.
+
+    Returns
+    -------
+    vDataFrame
+        self
+
+    See Also
+    --------
+    vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vDataColumn.
+        """
+        if isinstance(by, str):
+            by = [by]
+        by, ts = self.format_colnames(by, ts)
+        partition = ""
+        if by:
+            partition = f"PARTITION BY {', '.join(by)}"
+        expr = f"""CONDITIONAL_TRUE_EVENT(
+                    {ts}::timestamp - LAG({ts}::timestamp) 
+                  > '{session_threshold}') 
+                  OVER ({partition} ORDER BY {ts})"""
+        return self.eval(name=name, expr=expr)
+
+    @save_verticapy_logs
     def train_test_split(
         self,
         test_size: float = 0.33,
@@ -640,7 +847,7 @@ class vDFML:
     test_size: float, optional
         Proportion of the test set comparint to the training set.
     order_by: str / dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
+        List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
         Without this parameter, the seeded random number used to split the data

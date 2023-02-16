@@ -53,7 +53,7 @@ bool
     True if the operation succeeded, False otherwise.
     """
     from verticapy._utils._sql import _executeSQL
-    from verticapy.connect.connect import SESSION_IDENTIFIER
+    from verticapy.connect import SESSION_IDENTIFIER
 
     if not (OPTIONS["save_query_profile"]) or (
         isinstance(OPTIONS["save_query_profile"], list)
