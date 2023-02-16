@@ -23,7 +23,7 @@ import math, os
 
 # VerticaPy
 import verticapy
-from verticapy.udf import create_lib_udf
+from verticapy.udf import generate_lib_udf
 
 
 def normalize_titanic(age, fare):
@@ -31,10 +31,10 @@ def normalize_titanic(age, fare):
 
 
 class TestUdf:
-    def test_create_lib_udf(self):
+    def test_generate_lib_udf(self):
         file_path = os.path.dirname(verticapy.__file__) + "/python_math_lib.py"
         pmath_path = os.path.dirname(verticapy.__file__) + "/tests/udf/pmath.py"
-        udx_str, udx_sql = create_lib_udf(
+        udx_str, udx_sql = generate_lib_udf(
             [
                 (math.exp, [float], float, {}, "python_exp"),
                 (

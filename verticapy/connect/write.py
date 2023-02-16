@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy.connect.connect import connect, VERTICAPY_AUTO_CONNECTION
+from verticapy.connect.utils import get_confparser, get_connection_file
 
 
 def change_auto_connection(name: str):

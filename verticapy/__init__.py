@@ -66,7 +66,7 @@ __license__ = "Apache License, Version 2.0"
 from verticapy._version import __version__, vertica_version
 from verticapy._config.config import set_option
 from verticapy._utils._logo import gen_verticapy_logo_html, gen_verticapy_logo_str
-from verticapy._help import help_start, vHelp
+from verticapy._help import help_start
 
 from verticapy.connect.external import set_external_connection
 from verticapy.connect.connect import (
@@ -97,10 +97,3 @@ from verticapy.sql.parsers.csv import read_csv
 from verticapy.sql.parsers.json import read_json
 from verticapy.sql.parsers.pandas import pandas_to_vertica
 from verticapy.sql.parsers.shp import read_shp
-
-# DEPR
-from verticapy.sql.create import create_schema, create_table, create_verticapy_schema
-from verticapy.sql.drop import drop
-from verticapy.sql.insert import insert_into, insert_verticapy_schema
-from verticapy.sql.read import readSQL, to_tablesample, vDataFrameSQL
-from verticapy.sql.dtypes import get_data_types
