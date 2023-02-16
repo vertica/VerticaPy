@@ -14,26 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 from typing import Union, Literal
 import random
 import numpy as np
 
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._version import vertica_version
 from verticapy._utils._gen import gen_name
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.learn.vmodel import Clustering, Tree, MulticlassClassifier, Regressor
-from verticapy.learn.tree import get_tree_list_of_arrays
 from verticapy._utils._sql._format import quote_ident
+from verticapy._version import check_minimum_version
+from verticapy._version import vertica_version
+
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.machine_learning.vertica.vmodel import Clustering, Tree, MulticlassClassifier, Regressor
+from verticapy.machine_learning.vertica.tree import get_tree_list_of_arrays
 
 
 class XGBoost:

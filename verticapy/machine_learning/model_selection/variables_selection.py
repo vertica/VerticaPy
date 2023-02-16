@@ -14,35 +14,29 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import random, itertools
 from typing import Union, Literal
+from tqdm.auto import tqdm
 
-# VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.sql.drop import drop
-from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample.base import tablesample
+from verticapy._config.config import OPTIONS
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.learn.tools import does_model_exist
-from verticapy.machine_learning._utils import reverse_score
+
+from verticapy.core.tablesample.base import tablesample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.sql.drop import drop
+from verticapy.sql.read import vDataFrameSQL
+
 from verticapy.plotting._matplotlib import (
     plot_stepwise_ml,
     plot_importance,
 )
-from verticapy._config.config import OPTIONS
+
+from verticapy.machine_learning._utils import reverse_score
+from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
-
-# Other Python Modules
-from tqdm.auto import tqdm
-
 
 @save_verticapy_logs
 def randomized_features_search_cv(

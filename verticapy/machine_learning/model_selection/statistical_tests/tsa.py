@@ -19,16 +19,17 @@ from typing import Union
 import numpy as np
 from scipy.stats import chi2, norm, f
 
-# VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs
+from verticapy._config.config import OPTIONS
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import schema_relation
+
+from verticapy.core.tablesample.base import tablesample
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample.base import tablesample
-from verticapy._utils._gen import gen_tmp_name
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy._utils._sql._format import schema_relation
-from verticapy._utils._sql._execute import _executeSQL
-from verticapy._config.config import OPTIONS
 
 
 @save_verticapy_logs

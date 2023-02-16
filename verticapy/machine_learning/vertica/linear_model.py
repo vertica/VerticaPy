@@ -14,20 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._version import vertica_version
-from verticapy.errors import ParameterError
-from verticapy.learn.vmodel import Regressor, BinaryClassifier
-
-# Standard Module
 from typing import Literal, Union
+
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._version import check_minimum_version, vertica_version
+from verticapy.errors import ParameterError
+
+from verticapy.machine_learning.vertica.vmodel import Regressor, BinaryClassifier
+
 
 
 class ElasticNet(Regressor):

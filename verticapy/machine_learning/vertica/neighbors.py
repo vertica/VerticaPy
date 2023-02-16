@@ -14,36 +14,32 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import warnings, itertools
+from collections.abc import Iterable
+from typing import Union, Literal
 
-#
-#
-# Modules
-#
-# VerticaPy Modules
+import matplotlib.pyplot as plt
+
+from verticapy._config.config import ISNOTEBOOK, OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
-import verticapy.learn.metrics as mt
+from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
+from verticapy.errors import ParameterError
+
+from verticapy.core.tablesample.base import tablesample
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.drop import drop
 from verticapy.sql.read import to_tablesample, vDataFrameSQL
 from verticapy.sql.insert import insert_verticapy_schema
-from verticapy.core.tablesample.base import tablesample
-from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy._utils._sql._execute import _executeSQL
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.learn.model_selection import roc_curve, prc_curve, lift_chart
-from verticapy.errors import ParameterError
-from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree
-from verticapy.learn.tools import does_model_exist
-from verticapy._utils._sql._format import quote_ident, schema_relation
-from verticapy._utils._sql._format import clean_query
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import OPTIONS
 
-# Standard Python Modules
-import warnings, itertools
-from typing import Union, Literal
-from collections.abc import Iterable
-import matplotlib.pyplot as plt
+from verticapy.plotting._matplotlib.base import updated_dict
+
+import verticapy.machine_learning.vertica.metrics as mt
+from verticapy.machine_learning.vertica.model_selection import roc_curve, prc_curve, lift_chart
+from verticapy.machine_learning.vertica.tools import does_model_exist
+from verticapy.machine_learning.vertica.vmodel import MulticlassClassifier, vModel, Regressor, Tree
 
 
 class NearestCentroid(MulticlassClassifier):

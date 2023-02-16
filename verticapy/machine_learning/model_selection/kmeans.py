@@ -15,21 +15,20 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Union, Literal
+from tqdm.auto import tqdm
 
-# VerticaPy Modules
+import matplotlib.pyplot as plt
+
+from verticapy._config.config import ISNOTEBOOK, OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.base import vDataFrame
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._format import schema_relation, quote_ident
+
 from verticapy.core.tablesample.base import tablesample
-from verticapy._config.config import ISNOTEBOOK
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.plotting._colors import gen_colors
 from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import OPTIONS
-from verticapy._utils._sql._format import schema_relation, quote_ident
-from verticapy._utils._gen import gen_tmp_name
-
-# Other Python Modules
-import matplotlib.pyplot as plt
-from tqdm.auto import tqdm
 
 
 @save_verticapy_logs

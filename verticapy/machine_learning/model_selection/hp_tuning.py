@@ -18,27 +18,28 @@ import random, math, itertools
 import numpy as np
 from collections.abc import Iterable
 from typing import Union, Literal
+from tqdm.auto import tqdm
 
-# VerticaPy Modules
+import matplotlib.pyplot as plt
+
 from verticapy._utils._collect import save_verticapy_logs
+from verticapy._config.config import ISNOTEBOOK, OPTIONS
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._gen import gen_tmp_name
+from verticapy.errors import ParameterError
+
+from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample.base import tablesample
-from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._execute import _executeSQL
-from verticapy.errors import ParameterError
-from verticapy.plotting._colors import gen_colors
-from verticapy.learn.tools import does_model_exist
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy.machine_learning._utils import reverse_score
-from verticapy._config.config import OPTIONS
-from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
-# Other Python Modules
-import matplotlib.pyplot as plt
-from tqdm.auto import tqdm
+from verticapy.plotting._matplotlib.base import updated_dict
+from verticapy.plotting._colors import gen_colors
+
+from verticapy.machine_learning._utils import reverse_score
+from verticapy.machine_learning.model_selection.model_validation import cross_validate
+from verticapy.learn.tools import does_model_exist
 
 
 @save_verticapy_logs

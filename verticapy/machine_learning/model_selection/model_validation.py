@@ -17,25 +17,26 @@ permissions and limitations under the License.
 import statistics, random, time
 from collections.abc import Iterable
 from typing import Union, Literal
+from tqdm.auto import tqdm
 
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample.base import tablesample
-from verticapy._config.config import ISNOTEBOOK
-from verticapy.errors import ParameterError
-from verticapy.plotting._colors import gen_colors, get_color
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import OPTIONS
-from verticapy.machine_learning._utils import compute_area
-from verticapy._utils._sql._execute import _executeSQL
-
-# Other Python Modules
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from tqdm.auto import tqdm
+
+from verticapy._config.config import ISNOTEBOOK, OPTIONS
+from verticapy._version import check_minimum_version
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy.errors import ParameterError
+
+from verticapy.core.tablesample.base import tablesample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.sql.read import vDataFrameSQL
+
+from verticapy.plotting._colors import gen_colors, get_color
+from verticapy.plotting._matplotlib.base import updated_dict
+
+from verticapy.machine_learning._utils import compute_area
 
 
 def _compute_function_metrics(

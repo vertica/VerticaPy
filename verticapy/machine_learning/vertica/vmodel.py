@@ -14,20 +14,24 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import warnings, copy
-import numpy as np
 from typing import Union, Literal, get_type_hints
 from collections.abc import Iterable
+import numpy as np
 
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
+from verticapy._config.config import OPTIONS
+from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
+from verticapy._version import check_minimum_version, vertica_version
+from verticapy.errors import ConversionError, FunctionError, ParameterError, ModelError
+
+from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample, vDataFrameSQL
+
 from verticapy.plotting._matplotlib.mlplot import (
     plot_importance,
     regression_tree_plot,
@@ -37,19 +41,11 @@ from verticapy.plotting._matplotlib.mlplot import (
     svm_classifier_plot,
     regression_plot,
 )
-from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample, vDataFrameSQL
-from verticapy._version import vertica_version
-from verticapy.core.tablesample.base import tablesample
-from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy._utils._sql._execute import _executeSQL
-from verticapy.errors import FunctionError, ParameterError, ModelError, ConversionError
-from verticapy.learn.tools import does_model_exist
-from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
+
 from verticapy.machine_learning._utils import get_match_index
-from verticapy._config.config import OPTIONS
-import verticapy.machine_learning.metrics as mt
 import verticapy.machine_learning.model_selection as ms
+import verticapy.machine_learning.metrics as mt
+from verticapy.machine_learning.vertica.tools import does_model_exist
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___

@@ -14,21 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.sql.read import vDataFrameSQL
-from verticapy.errors import ParameterError, ModelError
-from verticapy.machine_learning.vertica.vmodel import Regressor
-from verticapy._config.config import OPTIONS
-
-# Standard Python Modules
 from typing import Union
+
+from verticapy._config.config import OPTIONS
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy.errors import ParameterError, ModelError
+
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.sql.read import vDataFrameSQL
+
+from verticapy.machine_learning.vertica.vmodel import Regressor
 
 
 class Pipeline:

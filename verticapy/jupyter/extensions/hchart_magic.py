@@ -27,7 +27,7 @@ from verticapy.errors import ParameterError
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.core.tablesample.base import tablesample
-from verticapy.plotting._highcharts import hchartSQL
+from verticapy.plotting._highcharts.base import hchartSQL
 from verticapy._utils._sql._format import replace_vars_in_query, clean_query
 from verticapy._config.config import OPTIONS
 

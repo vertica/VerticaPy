@@ -14,20 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Literal, Union
 
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.learn.vmodel import MulticlassClassifier
 from verticapy._utils._sql._format import quote_ident
+from verticapy._version import check_minimum_version
+
 from verticapy.sql.read import vDataFrameSQL
 
-# Standard Modules
-from typing import Literal, Union
+from verticapy.machine_learning.vertica.vmodel import MulticlassClassifier
 
 
 class NaiveBayes(MulticlassClassifier):

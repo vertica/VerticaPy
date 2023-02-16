@@ -14,21 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Literal
 
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.plotting._matplotlib.mlplot import plot_var
+from verticapy._version import check_minimum_version
+
 from verticapy.plotting._colors import gen_colors, gen_cmap
-from verticapy.learn.vmodel import Decomposition
+from verticapy.plotting._matplotlib.mlplot import plot_var
+
 from verticapy.core.tablesample.base import tablesample
 
-# Standard Module
-from typing import Literal
+from verticapy.machine_learning.vertica.vmodel import Decomposition
 
 
 class MCA(Decomposition):

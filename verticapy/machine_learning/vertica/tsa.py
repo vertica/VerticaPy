@@ -14,42 +14,37 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import math
 from typing import Union, Literal
 
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
+import matplotlib.pyplot as plt
+
+from verticapy._config.config import ISNOTEBOOK, OPTIONS, PARSER_IMPORT
 from verticapy._utils._collect import save_verticapy_logs
-import verticapy.learn.metrics as mt
-from verticapy.learn.vmodel import Regressor
-from verticapy.learn.linear_model import LinearRegression
-from verticapy.core.vdataframe.base import vDataFrame
+from verticapy._version import check_minimum_version
+
 from verticapy.plotting._colors import gen_colors
-from verticapy.learn.tools import does_model_exist
 from verticapy._utils._sql._format import quote_ident, schema_relation
-from verticapy.sql.insert import insert_verticapy_schema
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._config.config import ISNOTEBOOK
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy.sql.drop import drop
+
 from verticapy.core.tablesample.base import tablesample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.sql.drop import drop
+from verticapy.sql.insert import insert_verticapy_schema
 from verticapy.sql.read import vDataFrameSQL
-from verticapy._config.config import OPTIONS
+
+from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.mlplot import plot_importance
 
-# Other Python Modules
-try:
+import verticapy.machine_learning.vertica.metrics as mt
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
+from verticapy.machine_learning.vertica.tools import does_model_exist
+from verticapy.machine_learning.vertica.vmodel import Regressor
+
+if PARSER_IMPORT:
     from dateutil.parser import parse
-except:
-    pass
-import matplotlib.pyplot as plt
 
 
 class SARIMAX(Regressor):

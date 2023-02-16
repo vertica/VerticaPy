@@ -14,23 +14,26 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import datetime
 from typing import Union, Literal
+from tqdm.auto import tqdm
 
-# VerticaPy Modules
+from verticapy._config.config import OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.sql.read import vDataFrameSQL
-from verticapy._version import vertica_version
-from verticapy.core.tablesample.base import tablesample
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import schema_relation
+from verticapy._version import vertica_version
 from verticapy.errors import ParameterError
+
+from verticapy.core.tablesample.base import tablesample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.sql.read import vDataFrameSQL
+
+from verticapy.plotting._matplotlib.mlplot import plot_bubble_ml, plot_stepwise_ml
+
+from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.vertica.ensemble import (
     RandomForestRegressor,
     RandomForestClassifier,
@@ -58,15 +61,7 @@ from verticapy.machine_learning.vertica.neighbors import (
     KNeighborsRegressor,
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
-from verticapy.plotting._matplotlib.mlplot import plot_bubble_ml, plot_stepwise_ml
 from verticapy.machine_learning.vertica.vmodel import vModel
-from verticapy._utils._sql._format import schema_relation
-from verticapy.machine_learning._utils import reverse_score
-from verticapy._utils._sql._execute import _executeSQL
-from verticapy._config.config import OPTIONS
-
-# Other Modules
-from tqdm.auto import tqdm
 
 
 class AutoDataPrep(vModel):

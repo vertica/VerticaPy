@@ -14,29 +14,25 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import os
 from typing import Literal, Union
-
-# VerticaPy Modules
 import vertica_python
-from verticapy._version import check_minimum_version
+
+from verticapy._config.config import OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.connect import current_cursor
-from verticapy.sql.drop import drop
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy.learn.vmodel import Clustering, Tree, vModel
-from verticapy.learn.tools import does_model_exist
 from verticapy._utils._sql._format import quote_ident, schema_relation
+from verticapy._version import check_minimum_version
+from verticapy.connect import current_cursor
+
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_verticapy_schema
-from verticapy._config.config import OPTIONS
+
+from verticapy.machine_learning.vertica.vmodel import Clustering, Tree, vModel
+from verticapy.machine_learning.vertica.tools import does_model_exist
 
 
 class BisectingKMeans(Clustering, Tree):

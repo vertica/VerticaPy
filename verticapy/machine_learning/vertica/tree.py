@@ -14,23 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.learn.vmodel import MulticlassClassifier, Regressor, Tree
-from verticapy._utils._sql._format import quote_ident
-
-# Standard Python Modules
 from typing import Union, Literal
 
-#
-# Functions used to simplify the code
-#
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident
+from verticapy._version import check_minimum_version
+
+from verticapy.machine_learning.vertica.vmodel import MulticlassClassifier, Regressor, Tree
 
 
 def get_tree_list_of_arrays(
