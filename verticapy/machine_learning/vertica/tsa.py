@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
-from typing import Union, Literal
+from typing import Literal, Union
 
 import matplotlib.pyplot as plt
 
@@ -38,7 +38,7 @@ from verticapy.sql.read import vDataFrameSQL
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.mlplot import plot_importance
 
-import verticapy.machine_learning.vertica.metrics as mt
+import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.vertica.linear_model import LinearRegression
 from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.vertica.base import Regressor

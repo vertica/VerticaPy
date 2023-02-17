@@ -16,22 +16,20 @@ permissions and limitations under the License.
 """
 from typing import Union
 from collections.abc import Iterable
+
+from verticapy._config.config import ISNOTEBOOK, OPTIONS
 from verticapy._utils._cast import to_varchar
-from verticapy.sql.read import to_tablesample
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._config.config import OPTIONS
-from verticapy.sql.read import readSQL, vDataFrameSQL
-from verticapy.core.str_sql.base import str_sql
 from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy._version import vertica_version
 
+from verticapy.core.str_sql.base import str_sql
 
-# Jupyter - Optional
-try:
+from verticapy.sql.read import readSQL, to_tablesample, vDataFrameSQL
+
+if ISNOTEBOOK:
     from IPython.display import HTML, display
-except:
-    pass
 
 
 class vDFREAD:

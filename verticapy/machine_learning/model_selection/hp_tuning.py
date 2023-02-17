@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import random, math, itertools
 import numpy as np
 from collections.abc import Iterable
-from typing import Union, Literal
+from typing import Literal, Union
 from tqdm.auto import tqdm
 
 import matplotlib.pyplot as plt

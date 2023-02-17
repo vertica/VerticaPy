@@ -14,13 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
-import warnings, math
-from typing import Union, Literal
+import math, warnings
+from typing import Literal, Union
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import OPTIONS
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
 
 

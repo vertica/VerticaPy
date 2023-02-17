@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import random, itertools
-from typing import Union, Literal
+from typing import Literal, Union
 from tqdm.auto import tqdm
 
 from verticapy._utils._collect import save_verticapy_logs

@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 # Standard Python Modules
 import warnings, math
-from typing import Union, Literal
+from typing import Literal, Union
 
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs

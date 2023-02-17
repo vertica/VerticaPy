@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import decimal, math
 from collections.abc import Iterable
-from typing import Union, Literal
+from typing import Literal, Union
 
 # Other modules
 from tqdm.auto import tqdm

@@ -17,7 +17,7 @@ permissions and limitations under the License.
 # Standard Python Modules
 import warnings, datetime, math, re
 from itertools import combinations_with_replacement
-from typing import Union, Literal
+from typing import Literal, Union
 
 # VerticaPy Modules
 from verticapy._utils._collect import save_verticapy_logs

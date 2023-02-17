@@ -15,14 +15,16 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime, math
-from typing import Union, Literal
+from typing import Literal, Union
+from collections.abc import Iterable
+
+from verticapy._config.config import OPTIONS
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._execute import _executeSQL
+
 import verticapy.plotting._matplotlib as plt
 from verticapy.plotting._highcharts.base import hchart_from_vdf
-from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._collect import save_verticapy_logs
-from collections.abc import Iterable
-from verticapy._config.config import OPTIONS
-from verticapy._utils._sql._execute import _executeSQL
 
 
 class vDFPLOT:

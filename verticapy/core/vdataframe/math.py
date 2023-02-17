@@ -14,17 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union, Literal
 import random
-from verticapy._utils._sql._format import quote_ident
-from verticapy.core._utils._map import verticapy_agg_name
-from verticapy.errors import MissingColumn, ParameterError, QueryError
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.str_sql.base import str_sql
-from verticapy.sql.dtypes import get_data_types
+from typing import Literal, Union
+
 from verticapy._utils._cast import to_category
-from verticapy.sql.read import vDataFrameSQL
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident
+from verticapy.errors import MissingColumn, ParameterError, QueryError
+
+from verticapy.core._utils._map import verticapy_agg_name
+
+from verticapy.core.str_sql.base import str_sql
+
+from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.functions.conditional import decode
+from verticapy.sql.read import vDataFrameSQL
 
 
 class vDFMATH:

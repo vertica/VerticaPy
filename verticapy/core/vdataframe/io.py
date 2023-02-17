@@ -14,20 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union, Literal
+from typing import Literal, Union
 from collections.abc import Iterable
-import pickle, decimal, os, copy
-
-import pandas as pd
+import copy, decimal, pickle, os
 import numpy as np
 
+import pandas as pd
+
+from verticapy._config.config import current_random, GEOPANDAS_ON
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql.read import to_tablesample
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy.errors import ParameterError, ParsingError
 from verticapy._utils._sql._format import quote_ident
 from verticapy.connect import current_cursor
-from verticapy._config.config import current_random, GEOPANDAS_ON
+from verticapy.errors import ParameterError, ParsingError
+
+from verticapy.sql.read import to_tablesample
 
 if GEOPANDAS_ON:
     from geopandas import GeoDataFrame

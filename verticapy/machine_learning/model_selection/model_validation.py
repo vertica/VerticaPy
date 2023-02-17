@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import statistics, random, time
 from collections.abc import Iterable
-from typing import Union, Literal
+from typing import Literal, Union
 from tqdm.auto import tqdm
 
 import matplotlib.pyplot as plt

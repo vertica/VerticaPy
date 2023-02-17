@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings, copy
-from typing import Union, Literal, get_type_hints
+from typing import Literal, Union, get_type_hints
 from collections.abc import Iterable
 import numpy as np
 

@@ -14,23 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
-import random, warnings, datetime, math
-from typing import Union, Literal
+import datetime, math, random, warnings
+from typing import Literal, Union
 from itertools import combinations_with_replacement
-
-# Other modules
 import numpy as np
 import scipy.stats as scipy_st
 
-# VerticaPy Modules
-from verticapy.core.tablesample.base import tablesample
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import ParameterError
-from verticapy.sql.read import vDataFrameSQL
+from verticapy._config.config import OPTIONS
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
-from verticapy._config.config import OPTIONS
+from verticapy.errors import ParameterError
+
+from verticapy.core.tablesample.base import tablesample
+
+from verticapy.sql.read import vDataFrameSQL
 
 
 class vDFML:

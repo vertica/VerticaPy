@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import random, warnings, datetime
-from typing import Union, Literal
+from typing import Literal, Union
 from collections.abc import Iterable
 from verticapy.errors import ParameterError
 from verticapy._config.config import OPTIONS

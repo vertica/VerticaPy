@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import numpy as np
-from typing import Union, Literal
+from typing import Literal, Union
 
 from verticapy._config.config import GRAPHVIZ_ON
 from verticapy._utils._collect import save_verticapy_logs

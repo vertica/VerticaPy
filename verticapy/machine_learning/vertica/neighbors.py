@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import warnings, itertools
 from collections.abc import Iterable
-from typing import Union, Literal
+from typing import Literal, Union
 
 import matplotlib.pyplot as plt
 
@@ -36,7 +36,7 @@ from verticapy.sql.insert import insert_verticapy_schema
 
 from verticapy.plotting._matplotlib.base import updated_dict
 
-import verticapy.machine_learning.vertica.metrics as mt
+import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.vertica.model_selection import (
     roc_curve,
     prc_curve,

@@ -21,7 +21,7 @@ permissions and limitations under the License.
 # Standard Python Modules
 import warnings, decimal
 import multiprocessing
-from typing import Union, Literal
+from typing import Literal, Union
 
 # Other modules
 from tqdm.auto import tqdm
