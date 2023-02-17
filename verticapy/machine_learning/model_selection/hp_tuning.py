@@ -847,7 +847,8 @@ tablesample
             ):
                 result["solver"] = {"type": str, "values": ["bfgs", "cgd"]}
             if isinstance(
-                estimator, (vml.Lasso, Ridge, vml.ElasticNet, vml.LogisticRegression)
+                estimator,
+                (vml.Lasso, vml.Ridge, vml.ElasticNet, vml.LogisticRegression),
             ):
                 result["C"] = {
                     "type": float,
