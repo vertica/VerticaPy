@@ -20,9 +20,9 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._version import check_minimum_version
 
-from verticapy.sql.read import vDataFrameSQL
-
 from verticapy.machine_learning.vertica.base import MulticlassClassifier
+
+from verticapy.sql.read import vDataFrameSQL
 
 
 class NaiveBayes(MulticlassClassifier):

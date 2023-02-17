@@ -39,11 +39,11 @@ from verticapy.machine_learning.vertica.linear_model import (
     Ridge,
 )
 from verticapy.machine_learning.vertica.naive_bayes import (
-    NaiveBayes,
     BernoulliNB,
     CategoricalNB,
     GaussianNB,
     MultinomialNB,
+    NaiveBayes,
 )
 from verticapy.machine_learning.vertica.neighbors import (
     NearestCentroid,
@@ -56,11 +56,11 @@ from verticapy.machine_learning.vertica.pipeline import Pipeline
 from verticapy.machine_learning.vertica.preprocessing import (
     Balance,
     CountVectorizer,
-    Normalizer,
-    StandardScaler,
-    RobustScaler,
     MinMaxScaler,
+    Normalizer,
     OneHotEncoder,
+    RobustScaler,
+    StandardScaler,
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 from verticapy.machine_learning.vertica.tree import (

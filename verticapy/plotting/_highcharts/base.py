@@ -18,10 +18,8 @@ from collections.abc import Iterable
 
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy.connect import current_cursor
-from verticapy.sql.read import vDataFrameSQL
 
 from verticapy.plotting._colors import gen_colors
-
 from verticapy.plotting._highcharts.bar import bar
 from verticapy.plotting._highcharts.boxplot import boxplot
 from verticapy.plotting._highcharts.candlestick import candlestick
@@ -32,6 +30,8 @@ from verticapy.plotting._highcharts.negative_bar import negative_bar
 from verticapy.plotting._highcharts.pie import pie
 from verticapy.plotting._highcharts.scatter import scatter
 from verticapy.plotting._highcharts.spider import spider
+
+from verticapy.sql.read import vDataFrameSQL
 
 
 def sort_classes(categories):

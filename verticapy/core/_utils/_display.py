@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import shutil, html
+import html, shutil
 
 from verticapy._config.config import OPTIONS
 from verticapy._utils._cast import to_category

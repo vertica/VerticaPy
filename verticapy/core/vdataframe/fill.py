@@ -28,7 +28,6 @@ from verticapy._version import vertica_version
 from verticapy.errors import EmptyParameter, ParameterError, QueryError
 
 from verticapy.core._utils._merge import gen_coalesce, group_similar_names
-
 from verticapy.core.str_sql.base import str_sql
 
 from verticapy.sql.drop import drop

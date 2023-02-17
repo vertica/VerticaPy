@@ -14,9 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import os
+import os, vertica_python
 from typing import Literal, Union
-import vertica_python
 
 from verticapy._config.config import OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
@@ -28,11 +27,11 @@ from verticapy.connect import current_cursor
 
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.sql.drop import drop
-from verticapy.sql.insert import insert_verticapy_schema
-
 from verticapy.machine_learning.vertica.base import Clustering, Tree, vModel
 from verticapy.machine_learning.model_management.read import does_model_exist
+
+from verticapy.sql.drop import drop
+from verticapy.sql.insert import insert_verticapy_schema
 
 
 class BisectingKMeans(Clustering, Tree):

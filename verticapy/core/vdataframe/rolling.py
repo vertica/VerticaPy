@@ -14,14 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random, datetime
+import datetime, random
 from typing import Union
 
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name
 from verticapy._utils._sql._format import quote_ident
-from verticapy.core._utils._map import verticapy_agg_name
 from verticapy.errors import ParameterError
+
+from verticapy.core._utils._map import verticapy_agg_name
 
 
 class vDFROLL:

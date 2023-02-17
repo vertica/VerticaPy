@@ -14,16 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings, sys, time
+import sys, time, warnings
 
 from verticapy._config.config import OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import (
     clean_query,
     format_schema_table,
     quote_ident,
 )
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import MissingRelation
 
 

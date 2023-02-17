@@ -14,29 +14,29 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import statistics, random, time
+import random, statistics, time
 from collections.abc import Iterable
 from typing import Literal, Union
 from tqdm.auto import tqdm
 
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 
 from verticapy._config.config import ISNOTEBOOK, OPTIONS
-from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
+from verticapy._version import check_minimum_version
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.sql.read import vDataFrameSQL
+from verticapy.machine_learning._utils import compute_area
 
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.plotting._matplotlib.base import updated_dict
 
-from verticapy.machine_learning._utils import compute_area
+from verticapy.sql.read import vDataFrameSQL
 
 
 def _compute_function_metrics(

@@ -14,25 +14,22 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random, math, itertools
-import numpy as np
-from collections.abc import Iterable
+import itertools, math, random
 from typing import Literal, Union
+from collections.abc import Iterable
 from tqdm.auto import tqdm
+import numpy as np
 
 import matplotlib.pyplot as plt
 
-from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import ISNOTEBOOK, OPTIONS
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
-
-from verticapy.sql.drop import drop
-from verticapy.sql.read import vDataFrameSQL
 
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._colors import gen_colors
@@ -40,6 +37,9 @@ from verticapy.plotting._colors import gen_colors
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 from verticapy.machine_learning.model_management.read import does_model_exist
+
+from verticapy.sql.drop import drop
+from verticapy.sql.read import vDataFrameSQL
 
 
 @save_verticapy_logs
@@ -371,7 +371,10 @@ tablesample
         }
     )
 
-    from verticapy.machine_learning.vertica.linear_model import LogisticRegression, ElasticNet
+    from verticapy.machine_learning.vertica.linear_model import (
+        LogisticRegression,
+        ElasticNet,
+    )
 
     if estimator_type == "auto":
         if not (isinstance(input_relation, vDataFrame)):
@@ -439,7 +442,12 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes, BisectingKMeans, DBSCAN
+    from verticapy.machine_learning.vertica.cluster import (
+        KMeans,
+        KPrototypes,
+        BisectingKMeans,
+        DBSCAN,
+    )
     from verticapy.machine_learning.vertica.decomposition import PCA, SVD
     from verticapy.machine_learning.vertica.ensemble import (
         RandomForestRegressor,
@@ -461,7 +469,10 @@ tablesample
         LocalOutlierFactor,
         NearestCentroid,
     )
-    from verticapy.machine_learning.vertica.preprocessing import Normalizer, OneHotEncoder
+    from verticapy.machine_learning.vertica.preprocessing import (
+        Normalizer,
+        OneHotEncoder,
+    )
     from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
     from verticapy.machine_learning.vertica.tree import (
         DummyTreeRegressor,

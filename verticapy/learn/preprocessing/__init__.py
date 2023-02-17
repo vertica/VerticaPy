@@ -17,9 +17,9 @@ permissions and limitations under the License.
 from verticapy.machine_learning.vertica.preprocessing import (
     Balance,
     CountVectorizer,
-    Normalizer,
-    StandardScaler,
-    RobustScaler,
     MinMaxScaler,
+    Normalizer,
     OneHotEncoder,
+    RobustScaler,
+    StandardScaler,
 )

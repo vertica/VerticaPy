@@ -31,6 +31,7 @@ from verticapy.plotting._matplotlib.base import updated_dict
 
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.str_sql.base import str_sql
+
 from verticapy.sql.read import to_tablesample
 
 

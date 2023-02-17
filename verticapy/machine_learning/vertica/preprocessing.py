@@ -25,10 +25,10 @@ from verticapy._version import check_minimum_version
 
 from verticapy.core.vdataframe.base import vDataFrame
 
+from verticapy.machine_learning.vertica.base import Preprocessing, vModel
+
 from verticapy.sql.insert import insert_verticapy_schema
 from verticapy.sql.read import vDataFrameSQL
-
-from verticapy.machine_learning.vertica.base import Preprocessing, vModel
 
 
 @check_minimum_version

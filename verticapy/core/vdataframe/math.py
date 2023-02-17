@@ -23,7 +23,6 @@ from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import MissingColumn, ParameterError, QueryError
 
 from verticapy.core._utils._map import verticapy_agg_name
-
 from verticapy.core.str_sql.base import str_sql
 
 from verticapy.sql.dtypes import get_data_types

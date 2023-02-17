@@ -14,8 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Union
 import random
+from typing import Literal, Union
 import numpy as np
 
 from verticapy._utils._collect import save_verticapy_logs
@@ -29,9 +29,9 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.base import (
     Clustering,
-    Tree,
     MulticlassClassifier,
     Regressor,
+    Tree,
 )
 from verticapy.machine_learning.vertica.tree import get_tree_list_of_arrays
 

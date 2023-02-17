@@ -14,8 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
 import datetime, decimal, inspect
+from typing import Literal
 
 
 def get_func_info(func) -> tuple:

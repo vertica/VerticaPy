@@ -19,12 +19,12 @@ from typing import Literal
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._version import check_minimum_version
 
-from verticapy.plotting._colors import gen_colors, gen_cmap
-from verticapy.plotting._matplotlib.mlplot import plot_var
-
 from verticapy.core.tablesample.base import tablesample
 
 from verticapy.machine_learning.vertica.base import Decomposition
+
+from verticapy.plotting._colors import gen_colors, gen_cmap
+from verticapy.plotting._matplotlib.mlplot import plot_var
 
 
 class MCA(Decomposition):

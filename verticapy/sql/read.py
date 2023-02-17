@@ -24,10 +24,10 @@ from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._display import print_query, print_time
 
+from verticapy.core.str_sql.base import str_sql
+
 from verticapy.sql.dtypes import vertica_python_dtype, get_data_types
 from verticapy.sql.flex import isvmap
-
-from verticapy.core.str_sql.base import str_sql
 
 
 @save_verticapy_logs

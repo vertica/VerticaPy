@@ -25,10 +25,10 @@ from verticapy.errors import ParameterError
 
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.sql.read import vDataFrameSQL
-
 from verticapy.machine_learning.vertica.base import vModel
 from verticapy.machine_learning.vertica.decomposition import PCA
+
+from verticapy.sql.read import vDataFrameSQL
 
 
 class AutoDataPrep(vModel):

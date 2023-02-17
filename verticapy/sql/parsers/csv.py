@@ -18,13 +18,13 @@ import os, warnings
 
 from verticapy._config.config import OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql._format import clean_query, format_schema_table, quote_ident
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import clean_query, format_schema_table, quote_ident
 from verticapy.errors import ExtensionError, MissingRelation, ParameterError
 
-from verticapy.sql.parsers._utils import extract_compression, get_first_file
 from verticapy.sql.flex import compute_flextable_keys
+from verticapy.sql.parsers._utils import extract_compression, get_first_file
 
 
 def guess_sep(file_str: str):

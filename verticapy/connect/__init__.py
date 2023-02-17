@@ -20,10 +20,10 @@ from verticapy.connect.external import (
     set_external_connection,
 )
 from verticapy.connect.connect import (
-    VERTICAPY_AUTO_CONNECTION,
+    CONNECTION,
     SESSION_IDENTIFIER,
     SESSION_LABEL,
-    CONNECTION,
+    VERTICAPY_AUTO_CONNECTION,
     auto_connect,
     close_connection,
     connect,

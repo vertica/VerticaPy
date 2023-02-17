@@ -17,11 +17,11 @@ permissions and limitations under the License.
 import time, warnings
 
 from IPython.core.magic import needs_local_scope
-from IPython.display import HTML, display
+from IPython.display import display, HTML
 
 from verticapy._config.config import OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql._format import replace_vars_in_query, clean_query
+from verticapy._utils._sql._format import clean_query, replace_vars_in_query
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import tablesample

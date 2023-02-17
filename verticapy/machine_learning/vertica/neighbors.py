@@ -30,25 +30,25 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample, vDataFrameSQL
-from verticapy.sql.insert import insert_verticapy_schema
-
 from verticapy.plotting._matplotlib.base import updated_dict
 
 import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.model_selection.model_validation import (
-    roc_curve,
     prc_curve,
+    roc_curve,
     lift_chart,
 )
 from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.vertica.base import (
     MulticlassClassifier,
-    vModel,
     Regressor,
     Tree,
+    vModel,
 )
+
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample, vDataFrameSQL
+from verticapy.sql.insert import insert_verticapy_schema
 
 
 class NearestCentroid(MulticlassClassifier):

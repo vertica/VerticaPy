@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings, copy
+import copy, warnings
 from typing import Literal, Union, get_type_hints
 from collections.abc import Iterable
 import numpy as np
@@ -29,9 +29,6 @@ from verticapy.errors import ConversionError, FunctionError, ParameterError, Mod
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample, vDataFrameSQL
-
 from verticapy.plotting._matplotlib.mlplot import (
     plot_importance,
     regression_tree_plot,
@@ -43,9 +40,12 @@ from verticapy.plotting._matplotlib.mlplot import (
 )
 
 from verticapy.machine_learning._utils import get_match_index
-import verticapy.machine_learning.model_selection as ms
 import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.model_management.read import does_model_exist
+import verticapy.machine_learning.model_selection as ms
+
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample, vDataFrameSQL
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___

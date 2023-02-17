@@ -23,15 +23,15 @@ permissions and limitations under the License.
 # \____/  \_/\_\_____/ \_|  |_/\_| |_/\____/\___/ \____/
 #
 ##
-import warnings, re, time
+import re, time, warnings
 
 from IPython.core.magic import needs_local_scope
-from IPython.display import HTML, display
+from IPython.display import display, HTML
 
 from verticapy._config.config import OPTIONS, set_option
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy._utils._sql._format import replace_vars_in_query, clean_query
+from verticapy._utils._sql._format import clean_query, replace_vars_in_query
 from verticapy.connect import SPECIAL_SYMBOLS
 from verticapy.errors import QueryError, ParameterError
 

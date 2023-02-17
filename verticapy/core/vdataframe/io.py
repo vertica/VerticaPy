@@ -14,9 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy, decimal, pickle, os
 from typing import Literal, Union
 from collections.abc import Iterable
-import copy, decimal, pickle, os
 import numpy as np
 
 import pandas as pd

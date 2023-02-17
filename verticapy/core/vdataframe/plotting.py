@@ -23,8 +23,8 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
 
-import verticapy.plotting._matplotlib as plt
 from verticapy.plotting._highcharts.base import hchart_from_vdf
+import verticapy.plotting._matplotlib as plt
 
 
 class vDFPLOT:

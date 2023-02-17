@@ -19,8 +19,8 @@ from typing import Union
 import numpy as np
 from scipy.stats import chi2, norm, f
 
-from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import OPTIONS
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import schema_relation

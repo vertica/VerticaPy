@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import time, re, warnings, copy
+import copy, re, time, warnings
 from typing import Union
 
 from verticapy._config.config import current_random, OPTIONS
@@ -22,8 +22,8 @@ from verticapy._utils._cast import to_varchar
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
-from verticapy.core._utils._map import verticapy_agg_name
 
+from verticapy.core._utils._map import verticapy_agg_name
 from verticapy.core.tablesample.base import tablesample
 
 from verticapy.sql.flex import isvmap

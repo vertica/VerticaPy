@@ -27,11 +27,10 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.sql.read import vDataFrameSQL
-
 from verticapy.plotting._matplotlib.mlplot import plot_bubble_ml, plot_stepwise_ml
 
 from verticapy.machine_learning._utils import reverse_score
+from verticapy.machine_learning.vertica.automl import AutoDataPrep
 from verticapy.machine_learning.vertica.base import vModel
 from verticapy.machine_learning.vertica.ensemble import (
     RandomForestRegressor,
@@ -58,7 +57,7 @@ from verticapy.machine_learning.vertica.neighbors import (
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 
-from verticapy.machine_learning.vertica.automl import AutoDataPrep
+from verticapy.sql.read import vDataFrameSQL
 
 
 class AutoML(vModel):

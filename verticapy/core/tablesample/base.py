@@ -14,14 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import math, decimal, datetime, copy
+import copy, decimal, datetime, math
 import numpy as np
 
 from verticapy._config.config import OPTIONS
-from verticapy.core._utils._display import print_table
 from verticapy._utils._sql._format import quote_ident
 from verticapy._version import vertica_version
 from verticapy.errors import ParameterError, MissingColumn
+
+from verticapy.core._utils._display import print_table
 
 from verticapy.jupyter._javascript import datatables_repr
 

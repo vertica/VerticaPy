@@ -18,21 +18,22 @@ import math
 from collections.abc import Iterable
 from typing import Union
 
-from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
+from verticapy._version import check_minimum_version
 
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.sql.read import to_tablesample
 
 from verticapy.machine_learning.model_selection.model_validation import (
     prc_curve,
     roc_curve,
 )
 from verticapy.machine_learning._utils import (
-    _compute_tn_fn_fp_tp,
     _compute_metric_query,
+    _compute_tn_fn_fp_tp,
 )
+
+from verticapy.sql.read import to_tablesample
 
 
 @save_verticapy_logs

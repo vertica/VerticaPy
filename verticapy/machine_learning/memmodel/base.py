@@ -14,31 +14,28 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import numpy as np
 from typing import Literal, Union
+import numpy as np
 
 from verticapy._config.config import GRAPHVIZ_ON
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import ParameterError, FunctionError
 from verticapy._utils._sql._format import clean_query
-
-if GRAPHVIZ_ON:
-    import graphviz
+from verticapy.errors import ParameterError, FunctionError
 
 from verticapy.machine_learning.memmodel.cluster import (
     bisecting_kmeans_to_graphviz,
     predict_from_bisecting_kmeans,
-    sql_from_bisecting_kmeans,
     predict_from_clusters,
-    sql_from_clusters,
     predict_from_clusters_kprotypes,
+    sql_from_bisecting_kmeans,
+    sql_from_clusters,
     sql_from_clusters_kprotypes,
 )
 from verticapy.machine_learning.memmodel.decomposition import (
     matrix_rotation,
     transform_from_pca,
-    sql_from_pca,
     transform_from_svd,
+    sql_from_pca,
     sql_from_svd,
 )
 from verticapy.machine_learning.memmodel.linear_model import (
@@ -47,19 +44,22 @@ from verticapy.machine_learning.memmodel.linear_model import (
 )
 from verticapy.machine_learning.memmodel.naive_bayes import predict_from_nb, sql_from_nb
 from verticapy.machine_learning.memmodel.preprocessing import (
-    transform_from_normalizer,
     sql_from_normalizer,
-    transform_from_one_hot_encoder,
     sql_from_one_hot_encoder,
+    transform_from_one_hot_encoder,
+    transform_from_normalizer,
 )
 from verticapy.machine_learning.memmodel.tree import (
-    predict_from_chaid_tree,
-    sql_from_chaid_tree,
+    binary_tree_to_graphviz,
     chaid_to_graphviz,
     predict_from_binary_tree,
+    predict_from_chaid_tree,
     sql_from_binary_tree,
-    binary_tree_to_graphviz,
+    sql_from_chaid_tree,
 )
+
+if GRAPHVIZ_ON:
+    import graphviz
 
 
 class memModel:

@@ -24,16 +24,12 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._version import check_minimum_version
 
 from verticapy.plotting._colors import gen_colors
-from verticapy._utils._sql._format import quote_ident, schema_relation
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import quote_ident, schema_relation
 
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
-
-from verticapy.sql.drop import drop
-from verticapy.sql.insert import insert_verticapy_schema
-from verticapy.sql.read import vDataFrameSQL
 
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.mlplot import plot_importance
@@ -42,6 +38,10 @@ import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.vertica.linear_model import LinearRegression
 from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.vertica.base import Regressor
+
+from verticapy.sql.drop import drop
+from verticapy.sql.insert import insert_verticapy_schema
+from verticapy.sql.read import vDataFrameSQL
 
 if PARSER_IMPORT:
     from dateutil.parser import parse

@@ -34,15 +34,14 @@ from verticapy.errors import (
 )
 
 from verticapy.core._utils._map import verticapy_agg_name
-
 from verticapy.core.tablesample.base import tablesample
-
-from verticapy.sql.read import to_tablesample
 
 from verticapy.core.vdataframe.multiprocessing import (
     aggregate_parallel_block,
     describe_parallel_block,
 )
+
+from verticapy.sql.read import to_tablesample
 
 
 class vDFAGG:

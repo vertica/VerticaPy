@@ -14,34 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy.machine_learning.model_selection.statistical_tests.tsa import (
-    adfuller,
-    cochrane_orcutt,
-    durbin_watson,
-    het_arch,
-    ljungbox,
-    mkt,
-    seasonal_decompose,
-)
-from verticapy.machine_learning.model_selection.statistical_tests.ols import (
-    endogtest,
-    het_breuschpagan,
-    het_goldfeldquandt,
-    het_white,
-    variance_inflation_factor,
-)
-from verticapy.machine_learning.model_selection.statistical_tests.norm import (
-    jarque_bera,
-    kurtosistest,
-    normaltest,
-    skewtest,
-)
 from verticapy.sql.functions.analytic import (
     avg,
     bool_and,
@@ -85,7 +57,7 @@ from verticapy.sql.functions.date import (
     week,
     year,
 )
-from verticapy.sql.functions.math import E, PI, INF, NAN, TAU
+from verticapy.sql.functions.math import E, INF, PI, NAN, TAU
 from verticapy.sql.functions.math import (
     apply,
     abs,
@@ -142,4 +114,27 @@ from verticapy.sql.functions.string import (
     soundex,
     soundex_matches,
     substr,
+)
+
+from verticapy.machine_learning.model_selection.statistical_tests.ols import (
+    endogtest,
+    het_breuschpagan,
+    het_goldfeldquandt,
+    het_white,
+    variance_inflation_factor,
+)
+from verticapy.machine_learning.model_selection.statistical_tests.norm import (
+    jarque_bera,
+    kurtosistest,
+    normaltest,
+    skewtest,
+)
+from verticapy.machine_learning.model_selection.statistical_tests.tsa import (
+    adfuller,
+    cochrane_orcutt,
+    durbin_watson,
+    het_arch,
+    ljungbox,
+    mkt,
+    seasonal_decompose,
 )

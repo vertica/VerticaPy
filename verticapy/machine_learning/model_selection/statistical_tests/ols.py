@@ -16,9 +16,8 @@ permissions and limitations under the License.
 """
 import math
 from typing import Literal
-
-from scipy.stats import chi2, f
 import numpy as np
+from scipy.stats import chi2, f
 
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import OPTIONS

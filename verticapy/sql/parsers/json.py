@@ -18,17 +18,17 @@ import os
 
 from verticapy._config.config import OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import (
     quote_ident,
     format_schema_table,
     clean_query,
 )
-from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 
-from verticapy.sql.parsers._utils import extract_compression
 from verticapy.sql.flex import compute_flextable_keys
+from verticapy.sql.parsers._utils import extract_compression
 
 
 def pjson(path: str, ingest_local: bool = True):

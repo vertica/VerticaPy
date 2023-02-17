@@ -18,16 +18,13 @@ import random, itertools
 from typing import Literal, Union
 from tqdm.auto import tqdm
 
-from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import OPTIONS
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
-
-from verticapy.sql.drop import drop
-from verticapy.sql.read import vDataFrameSQL
 
 from verticapy.plotting._matplotlib import (
     plot_stepwise_ml,
@@ -37,6 +34,9 @@ from verticapy.plotting._matplotlib import (
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
+
+from verticapy.sql.drop import drop
+from verticapy.sql.read import vDataFrameSQL
 
 
 @save_verticapy_logs

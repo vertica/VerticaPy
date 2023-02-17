@@ -161,7 +161,9 @@ model
             model.centroids_ = tablesample(model_save["centroids"])
             model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsClassifier":
-            from verticapy.machine_learning.vertica.neighbors import KNeighborsClassifier
+            from verticapy.machine_learning.vertica.neighbors import (
+                KNeighborsClassifier,
+            )
 
             model = KNeighborsClassifier(
                 name, model_save["n_neighbors"], model_save["p"]
@@ -348,7 +350,9 @@ model
         else:
             epsilon = 0.001
         if model_type == "rf_regressor":
-            from verticapy.machine_learning.vertica.ensemble import RandomForestRegressor
+            from verticapy.machine_learning.vertica.ensemble import (
+                RandomForestRegressor,
+            )
 
             model = RandomForestRegressor(
                 name,
@@ -362,7 +366,9 @@ model
                 int(parameters_dict["nbins"]),
             )
         elif model_type == "rf_classifier":
-            from verticapy.machine_learning.vertica.ensemble import RandomForestClassifier
+            from verticapy.machine_learning.vertica.ensemble import (
+                RandomForestClassifier,
+            )
 
             model = RandomForestClassifier(
                 name,
@@ -417,7 +423,9 @@ model
                 float(parameters_dict["sampling_size"]),
             )
         elif model_type == "logistic_reg":
-            from verticapy.machine_learning.vertica.linear_model import LogisticRegression
+            from verticapy.machine_learning.vertica.linear_model import (
+                LogisticRegression,
+            )
 
             model = LogisticRegression(
                 name,

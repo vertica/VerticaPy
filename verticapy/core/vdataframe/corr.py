@@ -32,11 +32,11 @@ from verticapy.errors import EmptyParameter
 
 from verticapy.core.tablesample.base import tablesample
 
-from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample
-
 from verticapy.plotting._colors import gen_cmap
 import verticapy.plotting._matplotlib as plt
+
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample
 
 
 class vDFCORR:

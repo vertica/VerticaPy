@@ -35,25 +35,6 @@ from verticapy.connect import (
     SPECIAL_SYMBOLS,
 )
 
-from verticapy.errors import (
-    ConnectionError,
-    MissingRelation,
-    ParameterError,
-    QueryError,
-)
-
-from verticapy.core.str_sql.base import str_sql
-from verticapy.core.tablesample.base import tablesample
-
-from verticapy.sql.dtypes import get_data_types
-from verticapy.sql.flex import (
-    compute_flextable_keys,
-    isvmap,
-    isflextable,
-)
-from verticapy.sql.parsers.pandas import read_pandas
-from verticapy.sql.read import vDataFrameSQL
-
 from verticapy.core.vdataframe.aggregate import vDFAGG, vDCAGG
 from verticapy.core.vdataframe.corr import vDFCORR, vDCCORR
 from verticapy.core.vdataframe.encoding import vDFENCODE, vDCENCODE
@@ -74,9 +55,26 @@ from verticapy.core.vdataframe.text import vDFTEXT, vDCTEXT
 from verticapy.core.vdataframe.typing import vDFTYPING, vDCTYPING
 from verticapy.core.vdataframe.utils import vDFUTILS
 
+from verticapy.errors import (
+    ConnectionError,
+    MissingRelation,
+    ParameterError,
+    QueryError,
+)
 
-###
-#                                           _____
+from verticapy.core.str_sql.base import str_sql
+from verticapy.core.tablesample.base import tablesample
+
+from verticapy.sql.dtypes import get_data_types
+from verticapy.sql.flex import (
+    compute_flextable_keys,
+    isvmap,
+    isflextable,
+)
+from verticapy.sql.parsers.pandas import read_pandas
+from verticapy.sql.read import vDataFrameSQL
+
+###                                          _____
 #   _______    ______ ____________    ____  \    \
 #   \      |  |      |\           \   \   \ /____/|
 #    |     /  /     /| \           \   |  |/_____|/

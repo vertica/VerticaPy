@@ -16,8 +16,8 @@ permissions and limitations under the License.
 """
 import warnings
 
-import matplotlib.ticker as mticker
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.errors import ParameterError

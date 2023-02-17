@@ -18,16 +18,16 @@ import warnings
 
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
-    quote_ident,
-    format_schema_table,
     clean_query,
+    format_schema_table,
+    quote_ident,
 )
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._version import check_minimum_version
-
 from verticapy.errors import ExtensionError, ParameterError
-from verticapy.sql.parsers._utils import extract_compression, extract_col_dt_from_query
+
+from verticapy.sql.parsers._utils import extract_col_dt_from_query, extract_compression
 
 
 @check_minimum_version
