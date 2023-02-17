@@ -61,7 +61,7 @@ from verticapy.machine_learning.vertica.neighbors import (
     KNeighborsRegressor,
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
-from verticapy.machine_learning.vertica.vmodel import vModel
+from verticapy.machine_learning.vertica.base import vModel
 
 
 class AutoDataPrep(vModel):

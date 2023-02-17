@@ -30,7 +30,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.sql.read import vDataFrameSQL
 
 
-
 @save_verticapy_logs
 def endogtest(vdf: vDataFrame, eps: str, X: list):
     """

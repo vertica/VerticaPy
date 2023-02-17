@@ -27,7 +27,12 @@ from verticapy._version import vertica_version
 
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.vertica.vmodel import Clustering, Tree, MulticlassClassifier, Regressor
+from verticapy.machine_learning.vertica.base import (
+    Clustering,
+    Tree,
+    MulticlassClassifier,
+    Regressor,
+)
 from verticapy.machine_learning.vertica.tree import get_tree_list_of_arrays
 
 

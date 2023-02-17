@@ -24,7 +24,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.sql.read import vDataFrameSQL
 
-from verticapy.machine_learning.vertica.vmodel import Regressor
+from verticapy.machine_learning.vertica.base import Regressor
 
 
 class Pipeline:

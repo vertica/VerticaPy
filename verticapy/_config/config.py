@@ -25,7 +25,7 @@ try:
     GEOPANDAS_ON = True
 except:
     GEOPANDAS_ON = False
-    
+
 try:
     from dateutil.parser import parse
 

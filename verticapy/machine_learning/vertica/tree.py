@@ -20,7 +20,11 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._version import check_minimum_version
 
-from verticapy.machine_learning.vertica.vmodel import MulticlassClassifier, Regressor, Tree
+from verticapy.machine_learning.vertica.base import (
+    MulticlassClassifier,
+    Regressor,
+    Tree,
+)
 
 
 def get_tree_list_of_arrays(

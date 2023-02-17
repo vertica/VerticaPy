@@ -31,7 +31,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_verticapy_schema
 
-from verticapy.machine_learning.vertica.vmodel import Clustering, Tree, vModel
+from verticapy.machine_learning.vertica.base import Clustering, Tree, vModel
 from verticapy.machine_learning.model_management.read import does_model_exist
 
 

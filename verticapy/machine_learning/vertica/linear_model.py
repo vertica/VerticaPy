@@ -20,8 +20,7 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._version import check_minimum_version, vertica_version
 from verticapy.errors import ParameterError
 
-from verticapy.machine_learning.vertica.vmodel import Regressor, BinaryClassifier
-
+from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 
 
 class ElasticNet(Regressor):

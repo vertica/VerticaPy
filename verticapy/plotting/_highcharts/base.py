@@ -33,6 +33,7 @@ from verticapy.plotting._highcharts.pie import pie
 from verticapy.plotting._highcharts.scatter import scatter
 from verticapy.plotting._highcharts.spider import spider
 
+
 def sort_classes(categories):
     try:
         try:
@@ -58,6 +59,7 @@ def data_to_columns(data: list, n: int):
             except:
                 columns[i] = columns[i] + [elem[i]]
     return columns
+
 
 def hchart_from_vdf(
     vdf,

@@ -37,9 +37,18 @@ from verticapy.sql.insert import insert_verticapy_schema
 from verticapy.plotting._matplotlib.base import updated_dict
 
 import verticapy.machine_learning.vertica.metrics as mt
-from verticapy.machine_learning.vertica.model_selection import roc_curve, prc_curve, lift_chart
+from verticapy.machine_learning.vertica.model_selection import (
+    roc_curve,
+    prc_curve,
+    lift_chart,
+)
 from verticapy.machine_learning.model_management.read import does_model_exist
-from verticapy.machine_learning.vertica.vmodel import MulticlassClassifier, vModel, Regressor, Tree
+from verticapy.machine_learning.vertica.base import (
+    MulticlassClassifier,
+    vModel,
+    Regressor,
+    Tree,
+)
 
 
 class NearestCentroid(MulticlassClassifier):

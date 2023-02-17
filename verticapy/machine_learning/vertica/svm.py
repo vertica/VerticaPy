@@ -19,7 +19,7 @@ from typing import Literal, Union
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._version import check_minimum_version
 
-from verticapy.machine_learning.vertica.vmodel import BinaryClassifier, Regressor
+from verticapy.machine_learning.vertica.base import BinaryClassifier, Regressor
 
 
 class LinearSVC(BinaryClassifier):

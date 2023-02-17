@@ -38,6 +38,7 @@ from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
+
 @save_verticapy_logs
 def randomized_features_search_cv(
     estimator,

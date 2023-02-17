@@ -24,7 +24,7 @@ from verticapy.plotting._matplotlib.mlplot import plot_var
 
 from verticapy.core.tablesample.base import tablesample
 
-from verticapy.machine_learning.vertica.vmodel import Decomposition
+from verticapy.machine_learning.vertica.base import Decomposition
 
 
 class MCA(Decomposition):

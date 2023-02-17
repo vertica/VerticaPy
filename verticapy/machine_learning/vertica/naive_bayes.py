@@ -22,7 +22,7 @@ from verticapy._version import check_minimum_version
 
 from verticapy.sql.read import vDataFrameSQL
 
-from verticapy.machine_learning.vertica.vmodel import MulticlassClassifier
+from verticapy.machine_learning.vertica.base import MulticlassClassifier
 
 
 class NaiveBayes(MulticlassClassifier):
