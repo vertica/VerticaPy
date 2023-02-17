@@ -1616,7 +1616,7 @@ class vDCPLOT:
     --------
     vDataFrame[].hist : Draws the histogram of the vDataColumn based on an aggregation.
         """
-        from verticapy.learn import KernelDensity
+        from verticapy.machine_learning.vertica import KernelDensity
 
         if by:
             by = self.parent.format_colnames(by)

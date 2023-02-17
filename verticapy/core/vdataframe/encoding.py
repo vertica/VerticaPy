@@ -219,7 +219,7 @@ class vDCENCODE:
     vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
     vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
-        from verticapy.learn.ensemble import (
+        from verticapy.machine_learning.vertica.ensemble import (
             RandomForestRegressor,
             RandomForestClassifier,
         )

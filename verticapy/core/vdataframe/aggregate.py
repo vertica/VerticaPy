@@ -14,36 +14,31 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-#
-#
-# Modules
-#
-# Standard Python Modules
-import warnings, decimal
-import multiprocessing
+import decimal, multiprocessing, warnings
 from typing import Literal, Union
-
-# Other modules
 from tqdm.auto import tqdm
 
-# VerticaPy Modules
-from verticapy.core.tablesample.base import tablesample
+from verticapy._config.config import OPTIONS
+from verticapy._utils._cast import to_varchar
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import (
-    EmptyParameter,
-    FunctionError,
-)
-from verticapy._version import vertica_version
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import (
     format_magic,
     quote_ident,
 )
-from verticapy.core._utils._map import verticapy_agg_name
+from verticapy._version import vertica_version
 from verticapy.connect import current_cursor
-from verticapy._config.config import OPTIONS
+from verticapy.errors import (
+    EmptyParameter,
+    FunctionError,
+)
+
+from verticapy.core._utils._map import verticapy_agg_name
+
+from verticapy.core.tablesample.base import tablesample
+
 from verticapy.sql.read import to_tablesample
-from verticapy._utils._cast import to_varchar
+
 from verticapy.core.vdataframe.multiprocessing import (
     aggregate_parallel_block,
     describe_parallel_block,

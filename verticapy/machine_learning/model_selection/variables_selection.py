@@ -347,7 +347,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.learn.metrics import aic_bic
+    from verticapy.machine_learning.metrics import aic_bic
 
     if isinstance(X, str):
         X = [X]

@@ -90,7 +90,7 @@ int
     elif not (init):
         init = "kmeanspp"
 
-    from verticapy.learn.cluster import KMeans, KPrototypes
+    from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
@@ -189,7 +189,7 @@ tablesample
         init = "random"
     elif not (init):
         init = "kmeanspp"
-    from verticapy.learn.cluster import KMeans, KPrototypes
+    from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])

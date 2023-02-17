@@ -39,7 +39,7 @@ from verticapy.plotting._colors import gen_colors
 
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
-from verticapy.learn.tools import does_model_exist
+from verticapy.machine_learning.model_management.read import does_model_exist
 
 
 @save_verticapy_logs
@@ -223,7 +223,7 @@ tablesample
                 },
             }
         all_params = list(dict.fromkeys(model_grid))
-        from verticapy.learn.ensemble import RandomForestRegressor
+        from verticapy.machine_learning.vertica.ensemble import RandomForestRegressor
 
         hyper_param_estimator = RandomForestRegressor(
             name=estimator.name, **RFmodel_params
@@ -371,7 +371,7 @@ tablesample
         }
     )
 
-    from verticapy.learn.linear_model import LogisticRegression, ElasticNet
+    from verticapy.machine_learning.vertica.linear_model import LogisticRegression, ElasticNet
 
     if estimator_type == "auto":
         if not (isinstance(input_relation, vDataFrame)):
@@ -439,31 +439,31 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.learn.cluster import KMeans, KPrototypes, BisectingKMeans, DBSCAN
-    from verticapy.learn.decomposition import PCA, SVD
-    from verticapy.learn.ensemble import (
+    from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes, BisectingKMeans, DBSCAN
+    from verticapy.machine_learning.vertica.decomposition import PCA, SVD
+    from verticapy.machine_learning.vertica.ensemble import (
         RandomForestRegressor,
         RandomForestClassifier,
         XGBoostRegressor,
         XGBoostClassifier,
     )
-    from verticapy.learn.linear_model import (
+    from verticapy.machine_learning.vertica.linear_model import (
         LinearRegression,
         ElasticNet,
         Lasso,
         Ridge,
         LogisticRegression,
     )
-    from verticapy.learn.naive_bayes import NaiveBayes
-    from verticapy.learn.neighbors import (
+    from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
+    from verticapy.machine_learning.vertica.neighbors import (
         KNeighborsRegressor,
         KNeighborsClassifier,
         LocalOutlierFactor,
         NearestCentroid,
     )
-    from verticapy.learn.preprocessing import Normalizer, OneHotEncoder
-    from verticapy.learn.svm import LinearSVC, LinearSVR
-    from verticapy.learn.tree import (
+    from verticapy.machine_learning.vertica.preprocessing import Normalizer, OneHotEncoder
+    from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
+    from verticapy.machine_learning.vertica.tree import (
         DummyTreeRegressor,
         DummyTreeClassifier,
         DecisionTreeRegressor,

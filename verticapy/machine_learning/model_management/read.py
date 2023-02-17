@@ -155,26 +155,26 @@ model
                 result_tmp = "None"
             model_save[val[0]] = result_tmp
         if model_save["type"] == "NearestCentroid":
-            from verticapy.learn.neighbors import NearestCentroid
+            from verticapy.machine_learning.vertica.neighbors import NearestCentroid
 
             model = NearestCentroid(name, model_save["p"])
             model.centroids_ = tablesample(model_save["centroids"])
             model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsClassifier":
-            from verticapy.learn.neighbors import KNeighborsClassifier
+            from verticapy.machine_learning.vertica.neighbors import KNeighborsClassifier
 
             model = KNeighborsClassifier(
                 name, model_save["n_neighbors"], model_save["p"]
             )
             model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsRegressor":
-            from verticapy.learn.neighbors import KNeighborsRegressor
+            from verticapy.machine_learning.vertica.neighbors import KNeighborsRegressor
 
             model = KNeighborsRegressor(
                 name, model_save["n_neighbors"], model_save["p"]
             )
         elif model_save["type"] == "KernelDensity":
-            from verticapy.learn.neighbors import KernelDensity
+            from verticapy.machine_learning.vertica.neighbors import KernelDensity
 
             model = KernelDensity(
                 name,
@@ -191,12 +191,12 @@ model
             model.map = model_save["map"]
             model.tree_name = model_save["tree_name"]
         elif model_save["type"] == "LocalOutlierFactor":
-            from verticapy.learn.neighbors import LocalOutlierFactor
+            from verticapy.machine_learning.vertica.neighbors import LocalOutlierFactor
 
             model = LocalOutlierFactor(name, model_save["n_neighbors"], model_save["p"])
             model.n_errors_ = model_save["n_errors"]
         elif model_save["type"] == "DBSCAN":
-            from verticapy.learn.cluster import DBSCAN
+            from verticapy.machine_learning.vertica.cluster import DBSCAN
 
             model = DBSCAN(
                 name, model_save["eps"], model_save["min_samples"], model_save["p"]
@@ -204,7 +204,7 @@ model
             model.n_cluster_ = model_save["n_cluster"]
             model.n_noise_ = model_save["n_noise"]
         elif model_save["type"] == "CountVectorizer":
-            from verticapy.learn.preprocessing import CountVectorizer
+            from verticapy.machine_learning.vertica.preprocessing import CountVectorizer
 
             model = CountVectorizer(
                 name,
@@ -218,7 +218,7 @@ model
             model.stop_words_ = model.compute_stop_words()
             model.vocabulary_ = model.compute_vocabulary()
         elif model_save["type"] == "SARIMAX":
-            from verticapy.learn.tsa import SARIMAX
+            from verticapy.machine_learning.vertica.tsa import SARIMAX
 
             model = SARIMAX(
                 name,
@@ -246,7 +246,7 @@ model
             model.exogenous = model_save["exogenous"]
             model.deploy_predict_ = model_save["deploy_predict"]
         elif model_save["type"] == "VAR":
-            from verticapy.learn.tsa import VAR
+            from verticapy.machine_learning.vertica.tsa import VAR
 
             model = VAR(
                 name,
@@ -290,7 +290,7 @@ model
             mtype = model_type.lower() + "("
             info = mtype + info.split(mtype)[1]
         elif model_type.lower() == "normalize_fit":
-            from verticapy.learn.preprocessing import Normalizer
+            from verticapy.machine_learning.vertica.preprocessing import Normalizer
 
             model = Normalizer(name)
             model.param_ = model.get_attr("details")
@@ -348,7 +348,7 @@ model
         else:
             epsilon = 0.001
         if model_type == "rf_regressor":
-            from verticapy.learn.ensemble import RandomForestRegressor
+            from verticapy.machine_learning.vertica.ensemble import RandomForestRegressor
 
             model = RandomForestRegressor(
                 name,
@@ -362,7 +362,7 @@ model
                 int(parameters_dict["nbins"]),
             )
         elif model_type == "rf_classifier":
-            from verticapy.learn.ensemble import RandomForestClassifier
+            from verticapy.machine_learning.vertica.ensemble import RandomForestClassifier
 
             model = RandomForestClassifier(
                 name,
@@ -376,7 +376,7 @@ model
                 int(parameters_dict["nbins"]),
             )
         elif model_type == "iforest":
-            from verticapy.learn.ensemble import IsolationForest
+            from verticapy.machine_learning.vertica.ensemble import IsolationForest
 
             model = IsolationForest(
                 name,
@@ -387,7 +387,7 @@ model
                 float(parameters_dict["col_sample_by_tree"]),
             )
         elif model_type == "xgb_classifier":
-            from verticapy.learn.ensemble import XGBoostClassifier
+            from verticapy.machine_learning.vertica.ensemble import XGBoostClassifier
 
             model = XGBoostClassifier(
                 name,
@@ -402,7 +402,7 @@ model
                 float(parameters_dict["sampling_size"]),
             )
         elif model_type == "xgb_regressor":
-            from verticapy.learn.ensemble import XGBoostRegressor
+            from verticapy.machine_learning.vertica.ensemble import XGBoostRegressor
 
             model = XGBoostRegressor(
                 name,
@@ -417,7 +417,7 @@ model
                 float(parameters_dict["sampling_size"]),
             )
         elif model_type == "logistic_reg":
-            from verticapy.learn.linear_model import LogisticRegression
+            from verticapy.machine_learning.vertica.linear_model import LogisticRegression
 
             model = LogisticRegression(
                 name,
@@ -429,7 +429,7 @@ model
                 float(parameters_dict["alpha"]),
             )
         elif model_type == "linear_reg":
-            from verticapy.learn.linear_model import (
+            from verticapy.machine_learning.vertica.linear_model import (
                 LinearRegression,
                 Lasso,
                 Ridge,
@@ -469,11 +469,11 @@ model
                     float(parameters_dict["alpha"]),
                 )
         elif model_type == "naive_bayes":
-            from verticapy.learn.naive_bayes import NaiveBayes
+            from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
 
             model = NaiveBayes(name, float(parameters_dict["alpha"]))
         elif model_type == "svm_regressor":
-            from verticapy.learn.svm import LinearSVR
+            from verticapy.machine_learning.vertica.svm import LinearSVR
 
             model = LinearSVR(
                 name,
@@ -486,7 +486,7 @@ model
                 int(parameters_dict["max_iterations"]),
             )
         elif model_type == "svm_classifier":
-            from verticapy.learn.svm import LinearSVC
+            from verticapy.machine_learning.vertica.svm import LinearSVC
 
             class_weights = parameters_dict["class_weights"].split(",")
             for idx, elem in enumerate(class_weights):
@@ -505,7 +505,7 @@ model
                 int(parameters_dict["max_iterations"]),
             )
         elif model_type in ("kmeans", "kprototypes"):
-            from verticapy.learn.cluster import KMeans, KPrototypes
+            from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 
             if model_type == "kmeans":
                 model = KMeans(
@@ -553,7 +553,7 @@ model
             ]
             model.metrics_ = tablesample(values)
         elif model_type == "bisecting_kmeans":
-            from verticapy.learn.cluster import BisectingKMeans
+            from verticapy.machine_learning.vertica.cluster import BisectingKMeans
 
             model = BisectingKMeans(
                 name,
@@ -569,20 +569,20 @@ model
             model.metrics_ = model.get_attr("Metrics")
             model.cluster_centers_ = model.get_attr("BKTree")
         elif model_type == "pca":
-            from verticapy.learn.decomposition import PCA
+            from verticapy.machine_learning.vertica.decomposition import PCA
 
             model = PCA(name, 0, bool(parameters_dict["scale"]))
             model.components_ = model.get_attr("principal_components")
             model.explained_variance_ = model.get_attr("singular_values")
             model.mean_ = model.get_attr("columns")
         elif model_type == "svd":
-            from verticapy.learn.decomposition import SVD
+            from verticapy.machine_learning.vertica.decomposition import SVD
 
             model = SVD(name)
             model.singular_values_ = model.get_attr("right_singular_vectors")
             model.explained_variance_ = model.get_attr("singular_values")
         elif model_type == "one_hot_encoder_fit":
-            from verticapy.learn.preprocessing import OneHotEncoder
+            from verticapy.machine_learning.vertica.preprocessing import OneHotEncoder
 
             model = OneHotEncoder(name)
             try:

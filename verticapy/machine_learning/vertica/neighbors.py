@@ -1100,7 +1100,7 @@ xlim: list, optional
             self.tree_name = f"{name_str}_KernelDensity_Tree"
             self.y = "KDE"
 
-            from verticapy.learn.tree import DecisionTreeRegressor
+            from verticapy.machine_learning.vertica.tree import DecisionTreeRegressor
 
             model = DecisionTreeRegressor(
                 name=self.tree_name,

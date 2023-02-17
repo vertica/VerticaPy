@@ -70,7 +70,7 @@ bool
             add_identifier: bool = False,
         ):
             from verticapy.core.vdataframe.base import vDataFrame
-            from verticapy.learn.vmodel import vModel
+            from verticapy.machine_learning.vertica.base import vModel
 
             json = "{"
             if name:

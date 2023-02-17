@@ -17,26 +17,26 @@ permissions and limitations under the License.
 import decimal, math
 from collections.abc import Iterable
 from typing import Literal, Union
-
-# Other modules
 from tqdm.auto import tqdm
 import numpy as np
 import scipy.stats as scipy_st
 import scipy.special as scipy_special
 
-# VerticaPy Modules
-from verticapy.core.tablesample.base import tablesample
-from verticapy.sql.read import to_tablesample
-import verticapy.plotting._matplotlib as plt
+from verticapy._config.config import OPTIONS
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import EmptyParameter
-from verticapy.sql.drop import drop
-from verticapy._version import vertica_version
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy.plotting._colors import gen_cmap
 from verticapy._utils._sql._format import quote_ident
-from verticapy._config.config import OPTIONS
+from verticapy._version import vertica_version
+from verticapy.errors import EmptyParameter
+
+from verticapy.core.tablesample.base import tablesample
+
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample
+
+from verticapy.plotting._colors import gen_cmap
+import verticapy.plotting._matplotlib as plt
 
 
 class vDFCORR:

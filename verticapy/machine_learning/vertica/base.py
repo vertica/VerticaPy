@@ -817,8 +817,8 @@ Main Class for Vertica Model
     object
         memModel model.
         """
-        from verticapy.learn.memmodel import memModel
-        from verticapy.learn.tree import get_tree_list_of_arrays
+        from verticapy.machine_learning.memmodel.base import memModel
+        from verticapy.machine_learning.vertica.tree import get_tree_list_of_arrays
 
         if self.type == "AutoML":
             return self.best_model_.to_memmodel()
@@ -1052,7 +1052,7 @@ Main Class for Vertica Model
     str / func
         Python function
         """
-        from verticapy.learn.tree import get_tree_list_of_arrays
+        from verticapy.machine_learning.vertica.tree import get_tree_list_of_arrays
 
         if not (return_str):
             func = self.to_python(

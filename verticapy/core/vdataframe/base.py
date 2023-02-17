@@ -14,69 +14,65 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-#
-#
-# Modules
-#
-# Standard Python Modules
 import warnings
 from typing import Literal, Union
-
-# Other modules
-import pandas as pd
 import numpy as np
 
-# VerticaPy Modules
-from verticapy.sql.parsers.pandas import read_pandas
-from verticapy.core.tablesample.base import tablesample
+import pandas as pd
+
+from verticapy._config.config import OPTIONS
+from verticapy._utils._cast import to_category
 from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import (
+    clean_query,
+    format_schema_table,
+    quote_ident,
+    schema_relation,
+)
+from verticapy.connect import (
+    EXTERNAL_CONNECTION,
+    SPECIAL_SYMBOLS,
+)
+
 from verticapy.errors import (
     ConnectionError,
     MissingRelation,
     ParameterError,
     QueryError,
 )
-from verticapy.sql.dtypes import get_data_types
-from verticapy.sql.flex import (
-    isvmap,
-    isflextable,
-    compute_flextable_keys,
-)
-from verticapy._utils._cast import to_category
-from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql._execute import _executeSQL
-from verticapy._utils._sql._format import (
-    quote_ident,
-    schema_relation,
-    format_schema_table,
-    clean_query,
-)
-from verticapy.connect import (
-    EXTERNAL_CONNECTION,
-    SPECIAL_SYMBOLS,
-)
-from verticapy._config.config import OPTIONS
 
 from verticapy.core.str_sql.base import str_sql
+from verticapy.core.tablesample.base import tablesample
+
+from verticapy.sql.dtypes import get_data_types
+from verticapy.sql.flex import (
+    compute_flextable_keys,
+    isvmap,
+    isflextable,
+)
+from verticapy.sql.parsers.pandas import read_pandas
+from verticapy.sql.read import vDataFrameSQL
+
 from verticapy.core.vdataframe.aggregate import vDFAGG, vDCAGG
 from verticapy.core.vdataframe.corr import vDFCORR, vDCCORR
-from verticapy.core.vdataframe.io import vDFIO
-from verticapy.core.vdataframe.rolling import vDFROLL
-from verticapy.core.vdataframe.plotting import vDFPLOT, vDCPLOT
+from verticapy.core.vdataframe.encoding import vDFENCODE, vDCENCODE
+from verticapy.core.vdataframe.eval import vDFEVAL, vDCEVAL
+from verticapy.core.vdataframe.fill import vDFFILL, vDCFILL
 from verticapy.core.vdataframe.filter import vDFFILTER, vDCFILTER
+from verticapy.core.vdataframe.io import vDFIO
 from verticapy.core.vdataframe.join_union_sort import vDFJUS
 from verticapy.core.vdataframe.machine_learning import vDFML
 from verticapy.core.vdataframe.math import vDFMATH, vDCMATH
-from verticapy.core.vdataframe.sys import vDFSYS, vDCSYS
-from verticapy.core.vdataframe.typing import vDFTYPING, vDCTYPING
-from verticapy.core.vdataframe.read import vDFREAD, vDCREAD
-from verticapy.core.vdataframe.text import vDFTEXT, vDCTEXT
-from verticapy.core.vdataframe.utils import vDFUTILS
-from verticapy.core.vdataframe.encoding import vDFENCODE, vDCENCODE
 from verticapy.core.vdataframe.normalize import vDFNORM, vDCNORM
-from verticapy.core.vdataframe.eval import vDFEVAL, vDCEVAL
-from verticapy.core.vdataframe.fill import vDFFILL, vDCFILL
 from verticapy.core.vdataframe.pivot import vDFPIVOT
+from verticapy.core.vdataframe.plotting import vDFPLOT, vDCPLOT
+from verticapy.core.vdataframe.read import vDFREAD, vDCREAD
+from verticapy.core.vdataframe.rolling import vDFROLL
+from verticapy.core.vdataframe.sys import vDFSYS, vDCSYS
+from verticapy.core.vdataframe.text import vDFTEXT, vDCTEXT
+from verticapy.core.vdataframe.typing import vDFTYPING, vDCTYPING
+from verticapy.core.vdataframe.utils import vDFUTILS
 
 
 ###
@@ -98,23 +94,23 @@ from verticapy.core.vdataframe.pivot import vDFPIVOT
 class vDataFrame(
     vDFAGG,
     vDFCORR,
-    vDFIO,
-    vDFROLL,
-    vDFPLOT,
-    vDFFILTER,
-    vDFJUS,
-    vDFML,
-    vDFMATH,
-    vDFSYS,
-    vDFTYPING,
-    vDFREAD,
-    vDFTEXT,
-    vDFUTILS,
     vDFENCODE,
-    vDFNORM,
     vDFEVAL,
     vDFFILL,
+    vDFFILTER,
+    vDFIO,
+    vDFJUS,
+    vDFMATH,
+    vDFML,
+    vDFNORM,
     vDFPIVOT,
+    vDFPLOT,
+    vDFREAD,
+    vDFROLL,
+    vDFSYS,
+    vDFTEXT,
+    vDFTYPING,
+    vDFUTILS,
 ):
     """
 An object that records all user modifications, allowing users to 
@@ -429,18 +425,18 @@ vDataColumns : vDataColumn
 
 class vDataColumn(
     vDCAGG,
-    vDCPLOT,
-    vDCMATH,
-    vDCTYPING,
+    vDCCORR,
+    vDCENCODE,
+    vDCEVAL,
+    vDCFILL,
     vDCFILTER,
+    vDCMATH,
+    vDCNORM,
+    vDCPLOT,
     vDCREAD,
     vDCSYS,
     vDCTEXT,
-    vDCCORR,
-    vDCENCODE,
-    vDCNORM,
-    vDCEVAL,
-    vDCFILL,
+    vDCTYPING,
     str_sql,
 ):
     """
