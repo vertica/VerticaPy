@@ -40,7 +40,7 @@ from verticapy.plotting._matplotlib.mlplot import plot_importance
 
 import verticapy.machine_learning.vertica.metrics as mt
 from verticapy.machine_learning.vertica.linear_model import LinearRegression
-from verticapy.machine_learning.vertica.tools import does_model_exist
+from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.vertica.vmodel import Regressor
 
 if PARSER_IMPORT:

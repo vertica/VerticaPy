@@ -45,7 +45,7 @@ from verticapy.plotting._matplotlib.mlplot import (
 from verticapy.machine_learning._utils import get_match_index
 import verticapy.machine_learning.model_selection as ms
 import verticapy.machine_learning.metrics as mt
-from verticapy.machine_learning.vertica.tools import does_model_exist
+from verticapy.machine_learning.model_management.read import does_model_exist
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___

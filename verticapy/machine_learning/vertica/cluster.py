@@ -32,7 +32,7 @@ from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_verticapy_schema
 
 from verticapy.machine_learning.vertica.vmodel import Clustering, Tree, vModel
-from verticapy.machine_learning.vertica.tools import does_model_exist
+from verticapy.machine_learning.model_management.read import does_model_exist
 
 
 class BisectingKMeans(Clustering, Tree):
