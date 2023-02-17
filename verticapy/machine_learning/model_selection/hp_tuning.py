@@ -31,8 +31,8 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._colors import gen_colors
+from verticapy.plotting._matplotlib.base import updated_dict
 
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
