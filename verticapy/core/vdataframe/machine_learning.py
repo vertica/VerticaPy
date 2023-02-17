@@ -204,7 +204,7 @@ class vDFML:
         learn.memmodel.
         """
         from verticapy.machine_learning._utils import get_match_index
-        from verticapy.machine_learning.vertica.memmodel.base import memModel
+        from verticapy.machine_learning.memmodel.base import memModel
 
         if "process" not in kwds or kwds["process"]:
             if isinstance(columns, str):
