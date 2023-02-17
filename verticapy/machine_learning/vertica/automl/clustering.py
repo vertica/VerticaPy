@@ -121,7 +121,7 @@ model_: object
         clustering model
         """
         from verticapy.machine_learning.vertica.automl import AutoDataPrep
-        
+
         if OPTIONS["overwrite_model"]:
             self.drop()
         else:

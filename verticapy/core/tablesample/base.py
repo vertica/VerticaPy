@@ -17,6 +17,8 @@ permissions and limitations under the License.
 import copy, decimal, datetime, math
 import numpy as np
 
+import pandas as pd
+
 from verticapy._config.config import OPTIONS
 from verticapy._utils._sql._format import quote_ident
 from verticapy._version import vertica_version
@@ -453,8 +455,6 @@ The tablesample attributes are the same as the parameters.
 	tablesample.to_sql : Generates the SQL query associated to the tablesample.
 	tablesample.to_vdf : Converts the tablesample to vDataFrame.
 		"""
-        import pandas as pd
-
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
             return df.drop(columns=["index"])

@@ -23,6 +23,8 @@ from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import clean_query, format_schema_table, quote_ident
 from verticapy.errors import ExtensionError, MissingRelation, ParameterError
 
+from verticapy.sql.create import create_table
+from verticapy.sql.drop import drop
 from verticapy.sql.flex import compute_flextable_keys
 from verticapy.sql.parsers._utils import extract_compression, get_first_file
 
@@ -151,8 +153,6 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    from verticapy.sql.drop import drop
-
     if record_terminator == "\n":
         record_terminator = "\\n"
     if not (flex_name):
@@ -331,7 +331,6 @@ See Also
 read_json : Ingests a JSON file into the Vertica database.
 	"""
     from verticapy.core.vdataframe.base import vDataFrame
-    from verticapy.sql.create import create_table
 
     if schema:
         temporary_local_table = False

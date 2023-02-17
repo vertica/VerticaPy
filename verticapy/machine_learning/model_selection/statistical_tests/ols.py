@@ -26,6 +26,8 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
 
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
 from verticapy.sql.read import vDataFrameSQL
 
 
@@ -49,8 +51,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
     eps, X = vdf.format_colnames(eps, X)
     name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
@@ -103,8 +103,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
     eps, X = vdf.format_colnames(eps, X)
     name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
@@ -174,7 +172,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
     def model_fit(input_relation, X, y, model):
         mse = []
@@ -232,8 +229,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
     eps, X = vdf.format_colnames(eps, X)
     X_0 = ["1"] + X
     variables = []
@@ -302,8 +297,6 @@ Returns
 float
     VIF.
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
     X, X_idx = vdf.format_colnames(X, X_idx)
 
     if isinstance(X_idx, str):

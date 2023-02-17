@@ -133,8 +133,9 @@ def quote_ident(column: str):
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):
-    from verticapy.core.vdataframe.base import vDataFrame
     from verticapy.core.tablesample.base import tablesample
+    from verticapy.core.vdataframe.base import vDataFrame
+
     from verticapy.sql.parsers.pandas import read_pandas
 
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query

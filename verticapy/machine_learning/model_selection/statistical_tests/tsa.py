@@ -28,6 +28,8 @@ from verticapy._utils._sql._format import schema_relation
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
 
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
 from verticapy.sql.drop import drop
 from verticapy.sql.read import vDataFrameSQL
 
@@ -69,7 +71,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
     def critical_value(alpha, N, with_trend):
         if not (with_trend):
@@ -406,8 +407,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
     eps, ts, by = vdf.format_colnames(eps, ts, by)
     X = []
     X_names = []
@@ -656,8 +655,6 @@ Returns
 vDataFrame
     object containing (ts, column, TS seasonal part, TS trend, TS noise).
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
     if isinstance(by, str):
         by = [by]
     assert period > 0 or polynomial_order > 0, ParameterError(

@@ -26,11 +26,13 @@ from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import ParameterError
 
-from verticapy.plotting._colors import gen_colors, gen_cmap
-from verticapy.plotting._matplotlib.base import updated_dict
-
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.str_sql.base import str_sql
+
+from verticapy.datasets import gen_meshgrid
+
+from verticapy.plotting._colors import gen_colors, gen_cmap
+from verticapy.plotting._matplotlib.base import updated_dict
 
 from verticapy.sql.read import to_tablesample
 
@@ -139,8 +141,6 @@ def contour_plot(
         X, Y = np.meshgrid(xlist, ylist)
         Z = func(X, Y)
     else:
-        from verticapy.datasets import gen_meshgrid
-
         vdf_tmp = gen_meshgrid(
             {
                 quote_ident(columns[1])[1:-1]: {

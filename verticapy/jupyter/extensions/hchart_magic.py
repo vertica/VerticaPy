@@ -27,14 +27,14 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
 
+from verticapy.jupyter.extensions._utils import get_magic_options
+
 from verticapy.plotting._highcharts.base import hchartSQL
 
 
 @save_verticapy_logs
 @needs_local_scope
 def hchart_magic(line, cell="", local_ns=None):
-    from verticapy.jupyter.extensions._utils import get_magic_options
-
     # Initialization
     query = "" if (not (cell) and (line)) else cell
 

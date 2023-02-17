@@ -17,6 +17,11 @@ permissions and limitations under the License.
 import time
 from typing import Literal
 
+from verticapy._config.config import OPTIONS
+from verticapy._utils._sql._display import print_query, print_time
+from verticapy._utils._sql._format import clean_query, erase_label
+from verticapy.connect import SPECIAL_SYMBOLS, current_cursor
+
 
 def _executeSQL(
     query: str,
@@ -31,10 +36,6 @@ def _executeSQL(
     symbol: str = "$",
 ):
     from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-    from verticapy._config.config import OPTIONS
-    from verticapy.connect import SPECIAL_SYMBOLS, current_cursor
-    from verticapy._utils._sql._format import clean_query, erase_label
-    from verticapy._utils._sql._display import print_query, print_time
 
     # Cleaning the query
     if sql_push_ext and (symbol in SPECIAL_SYMBOLS):

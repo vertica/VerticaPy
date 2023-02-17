@@ -32,6 +32,7 @@ from verticapy.plotting._matplotlib import (
 )
 
 from verticapy.machine_learning._utils import reverse_score
+from verticapy.machine_learning.metrics import aic_bic
 from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
@@ -347,8 +348,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.machine_learning.metrics import aic_bic
-
     if isinstance(X, str):
         X = [X]
     assert len(X) >= 1, ParameterError("Vector X must have at least one element.")

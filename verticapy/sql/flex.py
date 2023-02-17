@@ -157,7 +157,6 @@ Returns
 bool
     True if the column is a VMap.
     """
-    # -#
     from verticapy.vdataframe import vDataFrame
 
     column = quote_ident(column)

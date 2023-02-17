@@ -19,6 +19,7 @@ import vertica_python, warnings
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident, format_schema_table
+from verticapy.connect import current_cursor
 from verticapy.errors import ParameterError
 
 from verticapy.sql.drop import drop
@@ -89,9 +90,6 @@ list of tuples
             "As parameter 'table_name' is defined, parameter 'expression' is ignored."
         )
         warnings.warn(warning_message, Warning)
-
-    from verticapy.connect import current_cursor
-
     if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor) and not (
         table_name
     ):

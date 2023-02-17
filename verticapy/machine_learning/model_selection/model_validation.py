@@ -35,6 +35,7 @@ from verticapy.machine_learning._utils import compute_area
 
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.plotting._matplotlib.base import updated_dict
+from verticapy.plotting._matplotlib.timeseries import range_curve
 
 from verticapy.sql.read import vDataFrameSQL
 
@@ -450,8 +451,6 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.plotting._matplotlib import range_curve
-
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
     if estimator.MODEL_SUBTYPE == "REGRESSOR" and metric == "auto":

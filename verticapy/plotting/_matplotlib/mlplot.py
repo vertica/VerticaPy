@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import math
 from typing import Union
 import numpy as np
+import scipy.spatial as scipy_st
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -1158,8 +1159,6 @@ def voronoi_plot(
     ax=None,
     **style_kwds,
 ):
-    from scipy.spatial import voronoi_plot_2d, Voronoi
-
     min_x, max_x, min_y, max_y = (
         min([elem[0] for elem in clusters]),
         max([elem[0] for elem in clusters]),
@@ -1172,9 +1171,9 @@ def voronoi_plot(
         [max_x + 999, min_y - 999],
         [max_x + 999, max_y + 999],
     ]
-    v = Voronoi(clusters + dummies_point)
+    v = scipy_st.Voronoi(clusters + dummies_point)
     param = {"show_vertices": False}
-    voronoi_plot_2d(v, ax=ax, **updated_dict(param, style_kwds))
+    scipy_st.voronoi_plot_2d(v, ax=ax, **updated_dict(param, style_kwds))
     if not (ax):
         ax = plt
         ax.xlabel(columns[0])

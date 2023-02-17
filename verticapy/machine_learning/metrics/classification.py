@@ -24,10 +24,6 @@ from verticapy._version import check_minimum_version
 from verticapy.core.tablesample.base import tablesample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.model_selection.model_validation import (
-    prc_curve,
-    roc_curve,
-)
 from verticapy.machine_learning._utils import (
     _compute_metric_query,
     _compute_tn_fn_fp_tp,
@@ -126,6 +122,8 @@ Returns
 float
 	score
 	"""
+    from verticapy.machine_learning.model_selection.model_validation import roc_curve
+
     return roc_curve(
         y_true, y_score, input_relation, pos_label, nbins=nbins, auc_roc=True
     )
@@ -178,6 +176,8 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
+    from verticapy.machine_learning.model_selection.model_validation import roc_curve
+
     if estimator:
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes != 2) else [estimator.classes_[1]]
@@ -709,6 +709,8 @@ Returns
 float
 	score
 	"""
+    from verticapy.machine_learning.model_selection.model_validation import prc_curve
+
     return prc_curve(
         y_true, y_score, input_relation, pos_label, nbins=nbins, auc_prc=True
     )

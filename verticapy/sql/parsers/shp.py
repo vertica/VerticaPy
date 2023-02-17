@@ -41,6 +41,8 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
+    from verticapy.core.vdataframe.base import vDataFrame
+
     file = path.split("/")[-1]
     file_extension = file[-3 : len(file)]
     if file_extension != "shp":
@@ -62,6 +64,4 @@ vDataFrame
     )
     _executeSQL(query, title="Ingesting the data.")
     print(f'The table "{schema}"."{table_name}" has been successfully created.')
-    from verticapy.core.vdataframe.base import vDataFrame
-
     return vDataFrame(table_name, schema=schema)

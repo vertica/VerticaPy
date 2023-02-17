@@ -16,7 +16,9 @@ permissions and limitations under the License.
 """
 import re
 
+from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import clean_query
+from verticapy._utils._sql._execute import _executeSQL
 from verticapy.connect import EXTERNAL_CONNECTION
 from verticapy.errors import ConnectionError
 
@@ -42,9 +44,6 @@ def get_dblink_fun(query: str, symbol: str = "$"):
 
 
 def replace_external_queries_in_query(query: str):
-    from verticapy._utils._gen import gen_tmp_name
-    from verticapy._utils._sql._execute import _executeSQL
-
     sql_keyword = (
         "select ",
         "create ",

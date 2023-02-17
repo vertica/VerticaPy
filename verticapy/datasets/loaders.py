@@ -21,8 +21,6 @@ from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
 from verticapy.connect import current_cursor
 
-from verticapy.core.vdataframe.base import vDataFrame
-
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
 
@@ -33,6 +31,7 @@ def load_dataset(
     """
     General Function to ingest a dataset
     """
+    from verticapy.core.vdataframe.base import vDataFrame
 
     try:
 

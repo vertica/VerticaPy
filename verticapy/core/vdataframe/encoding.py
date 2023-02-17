@@ -220,8 +220,8 @@ class vDCENCODE:
     vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
         from verticapy.machine_learning.vertica.ensemble import (
-            RandomForestRegressor,
             RandomForestClassifier,
+            RandomForestRegressor,
         )
 
         if self.isnum() and method == "smart":
