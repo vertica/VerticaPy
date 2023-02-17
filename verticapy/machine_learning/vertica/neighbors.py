@@ -37,7 +37,7 @@ from verticapy.sql.insert import insert_verticapy_schema
 from verticapy.plotting._matplotlib.base import updated_dict
 
 import verticapy.machine_learning.metrics as mt
-from verticapy.machine_learning.vertica.model_selection import (
+from verticapy.machine_learning.model_selection.model_validation import (
     roc_curve,
     prc_curve,
     lift_chart,

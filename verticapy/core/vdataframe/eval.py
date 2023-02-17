@@ -14,18 +14,18 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
 import re
 from typing import Union
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import QueryError
-from verticapy.sql.flex import isvmap
 from verticapy._utils._cast import to_category
-from verticapy.core.str_sql.base import str_sql
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
+from verticapy.errors import QueryError
+
+from verticapy.core.str_sql.base import str_sql
+
 from verticapy.sql.dtypes import get_data_types
+from verticapy.sql.flex import isvmap
 
 
 class vDFEVAL:

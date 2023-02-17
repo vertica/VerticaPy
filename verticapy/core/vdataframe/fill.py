@@ -14,25 +14,26 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
-import warnings, datetime, math, re
+import datetime, math, re, warnings
 from itertools import combinations_with_replacement
 from typing import Literal, Union
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import EmptyParameter, ParameterError, QueryError
-from verticapy.sql.flex import compute_vmap_keys, isvmap
-from verticapy._utils._cast import to_category, to_varchar
-from verticapy._version import vertica_version
-from verticapy.core.str_sql.base import str_sql
-from verticapy._utils._sql._format import quote_ident
-from verticapy.core._utils._merge import gen_coalesce, group_similar_names
 from verticapy._config.config import OPTIONS
-from verticapy.sql.dtypes import get_data_types
-from verticapy.sql.drop import drop
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._cast import to_category, to_varchar
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import quote_ident
+from verticapy._version import vertica_version
+from verticapy.errors import EmptyParameter, ParameterError, QueryError
+
+from verticapy.core._utils._merge import gen_coalesce, group_similar_names
+
+from verticapy.core.str_sql.base import str_sql
+
+from verticapy.sql.drop import drop
+from verticapy.sql.dtypes import get_data_types
+from verticapy.sql.flex import compute_vmap_keys, isvmap
 
 
 class vDFFILL:

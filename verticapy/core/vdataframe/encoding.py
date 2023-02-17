@@ -14,18 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
 import warnings, math
 from typing import Literal, Union
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import ParameterError
-from verticapy._utils._cast import to_varchar
 from verticapy._config.config import OPTIONS
-from verticapy.sql.drop import drop
+from verticapy._utils._cast import to_varchar
+from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._gen import gen_tmp_name
+from verticapy.errors import ParameterError
+
+from verticapy.sql.drop import drop
 
 
 class vDFENCODE:

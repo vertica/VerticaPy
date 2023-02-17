@@ -17,12 +17,12 @@ permissions and limitations under the License.
 import random, warnings, datetime
 from typing import Literal, Union
 from collections.abc import Iterable
-from verticapy.errors import ParameterError
+
 from verticapy._config.config import OPTIONS
-from verticapy._utils._sql._format import clean_query
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import clean_query, quote_ident
+from verticapy.errors import ParameterError
 
 
 class vDFFILTER:
