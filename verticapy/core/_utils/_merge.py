@@ -17,12 +17,6 @@ permissions and limitations under the License.
 from verticapy._utils._sql._format import quote_ident
 
 
-#
-#
-# Tools to merge similar names/categories together.
-#
-
-
 def erase_prefix_in_name(name: str, prefix: list = []):
     """----
 Excludes the input lists of prefixes from the input name and returns it.

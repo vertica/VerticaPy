@@ -16,10 +16,9 @@ permissions and limitations under the License.
 """
 import os
 
-# VerticaPy Modules
-from verticapy.errors import ParameterError
 from verticapy.connect.connect import VERTICAPY_AUTO_CONNECTION, SESSION_LABEL
 from verticapy.connect.utils import get_confparser
+from verticapy.errors import ParameterError
 
 
 def available_connections():

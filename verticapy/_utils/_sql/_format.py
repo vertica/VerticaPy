@@ -15,7 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
+
 import pandas as pd
+
 from verticapy._config.config import OPTIONS
 from verticapy._utils._cast import to_dtype_category
 

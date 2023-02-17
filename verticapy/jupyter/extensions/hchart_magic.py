@@ -14,22 +14,20 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import time, warnings
 
-# Jupyter Modules
 from IPython.core.magic import needs_local_scope
 from IPython.display import HTML, display
 
-# Standard Python Modules
-import time, warnings
-
-# VerticaPy
-from verticapy.errors import ParameterError
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.core.tablesample.base import tablesample
-from verticapy.plotting._highcharts.base import hchartSQL
-from verticapy._utils._sql._format import replace_vars_in_query, clean_query
 from verticapy._config.config import OPTIONS
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._format import replace_vars_in_query, clean_query
+from verticapy.errors import ParameterError
+
+from verticapy.core.tablesample.base import tablesample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.plotting._highcharts.base import hchartSQL
 
 
 @save_verticapy_logs

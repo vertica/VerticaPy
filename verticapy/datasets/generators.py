@@ -18,8 +18,9 @@ import datetime
 
 from verticapy._version import check_minimum_version
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql.read import vDataFrameSQL
 from verticapy.errors import ParameterError
+
+from verticapy.sql.read import vDataFrameSQL
 
 
 @check_minimum_version

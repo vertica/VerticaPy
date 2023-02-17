@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 import warnings
 from typing import Union, Literal, overload
-from verticapy.errors import ParameterError
 
 try:
     from geopandas import GeoDataFrame
@@ -25,13 +24,6 @@ try:
     GEOPANDAS_ON = True
 except:
     GEOPANDAS_ON = False
-
-try:
-    from dateutil.parser import parse
-
-    PARSER_IMPORT = True
-except:
-    PARSER_IMPORT = False
 
 try:
     import graphviz
@@ -50,6 +42,14 @@ try:
 except:
     pass
 
+try:
+    from dateutil.parser import parse
+
+    PARSER_IMPORT = True
+except:
+    PARSER_IMPORT = False
+
+from verticapy.errors import ParameterError
 
 COLORS_OPTIONS = {
     "rgb": ["red", "green", "blue", "orange", "yellow", "gray"],

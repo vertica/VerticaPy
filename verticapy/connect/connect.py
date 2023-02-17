@@ -14,14 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import uuid
+import uuid, vertica_python
 
-from verticapy.errors import ConnectionError, ParameterError
 from verticapy._version import __version__
-import vertica_python
 from verticapy.connect.utils import get_confparser, get_connection_file
+from verticapy.errors import ConnectionError, ParameterError
 
-# Global Variables
 VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
 SESSION_IDENTIFIER = str(uuid.uuid1()).replace("-", "")
 SESSION_LABEL = f"verticapy-{__version__}-{SESSION_IDENTIFIER}"

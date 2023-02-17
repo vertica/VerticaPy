@@ -15,9 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import shutil, html
+
 from verticapy._config.config import OPTIONS
-from verticapy._utils._logo import gen_verticapy_logo_html
 from verticapy._utils._cast import to_category
+from verticapy._utils._logo import gen_verticapy_logo_html
 
 
 def print_table(

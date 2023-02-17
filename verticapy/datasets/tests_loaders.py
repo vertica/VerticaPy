@@ -14,12 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# VerticaPy Modules
+from verticapy._utils._sql._format import quote_ident
+
 from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_into
-from verticapy._utils._sql._format import quote_ident
 
 
 def load_dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):

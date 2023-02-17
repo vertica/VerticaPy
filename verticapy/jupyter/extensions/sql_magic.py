@@ -14,8 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
 ##
 #  _____  _____ _      ___  ___  ___  _____ _____ _____
 # /  ___||  _  | |     |  \/  | / _ \|  __ \_   _/  __ \
@@ -25,26 +23,22 @@ permissions and limitations under the License.
 # \____/  \_/\_\_____/ \_|  |_/\_| |_/\____/\___/ \____/
 #
 ##
-#
+import warnings, re, time
 
-# Jupyter Modules
 from IPython.core.magic import needs_local_scope
 from IPython.display import HTML, display
 
-# Standard Python Modules
-import warnings, re, time
-
-# VerticaPy Modules
+from verticapy._config.config import OPTIONS, set_option
+from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._format import replace_vars_in_query, clean_query
 from verticapy.connect import SPECIAL_SYMBOLS
 from verticapy.errors import QueryError, ParameterError
-from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-from verticapy._utils._sql._format import replace_vars_in_query, clean_query
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql._execute import _executeSQL
-from verticapy._config.config import OPTIONS
+
 from verticapy.jupyter.extensions._utils import get_magic_options
-from verticapy._config.config import set_option
+
+from verticapy.sql.read import vDataFrameSQL
+from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
 
 
 @save_verticapy_logs
