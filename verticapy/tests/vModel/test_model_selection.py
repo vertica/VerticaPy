@@ -22,7 +22,7 @@ import pytest
 import matplotlib.pyplot as plt
 
 # VerticaPy
-import verticapy
+import verticapy, drop
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy._config.config import set_option
 from verticapy.connect import current_cursor

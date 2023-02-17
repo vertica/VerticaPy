@@ -22,6 +22,7 @@ from verticapy._utils._collect import save_verticapy_logs
 
 from verticapy.core.vdataframe.base import vDataFrame
 
+from verticapy.machine_learning.vertica.automl import AutoDataPrep
 from verticapy.machine_learning.vertica.base import vModel
 from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 from verticapy.machine_learning.model_selection import best_k
@@ -120,8 +121,6 @@ model_: object
     object
         clustering model
         """
-        from verticapy.machine_learning.vertica.automl import AutoDataPrep
-        
         if OPTIONS["overwrite_model"]:
             self.drop()
         else:
