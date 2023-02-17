@@ -25,7 +25,6 @@ import scipy.stats as scipy_st
 
 # VerticaPy Modules
 from verticapy.core.tablesample.base import tablesample
-from verticapy.learn.memmodel import memModel
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import ParameterError
 from verticapy.sql.read import vDataFrameSQL
@@ -207,6 +206,7 @@ class vDFML:
         learn.memmodel.
         """
         from verticapy.machine_learning._utils import get_match_index
+        from verticapy.machine_learning.vertica.memmodel.base import memModel
 
         if "process" not in kwds or kwds["process"]:
             if isinstance(columns, str):

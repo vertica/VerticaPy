@@ -25,11 +25,9 @@ from verticapy.machine_learning.vertica.cluster import (
     KPrototypes,
 )
 from verticapy.machine_learning.vertica.decomposition import MCA, PCA, SVD
-from verticapy.machine_learning.vertica.automl import (
-    AutoDataPrep,
-    AutoClustering,
-    AutoML,
-)
+from verticapy.machine_learning.vertica.automl.clustering import AutoClustering
+from verticapy.machine_learning.vertica.automl.dataprep import AutoDataPrep
+from verticapy.machine_learning.vertica.automl.supervised import AutoML
 from verticapy.machine_learning.vertica.ensemble import (
     IsolationForest,
     RandomForestClassifier,
