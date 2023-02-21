@@ -97,7 +97,7 @@ List of tuples
         assert expr[vmap_col].isvmap(), ParameterError(
             f"Virtual column {vmap_col} is not a VMAP."
         )
-        expr = expr.__genSQL__()
+        expr = expr._genSQL()
     result = _executeSQL(
         (
             "SELECT /*+LABEL('utilities.compute_vmap_keys')*/ keys, COUNT(*) FROM "
@@ -161,7 +161,7 @@ bool
 
     column = quote_ident(column)
     if isinstance(expr, vDataFrame):
-        expr = expr.__genSQL__()
+        expr = expr._genSQL()
     sql = f"SELECT MAPVERSION({column}) AS isvmap, {column} FROM {expr} WHERE {column} IS NOT NULL LIMIT 1;"
     try:
         result = _executeSQL(

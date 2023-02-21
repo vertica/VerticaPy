@@ -56,7 +56,7 @@ def bubble(
     if isinstance(colors, str):
         colors = [colors]
     if not (catcol) and not (cmap_col):
-        tablesample = max_nb_points / vdf.shape()[0]
+        TableSample = max_nb_points / vdf.shape()[0]
         query_result = _executeSQL(
             query=f"""
                 SELECT 
@@ -64,8 +64,8 @@ def bubble(
                     {columns[0]}, 
                     {columns[1]}, 
                     {columns[2]} 
-                FROM {vdf.__genSQL__(True)} 
-                WHERE __verticapy_split__ < {tablesample} 
+                FROM {vdf._genSQL(True)} 
+                WHERE __verticapy_split__ < {TableSample} 
                   AND {columns[0]} IS NOT NULL
                   AND {columns[1]} IS NOT NULL
                   AND {columns[2]} IS NOT NULL 
@@ -163,7 +163,7 @@ def bubble(
             ax.imshow(im, extent=bbox)
         others = []
         count = vdf.shape()[0]
-        tablesample = 0.1 if (count > 10000) else 0.9
+        TableSample = 0.1 if (count > 10000) else 0.9
         if columns[2] != 1:
             max_size, min_size = (
                 float(vdf[columns[2]].max()),
@@ -182,8 +182,8 @@ def bubble(
                             {columns[0]},
                             {columns[1]},
                             {columns[2]} 
-                        FROM {vdf.__genSQL__(True)}
-                        WHERE  __verticapy_split__ < {tablesample} 
+                        FROM {vdf._genSQL(True)}
+                        WHERE  __verticapy_split__ < {TableSample} 
                            AND {catcol} = '{category_str}'
                            AND {columns[0]} IS NOT NULL
                            AND {columns[1]} IS NOT NULL
@@ -230,8 +230,8 @@ def bubble(
                         {columns[1]},
                         {columns[2]},
                         {cmap_col}
-                    FROM {vdf.__genSQL__(True)}
-                    WHERE  __verticapy_split__ < {tablesample} 
+                    FROM {vdf._genSQL(True)}
+                    WHERE  __verticapy_split__ < {TableSample} 
                        AND {columns[0]} IS NOT NULL
                        AND {columns[1]} IS NOT NULL
                        AND {columns[2]} IS NOT NULL
@@ -445,7 +445,7 @@ def outliers_contour_plot(
 def scatter_matrix(
     vdf, columns: list = [], **style_kwds,
 ):
-    columns = vdf.format_colnames(columns)
+    columns = vdf._format_colnames(columns)
     if not (columns):
         columns = vdf.numcol()
     elif len(columns) == 1:
@@ -464,7 +464,7 @@ def scatter_matrix(
                 /*+LABEL('plotting._matplotlib.scatter_matrix')*/
                 {", ".join(columns)},
                 {random_func} AS rand
-            FROM {vdf.__genSQL__(True)}
+            FROM {vdf._genSQL(True)}
             WHERE __verticapy_split__ < 0.5
             ORDER BY rand 
             LIMIT 1000""",
@@ -520,7 +520,7 @@ def scatter(
     ax=None,
     **style_kwds,
 ):
-    columns, catcol = vdf.format_colnames(columns, catcol, expected_nb_of_cols=[2, 3])
+    columns, catcol = vdf._format_colnames(columns, catcol, expected_nb_of_cols=[2, 3])
     n = len(columns)
     for col in columns:
         if not (vdf[col].isnum()):
@@ -554,10 +554,10 @@ def scatter(
             ax = plt.axes(projection="3d")
     all_scatter, others = [], []
     if not (catcol):
-        tablesample = max_nb_points / vdf.shape()[0]
+        TableSample = max_nb_points / vdf.shape()[0]
         limit = max_nb_points
     else:
-        tablesample = 10 if (vdf.shape()[0] > 10000) else 90
+        TableSample = 10 if (vdf.shape()[0] > 10000) else 90
         if cat_priority:
             all_categories = copy.deepcopy(cat_priority)
         else:
@@ -570,12 +570,12 @@ def scatter(
             {columns[0]},
             {columns[1]}
             {{}}
-        FROM {vdf.__genSQL__(True)}
+        FROM {vdf._genSQL(True)}
         WHERE {{}}
               {columns[0]} IS NOT NULL
           AND {columns[1]} IS NOT NULL
           {{}}
-          AND __verticapy_split__ < {tablesample} 
+          AND __verticapy_split__ < {TableSample} 
         LIMIT {limit}"""
     if n == 3:
         condition = [f", {columns[2]}", f"{columns[2]} IS NOT NULL AND"]

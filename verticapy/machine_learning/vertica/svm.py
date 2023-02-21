@@ -129,7 +129,7 @@ Attributes
 After the object creation, all the parameters become attributes. 
 The model will also create extra attributes when fitting the model:
 
-coef: tablesample
+coef: TableSample
 	Coefficients and their mathematical information 
 	(pvalue, std, value...)
 input_relation: str

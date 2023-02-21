@@ -22,9 +22,9 @@ from verticapy._config.config import OPTIONS
 from verticapy._utils._cast import to_category, to_varchar
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._merge import gen_coalesce, group_similar_names
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
 from verticapy._version import vertica_version
 from verticapy.errors import EmptyParameter, ParameterError, QueryError
 
@@ -85,9 +85,9 @@ class vDFFILL:
                         self[column].fillna(method="auto")
             else:
                 for column in val:
-                    self[self.format_colnames(column)].fillna(val=val[column])
+                    self[self._format_colnames(column)].fillna(val=val[column])
                 for column in method:
-                    self[self.format_colnames(column)].fillna(method=method[column],)
+                    self[self._format_colnames(column)].fillna(method=method[column],)
             return self
         finally:
             OPTIONS["print_info"] = print_info
@@ -137,7 +137,7 @@ class vDFFILL:
 
         if isinstance(by, str):
             by = [by]
-        method, ts, by = self.format_colnames(method, ts, by)
+        method, ts, by = self._format_colnames(method, ts, by)
         all_elements = []
         for column in method:
             assert method[column] in (
@@ -157,7 +157,7 @@ class vDFFILL:
             else:
                 func, interp = "TS_FIRST_VALUE", "linear"
             all_elements += [f"{func}({column}, '{interp}') AS {column}"]
-        query = f"SELECT {{}} FROM {self.__genSQL__()}"
+        query = f"SELECT {{}} FROM {self._genSQL()}"
         tmp_query = [f"slice_time AS {quote_ident(ts)}"]
         tmp_query += [quote_ident(column) for column in by]
         tmp_query += all_elements
@@ -169,7 +169,7 @@ class vDFFILL:
         query += f""" 
             TIMESERIES slice_time AS '{rule}' 
             OVER ({partition}ORDER BY {quote_ident(ts)}::timestamp)"""
-        return vDataFrame(sql=query)
+        return vDataFrame(query)
 
     asfreq = interpolate
 
@@ -272,13 +272,13 @@ class vDCFILL:
                 SELECT /*+LABEL('vDataColumn.fill_outliers')*/ 
                     PERCENTILE_CONT({alpha}) WITHIN GROUP (ORDER BY {self.alias}) OVER (), 
                     PERCENTILE_CONT(1 - {alpha}) WITHIN GROUP (ORDER BY {self.alias}) OVER () 
-                FROM {self.parent.__genSQL__()} LIMIT 1"""
+                FROM {self.parent._genSQL()} LIMIT 1"""
             p_alpha, p_1_alpha = _executeSQL(
                 query=query,
                 title=f"Computing the quantiles of {self.alias}.",
                 method="fetchrow",
-                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self.parent._VARS["sql_push_ext"],
+                symbol=self.parent._VARS["symbol"],
             )
         if method == "winsorize":
             self.clip(lower=p_alpha, upper=p_1_alpha)
@@ -291,7 +291,7 @@ class vDCFILL:
                 WITH vdf_table AS 
                     (SELECT 
                         /*+LABEL('vDataColumn.fill_outliers')*/ * 
-                    FROM {self.parent.__genSQL__()}) 
+                    FROM {self.parent._genSQL()}) 
                     (SELECT 
                         AVG({self.alias}) 
                     FROM vdf_table WHERE {self.alias} < {p_alpha}) 
@@ -305,8 +305,8 @@ class vDCFILL:
                     query=query,
                     title=f"Computing the average of the {self.alias}'s lower and upper outliers.",
                     method="fetchall",
-                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self.parent._VARS["sql_push_ext"],
+                    symbol=self.parent._VARS["symbol"],
                 )
             ]
             if mean_alpha == None:
@@ -377,7 +377,7 @@ class vDCFILL:
     --------
     vDataFrame[].dropna : Drops the vDataColumn missing values.
         """
-        by, order_by = self.parent.format_colnames(by, order_by)
+        by, order_by = self.parent._format_colnames(by, order_by)
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):
@@ -419,14 +419,14 @@ class vDCFILL:
                         SELECT 
                             /*+LABEL('vDataColumn.fillna')*/ {by[0]}, 
                             {fun}({self.alias})
-                        FROM {self.parent.__genSQL__()} 
+                        FROM {self.parent._genSQL()} 
                         GROUP BY {by[0]};"""
                     result = _executeSQL(
                         query=query,
                         title="Computing the different aggregations.",
                         method="fetchall",
-                        sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                        symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                        sql_push_ext=self.parent._VARS["sql_push_ext"],
+                        symbol=self.parent._VARS["symbol"],
                     )
                     for idx, x in enumerate(result):
                         if x[0] == None:
@@ -442,11 +442,11 @@ class vDCFILL:
                             SELECT 
                                 /*+LABEL('vDataColumn.fillna')*/ 
                                 {new_column.format(self.alias)} 
-                            FROM {self.parent.__genSQL__()} 
+                            FROM {self.parent._genSQL()} 
                             LIMIT 1""",
                         print_time_sql=False,
-                        sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                        symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                        sql_push_ext=self.parent._VARS["sql_push_ext"],
+                        symbol=self.parent._VARS["symbol"],
                     )
                 except:
                     new_column = f"""
@@ -492,7 +492,7 @@ class vDCFILL:
             sauv = {}
             for elem in self.catalog:
                 sauv[elem] = self.catalog[elem]
-            self.parent.__update_catalog__(erase=True, columns=[self.alias])
+            self.parent._update_catalog(erase=True, columns=[self.alias])
             total = abs(self.count() - total)
         except Exception as e:
             self.transformations = [elem for elem in copy_trans]
@@ -510,7 +510,7 @@ class vDCFILL:
             conj = "s were " if total > 1 else " was "
             if OPTIONS["print_info"]:
                 print(f"{total} element{conj}filled.")
-            self.parent.__add_to_history__(
+            self.parent._add_to_history(
                 f"[Fillna]: {total} {self.alias} missing value{conj} filled."
             )
         else:

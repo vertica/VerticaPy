@@ -61,10 +61,10 @@ class vDFREAD:
                 limit = ""
             query = f"""
                 SELECT * 
-                FROM {self.__genSQL__()}
-                {self.__get_last_order_by__()} 
+                FROM {self._genSQL()}
+                {self._get_last_order_by()} 
                 OFFSET {index_start}{limit}"""
-            return vDataFrame(sql=query)
+            return vDataFrame(query)
 
         elif isinstance(index, int):
             columns = self.get_columns()
@@ -77,13 +77,13 @@ class vDFREAD:
                 query=f"""
                     SELECT /*+LABEL('vDataframe.__getitem__')*/ 
                         {', '.join(columns)} 
-                    FROM {self.__genSQL__()}
-                    {self.__get_last_order_by__()} 
+                    FROM {self._genSQL()}
+                    {self._get_last_order_by()} 
                     OFFSET {index} LIMIT 1""",
                 title="Getting the vDataFrame element.",
                 method="fetchrow",
-                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self._VARS["sql_push_ext"],
+                symbol=self._VARS["symbol"],
             )
 
         elif isinstance(index, (str, str_sql)):
@@ -94,7 +94,7 @@ class vDFREAD:
                 index = str(index)
                 is_sql = True
             try:
-                new_index = self.format_colnames(index)
+                new_index = self._format_colnames(index)
                 return getattr(self, new_index)
             except:
                 if is_sql:
@@ -112,30 +112,30 @@ class vDFREAD:
             return getattr(self, index)
 
     def __repr__(self):
-        if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (
-            self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"
+        if self._VARS["sql_magic_result"] and (
+            self._VARS["main_relation"][-10:] == "VSQL_MAGIC"
         ):
             return readSQL(
-                self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
+                self._VARS["main_relation"][1:-12],
                 OPTIONS["time_on"],
                 OPTIONS["max_rows"],
             ).__repr__()
-        max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
+        max_rows = self._VARS["max_rows"]
         if max_rows <= 0:
             max_rows = OPTIONS["max_rows"]
         return self.head(limit=max_rows).__repr__()
 
     def _repr_html_(self, interactive=False):
-        if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (
-            self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"
+        if self._VARS["sql_magic_result"] and (
+            self._VARS["main_relation"][-10:] == "VSQL_MAGIC"
         ):
-            self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
+            self._VARS["sql_magic_result"] = False
             return readSQL(
-                self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
+                self._VARS["main_relation"][1:-12],
                 OPTIONS["time_on"],
                 OPTIONS["max_rows"],
             )._repr_html_(interactive)
-        max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
+        max_rows = self._VARS["max_rows"]
         if max_rows <= 0:
             max_rows = OPTIONS["max_rows"]
         return self.head(limit=max_rows)._repr_html_(interactive)
@@ -168,12 +168,10 @@ class vDFREAD:
         # -#
         if isinstance(exclude_columns, str):
             exclude_columns = [columns]
-        columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+        columns = [elem for elem in self._VARS["columns"]]
         result = []
         exclude_columns = [elem for elem in exclude_columns]
-        exclude_columns += [
-            elem for elem in self._VERTICAPY_VARIABLES_["exclude_columns"]
-        ]
+        exclude_columns += [elem for elem in self._VARS["exclude_columns"]]
         exclude_columns = [elem.replace('"', "").lower() for elem in exclude_columns]
         for column in columns:
             if column.replace('"', "").lower() not in exclude_columns:
@@ -191,9 +189,9 @@ class vDFREAD:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -218,9 +216,9 @@ class vDFREAD:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -231,7 +229,7 @@ class vDFREAD:
             columns = [columns]
         if offset < 0:
             offset = max(0, self.shape()[0] - limit)
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         if not (columns):
             columns = self.get_columns()
         all_columns = []
@@ -246,21 +244,20 @@ class vDFREAD:
             query=f"""
                 SELECT 
                     {', '.join(all_columns)} 
-                FROM {self.__genSQL__()}
-                {self.__get_last_order_by__()} 
+                FROM {self._genSQL()}
+                {self._get_last_order_by()} 
                 LIMIT {limit} OFFSET {offset}""",
             title=title,
-            max_columns=self._VERTICAPY_VARIABLES_["max_columns"],
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            max_columns=self._VARS["max_columns"],
+            sql_push_ext=self._VARS["sql_push_ext"],
+            symbol=self._VARS["symbol"],
         )
-        pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
+        pre_comp = self._get_catalog_value("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             result.count = pre_comp
         elif OPTIONS["count_on"]:
             result.count = self.shape()[0]
         result.offset = offset
-        result.name = self._VERTICAPY_VARIABLES_["input_relation"]
         columns = self.get_columns()
         all_percent = True
         for column in columns:
@@ -274,7 +271,7 @@ class vDFREAD:
         for column in result.values:
             result.dtype[column] = self[column].ctype()
             if all_percent:
-                result.percent[column] = percent[self.format_colnames(column)][0]
+                result.percent[column] = percent[self._format_colnames(column)][0]
         return result
 
     def shape(self):
@@ -287,21 +284,21 @@ class vDFREAD:
         (number of lines, number of columns)
         """
         m = len(self.get_columns())
-        pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
+        pre_comp = self._get_catalog_value("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return (pre_comp, m)
-        self._VERTICAPY_VARIABLES_["count"] = _executeSQL(
+        self._VARS["count"] = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.shape')*/ COUNT(*) 
-                FROM {self.__genSQL__()} LIMIT 1
+                FROM {self._genSQL()} LIMIT 1
             """,
             title="Computing the total number of elements (COUNT(*))",
             method="fetchfirstelem",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self._VARS["sql_push_ext"],
+            symbol=self._VARS["symbol"],
         )
-        return (self._VERTICAPY_VARIABLES_["count"], m)
+        return (self._VARS["count"], m)
 
     def tail(self, limit: int = 5):
         """
@@ -314,9 +311,9 @@ class vDFREAD:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -348,10 +345,10 @@ class vDFREAD:
         if isinstance(columns, str):
             columns = [columns]
         for i in range(len(columns)):
-            column = self.format_colnames(columns[i], raise_error=False)
+            column = self._format_colnames(columns[i], raise_error=False)
             if column:
                 dtype = ""
-                if self._VERTICAPY_VARIABLES_["isflex"]:
+                if self._VARS["isflex"]:
                     dtype = self[column].ctype().lower()
                     if (
                         "array" in dtype
@@ -365,8 +362,8 @@ class vDFREAD:
                 columns[i] = column + dtype
             else:
                 columns[i] = str(columns[i])
-        query = f"SELECT  {', '.join(columns)} FROM {self.__genSQL__()}"
-        return vDataFrame(sql=query)
+        query = f"SELECT  {', '.join(columns)} FROM {self._genSQL()}"
+        return vDataFrame(query)
 
 
 class vDCREAD:
@@ -402,8 +399,8 @@ class vDCREAD:
                 query = f"""
                     (SELECT 
                         {elem_to_select} AS {new_alias} 
-                    FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
-                vcol = vDataFrame(sql=query)[new_alias]
+                    FROM {self.parent._genSQL()}) VERTICAPY_SUBTABLE"""
+                vcol = vDataFrame(query)[new_alias]
                 vcol.transformations[-1] = (
                     new_alias,
                     self.ctype(),
@@ -429,10 +426,10 @@ class vDCREAD:
                 query = f"""
                     SELECT 
                         {self.alias} 
-                    FROM {self.parent.__genSQL__()}
-                    {self.parent.__get_last_order_by__()} 
+                    FROM {self.parent._genSQL()}
+                    {self.parent._get_last_order_by()} 
                     OFFSET {index_start} {limit}"""
-                return vDataFrame(sql=query)
+                return vDataFrame(query)
         elif isinstance(index, int):
             if self.isarray():
                 vertica_version(condition=[9, 3, 0])
@@ -441,8 +438,8 @@ class vDCREAD:
                 query = f"""
                     SELECT 
                         {elem_to_select} AS {new_alias} 
-                    FROM {self.parent.__genSQL__()}"""
-                vcol = vDataFrame(sql=query)[new_alias]
+                    FROM {self.parent._genSQL()}"""
+                vcol = vDataFrame(query)[new_alias]
                 vcol.init_transf = f"{self.init_transf}[{index}]"
                 return vcol
             else:
@@ -454,14 +451,14 @@ class vDCREAD:
                         SELECT 
                             /*+LABEL('vDataColumn.__getitem__')*/ 
                             {self.alias}{cast} 
-                        FROM {self.parent.__genSQL__()}
-                        {self.parent.__get_last_order_by__()} 
+                        FROM {self.parent._genSQL()}
+                        {self.parent._get_last_order_by()} 
                         OFFSET {index} 
                         LIMIT 1""",
                     title="Getting the vDataColumn element.",
                     method="fetchfirstelem",
-                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self.parent._VARS["sql_push_ext"],
+                    symbol=self.parent._VARS["symbol"],
                 )
         elif isinstance(index, str):
             if self.category() == "vmap":
@@ -475,8 +472,8 @@ class vDCREAD:
             query = f"""
                 SELECT 
                     {elem_to_select} AS {quote_ident(index)} 
-                FROM {self.parent.__genSQL__()}"""
-            vcol = vDataFrame(sql=query)[index]
+                FROM {self.parent._genSQL()}"""
+            vcol = vDataFrame(query)[index]
             vcol.init_transf = init_transf
             return vcol
         else:
@@ -499,9 +496,9 @@ class vDCREAD:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -522,9 +519,9 @@ class vDCREAD:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -539,13 +536,13 @@ class vDCREAD:
             query=f"""
                 SELECT 
                     {alias_sql_repr} AS {self.alias} 
-                FROM {self.parent.__genSQL__()}
-                {self.parent.__get_last_order_by__()} 
+                FROM {self.parent._genSQL()}
+                {self.parent._get_last_order_by()} 
                 LIMIT {limit} 
                 OFFSET {offset}""",
             title=title,
-            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self.parent._VARS["sql_push_ext"],
+            symbol=self.parent._VARS["symbol"],
         )
         tail.count = self.parent.shape()[0]
         tail.offset = offset
@@ -565,9 +562,9 @@ class vDCREAD:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -576,15 +573,15 @@ class vDCREAD:
         query = f"""
             SELECT 
                 * 
-            FROM {self.parent.__genSQL__()} 
+            FROM {self.parent._genSQL()} 
             WHERE {self.alias} IS NOT NULL 
             ORDER BY {self.alias} DESC LIMIT {n}"""
         title = f"Reads {self.alias} {n} largest elements."
         return to_tablesample(
             query,
             title=title,
-            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self.parent._VARS["sql_push_ext"],
+            symbol=self.parent._VARS["symbol"],
         )
 
     @save_verticapy_logs
@@ -599,9 +596,9 @@ class vDCREAD:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -611,12 +608,12 @@ class vDCREAD:
             f"""
             SELECT 
                 * 
-            FROM {self.parent.__genSQL__()} 
+            FROM {self.parent._genSQL()} 
             WHERE {self.alias} IS NOT NULL 
             ORDER BY {self.alias} ASC LIMIT {n}""",
             title=f"Reads {n} {self.alias} smallest elements.",
-            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self.parent._VARS["sql_push_ext"],
+            symbol=self.parent._VARS["symbol"],
         )
 
     def tail(self, limit: int = 5):
@@ -630,9 +627,9 @@ class vDCREAD:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------

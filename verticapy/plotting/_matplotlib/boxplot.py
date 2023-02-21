@@ -85,9 +85,9 @@ def boxplot(
     else:
         try:
             try:
-                by = vdf.format_colnames(by)
+                by = vdf._format_colnames(by)
             except:
-                by = vdf.parent.format_colnames(by)
+                by = vdf.parent._format_colnames(by)
             if vdf.alias == by:
                 raise NameError(
                     "The parameter 'column' and the parameter 'groupby' can not be the same"
@@ -97,7 +97,7 @@ def boxplot(
             is_categorical = (vdf.parent[by].nunique(True) <= max_cardinality) or not (
                 is_numeric
             )
-            table = vdf.parent.__genSQL__()
+            table = vdf.parent._genSQL()
             if not (is_categorical):
                 enum_trans = (
                     vdf.parent[by]
@@ -269,7 +269,7 @@ def boxplot2D(
         columns = vdf.numcol()
     for column in columns:
         if column not in vdf.numcol():
-            if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+            if vdf._VARS["display"]["print_info"]:
                 warning_message = f"The Virtual Column {column} is not numerical.\nIt will be ignored."
                 warnings.warn(warning_message, Warning)
             columns.remove(column)

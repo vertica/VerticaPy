@@ -26,7 +26,7 @@ from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import ParameterError
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.str_sql.base import str_sql
 
 from verticapy.datasets import gen_meshgrid
@@ -301,7 +301,7 @@ def hexbin(
                 {columns[0]},
                 {columns[1]},
                 {aggregate}{over}
-            FROM {vdf.__genSQL__()}
+            FROM {vdf._genSQL()}
             GROUP BY {columns[0]}, {columns[1]}""",
         title="Grouping all the elements for the Hexbin Plot",
         method="fetchall",
@@ -364,7 +364,7 @@ def pivot_table(
     extent: list = [],
     **style_kwds,
 ):
-    columns, of = vdf.format_colnames(columns, of)
+    columns, of = vdf._format_colnames(columns, of)
     other_columns = ""
     method = method.lower()
     if method == "median":
@@ -473,7 +473,7 @@ def pivot_table(
                 SELECT 
                     {cast} AS {columns[0]},
                     {aggregate}{over} 
-                FROM {vdf.__genSQL__()}
+                FROM {vdf._genSQL()}
                 {where}
                 GROUP BY 1 {order_by}"""
         )
@@ -503,7 +503,7 @@ def pivot_table(
                           {all_columns[1]} AS {columns[1]}
                           {aggr}
                           {other_columns} 
-                       FROM {vdf.__genSQL__()}{where}) 
+                       FROM {vdf._genSQL()}{where}) 
                        pivot_table) pivot_table_date
             WHERE {columns[0]} IS NOT NULL 
               AND {columns[1]} IS NOT NULL
@@ -571,4 +571,4 @@ def pivot_table(
     del all_columns[0]
     for column in all_columns:
         values[column[0]] = column[1 : len(column)]
-    return tablesample(values=values)
+    return TableSample(values=values)

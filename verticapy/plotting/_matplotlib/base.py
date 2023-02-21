@@ -89,13 +89,13 @@ def compute_plot_variables(
                 SELECT 
                     {vdf.alias},
                     {aggregate}
-                FROM {vdf.parent.__genSQL__()} 
+                FROM {vdf.parent._genSQL()} 
                 WHERE {vdf.alias} IS NOT NULL 
                 GROUP BY {vdf.alias} 
                 ORDER BY {vdf.alias} ASC 
                 LIMIT {max_cardinality}"""
         else:
-            table = vdf.parent.__genSQL__()
+            table = vdf.parent._genSQL()
             if (pie) and (is_numeric):
                 enum_trans = (
                     vdf.discretize(h=h, return_enum_trans=True)[0].replace(
@@ -155,7 +155,7 @@ def compute_plot_variables(
                     SELECT 
                         /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
                         DATEDIFF('second', MIN({vdf.alias}), MAX({vdf.alias}))
-                    FROM {vdf.parent.__genSQL__()}""",
+                    FROM {vdf.parent._genSQL()}""",
                 title="Computing the histogram interval",
                 method="fetchrow",
             )
@@ -168,7 +168,7 @@ def compute_plot_variables(
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
                     FLOOR({converted_date} / {h}) * {h}, 
                     {aggregate} 
-                FROM {vdf.parent.__genSQL__()}
+                FROM {vdf.parent._genSQL()}
                 WHERE {vdf.alias} IS NOT NULL 
                 GROUP BY 1 
                 ORDER BY 1""",
@@ -217,7 +217,7 @@ def compute_plot_variables(
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
                     FLOOR({vdf.alias} / {h}) * {h},
                     {aggregate} 
-                FROM {vdf.parent.__genSQL__()}
+                FROM {vdf.parent._genSQL()}
                 WHERE {vdf.alias} IS NOT NULL
                 GROUP BY 1
                 ORDER BY 1""",

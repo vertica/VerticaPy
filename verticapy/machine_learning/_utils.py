@@ -105,7 +105,7 @@ float or tuple of floats
     if isinstance(input_relation, str):
         relation = input_relation
     else:
-        relation = input_relation.__genSQL__()
+        relation = input_relation._genSQL()
     if fetchfirstelem:
         method = "fetchfirstelem"
     else:

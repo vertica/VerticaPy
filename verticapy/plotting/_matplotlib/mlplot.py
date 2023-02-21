@@ -229,11 +229,11 @@ def lof_plot(
     input_relation: str,
     columns: list,
     lof: str,
-    tablesample: Union[int, float] = -1,
+    TableSample: Union[int, float] = -1,
     ax=None,
     **style_kwds,
 ):
-    tablesample = f"TABLESAMPLE({tablesample})" if (0 < tablesample < 100) else ""
+    TableSample = f"TABLESAMPLE({TableSample})" if (0 < TableSample < 100) else ""
     colors = []
     if "color" in style_kwds:
         if isinstance(style_kwds["color"], str):
@@ -261,7 +261,7 @@ def lof_plot(
                     /*+LABEL('plotting._matplotlib.lof_plot')*/ 
                     {column}, 
                     {lof} 
-                FROM {input_relation} {tablesample} 
+                FROM {input_relation} {TableSample} 
                 WHERE {column} IS NOT NULL""",
             method="fetchall",
             print_time_sql=False,
@@ -299,7 +299,7 @@ def lof_plot(
                 {columns[0]}, 
                 {columns[1]}, 
                 {lof} 
-            FROM {input_relation} {tablesample} 
+            FROM {input_relation} {TableSample} 
             WHERE {columns[0]} IS NOT NULL 
               AND {columns[1]} IS NOT NULL""",
             method="fetchall",
@@ -339,7 +339,7 @@ def lof_plot(
                 {columns[1]}, 
                 {columns[2]}, 
                 {lof} 
-            FROM {input_relation} {tablesample} 
+            FROM {input_relation} {TableSample} 
             WHERE {columns[0]} IS NOT NULL 
               AND {columns[1]} IS NOT NULL 
               AND {columns[2]} IS NOT NULL""",

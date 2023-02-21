@@ -24,7 +24,7 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._colors import gen_colors
@@ -179,9 +179,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if isinstance(X, str):
         X = [X]
@@ -237,4 +237,4 @@ tablesample
     ax.set_xlabel("Number of Clusters")
     ax.set_ylabel("Between-Cluster SS / Total SS")
     values = {"index": L, "Within-Cluster SS": all_within_cluster_SS}
-    return tablesample(values=values)
+    return TableSample(values=values)

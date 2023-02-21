@@ -21,7 +21,7 @@ from typing import Union
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._version import check_minimum_version
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning._utils import (
@@ -172,9 +172,9 @@ nbins: int, optional
 
 Returns
 -------
-tablesample
+TableSample
  	An object containing the result. For more information, see
- 	utilities.tablesample.
+ 	utilities.TableSample.
 	"""
     from verticapy.machine_learning.model_selection.model_validation import roc_curve
 
@@ -291,7 +291,7 @@ tablesample
             csi,
             current_cutoff,
         ]
-    return tablesample(values)
+    return TableSample(values)
 
 
 @check_minimum_version
@@ -322,14 +322,14 @@ pos_label: str / int / float, optional
 
 Returns
 -------
-tablesample
+TableSample
  	An object containing the result. For more information, see
- 	utilities.tablesample.
+ 	utilities.TableSample.
 	"""
     if isinstance(input_relation, str):
         relation = input_relation
     else:
-        relation = input_relation.__genSQL__()
+        relation = input_relation._genSQL()
     result = to_tablesample(
         query=f"""
         SELECT 
@@ -606,14 +606,14 @@ labels: list
 
 Returns
 -------
-tablesample
+TableSample
  	An object containing the result. For more information, see
- 	utilities.tablesample.
+ 	utilities.TableSample.
 	"""
     if isinstance(input_relation, str):
         relation = input_relation
     else:
-        relation = input_relation.__genSQL__()
+        relation = input_relation._genSQL()
     num_classes = str(len(labels))
     query = f"""
         SELECT 

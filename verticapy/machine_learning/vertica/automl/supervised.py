@@ -24,7 +24,7 @@ from verticapy._utils._sql._format import schema_relation
 from verticapy._version import vertica_version
 from verticapy.errors import ParameterError
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.mlplot import plot_bubble_ml, plot_stepwise_ml
@@ -150,7 +150,7 @@ preprocess_: object
     Model used to preprocess the data.
 best_model_: object
     Most efficient models found during the search.
-model_grid_ : tablesample
+model_grid_ : TableSample
     Grid containing the different models information.
     """
 
@@ -227,7 +227,7 @@ model_grid_ : tablesample
             else:
                 exclude_columns = [y]
             if not (isinstance(input_relation, vDataFrame)):
-                X = vDataFrame(sql=input_relation).get_columns(
+                X = vDataFrame(input_relation).get_columns(
                     exclude_columns=exclude_columns
                 )
             else:
@@ -238,7 +238,7 @@ model_grid_ : tablesample
             modeltype = None
             estimator_method = self.parameters["estimator"]
             if not (isinstance(input_relation, vDataFrame)):
-                vdf = vDataFrame(sql=input_relation)
+                vdf = vDataFrame(input_relation)
             else:
                 vdf = input_relation
             if self.parameters["estimator_type"].lower() == "binary" or (
@@ -365,7 +365,7 @@ model_grid_ : tablesample
             self.parameters["metric"] = "rmse"
         elif self.parameters["metric"] == "auto":
             self.parameters["metric"] = "logloss"
-        result = tablesample(
+        result = TableSample(
             {
                 "model_type": [],
                 "parameters": [],
@@ -454,7 +454,7 @@ model_grid_ : tablesample
         ]
         reverse = reverse_score(self.parameters["metric"])
         data.sort(key=lambda tup: tup[2], reverse=reverse)
-        result = tablesample(
+        result = TableSample(
             {
                 "model_type": [elem[0] for elem in data],
                 "parameters": [elem[1] for elem in data],
@@ -498,7 +498,7 @@ model_grid_ : tablesample
         self.parameters["reverse"] = not (reverse)
         if self.preprocess_ != None:
             self.preprocess_.drop()
-            self.preprocess_.final_relation_ = vDataFrame(sql=self.preprocess_.sql_)
+            self.preprocess_.final_relation_ = vDataFrame(self.preprocess_.sql_)
         return self.model_grid_
 
     def plot(self, mltype: str = "champion", ax=None, **style_kwds):

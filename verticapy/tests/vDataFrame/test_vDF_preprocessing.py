@@ -20,7 +20,7 @@ import pytest
 
 # VerticaPy
 from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.utilities import drop, tablesample
+from verticapy.utilities import drop, TableSample
 from verticapy.errors import ConversionError
 from verticapy.datasets import load_titanic, load_iris, load_market
 from verticapy._config.config import set_option
@@ -59,7 +59,7 @@ class TestvDFPreprocessing:
         assert test.shape() == (pytest.approx(407), 14)
 
     def test_vDF_add_duplicates(self):
-        names = tablesample(
+        names = TableSample(
             {"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}
         ).to_vdf()
         result = (
@@ -247,7 +247,7 @@ class TestvDFPreprocessing:
         assert titanic_copy["embarked"].distinct() == [0, 1, 2, 3]
 
     def test_vDF_merge_similar_names(self):
-        x = tablesample(
+        x = TableSample(
             {
                 "age": [50, None, None, None],
                 "information.age": [None, None, 30, None],
@@ -456,7 +456,7 @@ class TestvDFPreprocessing:
 
         # STR to VMAP
         # tests on JSONs vdf
-        vdf = tablesample(
+        vdf = TableSample(
             {
                 "str_test": [
                     '{"name": "Badr", "information": {"age": 29, "numero": [0, 6, 3]}}'
@@ -466,17 +466,17 @@ class TestvDFPreprocessing:
         vdf["str_test"].astype("vmap")
         assert int(vdf["str_test"]["information"]["age"][0]) == 29
         # tests on CSVs strings
-        vdf = tablesample({"str_test": ["a,b,c,d"]}).to_vdf()
+        vdf = TableSample({"str_test": ["a,b,c,d"]}).to_vdf()
         vdf["str_test"].astype("vmap(val1,val2,val3,val4)")
         assert vdf["str_test"]["val2"][0] == "b"
 
         # STR to ARRAY
-        vdf = tablesample({"str_test": ["a,b,c,d"]}).to_vdf()
+        vdf = TableSample({"str_test": ["a,b,c,d"]}).to_vdf()
         vdf["str_test"].astype("array")
         assert vdf["str_test"][1][0] == "b"
 
         # VMAP to STR
-        vdf = tablesample(
+        vdf = TableSample(
             {
                 "str_test": [
                     '{"name": "Badr", "information": {"age": 29, "numero": [0, 6, 3]}}'
@@ -489,7 +489,7 @@ class TestvDFPreprocessing:
             vdf["str_test"][0]
             == '{\n\t"information": {\n\t\t"age": "29",\n\t\t"numero": {\n\t\t\t"0": "0",\n\t\t\t"1": "6",\n\t\t\t"2": "3"\n\t\t}\n\t},\n\t"name": "Badr"\n}'
         )
-        vdf = tablesample(
+        vdf = TableSample(
             {
                 "str_test": [
                     '{"name": "Badr", "information": {"age": 29, "numero": [0, 6, 3]}}'

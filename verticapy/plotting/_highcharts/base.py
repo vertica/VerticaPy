@@ -79,7 +79,7 @@ def hchart_from_vdf(
 ):
     if not (x):
         x = vdf.numcol()
-    x, y, z, c = vdf.format_colnames(x, y, z, c, raise_error=False)
+    x, y, z, c = vdf._format_colnames(x, y, z, c, raise_error=False)
     groupby = " GROUP BY 1 " if (aggregate) else ""
     if drilldown:
         if not (z):
@@ -92,14 +92,14 @@ def hchart_from_vdf(
             f"""SELECT 
                     {x},
                     {z}
-                FROM {vdf.__genSQL__()} 
+                FROM {vdf._genSQL()} 
                 GROUP BY 1
                 LIMIT {limit}""",
             f"""SELECT 
                     {x},
                     {y},
                     {z}
-                FROM {vdf.__genSQL__()}
+                FROM {vdf._genSQL()}
                 GROUP BY 1, 2
                 LIMIT {limit}""",
         ]
@@ -129,7 +129,7 @@ def hchart_from_vdf(
                             /*+LABEL('highchart.hchart_from_vdf')*/ 
                             {x},
                             {y} 
-                        FROM {vdf.__genSQL__()}
+                        FROM {vdf._genSQL()}
                         GROUP BY 1
                         ORDER BY 2 DESC
                         LIMIT {max_cardinality}""",
@@ -151,7 +151,7 @@ def hchart_from_vdf(
             SELECT 
                 {x},
                 {y}
-            FROM {vdf.__genSQL__()}
+            FROM {vdf._genSQL()}
             {groupby}
             {order_by}
             LIMIT {limit}"""
@@ -219,7 +219,7 @@ def hchart_from_vdf(
                 {x},
                 {y},
                 {z} 
-            FROM {vdf.__genSQL__()}
+            FROM {vdf._genSQL()}
             {where}
             {groupby}
             LIMIT {limit}"""
@@ -238,7 +238,7 @@ def hchart_from_vdf(
                 SELECT 
                     {x}{cast},
                     {y}
-                FROM {vdf.__genSQL__()}
+                FROM {vdf._genSQL()}
                 WHERE {x} IS NOT NULL
                 {groupby}
                 {order_by}
@@ -270,7 +270,7 @@ def hchart_from_vdf(
                     {x}{cast},
                     {y},
                     {z}
-                FROM {vdf.__genSQL__()}
+                FROM {vdf._genSQL()}
                 WHERE {x} IS NOT NULL
                   AND {y} IS NOT NULL
                 LIMIT {max(int(limit / unique), 1)} 
@@ -285,7 +285,7 @@ def hchart_from_vdf(
                 SELECT 
                     {x}{cast},
                     {y} 
-                FROM {vdf.__genSQL__()} 
+                FROM {vdf._genSQL()} 
                 WHERE {x} IS NOT NULL 
                   AND {y} IS NOT NULL 
                 LIMIT {limit}"""
@@ -295,7 +295,7 @@ def hchart_from_vdf(
                     {x}{cast},
                     {y},
                     {z}
-                FROM {vdf.__genSQL__()}
+                FROM {vdf._genSQL()}
                 WHERE {x} IS NOT NULL 
                   AND {y} IS NOT NULL 
                   AND {z} IS NOT NULL 
@@ -333,7 +333,7 @@ def hchart_from_vdf(
                     {x}{cast},
                     {y}{z_str},
                     {c} 
-                FROM {vdf.__genSQL__()} 
+                FROM {vdf._genSQL()} 
                 WHERE {x} IS NOT NULL 
                   AND {y} IS NOT NULL
                   {z_is_not_null}
@@ -349,7 +349,7 @@ def hchart_from_vdf(
             SELECT
                 {x}{cast},
                 {", ".join(y)}
-            FROM {vdf.__genSQL__()}
+            FROM {vdf._genSQL()}
             {groupby}
             {order_by}
             LIMIT {limit}"""
@@ -377,7 +377,7 @@ def hchart_from_vdf(
                                 /*+LABEL('highchart.hchart_from_vdf')*/ 
                                 {x}, 
                                 {y[0]} 
-                            FROM {vdf.__genSQL__()} 
+                            FROM {vdf._genSQL()} 
                             GROUP BY 1 
                             ORDER BY 2 DESC 
                             LIMIT {max_cardinality}""",
@@ -408,7 +408,7 @@ def hchart_from_vdf(
             SELECT 
                 {x}, 
                 {", ".join(y)} 
-            FROM {vdf.__genSQL__()}
+            FROM {vdf._genSQL()}
             {groupby} 
             LIMIT {limit}"""
     elif kind == "candlestick":
@@ -428,7 +428,7 @@ def hchart_from_vdf(
                         APPROXIMATE_PERCENTILE({y} 
                           USING PARAMETERS percentile = {alpha}) AS close,
                         SUM({y}) AS volume
-                	FROM {vdf.__genSQL__()} 
+                	FROM {vdf._genSQL()} 
                     GROUP BY 1 
                     ORDER BY 1"""
             else:
@@ -436,7 +436,7 @@ def hchart_from_vdf(
                     SELECT 
                         {x}::timestamp, 
                         {", ".join(y)} 
-                    FROM {vdf.__genSQL__()} 
+                    FROM {vdf._genSQL()} 
                     GROUP BY 1 
                     ORDER BY 1"""
         else:
@@ -444,7 +444,7 @@ def hchart_from_vdf(
                 SELECT 
                     {x}::timestamp, 
                     {', '.join(y)} 
-                FROM {vdf.__genSQL__()} 
+                FROM {vdf._genSQL()} 
                 ORDER BY 1"""
     if drilldown:
         return drilldown_chart(
@@ -569,7 +569,7 @@ def hchartSQL(
         print_time_sql=False,
     )
     names = [desc[0] for desc in current_cursor().description]
-    vdf = vDataFrame(sql=query)
+    vdf = vDataFrame(query)
     allnum = vdf.numcol()
     if kind == "auto":
         if len(names) == 1:

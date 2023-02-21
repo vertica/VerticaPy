@@ -103,7 +103,7 @@ def animated_bar(
                 (SELECT 
                     {order_by},
                     {", ".join(columns)} 
-                 FROM {vdf.__genSQL__()} 
+                 FROM {vdf._genSQL()} 
                  WHERE {order_by} IS NOT NULL 
                    AND {condition}
                    {order_by_start_str}
@@ -384,7 +384,7 @@ def animated_bubble_plot(
                     {order_by}, 
                     {", ".join([str(column) for column in columns])}, 
                     {by} 
-                 FROM {vdf.__genSQL__(True)} 
+                 FROM {vdf._genSQL(True)} 
                  WHERE  {columns[0]} IS NOT NULL 
                     AND {columns[1]} IS NOT NULL 
                     AND {columns[2]} IS NOT NULL
@@ -583,7 +583,7 @@ def animated_ts_plot(
         columns = vdf.numcol()
     for column in columns:
         if not (vdf[column].isnum()):
-            if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+            if vdf._VARS["display"]["print_info"]:
                 warning_message = (
                     f"The Virtual Column {column} is "
                     "not numerical.\nIt will be ignored."
@@ -608,7 +608,7 @@ def animated_ts_plot(
                 /*+LABEL('plotting._matplotlib.animated_ts_plot')*/ 
                 {order_by},
                 {", ".join(columns)} 
-            FROM {vdf.__genSQL__()} 
+            FROM {vdf._genSQL()} 
             WHERE {order_by} IS NOT NULL
                   {order_by_start_str}
                   {order_by_end_str}

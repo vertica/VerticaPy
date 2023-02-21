@@ -24,7 +24,7 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, replace_vars_in_query
 from verticapy.errors import ParameterError
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.jupyter.extensions._utils import get_magic_options

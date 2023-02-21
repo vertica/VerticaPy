@@ -110,43 +110,43 @@ class TestUtilities:
         assert vdf["all_managers"].apply_fun(func="length")
         assert vdf["all_managers"].max() == 2.0
         # testing apply_fun - min
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="min")
         assert vdf2["x"].sum() == 12
         # testing apply_fun - max
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="max")
         assert vdf2["x"].sum() == 18
         # testing apply_fun - avg
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="avg")
         assert vdf2["x"].sum() == 15
         # testing apply_fun - sum
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="sum")
         assert vdf2["x"].sum() == 45
         # testing apply_fun - contain
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="contain", x=1)
         assert vdf2["x"].sum() == 1
         # testing apply_fun - len
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7]]}).to_vdf()
         vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
         vdf2["x"].apply_fun(func="len")
         assert vdf2["x"].sum() == 7
         # testing apply_fun - find
-        vdf2 = tablesample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="find", x=2)
         assert vdf2["x"].sum() == 0
         # testing string to array
-        vdf2 = tablesample(
+        vdf2 = TableSample(
             {"x": ["[1, -2, 3]", "[2,    5,    6]", "[7,   8]"]}
         ).to_vdf()
         vdf2["x"].astype("array")
         vdf2["x"].apply_fun(func="len")
         assert vdf2["x"].sum() == 8
-        # tablesample with ROW and arrays
-        vdf2 = tablesample(
+        # TableSample with ROW and arrays
+        vdf2 = TableSample(
             {
                 "x": [[1, 2, 3], [4, 5, 6], [7]],
                 "y": [{"a": 1, "b": 2}, {"a": 2, "b": 3}, {"a": 4, "b": 5}],
@@ -157,7 +157,7 @@ class TestUtilities:
         vdf2["x"].apply_fun(func="len")
         assert vdf2["x"].sum() == 7.0
         # Complex to JSON
-        vdf2 = tablesample(
+        vdf2 = TableSample(
             {
                 "x": [[1, 2, 3], [4, 5, 6], [7]],
                 "y": [{"a": 1, "b": 2}, {"a": 2, "b": 3}, {"a": 4, "b": 5}],
@@ -169,7 +169,7 @@ class TestUtilities:
         assert vdf2["x"].transformations[-1][0] == "TO_JSON({})"
         assert vdf2["y"].transformations[-1][0] == "TO_JSON({})"
         # Test get_len
-        vdf2 = tablesample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
         assert vdf2["x"].get_len().sum() == 9
 
@@ -581,7 +581,6 @@ class TestUtilities:
             ingest_local=True,
             use_complex_dt=False,
         )
-        assert vdf._VERTICAPY_VARIABLES_["schema"] == '"public"'
         assert drop("public.laliga_verticapy_test_json", method="table",)
 
         # testing local temporary table
@@ -592,7 +591,6 @@ class TestUtilities:
             ingest_local=True,
             use_complex_dt=False,
         )
-        assert vdf._VERTICAPY_VARIABLES_["schema"] == '"v_temp_schema"'
         assert drop("v_temp_schema.laliga_verticapy_test_json2", method="table",)
 
         # Checking flextables and materialize option
@@ -801,9 +799,7 @@ class TestUtilities:
 
         # testing insert
         vdf = read_file(path)
-        vdf = read_file(
-            path, table_name=vdf._VERTICAPY_VARIABLES_["input_relation"], insert=True,
-        )
+        vdf = read_file(path, table_name=vdf._VARS["main_relation"], insert=True,)
         assert vdf.shape() == (904, 14)
 
     def test_read_shp(self, cities_vd):
@@ -913,8 +909,8 @@ class TestUtilities:
         q3 = current_cursor().fetchone()[0]
         assert q == q3
 
-    def test_tablesample(self):
-        result = tablesample(
+    def test_TableSample(self):
+        result = TableSample(
             {"index": ["Apple", "Banana", "Orange"], "price": [1, 2, 3]}
         )
         assert result["index"] == ["Apple", "Banana", "Orange"]
@@ -944,7 +940,7 @@ class TestUtilities:
         assert result['verticapy test *+"'] == [1]
 
     def test_vDataFrame_sql(self):
-        result = vDataFrame(sql='(SELECT 1 AS "verticapy test *+") x',)
+        result = vDataFrame('(SELECT 1 AS "verticapy test *+") x',)
         assert result["verticapy test *+"].avg() == 1.0
 
     @pytest.mark.skip(reason="this test will be implemented later")

@@ -23,9 +23,11 @@ import pandas as pd
 from verticapy._config.config import OPTIONS
 from verticapy._utils._cast import to_category
 from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._check import is_longvar, is_sql_select
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import (
     clean_query,
+    extract_subquery,
     format_schema_table,
     quote_ident,
     schema_relation,
@@ -62,7 +64,7 @@ from verticapy.core.vdataframe.typing import vDFTYPING, vDCTYPING
 from verticapy.core.vdataframe.utils import vDFUTILS
 
 from verticapy.core.str_sql.base import str_sql
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import (
@@ -118,7 +120,7 @@ alias an all user transformations.
 
 Parameters
 ----------
-input_relation: str / tablesample / pandas.DataFrame 
+input_relation: str / TableSample / pandas.DataFrame 
                    / list / numpy.ndarray / dict, optional
     If the input_relation is of type str, it must represent the relation 
     (view, table, or temporary table) used to create the object. 
@@ -126,6 +128,7 @@ input_relation: str / tablesample / pandas.DataFrame
     relation and schema: 'schema.relation' or '"schema"."relation"'. 
     Alternatively, you can use the 'schema' parameter, in which case 
     the input_relation must exclude the schema name.
+    It can also be the SQL query used to create the vDataFrame.
     If it is a pandas.DataFrame, a temporary local table is created.
     Otherwise, the vDataFrame is created using the generated SQL code 
     of multiple UNIONs. 
@@ -140,9 +143,6 @@ schema: str, optional
     table within a particular schema, or to specify a schema and relation name 
     that contain period '.' characters. If specified, the input_relation cannot 
     include a schema.
-sql: str, optional
-    A SQL query used to create the vDataFrame. If specified, the parameter 
-    'input_relation' must be empty.
 external: bool, optional
     A boolean to indicate whether it is an external table. If set to True, a
     Connection Identifier Database must be defined.
@@ -164,7 +164,7 @@ empty: bool, optional
 
 Attributes
 ----------
-_VERTICAPY_VARIABLES_: dict
+_VARS: dict
     Dictionary containing all vDataFrame attributes.
         allcols_ind, int      : Integer, used to optimize the SQL 
                                 code generation.
@@ -173,9 +173,7 @@ _VERTICAPY_VARIABLES_: dict
                                 (catalog).
         exclude_columns, list : vDataColumns to exclude from the final 
                                 relation.
-        external, bool        : True if it is an External vDataFrame.
         history, list         : vDataFrame history (user modifications).
-        input_relation, str   : Name of the vDataFrame.
         isflex, bool          : True if it is a Flex vDataFrame.
         main_relation, str    : Relation to use to build the vDataFrame 
                                 (first floor).
@@ -183,7 +181,6 @@ _VERTICAPY_VARIABLES_: dict
                                 vDataFrame.
         saving, list          : List used to reconstruct the 
                                 vDataFrame.
-        schema, str           : Schema of the input relation.
         where, list           : List of all rules to filter the 
                                 vDataFrame.
         max_colums, int       : Maximum number of columns to display.
@@ -197,20 +194,17 @@ vDataColumns : vDataColumn
     @save_verticapy_logs
     def __init__(
         self,
-        input_relation: Union[
-            str, pd.DataFrame, np.ndarray, list, tablesample, dict
-        ] = "",
+        input_relation: Union[str, pd.DataFrame, np.ndarray, list, TableSample, dict],
         columns: Union[str, list] = [],
         usecols: Union[str, list] = [],
         schema: str = "",
-        sql: str = "",
         external: bool = False,
         symbol: Literal[tuple(SPECIAL_SYMBOLS)] = "$",
         sql_push_ext: bool = True,
         empty: bool = False,
     ) -> None:
         # Main Attributes
-        self._VERTICAPY_VARIABLES_ = {
+        self._VARS = {
             "allcols_ind": -1,
             "count": -1,
             "exclude_columns": [],
@@ -224,23 +218,10 @@ vDataColumns : vDataColumn
             "where": [],
         }
         # Initialization
-        if not (isinstance(input_relation, (pd.DataFrame, np.ndarray))):
-            assert input_relation or sql or empty, ParameterError(
-                "The parameters 'input_relation' and 'sql' cannot both be empty."
-            )
-            assert not (input_relation) or not (sql) or empty, ParameterError(
-                "Either 'sql' or 'input_relation' must be empty."
-            )
+        if isinstance(input_relation, str) and is_sql_select(input_relation):
+            sql = input_relation
         else:
-            assert not (sql) or empty, ParameterError(
-                "Either 'sql' or 'input_relation' must be empty."
-            )
-        assert isinstance(input_relation, str) or not (schema), ParameterError(
-            "schema must be empty when the 'input_relation' is not of type str."
-        )
-        assert not (sql) or not (schema), ParameterError(
-            "schema must be empty when the parameter 'sql' is not empty."
-        )
+            sql = ""
         schema = quote_ident(schema)
         if isinstance(usecols, str):
             usecols = [usecols]
@@ -274,16 +255,13 @@ vDataColumns : vDataColumn
                     "one with the correct symbol."
                 )
 
-        self._VERTICAPY_VARIABLES_ = {
-            **self._VERTICAPY_VARIABLES_,
-            "external": external,
-            "input_relation": input_relation,
-            "schema": schema,
+        self._VARS = {
+            **self._VARS,
             "sql_push_ext": external and sql_push_ext,
             "symbol": symbol,
         }
 
-        if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
+        if isinstance(input_relation, (TableSample, list, np.ndarray, dict)):
 
             if isinstance(input_relation, (list, np.ndarray)):
 
@@ -300,11 +278,11 @@ vDataColumns : vDataColumn
                 for idx in range(nb_cols):
                     col_name = columns[idx] if idx < len(columns) else f"col{idx}"
                     d[col_name] = [l[idx] for l in input_relation]
-                tb = tablesample(d)
+                tb = TableSample(d)
 
             elif isinstance(input_relation, dict):
 
-                tb = tablesample(input_relation)
+                tb = TableSample(input_relation)
 
             else:
 
@@ -315,7 +293,7 @@ vDataColumns : vDataColumn
                 tb_final = {}
                 for col in usecols:
                     tb_final[col] = tb[col]
-                tb = tablesample(tb_final)
+                tb = TableSample(tb_final)
 
             self.__init__(
                 sql=tb.to_sql(),
@@ -330,9 +308,7 @@ vDataColumns : vDataColumn
                 vdf = read_pandas(input_relation[usecols])
             else:
                 vdf = read_pandas(input_relation)
-            schema = vdf._VERTICAPY_VARIABLES_["schema"]
-            input_relation = vdf._VERTICAPY_VARIABLES_["input_relation"]
-            self.__init__(input_relation=input_relation, schema=schema)
+            self.__init__(input_relation=vdf._VARS["main_relation"])
 
         elif not (empty):
 
@@ -349,10 +325,7 @@ vDataColumns : vDataColumn
 
                 else:
 
-                    if sql_tmp[0] == "(" and sql_tmp[-1] != ")":
-                        sql_tmp = ")".join(
-                            "(".join(sql_tmp.split("(")[1:]).split(")")[:-1]
-                        )
+                    sql_tmp = extract_subquery(sql_tmp)
 
                     # Filtering some columns
                     if usecols:
@@ -395,24 +368,21 @@ vDataColumns : vDataColumn
                 allcols_ind = len(columns)
             else:
                 allcols_ind = -1
-            self._VERTICAPY_VARIABLES_ = {
-                **self._VERTICAPY_VARIABLES_,
+            self._VARS = {
+                **self._VARS,
                 "allcols_ind": allcols_ind,
                 "columns": columns,
-                "input_relation": input_relation,
                 "isflex": isflex,
                 "main_relation": main_relation,
-                "schema": schema,
             }
 
             # Creating the vDataColumns
             for column, ctype in dtypes:
                 column_ident = quote_ident(column)
                 category = to_category(ctype)
-                long_var = ctype.lower()[0:12] in ("long varbina", "long varchar")
-                if long_var:
+                if is_longvar(ctype):
                     if isflex or isvmap(
-                        expr=self._VERTICAPY_VARIABLES_["main_relation"], column=column,
+                        expr=self._VARS["main_relation"], column=column,
                     ):
                         category = "vmap"
                         if "(" in ctype:

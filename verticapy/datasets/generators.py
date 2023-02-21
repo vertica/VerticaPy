@@ -127,7 +127,7 @@ vDataFrame
                  SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{nrows} seconds' AS t) x 
                 TIMESERIES tm AS '1 second' OVER(ORDER BY t)) VERTICAPY_SUBTABLE"""
 
-    return vDataFrame(sql=query)
+    return vDataFrame(query)
 
 
 @save_verticapy_logs
@@ -248,4 +248,4 @@ vDataFrame
 
     query = f"SELECT * FROM {' CROSS JOIN '.join(sql)}"
 
-    return vDataFrame(sql=query)
+    return vDataFrame(query)

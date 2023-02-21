@@ -33,7 +33,7 @@ from verticapy.sql.flex import isvmap
 @save_verticapy_logs
 def readSQL(query: str, time_on: bool = False, limit: int = 100):
     """
-    Returns the result of a SQL query as a tablesample object.
+    Returns the result of a SQL query as a TableSample object.
 
     Parameters
     ----------
@@ -46,7 +46,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
 
     Returns
     -------
-    tablesample
+    TableSample
         Result of the query.
     """
     from verticapy.core.vdataframe.base import vDataFrame
@@ -77,11 +77,11 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         OPTIONS["sql_on"] = sql_on_init
     result.count = count
     if OPTIONS["percent_bar"]:
-        vdf = vDataFrame(sql=query)
+        vdf = vDataFrame(query)
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
             result.dtype[column] = vdf[column].ctype()
-            result.percent[column] = percent[vdf.format_colnames(column)][0]
+            result.percent[column] = percent[vdf._format_colnames(column)][0]
     return result
 
 
@@ -93,7 +93,7 @@ def to_tablesample(
     symbol: str = "$",
 ):
     """
-    Returns the result of a SQL query as a tablesample object.
+    Returns the result of a SQL query as a TableSample object.
 
     Parameters
     ----------
@@ -115,14 +115,14 @@ def to_tablesample(
 
     Returns
     -------
-    tablesample
+    TableSample
         Result of the query.
 
     See Also
     --------
-    tablesample : Object in memory created for rendering purposes.
+    TableSample : Object in memory created for rendering purposes.
     """
-    from verticapy.core.tablesample.base import tablesample
+    from verticapy.core.TableSample.base import TableSample
 
     if OPTIONS["sql_on"]:
         print_query(query, title)
@@ -151,6 +151,6 @@ def to_tablesample(
     values = {}
     for column in data_columns:
         values[column[0]] = column[1 : len(column)]
-    return tablesample(
+    return TableSample(
         values=values, dtype=dtype, max_columns=max_columns,
     ).decimal_to_float()

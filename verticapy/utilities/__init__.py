@@ -19,7 +19,7 @@ from verticapy._utils._collect import save_to_query_profile
 from verticapy._help import help_start, vHelp
 from verticapy._version import vertica_version
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 
 from verticapy.sql.create import create_schema, create_table, create_verticapy_schema
 from verticapy.sql.drop import drop

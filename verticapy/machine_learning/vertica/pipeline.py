@@ -114,7 +114,7 @@ steps: list
         if isinstance(X, str):
             X = [X]
         if isinstance(input_relation, str):
-            vdf = vDataFrame(sql=input_relation)
+            vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation
         if OPTIONS["overwrite_model"]:
@@ -187,7 +187,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vDataFrame(sql=vdf)
+            vdf = vDataFrame(vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -211,9 +211,9 @@ steps: list
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if isinstance(self.steps[-1][1], Regressor):
             return self.steps[-1][1].regression_report()
@@ -271,7 +271,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vDataFrame(sql=vdf)
+            vdf = vDataFrame(vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -311,7 +311,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vDataFrame(sql=vdf)
+            vdf = vDataFrame(vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx in range(1, len(self.steps) + 1):

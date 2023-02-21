@@ -73,11 +73,11 @@ class vDFJUS:
             expr1 = [expr1]
         if isinstance(expr2, str):
             expr2 = [expr2]
-        first_relation = self.__genSQL__()
+        first_relation = self._genSQL()
         if isinstance(input_relation, str):
             second_relation = input_relation
         elif isinstance(input_relation, vDataFrame):
-            second_relation = input_relation.__genSQL__()
+            second_relation = input_relation._genSQL()
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)
         union = "UNION" if not (union_all) else "UNION ALL"
@@ -89,7 +89,7 @@ class vDFJUS:
             (SELECT 
                 {columns2} 
              FROM {second_relation})"""
-        return vDataFrame(sql=query)
+        return vDataFrame(query)
 
     @save_verticapy_logs
     def join(
@@ -213,14 +213,14 @@ class vDFJUS:
             on_list += [elem for elem in on]
         on_list += [(key, on[key], "linterpolate") for key in on_interpolate]
         # Checks
-        self.format_colnames([elem[0] for elem in on_list])
+        self._format_colnames([elem[0] for elem in on_list])
         if isinstance(input_relation, vDataFrame):
-            input_relation.format_colnames([elem[1] for elem in on_list])
-            relation = input_relation.__genSQL__()
+            input_relation._format_colnames([elem[1] for elem in on_list])
+            relation = input_relation._genSQL()
         else:
             relation = input_relation
         # Relations
-        first_relation = create_final_relation(self.__genSQL__(), alias="x")
+        first_relation = create_final_relation(self._genSQL(), alias="x")
         second_relation = create_final_relation(relation, alias="y")
         # ON
         on_join = []
@@ -281,7 +281,7 @@ class vDFJUS:
         query = (
             f"SELECT {expr} FROM {first_relation}{how}JOIN {second_relation} {on_join}"
         )
-        return vDataFrame(sql=query)
+        return vDataFrame(query)
 
     @save_verticapy_logs
     def sort(self, columns: Union[str, dict, list]):
@@ -308,12 +308,10 @@ class vDFJUS:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         max_pos = 0
-        columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+        columns_tmp = [elem for elem in self._VARS["columns"]]
         for column in columns_tmp:
             max_pos = max(max_pos, len(self[column].transformations) - 1)
-        self._VERTICAPY_VARIABLES_["order_by"][max_pos] = self.__get_sort_syntax__(
-            columns
-        )
+        self._VARS["order_by"][max_pos] = self._get_sort_syntax(columns)
         return self

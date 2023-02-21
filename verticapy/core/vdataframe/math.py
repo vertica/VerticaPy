@@ -86,7 +86,7 @@ class vDFMATH:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.numcol() if not (columns) else self.format_colnames(columns)
+        columns = self.numcol() if not (columns) else self._format_colnames(columns)
         func = {}
         for column in columns:
             if not (self[column].isbool()):
@@ -193,7 +193,7 @@ class vDFMATH:
                 columns = [columns]
             else:
                 columns = []
-        columns, by = self.format_colnames(columns, by)
+        columns, by = self._format_colnames(columns, by)
         by_name = ["by"] + by if (by) else []
         by_order = ["order_by"] + [elem for elem in order_by] if (order_by) else []
         if not (name):
@@ -201,7 +201,7 @@ class vDFMATH:
         func = func.lower()
         by = ", ".join(by)
         by = f"PARTITION BY {by}" if (by) else ""
-        order_by = self.__get_sort_syntax__(order_by)
+        order_by = self._get_sort_syntax(order_by)
         func = verticapy_agg_name(func.lower(), method="vertica")
         if func in (
             "max",
@@ -241,7 +241,7 @@ class vDFMATH:
                 median_name = f"{column_str}_median_{random_nb}"
                 std_name = f"{column_str}_std_{random_nb}"
                 count_name = f"{column_str}_count_{random_nb}"
-                all_cols = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+                all_cols = [elem for elem in self._VARS["columns"]]
                 if func == "mad":
                     self.eval(median_name, f"MEDIAN({columns[0]}) OVER ({by})")
                 else:
@@ -451,15 +451,15 @@ class vDFMATH:
                     "flexibility use the 'eval' method."
                 )
         if func in ("kurtosis", "skewness", "jb"):
-            self._VERTICAPY_VARIABLES_["exclude_columns"] += [
+            self._VARS["exclude_columns"] += [
                 quote_ident(mean_name),
                 quote_ident(std_name),
                 quote_ident(count_name),
             ]
         elif func == "aad":
-            self._VERTICAPY_VARIABLES_["exclude_columns"] += [quote_ident(mean_name)]
+            self._VARS["exclude_columns"] += [quote_ident(mean_name)]
         elif func == "mad":
-            self._VERTICAPY_VARIABLES_["exclude_columns"] += [quote_ident(median_name)]
+            self._VARS["exclude_columns"] += [quote_ident(median_name)]
         return self
 
     @save_verticapy_logs
@@ -486,7 +486,7 @@ class vDFMATH:
     vDataFrame.applymap : Applies a function to all vDataColumns.
     vDataFrame.eval     : Evaluates a customized expression.
         """
-        func = self.format_colnames(func)
+        func = self._format_colnames(func)
         for column in func:
             self[column].apply(func[column])
         return self
@@ -634,7 +634,7 @@ class vDCMATH:
                 expr=f"""
                     SELECT 
                         {func_apply} AS apply_test_feature 
-                    FROM {self.parent.__genSQL__()} 
+                    FROM {self.parent._genSQL()} 
                     WHERE {self.alias} IS NOT NULL 
                     LIMIT 0""",
                 column="apply_test_feature",
@@ -666,8 +666,8 @@ class vDCMATH:
                 for k in range(max_floor):
                     self.transformations += [("{}", self.ctype(), self.category())]
                 self.transformations += [(func, ctype, category)]
-                self.parent.__update_catalog__(erase=True, columns=[self.alias])
-            self.parent.__add_to_history__(
+                self.parent._update_catalog(erase=True, columns=[self.alias])
+            self.parent._add_to_history(
                 f"[Apply]: The vDataColumn '{alias_sql_repr}' was "
                 f"transformed with the func 'x -> {func_apply}'."
             )
@@ -904,8 +904,8 @@ class vDCMATH:
         query = f"""
             SELECT 
                 {elem_to_select} AS {new_alias} 
-            FROM {self.parent.__genSQL__()}"""
-        vcol = vDataFrame(sql=query)[new_alias]
+            FROM {self.parent._genSQL()}"""
+        vcol = vDataFrame(query)[new_alias]
         vcol.init_transf = init_transf
         return vcol
 

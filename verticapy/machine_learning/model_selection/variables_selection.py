@@ -23,7 +23,7 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ParameterError
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib import (
@@ -127,9 +127,9 @@ print_info: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if isinstance(X, str):
         X = [X]
@@ -222,7 +222,7 @@ tablesample
                     raise (e)
     if not (data):
         if training_score:
-            return tablesample(
+            return TableSample(
                 {
                     "parameters": [],
                     "avg_score": [],
@@ -233,13 +233,13 @@ tablesample
                 }
             )
         else:
-            return tablesample(
+            return TableSample(
                 {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
             )
     reverse = reverse_score(metric)
     data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
-        result = tablesample(
+        result = TableSample(
             {
                 "features": [d[0] for d in data],
                 "avg_score": [d[1] for d in data],
@@ -261,7 +261,7 @@ tablesample
                 f"{result['avg_time'][0]}\033[0m;"
             )
     else:
-        result = tablesample(
+        result = TableSample(
             {
                 "features": [d[0] for d in data],
                 "avg_score": [d[1] for d in data],
@@ -343,9 +343,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if isinstance(X, str):
         X = [X]
@@ -354,9 +354,7 @@ tablesample
         does_model_exist(name=estimator.name, raise_error=True)
     result, current_step = [], 0
     table = (
-        input_relation
-        if isinstance(input_relation, str)
-        else input_relation.__genSQL__()
+        input_relation if isinstance(input_relation, str) else input_relation._genSQL()
     )
     avg = _executeSQL(
         f"SELECT /*+LABEL('learn.model_selection.stepwise')*/ AVG({y}) FROM {table}",
@@ -368,7 +366,7 @@ tablesample
         random.shuffle(X)
     elif x_order in ("spearman", "pearson"):
         if isinstance(input_relation, str):
-            vdf = vDataFrame(sql=input_relation)
+            vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation
         X = [
@@ -465,7 +463,7 @@ tablesample
         features[idx] = [item.replace('"', "") for item in x]
     importance = [x[5] if (x[5]) and x[5] > 0 else 0 for x in result]
     importance = [100 * x / sum(importance) for x in importance]
-    result = tablesample(
+    result = TableSample(
         {
             "index": [x[4] for x in result],
             "features": features,

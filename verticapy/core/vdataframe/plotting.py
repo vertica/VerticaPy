@@ -139,7 +139,7 @@ class vDFPLOT:
         ) or kind != "bubble", ParameterError(
             f"Parameter 'columns' must include at least 2 numerical vDataColumns and maximum 4 vDataColumns when using kind = '{kind}'."
         )
-        columns, ts, by = self.format_colnames(columns, ts, by)
+        columns, ts, by = self._format_colnames(columns, ts, by)
         if kind == "bubble":
             if len(columns) == 3 and not (self[columns[2]].isnum()):
                 label_name = columns[2]
@@ -305,7 +305,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         if len(columns) == 1:
             return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax, **style_kwds)
         else:
@@ -362,7 +362,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns) if (columns) else self.numcol()
+        columns = self._format_colnames(columns) if (columns) else self.numcol()
         return plt.boxplot2D(self, columns, ax=ax, **style_kwds)
 
     @save_verticapy_logs
@@ -414,7 +414,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns, catcol, size_bubble_col, cmap_col = self.format_colnames(
+        columns, catcol, size_bubble_col, cmap_col = self._format_colnames(
             columns, catcol, size_bubble_col, cmap_col, expected_nb_of_cols=2
         )
         return plt.bubble(
@@ -459,7 +459,7 @@ class vDFPLOT:
      vDataFrame.hist        : Draws the histogram of the input vDataColumns based on an aggregation.
      vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
-        columns = self.format_colnames(columns, expected_nb_of_cols=2)
+        columns = self._format_colnames(columns, expected_nb_of_cols=2)
         return plt.contour_plot(self, columns, func, nbins, ax=ax, **style_kwds,)
 
     @save_verticapy_logs
@@ -511,7 +511,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         if not (columns):
             columns = self.numcol()
         else:
@@ -792,7 +792,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=2)
+        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
         for column in columns:
             assert self[column].isnum(), TypeError(
                 f"vDataColumn {column} must be numerical to draw the Heatmap."
@@ -864,7 +864,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=2)
+        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
         return plt.hexbin(self, columns, method, of, bbox, img, ax=ax, **style_kwds)
 
     @save_verticapy_logs
@@ -928,7 +928,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns, of = self.format_colnames(
+        columns, of = self._format_colnames(
             columns, of, expected_nb_of_cols=[1, 2, 3, 4, 5]
         )
         stacked = True if (hist_type.lower() == "stacked") else False
@@ -1001,7 +1001,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns, expected_nb_of_cols=[1, 2])
+        columns = self._format_colnames(columns, expected_nb_of_cols=[1, 2])
         return plt.outliers_contour_plot(
             self,
             columns,
@@ -1054,7 +1054,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         return plt.nested_pie(self, columns, max_cardinality, h, ax=None, **style_kwds)
 
     @save_verticapy_logs
@@ -1110,9 +1110,9 @@ class vDFPLOT:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -1121,7 +1121,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         return plt.pivot_table(
             self,
             columns,
@@ -1182,7 +1182,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns, ts = self.format_colnames(columns, ts)
+        columns, ts = self._format_colnames(columns, ts)
         kind = "step" if step else "line"
         return plt.multi_ts_plot(
             self, ts, columns, start_date, end_date, kind, ax=ax, **style_kwds,
@@ -1315,7 +1315,7 @@ class vDFPLOT:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         return plt.scatter_matrix(self, columns, **style_kwds)
 
     @save_verticapy_logs
@@ -1368,7 +1368,7 @@ class vDFPLOT:
             "Columns having negative values can not be "
             "processed by the 'stacked_area' method."
         )
-        columns, ts = self.format_colnames(columns, ts)
+        columns, ts = self._format_colnames(columns, ts)
         return plt.multi_ts_plot(
             self, ts, columns, start_date, end_date, kind=kind, ax=ax, **style_kwds,
         )
@@ -1395,7 +1395,7 @@ class vDCPLOT:
         optimal bar width.
         """
         if method == "auto":
-            pre_comp = self.parent.__get_catalog_value__(self.alias, "numh")
+            pre_comp = self.parent._get_catalog_value(self.alias, "numh")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 return pre_comp
         assert self.isnum() or self.isdate(), ParameterError(
@@ -1438,11 +1438,11 @@ class vDCPLOT:
                         DATEDIFF('second', 
                                  '{self.min()}'::timestamp, 
                                  {self.alias}) AS {self.alias} 
-                    FROM {self.parent.__genSQL__()}) VERTICAPY_OPTIMAL_H_TABLE""",
+                    FROM {self.parent._genSQL()}) VERTICAPY_OPTIMAL_H_TABLE""",
                 title="Different aggregations to compute the optimal h.",
                 method="fetchrow",
-                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self.parent._VARS["sql_push_ext"],
+                symbol=self.parent._VARS["symbol"],
             )
             (
                 count,
@@ -1465,7 +1465,7 @@ class vDCPLOT:
             best_h = fd
         else:
             best_h = max(sturges, fd)
-            self.parent.__update_catalog__({"index": ["numh"], self.alias: [best_h]})
+            self.parent._update_catalog({"index": ["numh"], self.alias: [best_h]})
         if self.category() == "int":
             best_h = max(math.floor(best_h), 1)
         return best_h
@@ -1519,7 +1519,7 @@ class vDCPLOT:
     --------
     vDataFrame[].hist : Draws the histogram of the vDataColumn based on an aggregation.
         """
-        of = self.parent.format_colnames(of)
+        of = self.parent._format_colnames(of)
         return plt.bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     @save_verticapy_logs
@@ -1565,7 +1565,7 @@ class vDCPLOT:
         """
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
-        by = self.parent.format_colnames(by)
+        by = self.parent._format_colnames(by)
         return plt.boxplot(
             self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds
         )
@@ -1619,7 +1619,7 @@ class vDCPLOT:
         from verticapy.machine_learning.vertica import KernelDensity
 
         if by:
-            by = self.parent.format_colnames(by)
+            by = self.parent._format_colnames(by)
             colors = plt.gen_colors()
             if not xlim:
                 xmin = self.min()
@@ -1676,7 +1676,7 @@ class vDCPLOT:
             store=False,
         )
         try:
-            result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(
+            result = model.fit(self.parent._genSQL(), [self.alias]).plot(
                 ax=ax, **style_kwds
             )
             return result
@@ -1710,7 +1710,7 @@ class vDCPLOT:
         else:
             check = False
         if check:
-            column = self.parent.format_colnames(column)
+            column = self.parent._format_colnames(column)
             columns += [column]
             if not ("cmap" in kwargs):
                 kwargs["cmap"] = gen_cmap()[0]
@@ -1772,7 +1772,7 @@ class vDCPLOT:
     --------
     vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
-        of = self.parent.format_colnames(of)
+        of = self.parent._format_colnames(of)
         return plt.hist(
             self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds
         )
@@ -1831,7 +1831,7 @@ class vDCPLOT:
     vDataFrame.donut : Draws the donut chart of the vDataColumn based on an aggregation.
         """
         donut, rose = (pie_type == "donut"), (pie_type == "rose")
-        of = self.parent.format_colnames(of)
+        of = self.parent._format_colnames(of)
         return plt.pie(
             self, method, of, max_cardinality, h, donut, rose, ax=None, **style_kwds,
         )
@@ -1882,7 +1882,7 @@ class vDCPLOT:
     --------
     vDataFrame.plot : Draws the time series.
         """
-        ts, by = self.parent.format_colnames(ts, by)
+        ts, by = self.parent._format_colnames(ts, by)
         return plt.ts_plot(
             self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwds,
         )
@@ -1931,7 +1931,7 @@ class vDCPLOT:
     --------
     vDataFrame.plot : Draws the time series.
         """
-        ts = self.parent.format_colnames(ts)
+        ts = self.parent._format_colnames(ts)
         return plt.range_curve_vdf(
             self, ts, q, start_date, end_date, plot_median, ax=ax, **style_kwds,
         )
@@ -1987,7 +1987,7 @@ class vDCPLOT:
     --------
     vDataFrame.bar : Draws the Bar Chart of the input vDataColumns based on an aggregation.
         """
-        by, of = self.parent.format_colnames(by, of)
+        by, of = self.parent._format_colnames(by, of)
         columns = [self.alias]
         if by:
             columns += [by]

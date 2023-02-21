@@ -23,7 +23,7 @@ from verticapy._utils._sql._format import clean_query
 from verticapy._version import vertica_version
 from verticapy.errors import ConversionError
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 
 from verticapy.sql.flex import isvmap
 
@@ -47,7 +47,7 @@ class vDFTYPING:
         self
         """
         for column in dtype:
-            self[self.format_colnames(column)].astype(dtype=dtype[column])
+            self[self._format_colnames(column)].astype(dtype=dtype[column])
         return self
 
     @save_verticapy_logs
@@ -99,11 +99,11 @@ class vDFTYPING:
                         SELECT 
                             /*+LABEL('vDataframe.catcol')*/ 
                             (APPROXIMATE_COUNT_DISTINCT({column}) < {max_cardinality}) 
-                        FROM {self.__genSQL__()}""",
+                        FROM {self._genSQL()}""",
                     title="Looking at columns with low cardinality.",
                     method="fetchfirstelem",
-                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self._VARS["sql_push_ext"],
+                    symbol=self._VARS["symbol"],
                 )
             elif self[column].category() == "float":
                 is_cat = False
@@ -142,15 +142,15 @@ class vDFTYPING:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         values = {"index": [], "dtype": []}
         for column in self.get_columns():
             values["index"] += [column]
             values["dtype"] += [self[column].ctype()]
-        return tablesample(values)
+        return TableSample(values)
 
     def numcol(self, exclude_columns: list = []):
         """
@@ -213,7 +213,7 @@ class vDCTYPING:
                 query = f"""
                     SELECT 
                         {self.alias} 
-                    FROM {self.parent.__genSQL__()} 
+                    FROM {self.parent._genSQL()} 
                     ORDER BY LENGTH({self.alias}) DESC 
                     LIMIT 1"""
                 biggest_str = _executeSQL(
@@ -281,19 +281,19 @@ class vDCTYPING:
                 SELECT 
                     /*+LABEL('vDataColumn.astype')*/ 
                     {transformation[0]} AS {self.alias} 
-                FROM {self.parent.__genSQL__()} 
+                FROM {self.parent._genSQL()} 
                 WHERE {self.alias} IS NOT NULL 
                 LIMIT 20"""
             _executeSQL(
                 query,
                 title="Testing the Type casting.",
-                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self.parent._VARS["sql_push_ext"],
+                symbol=self.parent._VARS["symbol"],
             )
             self.transformations += [
                 (transformation[1], dtype, to_category(ctype=dtype),)
             ]
-            self.parent.__add_to_history__(
+            self.parent._add_to_history(
                 f"[AsType]: The vDataColumn {self.alias} was converted to {dtype}."
             )
             return self.parent
@@ -400,5 +400,5 @@ class vDCTYPING:
         True if the vDataColumn category is VMap.
         """
         return self.category() == "vmap" or isvmap(
-            column=self.alias, expr=self.parent.__genSQL__()
+            column=self.alias, expr=self.parent._genSQL()
         )

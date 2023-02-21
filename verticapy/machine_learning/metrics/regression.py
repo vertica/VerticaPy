@@ -22,7 +22,7 @@ from scipy.stats import f
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning._utils import _compute_metric_query
@@ -112,14 +112,14 @@ k: int, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if isinstance(input_relation, str):
         relation = input_relation
     else:
-        relation = input_relation.__genSQL__()
+        relation = input_relation._genSQL()
     n, avg = _executeSQL(
         query=f"""
         SELECT /*+LABEL('learn.metrics.anova_table')*/
@@ -150,7 +150,7 @@ tablesample
     else:
         F = MSR / MSE
     pvalue = f.sf(F, k, n)
-    return tablesample(
+    return TableSample(
         {
             "index": ["Regression", "Residual", "Total"],
             "Df": [dfr, dfe, dft],
@@ -465,14 +465,14 @@ k: int, optional
 
 Returns
 -------
-tablesample
+TableSample
  	An object containing the result. For more information, see
- 	utilities.tablesample.
+ 	utilities.TableSample.
 	"""
     if isinstance(input_relation, str):
         relation = input_relation
     else:
-        relation = input_relation.__genSQL__()
+        relation = input_relation._genSQL()
     query = f"""SELECT /*+LABEL('learn.metrics.regression_report')*/
                     1 - VARIANCE({y_true} - {y_score}) / VARIANCE({y_true}), 
                     MAX(ABS({y_true} - {y_score})),
@@ -523,4 +523,4 @@ tablesample
         aic,
         bic,
     ]
-    return tablesample(values)
+    return TableSample(values)

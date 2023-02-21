@@ -461,7 +461,7 @@ col_sample_by_tree: float, optional
         """
         # Inititalization
         if isinstance(vdf, str):
-            vdf = vDataFrame(sql=vdf)
+            vdf = vDataFrame(vdf)
         if not (name):
             name = gen_name([self.type, self.name])
 
@@ -573,7 +573,7 @@ col_sample_by_tree: float, optional
         """
         # Inititalization
         if isinstance(vdf, str):
-            vdf = vDataFrame(sql=vdf)
+            vdf = vDataFrame(vdf)
         if not (name):
             name = gen_name([self.type, self.name])
 

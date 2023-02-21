@@ -27,7 +27,7 @@ from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
 from verticapy.errors import ParameterError
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import updated_dict
@@ -110,11 +110,11 @@ p: int, optional
             does_model_exist(name=self.name, raise_error=True)
         func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
         if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
+            self.input_relation = input_relation._genSQL()
         else:
             self.input_relation = input_relation
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
+            self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
@@ -308,11 +308,11 @@ p: int, optional
         else:
             does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
+            self.input_relation = input_relation._genSQL()
         else:
             self.input_relation = input_relation
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
+            self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
@@ -369,9 +369,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if not (isinstance(labels, Iterable)) or isinstance(labels, str):
             labels = [labels]
@@ -398,9 +398,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
@@ -436,9 +436,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         pos_label = (
             self.classes_[1]
@@ -455,7 +455,7 @@ p: int, optional
             if pos_label == 1:
                 return result
             else:
-                return tablesample(
+                return TableSample(
                     values={
                         "index": [f"Non-{pos_label}", str(pos_label),],
                         f"Non-{pos_label}": result.values[0],
@@ -491,9 +491,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
@@ -524,9 +524,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
@@ -581,7 +581,7 @@ p: int, optional
             "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
-            vdf = vDataFrame(sql=vdf)
+            vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -601,7 +601,7 @@ p: int, optional
             and self.classes_[1] in [1, "1"]
         ):
             table = self.deploySQL(
-                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
+                X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
             )
             sql = f"""
                 (SELECT 
@@ -616,7 +616,7 @@ p: int, optional
         else:
             table = self.deploySQL(
                 X=X,
-                test_relation=vdf.__genSQL__(),
+                test_relation=vdf._genSQL(),
                 key_columns=key_columns_arg,
                 predict=True,
             )
@@ -626,9 +626,9 @@ p: int, optional
                     predict_neighbors AS {name} 
                  FROM {table}"""
         if inplace:
-            return vdf.__init__(sql=sql)
+            return vdf.__init__(sql)
         else:
-            return vDataFrame(sql=sql)
+            return vDataFrame(sql)
 
     def predict_proba(
         self,
@@ -677,7 +677,7 @@ p: int, optional
             )
         )
         if isinstance(vdf, str):
-            vdf = vDataFrame(sql=vdf)
+            vdf = vDataFrame(vdf)
         X = [quote_ident(x) for x in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if not (name):
@@ -708,7 +708,7 @@ p: int, optional
         else:
             key_columns_str = ""
         table = self.deploySQL(
-            X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
+            X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
         )
         sql = f"""
             SELECT 
@@ -719,9 +719,9 @@ p: int, optional
 
         # Result
         if inplace:
-            return vdf.__init__(sql=sql)
+            return vdf.__init__(sql)
         else:
-            return vDataFrame(sql=sql)
+            return vDataFrame(sql)
 
     def roc_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
@@ -741,9 +741,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         pos_label = (
             self.classes_[1]
@@ -962,15 +962,15 @@ xlim: list, optional
             if not (X):
                 X = input_relation.numcol()
             vdf = input_relation
-            input_relation = input_relation.__genSQL__()
+            input_relation = input_relation._genSQL()
         else:
             try:
                 vdf = vDataFrame(input_relation)
             except:
-                vdf = vDataFrame(sql=input_relation)
+                vdf = vDataFrame(input_relation)
             if not (X):
                 X = vdf.numcol()
-        X = vdf.format_colnames(X)
+        X = vdf._format_colnames(X)
 
         def density_compute(
             vdf: vDataFrame,
@@ -1019,7 +1019,7 @@ xlim: list, optional
                         SELECT 
                             /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
                             {", ".join(L)} 
-                        FROM {vdf.__genSQL__()}"""
+                        FROM {vdf._genSQL()}"""
                     result = _executeSQL(
                         query, title="Computing the KDE", method="fetchrow"
                     )
@@ -1027,7 +1027,7 @@ xlim: list, optional
                 else:
                     return 0
 
-            columns = vdf.format_colnames(columns)
+            columns = vdf._format_colnames(columns)
             x_vars = []
             y = []
             for idx, column in enumerate(columns):
@@ -1075,7 +1075,7 @@ xlim: list, optional
                             SELECT 
                                 /*+LABEL('learn.neighbors.KernelDensity.fit')*/
                                 {", ".join(X)}, 0.0::float AS KDE 
-                            FROM {vdf.__genSQL__()} 
+                            FROM {vdf._genSQL()} 
                             LIMIT 0""",
                 print_time_sql=False,
             )
@@ -1369,11 +1369,11 @@ p: int, optional
         else:
             does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
+            self.input_relation = input_relation._genSQL()
         else:
             self.input_relation = input_relation
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
+            self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
@@ -1429,7 +1429,7 @@ p: int, optional
         if isinstance(X, str):
             X = [X]
         if isinstance(vdf, str):
-            vdf = vDataFrame(sql=vdf)
+            vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -1443,7 +1443,7 @@ p: int, optional
         else:
             key_columns_str = ""
         table = self.deploySQL(
-            X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
+            X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
         )
         sql = f"""
             SELECT 
@@ -1451,9 +1451,9 @@ p: int, optional
                 predict_neighbors AS {name} 
              FROM {table}"""
         if inplace:
-            return vdf.__init__(sql=sql)
+            return vdf.__init__(sql)
         else:
-            return vDataFrame(sql=sql)
+            return vDataFrame(sql)
 
 
 class LocalOutlierFactor(vModel):
@@ -1528,7 +1528,7 @@ p: int, optional
             does_model_exist(name=self.name, raise_error=True)
         self.key_columns = [quote_ident(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
+            self.input_relation = input_relation._genSQL()
             if not (X):
                 X = input_relation.numcol()
         else:

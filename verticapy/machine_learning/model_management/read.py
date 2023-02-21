@@ -19,7 +19,7 @@ from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident, schema_relation
 from verticapy._version import vertica_version
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 
 from verticapy.sql.read import to_tablesample
 
@@ -158,7 +158,7 @@ model
             model_save[val[0]] = result_tmp
         if model_save["type"] == "NearestCentroid":
             model = vml.NearestCentroid(name, model_save["p"])
-            model.centroids_ = tablesample(model_save["centroids"])
+            model.centroids_ = TableSample(model_save["centroids"])
             model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsClassifier":
             model = vml.KNeighborsClassifier(
@@ -224,10 +224,10 @@ model
                 model_save["papprox_ma"],
             )
             model.transform_relation = model_save["transform_relation"]
-            model.coef_ = tablesample(model_save["coef"])
+            model.coef_ = TableSample(model_save["coef"])
             model.ma_avg_ = model_save["ma_avg"]
             if isinstance(model_save["ma_piq"], dict):
-                model.ma_piq_ = tablesample(model_save["ma_piq"])
+                model.ma_piq_ = TableSample(model_save["ma_piq"])
             else:
                 model.ma_piq_ = None
             model.ts = model_save["ts"]
@@ -244,7 +244,7 @@ model
             model.transform_relation = model_save["transform_relation"]
             model.coef_ = []
             for i in range(len(model_save["X"])):
-                model.coef_ += [tablesample(model_save[f"coef_{i}"])]
+                model.coef_ += [TableSample(model_save[f"coef_{i}"])]
             model.ts = model_save["ts"]
             model.deploy_predict_ = model_save["deploy_predict"]
             model.X = model_save["X"]
@@ -517,7 +517,7 @@ model
                 / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
                 result.split("Converged: ")[1].split("\n")[0] == "True",
             ]
-            model.metrics_ = tablesample(values)
+            model.metrics_ = TableSample(values)
         elif model_type == "bisecting_kmeans":
             model = vml.BisectingKMeans(
                 name,

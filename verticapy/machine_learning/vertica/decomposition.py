@@ -19,7 +19,7 @@ from typing import Literal
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._version import check_minimum_version
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 
 from verticapy.machine_learning.vertica.base import Decomposition
 
@@ -150,7 +150,7 @@ name: str
         variables, contribution = zip(
             *sorted(zip(self.X, contrib), key=lambda t: t[1], reverse=True)
         )
-        contrib = tablesample(
+        contrib = TableSample(
             {"row_nb": [i + 1 for i in range(n)], "contrib": contribution}
         ).to_vdf()
         contrib["row_nb_2"] = contrib["row_nb"] + 0.5
@@ -199,7 +199,7 @@ name: str
         variables, quality = zip(
             *sorted(zip(self.X, quality), key=lambda t: t[1], reverse=True)
         )
-        quality = tablesample({"variables": variables, "quality": quality}).to_vdf()
+        quality = TableSample({"variables": variables, "quality": quality}).to_vdf()
         ax = quality["variables"].hist(
             method="avg", of="quality", max_cardinality=n, ax=ax, **style_kwds
         )

@@ -44,6 +44,12 @@ def erase_label(query: str):
     return query
 
 
+def extract_subquery(query: str) -> bool:
+    if query[0] == "(" and query[-1] != ")":
+        query = ")".join("(".join(query.split("(")[1:]).split(")")[:-1])
+    return query
+
+
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
     from verticapy.core.str_sql.base import str_sql
     from verticapy.core.vdataframe.base import vDataColumn
@@ -137,7 +143,7 @@ def quote_ident(column: str):
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):
-    from verticapy.core.tablesample.base import tablesample
+    from verticapy.core.TableSample.base import TableSample
     from verticapy.core.vdataframe.base import vDataFrame
 
     from verticapy.sql.parsers.pandas import read_pandas
@@ -172,11 +178,11 @@ def replace_vars_in_query(query: str, locals_dict: dict):
                 fail = True
         if not (fail):
             if isinstance(val, vDataFrame):
-                val = val.__genSQL__()
-            elif isinstance(val, tablesample):
+                val = val._genSQL()
+            elif isinstance(val, TableSample):
                 val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
             elif isinstance(val, pd.DataFrame):
-                val = read_pandas(val).__genSQL__()
+                val = read_pandas(val)._genSQL()
             elif isinstance(val, list):
                 val = ", ".join(["NULL" if elem is None else str(elem) for elem in val])
             query_tmp = query_tmp.replace(v, str(val))

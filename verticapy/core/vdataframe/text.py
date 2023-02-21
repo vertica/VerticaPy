@@ -90,7 +90,7 @@ class vDFTEXT:
     --------
     vDataFrame.eval : Evaluates a customized expression.
         """
-        column = self.format_colnames(column)
+        column = self._format_colnames(column)
         pattern_str = pattern.replace("'", "''")
         expr = f"REGEXP_{method.upper()}({column}, '{pattern_str}'"
         if method == "replace":

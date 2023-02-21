@@ -87,7 +87,7 @@ class vDFEVAL:
                 "be able to solve this issue."
             )
         try:
-            query = f"SELECT {expr} AS {name} FROM {self.__genSQL__()} LIMIT 0"
+            query = f"SELECT {expr} AS {name} FROM {self._genSQL()} LIMIT 0"
             ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
         except:
             raise QueryError(
@@ -99,7 +99,7 @@ class vDFEVAL:
         if not (ctype):
             ctype = "undefined"
         elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
-            self._VERTICAPY_VARIABLES_["isflex"]
+            self._VARS["isflex"]
             or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
         ):
             category = "vmap"
@@ -128,8 +128,8 @@ class vDFEVAL:
         setattr(self, name.replace('"', ""), new_vDataColumn)
         new_vDataColumn.init = False
         new_vDataColumn.init_transf = name
-        self._VERTICAPY_VARIABLES_["columns"] += [name]
-        self.__add_to_history__(
+        self._VARS["columns"] += [name]
+        self._add_to_history(
             f"[Eval]: A new vDataColumn {name} was added to the vDataFrame."
         )
         return self

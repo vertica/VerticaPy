@@ -72,7 +72,7 @@ class vDFENCODE:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         if not (columns):
             columns = self.get_columns()
         cols_hand = True if (columns) else False
@@ -238,7 +238,7 @@ class vDCENCODE:
                 "Parameter 'response' can not be empty in case of "
                 "discretization using the method 'smart'."
             )
-            response = self.parent.format_colnames(response)
+            response = self.parent._format_colnames(response)
             drop(tmp_view_name, method="view")
             self.parent.to_db(tmp_view_name)
             drop(tmp_model_name, method="model")
@@ -275,8 +275,8 @@ class vDCENCODE:
                     query=query,
                     title="Computing the optimized histogram nbins using Random Forest.",
                     method="fetchall",
-                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self.parent._VARS["sql_push_ext"],
+                    symbol=self.parent._VARS["symbol"],
                 )
                 result = [x[0] for x in result]
             finally:
@@ -323,14 +323,14 @@ class vDCENCODE:
                 FROM (SELECT 
                         {self.alias}, 
                         ROW_NUMBER() OVER (ORDER BY {self.alias}) AS _verticapy_row_nb_ 
-                      FROM {self.parent.__genSQL__()} 
+                      FROM {self.parent._genSQL()} 
                       WHERE {self.alias} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
             result = _executeSQL(
                 query=query,
                 title="Computing the equal frequency histogram bins.",
                 method="fetchall",
-                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self.parent._VARS["sql_push_ext"],
+                symbol=self.parent._VARS["symbol"],
             )
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
@@ -378,7 +378,7 @@ class vDCENCODE:
             sauv = {}
             for elem in self.catalog:
                 sauv[elem] = self.catalog[elem]
-            self.parent.__update_catalog__(erase=True, columns=[self.alias])
+            self.parent._update_catalog(erase=True, columns=[self.alias])
             try:
                 if "count" in sauv:
                     self.catalog["count"] = sauv["count"]
@@ -387,7 +387,7 @@ class vDCENCODE:
                     )
             except:
                 pass
-            self.parent.__add_to_history__(
+            self.parent._add_to_history(
                 f"[Discretize]: The vDataColumn {self.alias} was discretized."
             )
         return self.parent
@@ -481,10 +481,10 @@ class vDCENCODE:
                 )
                 setattr(self.parent, name, new_vDataColumn)
                 setattr(self.parent, name.replace('"', ""), new_vDataColumn)
-                self.parent._VERTICAPY_VARIABLES_["columns"] += [name]
+                self.parent._VARS["columns"] += [name]
                 all_new_features += [name]
             conj = "s were " if len(all_new_features) > 1 else " was "
-            self.parent.__add_to_history__(
+            self.parent._add_to_history(
                 "[Get Dummies]: One hot encoder was applied to the vDataColumn "
                 f"{self.alias}\n{len(all_new_features)} feature{conj}created: "
                 f"{', '.join(all_new_features)}."
@@ -526,10 +526,10 @@ class vDCENCODE:
                 text_info += f"\t{distinct_elements[k]} => {k}"
             expr = f"{', '.join(expr)}, {len(distinct_elements)})"
             self.transformations += [(expr, "int", "int")]
-            self.parent.__update_catalog__(erase=True, columns=[self.alias])
+            self.parent._update_catalog(erase=True, columns=[self.alias])
             self.catalog["count"] = self.parent.shape()[0]
             self.catalog["percent"] = 100
-            self.parent.__add_to_history__(
+            self.parent._add_to_history(
                 "[Label Encoding]: Label Encoding was applied to the vDataColumn"
                 f" {self.alias} using the following mapping:{text_info}"
             )
@@ -558,7 +558,7 @@ class vDCENCODE:
     vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
     vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
         """
-        response = self.parent.format_colnames(response)
+        response = self.parent._format_colnames(response)
         assert self.parent[response].isnum(), TypeError(
             "The response column must be numerical to use a mean encoding"
         )
@@ -570,8 +570,8 @@ class vDCENCODE:
         self.transformations += [
             (f"AVG({response}) OVER (PARTITION BY {{}})", "int", "float",)
         ]
-        self.parent.__update_catalog__(erase=True, columns=[self.alias])
-        self.parent.__add_to_history__(
+        self.parent._update_catalog(erase=True, columns=[self.alias])
+        self.parent._add_to_history(
             f"[Mean Encode]: The vDataColumn {self.alias} was transformed "
             f"using a mean encoding with {response} as Response Column."
         )

@@ -87,7 +87,7 @@ bool
                 elif json_dict[key] is None:
                     json += "null"
                 elif isinstance(json_dict[key], vDataFrame):
-                    json_dict_str = json_dict[key].__genSQL__().replace('"', '\\"')
+                    json_dict_str = json_dict[key]._genSQL().replace('"', '\\"')
                     json += f'"{json_dict_str}"'
                 elif isinstance(json_dict[key], vModel):
                     json += f'"{json_dict[key].type}"'

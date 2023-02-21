@@ -28,9 +28,9 @@ from verticapy.errors import ParameterError, MissingColumn
 from verticapy.jupyter._javascript import datatables_repr
 
 
-class tablesample:
+class TableSample:
     """
-The tablesample is the transition from 'Big Data' to 'Small Data'. 
+The TableSample is the transition from 'Big Data' to 'Small Data'. 
 This object allows you to conveniently display your results without any  
 dependencies on any other module. It stores the aggregated result in memory
 which can then be transformed into a pandas.DataFrame or vDataFrame.
@@ -56,7 +56,7 @@ max_columns: int, optional
 
 Attributes
 ----------
-The tablesample attributes are the same as the parameters.
+The TableSample attributes are the same as the parameters.
 	"""
 
     #
@@ -227,24 +227,24 @@ The tablesample attributes are the same as the parameters.
 
     def append(self, tbs):
         """
-        Appends the input tablesample to a target tablesample.
+        Appends the input TableSample to a target TableSample.
 
         Parameters
         ----------
-        tbs: tablesample
+        tbs: TableSample
             Tablesample to append.
 
         Returns
         -------
-        tablesample
+        TableSample
             self
         """
-        assert isinstance(tbs, tablesample), ParameterError(
-            "tablesamples can only be appended to another tablesample."
+        assert isinstance(tbs, TableSample), ParameterError(
+            "TableSamples can only be appended to another TableSample."
         )
         n1, n2 = self.shape()[0], tbs.shape()[0]
         assert n1 == n2, ParameterError(
-            "The input and target tablesamples must have the same number of columns."
+            "The input and target TableSamples must have the same number of columns."
             f" Expected {n1}, Found {n2}."
         )
         cols1, cols2 = [col for col in self.values], [col for col in tbs.values]
@@ -254,11 +254,11 @@ The tablesample attributes are the same as the parameters.
 
     def decimal_to_float(self):
         """
-    Converts all the tablesample's decimals to floats.
+    Converts all the TableSample's decimals to floats.
 
     Returns
     -------
-    tablesample
+    TableSample
         self
         """
         for elem in self.values:
@@ -270,24 +270,24 @@ The tablesample attributes are the same as the parameters.
 
     def merge(self, tbs):
         """
-        Merges the input tablesample to a target tablesample.
+        Merges the input TableSample to a target TableSample.
 
         Parameters
         ----------
-        tbs: tablesample
+        tbs: TableSample
             Tablesample to merge.
 
         Returns
         -------
-        tablesample
+        TableSample
             self
         """
-        assert isinstance(tbs, tablesample), ParameterError(
-            "tablesamples can only be merged with other tablesamples."
+        assert isinstance(tbs, TableSample), ParameterError(
+            "TableSamples can only be merged with other TableSamples."
         )
         n1, n2 = self.shape()[1], tbs.shape()[1]
         assert n1 == n2, ParameterError(
-            "The input and target tablesamples must have the same number of rows."
+            "The input and target TableSamples must have the same number of rows."
             f" Expected {n1}, Found {n2}."
         )
         for col in tbs.values:
@@ -336,7 +336,7 @@ The tablesample attributes are the same as the parameters.
 
     def shape(self):
         """
-    Computes the tablesample shape.
+    Computes the TableSample shape.
 
     Returns
     -------
@@ -349,7 +349,7 @@ The tablesample attributes are the same as the parameters.
 
     def sort(self, column: str, desc: bool = False):
         """
-        Sorts the tablesample using the input column.
+        Sorts the TableSample using the input column.
 
         Parameters
         ----------
@@ -360,7 +360,7 @@ The tablesample attributes are the same as the parameters.
 
         Returns
         -------
-        tablesample
+        TableSample
             self
         """
         column = column.replace('"', "").lower()
@@ -386,12 +386,12 @@ The tablesample attributes are the same as the parameters.
 
     def transpose(self):
         """
-	Transposes the tablesample.
+	Transposes the TableSample.
 
  	Returns
  	-------
- 	tablesample
- 		transposed tablesample
+ 	TableSample
+ 		transposed TableSample
 		"""
         index = [column for column in self.values]
         first_item = list(self.values.keys())[0]
@@ -406,11 +406,11 @@ The tablesample attributes are the same as the parameters.
         values = {}
         for item in columns:
             values[item[0]] = item[1 : len(item)]
-        return tablesample(values, self.dtype, self.count, self.offset, self.percent)
+        return TableSample(values, self.dtype, self.count, self.offset, self.percent)
 
     def to_list(self):
         """
-    Converts the tablesample to a list.
+    Converts the TableSample to a list.
 
     Returns
     -------
@@ -431,7 +431,7 @@ The tablesample attributes are the same as the parameters.
 
     def to_numpy(self):
         """
-    Converts the tablesample to a numpy array.
+    Converts the TableSample to a numpy array.
 
     Returns
     -------
@@ -442,17 +442,17 @@ The tablesample attributes are the same as the parameters.
 
     def to_pandas(self):
         """
-	Converts the tablesample to a pandas DataFrame.
+	Converts the TableSample to a pandas DataFrame.
 
  	Returns
  	-------
  	pandas.DataFrame
- 		pandas DataFrame of the tablesample.
+ 		pandas DataFrame of the TableSample.
 
 	See Also
 	--------
-	tablesample.to_sql : Generates the SQL query associated to the tablesample.
-	tablesample.to_vdf : Converts the tablesample to vDataFrame.
+	TableSample.to_sql : Generates the SQL query associated to the TableSample.
+	TableSample.to_vdf : Converts the TableSample to vDataFrame.
 		"""
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
@@ -462,17 +462,17 @@ The tablesample attributes are the same as the parameters.
 
     def to_sql(self):
         """
-    Generates the SQL query associated to the tablesample.
+    Generates the SQL query associated to the TableSample.
 
     Returns
     -------
     str
-        SQL query associated to the tablesample.
+        SQL query associated to the TableSample.
 
     See Also
     --------
-    tablesample.to_pandas : Converts the tablesample to a pandas DataFrame.
-    tablesample.to_sql    : Generates the SQL query associated to the tablesample.
+    TableSample.to_pandas : Converts the TableSample to a pandas DataFrame.
+    TableSample.to_sql    : Generates the SQL query associated to the TableSample.
         """
 
         def get_correct_format_and_cast(val):
@@ -527,18 +527,18 @@ The tablesample attributes are the same as the parameters.
 
     def to_vdf(self):
         """
-	Converts the tablesample to a vDataFrame.
+	Converts the TableSample to a vDataFrame.
 
  	Returns
  	-------
  	vDataFrame
- 		vDataFrame of the tablesample.
+ 		vDataFrame of the TableSample.
 
 	See Also
 	--------
-	tablesample.to_pandas : Converts the tablesample to a pandas DataFrame.
-	tablesample.to_sql    : Generates the SQL query associated to the tablesample.
+	TableSample.to_pandas : Converts the TableSample to a pandas DataFrame.
+	TableSample.to_sql    : Generates the SQL query associated to the TableSample.
 		"""
         from verticapy.core.vdataframe.base import vDataFrame
 
-        return vDataFrame(sql=self.to_sql())
+        return vDataFrame(self.to_sql())

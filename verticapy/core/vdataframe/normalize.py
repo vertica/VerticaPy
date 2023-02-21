@@ -60,7 +60,7 @@ class vDFNORM:
         if isinstance(columns, str):
             columns = [columns]
         no_cols = True if not (columns) else False
-        columns = self.numcol() if not (columns) else self.format_colnames(columns)
+        columns = self.numcol() if not (columns) else self._format_colnames(columns)
         for column in columns:
             if self[column].isnum() and not (self[column].isbool()):
                 self[column].normalize(method=method)
@@ -114,7 +114,7 @@ class vDCNORM:
         if isinstance(by, str):
             by = [by]
         method = method.lower()
-        by = self.parent.format_colnames(by)
+        by = self.parent._format_colnames(by)
         nullifzero, n = 1, len(by)
         if self.isbool():
 
@@ -143,13 +143,11 @@ class vDCNORM:
                                     /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
                                     AVG({self.alias}), 
                                     STDDEV({self.alias}) 
-                                FROM {self.parent.__genSQL__()} GROUP BY {by[0]}""",
+                                FROM {self.parent._genSQL()} GROUP BY {by[0]}""",
                             title="Computing the different categories to normalize.",
                             method="fetchall",
-                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
-                                "sql_push_ext"
-                            ],
-                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                            sql_push_ext=self.parent._VARS["sql_push_ext"],
+                            symbol=self.parent._VARS["symbol"],
                         )
                         for i in range(len(result)):
                             if result[i][2] == None:
@@ -177,13 +175,11 @@ class vDCNORM:
                                     /*+LABEL('vDataColumn.normalize')*/ 
                                     {avg},
                                     {stddev} 
-                                FROM {self.parent.__genSQL__()} 
+                                FROM {self.parent._genSQL()} 
                                 LIMIT 1""",
                             print_time_sql=False,
-                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
-                                "sql_push_ext"
-                            ],
-                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                            sql_push_ext=self.parent._VARS["sql_push_ext"],
+                            symbol=self.parent._VARS["symbol"],
                         )
                     except:
                         avg, stddev = (
@@ -250,14 +246,12 @@ class vDCNORM:
                                     /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
                                     MIN({self.alias}), 
                                     MAX({self.alias})
-                                FROM {self.parent.__genSQL__()} 
+                                FROM {self.parent._genSQL()} 
                                 GROUP BY {by[0]}""",
                             title=f"Computing the different categories {by[0]} to normalize.",
                             method="fetchall",
-                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
-                                "sql_push_ext"
-                            ],
-                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                            sql_push_ext=self.parent._VARS["sql_push_ext"],
+                            symbol=self.parent._VARS["symbol"],
                         )
                         cmin_cmax = []
                         for i in range(1, 3):
@@ -280,13 +274,11 @@ class vDCNORM:
                                     /*+LABEL('vDataColumn.normalize')*/ 
                                     {cmin_cmax[1]}, 
                                     {cmin_cmax[0]} 
-                                FROM {self.parent.__genSQL__()} 
+                                FROM {self.parent._genSQL()} 
                                 LIMIT 1""",
                             print_time_sql=False,
-                            sql_push_ext=self.parent._VERTICAPY_VARIABLES_[
-                                "sql_push_ext"
-                            ],
-                            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                            sql_push_ext=self.parent._VARS["sql_push_ext"],
+                            symbol=self.parent._VARS["symbol"],
                         )
                     except:
                         cmax, cmin = (
@@ -322,7 +314,7 @@ class vDCNORM:
             sauv = {}
             for elem in self.catalog:
                 sauv[elem] = self.catalog[elem]
-            self.parent.__update_catalog__(erase=True, columns=[self.alias])
+            self.parent._update_catalog(erase=True, columns=[self.alias])
             try:
 
                 if "count" in sauv:
@@ -363,7 +355,7 @@ class vDCNORM:
             elif method == "minmax":
                 self.catalog["min"] = 0
                 self.catalog["max"] = 1
-            self.parent.__add_to_history__(
+            self.parent._add_to_history(
                 f"[Normalize]: The vDataColumn '{self.alias}' was "
                 f"normalized with the method '{method}'."
             )

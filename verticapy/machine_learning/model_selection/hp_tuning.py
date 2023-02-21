@@ -28,7 +28,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ParameterError
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.datasets.generators import gen_meshgrid, gen_dataset
@@ -140,9 +140,9 @@ print_info: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if print_info:
         print(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
@@ -192,7 +192,7 @@ tablesample
                 result["max_features"][idx] = int(np.floor(np.sqrt(len(X))) + 1)
             elif elem == "max":
                 result["max_features"][idx] = int(len(X))
-    result = tablesample(result).to_sql()
+    result = TableSample(result).to_sql()
     schema = OPTIONS["temp_schema"]
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
@@ -354,9 +354,9 @@ print_info: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     import verticapy.machine_learning.vertica as vml
 
@@ -374,7 +374,7 @@ tablesample
     )
     if estimator_type == "auto":
         if not (isinstance(input_relation, vDataFrame)):
-            vdf = vDataFrame(sql=input_relation)
+            vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation
         if sorted(vdf[y].distinct()) == [0, 1]:
@@ -436,9 +436,9 @@ optimized_grid: int, optional
     
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     import verticapy.machine_learning.vertica as vml
 
@@ -1130,9 +1130,9 @@ print_info: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if isinstance(X, str):
         X = [X]
@@ -1233,7 +1233,7 @@ tablesample
                 raise (e)
     if not (data):
         if training_score:
-            return tablesample(
+            return TableSample(
                 {
                     "parameters": [],
                     "avg_score": [],
@@ -1244,13 +1244,13 @@ tablesample
                 }
             )
         else:
-            return tablesample(
+            return TableSample(
                 {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
             )
     reverse = reverse_score(metric)
     data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
-        result = tablesample(
+        result = TableSample(
             {
                 "parameters": [d[0] for d in data],
                 "avg_score": [d[1] for d in data],
@@ -1272,7 +1272,7 @@ tablesample
                 f"\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
             )
     else:
-        result = tablesample(
+        result = TableSample(
             {
                 "parameters": [d[0] for d in data],
                 "avg_score": [d[1] for d in data],
@@ -1347,9 +1347,9 @@ p: int/list, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if isinstance(by, str):
         by = [by]
@@ -1361,10 +1361,10 @@ tablesample
         color = style_kwds["color"]
     else:
         color = gen_colors()[0]
-    by, column, ts = vdf.format_colnames(by, column, ts)
+    by, column, ts = vdf._format_colnames(by, column, ts)
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
-    result = tablesample(
+    result = TableSample(
         {
             "index": [i for i in range(0, len(acf.values["value"]))],
             "acf": acf.values["value"],
@@ -1491,9 +1491,9 @@ print_info: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     param_grid = gen_params_grid(estimator, nbins, len(X), lmax, optimized_grid)
     return grid_search_cv(
@@ -1588,9 +1588,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
         param_range = [param_range]
@@ -1632,7 +1632,7 @@ tablesample
             [elem[1] + std_coeff * elem[3] for elem in gs_result_final],
         ],
     ]
-    result = tablesample(
+    result = TableSample(
         {
             param_name: X,
             "training_score_lower": Y[0][0],

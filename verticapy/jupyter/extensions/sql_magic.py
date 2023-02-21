@@ -252,13 +252,13 @@ def sql_magic(line, cell="", local_ns=None):
                 error = ""
 
                 try:
-                    result = vDataFrame(sql=query)
-                    result._VERTICAPY_VARIABLES_["sql_magic_result"] = True
+                    result = vDataFrame(query)
+                    result._VARS["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:
-                        result._VERTICAPY_VARIABLES_["max_rows"] = options["-nrows"]
+                        result._VARS["max_rows"] = options["-nrows"]
                     if "-ncols" in options:
-                        result._VERTICAPY_VARIABLES_["max_columns"] = options["-ncols"]
+                        result._VARS["max_columns"] = options["-ncols"]
 
                 except:
 

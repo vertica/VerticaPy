@@ -17,8 +17,8 @@ permissions and limitations under the License.
 from typing import Union
 
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._merge import gen_coalesce, group_similar_names
 from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
 from verticapy.errors import EmptyParameter
 
 from verticapy.sql.flex import compute_vmap_keys
@@ -111,8 +111,8 @@ class vDFPIVOT:
             skip_word = [skip_word]
         columns = self.get_columns()
         group_dict = group_similar_names(columns, skip_word=skip_word)
-        sql = f"SELECT {gen_coalesce(group_dict)} FROM {self.__genSQL__()}"
-        return vDataFrame(sql=sql)
+        sql = f"SELECT {gen_coalesce(group_dict)} FROM {self._genSQL()}"
+        return vDataFrame(sql)
 
     @save_verticapy_logs
     def narrow(
@@ -149,7 +149,7 @@ class vDFPIVOT:
         """
         from verticapy.core.vdataframe.base import vDataFrame
 
-        index, columns = self.format_colnames(index, columns)
+        index, columns = self._format_colnames(index, columns)
         if isinstance(columns, str):
             columns = [columns]
         if isinstance(index, str):
@@ -179,10 +179,10 @@ class vDFPIVOT:
                     {', '.join(index)}, 
                     '{column_str}' AS {col_name}, 
                     {column}{conv} AS {val_name} 
-                FROM {self.__genSQL__()})"""
+                FROM {self._genSQL()})"""
             ]
         query = " UNION ALL ".join(query)
-        return vDataFrame(sql=query)
+        return vDataFrame(query)
 
     melt = narrow
 
@@ -227,7 +227,7 @@ class vDFPIVOT:
         """
         from verticapy.core.vdataframe.base import vDataFrame
 
-        index, columns, values = self.format_colnames(index, columns, values)
+        index, columns, values = self._format_colnames(index, columns, values)
         aggr = aggr.upper()
         if "{}" not in aggr:
             aggr += "({})"
@@ -255,6 +255,6 @@ class vDFPIVOT:
             SELECT 
                 {index},
                 {", ".join(new_cols_trans)}
-            FROM {self.__genSQL__()}
+            FROM {self._genSQL()}
             GROUP BY 1""",
         )

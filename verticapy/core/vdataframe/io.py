@@ -68,7 +68,7 @@ class vDFIO:
     --------
     vDataFrame.save : Saves the current vDataFrame structure.
         """
-        save = self._VERTICAPY_VARIABLES_["saving"][offset]
+        save = self._VARS["saving"][offset]
         vdf = pickle.loads(save)
         return vdf
 
@@ -88,7 +88,7 @@ class vDFIO:
     vDataFrame.load : Loads a saving.
         """
         vdf = self.copy()
-        self._VERTICAPY_VARIABLES_["saving"] += [pickle.dumps(vdf)]
+        self._VARS["saving"] += [pickle.dumps(vdf)]
         return self
 
     @save_verticapy_logs
@@ -178,9 +178,9 @@ class vDFIO:
         total = self.shape()[0]
         current_nb_rows_written, file_id = 0, 0
         limit = int(total / n_files) + 1
-        order_by = self.__get_sort_syntax__(order_by)
+        order_by = self._get_sort_syntax(order_by)
         if not (order_by):
-            order_by = self.__get_last_order_by__()
+            order_by = self._get_last_order_by()
         if n_files > 1 and path:
             os.makedirs(path)
         csv_files = []
@@ -204,14 +204,14 @@ class vDFIO:
                     SELECT 
                         /*+LABEL('vDataframe.to_csv')*/ 
                         {', '.join(columns)} 
-                    FROM {self.__genSQL__()}
+                    FROM {self._genSQL()}
                     {order_by} 
                     LIMIT {limit} 
                     OFFSET {current_nb_rows_written}""",
                 title="Reading the data.",
                 method="fetchall",
-                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self._VARS["sql_push_ext"],
+                symbol=self._VARS["symbol"],
             )
             for row in result:
                 tmp_row = []
@@ -296,7 +296,7 @@ class vDFIO:
         if isinstance(usecols, str):
             usecols = [usecols]
         relation_type = relation_type.lower()
-        usecols = self.format_colnames(usecols)
+        usecols = self._format_colnames(usecols)
         commit = (
             " ON COMMIT PRESERVE ROWS"
             if (relation_type in ("local", "temporary"))
@@ -306,7 +306,7 @@ class vDFIO:
             relation_type += " table"
         elif relation_type == "local":
             relation_type += " temporary table"
-        isflex = self._VERTICAPY_VARIABLES_["isflex"]
+        isflex = self._VARS["isflex"]
         if not (usecols):
             usecols = self.get_columns()
         if not (usecols) and not (isflex):
@@ -337,9 +337,9 @@ class vDFIO:
                 INSERT INTO {name}{insert_usecols_str} 
                     SELECT 
                         {select}{nb_split} 
-                    FROM {self.__genSQL__()}
+                    FROM {self._genSQL()}
                     {db_filter}
-                    {self.__get_last_order_by__()}"""
+                    {self._get_last_order_by()}"""
         else:
             query = f"""
                 CREATE 
@@ -349,23 +349,23 @@ class vDFIO:
                 SELECT 
                     /*+LABEL('vDataframe.to_db')*/ 
                     {select}{nb_split} 
-                FROM {self.__genSQL__()}
+                FROM {self._genSQL()}
                 {db_filter}
-                {self.__get_last_order_by__()}"""
+                {self._get_last_order_by()}"""
         _executeSQL(
             query=query,
             title=f"Creating a new {relation_type} to save the vDataFrame.",
         )
         if relation_type == "insert":
             _executeSQL(query="COMMIT;", title="Commit.")
-        self.__add_to_history__(
+        self._add_to_history(
             "[Save]: The vDataFrame was saved into a "
             f"{relation_type} named '{name}'."
         )
         if inplace:
             history, saving = (
-                self._VERTICAPY_VARIABLES_["history"],
-                self._VERTICAPY_VARIABLES_["saving"],
+                self._VARS["history"],
+                self._VARS["saving"],
             )
             catalog_vars = {}
             for column in usecols:
@@ -374,7 +374,7 @@ class vDFIO:
                 self.__init__("v_temp_schema." + name)
             else:
                 self.__init__(name)
-            self._VERTICAPY_VARIABLES_["history"] = history
+            self._VARS["history"] = history
             for column in usecols:
                 self[column].catalog = catalog_vars[column]
         return self
@@ -409,8 +409,8 @@ class vDFIO:
         query = f"""
             SELECT 
                 /*+LABEL('vDataframe.to_geopandas')*/ {columns} 
-            FROM {self.__genSQL__()}
-            {self.__get_last_order_by__()}"""
+            FROM {self._genSQL()}
+            {self._get_last_order_by()}"""
         data = _executeSQL(
             query, title="Getting the vDataFrame values.", method="fetchall"
         )
@@ -495,9 +495,9 @@ class vDFIO:
         total = self.shape()[0]
         current_nb_rows_written, file_id = 0, 0
         limit = int(total / n_files) + 1
-        order_by = self.__get_sort_syntax__(order_by)
+        order_by = self._get_sort_syntax(order_by)
         if not (order_by):
-            order_by = self.__get_last_order_by__()
+            order_by = self._get_last_order_by()
         if n_files > 1 and path:
             os.makedirs(path)
         if not (path):
@@ -509,14 +509,14 @@ class vDFIO:
                     SELECT 
                         /*+LABEL('vDataframe.to_json')*/ 
                         {', '.join(transformations)} 
-                    FROM {self.__genSQL__()}
+                    FROM {self._genSQL()}
                     {order_by} 
                     LIMIT {limit} 
                     OFFSET {current_nb_rows_written}""",
                 title="Reading the data.",
                 method="fetchall",
-                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self._VARS["sql_push_ext"],
+                symbol=self._VARS["symbol"],
             )
             for row in result:
                 tmp_row = []
@@ -563,12 +563,12 @@ class vDFIO:
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.to_list')*/ * 
-                FROM {self.__genSQL__()}
-                {self.__get_last_order_by__()}""",
+                FROM {self._genSQL()}
+                {self._get_last_order_by()}""",
             title="Getting the vDataFrame values.",
             method="fetchall",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self._VARS["sql_push_ext"],
+            symbol=self._VARS["symbol"],
         )
         final_result = []
         for elem in result:
@@ -610,11 +610,11 @@ class vDFIO:
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.to_pandas')*/ * 
-                FROM {self.__genSQL__()}{self.__get_last_order_by__()}""",
+                FROM {self._genSQL()}{self._get_last_order_by()}""",
             title="Getting the vDataFrame values.",
             method="fetchall",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self._VARS["sql_push_ext"],
+            symbol=self._VARS["symbol"],
         )
         column_names = [column[0] for column in current_cursor().description]
         df = pd.DataFrame(data)
@@ -696,9 +696,9 @@ class vDFIO:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the number of rows exported. For details, 
-        see utilities.tablesample.
+        see utilities.TableSample.
 
     See Also
     --------
@@ -714,7 +714,7 @@ class vDFIO:
             raise ParameterError("Parameter 'rowGroupSizeMB' must be greater than 0.")
         if fileSizeMB <= 0:
             raise ParameterError("Parameter 'fileSizeMB' must be greater than 0.")
-        by = self.format_colnames(by)
+        by = self._format_colnames(by)
         partition = ""
         if by:
             partition = f"PARTITION BY {', '.join(by)}"
@@ -727,11 +727,11 @@ class vDFIO:
                                   fileMode = '{fileMode}',
                                   dirMode = '{dirMode}',
                                   int96AsTimestamp = {str(int96AsTimestamp).lower()}) 
-                          OVER({partition}{self.__get_sort_syntax__(order_by)}) 
-                       AS SELECT * FROM {self.__genSQL__()};""",
+                          OVER({partition}{self._get_sort_syntax(order_by)}) 
+                       AS SELECT * FROM {self._genSQL()};""",
             title="Exporting data to Parquet format.",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self._VARS["sql_push_ext"],
+            symbol=self._VARS["symbol"],
         )
         return result
 
@@ -817,6 +817,6 @@ class vDFIO:
                                  overwrite = {overwrite}, 
                                  shape = '{shape}') 
                 OVER() 
-            FROM {self.__genSQL__()};"""
+            FROM {self._genSQL()};"""
         _executeSQL(query=query, title="Exporting the SHP.")
         return self

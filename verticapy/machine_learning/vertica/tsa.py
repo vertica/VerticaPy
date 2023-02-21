@@ -28,7 +28,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident, schema_relation
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import updated_dict
@@ -314,16 +314,16 @@ papprox_ma: int, optional
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
-            else input_relation.__genSQL__()
+            else input_relation._genSQL()
         )
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
+            self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
         self.y, self.ts, self.deploy_predict_ = quote_ident(y), quote_ident(ts), ""
-        self.coef_ = tablesample({"predictor": [], "coefficient": []})
+        self.coef_ = TableSample({"predictor": [], "coefficient": []})
         self.ma_avg_, self.ma_piq_ = None, None
         X, schema = [quote_ident(x) for x in X], schema_relation(self.name)[0]
         self.X, self.exogenous = [], X
@@ -584,7 +584,7 @@ papprox_ma: int, optional
                     elif j - i == 0:
                         piq_tmp -= thetaq[i]
                 piq = piq + [piq_tmp]
-            self.ma_piq_ = tablesample({"coefficient": piq})
+            self.ma_piq_ = TableSample({"coefficient": piq})
             epsilon = (
                 "[VerticaPy_y] - "
                 + str(self.ma_avg_)
@@ -722,7 +722,7 @@ papprox_ma: int, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vDataFrame(sql=self.input_relation)
+            vdf = vDataFrame(self.input_relation)
         delta_limit, limit = (
             limit,
             max(
@@ -959,7 +959,7 @@ papprox_ma: int, optional
             ts = self.ts
         if not (X):
             X = self.exogenous
-        y, ts = vdf.format_colnames(y, ts)
+        y, ts = vdf._format_colnames(y, ts)
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -983,7 +983,7 @@ papprox_ma: int, optional
             + [predictSQL]
             + ["VerticaPy_y_copy AS {}".format(y)]
         )
-        relation = vdf.__genSQL__()
+        relation = vdf._genSQL()
         for i in range(nlead):
             query = "SELECT /*+LABEL('learn.tsa.SARIMAX.predict')*/ ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
@@ -1037,7 +1037,7 @@ papprox_ma: int, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vDataFrame(sql=final_relation)
+        result = vDataFrame(final_relation)
         if nlead > 0:
             result[y].apply(
                 "CASE WHEN {} >= '{}' THEN NULL ELSE {} END".format(ts, first_t, "{}")
@@ -1224,7 +1224,7 @@ solver: str, optional
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
         min_max = (
-            vDataFrame(sql=self.input_relation)
+            vDataFrame(self.input_relation)
             .agg(func=["min", "max"], columns=self.X)
             .transpose()
         )
@@ -1249,7 +1249,7 @@ solver: str, optional
         importances = {"index": ["importance", "sign"]}
         for elem in coeff_importances:
             importances[elem] = [coeff_importances[elem], coeff_sign[elem]]
-        return tablesample(values=importances).transpose()
+        return TableSample(values=importances).transpose()
 
     def fit(
         self,
@@ -1284,10 +1284,10 @@ solver: str, optional
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
-            else input_relation.__genSQL__()
+            else input_relation._genSQL()
         )
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
+            self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
@@ -1453,7 +1453,7 @@ solver: str, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vDataFrame(sql=self.input_relation)
+            vdf = vDataFrame(self.input_relation)
         delta_limit, limit = (
             limit,
             max(max(limit, self.parameters["p"] + 1 + nlast), 200),
@@ -1687,7 +1687,7 @@ solver: str, optional
             ts = self.ts
         if not (X):
             X = self.X
-        X, ts = vdf.format_colnames(X, ts)
+        X, ts = vdf._format_colnames(X, ts)
         all_pred, names = [], []
         transform_relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts)
         for idx, elem in enumerate(X):
@@ -1699,7 +1699,7 @@ solver: str, optional
             all_pred += ["{} AS {}".format(self.deploySQL()[idx], name_tmp)]
             transform_relation = transform_relation.replace("[X{}]".format(idx), elem)
         columns = vdf.get_columns() + all_pred
-        relation = vdf.__genSQL__()
+        relation = vdf._genSQL()
         for i in range(nlead):
             query = "SELECT /*+LABEL('learn.tsa.VAR.predict')*/ ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
@@ -1750,7 +1750,7 @@ solver: str, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vDataFrame(sql=final_relation)
+        result = vDataFrame(final_relation)
         if nlead > 0:
             for elem in X:
                 result[elem].apply(
@@ -1800,7 +1800,7 @@ solver: str, optional
             method, adj = "r2", True
         elif method == "rmse":
             method, root = "mse", True
-        result = tablesample({"index": [index]})
+        result = TableSample({"index": [index]})
         fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
 
         # Table Formatting

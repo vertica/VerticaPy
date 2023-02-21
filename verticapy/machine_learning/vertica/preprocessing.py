@@ -211,7 +211,7 @@ max_text_size: int, optional
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.get_columns()
-            self.input_relation = input_relation.__genSQL__()
+            self.input_relation = input_relation._genSQL()
         else:
             if not (X):
                 X = vDataFrame(input_relation).get_columns()
@@ -281,7 +281,7 @@ max_text_size: int, optional
 	vDataFrame
  		object result of the model transformation.
 		"""
-        return vDataFrame(sql=self.deploySQL())
+        return vDataFrame(self.deploySQL())
 
 
 class Normalizer(Preprocessing):

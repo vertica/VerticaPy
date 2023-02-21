@@ -58,7 +58,7 @@ Returns
 vDataFrame
     result of the transformation.
     """
-    x, y = vdf.format_colnames(x, y)
+    x, y = vdf._format_colnames(x, y)
 
     result = vdf.copy()
 
@@ -106,7 +106,7 @@ Returns
 vDataFrame
     object containing the result of the intersection.
     """
-    x, y, gid, g = vdf.format_colnames(x, y, gid, g)
+    x, y, gid, g = vdf._format_colnames(x, y, gid, g)
 
     if g:
         params = f"{gid}, {g}"
@@ -124,9 +124,9 @@ vDataFrame
             USING PARAMETERS 
                 index='{index}') 
             OVER (PARTITION BEST) AS (point_id, polygon_gid) 
-        FROM {vdf.__genSQL__()}"""
+        FROM {vdf._genSQL()}"""
 
-    return vDataFrame(sql=query)
+    return vDataFrame(query)
 
 
 @save_verticapy_logs

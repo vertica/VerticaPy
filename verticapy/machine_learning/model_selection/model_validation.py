@@ -28,7 +28,7 @@ from verticapy._utils._sql._execute import _executeSQL
 from verticapy._version import check_minimum_version
 from verticapy.errors import ParameterError
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning._utils import compute_area
@@ -55,7 +55,7 @@ def _compute_function_metrics(
     if isinstance(input_relation, str):
         table = input_relation
     else:
-        table = input_relation.__genSQL__()
+        table = input_relation._genSQL()
     if fun_sql_name == "roc":
         X = ["decision_boundary", "false_positive_rate", "true_positive_rate"]
     elif fun_sql_name == "prc":
@@ -165,14 +165,14 @@ training_score: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
  	An object containing the result. For more information, see
- 	utilities.tablesample.
+ 	utilities.TableSample.
 	"""
     if isinstance(X, str):
         X = [X]
     if isinstance(input_relation, str):
-        input_relation = vDataFrame(sql=input_relation)
+        input_relation = vDataFrame(input_relation)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
     if estimator.MODEL_SUBTYPE == "REGRESSOR":
@@ -352,11 +352,11 @@ tablesample
         statistics.mean([float(elem) for elem in total_time]),
         statistics.stdev([float(elem) for elem in total_time]),
     ]
-    result = tablesample(values=result).transpose()
+    result = TableSample(values=result).transpose()
     if show_time:
         result.values["time"] = total_time
     if training_score:
-        result_train = tablesample(values=result_train).transpose()
+        result_train = TableSample(values=result_train).transpose()
         if show_time:
             result_train.values["time"] = total_time
     if training_score:
@@ -445,9 +445,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
@@ -456,7 +456,7 @@ tablesample
     elif metric == "auto":
         metric = "logloss"
     if isinstance(input_relation, str):
-        input_relation = vDataFrame(sql=input_relation)
+        input_relation = vDataFrame(input_relation)
     lc_result_final = []
     sizes = sorted(set(sizes))
     if OPTIONS["tqdm"]:
@@ -493,7 +493,7 @@ tablesample
         lc_result_final.sort(key=lambda tup: tup[0])
     else:
         lc_result_final.sort(key=lambda tup: tup[5])
-    result = tablesample(
+    result = TableSample(
         {
             "n": [elem[0] for elem in lc_result_final],
             metric: [elem[1] for elem in lc_result_final],
@@ -615,9 +615,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     decision_boundary, positive_prediction_ratio, lift = _compute_function_metrics(
         y_true=y_true,
@@ -664,7 +664,7 @@ tablesample
     ax.legend(handles=[color1, color2], loc="center left", bbox_to_anchor=[1, 0.5])
     ax.set_xlim(0, 1)
     ax.set_ylim(0)
-    return tablesample(
+    return TableSample(
         values={
             "decision_boundary": decision_boundary,
             "positive_prediction_ratio": positive_prediction_ratio,
@@ -714,9 +714,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     threshold, recall, precision = _compute_function_metrics(
         y_true=y_true,
@@ -757,7 +757,7 @@ tablesample
     )
     ax.set_axisbelow(True)
     ax.grid()
-    return tablesample(
+    return TableSample(
         values={"threshold": threshold, "recall": recall, "precision": precision}
     )
 
@@ -811,9 +811,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     threshold, false_positive, true_positive = _compute_function_metrics(
         y_true=y_true,
@@ -888,7 +888,7 @@ tablesample
     ax.set_xlim(0, 1)
     ax.set_axisbelow(True)
     ax.grid()
-    return tablesample(
+    return TableSample(
         values={
             "threshold": threshold,
             "false_positive": false_positive,

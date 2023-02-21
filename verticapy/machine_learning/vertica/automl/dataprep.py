@@ -177,7 +177,7 @@ final_relation_: vDataFrame
             "Parameter 'by' must be empty if 'ts' is not defined."
         )
         if isinstance(input_relation, str):
-            vdf = vDataFrame(sql=input_relation)
+            vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation.copy()
         if not (X):
@@ -197,7 +197,7 @@ final_relation_: vDataFrame
                 ts = ts_tmp
             if nb_date == 1 and nb_others == 1:
                 by = [cat_tmp]
-        X, ts, by = vdf.format_colnames(X, ts, by)
+        X, ts, by = vdf._format_colnames(X, ts, by)
         X_diff = vdf.get_columns(exclude_columns=X)
         columns_to_drop = []
         n = vdf.shape()[0]
@@ -306,7 +306,7 @@ final_relation_: vDataFrame
                         SELECT 
                             /*+LABEL('learn.delphi.AutoDataPrep.fit')*/
                             verticapy_time_delta 
-                        FROM {vdf_tmp.__genSQL__()} 
+                        FROM {vdf_tmp._genSQL()} 
                         ORDER BY cnt DESC 
                         LIMIT 1""",
                     method="fetchfirstelem",
@@ -337,7 +337,7 @@ final_relation_: vDataFrame
             self.X_out = vdf.get_columns(
                 exclude_columns=by + [ts] + X_diff if ts else by + X_diff
             )
-        self.sql_ = vdf.__genSQL__()
+        self.sql_ = vdf._genSQL()
         if self.parameters["save"]:
             vdf.to_db(name=self.name, relation_type="table", inplace=True)
         self.final_relation_ = vdf

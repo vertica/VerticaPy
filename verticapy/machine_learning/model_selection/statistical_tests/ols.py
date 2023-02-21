@@ -23,7 +23,7 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import OPTIONS
 from verticapy._utils._gen import gen_tmp_name
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.linear_model import LinearRegression
@@ -45,11 +45,11 @@ X: list
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    eps, X = vdf.format_colnames(eps, X)
+    eps, X = vdf._format_colnames(eps, X)
     name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
@@ -67,7 +67,7 @@ tablesample
     lm_pvalue = chi2.sf(LM, k)
     F = (n - k - 1) * R2 / (1 - R2) / k
     f_pvalue = f.sf(F, k, n - k - 1)
-    result = tablesample(
+    result = TableSample(
         {
             "index": [
                 "Lagrange Multiplier Statistic",
@@ -97,11 +97,11 @@ X: list
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    eps, X = vdf.format_colnames(eps, X)
+    eps, X = vdf._format_colnames(eps, X)
     name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     vdf_copy = vdf.copy()
@@ -121,7 +121,7 @@ tablesample
     lm_pvalue = chi2.sf(LM, k)
     F = (n - k - 1) * R2 / (1 - R2) / k
     f_pvalue = f.sf(F, k, n - k - 1)
-    result = tablesample(
+    result = TableSample(
         {
             "index": [
                 "Lagrange Multiplier Statistic",
@@ -166,9 +166,9 @@ alternative: str, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
 
     def model_fit(input_relation, X, y, model):
@@ -180,7 +180,7 @@ tablesample
             model.drop()
         return mse
 
-    y, X = vdf.format_colnames(y, X)
+    y, X = vdf._format_colnames(y, X)
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
@@ -203,7 +203,7 @@ tablesample
         fpval_sm = f.cdf(F, m - k, n - k)
         fpval_la = f.sf(F, m - k, n - k)
         f_pvalue = 2 * min(fpval_sm, fpval_la)
-    result = tablesample({"index": ["F Value", "f_p_value"], "value": [F, f_pvalue]})
+    result = TableSample({"index": ["F Value", "f_p_value"], "value": [F, f_pvalue]})
     return result
 
 
@@ -223,11 +223,11 @@ X: str
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    eps, X = vdf.format_colnames(eps, X)
+    eps, X = vdf._format_colnames(eps, X)
     X_0 = ["1"] + X
     variables = []
     variables_names = []
@@ -237,9 +237,9 @@ tablesample
                 variables += ["{} * {} AS var_{}_{}".format(X_0[i], X_0[j], i, j)]
                 variables_names += ["var_{}_{}".format(i, j)]
     query = "SELECT {}, POWER({}, 2) AS v_eps2 FROM {}".format(
-        ", ".join(variables), eps, vdf.__genSQL__()
+        ", ".join(variables), eps, vdf._genSQL()
     )
-    vdf_white = vDataFrame(sql=query)
+    vdf_white = vDataFrame(query)
     name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
@@ -260,7 +260,7 @@ tablesample
     lm_pvalue = chi2.sf(LM, k)
     F = (n - k - 1) * R2 / (1 - R2) / k
     f_pvalue = f.sf(F, k, n - k - 1)
-    result = tablesample(
+    result = TableSample(
         {
             "index": [
                 "Lagrange Multiplier Statistic",
@@ -287,7 +287,7 @@ vdf: vDataFrame
 X: list
     Input Variables.
 X_idx: int
-    Index of the exogenous variable in X. If left to None, a tablesample will
+    Index of the exogenous variable in X. If left to None, a TableSample will
     be returned with all the variables VIF.
 
 Returns
@@ -295,7 +295,7 @@ Returns
 float
     VIF.
     """
-    X, X_idx = vdf.format_colnames(X, X_idx)
+    X, X_idx = vdf._format_colnames(X, X_idx)
 
     if isinstance(X_idx, str):
         for i in range(len(X)):
@@ -327,7 +327,7 @@ float
         VIF = []
         for i in range(len(X)):
             VIF += [variance_inflation_factor(vdf, X, i)]
-        return tablesample({"X_idx": X, "VIF": VIF})
+        return TableSample({"X_idx": X, "VIF": VIF})
     else:
         raise ParameterError(
             f"Wrong type for Parameter X_idx.\nExpected integer, found {type(X_idx)}."

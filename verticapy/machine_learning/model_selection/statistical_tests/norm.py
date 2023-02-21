@@ -20,7 +20,7 @@ from scipy.stats import chi2, norm
 
 from verticapy._utils._collect import save_verticapy_logs
 
-from verticapy.core.tablesample.base import tablesample
+from verticapy.core.TableSample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 
@@ -40,17 +40,17 @@ alpha: int / float, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    column = vdf.format_colnames(column)
+    column = vdf._format_colnames(column)
     jb, kurtosis, skewness, n = (
         vdf[column].agg(["jb", "kurtosis", "skewness", "count"]).values[column]
     )
     pvalue = chi2.sf(jb, 2)
     result = False if pvalue < alpha else True
-    result = tablesample(
+    result = TableSample(
         {
             "index": [
                 "Jarque Bera Test Statistic",
@@ -80,11 +80,11 @@ column: str
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    column = vdf.format_colnames(column)
+    column = vdf._format_colnames(column)
     g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
     mu1 = -6 / (n + 1)
     mu2 = 24 * n * (n - 2) * (n - 3) / (((n + 1) ** 2) * (n + 3) * (n + 5))
@@ -99,7 +99,7 @@ tablesample
     B = B ** (1 / 3) if B > 0 else (-B) ** (1 / 3)
     Z2 = math.sqrt(9 * A / 2) * (1 - 2 / (9 * A) - B)
     pvalue = 2 * norm.sf(abs(Z2))
-    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z2, pvalue]})
+    result = TableSample({"index": ["Statistic", "p_value"], "value": [Z2, pvalue]})
     return result
 
 
@@ -117,9 +117,9 @@ column: str
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     Z1, Z2 = (
         skewtest(vdf, column)["value"][0],
@@ -127,7 +127,7 @@ tablesample
     )
     Z = Z1 ** 2 + Z2 ** 2
     pvalue = chi2.sf(Z, 2)
-    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z, pvalue]})
+    result = TableSample({"index": ["Statistic", "p_value"], "value": [Z, pvalue]})
     return result
 
 
@@ -145,11 +145,11 @@ column: str
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    column = vdf.format_colnames(column)
+    column = vdf._format_colnames(column)
     g1, n = vdf[column].agg(["skewness", "count"]).values[column]
     mu1 = 0
     mu2 = 6 * (n - 2) / ((n + 1) * (n + 3))
@@ -162,5 +162,5 @@ tablesample
     alpha2 = 2 / (W2 - 1)
     Z1 = delta * math.asinh(g1 / math.sqrt(alpha2 * mu2))
     pvalue = 2 * norm.sf(abs(Z1))
-    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z1, pvalue]})
+    result = TableSample({"index": ["Statistic", "p_value"], "value": [Z1, pvalue]})
     return result

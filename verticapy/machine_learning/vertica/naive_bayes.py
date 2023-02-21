@@ -75,7 +75,7 @@ nbtype: str, optional
     def get_var_info(self):
         # Returns a list of dictionary for each of the NB variables.
         # It is used to translate NB to Python
-        vdf = vDataFrame(sql=self.input_relation)
+        vdf = vDataFrame(self.input_relation)
         var_info = {}
         gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
         for idx, elem in enumerate(self.X):

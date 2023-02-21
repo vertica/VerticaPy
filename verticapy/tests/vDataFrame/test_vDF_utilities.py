@@ -380,21 +380,21 @@ class TestvDFUtilities:
 
     def test_vDF_load(self, titanic_vd):
         result = titanic_vd.copy()
-        result._VERTICAPY_VARIABLES_["saving"] = []
+        result._VARS["saving"] = []
         result.save()
-        assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
+        assert len(result._VARS["saving"]) == 1
         result.filter("age < 40")
         result["embarked"].drop()
         assert result.shape() == (760, 13)
         result = result.load()
-        assert len(result._VERTICAPY_VARIABLES_["saving"]) == 0
+        assert len(result._VARS["saving"]) == 0
         assert result.shape() == (1234, 14)
 
     def test_vDF_save(self, titanic_vd):
         result = titanic_vd.copy()
-        result._VERTICAPY_VARIABLES_["saving"] = []
+        result._VARS["saving"] = []
         result.save()
-        assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
+        assert len(result._VARS["saving"]) == 1
 
     def test_vDF_catcol(self, titanic_vd):
         result = [
@@ -601,9 +601,9 @@ class TestvDFUtilities:
                     fare 
                  FROM titanic 
                  WHERE age IS NOT NULL;;"""
-        vdf = vDataFrame(sql=sql)
+        vdf = vDataFrame(sql)
         assert vdf.shape() == (997, 2)
-        vdf = vDataFrame(sql=sql, usecols=["age"])
+        vdf = vDataFrame(sql, usecols=["age"])
         assert vdf.shape() == (997, 1)
 
     def test_vDF_store_usage(self, titanic_vd):

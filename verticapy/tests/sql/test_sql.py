@@ -27,7 +27,7 @@ from verticapy.connect import set_external_connection
 from verticapy import (
     drop,
     set_option,
-    tablesample,
+    TableSample,
 )
 from verticapy.sdk.vertica.dblink import get_dblink_fun
 from verticapy.datasets import load_titanic
@@ -51,7 +51,7 @@ class TestSQL:
         result = sql('  -c "SELECT * FROM titanic;"', "")
         assert result.shape() == (1234, 14)
         assert (
-            result._VERTICAPY_VARIABLES_["main_relation"]
+            result._VARS["main_relation"]
             == "(SELECT * FROM titanic) VERTICAPY_SUBTABLE"
         )
 
@@ -66,14 +66,14 @@ class TestSQL:
         # SQL line Test -nrows -ncols
         result = sql('  -c "SELECT * FROM titanic;"   -ncols 4    -nrows 70', "")
         assert result.shape() == (1234, 14)
-        assert result._VERTICAPY_VARIABLES_["max_columns"] == 4
-        assert result._VERTICAPY_VARIABLES_["max_rows"] == 70
+        assert result._VARS["max_columns"] == 4
+        assert result._VARS["max_rows"] == 70
 
         # SQL Cell Test -nrows -ncols
         result = sql("  -ncols 4    -nrows 70", "SELECT * FROM titanic;")
         assert result.shape() == (1234, 14)
-        assert result._VERTICAPY_VARIABLES_["max_columns"] == 4
-        assert result._VERTICAPY_VARIABLES_["max_rows"] == 70
+        assert result._VARS["max_columns"] == 4
+        assert result._VARS["max_rows"] == 70
 
         # SQL cell Test
         result = sql(
@@ -213,7 +213,7 @@ class TestSQL:
         # table = "titanic"
         # result = sql("", "SELECT * FROM :titanic;")
         # assert result.shape() == (1234, 14)
-        # tb = tablesample({"x": [4, 5, 6], "y": [1, 2, 3]})
+        # tb = TableSample({"x": [4, 5, 6], "y": [1, 2, 3]})
         # result = sql("", "SELECT AVG(x) FROM :tb;")
         # assert result == 5
 

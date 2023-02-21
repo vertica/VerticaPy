@@ -199,7 +199,7 @@ p: int, optional
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
-            input_relation = input_relation.__genSQL__()
+            input_relation = input_relation._genSQL()
         else:
             if not (X):
                 X = vDataFrame(input_relation).numcol()

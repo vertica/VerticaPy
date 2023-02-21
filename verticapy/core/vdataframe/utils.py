@@ -23,7 +23,7 @@ from verticapy.errors import MissingColumn, ParameterError
 
 
 class vDFUTILS:
-    def format_colnames(
+    def _format_colnames(
         self,
         *argv,
         columns: Union[str, list, dict] = [],
@@ -38,7 +38,7 @@ class vDFUTILS:
     *argv: str / list / dict, optional
         List of columns' names to format. It allows to use as input multiple
         objects and to get all of them formatted.
-        Example: self.format_colnames(x0, x1, x2) will return x0_f, x1_f, 
+        Example: self._format_colnames(x0, x1, x2) will return x0_f, x1_f, 
         x2_f where xi_f represents xi correctly formatted.
     columns: str / list / dict, optional
         List of columns' names to format.
@@ -59,7 +59,7 @@ class vDFUTILS:
         if argv:
             result = []
             for arg in argv:
-                result += [self.format_colnames(columns=arg, raise_error=raise_error)]
+                result += [self._format_colnames(columns=arg, raise_error=raise_error)]
             if len(argv) == 1:
                 result = result[0]
         else:
@@ -102,12 +102,12 @@ class vDFUTILS:
             elif isinstance(columns, dict):
                 result = {}
                 for col in columns:
-                    key = self.format_colnames(col, raise_error=raise_error)
+                    key = self._format_colnames(col, raise_error=raise_error)
                     result[key] = columns[col]
             else:
                 result = []
                 for col in columns:
-                    result += [self.format_colnames(col, raise_error=raise_error)]
+                    result += [self._format_colnames(col, raise_error=raise_error)]
         if raise_error:
             if isinstance(expected_nb_of_cols, int):
                 expected_nb_of_cols = [expected_nb_of_cols]

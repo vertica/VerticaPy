@@ -31,7 +31,7 @@ def get_tree_list_of_arrays(
     tree, X: list, model_type: str, return_probability: bool = False
 ):
     """
-    Takes as input a tree which is represented by a tablesample
+    Takes as input a tree which is represented by a TableSample
     It returns a list of arrays. Each index of the arrays represents
     a node value.
     """

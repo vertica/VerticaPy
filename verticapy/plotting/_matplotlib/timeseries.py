@@ -121,7 +121,7 @@ def multi_ts_plot(
         columns = vdf.numcol()
     for column in columns:
         if not (vdf[column].isnum()):
-            if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+            if vdf._VARS["display"]["print_info"]:
                 warning_message = (
                     f"The Virtual Column {column} is "
                     "not numerical.\nIt will be ignored."
@@ -143,7 +143,7 @@ def multi_ts_plot(
                 /*+LABEL('plotting._matplotlib.multi_ts_plot')*/ 
                 {order_by}, 
                 {", ".join(columns)} 
-            FROM {vdf.__genSQL__()} 
+            FROM {vdf._genSQL()} 
             WHERE {order_by} IS NOT NULL
             {condition}
             ORDER BY {order_by}""",
@@ -308,7 +308,7 @@ def range_curve_vdf(
             APPROXIMATE_PERCENTILE({vdf.alias} USING PARAMETERS percentile = {q[0]}),
             APPROXIMATE_MEDIAN({vdf.alias}),
             APPROXIMATE_PERCENTILE({vdf.alias} USING PARAMETERS percentile = {q[1]})
-        FROM {vdf.parent.__genSQL__()} 
+        FROM {vdf.parent._genSQL()} 
         WHERE {order_by} IS NOT NULL 
           AND {vdf.alias} IS NOT NULL
           {order_by_start_str}
@@ -364,7 +364,7 @@ def ts_plot(
             /*+LABEL('plotting._matplotlib.ts_plot')*/ 
             {order_by},
             {vdf.alias}
-        FROM {vdf.parent.__genSQL__()}
+        FROM {vdf.parent._genSQL()}
         WHERE {order_by} IS NOT NULL 
           AND {vdf.alias} IS NOT NULL
           {order_by_start_str}

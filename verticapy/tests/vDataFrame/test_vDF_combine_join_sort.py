@@ -20,7 +20,7 @@ import pytest
 
 # VerticaPy
 from verticapy.errors import MissingColumn
-from verticapy import drop, set_option, tablesample
+from verticapy import drop, set_option, TableSample
 from verticapy.datasets import load_iris, load_market, load_amazon, load_titanic
 
 set_option("print_info", False)
@@ -249,7 +249,7 @@ class TestvDFCombineJoinSort:
         assert table_join.shape() == (194, 2)
         drop("v_temp_schema.not_dried")
         # testing different operators
-        d1 = tablesample(
+        d1 = TableSample(
             {
                 "name1": ["Badr", "Umar", "Arash"],
                 "email1": ["b.ouali@me.fr", "umar@me.com", "a.farad@me.com"],
@@ -257,7 +257,7 @@ class TestvDFCombineJoinSort:
                 "fav_car1": ["BM", "Audi", "Merc"],
             }
         ).to_vdf()
-        d2 = tablesample(
+        d2 = TableSample(
             {
                 "name2": ["Badr", "Umar", "Arash"],
                 "email2": ["badr.ouali@me.fr", "umar.f@me.com", "arash.farad@me.com",],
