@@ -129,7 +129,10 @@ def quote_ident(column: str):
     if len(tmp_column) >= 2 and (tmp_column[0] == tmp_column[-1] == '"'):
         tmp_column = tmp_column[1:-1]
     temp_column_str = str(tmp_column).replace('"', '""')
-    return f'"{temp_column_str}"'
+    temp_column_str = f'"{temp_column_str}"'
+    if temp_column_str == '""':
+        return ""
+    return temp_column_str
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):

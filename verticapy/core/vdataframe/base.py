@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
+import copy, warnings
 from typing import Literal, Union
 import numpy as np
 
@@ -241,6 +241,7 @@ vDataColumns : vDataColumn
         assert not (sql) or not (schema), ParameterError(
             "schema must be empty when the parameter 'sql' is not empty."
         )
+        schema = quote_ident(schema)
         if isinstance(usecols, str):
             usecols = [usecols]
         if isinstance(columns, str):
@@ -344,7 +345,7 @@ vDataColumns : vDataColumn
 
                 if "select " not in sql_tmp.lower():
 
-                    self.__init__(sql_tmp)
+                    return self.__init__(sql_tmp)
 
                 else:
 
@@ -362,78 +363,69 @@ vDataColumns : vDataColumn
                         sql_tmp = (
                             f"SELECT {usecols_tmp} FROM ({sql_tmp}) VERTICAPY_SUBTABLE"
                         )
-
+                    main_relation = f"({sql_tmp}) VERTICAPY_SUBTABLE"
                     dtypes = get_data_types(sql_tmp)
-                    self._VERTICAPY_VARIABLES_[
-                        "main_relation"
-                    ] = f"({sql_tmp}) VERTICAPY_SUBTABLE"
 
             else:
 
                 if not (schema):
                     schema, input_relation = schema_relation(input_relation)
-                self._VERTICAPY_VARIABLES_["schema"] = schema.replace('"', "")
-                self._VERTICAPY_VARIABLES_["input_relation"] = input_relation.replace(
-                    '"', ""
+                schema = quote_ident(schema)
+                input_relation = quote_ident(input_relation)
+                main_relation = format_schema_table(schema, input_relation)
+                isflex = isflextable(
+                    table_name=input_relation[1:-1], schema=schema[1:-1]
                 )
-                table_name = self._VERTICAPY_VARIABLES_["input_relation"].replace(
-                    "'", "''"
-                )
-                schema = self._VERTICAPY_VARIABLES_["schema"].replace("'", "''")
-                isflex = isflextable(table_name=table_name, schema=schema)
-                self._VERTICAPY_VARIABLES_["isflex"] = isflex
                 if isflex:
                     dtypes = compute_flextable_keys(
-                        flex_name=f'"{schema}".{table_name}', usecols=usecols
+                        flex_name=f"{schema}.{input_relation[1:-1]}", usecols=usecols
                     )
+                    if not (dtypes):
+                        raise ValueError(
+                            f"The flextable {schema}.{input_relation[1:-1]} is empty."
+                        )
                 else:
                     dtypes = get_data_types(
-                        table_name=table_name, schema=schema, usecols=usecols
+                        table_name=input_relation[1:-1],
+                        schema=schema[1:-1],
+                        usecols=usecols,
                     )
-                self._VERTICAPY_VARIABLES_["main_relation"] = format_schema_table(
-                    self._VERTICAPY_VARIABLES_["schema"],
-                    self._VERTICAPY_VARIABLES_["input_relation"],
-                )
 
             columns = [quote_ident(dt[0]) for dt in dtypes]
             if len(columns) == 0:
-                raise MissingRelation(
-                    f"No table or views '{self._VERTICAPY_VARIABLES_['input_relation']}' found."
-                )
+                raise MissingRelation(f"No table or views {input_relation} found.")
             if not (usecols):
                 self._VERTICAPY_VARIABLES_["allcols_ind"] = len(columns)
-            self._VERTICAPY_VARIABLES_["columns"] = columns
+            self._VERTICAPY_VARIABLES_ = {
+                **self._VERTICAPY_VARIABLES_,
+                "columns": columns,
+                "input_relation": input_relation,
+                "isflex": isflex,
+                "main_relation": main_relation,
+                "schema": schema,
+            }
 
             # Creating the vDataColumns
             for column, ctype in dtypes:
-                if '"' in column:
-                    column_str = column.replace('"', "_")
-                    warning_message = (
-                        f'A double quote " was found in the column {column}, its '
-                        f"alias was changed using underscores '_' to {column_str}"
-                    )
-                    warnings.warn(warning_message, Warning)
-                column_name = '"' + column.replace('"', "_") + '"'
+                column_ident = quote_ident(column)
                 category = to_category(ctype)
-                if (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
-                    isflex
-                    or isvmap(
+                long_var = ctype.lower()[0:12] in ("long varbina", "long varchar")
+                if long_var:
+                    if isflex or isvmap(
                         expr=self._VERTICAPY_VARIABLES_["main_relation"], column=column,
-                    )
-                ):
-                    category = "vmap"
-                    ctype = (
-                        "VMAP(" + "(".join(ctype.split("(")[1:])
-                        if "(" in ctype
-                        else "VMAP"
-                    )
+                    ):
+                        category = "vmap"
+                        if "(" in ctype:
+                            ctype = "VMAP(" + "(".join(ctype.split("(")[1:])
+                        else:
+                            ctype = "VMAP"
                 new_vDataColumn = vDataColumn(
-                    column_name,
+                    column_ident,
                     parent=self,
                     transformations=[(quote_ident(column), ctype, category,)],
                 )
-                setattr(self, column_name, new_vDataColumn)
-                setattr(self, column_name[1:-1], new_vDataColumn)
+                setattr(self, column_ident, new_vDataColumn)
+                setattr(self, column_ident[1:-1], new_vDataColumn)
                 new_vDataColumn.init = False
 
 
@@ -497,11 +489,9 @@ Attributes
     def __init__(
         self, alias: str, transformations: list = [], parent=None, catalog: dict = {},
     ):
-        self.parent, self.alias, self.transformations = (
-            parent,
-            alias,
-            [elem for elem in transformations],
-        )
+        self.parent = parent
+        self.alias = alias
+        self.transformations = copy.deepcopy(transformations)
         self.catalog = {
             "cov": {},
             "pearson": {},
@@ -520,8 +510,8 @@ Attributes
             "regr_sxy": {},
             "regr_syy": {},
         }
-        for elem in catalog:
-            self.catalog[elem] = catalog[elem]
+        for key in catalog:
+            self.catalog[key] = catalog[key]
         self.init_transf = self.transformations[0][0]
         if self.init_transf == "___VERTICAPY_UNDEFINED___":
             self.init_transf = self.alias
