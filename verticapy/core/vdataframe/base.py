@@ -208,7 +208,7 @@ vDataColumns : vDataColumn
         symbol: Literal[tuple(SPECIAL_SYMBOLS)] = "$",
         sql_push_ext: bool = True,
         empty: bool = False,
-    ):
+    ) -> None:
         # Main Attributes
         self._VERTICAPY_VARIABLES_ = {
             "allcols_ind": -1,
@@ -310,6 +310,7 @@ vDataColumns : vDataColumn
                 tb = input_relation
 
             if usecols:
+
                 tb_final = {}
                 for col in usecols:
                     tb_final[col] = tb[col]
@@ -332,140 +333,116 @@ vDataColumns : vDataColumn
             input_relation = vdf._VERTICAPY_VARIABLES_["input_relation"]
             self.__init__(input_relation=input_relation, schema=schema)
 
-        elif sql:
-
-            # Cleaning the Query
-            sql_tmp = clean_query(sql)
-
-            if "select " not in sql_tmp.lower():
-
-                self.__init__(sql_tmp)
-
-            else:
-
-                if (
-                    sql_tmp[0].replace(" ", "") == "("
-                    and sql_tmp[-1].replace(" ", "") != ")"
-                ):
-                    sql_tmp = ")".join("(".join(sql_tmp.split("(")[1:]).split(")")[:-1])
-
-                # Filtering some columns
-                if usecols:
-                    usecols_tmp = ", ".join([quote_ident(col) for col in usecols])
-                    sql_tmp = (
-                        f"SELECT {usecols_tmp} FROM ({sql_tmp}) VERTICAPY_SUBTABLE"
-                    )
-
-                dtypes = get_data_types(sql_tmp)
-                self._VERTICAPY_VARIABLES_["columns"] = [
-                    quote_ident(dt[0]) for dt in dtypes
-                ]
-                self._VERTICAPY_VARIABLES_[
-                    "main_relation"
-                ] = f"({sql_tmp}) VERTICAPY_SUBTABLE"
-
-                # Creating the vDataColumns
-                for column, ctype in dtypes:
-                    if '"' in column:
-                        column_str = column.replace('"', "_")
-                        warning_message = (
-                            f'A double quote " was found in the column {column}, its '
-                            f"alias was changed using underscores '_' to {column_str}"
-                        )
-                        warnings.warn(warning_message, Warning)
-                    column_name = '"' + column.replace('"', "_") + '"'
-                    category = to_category(ctype)
-                    if (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
-                        isvmap(expr=relation, column=column,)
-                    ):
-                        category = "vmap"
-                        ctype = (
-                            "VMAP(" + "(".join(ctype.split("(")[1:])
-                            if "(" in ctype
-                            else "VMAP"
-                        )
-                    new_vDataColumn = vDataColumn(
-                        column_name,
-                        parent=self,
-                        transformations=[(quote_ident(column), ctype, category,)],
-                    )
-                    setattr(self, column_name, new_vDataColumn)
-                    setattr(self, column_name[1:-1], new_vDataColumn)
-                    new_vDataColumn.init = False
-
         elif not (empty):
 
-            if not (schema):
-                schema, input_relation = schema_relation(input_relation)
-            self._VERTICAPY_VARIABLES_["schema"] = schema.replace('"', "")
-            self._VERTICAPY_VARIABLES_["input_relation"] = input_relation.replace(
-                '"', ""
-            )
-            table_name = self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''")
-            schema = self._VERTICAPY_VARIABLES_["schema"].replace("'", "''")
-            isflex = isflextable(table_name=table_name, schema=schema)
-            self._VERTICAPY_VARIABLES_["isflex"] = isflex
-            if isflex:
-                columns_dtype = compute_flextable_keys(
-                    flex_name=f'"{schema}".{table_name}', usecols=usecols
-                )
+            if sql:
+
+                # Cleaning the Query
+                sql_tmp = clean_query(sql)
+
+                isflex = False
+
+                if "select " not in sql_tmp.lower():
+
+                    self.__init__(sql_tmp)
+
+                else:
+
+                    if (
+                        sql_tmp[0].replace(" ", "") == "("
+                        and sql_tmp[-1].replace(" ", "") != ")"
+                    ):
+                        sql_tmp = ")".join(
+                            "(".join(sql_tmp.split("(")[1:]).split(")")[:-1]
+                        )
+
+                    # Filtering some columns
+                    if usecols:
+                        usecols_tmp = ", ".join([quote_ident(col) for col in usecols])
+                        sql_tmp = (
+                            f"SELECT {usecols_tmp} FROM ({sql_tmp}) VERTICAPY_SUBTABLE"
+                        )
+
+                    dtypes = get_data_types(sql_tmp)
+                    self._VERTICAPY_VARIABLES_[
+                        "main_relation"
+                    ] = f"({sql_tmp}) VERTICAPY_SUBTABLE"
+
             else:
-                columns_dtype = get_data_types(
-                    table_name=table_name, schema=schema, usecols=usecols
+
+                if not (schema):
+                    schema, input_relation = schema_relation(input_relation)
+                self._VERTICAPY_VARIABLES_["schema"] = schema.replace('"', "")
+                self._VERTICAPY_VARIABLES_["input_relation"] = input_relation.replace(
+                    '"', ""
                 )
-            columns_dtype = [(str(dt[0]), str(dt[1])) for dt in columns_dtype]
-            columns = ['"' + dt[0].replace('"', "_") + '"' for dt in columns_dtype]
+                table_name = self._VERTICAPY_VARIABLES_["input_relation"].replace(
+                    "'", "''"
+                )
+                schema = self._VERTICAPY_VARIABLES_["schema"].replace("'", "''")
+                isflex = isflextable(table_name=table_name, schema=schema)
+                self._VERTICAPY_VARIABLES_["isflex"] = isflex
+                if isflex:
+                    dtypes = compute_flextable_keys(
+                        flex_name=f'"{schema}".{table_name}', usecols=usecols
+                    )
+                else:
+                    dtypes = get_data_types(
+                        table_name=table_name, schema=schema, usecols=usecols
+                    )
+                self._VERTICAPY_VARIABLES_["main_relation"] = format_schema_table(
+                    self._VERTICAPY_VARIABLES_["schema"],
+                    self._VERTICAPY_VARIABLES_["input_relation"],
+                )
+
+            columns = [quote_ident(dt[0]) for dt in dtypes]
+            if len(columns) == 0:
+                raise MissingRelation(
+                    f"No table or views '{self._VERTICAPY_VARIABLES_['input_relation']}' found."
+                )
             if not (usecols):
                 self._VERTICAPY_VARIABLES_["allcols_ind"] = len(columns)
-            assert columns != [], MissingRelation(
-                f"No table or views '{self._VERTICAPY_VARIABLES_['input_relation']}' found."
-            )
-            self._VERTICAPY_VARIABLES_["columns"] = [col for col in columns]
-            for col_dtype in columns_dtype:
-                column, dtype = col_dtype[0], col_dtype[1]
+            self._VERTICAPY_VARIABLES_["columns"] = columns
+
+            # Creating the vDataColumns
+            for column, ctype in dtypes:
                 if '"' in column:
                     column_str = column.replace('"', "_")
                     warning_message = (
-                        f'A double quote " was found in the column {column}, '
-                        f"its alias was changed using underscores '_' to {column_str}."
+                        f'A double quote " was found in the column {column}, its '
+                        f"alias was changed using underscores '_' to {column_str}"
                     )
                     warnings.warn(warning_message, Warning)
-                category = to_category(dtype)
-                if (dtype.lower()[0:12] in ("long varbina", "long varchar")) and (
+                column_name = '"' + column.replace('"', "_") + '"'
+                category = to_category(ctype)
+                if (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
                     isflex
                     or isvmap(
-                        expr=format_schema_table(schema, table_name), column=column,
+                        expr=self._VERTICAPY_VARIABLES_["main_relation"], column=column,
                     )
                 ):
                     category = "vmap"
-                    dtype = (
-                        "VMAP(" + "(".join(dtype.split("(")[1:])
-                        if "(" in dtype
+                    ctype = (
+                        "VMAP(" + "(".join(ctype.split("(")[1:])
+                        if "(" in ctype
                         else "VMAP"
                     )
-                column_name = '"' + column.replace('"', "_") + '"'
                 new_vDataColumn = vDataColumn(
                     column_name,
                     parent=self,
-                    transformations=[(quote_ident(column), dtype, category,)],
+                    transformations=[(quote_ident(column), ctype, category,)],
                 )
                 setattr(self, column_name, new_vDataColumn)
                 setattr(self, column_name[1:-1], new_vDataColumn)
                 new_vDataColumn.init = False
-            self._VERTICAPY_VARIABLES_["main_relation"] = format_schema_table(
-                self._VERTICAPY_VARIABLES_["schema"],
-                self._VERTICAPY_VARIABLES_["input_relation"],
-            )
 
 
 ##
-#
 #   __   ___  ______     ______     __         __  __     __    __     __   __
 #  /\ \ /  / /\  ___\   /\  __ \   /\ \       /\ \/\ \   /\ "-./  \   /\ "-.\ \
 #  \ \ \' /  \ \ \____  \ \ \/\ \  \ \ \____  \ \ \_\ \  \ \ \-./\ \  \ \ \-.  \
 #   \ \__/    \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_\\"\_\
 #    \/_/      \/_____/   \/_____/   \/_____/   \/_____/   \/_/  \/_/   \/_/ \/_/
-#
 ##
 
 
