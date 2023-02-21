@@ -23,31 +23,48 @@ from verticapy._utils._cast import to_dtype_category
 from verticapy.errors import ParsingError
 
 
-def clean_query(query: str):
-    res = re.sub(r"--.+(\n|\Z)", "", query)
-    res = res.replace("\t", " ").replace("\n", " ")
-    res = re.sub(" +", " ", res)
+def clean_query(query: str) -> str:
+    query = re.sub(r"--.+(\n|\Z)", "", query)
+    query = query.replace("\t", " ").replace("\n", " ")
+    query = re.sub(" +", " ", query)
 
-    while len(res) > 0 and (res[-1] in (";", " ")):
-        res = res[0:-1]
+    while len(query) > 0 and (query[-1] in (";", " ")):
+        query = query[0:-1]
 
-    while len(res) > 0 and (res[0] in (";", " ")):
-        res = res[1:]
+    while len(query) > 0 and (query[0] in (";", " ")):
+        query = query[1:]
 
-    return res
+    return query.strip()
 
 
-def erase_label(query: str):
+def erase_comment(query: str) -> str:
+    query = re.sub(r"--.+(\n|\Z)", "", query)
+    query = re.sub(r"/\*(.+?)\*/", "", query)
+    return query.strip()
+
+
+def erase_label(query: str) -> str:
     labels = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
     for label in labels:
         query = query.replace(f"/*+LABEL{label}*/", "")
-    return query
+    return query.strip()
 
 
-def extract_subquery(query: str) -> bool:
-    if query[0] == "(" and query[-1] != ")":
-        query = ")".join("(".join(query.split("(")[1:]).split(")")[:-1])
-    return query
+def extract_subquery(query: str) -> str:
+    query_tmp = clean_query(query)
+    query_tmp = erase_comment(query_tmp)
+    if query_tmp[0] == "(" and query_tmp[-1] != ")":
+        query = ")".join("(".join(query_tmp.split("(")[1:]).split(")")[:-1])
+    return query.strip()
+
+
+def extract_and_rename_subquery(query: str, alias: str):
+    query_tmp = extract_subquery(query)
+    query_clean = clean_query(query)
+    query_clean = erase_comment(query)
+    if query != query_tmp or query_clean[0:6].lower() == "select":
+        query = f"({query_tmp})"
+    return f"{query} AS {alias}"
 
 
 def extract_precision_scale(ctype: str) -> tuple:

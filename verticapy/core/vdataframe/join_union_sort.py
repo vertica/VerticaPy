@@ -187,18 +187,6 @@ class vDFJUS:
             expr2 = [expr2]
         if isinstance(on, tuple):
             on = [on]
-        # Giving the right alias to the right relation
-        def create_final_relation(relation: str, alias: str):
-            if (
-                ("SELECT" in relation.upper())
-                and ("FROM" in relation.upper())
-                and ("(" in relation)
-                and (")" in relation)
-            ):
-                return f"(SELECT * FROM {relation}) AS {alias}"
-            else:
-                return f"{relation} AS {alias}"
-
         # List with the operators
         if str(how).lower() == "natural" and (on or on_interpolate):
             raise ParameterError(
@@ -220,8 +208,8 @@ class vDFJUS:
         else:
             relation = input_relation
         # Relations
-        first_relation = create_final_relation(self._genSQL(), alias="x")
-        second_relation = create_final_relation(relation, alias="y")
+        first_relation = extract_and_rename_subquery(self._genSQL(), alias="x")
+        second_relation = extract_and_rename_subquery(relation, alias="y")
         # ON
         on_join = []
         all_operators = [
