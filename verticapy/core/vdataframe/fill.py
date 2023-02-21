@@ -133,6 +133,8 @@ class vDFFILL:
     vDataFrame[].fillna  : Fills the vDataColumn missing values.
     vDataFrame[].slice   : Slices the vDataColumn.
         """
+        from verticapy.core.vdataframe.base import vDataFrame
+
         if isinstance(by, str):
             by = [by]
         method, ts, by = self.format_colnames(method, ts, by)
@@ -155,23 +157,19 @@ class vDFFILL:
             else:
                 func, interp = "TS_FIRST_VALUE", "linear"
             all_elements += [f"{func}({column}, '{interp}') AS {column}"]
-        table = f"SELECT {{}} FROM {self.__genSQL__()}"
+        query = f"SELECT {{}} FROM {self.__genSQL__()}"
         tmp_query = [f"slice_time AS {quote_ident(ts)}"]
         tmp_query += [quote_ident(column) for column in by]
         tmp_query += all_elements
-        table = table.format(", ".join(tmp_query))
+        query = query.format(", ".join(tmp_query))
         partition = ""
         if by:
             partition = ", ".join([quote_ident(column) for column in by])
             partition = f"PARTITION BY {partition} "
-        table += f""" 
+        query += f""" 
             TIMESERIES slice_time AS '{rule}' 
             OVER ({partition}ORDER BY {quote_ident(ts)}::timestamp)"""
-        return self.__vDataFrameSQL__(
-            f"({table}) interpolate",
-            "interpolate",
-            "[interpolate]: The data was resampled",
-        )
+        return vDataFrame(sql=query)
 
     asfreq = interpolate
 

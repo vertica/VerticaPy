@@ -47,7 +47,7 @@ from verticapy.machine_learning.vertica.base import (
 )
 
 from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample, vDataFrameSQL
+from verticapy.sql.read import to_tablesample
 from verticapy.sql.insert import insert_verticapy_schema
 
 
@@ -581,7 +581,7 @@ p: int, optional
             "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -621,14 +621,14 @@ p: int, optional
                 predict=True,
             )
             sql = f"""
-                (SELECT 
+                SELECT 
                     {", ".join(X)}{key_columns_str}, 
                     predict_neighbors AS {name} 
-                 FROM {table}) VERTICAPY_SUBTABLE"""
+                 FROM {table}"""
         if inplace:
-            return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
+            return vdf.__init__(sql=sql)
         else:
-            return vDataFrameSQL(name="Neighbors", relation=sql)
+            return vDataFrame(sql=sql)
 
     def predict_proba(
         self,
@@ -677,7 +677,7 @@ p: int, optional
             )
         )
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X = [quote_ident(x) for x in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if not (name):
@@ -711,17 +711,17 @@ p: int, optional
             X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
         )
         sql = f"""
-            (SELECT 
+            SELECT 
                 {", ".join(X)}{key_columns_str}, 
                 {", ".join(predict)} 
              FROM {table} 
-             GROUP BY {", ".join(X + key_columns)}) VERTICAPY_SUBTABLE"""
+             GROUP BY {", ".join(X + key_columns)}"""
 
         # Result
         if inplace:
-            return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
+            return vdf.__init__(sql=sql)
         else:
-            return vDataFrameSQL(name="Neighbors", relation=sql)
+            return vDataFrame(sql=sql)
 
     def roc_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
@@ -967,7 +967,7 @@ xlim: list, optional
             try:
                 vdf = vDataFrame(input_relation)
             except:
-                vdf = vDataFrameSQL(input_relation)
+                vdf = vDataFrame(sql=input_relation)
             if not (X):
                 X = vdf.numcol()
         X = vdf.format_colnames(X)
@@ -1429,7 +1429,7 @@ p: int, optional
         if isinstance(X, str):
             X = [X]
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(vdf)
+            vdf = vDataFrame(sql=vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -1446,14 +1446,14 @@ p: int, optional
             X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
         )
         sql = f"""
-            (SELECT 
+            SELECT 
                 {", ".join(X)}{key_columns_str}, 
                 predict_neighbors AS {name} 
-             FROM {table}) VERTICAPY_SUBTABLE"""
+             FROM {table}"""
         if inplace:
-            return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
+            return vdf.__init__(sql=sql)
         else:
-            return vDataFrameSQL(name="Neighbors", relation=sql)
+            return vDataFrame(sql=sql)
 
 
 class LocalOutlierFactor(vModel):

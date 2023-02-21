@@ -27,7 +27,6 @@ from verticapy.core.str_sql.base import str_sql
 
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.functions.conditional import decode
-from verticapy.sql.read import vDataFrameSQL
 
 
 class vDFMATH:
@@ -890,6 +889,8 @@ class vDCMATH:
     vDataColumn
         vDataColumn that includes the length of each element.
         """
+        from verticapy.core.vdataframe.base import vDataFrame
+
         cat = self.category()
         if cat == "vmap":
             fun = "MAPSIZE"
@@ -901,10 +902,10 @@ class vDCMATH:
         init_transf = f"{fun}({self.init_transf})"
         new_alias = quote_ident(self.alias[1:-1] + ".length")
         query = f"""
-            (SELECT 
+            SELECT 
                 {elem_to_select} AS {new_alias} 
-            FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
-        vcol = vDataFrameSQL(query)[new_alias]
+            FROM {self.parent.__genSQL__()}"""
+        vcol = vDataFrame(sql=query)[new_alias]
         vcol.init_transf = init_transf
         return vcol
 

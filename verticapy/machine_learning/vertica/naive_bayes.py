@@ -20,9 +20,9 @@ from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._version import check_minimum_version
 
-from verticapy.machine_learning.vertica.base import MulticlassClassifier
+from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.sql.read import vDataFrameSQL
+from verticapy.machine_learning.vertica.base import MulticlassClassifier
 
 
 class NaiveBayes(MulticlassClassifier):
@@ -75,7 +75,7 @@ nbtype: str, optional
     def get_var_info(self):
         # Returns a list of dictionary for each of the NB variables.
         # It is used to translate NB to Python
-        vdf = vDataFrameSQL(self.input_relation)
+        vdf = vDataFrame(sql=self.input_relation)
         var_info = {}
         gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
         for idx, elem in enumerate(self.X):

@@ -943,8 +943,8 @@ class TestUtilities:
         result = to_tablesample('SELECT 1 AS "verticapy test *+""";')
         assert result['verticapy test *+"'] == [1]
 
-    def test_vDataFrameSQL(self):
-        result = vDataFrameSQL('(SELECT 1 AS "verticapy test *+") x',)
+    def test_vDataFrame_sql(self):
+        result = vDataFrame(sql='(SELECT 1 AS "verticapy test *+") x',)
         assert result["verticapy test *+"].avg() == 1.0
 
     @pytest.mark.skip(reason="this test will be implemented later")

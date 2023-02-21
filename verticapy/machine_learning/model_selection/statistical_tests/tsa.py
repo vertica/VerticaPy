@@ -31,7 +31,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
 from verticapy.sql.drop import drop
-from verticapy.sql.read import vDataFrameSQL
 
 
 @save_verticapy_logs
@@ -302,7 +301,7 @@ model
      - r2_          : R2
     """
     if isinstance(vdf, str):
-        vdf_tmp = vDataFrameSQL(vdf)
+        vdf_tmp = vDataFrame(sql=vdf)
     else:
         vdf_tmp = vdf.copy()
     ts = vdf.format_colnames(ts)
@@ -417,10 +416,8 @@ tablesample
             )
         ]
         X_names += ["lag_{}".format(i)]
-    query = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-        ", ".join(X), vdf.__genSQL__()
-    )
-    vdf_lags = vDataFrameSQL(query)
+    query = "SELECT {} FROM {}".format(", ".join(X), vdf.__genSQL__())
+    vdf_lags = vDataFrame(sql=query)
     name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:

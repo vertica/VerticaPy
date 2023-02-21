@@ -91,6 +91,8 @@ class vDFAGG:
     vDataFrame.join     : Joins the vDataFrame with another relation.
     vDataFrame.sort     : Sorts the vDataFrame.
         """
+        from verticapy.core.vdataframe.base import vDataFrame
+
         if isinstance(columns, str):
             columns = [columns]
         if isinstance(expr, str):
@@ -164,20 +166,16 @@ class vDFAGG:
             )
         else:
             rollup_expr_str = rollup_expr
-        relation = f"""
-            (SELECT 
+        query = f"""
+            SELECT 
                 {columns_str} 
             FROM {self.__genSQL__()} 
-            GROUP BY {rollup_expr_str}{having}) VERTICAPY_SUBTABLE"""
+            GROUP BY {rollup_expr_str}{having}"""
         if not (rollup):
             rollup_expr_str = ", ".join([str(c) for c in columns_to_select])
         else:
             rollup_expr_str = rollup_expr
-        return self.__vDataFrameSQL__(
-            relation,
-            "groupby",
-            f"[Groupby]: The columns were grouped by {rollup_expr_str}",
-        )
+        return vDataFrame(sql=query)
 
     @save_verticapy_logs
     def duplicated(

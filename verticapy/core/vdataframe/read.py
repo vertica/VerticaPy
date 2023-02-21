@@ -26,7 +26,7 @@ from verticapy._version import vertica_version
 
 from verticapy.core.str_sql.base import str_sql
 
-from verticapy.sql.read import readSQL, to_tablesample, vDataFrameSQL
+from verticapy.sql.read import readSQL, to_tablesample
 
 if ISNOTEBOOK:
     from IPython.display import HTML, display
@@ -60,11 +60,11 @@ class vDFREAD:
             else:
                 limit = ""
             query = f"""
-                (SELECT * 
+                SELECT * 
                 FROM {self.__genSQL__()}
                 {self.__get_last_order_by__()} 
-                OFFSET {index_start}{limit}) VERTICAPY_SUBTABLE"""
-            return vDataFrameSQL(query)
+                OFFSET {index_start}{limit}"""
+            return vDataFrame(sql=query)
 
         elif isinstance(index, int):
             columns = self.get_columns()
@@ -343,6 +343,8 @@ class vDFREAD:
     --------
     vDataFrame.search : Searches the elements which matches with the input conditions.
         """
+        from verticapy.core.vdataframe.base import vDataFrame
+
         if isinstance(columns, str):
             columns = [columns]
         for i in range(len(columns)):
@@ -363,17 +365,14 @@ class vDFREAD:
                 columns[i] = column + dtype
             else:
                 columns[i] = str(columns[i])
-        table = f"""
-            (SELECT 
-                {', '.join(columns)} 
-            FROM {self.__genSQL__()}) VERTICAPY_SUBTABLE"""
-        return self.__vDataFrameSQL__(
-            table, self._VERTICAPY_VARIABLES_["input_relation"], ""
-        )
+        query = f"SELECT  {', '.join(columns)} FROM {self.__genSQL__()}"
+        return vDataFrame(sql=query)
 
 
 class vDCREAD:
     def __getitem__(self, index):
+        from verticapy.core.vdataframe.base import vDataFrame
+
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
                 "vDataColumn doesn't allow slicing having steps different than 1."
@@ -404,7 +403,7 @@ class vDCREAD:
                     (SELECT 
                         {elem_to_select} AS {new_alias} 
                     FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
-                vcol = vDataFrameSQL(query)[new_alias]
+                vcol = vDataFrame(sql=query)[new_alias]
                 vcol.transformations[-1] = (
                     new_alias,
                     self.ctype(),
@@ -428,23 +427,22 @@ class vDCREAD:
                 else:
                     limit = ""
                 query = f"""
-                    (SELECT 
+                    SELECT 
                         {self.alias} 
                     FROM {self.parent.__genSQL__()}
                     {self.parent.__get_last_order_by__()} 
-                    OFFSET {index_start}
-                    {limit}) VERTICAPY_SUBTABLE"""
-                return vDataFrameSQL(query)
+                    OFFSET {index_start} {limit}"""
+                return vDataFrame(sql=query)
         elif isinstance(index, int):
             if self.isarray():
                 vertica_version(condition=[9, 3, 0])
                 elem_to_select = f"{self.alias}[{index}]"
                 new_alias = quote_ident(f"{self.alias[1:-1]}.{index}")
                 query = f"""
-                    (SELECT 
+                    SELECT 
                         {elem_to_select} AS {new_alias} 
-                    FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
-                vcol = vDataFrameSQL(query)[new_alias]
+                    FROM {self.parent.__genSQL__()}"""
+                vcol = vDataFrame(sql=query)[new_alias]
                 vcol.init_transf = f"{self.init_transf}[{index}]"
                 return vcol
             else:
@@ -475,10 +473,10 @@ class vDCREAD:
                 elem_to_select = f"{self.alias}.{quote_ident(index)}"
                 init_transf = f"{self.init_transf}.{quote_ident(index)}"
             query = f"""
-                (SELECT 
+                SELECT 
                     {elem_to_select} AS {quote_ident(index)} 
-                FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
-            vcol = vDataFrameSQL(query)[index]
+                FROM {self.parent.__genSQL__()}"""
+            vcol = vDataFrame(sql=query)[index]
             vcol.init_transf = init_transf
             return vcol
         else:

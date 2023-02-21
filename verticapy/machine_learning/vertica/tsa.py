@@ -41,7 +41,6 @@ from verticapy.machine_learning.vertica.base import Regressor
 
 from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_verticapy_schema
-from verticapy.sql.read import vDataFrameSQL
 
 if PARSER_IMPORT:
     from dateutil.parser import parse
@@ -723,7 +722,7 @@ papprox_ma: int, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vDataFrameSQL(relation=self.input_relation)
+            vdf = vDataFrame(sql=self.input_relation)
         delta_limit, limit = (
             limit,
             max(
@@ -1038,7 +1037,7 @@ papprox_ma: int, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vDataFrameSQL(final_relation, "SARIMAX")
+        result = vDataFrame(sql=final_relation)
         if nlead > 0:
             result[y].apply(
                 "CASE WHEN {} >= '{}' THEN NULL ELSE {} END".format(ts, first_t, "{}")
@@ -1225,7 +1224,7 @@ solver: str, optional
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
         min_max = (
-            vDataFrameSQL(relation=self.input_relation)
+            vDataFrame(sql=self.input_relation)
             .agg(func=["min", "max"], columns=self.X)
             .transpose()
         )
@@ -1454,7 +1453,7 @@ solver: str, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vDataFrameSQL(relation=self.input_relation)
+            vdf = vDataFrame(sql=self.input_relation)
         delta_limit, limit = (
             limit,
             max(max(limit, self.parameters["p"] + 1 + nlast), 200),
@@ -1751,7 +1750,7 @@ solver: str, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vDataFrameSQL(final_relation, "VAR")
+        result = vDataFrame(sql=final_relation)
         if nlead > 0:
             for elem in X:
                 result[elem].apply(

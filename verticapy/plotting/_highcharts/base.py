@@ -31,8 +31,6 @@ from verticapy.plotting._highcharts.pie import pie
 from verticapy.plotting._highcharts.scatter import scatter
 from verticapy.plotting._highcharts.spider import spider
 
-from verticapy.sql.read import vDataFrameSQL
-
 
 def sort_classes(categories):
     try:
@@ -559,6 +557,8 @@ def hchart_from_vdf(
 def hchartSQL(
     query: str, kind="auto", width: int = 600, height: int = 400, options: dict = {},
 ):
+    from verticapy.core.vdataframe.base import vDataFrame
+
     aggregate, stock = False, False
     data = _executeSQL(
         query=f"""
@@ -569,7 +569,7 @@ def hchartSQL(
         print_time_sql=False,
     )
     names = [desc[0] for desc in current_cursor().description]
-    vdf = vDataFrameSQL(f"({query}) VERTICAPY_SUBTABLE")
+    vdf = vDataFrame(sql=query)
     allnum = vdf.numcol()
     if kind == "auto":
         if len(names) == 1:

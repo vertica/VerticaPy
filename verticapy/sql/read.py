@@ -49,6 +49,8 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     tablesample
         Result of the query.
     """
+    from verticapy.core.vdataframe.base import vDataFrame
+
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
     if OPTIONS["count_on"]:
@@ -75,7 +77,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         OPTIONS["sql_on"] = sql_on_init
     result.count = count
     if OPTIONS["percent_bar"]:
-        vdf = vDataFrameSQL(f"({query}) VERTICAPY_SUBTABLE")
+        vdf = vDataFrame(sql=query)
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
             result.dtype[column] = vdf[column].ctype()
@@ -152,93 +154,3 @@ def to_tablesample(
     return tablesample(
         values=values, dtype=dtype, max_columns=max_columns,
     ).decimal_to_float()
-
-
-def vDataFrameSQL(
-    relation: str,
-    name: str = "VDF",
-    schema: str = "public",
-    history: list = [],
-    saving: list = [],
-    vdf=None,
-):
-    """
-Creates a vDataFrame based on a customized relation.
-
-Parameters
-----------
-relation: str
-    Relation. You can also specify a customized relation, 
-    but you must enclose it with an alias. For example "(SELECT 1) x" is 
-    correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-name: str, optional
-    Name of the vDataFrame. It is used only when displaying the vDataFrame.
-schema: str, optional
-    Relation schema. It can be to use to be less ambiguous and allow to 
-    create schema and relation name with dots '.' inside.
-history: list, optional
-    vDataFrame history (user modifications). To use to keep the previous 
-    vDataFrame history.
-saving: list, optional
-    List to use to reconstruct the vDataFrame from previous transformations.
-
-Returns
--------
-vDataFrame
-    The vDataFrame associated to the input relation.
-    """
-    # Initialization
-    from verticapy.core.vdataframe.base import vDataFrame
-
-    if isinstance(vdf, vDataFrame):
-        external = vdf._VERTICAPY_VARIABLES_["external"]
-        symbol = vdf._VERTICAPY_VARIABLES_["symbol"]
-        sql_push_ext = vdf._VERTICAPY_VARIABLES_["sql_push_ext"]
-        vdf.__init__("", empty=True)
-        vdf._VERTICAPY_VARIABLES_["external"] = external
-        vdf._VERTICAPY_VARIABLES_["symbol"] = symbol
-        vdf._VERTICAPY_VARIABLES_["sql_push_ext"] = sql_push_ext
-    else:
-        vdf = vDataFrame("", empty=True)
-    vdf._VERTICAPY_VARIABLES_["input_relation"] = name
-    vdf._VERTICAPY_VARIABLES_["main_relation"] = relation
-    vdf._VERTICAPY_VARIABLES_["schema"] = schema
-    vdf._VERTICAPY_VARIABLES_["where"] = []
-    vdf._VERTICAPY_VARIABLES_["order_by"] = {}
-    vdf._VERTICAPY_VARIABLES_["exclude_columns"] = []
-    vdf._VERTICAPY_VARIABLES_["history"] = history
-    vdf._VERTICAPY_VARIABLES_["saving"] = saving
-    dtypes = get_data_types(f"SELECT * FROM {relation} LIMIT 0")
-    vdf._VERTICAPY_VARIABLES_["columns"] = ['"' + item[0] + '"' for item in dtypes]
-
-    # Creating the vDataColumns
-    for column, ctype in dtypes:
-        if '"' in column:
-            column_str = column.replace('"', "_")
-            warning_message = (
-                f'A double quote " was found in the column {column}, its '
-                f"alias was changed using underscores '_' to {column_str}"
-            )
-            warnings.warn(warning_message, Warning)
-        from verticapy.core.vdataframe.base import vDataColumn
-
-        column_name = '"' + column.replace('"', "_") + '"'
-        category = to_category(ctype)
-        if (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
-            isvmap(expr=relation, column=column,)
-        ):
-            category = "vmap"
-            ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"
-        new_vDataColumn = vDataColumn(
-            column_name,
-            parent=vdf,
-            transformations=[(quote_ident(column), ctype, category,)],
-        )
-        setattr(vdf, column_name, new_vDataColumn)
-        setattr(vdf, column_name[1:-1], new_vDataColumn)
-        new_vDataColumn.init = False
-
-    return vdf
-
-
-vdf_from_relation = vDataFrameSQL

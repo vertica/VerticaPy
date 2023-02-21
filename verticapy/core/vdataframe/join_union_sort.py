@@ -81,7 +81,7 @@ class vDFJUS:
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)
         union = "UNION" if not (union_all) else "UNION ALL"
-        table = f"""
+        query = f"""
             (SELECT 
                 {columns} 
              FROM {first_relation}) 
@@ -89,11 +89,7 @@ class vDFJUS:
             (SELECT 
                 {columns2} 
              FROM {second_relation})"""
-        return self.__vDataFrameSQL__(
-            f"({table}) append_table",
-            self._VERTICAPY_VARIABLES_["input_relation"],
-            "[Append]: Union of two relations",
-        )
+        return vDataFrame(sql=query)
 
     @save_verticapy_logs
     def join(
@@ -282,14 +278,10 @@ class vDFJUS:
         expr = "*" if not (expr) else ", ".join(expr)
         if how:
             how = " " + how.upper() + " "
-        table = (
+        query = (
             f"SELECT {expr} FROM {first_relation}{how}JOIN {second_relation} {on_join}"
         )
-        return self.__vDataFrameSQL__(
-            f"({table}) VERTICAPY_SUBTABLE",
-            "join",
-            "[Join]: Two relations were joined together",
-        )
+        return vDataFrame(sql=query)
 
     @save_verticapy_logs
     def sort(self, columns: Union[str, dict, list]):

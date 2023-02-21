@@ -28,8 +28,6 @@ from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import tablesample
 
-from verticapy.sql.read import vDataFrameSQL
-
 
 class vDFML:
     @save_verticapy_logs
@@ -859,6 +857,8 @@ class vDFML:
     tuple
         (train vDataFrame, test vDataFrame)
         """
+        from verticapy.core.vdataframe.base import vDataFrame
+
         if isinstance(order_by, str):
             order_by = [order_by]
         order_by = self.__get_sort_syntax__(order_by)
@@ -881,14 +881,14 @@ class vDFML:
             method="fetchfirstelem",
         )
         test_table = f"""
-            (SELECT * 
-             FROM {self.__genSQL__()} 
-             WHERE {random_func} < {q}{order_by}) x"""
+            SELECT * 
+            FROM {self.__genSQL__()} 
+            WHERE {random_func} < {q}{order_by}"""
         train_table = f"""
-            (SELECT * 
-             FROM {self.__genSQL__()} 
-             WHERE {random_func} > {q}{order_by}) x"""
+            SELECT * 
+            FROM {self.__genSQL__()} 
+            WHERE {random_func} > {q}{order_by}"""
         return (
-            vDataFrameSQL(relation=train_table),
-            vDataFrameSQL(relation=test_table),
+            vDataFrame(sql=train_table),
+            vDataFrame(sql=test_table),
         )

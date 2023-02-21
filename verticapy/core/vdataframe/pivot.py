@@ -106,19 +106,14 @@ class vDFPIVOT:
     vDataFrame
         An object containing the merged element.
         """
+        from verticapy.core.base.vdataframe import vDataFrame
+
         if isinstance(skip_word, str):
             skip_word = [skip_word]
         columns = self.get_columns()
         group_dict = group_similar_names(columns, skip_word=skip_word)
-        sql = f"""
-            (SELECT 
-                {gen_coalesce(group_dict)} 
-            FROM {self.__genSQL__()}) VERTICAPY_SUBTABLE"""
-        return self.__vDataFrameSQL__(
-            sql,
-            "merge_similar_names",
-            "[merge_similar_names]: The columns were merged.",
-        )
+        sql = f"SELECT {gen_coalesce(group_dict)} FROM {self.__genSQL__()}"
+        return vDataFrame(sql=sql)
 
     @save_verticapy_logs
     def narrow(
@@ -153,6 +148,8 @@ class vDFPIVOT:
     --------
     vDataFrame.pivot : Returns the pivot table of the vDataFrame.
         """
+        from verticapy.core.vdataframe.base import vDataFrame
+
         index, columns = self.format_colnames(index, columns)
         if isinstance(columns, str):
             columns = [columns]
@@ -186,10 +183,7 @@ class vDFPIVOT:
                 FROM {self.__genSQL__()})"""
             ]
         query = " UNION ALL ".join(query)
-        query = f"({query}) VERTICAPY_SUBTABLE"
-        return self.__vDataFrameSQL__(
-            query, "narrow", f"[Narrow]: Narrow table using index = {index}",
-        )
+        return vDataFrame(sql=query)
 
     melt = narrow
 
@@ -232,6 +226,8 @@ class vDFPIVOT:
     vDataFrame.pivot_table : Draws the pivot table of one or two columns based on an 
         aggregation.
         """
+        from verticapy.core.vdataframe.base import vDataFrame
+
         index, columns, values = self.format_colnames(index, columns, values)
         aggr = aggr.upper()
         if "{}" not in aggr:
@@ -255,16 +251,11 @@ class vDFPIVOT:
                     )
                     + f"AS '{prefix}{elem}'"
                 ]
-        return self.__vDataFrameSQL__(
-            f"""
-            (SELECT 
+        return vDataFrame(
+            sql=f"""
+            SELECT 
                 {index},
                 {", ".join(new_cols_trans)}
-             FROM {self.__genSQL__()}
-             GROUP BY 1) VERTICAPY_SUBTABLE""",
-            "pivot",
-            (
-                f"[Pivot]: Pivot table using index = {index} & "
-                f"columns = {columns} & values = {values}"
-            ),
+            FROM {self.__genSQL__()}
+            GROUP BY 1""",
         )

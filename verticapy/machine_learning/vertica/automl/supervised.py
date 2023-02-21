@@ -57,8 +57,6 @@ from verticapy.machine_learning.vertica.neighbors import (
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 
-from verticapy.sql.read import vDataFrameSQL
-
 
 class AutoML(vModel):
     """
@@ -229,7 +227,7 @@ model_grid_ : tablesample
             else:
                 exclude_columns = [y]
             if not (isinstance(input_relation, vDataFrame)):
-                X = vDataFrameSQL(input_relation).get_columns(
+                X = vDataFrame(sql=input_relation).get_columns(
                     exclude_columns=exclude_columns
                 )
             else:
@@ -240,7 +238,7 @@ model_grid_ : tablesample
             modeltype = None
             estimator_method = self.parameters["estimator"]
             if not (isinstance(input_relation, vDataFrame)):
-                vdf = vDataFrameSQL(input_relation)
+                vdf = vDataFrame(sql=input_relation)
             else:
                 vdf = input_relation
             if self.parameters["estimator_type"].lower() == "binary" or (
@@ -500,7 +498,7 @@ model_grid_ : tablesample
         self.parameters["reverse"] = not (reverse)
         if self.preprocess_ != None:
             self.preprocess_.drop()
-            self.preprocess_.final_relation_ = vDataFrameSQL(self.preprocess_.sql_)
+            self.preprocess_.final_relation_ = vDataFrame(sql=self.preprocess_.sql_)
         return self.model_grid_
 
     def plot(self, mltype: str = "champion", ax=None, **style_kwds):

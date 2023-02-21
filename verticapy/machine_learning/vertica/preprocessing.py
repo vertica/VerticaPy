@@ -28,7 +28,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.machine_learning.vertica.base import Preprocessing, vModel
 
 from verticapy.sql.insert import insert_verticapy_schema
-from verticapy.sql.read import vDataFrameSQL
 
 
 @check_minimum_version
@@ -282,7 +281,7 @@ max_text_size: int, optional
 	vDataFrame
  		object result of the model transformation.
 		"""
-        return vDataFrameSQL(f"({self.deploySQL()}) VERTICAPY_SUBTABLE", self.name,)
+        return vDataFrame(sql=self.deploySQL())
 
 
 class Normalizer(Preprocessing):

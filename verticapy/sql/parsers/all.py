@@ -164,15 +164,20 @@ vDataFrame
         table_name = gen_tmp_name(name=basename)
     if not (table_name):
         table_name = basename
-    sql = (
-        f"SELECT INFER_TABLE_DDL ('{path}' USING PARAMETERS "
-        f"format='{file_format}', table_name='y_verticapy', "
-        "table_schema='x_verticapy', table_type='native', "
-        "with_copy_statement=true, one_line_result=true, "
-        f"max_files={max_files}, max_candidates=1);"
-    )
     result = _executeSQL(
-        sql, title="Generating the CREATE and COPY statement.", method="fetchfirstelem",
+        query=f"""
+            SELECT INFER_TABLE_DDL ('{path}' 
+                                    USING PARAMETERS
+                                    format='{file_format}',
+                                    table_name='y_verticapy',
+                                    table_schema='x_verticapy',
+                                    table_type='native',
+                                    with_copy_statement=true,
+                                    one_line_result=true,
+                                    max_files={max_files},
+                                    max_candidates=1);""",
+        title="Generating the CREATE and COPY statement.",
+        method="fetchfirstelem",
     )
     result = result.replace("UNKNOWN", unknown)
     result = "create" + "create".join(result.split("create")[1:])

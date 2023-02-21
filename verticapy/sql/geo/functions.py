@@ -21,7 +21,6 @@ import verticapy.sql.functions.math as mt
 from verticapy.datasets.generators import gen_meshgrid
 from verticapy.vdataframe import vDataFrame
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql.read import vDataFrameSQL
 from verticapy._utils._sql._execute import _executeSQL
 
 
@@ -120,14 +119,14 @@ vDataFrame
         raise ParameterError("Either 'x' and 'y' or 'g' must not be empty.")
 
     query = f"""
-        (SELECT 
+        SELECT 
             STV_Intersect({params} 
             USING PARAMETERS 
                 index='{index}') 
             OVER (PARTITION BEST) AS (point_id, polygon_gid) 
-        FROM {vdf.__genSQL__()}) x"""
+        FROM {vdf.__genSQL__()}"""
 
-    return vDataFrameSQL(query)
+    return vDataFrame(sql=query)
 
 
 @save_verticapy_logs

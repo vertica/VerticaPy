@@ -37,7 +37,6 @@ from verticapy.errors import QueryError, ParameterError
 
 from verticapy.jupyter.extensions._utils import get_magic_options
 
-from verticapy.sql.read import vDataFrameSQL
 from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
 
 
@@ -253,7 +252,7 @@ def sql_magic(line, cell="", local_ns=None):
                 error = ""
 
                 try:
-                    result = vDataFrameSQL(f"({query}) VSQL_MAGIC")
+                    result = vDataFrame(sql=query)
                     result._VERTICAPY_VARIABLES_["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:

@@ -34,6 +34,12 @@ from verticapy.connect import (
     EXTERNAL_CONNECTION,
     SPECIAL_SYMBOLS,
 )
+from verticapy.errors import (
+    ConnectionError,
+    MissingRelation,
+    ParameterError,
+    QueryError,
+)
 
 from verticapy.core.vdataframe.aggregate import vDFAGG, vDCAGG
 from verticapy.core.vdataframe.corr import vDFCORR, vDCCORR
@@ -55,13 +61,6 @@ from verticapy.core.vdataframe.text import vDFTEXT, vDCTEXT
 from verticapy.core.vdataframe.typing import vDFTYPING, vDCTYPING
 from verticapy.core.vdataframe.utils import vDFUTILS
 
-from verticapy.errors import (
-    ConnectionError,
-    MissingRelation,
-    ParameterError,
-    QueryError,
-)
-
 from verticapy.core.str_sql.base import str_sql
 from verticapy.core.tablesample.base import tablesample
 
@@ -72,7 +71,6 @@ from verticapy.sql.flex import (
     isflextable,
 )
 from verticapy.sql.parsers.pandas import read_pandas
-from verticapy.sql.read import vDataFrameSQL
 
 ###                                          _____
 #   _______    ______ ____________    ____  \    \
@@ -279,27 +277,30 @@ vDataColumns : vDataColumn
 
         if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
 
-            tb = input_relation
-
             if isinstance(input_relation, (list, np.ndarray)):
 
                 if isinstance(input_relation, list):
                     input_relation = np.array(input_relation)
 
-                assert len(input_relation.shape) == 2, ParameterError(
-                    "vDataFrames can only be created with two-dimensional objects."
-                )
+                if len(input_relation.shape) != 2:
+                    raise ParameterError(
+                        "vDataFrames can only be created with two-dimensional objects."
+                    )
 
-                tb = {}
+                d = {}
                 nb_cols = len(input_relation[0])
                 for idx in range(nb_cols):
                     col_name = columns[idx] if idx < len(columns) else f"col{idx}"
-                    tb[col_name] = [l[idx] for l in input_relation]
-                tb = tablesample(tb)
+                    d[col_name] = [l[idx] for l in input_relation]
+                tb = tablesample(d)
 
             elif isinstance(input_relation, dict):
 
-                tb = tablesample(tb)
+                tb = tablesample(input_relation)
+
+            else:
+
+                tb = input_relation
 
             if usecols:
                 tb_final = {}
@@ -307,32 +308,77 @@ vDataColumns : vDataColumn
                     tb_final[col] = tb[col]
                 tb = tablesample(tb_final)
 
-            relation = f"({tb.to_sql()}) sql_relation"
-            vDataFrameSQL(relation, name="", schema="", vdf=self)
+            self.__init__(
+                sql=tb.to_sql(),
+                external=external,
+                symbol=symbol,
+                sql_push_ext=sql_push_ext,
+            )
 
         elif isinstance(input_relation, pd.DataFrame):
 
             if usecols:
-                df = read_pandas(input_relation[usecols])
+                vdf = read_pandas(input_relation[usecols])
             else:
-                df = read_pandas(input_relation)
-            schema = df._VERTICAPY_VARIABLES_["schema"]
-            input_relation = df._VERTICAPY_VARIABLES_["input_relation"]
+                vdf = read_pandas(input_relation)
+            schema = vdf._VERTICAPY_VARIABLES_["schema"]
+            input_relation = vdf._VERTICAPY_VARIABLES_["input_relation"]
             self.__init__(input_relation=input_relation, schema=schema)
 
         elif sql:
 
             # Cleaning the Query
             sql_tmp = clean_query(sql)
-            sql_tmp = f"({sql_tmp}) VERTICAPY_SUBTABLE"
 
-            # Filtering some columns
-            if usecols:
-                usecols_tmp = ", ".join([quote_ident(col) for col in usecols])
-                sql_tmp = f"(SELECT {usecols_tmp} FROM {sql_tmp}) VERTICAPY_SUBTABLE"
+            if "select " not in sql_tmp.lower():
 
-            # vDataFrame of the Query
-            vDataFrameSQL(sql_tmp, name="", schema="", vdf=self)
+                self.__init__(sql_tmp)
+
+            else:
+
+                # Filtering some columns
+                if usecols:
+                    usecols_tmp = ", ".join([quote_ident(col) for col in usecols])
+                    sql_tmp = (
+                        f"SELECT {usecols_tmp} FROM ({sql_tmp}) VERTICAPY_SUBTABLE"
+                    )
+
+                dtypes = get_data_types(sql_tmp)
+                self._VERTICAPY_VARIABLES_["columns"] = [
+                    quote_ident(dt[0]) for dt in dtypes
+                ]
+                self._VERTICAPY_VARIABLES_[
+                    "main_relation"
+                ] = f"({sql_tmp}) VERTICAPY_SUBTABLE"
+
+                # Creating the vDataColumns
+                for column, ctype in dtypes:
+                    if '"' in column:
+                        column_str = column.replace('"', "_")
+                        warning_message = (
+                            f'A double quote " was found in the column {column}, its '
+                            f"alias was changed using underscores '_' to {column_str}"
+                        )
+                        warnings.warn(warning_message, Warning)
+                    column_name = '"' + column.replace('"', "_") + '"'
+                    category = to_category(ctype)
+                    if (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
+                        isvmap(expr=relation, column=column,)
+                    ):
+                        category = "vmap"
+                        ctype = (
+                            "VMAP(" + "(".join(ctype.split("(")[1:])
+                            if "(" in ctype
+                            else "VMAP"
+                        )
+                    new_vDataColumn = vDataColumn(
+                        column_name,
+                        parent=vdf,
+                        transformations=[(quote_ident(column), ctype, category,)],
+                    )
+                    setattr(self, column_name, new_vDataColumn)
+                    setattr(self, column_name[1:-1], new_vDataColumn)
+                    new_vDataColumn.init = False
 
         elif not (empty):
 

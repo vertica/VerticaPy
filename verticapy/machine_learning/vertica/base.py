@@ -45,7 +45,7 @@ from verticapy.machine_learning.model_management.read import does_model_exist
 import verticapy.machine_learning.model_selection as ms
 
 from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample, vDataFrameSQL
+from verticapy.sql.read import to_tablesample
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -201,7 +201,7 @@ Main Class for Vertica Model
                 "NaiveBayes",
                 "NearestCentroid",
             ):
-                return vDataFrameSQL(self.input_relation).contour(
+                return vDataFrame(sql=self.input_relation).contour(
                     self.X,
                     self.deploySQL(X=self.X, pos_label=pos_label),
                     cbar_title=self.y,
@@ -210,7 +210,7 @@ Main Class for Vertica Model
                     **style_kwds,
                 )
             else:
-                return vDataFrameSQL(self.input_relation).contour(
+                return vDataFrame(sql=self.input_relation).contour(
                     self.X,
                     self,
                     pos_label=pos_label,
@@ -220,7 +220,7 @@ Main Class for Vertica Model
                     **style_kwds,
                 )
         elif self.type == "KNeighborsRegressor":
-            return vDataFrameSQL(self.input_relation).contour(
+            return vDataFrame(sql=self.input_relation).contour(
                 self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
             )
         elif self.type in (
@@ -232,11 +232,11 @@ Main Class for Vertica Model
             cbar_title = "cluster"
             if self.type == "IsolationForest":
                 cbar_title = "anomaly_score"
-            return vDataFrameSQL(self.input_relation).contour(
+            return vDataFrame(sql=self.input_relation).contour(
                 self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds,
             )
         else:
-            return vDataFrameSQL(self.input_relation).contour(
+            return vDataFrame(sql=self.input_relation).contour(
                 self.X,
                 self.deploySQL(X=self.X),
                 cbar_title=self.y,
@@ -740,14 +740,14 @@ Main Class for Vertica Model
                         raise TypeError(
                             "KPrototypes' plots with categorical inputs is not yet supported."
                         )
-                vdf = vDataFrameSQL(self.input_relation)
+                vdf = vDataFrame(sql=self.input_relation)
                 catcol = f"{self.type.lower()}_cluster"
                 self.predict(vdf, name=catcol)
             elif self.type == "DBSCAN":
-                vdf = vDataFrameSQL(self.name)
+                vdf = vDataFrame(sql=self.name)
                 catcol = "dbscan_cluster"
             elif self.type == "IsolationForest":
-                vdf = vDataFrameSQL(self.input_relation)
+                vdf = vDataFrame(sql=self.input_relation)
                 self.predict(vdf, name="anomaly_score")
                 return vdf.bubble(
                     columns=self.X,
@@ -1477,7 +1477,7 @@ class Supervised(vModel):
             for x in X:
                 new_types[x] = nb_lookup_table[self.parameters["nbtype"]]
             if not (isinstance(input_relation, vDataFrame)):
-                input_relation = vDataFrameSQL(input_relation)
+                input_relation = vDataFrame(sql=input_relation)
             else:
                 input_relation.copy()
             input_relation.astype(new_types)
@@ -1960,7 +1960,7 @@ class BinaryClassifier(Classifier):
             "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X = [quote_ident(elem) for elem in X]
         if not (name):
             name = gen_name([self.type, self.name])
@@ -2012,7 +2012,7 @@ class BinaryClassifier(Classifier):
             "can only be 1 or 0 in case of Binary Classification."
         )
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X = [quote_ident(elem) for elem in X]
         if not (name):
             name = gen_name([self.type, self.name])
@@ -2532,7 +2532,7 @@ class MulticlassClassifier(Classifier):
             "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
 
         # In Place
         vdf_return = vdf if inplace else vdf.copy()
@@ -2600,7 +2600,7 @@ class MulticlassClassifier(Classifier):
             f"Found '{pos_label}'."
         )
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         if not (name):
             name = gen_name([self.type, self.name])
 
@@ -2790,7 +2790,7 @@ class Regressor(Supervised):
         else:
             X = [quote_ident(elem) for elem in X]
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         if not (name):
             name = f"{self.type}_" + "".join(ch for ch in self.name if ch.isalnum())
         if inplace:
@@ -2888,12 +2888,7 @@ class Regressor(Supervised):
         elif method == "anova":
             return mt.anova_table(self.y, prediction, test_relation, len(self.X))
         elif method == "details":
-            vdf = vDataFrameSQL(
-                f"""
-                    (SELECT 
-                        {self.y} 
-                    FROM {self.input_relation}) VERTICAPY_SUBTABLE"""
-            )
+            vdf = vDataFrame(sql=f"SELECT {self.y} FROM {self.input_relation}")
             n = vdf[self.y].count()
             kurt = vdf[self.y].kurt()
             skew = vdf[self.y].skew()
@@ -3023,7 +3018,7 @@ class Unsupervised(vModel):
             X_str = ", ".join([quote_ident(x) for x in X])
             id_column = f", ROW_NUMBER() OVER (ORDER BY {X_str}) AS {id_column_name}"
         if isinstance(input_relation, str) and self.type == "MCA":
-            input_relation = vDataFrameSQL(input_relation)
+            input_relation = vDataFrame(sql=input_relation)
         tmp_view = False
         if isinstance(input_relation, vDataFrame) or (id_column):
             tmp_view = True
@@ -3445,7 +3440,7 @@ class Preprocessing(Unsupervised):
         if not (X):
             X = self.get_names()
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
@@ -3454,7 +3449,7 @@ class Preprocessing(Unsupervised):
             exclude_columns, exclude_columns, all_columns
         )
         main_relation = f"(SELECT {inverse_sql} FROM {relation}) VERTICAPY_SUBTABLE"
-        return vDataFrameSQL(main_relation, "Inverse Transformation")
+        return vDataFrame(sql=main_relation)
 
     def transform(self, vdf: Union[str, vDataFrame] = None, X: Union[str, list] = []):
         """
@@ -3481,14 +3476,14 @@ class Preprocessing(Unsupervised):
         if not (X):
             X = self.X
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
         columns = self.deploySQL(exclude_columns, exclude_columns, all_columns)
         main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
-        return vDataFrameSQL(main_relation, "Inverse Transformation")
+        return vDataFrame(sql=main_relation)
 
 
 class Decomposition(Preprocessing):
@@ -3569,7 +3564,7 @@ class Decomposition(Preprocessing):
     ax
         Matplotlib axes object
         """
-        vdf = vDataFrameSQL(self.input_relation)
+        vdf = vDataFrame(sql=self.input_relation)
         ax = self.transform(vdf).scatter(
             columns=[f"col{dimensions[0]}", f"col{dimensions[1]}"],
             max_nb_points=100000,
@@ -3796,7 +3791,7 @@ class Decomposition(Preprocessing):
         if not (X):
             X = self.X
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
@@ -3805,7 +3800,7 @@ class Decomposition(Preprocessing):
             n_components, cutoff, exclude_columns, exclude_columns, all_columns
         )
         main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
-        return vDataFrameSQL(main_relation, "Inverse Transformation")
+        return vDataFrame(sql=main_relation)
 
 
 class Clustering(Unsupervised):
@@ -3841,7 +3836,7 @@ class Clustering(Unsupervised):
         if isinstance(X, str):
             X = [X]
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X = [quote_ident(elem) for elem in X]
         if not (name):
             name = self.type + "_" + "".join(ch for ch in self.name if ch.isalnum())

@@ -37,7 +37,6 @@ from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
 from verticapy.sql.drop import drop
-from verticapy.sql.read import vDataFrameSQL
 
 
 @save_verticapy_logs
@@ -369,7 +368,7 @@ tablesample
         random.shuffle(X)
     elif x_order in ("spearman", "pearson"):
         if isinstance(input_relation, str):
-            vdf = vDataFrameSQL(input_relation)
+            vdf = vDataFrame(sql=input_relation)
         else:
             vdf = input_relation
         X = [

@@ -24,8 +24,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.base import Regressor
 
-from verticapy.sql.read import vDataFrameSQL
-
 
 class Pipeline:
     """
@@ -116,7 +114,7 @@ steps: list
         if isinstance(X, str):
             X = [X]
         if isinstance(input_relation, str):
-            vdf = vDataFrameSQL(relation=input_relation)
+            vdf = vDataFrame(sql=input_relation)
         else:
             vdf = input_relation
         if OPTIONS["overwrite_model"]:
@@ -189,7 +187,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -273,7 +271,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -313,7 +311,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(sql=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx in range(1, len(self.steps) + 1):

@@ -28,8 +28,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.machine_learning.vertica.base import vModel
 from verticapy.machine_learning.vertica.decomposition import PCA
 
-from verticapy.sql.read import vDataFrameSQL
-
 
 class AutoDataPrep(vModel):
     """
@@ -179,7 +177,7 @@ final_relation_: vDataFrame
             "Parameter 'by' must be empty if 'ts' is not defined."
         )
         if isinstance(input_relation, str):
-            vdf = vDataFrameSQL(input_relation)
+            vdf = vDataFrame(sql=input_relation)
         else:
             vdf = input_relation.copy()
         if not (X):

@@ -37,8 +37,6 @@ from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.timeseries import range_curve
 
-from verticapy.sql.read import vDataFrameSQL
-
 
 def _compute_function_metrics(
     y_true: str,
@@ -174,7 +172,7 @@ tablesample
     if isinstance(X, str):
         X = [X]
     if isinstance(input_relation, str):
-        input_relation = vDataFrameSQL(input_relation)
+        input_relation = vDataFrame(sql=input_relation)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
     if estimator.MODEL_SUBTYPE == "REGRESSOR":
@@ -458,7 +456,7 @@ tablesample
     elif metric == "auto":
         metric = "logloss"
     if isinstance(input_relation, str):
-        input_relation = vDataFrameSQL(input_relation)
+        input_relation = vDataFrame(sql=input_relation)
     lc_result_final = []
     sizes = sorted(set(sizes))
     if OPTIONS["tqdm"]:

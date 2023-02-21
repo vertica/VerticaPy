@@ -42,7 +42,6 @@ from verticapy.machine_learning.model_selection.model_validation import cross_va
 from verticapy.machine_learning.model_management.read import does_model_exist
 
 from verticapy.sql.drop import drop
-from verticapy.sql.read import vDataFrameSQL
 
 
 @save_verticapy_logs
@@ -375,7 +374,7 @@ tablesample
     )
     if estimator_type == "auto":
         if not (isinstance(input_relation, vDataFrame)):
-            vdf = vDataFrameSQL(input_relation)
+            vdf = vDataFrame(sql=input_relation)
         else:
             vdf = input_relation
         if sorted(vdf[y].distinct()) == [0, 1]:

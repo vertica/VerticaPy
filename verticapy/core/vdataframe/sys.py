@@ -27,14 +27,9 @@ from verticapy.core._utils._map import verticapy_agg_name
 from verticapy.core.tablesample.base import tablesample
 
 from verticapy.sql.flex import isvmap
-from verticapy.sql.read import vDataFrameSQL
 
 
 class vDFSYS:
-    #
-    # Semi Special Methods
-    #
-
     def __add_to_history__(self, message: str):
         """
     VERTICAPY stores the user modification and help the user to look at 
@@ -320,15 +315,6 @@ class vDFSYS:
                         if val != val:
                             val = None
                         self[column].catalog[key] = val
-
-    def __vDataFrameSQL__(self, table: str, func: str, history: str):
-        """
-    This method is to use to build a vDataFrame based on a relation
-        """
-        schema = self._VERTICAPY_VARIABLES_["schema"]
-        history = self._VERTICAPY_VARIABLES_["history"] + [history]
-        saving = self._VERTICAPY_VARIABLES_["saving"]
-        return vDataFrameSQL(table, func, schema, history, saving)
 
     #
     # Methods

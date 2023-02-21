@@ -28,8 +28,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
-from verticapy.sql.read import vDataFrameSQL
-
 
 @save_verticapy_logs
 def endogtest(vdf: vDataFrame, eps: str, X: list):
@@ -238,10 +236,10 @@ tablesample
             if i != 0 or j != 0:
                 variables += ["{} * {} AS var_{}_{}".format(X_0[i], X_0[j], i, j)]
                 variables_names += ["var_{}_{}".format(i, j)]
-    query = "(SELECT {}, POWER({}, 2) AS v_eps2 FROM {}) VERTICAPY_SUBTABLE".format(
+    query = "SELECT {}, POWER({}, 2) AS v_eps2 FROM {}".format(
         ", ".join(variables), eps, vdf.__genSQL__()
     )
-    vdf_white = vDataFrameSQL(query)
+    vdf_white = vDataFrame(sql=query)
     name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:

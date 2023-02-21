@@ -1162,6 +1162,8 @@ class vDFCORR:
     vDataFrame.pacf        : Computes the partial autocorrelations of the 
                              input vDataColumn.
         """
+        from verticapy.core.vdataframe.base import vDataFrame
+
         method = str(method).lower()
         if isinstance(by, str):
             by = [by]
@@ -1179,11 +1181,11 @@ class vDFCORR:
             f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
             for i in p
         ]
-        relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) acf"
+        query = f"SELECT {', '.join([column] + columns)} FROM {table}"
         if len(p) == 1:
-            return self.__vDataFrameSQL__(relation, "acf", "").corr([], method=method)
+            return vDataFrame(sql=query).corr([], method=method)
         elif acf_type == "heatmap":
-            return self.__vDataFrameSQL__(relation, "acf", "").corr(
+            return vDataFrame(sql=query).corr(
                 [],
                 method=method,
                 round_nb=round_nb,
@@ -1192,7 +1194,7 @@ class vDFCORR:
                 **style_kwds,
             )
         else:
-            result = self.__vDataFrameSQL__(relation, "acf", "").corr(
+            result = vDataFrame(sql=query).corr(
                 [], method=method, focus=column, show=False
             )
             columns = [elem for elem in result.values["index"]]

@@ -20,7 +20,7 @@ import warnings
 from verticapy.vdataframe import vDataFrame
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.core.tablesample.base import tablesample
-from verticapy.sql.read import to_tablesample, vDataFrameSQL
+from verticapy.sql.read import to_tablesample
 from verticapy._utils._sql._execute import _executeSQL
 
 
@@ -106,6 +106,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    from verticapy.core.base.vdataframe import vDataFrame
 
     if not (name):
         query = f"SELECT STV_Describe_Index () OVER ()"
@@ -119,7 +120,7 @@ tablesample
             OVER()"""
 
     if list_polygons:
-        result = vDataFrameSQL(f"({query}) x")
+        result = vDataFrame(sql=query)
     else:
         result = to_tablesample(query)
 
