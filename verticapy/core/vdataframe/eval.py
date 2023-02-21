@@ -40,10 +40,10 @@ class vDFEVAL:
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
-        elif isinstance(val, vDataColumn) and not (val.init):
-            final_trans, n = val.init_transf, len(val.transformations)
+        elif isinstance(val, vDataColumn) and not (val._INIT):
+            final_trans, n = val._INIT_TRANSF, len(val._TRANSF)
             for i in range(1, n):
-                final_trans = val.transformations[i][0].replace("{}", final_trans)
+                final_trans = val._TRANSF[i][0].replace("{}", final_trans)
             self.eval(name=attr, expr=final_trans)
         else:
             self.__dict__[attr] = val
@@ -112,7 +112,7 @@ class vDFEVAL:
             if (quote_ident(column) in expr) or (
                 re.search(re.compile(f"\\b{column_str}\\b"), expr)
             ):
-                max_floor = max(len(self[column].transformations), max_floor)
+                max_floor = max(len(self[column]._TRANSF), max_floor)
         transformations = [
             (
                 "___VERTICAPY_UNDEFINED___",
@@ -126,8 +126,8 @@ class vDFEVAL:
         )
         setattr(self, name, new_vDataColumn)
         setattr(self, name.replace('"', ""), new_vDataColumn)
-        new_vDataColumn.init = False
-        new_vDataColumn.init_transf = name
+        new_vDataColumn._INIT = False
+        new_vDataColumn._INIT_TRANSF = name
         self._VARS["columns"] += [name]
         self._add_to_history(
             f"[Eval]: A new vDataColumn {name} was added to the vDataFrame."

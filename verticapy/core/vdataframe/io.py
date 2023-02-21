@@ -369,14 +369,14 @@ class vDFIO:
             )
             catalog_vars = {}
             for column in usecols:
-                catalog_vars[column] = self[column].catalog
+                catalog_vars[column] = self[column]._CATALOG
             if relation_type == "local temporary table":
                 self.__init__("v_temp_schema." + name)
             else:
                 self.__init__(name)
             self._VARS["history"] = history
             for column in usecols:
-                self[column].catalog = catalog_vars[column]
+                self[column]._CATALOG = catalog_vars[column]
         return self
 
     @save_verticapy_logs

@@ -24,7 +24,7 @@ from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import indentSQL, quote_ident
 
-from verticapy.core.TableSample.base import TableSample
+from verticapy.core.tablesample.base import TableSample
 
 from verticapy.sql.flex import isvmap
 
@@ -71,7 +71,7 @@ class vDFSYS:
             force_columns = [col for col in self._VARS["columns"]]
         for column in force_columns:
             all_imputations_grammar += [
-                [transformation[0] for transformation in self[column].transformations]
+                [transformation[0] for transformation in self[column]._TRANSF]
             ]
         for column in transformations:
             all_imputations_grammar += [transformations[column]]
@@ -185,19 +185,19 @@ class vDFSYS:
             return total
         elif method:
             method = verticapy_agg_name(method.lower())
-            if columns[1] in self[columns[0]].catalog[method]:
-                return self[columns[0]].catalog[method][columns[1]]
+            if columns[1] in self[columns[0]]._CATALOG[method]:
+                return self[columns[0]]._CATALOG[method][columns[1]]
             else:
                 return "VERTICAPY_NOT_PRECOMPUTED"
         key = verticapy_agg_name(key.lower())
         column = self._format_colnames(column)
         try:
-            if (key == "approx_unique") and ("unique" in self[column].catalog):
+            if (key == "approx_unique") and ("unique" in self[column]._CATALOG):
                 key = "unique"
             result = (
                 "VERTICAPY_NOT_PRECOMPUTED"
-                if key not in self[column].catalog
-                else self[column].catalog[key]
+                if key not in self[column]._CATALOG
+                else self[column]._CATALOG[key]
             )
         except:
             result = "VERTICAPY_NOT_PRECOMPUTED"
@@ -214,7 +214,7 @@ class vDFSYS:
         max_pos, order_by = 0, ""
         columns_tmp = [elem for elem in self.get_columns()]
         for column in columns_tmp:
-            max_pos = max(max_pos, len(self[column].transformations) - 1)
+            max_pos = max(max_pos, len(self[column]._TRANSF) - 1)
         if max_pos in self._VARS["order_by"]:
             order_by = self._VARS["order_by"][max_pos]
         return order_by
@@ -276,7 +276,7 @@ class vDFSYS:
             if not (columns):
                 columns = self.get_columns()
             for column in columns:
-                self[column].catalog = copy.deepcopy(agg_dict)
+                self[column]._CATALOG = copy.deepcopy(agg_dict)
             self._VARS["count"] = -1
         elif matrix:
             matrix = verticapy_agg_name(matrix.lower())
@@ -287,7 +287,7 @@ class vDFSYS:
                         val = float(val)
                     except:
                         pass
-                    self[column].catalog[matrix][elem] = val
+                    self[column]._CATALOG[matrix][elem] = val
         else:
             columns = [elem for elem in values]
             columns.remove("index")
@@ -304,7 +304,7 @@ class vDFSYS:
                             pass
                         if val != val:
                             val = None
-                        self[column].catalog[key] = val
+                        self[column]._CATALOG[key] = val
 
     def current_relation(self, reindent: bool = True):
         """
@@ -608,7 +608,7 @@ class vDCSYS:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -620,24 +620,24 @@ class vDCSYS:
         assert name.replace('"', ""), EmptyParameter(
             "The parameter 'name' must not be empty"
         )
-        assert not (self.parent.is_colname_in(name)), NameError(
+        assert not (self._PARENT.is_colname_in(name)), NameError(
             f"A vDataColumn has already the alias {name}.\nBy changing "
             "the parameter 'name', you'll be able to solve this issue."
         )
         new_vDataColumn = vDataColumn(
             name,
-            parent=self.parent,
-            transformations=[item for item in self.transformations],
-            catalog=self.catalog,
+            parent=self._PARENT,
+            transformations=[item for item in self._TRANSF],
+            catalog=self._CATALOG,
         )
-        setattr(self.parent, name, new_vDataColumn)
-        setattr(self.parent, name[1:-1], new_vDataColumn)
-        self.parent._VARS["columns"] += [name]
-        self.parent._add_to_history(
-            f"[Add Copy]: A copy of the vDataColumn {self.alias} "
+        setattr(self._PARENT, name, new_vDataColumn)
+        setattr(self._PARENT, name[1:-1], new_vDataColumn)
+        self._PARENT._VARS["columns"] += [name]
+        self._PARENT._add_to_history(
+            f"[Add Copy]: A copy of the vDataColumn {self._ALIAS} "
             f"named {name} was added to the vDataFrame."
         )
-        return self.parent
+        return self._PARENT
 
     @save_verticapy_logs
     def memory_usage(self):
@@ -655,11 +655,11 @@ class vDCSYS:
         """
         total = (
             sys.getsizeof(self)
-            + sys.getsizeof(self.alias)
-            + sys.getsizeof(self.transformations)
-            + sys.getsizeof(self.catalog)
+            + sys.getsizeof(self._ALIAS)
+            + sys.getsizeof(self._TRANSF)
+            + sys.getsizeof(self._CATALOG)
         )
-        for elem in self.catalog:
+        for elem in self._CATALOG:
             total += sys.getsizeof(elem)
         return total
 
@@ -677,23 +677,23 @@ class vDCSYS:
     --------
     vDataFrame.expected_store_usage : Returns the vDataFrame expected store usage.
         """
-        pre_comp = self.parent._get_catalog_value(self.alias, "store_usage")
+        pre_comp = self._PARENT._get_catalog_value(self._ALIAS, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return pre_comp
-        alias_sql_repr = to_varchar(self.category(), self.alias)
+        alias_sql_repr = to_varchar(self.category(), self._ALIAS)
         store_usage = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataColumn.storage_usage')*/ 
                     ZEROIFNULL(SUM(LENGTH({alias_sql_repr}::varchar))) 
-                FROM {self.parent._genSQL()}""",
-            title=f"Computing the Store Usage of the vDataColumn {self.alias}.",
+                FROM {self._PARENT._genSQL()}""",
+            title=f"Computing the Store Usage of the vDataColumn {self._ALIAS}.",
             method="fetchfirstelem",
-            sql_push_ext=self.parent._VARS["sql_push_ext"],
-            symbol=self.parent._VARS["symbol"],
+            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+            symbol=self._PARENT._VARS["symbol"],
         )
-        self.parent._update_catalog(
-            {"index": ["store_usage"], self.alias: [store_usage]}
+        self._PARENT._update_catalog(
+            {"index": ["store_usage"], self._ALIAS: [store_usage]}
         )
         return store_usage
 
@@ -714,15 +714,15 @@ class vDCSYS:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
     vDataFrame.add_copy : Creates a copy of the vDataColumn.
         """
-        old_name = quote_ident(self.alias)
+        old_name = quote_ident(self._ALIAS)
         new_name = new_name.replace('"', "")
-        assert not (self.parent.is_colname_in(new_name)), NameError(
+        assert not (self._PARENT.is_colname_in(new_name)), NameError(
             f"A vDataColumn has already the alias {new_name}.\n"
             "By changing the parameter 'new_name', you'll "
             "be able to solve this issue."

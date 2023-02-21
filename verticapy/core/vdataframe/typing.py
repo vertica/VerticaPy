@@ -23,7 +23,7 @@ from verticapy._utils._sql._format import clean_query
 from verticapy._version import vertica_version
 from verticapy.errors import ConversionError
 
-from verticapy.core.TableSample.base import TableSample
+from verticapy.core.tablesample.base import TableSample
 
 from verticapy.sql.flex import isvmap
 
@@ -197,7 +197,7 @@ class vDCTYPING:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -212,9 +212,9 @@ class vDCTYPING:
                     vertica_version(condition=[10, 0, 0])
                 query = f"""
                     SELECT 
-                        {self.alias} 
-                    FROM {self.parent._genSQL()} 
-                    ORDER BY LENGTH({self.alias}) DESC 
+                        {self._ALIAS} 
+                    FROM {self._PARENT._genSQL()} 
+                    ORDER BY LENGTH({self._ALIAS}) DESC 
                     LIMIT 1"""
                 biggest_str = _executeSQL(
                     query, title="getting the biggest string", method="fetchfirstelem",
@@ -276,30 +276,28 @@ class vDCTYPING:
             else:
                 transformation_2 = f"{{}}::{dtype}"
             transformation_2 = clean_query(transformation_2)
-            transformation = (transformation_2.format(self.alias), transformation_2)
+            transformation = (transformation_2.format(self._ALIAS), transformation_2)
             query = f"""
                 SELECT 
                     /*+LABEL('vDataColumn.astype')*/ 
-                    {transformation[0]} AS {self.alias} 
-                FROM {self.parent._genSQL()} 
-                WHERE {self.alias} IS NOT NULL 
+                    {transformation[0]} AS {self._ALIAS} 
+                FROM {self._PARENT._genSQL()} 
+                WHERE {self._ALIAS} IS NOT NULL 
                 LIMIT 20"""
             _executeSQL(
                 query,
                 title="Testing the Type casting.",
-                sql_push_ext=self.parent._VARS["sql_push_ext"],
-                symbol=self.parent._VARS["symbol"],
+                sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+                symbol=self._PARENT._VARS["symbol"],
             )
-            self.transformations += [
-                (transformation[1], dtype, to_category(ctype=dtype),)
-            ]
-            self.parent._add_to_history(
-                f"[AsType]: The vDataColumn {self.alias} was converted to {dtype}."
+            self._TRANSF += [(transformation[1], dtype, to_category(ctype=dtype),)]
+            self._PARENT._add_to_history(
+                f"[AsType]: The vDataColumn {self._ALIAS} was converted to {dtype}."
             )
-            return self.parent
+            return self._PARENT
         except Exception as e:
             raise ConversionError(
-                f"{e}\nThe vDataColumn {self.alias} can not be converted to {dtype}"
+                f"{e}\nThe vDataColumn {self._ALIAS} can not be converted to {dtype}"
             )
 
     def category(self):
@@ -316,7 +314,7 @@ class vDCTYPING:
     --------
     vDataFrame[].ctype : Returns the vDataColumn database type.
         """
-        return self.transformations[-1][2]
+        return self._TRANSF[-1][2]
 
     def ctype(self):
         """
@@ -327,7 +325,7 @@ class vDCTYPING:
     str
         vDataColumn DB type.
         """
-        return self.transformations[-1][1].lower()
+        return self._TRANSF[-1][1].lower()
 
     dtype = ctype
 
@@ -400,5 +398,5 @@ class vDCTYPING:
         True if the vDataColumn category is VMap.
         """
         return self.category() == "vmap" or isvmap(
-            column=self.alias, expr=self.parent._genSQL()
+            column=self._ALIAS, expr=self._PARENT._genSQL()
         )

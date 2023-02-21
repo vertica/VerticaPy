@@ -567,7 +567,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -589,7 +589,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -617,7 +617,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -627,51 +627,49 @@ class vDCMATH:
         """
         if isinstance(func, str_sql):
             func = str(func)
-        func_apply = func.replace("{}", self.alias)
-        alias_sql_repr = self.alias.replace('"', "")
+        func_apply = func.replace("{}", self._ALIAS)
+        alias_sql_repr = self._ALIAS.replace('"', "")
         try:
             ctype = get_data_types(
                 expr=f"""
                     SELECT 
                         {func_apply} AS apply_test_feature 
-                    FROM {self.parent._genSQL()} 
-                    WHERE {self.alias} IS NOT NULL 
+                    FROM {self._PARENT._genSQL()} 
+                    WHERE {self._ALIAS} IS NOT NULL 
                     LIMIT 0""",
                 column="apply_test_feature",
             )
             category = to_category(ctype=ctype)
-            all_cols, max_floor = self.parent.get_columns(), 0
+            all_cols, max_floor = self._PARENT.get_columns(), 0
             for column in all_cols:
                 try:
                     column_str = column.replace('"', "")
                     if (quote_ident(column) in func) or (
                         re.search(re.compile(f"\\b{column_str}\\b"), func,)
                     ):
-                        max_floor = max(
-                            len(self.parent[column].transformations), max_floor
-                        )
+                        max_floor = max(len(self._PARENT[column]._TRANSF), max_floor)
                 except:
                     pass
-            max_floor -= len(self.transformations)
+            max_floor -= len(self._TRANSF)
             if copy_name:
                 copy_name_str = copy_name.replace('"', "")
                 self.add_copy(name=copy_name)
                 for k in range(max_floor):
-                    self.parent[copy_name].transformations += [
+                    self._PARENT[copy_name]._TRANSF += [
                         ("{}", self.ctype(), self.category())
                     ]
-                self.parent[copy_name].transformations += [(func, ctype, category)]
-                self.parent[copy_name].catalog = self.catalog
+                self._PARENT[copy_name]._TRANSF += [(func, ctype, category)]
+                self._PARENT[copy_name]._CATALOG = self._CATALOG
             else:
                 for k in range(max_floor):
-                    self.transformations += [("{}", self.ctype(), self.category())]
-                self.transformations += [(func, ctype, category)]
-                self.parent._update_catalog(erase=True, columns=[self.alias])
-            self.parent._add_to_history(
+                    self._TRANSF += [("{}", self.ctype(), self.category())]
+                self._TRANSF += [(func, ctype, category)]
+                self._PARENT._update_catalog(erase=True, columns=[self._ALIAS])
+            self._PARENT._add_to_history(
                 f"[Apply]: The vDataColumn '{alias_sql_repr}' was "
                 f"transformed with the func 'x -> {func_apply}'."
             )
-            return self.parent
+            return self._PARENT
         except Exception as e:
             raise QueryError(
                 f"{e}\nError when applying the func 'x -> {func_apply}' "
@@ -766,7 +764,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -822,7 +820,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -846,7 +844,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -871,7 +869,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -898,15 +896,15 @@ class vDCMATH:
             fun = "APPLY_COUNT_ELEMENTS"
         else:
             fun = "LENGTH"
-        elem_to_select = f"{fun}({self.alias})"
-        init_transf = f"{fun}({self.init_transf})"
-        new_alias = quote_ident(self.alias[1:-1] + ".length")
+        elem_to_select = f"{fun}({self._ALIAS})"
+        init_transf = f"{fun}({self._INIT_TRANSF})"
+        new_alias = quote_ident(self._ALIAS[1:-1] + ".length")
         query = f"""
             SELECT 
                 {elem_to_select} AS {new_alias} 
-            FROM {self.parent._genSQL()}"""
+            FROM {self._PARENT._genSQL()}"""
         vcol = vDataFrame(query)[new_alias]
-        vcol.init_transf = init_transf
+        vcol._INIT_TRANSF = init_transf
         return vcol
 
     @save_verticapy_logs
@@ -922,7 +920,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -948,7 +946,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -974,7 +972,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------

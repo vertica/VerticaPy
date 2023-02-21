@@ -312,6 +312,6 @@ class vDFJUS:
         max_pos = 0
         columns_tmp = [elem for elem in self._VARS["columns"]]
         for column in columns_tmp:
-            max_pos = max(max_pos, len(self[column].transformations) - 1)
+            max_pos = max(max_pos, len(self[column]._TRANSF) - 1)
         self._VARS["order_by"][max_pos] = self._get_sort_syntax(columns)
         return self

@@ -30,7 +30,7 @@ from verticapy._utils._sql._format import quote_ident
 from verticapy._version import vertica_version
 from verticapy.errors import EmptyParameter
 
-from verticapy.core.TableSample.base import TableSample
+from verticapy.core.tablesample.base import TableSample
 
 from verticapy.plotting._colors import gen_cmap
 import verticapy.plotting._matplotlib as plt
@@ -1661,39 +1661,39 @@ class vDCCORR:
     --------
     vDataFrame.iv_woe : Computes the Information Value (IV) Table.
         """
-        y = self.parent._format_colnames(y)
-        assert self.parent[y].nunique() == 2, TypeError(
+        y = self._PARENT._format_colnames(y)
+        assert self._PARENT[y].nunique() == 2, TypeError(
             f"vDataColumn {y} must be binary to use iv_woe."
         )
-        response_cat = self.parent[y].distinct()
+        response_cat = self._PARENT[y].distinct()
         response_cat.sort()
         assert response_cat == [0, 1], TypeError(
             f"vDataColumn {y} must be binary to use iv_woe."
         )
-        self.parent[y].distinct()
+        self._PARENT[y].distinct()
         trans = self.discretize(
             method="same_width" if self.isnum() else "topk",
             nbins=nbins,
             k=nbins,
             new_category="Others",
             return_enum_trans=True,
-        )[0].replace("{}", self.alias)
+        )[0].replace("{}", self._ALIAS)
         query = f"""
             SELECT 
-                {trans} AS {self.alias}, 
-                {self.alias} AS ord, 
+                {trans} AS {self._ALIAS}, 
+                {self._ALIAS} AS ord, 
                 {y}::int AS {y} 
-            FROM {self.parent._genSQL()}"""
+            FROM {self._PARENT._genSQL()}"""
         query = f"""
             SELECT 
-                {self.alias}, 
+                {self._ALIAS}, 
                 MIN(ord) AS ord, 
                 SUM(1 - {y}) AS non_events, 
                 SUM({y}) AS events 
             FROM ({query}) x GROUP BY 1"""
         query = f"""
             SELECT 
-                {self.alias}, 
+                {self._ALIAS}, 
                 ord, 
                 non_events, 
                 events, 
@@ -1702,7 +1702,7 @@ class vDCCORR:
             FROM ({query}) x"""
         query = f"""
             SELECT 
-                {self.alias} AS index, 
+                {self._ALIAS} AS index, 
                 non_events, 
                 events, 
                 pt_non_events, 
@@ -1718,12 +1718,12 @@ class vDCCORR:
                         / NULLIFZERO(pt_events))) 
                 END AS iv 
             FROM ({query}) x ORDER BY ord"""
-        title = f"Computing WOE & IV of {self.alias} (response = {y})."
+        title = f"Computing WOE & IV of {self._ALIAS} (response = {y})."
         result = to_tablesample(
             query,
             title=title,
-            sql_push_ext=self.parent._VARS["sql_push_ext"],
-            symbol=self.parent._VARS["symbol"],
+            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+            symbol=self._PARENT._VARS["symbol"],
         )
         result.values["index"] += ["total"]
         result.values["non_events"] += [sum(result["non_events"])]

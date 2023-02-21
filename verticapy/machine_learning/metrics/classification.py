@@ -21,7 +21,7 @@ from typing import Union
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._version import check_minimum_version
 
-from verticapy.core.TableSample.base import TableSample
+from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning._utils import (

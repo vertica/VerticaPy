@@ -122,7 +122,7 @@ class vDCTEXT:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -151,7 +151,7 @@ class vDCTEXT:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -180,7 +180,7 @@ class vDCTEXT:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -211,7 +211,7 @@ class vDCTEXT:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -242,7 +242,7 @@ class vDCTEXT:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------

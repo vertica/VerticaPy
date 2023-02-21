@@ -19,7 +19,7 @@ from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident, schema_relation
 from verticapy._version import vertica_version
 
-from verticapy.core.TableSample.base import TableSample
+from verticapy.core.tablesample.base import TableSample
 
 from verticapy.sql.read import to_tablesample
 

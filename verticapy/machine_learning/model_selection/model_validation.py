@@ -28,7 +28,7 @@ from verticapy._utils._sql._execute import _executeSQL
 from verticapy._version import check_minimum_version
 from verticapy.errors import ParameterError
 
-from verticapy.core.TableSample.base import TableSample
+from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning._utils import compute_area

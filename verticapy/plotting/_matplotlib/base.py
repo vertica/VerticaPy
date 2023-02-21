@@ -64,7 +64,7 @@ def compute_plot_variables(
     elif isinstance(method, str):
         aggregate = method
         other_columns = ", " + ", ".join(
-            vdf.parent.get_columns(exclude_columns=[vdf.alias])
+            vdf._PARENT.get_columns(exclude_columns=[vdf._ALIAS])
         )
     else:
         raise ParameterError(
@@ -74,7 +74,7 @@ def compute_plot_variables(
     # depending on the cardinality, the type, the vDataColumn can be treated as categorical or not
     cardinality, count, is_numeric, is_date, is_categorical = (
         vdf.nunique(True),
-        vdf.parent.shape()[0],
+        vdf._PARENT.shape()[0],
         vdf.isnum() and not (vdf.isbool()),
         (vdf.category() == "date"),
         False,
@@ -87,31 +87,31 @@ def compute_plot_variables(
         if (is_numeric) and not (pie):
             query = f"""
                 SELECT 
-                    {vdf.alias},
+                    {vdf._ALIAS},
                     {aggregate}
-                FROM {vdf.parent._genSQL()} 
-                WHERE {vdf.alias} IS NOT NULL 
-                GROUP BY {vdf.alias} 
-                ORDER BY {vdf.alias} ASC 
+                FROM {vdf._PARENT._genSQL()} 
+                WHERE {vdf._ALIAS} IS NOT NULL 
+                GROUP BY {vdf._ALIAS} 
+                ORDER BY {vdf._ALIAS} ASC 
                 LIMIT {max_cardinality}"""
         else:
-            table = vdf.parent._genSQL()
+            table = vdf._PARENT._genSQL()
             if (pie) and (is_numeric):
                 enum_trans = (
                     vdf.discretize(h=h, return_enum_trans=True)[0].replace(
-                        "{}", vdf.alias
+                        "{}", vdf._ALIAS
                     )
                     + " AS "
-                    + vdf.alias
+                    + vdf._ALIAS
                 )
                 if of:
                     enum_trans += f" , {of}"
                 table = f"(SELECT {enum_trans + other_columns} FROM {table}) enum_table"
-            cast_alias = to_varchar(vdf.category(), vdf.alias)
+            cast_alias = to_varchar(vdf.category(), vdf._ALIAS)
             query = f"""
                 (SELECT 
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/ 
-                    {cast_alias} AS {vdf.alias},
+                    {cast_alias} AS {vdf._ALIAS},
                     {aggregate}
                  FROM {table} 
                  GROUP BY {cast_alias} 
@@ -124,11 +124,11 @@ def compute_plot_variables(
                         'Others',
                         {aggregate} 
                      FROM {table}
-                     WHERE {vdf.alias} NOT IN
+                     WHERE {vdf._ALIAS} NOT IN
                      (SELECT 
-                        {vdf.alias} 
+                        {vdf._ALIAS} 
                       FROM {table}
-                      GROUP BY {vdf.alias}
+                      GROUP BY {vdf._ALIAS}
                       ORDER BY {aggregate} DESC
                       LIMIT {max_cardinality}))"""
         query_result = _executeSQL(
@@ -154,22 +154,22 @@ def compute_plot_variables(
                 query=f"""
                     SELECT 
                         /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
-                        DATEDIFF('second', MIN({vdf.alias}), MAX({vdf.alias}))
-                    FROM {vdf.parent._genSQL()}""",
+                        DATEDIFF('second', MIN({vdf._ALIAS}), MAX({vdf._ALIAS}))
+                    FROM {vdf._PARENT._genSQL()}""",
                 title="Computing the histogram interval",
                 method="fetchrow",
             )
             h = float(query_result[0]) / nbins
         min_date = vdf.min()
-        converted_date = f"DATEDIFF('second', '{min_date}', {vdf.alias})"
+        converted_date = f"DATEDIFF('second', '{min_date}', {vdf._ALIAS})"
         query_result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
                     FLOOR({converted_date} / {h}) * {h}, 
                     {aggregate} 
-                FROM {vdf.parent._genSQL()}
-                WHERE {vdf.alias} IS NOT NULL 
+                FROM {vdf._PARENT._genSQL()}
+                WHERE {vdf._ALIAS} IS NOT NULL 
                 GROUP BY 1 
                 ORDER BY 1""",
             title="Computing the histogram heights",
@@ -215,10 +215,10 @@ def compute_plot_variables(
             query=f"""
                 SELECT
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
-                    FLOOR({vdf.alias} / {h}) * {h},
+                    FLOOR({vdf._ALIAS} / {h}) * {h},
                     {aggregate} 
-                FROM {vdf.parent._genSQL()}
-                WHERE {vdf.alias} IS NOT NULL
+                FROM {vdf._PARENT._genSQL()}
+                WHERE {vdf._ALIAS} IS NOT NULL
                 GROUP BY 1
                 ORDER BY 1""",
             title="Computing the histogram heights",

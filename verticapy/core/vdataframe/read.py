@@ -89,7 +89,7 @@ class vDFREAD:
         elif isinstance(index, (str, str_sql)):
             is_sql = False
             if isinstance(index, vDataColumn):
-                index = index.alias
+                index = index._ALIAS
             elif isinstance(index, str_sql):
                 index = str(index)
                 is_sql = True
@@ -261,7 +261,7 @@ class vDFREAD:
         columns = self.get_columns()
         all_percent = True
         for column in columns:
-            if not ("percent" in self[column].catalog):
+            if not ("percent" in self[column]._CATALOG):
                 all_percent = False
         all_percent = (all_percent or (OPTIONS["percent_bar"] == True)) and (
             OPTIONS["percent_bar"] != False
@@ -391,32 +391,32 @@ class vDCREAD:
                         index_stop_str = str(index_stop)
                 else:
                     index_stop_str = "1 + APPLY_COUNT_ELEMENTS({})"
-                elem_to_select = f"{self.alias}[{index_start_str}:{index_stop_str}]"
-                elem_to_select = elem_to_select.replace("{}", self.alias)
+                elem_to_select = f"{self._ALIAS}[{index_start_str}:{index_stop_str}]"
+                elem_to_select = elem_to_select.replace("{}", self._ALIAS)
                 new_alias = quote_ident(
-                    f"{self.alias[1:-1]}.{index_start}:{index_stop}"
+                    f"{self._ALIAS[1:-1]}.{index_start}:{index_stop}"
                 )
                 query = f"""
                     (SELECT 
                         {elem_to_select} AS {new_alias} 
-                    FROM {self.parent._genSQL()}) VERTICAPY_SUBTABLE"""
+                    FROM {self._PARENT._genSQL()}) VERTICAPY_SUBTABLE"""
                 vcol = vDataFrame(query)[new_alias]
-                vcol.transformations[-1] = (
+                vcol._TRANSF[-1] = (
                     new_alias,
                     self.ctype(),
                     self.category(),
                 )
-                vcol.init_transf = (
-                    f"{self.init_transf}[{index_start_str}:{index_stop_str}]"
+                vcol._INIT_TRANSF = (
+                    f"{self._INIT_TRANSF}[{index_start_str}:{index_stop_str}]"
                 )
-                vcol.init_transf = vcol.init_transf.replace("{}", self.init_transf)
+                vcol._INIT_TRANSF = vcol._INIT_TRANSF.replace("{}", self._INIT_TRANSF)
                 return vcol
             else:
                 if index_start < 0:
-                    index_start += self.parent.shape()[0]
+                    index_start += self._PARENT.shape()[0]
                 if isinstance(index_stop, int):
                     if index_stop < 0:
-                        index_stop += self.parent.shape()[0]
+                        index_stop += self._PARENT.shape()[0]
                     limit = index_stop - index_start
                     if limit <= 0:
                         limit = 0
@@ -425,56 +425,56 @@ class vDCREAD:
                     limit = ""
                 query = f"""
                     SELECT 
-                        {self.alias} 
-                    FROM {self.parent._genSQL()}
-                    {self.parent._get_last_order_by()} 
+                        {self._ALIAS} 
+                    FROM {self._PARENT._genSQL()}
+                    {self._PARENT._get_last_order_by()} 
                     OFFSET {index_start} {limit}"""
                 return vDataFrame(query)
         elif isinstance(index, int):
             if self.isarray():
                 vertica_version(condition=[9, 3, 0])
-                elem_to_select = f"{self.alias}[{index}]"
-                new_alias = quote_ident(f"{self.alias[1:-1]}.{index}")
+                elem_to_select = f"{self._ALIAS}[{index}]"
+                new_alias = quote_ident(f"{self._ALIAS[1:-1]}.{index}")
                 query = f"""
                     SELECT 
                         {elem_to_select} AS {new_alias} 
-                    FROM {self.parent._genSQL()}"""
+                    FROM {self._PARENT._genSQL()}"""
                 vcol = vDataFrame(query)[new_alias]
-                vcol.init_transf = f"{self.init_transf}[{index}]"
+                vcol._INIT_TRANSF = f"{self._INIT_TRANSF}[{index}]"
                 return vcol
             else:
                 cast = "::float" if self.category() == "float" else ""
                 if index < 0:
-                    index += self.parent.shape()[0]
+                    index += self._PARENT.shape()[0]
                 return _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataColumn.__getitem__')*/ 
-                            {self.alias}{cast} 
-                        FROM {self.parent._genSQL()}
-                        {self.parent._get_last_order_by()} 
+                            {self._ALIAS}{cast} 
+                        FROM {self._PARENT._genSQL()}
+                        {self._PARENT._get_last_order_by()} 
                         OFFSET {index} 
                         LIMIT 1""",
                     title="Getting the vDataColumn element.",
                     method="fetchfirstelem",
-                    sql_push_ext=self.parent._VARS["sql_push_ext"],
-                    symbol=self.parent._VARS["symbol"],
+                    sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+                    symbol=self._PARENT._VARS["symbol"],
                 )
         elif isinstance(index, str):
             if self.category() == "vmap":
                 index_str = index.replace("'", "''")
-                elem_to_select = f"MAPLOOKUP({self.alias}, '{index_str}')"
-                init_transf = f"MAPLOOKUP({self.init_transf}, '{index_str}')"
+                elem_to_select = f"MAPLOOKUP({self._ALIAS}, '{index_str}')"
+                init_transf = f"MAPLOOKUP({self._INIT_TRANSF}, '{index_str}')"
             else:
                 vertica_version(condition=[10, 0, 0])
-                elem_to_select = f"{self.alias}.{quote_ident(index)}"
-                init_transf = f"{self.init_transf}.{quote_ident(index)}"
+                elem_to_select = f"{self._ALIAS}.{quote_ident(index)}"
+                init_transf = f"{self._INIT_TRANSF}.{quote_ident(index)}"
             query = f"""
                 SELECT 
                     {elem_to_select} AS {quote_ident(index)} 
-                FROM {self.parent._genSQL()}"""
+                FROM {self._PARENT._genSQL()}"""
             vcol = vDataFrame(query)[index]
-            vcol.init_transf = init_transf
+            vcol._INIT_TRANSF = init_transf
             return vcol
         else:
             return getattr(self, index)
@@ -529,25 +529,25 @@ class vDCREAD:
     vDataFrame[].tail : Returns the tail of the vDataColumn.
         """
         if offset < 0:
-            offset = max(0, self.parent.shape()[0] - limit)
-        title = f"Reads {self.alias}."
-        alias_sql_repr = to_varchar(self.category(), self.alias)
+            offset = max(0, self._PARENT.shape()[0] - limit)
+        title = f"Reads {self._ALIAS}."
+        alias_sql_repr = to_varchar(self.category(), self._ALIAS)
         tail = to_tablesample(
             query=f"""
                 SELECT 
-                    {alias_sql_repr} AS {self.alias} 
-                FROM {self.parent._genSQL()}
-                {self.parent._get_last_order_by()} 
+                    {alias_sql_repr} AS {self._ALIAS} 
+                FROM {self._PARENT._genSQL()}
+                {self._PARENT._get_last_order_by()} 
                 LIMIT {limit} 
                 OFFSET {offset}""",
             title=title,
-            sql_push_ext=self.parent._VARS["sql_push_ext"],
-            symbol=self.parent._VARS["symbol"],
+            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+            symbol=self._PARENT._VARS["symbol"],
         )
-        tail.count = self.parent.shape()[0]
+        tail.count = self._PARENT.shape()[0]
         tail.offset = offset
-        tail.dtype[self.alias] = self.ctype()
-        tail.name = self.alias
+        tail.dtype[self._ALIAS] = self.ctype()
+        tail.name = self._ALIAS
         return tail
 
     @save_verticapy_logs
@@ -573,15 +573,15 @@ class vDCREAD:
         query = f"""
             SELECT 
                 * 
-            FROM {self.parent._genSQL()} 
-            WHERE {self.alias} IS NOT NULL 
-            ORDER BY {self.alias} DESC LIMIT {n}"""
-        title = f"Reads {self.alias} {n} largest elements."
+            FROM {self._PARENT._genSQL()} 
+            WHERE {self._ALIAS} IS NOT NULL 
+            ORDER BY {self._ALIAS} DESC LIMIT {n}"""
+        title = f"Reads {self._ALIAS} {n} largest elements."
         return to_tablesample(
             query,
             title=title,
-            sql_push_ext=self.parent._VARS["sql_push_ext"],
-            symbol=self.parent._VARS["symbol"],
+            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+            symbol=self._PARENT._VARS["symbol"],
         )
 
     @save_verticapy_logs
@@ -608,12 +608,12 @@ class vDCREAD:
             f"""
             SELECT 
                 * 
-            FROM {self.parent._genSQL()} 
-            WHERE {self.alias} IS NOT NULL 
-            ORDER BY {self.alias} ASC LIMIT {n}""",
-            title=f"Reads {n} {self.alias} smallest elements.",
-            sql_push_ext=self.parent._VARS["sql_push_ext"],
-            symbol=self.parent._VARS["symbol"],
+            FROM {self._PARENT._genSQL()} 
+            WHERE {self._ALIAS} IS NOT NULL 
+            ORDER BY {self._ALIAS} ASC LIMIT {n}""",
+            title=f"Reads {n} {self._ALIAS} smallest elements.",
+            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+            symbol=self._PARENT._VARS["symbol"],
         )
 
     def tail(self, limit: int = 5):

@@ -55,7 +55,7 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
     from verticapy.core.vdataframe.base import vDataColumn
 
     if isinstance(x, vDataColumn):
-        val = x.alias
+        val = x._ALIAS
     elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
         x, str_sql
     ):
@@ -143,7 +143,7 @@ def quote_ident(column: str):
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):
-    from verticapy.core.TableSample.base import TableSample
+    from verticapy.core.tablesample.base import TableSample
     from verticapy.core.vdataframe.base import vDataFrame
 
     from verticapy.sql.parsers.pandas import read_pandas

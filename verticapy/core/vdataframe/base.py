@@ -64,7 +64,7 @@ from verticapy.core.vdataframe.typing import vDFTYPING, vDCTYPING
 from verticapy.core.vdataframe.utils import vDFUTILS
 
 from verticapy.core.str_sql.base import str_sql
-from verticapy.core.TableSample.base import TableSample
+from verticapy.core.tablesample.base import TableSample
 
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import (
@@ -217,6 +217,7 @@ vDataColumns : vDataColumn
             "sql_magic_result": False,
             "where": [],
         }
+        isflex = False
         # Initialization
         if isinstance(input_relation, str) and is_sql_select(input_relation):
             sql = input_relation
@@ -315,26 +316,17 @@ vDataColumns : vDataColumn
             if sql:
 
                 # Cleaning the Query
-                sql_tmp = clean_query(sql)
+                sql = clean_query(sql)
+                sql = extract_subquery(sql)
 
-                isflex = False
+                # Filtering some columns
+                if usecols:
+                    usecols_tmp = ", ".join([quote_ident(col) for col in usecols])
+                    sql = f"SELECT {usecols_tmp} FROM ({sql}) VERTICAPY_SUBTABLE"
 
-                if "select " not in sql_tmp.lower():
-
-                    return self.__init__(sql_tmp)
-
-                else:
-
-                    sql_tmp = extract_subquery(sql_tmp)
-
-                    # Filtering some columns
-                    if usecols:
-                        usecols_tmp = ", ".join([quote_ident(col) for col in usecols])
-                        sql_tmp = (
-                            f"SELECT {usecols_tmp} FROM ({sql_tmp}) VERTICAPY_SUBTABLE"
-                        )
-                    main_relation = f"({sql_tmp}) VERTICAPY_SUBTABLE"
-                    dtypes = get_data_types(sql_tmp)
+                # Getting the main relation information
+                main_relation = f"({sql}) VERTICAPY_SUBTABLE"
+                dtypes = get_data_types(sql)
 
             else:
 
@@ -396,7 +388,7 @@ vDataColumns : vDataColumn
                 )
                 setattr(self, column_ident, new_vDataColumn)
                 setattr(self, column_ident[1:-1], new_vDataColumn)
-                new_vDataColumn.init = False
+                new_vDataColumn._INIT = False
 
 
 ##
@@ -459,10 +451,10 @@ Attributes
     def __init__(
         self, alias: str, transformations: list = [], parent=None, catalog: dict = {},
     ) -> None:
-        self.parent = parent
-        self.alias = alias
-        self.transformations = copy.deepcopy(transformations)
-        self.catalog = {
+        self._PARENT = parent
+        self._ALIAS = alias
+        self._TRANSF = copy.deepcopy(transformations)
+        self._CATALOG = {
             "cov": {},
             "pearson": {},
             "spearman": {},
@@ -481,8 +473,8 @@ Attributes
             "regr_syy": {},
         }
         for key in catalog:
-            self.catalog[key] = catalog[key]
-        self.init_transf = self.transformations[0][0]
-        if self.init_transf == "___VERTICAPY_UNDEFINED___":
-            self.init_transf = self.alias
-        self.init = True
+            self._CATALOG[key] = catalog[key]
+        self._INIT_TRANSF = self._TRANSF[0][0]
+        if self._INIT_TRANSF == "___VERTICAPY_UNDEFINED___":
+            self._INIT_TRANSF = self._ALIAS
+        self._INIT = True

@@ -105,7 +105,7 @@ class vDCNORM:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -114,7 +114,7 @@ class vDCNORM:
         if isinstance(by, str):
             by = [by]
         method = method.lower()
-        by = self.parent._format_colnames(by)
+        by = self._PARENT._format_colnames(by)
         nullifzero, n = 1, len(by)
         if self.isbool():
 
@@ -127,27 +127,27 @@ class vDCNORM:
 
                 if n == 0:
                     nullifzero = 0
-                    avg, stddev = self.aggregate(["avg", "std"]).values[self.alias]
+                    avg, stddev = self.aggregate(["avg", "std"]).values[self._ALIAS]
                     if stddev == 0:
                         warning_message = (
-                            f"Can not normalize {self.alias} using a "
+                            f"Can not normalize {self._ALIAS} using a "
                             "Z-Score - The Standard Deviation is null !"
                         )
                         warnings.warn(warning_message, Warning)
                         return self
-                elif (n == 1) and (self.parent[by[0]].nunique() < 50):
+                elif (n == 1) and (self._PARENT[by[0]].nunique() < 50):
                     try:
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
-                                    AVG({self.alias}), 
-                                    STDDEV({self.alias}) 
-                                FROM {self.parent._genSQL()} GROUP BY {by[0]}""",
+                                    AVG({self._ALIAS}), 
+                                    STDDEV({self._ALIAS}) 
+                                FROM {self._PARENT._genSQL()} GROUP BY {by[0]}""",
                             title="Computing the different categories to normalize.",
                             method="fetchall",
-                            sql_push_ext=self.parent._VARS["sql_push_ext"],
-                            symbol=self.parent._VARS["symbol"],
+                            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+                            symbol=self._PARENT._VARS["symbol"],
                         )
                         for i in range(len(result)):
                             if result[i][2] == None:
@@ -175,25 +175,25 @@ class vDCNORM:
                                     /*+LABEL('vDataColumn.normalize')*/ 
                                     {avg},
                                     {stddev} 
-                                FROM {self.parent._genSQL()} 
+                                FROM {self._PARENT._genSQL()} 
                                 LIMIT 1""",
                             print_time_sql=False,
-                            sql_push_ext=self.parent._VARS["sql_push_ext"],
-                            symbol=self.parent._VARS["symbol"],
+                            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+                            symbol=self._PARENT._VARS["symbol"],
                         )
                     except:
                         avg, stddev = (
-                            f"AVG({self.alias}) OVER (PARTITION BY {', '.join(by)})",
-                            f"STDDEV({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                            f"AVG({self._ALIAS}) OVER (PARTITION BY {', '.join(by)})",
+                            f"STDDEV({self._ALIAS}) OVER (PARTITION BY {', '.join(by)})",
                         )
                 else:
                     avg, stddev = (
-                        f"AVG({self.alias}) OVER (PARTITION BY {', '.join(by)})",
-                        f"STDDEV({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                        f"AVG({self._ALIAS}) OVER (PARTITION BY {', '.join(by)})",
+                        f"STDDEV({self._ALIAS}) OVER (PARTITION BY {', '.join(by)})",
                     )
                 nullifzero = "NULLIFZERO" if (nullifzero) else ""
                 if return_trans:
-                    return f"({self.alias} - {avg}) / {nullifzero}({stddev})"
+                    return f"({self._ALIAS} - {avg}) / {nullifzero}({stddev})"
                 else:
                     final_transformation = [
                         (f"({{}} - {avg}) / {nullifzero}({stddev})", "float", "float",)
@@ -209,18 +209,18 @@ class vDCNORM:
                     )
                     warnings.warn(warning_message, Warning)
                     return self
-                mad, med = self.aggregate(["mad", "approx_median"]).values[self.alias]
+                mad, med = self.aggregate(["mad", "approx_median"]).values[self._ALIAS]
                 mad *= 1.4826
                 if mad != 0:
                     if return_trans:
-                        return f"({self.alias} - {med}) / ({mad})"
+                        return f"({self._ALIAS} - {med}) / ({mad})"
                     else:
                         final_transformation = [
                             (f"({{}} - {med}) / ({mad})", "float", "float",)
                         ]
                 else:
                     warning_message = (
-                        f"Can not normalize {self.alias} using a "
+                        f"Can not normalize {self._ALIAS} using a "
                         "Robust Z-Score - The MAD is null !"
                     )
                     warnings.warn(warning_message, Warning)
@@ -230,10 +230,10 @@ class vDCNORM:
 
                 if n == 0:
                     nullifzero = 0
-                    cmin, cmax = self.aggregate(["min", "max"]).values[self.alias]
+                    cmin, cmax = self.aggregate(["min", "max"]).values[self._ALIAS]
                     if cmax - cmin == 0:
                         warning_message = (
-                            f"Can not normalize {self.alias} using "
+                            f"Can not normalize {self._ALIAS} using "
                             "the MIN and the MAX. MAX = MIN !"
                         )
                         warnings.warn(warning_message, Warning)
@@ -244,14 +244,14 @@ class vDCNORM:
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
-                                    MIN({self.alias}), 
-                                    MAX({self.alias})
-                                FROM {self.parent._genSQL()} 
+                                    MIN({self._ALIAS}), 
+                                    MAX({self._ALIAS})
+                                FROM {self._PARENT._genSQL()} 
                                 GROUP BY {by[0]}""",
                             title=f"Computing the different categories {by[0]} to normalize.",
                             method="fetchall",
-                            sql_push_ext=self.parent._VARS["sql_push_ext"],
-                            symbol=self.parent._VARS["symbol"],
+                            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+                            symbol=self._PARENT._VARS["symbol"],
                         )
                         cmin_cmax = []
                         for i in range(1, 3):
@@ -274,25 +274,25 @@ class vDCNORM:
                                     /*+LABEL('vDataColumn.normalize')*/ 
                                     {cmin_cmax[1]}, 
                                     {cmin_cmax[0]} 
-                                FROM {self.parent._genSQL()} 
+                                FROM {self._PARENT._genSQL()} 
                                 LIMIT 1""",
                             print_time_sql=False,
-                            sql_push_ext=self.parent._VARS["sql_push_ext"],
-                            symbol=self.parent._VARS["symbol"],
+                            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+                            symbol=self._PARENT._VARS["symbol"],
                         )
                     except:
                         cmax, cmin = (
-                            f"MAX({self.alias}) OVER (PARTITION BY {', '.join(by)})",
-                            f"MIN({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                            f"MAX({self._ALIAS}) OVER (PARTITION BY {', '.join(by)})",
+                            f"MIN({self._ALIAS}) OVER (PARTITION BY {', '.join(by)})",
                         )
                 else:
                     cmax, cmin = (
-                        f"MAX({self.alias}) OVER (PARTITION BY {', '.join(by)})",
-                        f"MIN({self.alias}) OVER (PARTITION BY {', '.join(by)})",
+                        f"MAX({self._ALIAS}) OVER (PARTITION BY {', '.join(by)})",
+                        f"MIN({self._ALIAS}) OVER (PARTITION BY {', '.join(by)})",
                     )
                 nullifzero = "NULLIFZERO" if (nullifzero) else ""
                 if return_trans:
-                    return f"({self.alias} - {cmin}) / {nullifzero}({cmax} - {cmin})"
+                    return f"({self._ALIAS} - {cmin}) / {nullifzero}({cmax} - {cmin})"
                 else:
                     final_transformation = [
                         (
@@ -305,22 +305,22 @@ class vDCNORM:
             if method != "robust_zscore":
                 max_floor = 0
                 for elem in by:
-                    if len(self.parent[elem].transformations) > max_floor:
-                        max_floor = len(self.parent[elem].transformations)
-                max_floor -= len(self.transformations)
+                    if len(self._PARENT[elem]._TRANSF) > max_floor:
+                        max_floor = len(self._PARENT[elem]._TRANSF)
+                max_floor -= len(self._TRANSF)
                 for k in range(max_floor):
-                    self.transformations += [("{}", self.ctype(), self.category())]
-            self.transformations += final_transformation
+                    self._TRANSF += [("{}", self.ctype(), self.category())]
+            self._TRANSF += final_transformation
             sauv = {}
-            for elem in self.catalog:
-                sauv[elem] = self.catalog[elem]
-            self.parent._update_catalog(erase=True, columns=[self.alias])
+            for elem in self._CATALOG:
+                sauv[elem] = self._CATALOG[elem]
+            self._PARENT._update_catalog(erase=True, columns=[self._ALIAS])
             try:
 
                 if "count" in sauv:
-                    self.catalog["count"] = sauv["count"]
-                    self.catalog["percent"] = (
-                        100 * sauv["count"] / self.parent.shape()[0]
+                    self._CATALOG["count"] = sauv["count"]
+                    self._CATALOG["percent"] = (
+                        100 * sauv["count"] / self._PARENT.shape()[0]
                     )
 
                 for elem in sauv:
@@ -328,37 +328,37 @@ class vDCNORM:
                     if "top" in elem:
 
                         if "percent" in elem:
-                            self.catalog[elem] = sauv[elem]
+                            self._CATALOG[elem] = sauv[elem]
                         elif elem == None:
-                            self.catalog[elem] = None
+                            self._CATALOG[elem] = None
                         elif method == "robust_zscore":
-                            self.catalog[elem] = (sauv[elem] - sauv["approx_50%"]) / (
+                            self._CATALOG[elem] = (sauv[elem] - sauv["approx_50%"]) / (
                                 1.4826 * sauv["mad"]
                             )
                         elif method == "zscore":
-                            self.catalog[elem] = (sauv[elem] - sauv["mean"]) / sauv[
+                            self._CATALOG[elem] = (sauv[elem] - sauv["mean"]) / sauv[
                                 "std"
                             ]
                         elif method == "minmax":
-                            self.catalog[elem] = (sauv[elem] - sauv["min"]) / (
+                            self._CATALOG[elem] = (sauv[elem] - sauv["min"]) / (
                                 sauv["max"] - sauv["min"]
                             )
 
             except:
                 pass
             if method == "robust_zscore":
-                self.catalog["median"] = 0
-                self.catalog["mad"] = 1 / 1.4826
+                self._CATALOG["median"] = 0
+                self._CATALOG["mad"] = 1 / 1.4826
             elif method == "zscore":
-                self.catalog["mean"] = 0
-                self.catalog["std"] = 1
+                self._CATALOG["mean"] = 0
+                self._CATALOG["std"] = 1
             elif method == "minmax":
-                self.catalog["min"] = 0
-                self.catalog["max"] = 1
-            self.parent._add_to_history(
-                f"[Normalize]: The vDataColumn '{self.alias}' was "
+                self._CATALOG["min"] = 0
+                self._CATALOG["max"] = 1
+            self._PARENT._add_to_history(
+                f"[Normalize]: The vDataColumn '{self._ALIAS}' was "
                 f"normalized with the method '{method}'."
             )
         else:
             raise TypeError("The vDataColumn must be numerical for Normalization")
-        return self.parent
+        return self._PARENT

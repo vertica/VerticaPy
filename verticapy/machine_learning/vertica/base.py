@@ -26,7 +26,7 @@ from verticapy._utils._sql._format import clean_query, quote_ident, schema_relat
 from verticapy._version import check_minimum_version, vertica_version
 from verticapy.errors import ConversionError, FunctionError, ParameterError, ModelError
 
-from verticapy.core.TableSample.base import TableSample
+from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.mlplot import (

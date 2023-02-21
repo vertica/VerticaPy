@@ -162,7 +162,7 @@ def pie(
             return my_autopct
 
         if (method.lower() in ["sum", "count"]) or (
-            (method.lower() in ["min", "max"]) and (vdf.parent[of].category == "int")
+            (method.lower() in ["min", "max"]) and (vdf._PARENT[of].category == "int")
         ):
             category = "int"
         else:
@@ -194,7 +194,7 @@ def pie(
         ax.legend(
             handles,
             labels,
-            title=vdf.alias,
+            title=vdf._ALIAS,
             loc="center left",
             bbox_to_anchor=[1, 0.5],
         )
@@ -248,7 +248,7 @@ def pie(
             z,
             bbox_to_anchor=[1.1, 0.5],
             loc="center left",
-            title=vdf.alias,
+            title=vdf._ALIAS,
             labelspacing=1,
         )
         box = ax.get_position()

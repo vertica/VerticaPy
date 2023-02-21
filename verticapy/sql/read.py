@@ -122,7 +122,7 @@ def to_tablesample(
     --------
     TableSample : Object in memory created for rendering purposes.
     """
-    from verticapy.core.TableSample.base import TableSample
+    from verticapy.core.tablesample.base import TableSample
 
     if OPTIONS["sql_on"]:
         print_query(query, title)

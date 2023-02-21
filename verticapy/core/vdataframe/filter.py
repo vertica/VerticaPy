@@ -309,7 +309,7 @@ class vDFFILTER:
             max_pos = 0
             columns_tmp = [elem for elem in self._VARS["columns"]]
             for column in columns_tmp:
-                max_pos = max(max_pos, len(self[column].transformations) - 1)
+                max_pos = max(max_pos, len(self[column]._TRANSF) - 1)
             new_count = self.shape()[0]
             self._VARS["where"] += [(conditions, max_pos)]
             try:
@@ -634,33 +634,33 @@ class vDCFILTER:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
     vDataFrame.drop: Drops the input vDataColumns from the vDataFrame.
         """
         try:
-            parent = self.parent
-            force_columns = [column for column in self.parent._VARS["columns"]]
-            force_columns.remove(self.alias)
+            parent = self._PARENT
+            force_columns = [column for column in self._PARENT._VARS["columns"]]
+            force_columns.remove(self._ALIAS)
             _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('vDataColumn.drop')*/ * 
-                    FROM {self.parent._genSQL(force_columns=force_columns)} 
+                    FROM {self._PARENT._genSQL(force_columns=force_columns)} 
                     LIMIT 10""",
                 print_time_sql=False,
-                sql_push_ext=self.parent._VARS["sql_push_ext"],
-                symbol=self.parent._VARS["symbol"],
+                sql_push_ext=self._PARENT._VARS["sql_push_ext"],
+                symbol=self._PARENT._VARS["symbol"],
             )
-            self.parent._VARS["columns"].remove(self.alias)
-            delattr(self.parent, self.alias)
+            self._PARENT._VARS["columns"].remove(self._ALIAS)
+            delattr(self._PARENT, self._ALIAS)
         except:
-            self.parent._VARS["exclude_columns"] += [self.alias]
+            self._PARENT._VARS["exclude_columns"] += [self._ALIAS]
         if add_history:
-            self.parent._add_to_history(
-                f"[Drop]: vDataColumn {self.alias} was deleted from the vDataFrame."
+            self._PARENT._add_to_history(
+                f"[Drop]: vDataColumn {self._ALIAS} was deleted from the vDataFrame."
             )
         return parent
 
@@ -689,7 +689,7 @@ class vDCFILTER:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
@@ -699,19 +699,19 @@ class vDCFILTER:
         """
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
-            self.parent.filter(
+            self._PARENT.filter(
                 f"""
-                    ABS({self.alias} - {result["avg"][0]}) 
+                    ABS({self._ALIAS} - {result["avg"][0]}) 
                   / {result["std"][0]} < {threshold}"""
             )
         else:
             p_alpha, p_1_alpha = (
-                self.parent.quantile([alpha, 1 - alpha], [self.alias])
+                self._PARENT.quantile([alpha, 1 - alpha], [self._ALIAS])
                 .transpose()
-                .values[self.alias]
+                .values[self._ALIAS]
             )
-            self.parent.filter(f"({self.alias} BETWEEN {p_alpha} AND {p_1_alpha})")
-        return self.parent
+            self._PARENT.filter(f"({self._ALIAS} BETWEEN {p_alpha} AND {p_1_alpha})")
+        return self._PARENT
 
     @save_verticapy_logs
     def dropna(self):
@@ -721,14 +721,14 @@ class vDCFILTER:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._PARENT
 
     See Also
     --------
     vDataFrame.filter: Filters the data using the input expression.
         """
-        self.parent.filter(f"{self.alias} IS NOT NULL")
-        return self.parent
+        self._PARENT.filter(f"{self._ALIAS} IS NOT NULL")
+        return self._PARENT
 
     @save_verticapy_logs
     def isin(
@@ -758,5 +758,5 @@ class vDCFILTER:
         if isinstance(val, str) or not (isinstance(val, Iterable)):
             val = [val]
         val += list(args)
-        val = {self.alias: val}
-        return self.parent.isin(val)
+        val = {self._ALIAS: val}
+        return self._PARENT.isin(val)

@@ -47,7 +47,7 @@ def bar(
         ax.set_axisbelow(True)
     param = {"color": gen_colors()[0], "alpha": 0.86}
     ax.barh(x, y, h, **updated_dict(param, style_kwds, 0))
-    ax.set_ylabel(vdf.alias)
+    ax.set_ylabel(vdf._ALIAS)
     if is_categorical:
         if vdf.category() == "text":
             new_z = []
@@ -270,7 +270,7 @@ def hist(
         ax.yaxis.grid()
     param = {"color": gen_colors()[0], "alpha": 0.86}
     ax.bar(x, y, h, **updated_dict(param, style_kwds))
-    ax.set_xlabel(vdf.alias)
+    ax.set_xlabel(vdf._ALIAS)
     if is_categorical:
         if not (is_numeric):
             new_z = []

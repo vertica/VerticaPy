@@ -57,13 +57,13 @@ def boxplot(
         if not (vdf.isnum()):
             raise TypeError("The column must be numerical in order to draw a boxplot")
         summarize = (
-            vdf.parent.describe(method="numerical", columns=[vdf.alias], unique=False)
+            vdf._PARENT.describe(method="numerical", columns=[vdf._ALIAS], unique=False)
             .transpose()
-            .values[vdf.alias]
+            .values[vdf._ALIAS]
         )
         for i in range(0, 2):
             del summarize[0]
-        ax.set_xlabel(vdf.alias)
+        ax.set_xlabel(vdf._ALIAS)
         box = ax.boxplot(
             summarize,
             notch=False,
@@ -87,26 +87,26 @@ def boxplot(
             try:
                 by = vdf._format_colnames(by)
             except:
-                by = vdf.parent._format_colnames(by)
-            if vdf.alias == by:
+                by = vdf._PARENT._format_colnames(by)
+            if vdf._ALIAS == by:
                 raise NameError(
                     "The parameter 'column' and the parameter 'groupby' can not be the same"
                 )
-            count = vdf.parent.shape()[0]
-            is_numeric = vdf.parent[by].isnum()
-            is_categorical = (vdf.parent[by].nunique(True) <= max_cardinality) or not (
+            count = vdf._PARENT.shape()[0]
+            is_numeric = vdf._PARENT[by].isnum()
+            is_categorical = (vdf._PARENT[by].nunique(True) <= max_cardinality) or not (
                 is_numeric
             )
-            table = vdf.parent._genSQL()
+            table = vdf._PARENT._genSQL()
             if not (is_categorical):
                 enum_trans = (
-                    vdf.parent[by]
+                    vdf._PARENT[by]
                     .discretize(h=h, return_enum_trans=True)[0]
                     .replace("{}", by)
                     + " AS "
                     + by
                 )
-                enum_trans += f", {vdf.alias}"
+                enum_trans += f", {vdf._ALIAS}"
                 table = f"(SELECT {enum_trans} FROM {table}) enum_table"
             if not (cat_priority):
                 query_result = _executeSQL(
@@ -115,7 +115,7 @@ def boxplot(
                             /*+LABEL('plotting._matplotlib.boxplot')*/ 
                             {by} 
                         FROM {table} 
-                        WHERE {vdf.alias} IS NOT NULL 
+                        WHERE {vdf._ALIAS} IS NOT NULL 
                         GROUP BY {by} 
                         ORDER BY COUNT(*) DESC 
                         LIMIT {max_cardinality}""",
@@ -135,14 +135,14 @@ def boxplot(
                     where = f"WHERE {by} = '{category_str}'"
                 tmp_query = f"""
                     SELECT 
-                        MIN({vdf.alias}) AS min,
-                        APPROXIMATE_PERCENTILE ({vdf.alias} 
+                        MIN({vdf._ALIAS}) AS min,
+                        APPROXIMATE_PERCENTILE ({vdf._ALIAS} 
                                USING PARAMETERS percentile = 0.25) AS Q1,
-                        APPROXIMATE_PERCENTILE ({vdf.alias} 
+                        APPROXIMATE_PERCENTILE ({vdf._ALIAS} 
                                USING PARAMETERS percentile = 0.5) AS Median, 
-                        APPROXIMATE_PERCENTILE ({vdf.alias} 
+                        APPROXIMATE_PERCENTILE ({vdf._ALIAS} 
                                USING PARAMETERS percentile = 0.75) AS Q3, 
-                        MAX({vdf.alias}) AS max, '{category}' 
+                        MAX({vdf._ALIAS}) AS max, '{category}' 
                     FROM vdf_table
                     {where}"""
                 all_queries += [tmp_query]
@@ -174,7 +174,7 @@ def boxplot(
             result = [[float(item[i]) for i in range(0, 5)] for item in query_result]
             result.reverse()
             cat_priority.reverse()
-            if vdf.parent[by].category() == "text":
+            if vdf._PARENT[by].category() == "text":
                 labels = []
                 for item in cat_priority:
                     labels += [item[0:47] + "..."] if (len(str(item)) > 50) else [item]
@@ -185,7 +185,7 @@ def boxplot(
                 if ISNOTEBOOK:
                     fig.set_size_inches(10, 6)
                 ax.yaxis.grid()
-            ax.set_ylabel(vdf.alias)
+            ax.set_ylabel(vdf._ALIAS)
             ax.set_xlabel(by)
             other_labels = []
             other_result = []

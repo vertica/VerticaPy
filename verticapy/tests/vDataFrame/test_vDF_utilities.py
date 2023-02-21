@@ -372,11 +372,11 @@ class TestvDFUtilities:
     def test_vDF_del_catalog(self, titanic_vd):
         result = titanic_vd.copy()
         result.describe(method="numerical")
-        assert "max" in result["age"].catalog
-        assert "avg" in result["age"].catalog
+        assert "max" in result["age"]._CATALOG
+        assert "avg" in result["age"]._CATALOG
         result.del_catalog()
-        assert "max" not in result["age"].catalog
-        assert "avg" not in result["age"].catalog
+        assert "max" not in result["age"]._CATALOG
+        assert "avg" not in result["age"]._CATALOG
 
     def test_vDF_load(self, titanic_vd):
         result = titanic_vd.copy()
