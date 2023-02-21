@@ -193,19 +193,6 @@ vDataColumns : vDataColumn
     between brackets. For example, to access the vDataColumn "myVC": 
     vDataFrame["myVC"].
     """
-    _VERTICAPY_VARIABLES_ = {
-        "allcols_ind": -1,
-        "count": -1,
-        "exclude_columns": [],
-        "history": [],
-        "isflex": False,
-        "max_columns": -1,
-        "max_rows": -1,
-        "order_by": {},
-        "saving": [],
-        "sql_magic_result": False,
-        "where": [],
-    }
 
     @save_verticapy_logs
     def __init__(
@@ -222,6 +209,20 @@ vDataColumns : vDataColumn
         sql_push_ext: bool = True,
         empty: bool = False,
     ):
+        # Main Attributes
+        self._VERTICAPY_VARIABLES_ = {
+            "allcols_ind": -1,
+            "count": -1,
+            "exclude_columns": [],
+            "history": [],
+            "isflex": False,
+            "max_columns": -1,
+            "max_rows": -1,
+            "order_by": {},
+            "saving": [],
+            "sql_magic_result": False,
+            "where": [],
+        }
         # Initialization
         if not (isinstance(input_relation, (pd.DataFrame, np.ndarray))):
             assert input_relation or sql or empty, ParameterError(
@@ -249,7 +250,7 @@ vDataColumns : vDataColumn
 
             if input_relation:
 
-                if not(isinstance(input_relation, str)):
+                if not (isinstance(input_relation, str)):
                     raise ParameterError(
                         "Parameter 'input_relation' must be a string "
                         "when using external tables."
@@ -345,7 +346,10 @@ vDataColumns : vDataColumn
 
             else:
 
-                if sql_tmp[0].replace(" ", "") == "(" and sql_tmp[-1].replace(" ", "") != ")":
+                if (
+                    sql_tmp[0].replace(" ", "") == "("
+                    and sql_tmp[-1].replace(" ", "") != ")"
+                ):
                     sql_tmp = ")".join("(".join(sql_tmp.split("(")[1:]).split(")")[:-1])
 
                 # Filtering some columns
