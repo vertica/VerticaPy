@@ -596,8 +596,6 @@ class vDFFILTER:
     vDataFrame.filter : Filters the vDataFrame using the input expressions.
     vDataFrame.select : Returns a copy of the vDataFrame with only the selected vDataColumns.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(order_by, str):
             order_by = [order_by]
         if isinstance(usecols, str):
@@ -610,7 +608,7 @@ class vDFFILTER:
             conditions = f" WHERE {conditions}"
         all_cols = ", ".join(["*"] + expr)
         query = f"SELECT {all_cols} FROM {self._genSQL()}{conditions}"
-        result = vDataFrame(query)
+        result = self._new_vdataframe(query)
         if usecols:
             result = result.select(usecols)
         return result.sort(order_by)

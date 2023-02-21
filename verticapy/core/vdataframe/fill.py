@@ -133,8 +133,6 @@ class vDFFILL:
     vDataFrame[].fillna  : Fills the vDataColumn missing values.
     vDataFrame[].slice   : Slices the vDataColumn.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(by, str):
             by = [by]
         method, ts, by = self._format_colnames(method, ts, by)
@@ -169,7 +167,7 @@ class vDFFILL:
         query += f""" 
             TIMESERIES slice_time AS '{rule}' 
             OVER ({partition}ORDER BY {quote_ident(ts)}::timestamp)"""
-        return vDataFrame(query)
+        return self._new_vdataframe(query)
 
     asfreq = interpolate
 

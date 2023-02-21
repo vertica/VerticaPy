@@ -887,8 +887,6 @@ class vDCMATH:
     vDataColumn
         vDataColumn that includes the length of each element.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         cat = self.category()
         if cat == "vmap":
             fun = "MAPSIZE"
@@ -903,7 +901,7 @@ class vDCMATH:
             SELECT 
                 {elem_to_select} AS {new_alias} 
             FROM {self._PARENT._genSQL()}"""
-        vcol = vDataFrame(query)[new_alias]
+        vcol = self._new_vdataframe(query)[new_alias]
         vcol._INIT_TRANSF = init_transf
         return vcol
 

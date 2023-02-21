@@ -159,7 +159,7 @@ sql_push_ext: bool, optional
     use SQL Magic directly). This can increase performance but might increase 
     the error rate. For instance, some DBs might not support the same SQL as 
     Vertica.
-empty: bool, optional
+_empty: bool, optional
     If set to True, the vDataFrame will be empty. You can use this to create 
     a custom vDataFrame and bypass the initialization check.
 
@@ -202,7 +202,7 @@ vDataColumns : vDataColumn
         external: bool = False,
         symbol: Literal[tuple(SPECIAL_SYMBOLS)] = "$",
         sql_push_ext: bool = True,
-        empty: bool = False,
+        _empty: bool = False,
     ) -> None:
         # Main Attributes
         self._VARS = {
@@ -306,13 +306,11 @@ vDataColumns : vDataColumn
 
         elif isinstance(input_relation, pd.DataFrame):
 
-            if usecols:
-                vdf = read_pandas(input_relation[usecols])
-            else:
-                vdf = read_pandas(input_relation)
+            argv = input_relation[usecols] if usecols else input_relation
+            vdf = read_pandas(argv)
             self.__init__(input_relation=vdf._VARS["main_relation"])
 
-        elif not (empty):
+        elif not (_empty):
 
             if sql:
 
@@ -392,6 +390,12 @@ vDataColumns : vDataColumn
                 setattr(self, column_ident[1:-1], new_vDataColumn)
                 new_vDataColumn._INIT = False
 
+    def _new_vdatacolumn(*argv, **kwds):
+        return vDataColumn(*argv, **kwds)
+
+    def _new_vdataframe(*argv, **kwds):
+        return vDataFrame(*argv, **kwds)
+
 
 ##
 #   __   ___  ______     ______     __         __  __     __    __     __   __
@@ -445,10 +449,6 @@ Attributes
     parent, vDataFrame   : Parent of the vDataColumn.
     transformations, str : List of the different transformations.
     """
-
-    #
-    # Special Methods
-    #
 
     def __init__(
         self, alias: str, transformations: list = [], parent=None, catalog: dict = {},

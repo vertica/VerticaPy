@@ -1164,8 +1164,6 @@ class vDFCORR:
     vDataFrame.pacf        : Computes the partial autocorrelations of the 
                              input vDataColumn.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         method = str(method).lower()
         if isinstance(by, str):
             by = [by]
@@ -1185,9 +1183,9 @@ class vDFCORR:
         ]
         query = f"SELECT {', '.join([column] + columns)} FROM {table}"
         if len(p) == 1:
-            return vDataFrame(query).corr([], method=method)
+            return self._new_vdataframe(query).corr([], method=method)
         elif acf_type == "heatmap":
-            return vDataFrame(query).corr(
+            return self._new_vdataframe(query).corr(
                 [],
                 method=method,
                 round_nb=round_nb,
@@ -1196,7 +1194,9 @@ class vDFCORR:
                 **style_kwds,
             )
         else:
-            result = vDataFrame(query).corr([], method=method, focus=column, show=False)
+            result = self._new_vdataframe(query).corr(
+                [], method=method, focus=column, show=False
+            )
             columns = [elem for elem in result.values["index"]]
             acf = [elem for elem in result.values[column]]
             acf_band = []
@@ -1291,8 +1291,6 @@ class vDFCORR:
     vDataFrame.corr   : Computes the correlation matrix of a vDataFrame.
     vDataFrame.cov    : Computes the covariance matrix of the vDataFrame.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
         if isinstance(by, str):
@@ -1331,7 +1329,7 @@ class vDFCORR:
                     CREATE VIEW {tmp_view_name} 
                         AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"""
                 _executeSQL(query, print_time_sql=False)
-                vdf = vDataFrame(tmp_view_name)
+                vdf = self._new_vdataframe(tmp_view_name)
                 drop(tmp_lr0_name, method="model")
                 model = LinearRegression(name=tmp_lr0_name, solver="Newton")
                 model.fit(

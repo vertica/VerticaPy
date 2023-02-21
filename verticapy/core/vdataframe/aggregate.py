@@ -175,7 +175,7 @@ class vDFAGG:
             rollup_expr_str = ", ".join([str(c) for c in columns_to_select])
         else:
             rollup_expr_str = rollup_expr
-        return vDataFrame(query)
+        return self._new_vdataframe(query)
 
     @save_verticapy_logs
     def duplicated(

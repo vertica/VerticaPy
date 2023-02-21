@@ -105,14 +105,12 @@ class vDFPIVOT:
     vDataFrame
         An object containing the merged element.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(skip_word, str):
             skip_word = [skip_word]
         columns = self.get_columns()
         group_dict = group_similar_names(columns, skip_word=skip_word)
         sql = f"SELECT {gen_coalesce(group_dict)} FROM {self._genSQL()}"
-        return vDataFrame(sql)
+        return self._new_vdataframe(sql)
 
     @save_verticapy_logs
     def narrow(
@@ -147,8 +145,6 @@ class vDFPIVOT:
     --------
     vDataFrame.pivot : Returns the pivot table of the vDataFrame.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         index, columns = self._format_colnames(index, columns)
         if isinstance(columns, str):
             columns = [columns]
@@ -182,7 +178,7 @@ class vDFPIVOT:
                 FROM {self._genSQL()})"""
             ]
         query = " UNION ALL ".join(query)
-        return vDataFrame(query)
+        return self._new_vdataframe(query)
 
     melt = narrow
 
@@ -225,8 +221,6 @@ class vDFPIVOT:
     vDataFrame.pivot_table : Draws the pivot table of one or two columns based on an 
         aggregation.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         index, columns, values = self._format_colnames(index, columns, values)
         aggr = aggr.upper()
         if "{}" not in aggr:
@@ -250,7 +244,7 @@ class vDFPIVOT:
                     )
                     + f"AS '{prefix}{elem}'"
                 ]
-        return vDataFrame(
+        return self._new_vdataframe(
             f"""
             SELECT 
                 {index},

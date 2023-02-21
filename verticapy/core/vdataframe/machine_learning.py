@@ -857,8 +857,6 @@ class vDFML:
     tuple
         (train vDataFrame, test vDataFrame)
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(order_by, str):
             order_by = [order_by]
         order_by = self._get_sort_syntax(order_by)
@@ -889,6 +887,6 @@ class vDFML:
             FROM {self._genSQL()} 
             WHERE {random_func} > {q}{order_by}"""
         return (
-            vDataFrame(train_table),
-            vDataFrame(test_table),
+            self._new_vdataframe(train_table),
+            self._new_vdataframe(test_table),
         )

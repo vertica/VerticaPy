@@ -75,8 +75,6 @@ class vDFEVAL:
     vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
         analytical function on a specific vDataColumn.
         """
-        from verticapy.core.vdataframe.base import vDataColumn
-
         if isinstance(expr, str_sql):
             expr = str(expr)
         name = quote_ident(name.replace('"', "_"))
@@ -121,7 +119,7 @@ class vDFEVAL:
             )
             for i in range(max_floor)
         ] + [(expr, ctype, category)]
-        new_vDataColumn = vDataColumn(
+        new_vDataColumn = self._new_vdatacolumn(
             name, parent=self, transformations=transformations
         )
         setattr(self, name, new_vDataColumn)

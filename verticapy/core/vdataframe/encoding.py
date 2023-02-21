@@ -426,8 +426,6 @@ class vDCENCODE:
     vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
     vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
-        from verticapy.core.vdataframe.base import vDataColumn
-
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
             all_new_features = []
@@ -465,7 +463,7 @@ class vDCENCODE:
                 )
                 expr = f"DECODE({{}}, '{distinct_elements_k}', 1, 0)"
                 transformations = self._TRANSF + [(expr, "bool", "int")]
-                new_vDataColumn = vDataColumn(
+                new_vDataColumn = self._PARENT._new_vdatacolumn(
                     name,
                     parent=self._PARENT,
                     transformations=transformations,

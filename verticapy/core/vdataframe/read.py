@@ -38,7 +38,7 @@ class vDFREAD:
         return (col for col in columns)
 
     def __getitem__(self, index):
-        from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
+        from verticapy.core.vdataframe.base import vDataColumn
 
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
@@ -64,7 +64,7 @@ class vDFREAD:
                 FROM {self._genSQL()}
                 {self._get_last_order_by()} 
                 OFFSET {index_start}{limit}"""
-            return vDataFrame(query)
+            return self._new_vdataframe(query)
 
         elif isinstance(index, int):
             columns = self.get_columns()
@@ -340,8 +340,6 @@ class vDFREAD:
     --------
     vDataFrame.search : Searches the elements which matches with the input conditions.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(columns, str):
             columns = [columns]
         for i in range(len(columns)):
@@ -363,13 +361,11 @@ class vDFREAD:
             else:
                 columns[i] = str(columns[i])
         query = f"SELECT  {', '.join(columns)} FROM {self._genSQL()}"
-        return vDataFrame(query)
+        return self._new_vdataframe(query)
 
 
 class vDCREAD:
     def __getitem__(self, index):
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
                 "vDataColumn doesn't allow slicing having steps different than 1."
@@ -400,7 +396,7 @@ class vDCREAD:
                     (SELECT 
                         {elem_to_select} AS {new_alias} 
                     FROM {self._PARENT._genSQL()}) VERTICAPY_SUBTABLE"""
-                vcol = vDataFrame(query)[new_alias]
+                vcol = self._new_vdataframe(query)[new_alias]
                 vcol._TRANSF[-1] = (
                     new_alias,
                     self.ctype(),
@@ -429,7 +425,7 @@ class vDCREAD:
                     FROM {self._PARENT._genSQL()}
                     {self._PARENT._get_last_order_by()} 
                     OFFSET {index_start} {limit}"""
-                return vDataFrame(query)
+                return self._new_vdataframe(query)
         elif isinstance(index, int):
             if self.isarray():
                 vertica_version(condition=[9, 3, 0])
@@ -439,7 +435,7 @@ class vDCREAD:
                     SELECT 
                         {elem_to_select} AS {new_alias} 
                     FROM {self._PARENT._genSQL()}"""
-                vcol = vDataFrame(query)[new_alias]
+                vcol = self._new_vdataframe(query)[new_alias]
                 vcol._INIT_TRANSF = f"{self._INIT_TRANSF}[{index}]"
                 return vcol
             else:
@@ -473,7 +469,7 @@ class vDCREAD:
                 SELECT 
                     {elem_to_select} AS {quote_ident(index)} 
                 FROM {self._PARENT._genSQL()}"""
-            vcol = vDataFrame(query)[index]
+            vcol = self._new_vdataframe(query)[index]
             vcol._INIT_TRANSF = init_transf
             return vcol
         else:

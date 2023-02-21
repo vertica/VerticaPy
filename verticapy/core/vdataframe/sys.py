@@ -614,8 +614,6 @@ class vDCSYS:
     --------
     vDataFrame.eval : Evaluates a customized expression.
         """
-        from verticapy.core.vdataframe.base import vDataColumn
-
         name = quote_ident(name.replace('"', "_"))
         assert name.replace('"', ""), EmptyParameter(
             "The parameter 'name' must not be empty"
@@ -624,7 +622,7 @@ class vDCSYS:
             f"A vDataColumn has already the alias {name}.\nBy changing "
             "the parameter 'name', you'll be able to solve this issue."
         )
-        new_vDataColumn = vDataColumn(
+        new_vDataColumn = self._PARENT._new_vdatacolumn(
             name,
             parent=self._PARENT,
             transformations=[item for item in self._TRANSF],
