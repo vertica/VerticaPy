@@ -22,12 +22,12 @@ from verticapy._config.config import OPTIONS
 from verticapy._utils._cast import to_category, to_varchar
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._merge import gen_coalesce, group_similar_names
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
 from verticapy._version import vertica_version
 from verticapy.errors import EmptyParameter, ParameterError, QueryError
 
-from verticapy.core._utils._merge import gen_coalesce, group_similar_names
 from verticapy.core.str_sql.base import str_sql
 
 from verticapy.sql.drop import drop

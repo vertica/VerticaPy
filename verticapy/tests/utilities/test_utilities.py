@@ -581,7 +581,7 @@ class TestUtilities:
             ingest_local=True,
             use_complex_dt=False,
         )
-        assert vdf._VERTICAPY_VARIABLES_["schema"] == "public"
+        assert vdf._VERTICAPY_VARIABLES_["schema"] == '"public"'
         assert drop("public.laliga_verticapy_test_json", method="table",)
 
         # testing local temporary table
@@ -592,7 +592,7 @@ class TestUtilities:
             ingest_local=True,
             use_complex_dt=False,
         )
-        assert vdf._VERTICAPY_VARIABLES_["schema"] == "v_temp_schema"
+        assert vdf._VERTICAPY_VARIABLES_["schema"] == '"v_temp_schema"'
         assert drop("v_temp_schema.laliga_verticapy_test_json2", method="table",)
 
         # Checking flextables and materialize option

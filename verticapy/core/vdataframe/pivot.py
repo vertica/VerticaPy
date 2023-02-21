@@ -17,10 +17,9 @@ permissions and limitations under the License.
 from typing import Union
 
 from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._merge import gen_coalesce, group_similar_names
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import EmptyParameter
-
-from verticapy.core._utils._merge import gen_coalesce, group_similar_names
 
 from verticapy.sql.flex import compute_vmap_keys
 

@@ -52,7 +52,7 @@ class TestSQL:
         assert result.shape() == (1234, 14)
         assert (
             result._VERTICAPY_VARIABLES_["main_relation"]
-            == "(SELECT * FROM titanic) VSQL_MAGIC"
+            == "(SELECT * FROM titanic) VERTICAPY_SUBTABLE"
         )
 
         # SQL line Test --command

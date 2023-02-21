@@ -349,10 +349,7 @@ vDataColumns : vDataColumn
 
                 else:
 
-                    if (
-                        sql_tmp[0].replace(" ", "") == "("
-                        and sql_tmp[-1].replace(" ", "") != ")"
-                    ):
+                    if sql_tmp[0] == "(" and sql_tmp[-1] != ")":
                         sql_tmp = ")".join(
                             "(".join(sql_tmp.split("(")[1:]).split(")")[:-1]
                         )
@@ -395,9 +392,12 @@ vDataColumns : vDataColumn
             if len(columns) == 0:
                 raise MissingRelation(f"No table or views {input_relation} found.")
             if not (usecols):
-                self._VERTICAPY_VARIABLES_["allcols_ind"] = len(columns)
+                allcols_ind = len(columns)
+            else:
+                allcols_ind = -1
             self._VERTICAPY_VARIABLES_ = {
                 **self._VERTICAPY_VARIABLES_,
+                allcols_ind: allcols_ind,
                 "columns": columns,
                 "input_relation": input_relation,
                 "isflex": isflex,
@@ -488,7 +488,7 @@ Attributes
 
     def __init__(
         self, alias: str, transformations: list = [], parent=None, catalog: dict = {},
-    ):
+    ) -> None:
         self.parent = parent
         self.alias = alias
         self.transformations = copy.deepcopy(transformations)

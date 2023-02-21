@@ -19,10 +19,9 @@ from typing import Union
 
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name
+from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import ParameterError
-
-from verticapy.core._utils._map import verticapy_agg_name
 
 
 class vDFROLL:

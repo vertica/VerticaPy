@@ -20,11 +20,10 @@ import numpy as np
 import pandas as pd
 
 from verticapy._config.config import OPTIONS
+from verticapy._utils._display import print_table
 from verticapy._utils._sql._format import quote_ident
 from verticapy._version import vertica_version
 from verticapy.errors import ParameterError, MissingColumn
-
-from verticapy.core._utils._display import print_table
 
 from verticapy.jupyter._javascript import datatables_repr
 

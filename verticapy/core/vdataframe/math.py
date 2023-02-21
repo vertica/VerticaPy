@@ -19,10 +19,10 @@ from typing import Literal, Union
 
 from verticapy._utils._cast import to_category
 from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import MissingColumn, ParameterError, QueryError
 
-from verticapy.core._utils._map import verticapy_agg_name
 from verticapy.core.str_sql.base import str_sql
 
 from verticapy.sql.dtypes import get_data_types
