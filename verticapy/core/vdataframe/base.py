@@ -193,10 +193,19 @@ vDataColumns : vDataColumn
     between brackets. For example, to access the vDataColumn "myVC": 
     vDataFrame["myVC"].
     """
-
-    #
-    # Special Methods
-    #
+    _VERTICAPY_VARIABLES_ = {
+        "allcols_ind": -1,
+        "count": -1,
+        "exclude_columns": [],
+        "history": [],
+        "isflex": False,
+        "max_columns": -1,
+        "max_rows": -1,
+        "order_by": {},
+        "saving": [],
+        "sql_magic_result": False,
+        "where": [],
+    }
 
     @save_verticapy_logs
     def __init__(
@@ -237,11 +246,14 @@ vDataColumns : vDataColumn
             columns = [columns]
 
         if external:
+
             if input_relation:
-                assert isinstance(input_relation, str), ParameterError(
-                    "Parameter 'input_relation' must be a string when using "
-                    "external tables."
-                )
+
+                if not(isinstance(input_relation, str)):
+                    raise ParameterError(
+                        "Parameter 'input_relation' must be a string "
+                        "when using external tables."
+                    )
                 if schema:
                     relation = f"{schema}.{input_relation}"
                 else:
@@ -264,15 +276,12 @@ vDataColumns : vDataColumn
                 )
 
         self._VERTICAPY_VARIABLES_ = {
-            "count": -1,
-            "allcols_ind": -1,
-            "max_rows": -1,
-            "max_columns": -1,
-            "sql_magic_result": False,
-            "isflex": False,
+            **self._VERTICAPY_VARIABLES_,
             "external": external,
-            "symbol": symbol,
+            "input_relation": input_relation,
+            "schema": schema,
             "sql_push_ext": external and sql_push_ext,
+            "symbol": symbol,
         }
 
         if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
@@ -336,6 +345,9 @@ vDataColumns : vDataColumn
 
             else:
 
+                if sql_tmp[0].replace(" ", "") == "(" and sql_tmp[-1].replace(" ", "") != ")":
+                    sql_tmp = ")".join("(".join(sql_tmp.split("(")[1:]).split(")")[:-1])
+
                 # Filtering some columns
                 if usecols:
                     usecols_tmp = ", ".join([quote_ident(col) for col in usecols])
@@ -373,7 +385,7 @@ vDataColumns : vDataColumn
                         )
                     new_vDataColumn = vDataColumn(
                         column_name,
-                        parent=vdf,
+                        parent=self,
                         transformations=[(quote_ident(column), ctype, category,)],
                     )
                     setattr(self, column_name, new_vDataColumn)
@@ -439,21 +451,10 @@ vDataColumns : vDataColumn
                 setattr(self, column_name, new_vDataColumn)
                 setattr(self, column_name[1:-1], new_vDataColumn)
                 new_vDataColumn.init = False
-            other_parameters = {
-                "exclude_columns": [],
-                "where": [],
-                "order_by": {},
-                "history": [],
-                "saving": [],
-                "main_relation": format_schema_table(
-                    self._VERTICAPY_VARIABLES_["schema"],
-                    self._VERTICAPY_VARIABLES_["input_relation"],
-                ),
-            }
-            self._VERTICAPY_VARIABLES_ = {
-                **self._VERTICAPY_VARIABLES_,
-                **other_parameters,
-            }
+            self._VERTICAPY_VARIABLES_["main_relation"] = format_schema_table(
+                self._VERTICAPY_VARIABLES_["schema"],
+                self._VERTICAPY_VARIABLES_["input_relation"],
+            )
 
 
 ##
