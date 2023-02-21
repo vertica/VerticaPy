@@ -27,6 +27,7 @@ from verticapy._utils._sql._check import is_longvar, is_sql_select
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import (
     clean_query,
+    extract_precision_scale,
     extract_subquery,
     format_schema_table,
     quote_ident,
@@ -297,7 +298,7 @@ vDataColumns : vDataColumn
                 tb = TableSample(tb_final)
 
             self.__init__(
-                sql=tb.to_sql(),
+                tb.to_sql(),
                 external=external,
                 symbol=symbol,
                 sql_push_ext=sql_push_ext,
@@ -377,8 +378,9 @@ vDataColumns : vDataColumn
                         expr=self._VARS["main_relation"], column=column,
                     ):
                         category = "vmap"
-                        if "(" in ctype:
-                            ctype = "VMAP(" + "(".join(ctype.split("(")[1:])
+                        precision = extract_precision_scale(ctype)[0]
+                        if precision:
+                            ctype = f"VMAP({precision})"
                         else:
                             ctype = "VMAP"
                 new_vDataColumn = vDataColumn(

@@ -50,6 +50,18 @@ def extract_subquery(query: str) -> bool:
     return query
 
 
+def extract_precision_scale(ctype: str) -> tuple:
+    if "(" not in ctype:
+        return (0, 0)
+    else:
+        precision_scale = ctype.split("(")[1].split(")")[0].split(",")
+        if len(precision_scale) == 1:
+            precision, scale = int(precision_scale[0]), 0
+        else:
+            precision, scale = precision_scale
+        return int(precision), int(scale)
+
+
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
     from verticapy.core.str_sql.base import str_sql
     from verticapy.core.vdataframe.base import vDataColumn

@@ -251,7 +251,7 @@ class vDFPIVOT:
                     + f"AS '{prefix}{elem}'"
                 ]
         return vDataFrame(
-            sql=f"""
+            f"""
             SELECT 
                 {index},
                 {", ".join(new_cols_trans)}
