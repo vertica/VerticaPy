@@ -397,7 +397,7 @@ vDataColumns : vDataColumn
                 allcols_ind = -1
             self._VERTICAPY_VARIABLES_ = {
                 **self._VERTICAPY_VARIABLES_,
-                allcols_ind: allcols_ind,
+                "allcols_ind": allcols_ind,
                 "columns": columns,
                 "input_relation": input_relation,
                 "isflex": isflex,
