@@ -106,7 +106,7 @@ class vDFPIVOT:
     vDataFrame
         An object containing the merged element.
         """
-        from verticapy.core.base.vdataframe import vDataFrame
+        from verticapy.core.vdataframe.base import vDataFrame
 
         if isinstance(skip_word, str):
             skip_word = [skip_word]

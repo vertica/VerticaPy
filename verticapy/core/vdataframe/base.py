@@ -255,10 +255,7 @@ vDataColumns : vDataColumn
                         "Parameter 'input_relation' must be a string "
                         "when using external tables."
                     )
-                if schema:
-                    relation = f"{schema}.{input_relation}"
-                else:
-                    relation = str(input_relation)
+                input_relation = f"{quote_ident(schema)}.{quote_ident(input_relation)}"
                 cols = ", ".join(usecols) if usecols else "*"
                 query = f"SELECT {cols} FROM {input_relation}"
 
