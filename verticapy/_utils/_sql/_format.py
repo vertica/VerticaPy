@@ -20,6 +20,7 @@ import pandas as pd
 
 from verticapy._config.config import OPTIONS
 from verticapy._utils._cast import to_dtype_category
+from verticapy.errors import ParsingError
 
 
 def clean_query(query: str):
