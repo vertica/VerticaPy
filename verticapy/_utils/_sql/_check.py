@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
+from verticapy._utils._sql._format import clean_query
 
 def is_longvar(ctype: str) -> bool:
     return ctype.lower()[0:12] in ("long varbina", "long varchar")
@@ -22,6 +22,7 @@ def is_longvar(ctype: str) -> bool:
 
 def is_sql_select(query: str) -> bool:
     result = False
+    query = clean_query(query)
     for idx, q in enumerate(query):
         if q not in (" ", "("):
             result = "select " == query[idx : idx + 7].lower()
