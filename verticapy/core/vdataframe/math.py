@@ -901,7 +901,7 @@ class vDCMATH:
             SELECT 
                 {elem_to_select} AS {new_alias} 
             FROM {self._PARENT._genSQL()}"""
-        vcol = self._new_vdataframe(query)[new_alias]
+        vcol = self._PARENT._new_vdataframe(query)[new_alias]
         vcol._INIT_TRANSF = init_transf
         return vcol
 
