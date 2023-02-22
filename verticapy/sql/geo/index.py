@@ -106,8 +106,6 @@ TableSample
     An object containing the result. For more information, see
     utilities.TableSample.
     """
-    from verticapy.core.vdataframe.base import vDataFrame
-
     if not (name):
         query = f"SELECT STV_Describe_Index () OVER ()"
     else:

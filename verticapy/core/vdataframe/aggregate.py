@@ -91,8 +91,6 @@ class vDFAGG:
     vDataFrame.join     : Joins the vDataFrame with another relation.
     vDataFrame.sort     : Sorts the vDataFrame.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(columns, str):
             columns = [columns]
         if isinstance(expr, str):

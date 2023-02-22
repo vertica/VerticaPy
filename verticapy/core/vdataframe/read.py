@@ -396,7 +396,7 @@ class vDCREAD:
                     (SELECT 
                         {elem_to_select} AS {new_alias} 
                     FROM {self._PARENT._genSQL()}) VERTICAPY_SUBTABLE"""
-                vcol = self._new_vdataframe(query)[new_alias]
+                vcol = self._PARENT._new_vdataframe(query)[new_alias]
                 vcol._TRANSF[-1] = (
                     new_alias,
                     self.ctype(),
@@ -425,7 +425,7 @@ class vDCREAD:
                     FROM {self._PARENT._genSQL()}
                     {self._PARENT._get_last_order_by()} 
                     OFFSET {index_start} {limit}"""
-                return self._new_vdataframe(query)
+                return self._PARENT._new_vdataframe(query)
         elif isinstance(index, int):
             if self.isarray():
                 vertica_version(condition=[9, 3, 0])
@@ -435,7 +435,7 @@ class vDCREAD:
                     SELECT 
                         {elem_to_select} AS {new_alias} 
                     FROM {self._PARENT._genSQL()}"""
-                vcol = self._new_vdataframe(query)[new_alias]
+                vcol = self._PARENT._new_vdataframe(query)[new_alias]
                 vcol._INIT_TRANSF = f"{self._INIT_TRANSF}[{index}]"
                 return vcol
             else:
@@ -469,7 +469,7 @@ class vDCREAD:
                 SELECT 
                     {elem_to_select} AS {quote_ident(index)} 
                 FROM {self._PARENT._genSQL()}"""
-            vcol = self._new_vdataframe(query)[index]
+            vcol = self._PARENT._new_vdataframe(query)[index]
             vcol._INIT_TRANSF = init_transf
             return vcol
         else:
