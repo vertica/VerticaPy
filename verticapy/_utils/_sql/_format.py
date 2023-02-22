@@ -64,7 +64,7 @@ def extract_and_rename_subquery(query: str, alias: str):
     query_clean = erase_comment(query)
     if query != query_tmp or query_clean[0:6].lower() == "select":
         query = f"({query_tmp})"
-    return f"{query} AS {alias}"
+    return f"{query} AS {quote_ident(alias)}"
 
 
 def extract_precision_scale(ctype: str) -> tuple:

@@ -390,10 +390,10 @@ vDataColumns : vDataColumn
                 setattr(self, column_ident[1:-1], new_vDataColumn)
                 new_vDataColumn._INIT = False
 
-    def _new_vdatacolumn(*argv, **kwds):
+    def _new_vdatacolumn(self, *argv, **kwds):
         return vDataColumn(*argv, **kwds)
 
-    def _new_vdataframe(*argv, **kwds):
+    def _new_vdataframe(self, *argv, **kwds):
         return vDataFrame(*argv, **kwds)
 
 
