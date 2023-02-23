@@ -15,8 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import random
-from verticapy.sql.sys import current_session, username
-from verticapy.sql._utils._format import quote_ident
+
+from verticapy._utils._sql._format import quote_ident
+
+from verticapy.connection.connect import current_cursor
 
 
 def gen_name(L: list):
@@ -29,7 +31,9 @@ def gen_name(L: list):
 
 
 def gen_tmp_name(schema: str = "", name: str = ""):
-    session_user = f"{current_session()}_{username()}"
+    current_cursor().execute("SELECT CURRENT_SESSION(), USERNAME();")
+    current_session, username = current_cursor().fetchone()
+    session_user = f"{current_session}_{username}"
     L = session_user.split("_")
     L[0] = "".join(filter(str.isalnum, L[0]))
     L[1] = "".join(filter(str.isalnum, L[1]))

@@ -14,13 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# High Chart
 from vertica_highcharts import Highchart
 
-# VerticaPy Modules
-from verticapy.connect import current_cursor
-from verticapy._utils._sql import _executeSQL
-from verticapy.plotting._colors import gen_colors
+from verticapy._config.colors import get_colors
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.connection import current_cursor
 
 
 def negative_bar(query: str, options: dict = {}, width: int = 600, height: int = 400):
@@ -70,7 +68,7 @@ def negative_bar(query: str, options: dict = {}, width: int = 600, height: int =
             + "</b> : ' + Math.abs(this.point.y);}"
         },
     }
-    default_options["colors"] = gen_colors()
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     dict_categories = {}
     for elem in all_categories:

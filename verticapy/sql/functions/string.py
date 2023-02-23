@@ -14,17 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy._utils._sql._format import format_magic
+from verticapy._utils._sql._vertica_version import check_minimum_version
 
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import format_magic
-
-# Regular str functions
+from verticapy.core.str_sql.base import str_sql
 
 
 def length(expr):

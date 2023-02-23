@@ -14,21 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.sql.read import vDataFrameSQL
-from verticapy.errors import ParameterError, ModelError
-from verticapy.machine_learning.vertica.vmodel import Regressor
-from verticapy._config.config import OPTIONS
-
-# Standard Python Modules
 from typing import Union
+
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy.errors import ParameterError, ModelError
+
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.machine_learning.vertica.base import Regressor
 
 
 class Pipeline:
@@ -43,9 +37,14 @@ steps: list
     in the order in which they are chained, with the last object an estimator.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_PREDICT_FUNCTION_SQL = ""
+    MODEL_CATEGORY = ""
+    MODEL_SUBCATEGORY = ""
+    MODEL_TYPE = "Pipeline"
+
     @save_verticapy_logs
     def __init__(self, steps: list):
-        self.type = "Pipeline"
         self.steps = []
         for idx, s in enumerate(steps):
             if len(s) != 2:
@@ -120,13 +119,13 @@ steps: list
         if isinstance(X, str):
             X = [X]
         if isinstance(input_relation, str):
-            vdf = vDataFrameSQL(relation=input_relation)
+            vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         X_new = [elem for elem in X]
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -193,7 +192,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -217,9 +216,9 @@ steps: list
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if isinstance(self.steps[-1][1], Regressor):
             return self.steps[-1][1].regression_report()
@@ -277,7 +276,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -317,7 +316,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx in range(1, len(self.steps) + 1):

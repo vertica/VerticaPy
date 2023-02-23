@@ -14,34 +14,29 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import random, itertools
-from typing import Union, Literal
+from typing import Literal, Union
+from tqdm.auto import tqdm
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.sql.drop import drop
-from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample import tablesample
-from verticapy._utils._sql import _executeSQL
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.learn.tools import does_model_exist
-from verticapy.machine_learning._utils import reverse_score
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.plotting._matplotlib import (
     plot_stepwise_ml,
     plot_importance,
 )
-from verticapy._config.config import OPTIONS
+
+from verticapy.machine_learning._utils import reverse_score
+from verticapy.machine_learning.metrics import aic_bic
+from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
-# Other Python Modules
-from tqdm.auto import tqdm
+from verticapy.sql.drop import drop
 
 
 @save_verticapy_logs
@@ -132,13 +127,13 @@ print_info: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if isinstance(X, str):
         X = [X]
-    if estimator.MODEL_SUBTYPE == "REGRESSOR" and metric == "auto":
+    if estimator.MODEL_SUBCATEGORY == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -158,7 +153,7 @@ tablesample
             if config not in all_configuration:
                 all_configuration += [config]
     if (
-        OPTIONS["tqdm"]
+        _options["tqdm"]
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
@@ -227,7 +222,7 @@ tablesample
                     raise (e)
     if not (data):
         if training_score:
-            return tablesample(
+            return TableSample(
                 {
                     "parameters": [],
                     "avg_score": [],
@@ -238,13 +233,13 @@ tablesample
                 }
             )
         else:
-            return tablesample(
+            return TableSample(
                 {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
             )
     reverse = reverse_score(metric)
     data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
-        result = tablesample(
+        result = TableSample(
             {
                 "features": [d[0] for d in data],
                 "avg_score": [d[1] for d in data],
@@ -266,7 +261,7 @@ tablesample
                 f"{result['avg_time'][0]}\033[0m;"
             )
     else:
-        result = tablesample(
+        result = TableSample(
             {
                 "features": [d[0] for d in data],
                 "avg_score": [d[1] for d in data],
@@ -348,22 +343,18 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    from verticapy.learn.metrics import aic_bic
-
     if isinstance(X, str):
         X = [X]
     assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
-    if not (OPTIONS["overwrite_model"]):
-        does_model_exist(name=estimator.name, raise_error=True)
+    if not (_options["overwrite_model"]):
+        does_model_exist(name=estimator.model_name, raise_error=True)
     result, current_step = [], 0
     table = (
-        input_relation
-        if isinstance(input_relation, str)
-        else input_relation.__genSQL__()
+        input_relation if isinstance(input_relation, str) else input_relation._genSQL()
     )
     avg = _executeSQL(
         f"SELECT /*+LABEL('learn.model_selection.stepwise')*/ AVG({y}) FROM {table}",
@@ -375,7 +366,7 @@ tablesample
         random.shuffle(X)
     elif x_order in ("spearman", "pearson"):
         if isinstance(input_relation, str):
-            vdf = vDataFrameSQL(input_relation)
+            vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation
         X = [
@@ -388,7 +379,7 @@ tablesample
             X.reverse()
     if print_info:
         print("\033[1m\033[4mStarting Stepwise\033[0m\033[0m")
-    if OPTIONS["tqdm"] and print_info:
+    if _options["tqdm"] and print_info:
         loop = tqdm(range(len(X)))
     else:
         loop = range(len(X))
@@ -472,7 +463,7 @@ tablesample
         features[idx] = [item.replace('"', "") for item in x]
     importance = [x[5] if (x[5]) and x[5] > 0 else 0 for x in result]
     importance = [100 * x / sum(importance) for x in importance]
-    result = tablesample(
+    result = TableSample(
         {
             "index": [x[4] for x in result],
             "features": features,

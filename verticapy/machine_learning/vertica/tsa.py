@@ -14,42 +14,35 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import math
-from typing import Union, Literal
+from typing import Literal, Union
 
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-import verticapy.learn.metrics as mt
-from verticapy.learn.vmodel import Regressor
-from verticapy.learn.linear_model import LinearRegression
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.plotting._colors import gen_colors
-from verticapy.learn.tools import does_model_exist
-from verticapy.sql._utils._format import quote_ident, schema_relation
-from verticapy.sql.insert import insert_verticapy_schema
-from verticapy._utils._sql import _executeSQL
+import matplotlib.pyplot as plt
+
+from verticapy._config.colors import get_colors
+from verticapy._config.config import ISNOTEBOOK, _options, PARSER_IMPORT
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._config.config import ISNOTEBOOK
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident, schema_relation
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import check_minimum_version
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy.sql.drop import drop
-from verticapy.core.tablesample import tablesample
-from verticapy.sql.read import vDataFrameSQL
-from verticapy._config.config import OPTIONS
 from verticapy.plotting._matplotlib.mlplot import plot_importance
 
-# Other Python Modules
-try:
+import verticapy.machine_learning.metrics as mt
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
+from verticapy.machine_learning.model_management.read import does_model_exist
+from verticapy.machine_learning.vertica.base import Regressor
+
+from verticapy.sql.drop import drop
+from verticapy.sql.insert import insert_verticapy_schema
+
+if PARSER_IMPORT:
     from dateutil.parser import parse
-except:
-    pass
-import matplotlib.pyplot as plt
 
 
 class SARIMAX(Regressor):
@@ -91,6 +84,12 @@ papprox_ma: int, optional
     the p of the AR(p) used to approximate the MA coefficients.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "TIMESERIES"
+    MODEL_TYPE = "SARIMAX"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -117,9 +116,7 @@ papprox_ma: int, optional
             assert D > 0 or P > 0 or Q > 0, ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
-        self.type, self.name = "SARIMAX", name
-        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.model_name = name
         self.parameters = {
             "p": p,
             "d": d,
@@ -313,31 +310,31 @@ papprox_ma: int, optional
         model
         """
         # Initialization
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
-            else input_relation.__genSQL__()
+            else input_relation._genSQL()
         )
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
+            self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
         self.y, self.ts, self.deploy_predict_ = quote_ident(y), quote_ident(ts), ""
-        self.coef_ = tablesample({"predictor": [], "coefficient": []})
+        self.coef_ = TableSample({"predictor": [], "coefficient": []})
         self.ma_avg_, self.ma_piq_ = None, None
-        X, schema = [quote_ident(x) for x in X], schema_relation(self.name)[0]
+        X, schema = [quote_ident(x) for x in X], schema_relation(self.model_name)[0]
         self.X, self.exogenous = [], X
         relation = (
             "(SELECT *, [VerticaPy_y] AS VerticaPy_y_copy FROM {}) VERTICAPY_SUBTABLE "
         )
         model = LinearRegression(
-            name=self.name,
+            name=self.model_name,
             solver=self.parameters["solver"],
             max_iter=self.parameters["max_iter"],
             tol=self.parameters["tol"],
@@ -590,7 +587,7 @@ papprox_ma: int, optional
                     elif j - i == 0:
                         piq_tmp -= thetaq[i]
                 piq = piq + [piq_tmp]
-            self.ma_piq_ = tablesample({"coefficient": piq})
+            self.ma_piq_ = TableSample({"coefficient": piq})
             epsilon = (
                 "[VerticaPy_y] - "
                 + str(self.ma_avg_)
@@ -668,7 +665,7 @@ papprox_ma: int, optional
             "papprox_ma": self.parameters["papprox_ma"],
         }
         insert_verticapy_schema(
-            model_name=self.name, model_type="SARIMAX", model_save=model_save,
+            model_name=self.model_name, model_type="SARIMAX", model_save=model_save,
         )
         return self
 
@@ -728,7 +725,7 @@ papprox_ma: int, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vDataFrameSQL(relation=self.input_relation)
+            vdf = vDataFrame(self.input_relation)
         delta_limit, limit = (
             limit,
             max(
@@ -761,8 +758,8 @@ papprox_ma: int, optional
             vdf=vdf, y=y, ts=ts, X=X, nlead=0, name="_verticapy_prediction_"
         )
         error_eps = 1.96 * math.sqrt(self.score(method="mse"))
-        print_info = OPTIONS["print_info"]
-        OPTIONS["print_info"] = False
+        print_info = _options["print_info"]
+        _options["print_info"] = False
         try:
             result = (
                 result.select([ts, y, "_verticapy_prediction_"])
@@ -772,9 +769,9 @@ papprox_ma: int, optional
                 .values
             )
         except:
-            OPTIONS["print_info"] = print_info
+            _options["print_info"] = print_info
             raise
-        OPTIONS["print_info"] = print_info
+        _options["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -835,7 +832,7 @@ papprox_ma: int, optional
             if ISNOTEBOOK:
                 fig.set_size_inches(10, 6)
             ax.grid()
-        colors = gen_colors()
+        colors = get_colors()
         param1 = {
             "color": colors[2],
             "linewidth": 2,
@@ -965,9 +962,10 @@ papprox_ma: int, optional
             ts = self.ts
         if not (X):
             X = self.exogenous
-        y, ts = vdf.format_colnames(y, ts)
+        y, ts = vdf._format_colnames(y, ts)
         name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
+            "{}_".format(self.MODEL_TYPE)
+            + "".join(ch for ch in self.model_name if ch.isalnum())
             if not (name)
             else name
         )
@@ -989,7 +987,7 @@ papprox_ma: int, optional
             + [predictSQL]
             + ["VerticaPy_y_copy AS {}".format(y)]
         )
-        relation = vdf.__genSQL__()
+        relation = vdf._genSQL()
         for i in range(nlead):
             query = "SELECT /*+LABEL('learn.tsa.SARIMAX.predict')*/ ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
@@ -1043,7 +1041,7 @@ papprox_ma: int, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vDataFrameSQL(final_relation, "SARIMAX")
+        result = vDataFrame(final_relation)
         if nlead > 0:
             result[y].apply(
                 "CASE WHEN {} >= '{}' THEN NULL ELSE {} END".format(ts, first_t, "{}")
@@ -1142,6 +1140,12 @@ solver: str, optional
         bfgs   : Broyden Fletcher Goldfarb Shanno
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "TIMESERIES"
+    MODEL_TYPE = "VAR"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -1152,7 +1156,7 @@ solver: str, optional
         max_iter: int = 1000,
         solver: Literal["newton", "bfgs"] = "newton",
     ):
-        self.type, self.name = "VAR", name
+        self.model_name = name
         assert p > 0, ParameterError(
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
@@ -1230,7 +1234,7 @@ solver: str, optional
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
         min_max = (
-            vDataFrameSQL(relation=self.input_relation)
+            vDataFrame(self.input_relation)
             .agg(func=["min", "max"], columns=self.X)
             .transpose()
         )
@@ -1255,7 +1259,7 @@ solver: str, optional
         importances = {"index": ["importance", "sign"]}
         for elem in coeff_importances:
             importances[elem] = [coeff_importances[elem], coeff_sign[elem]]
-        return tablesample(values=importances).transpose()
+        return TableSample(values=importances).transpose()
 
     def fit(
         self,
@@ -1283,17 +1287,17 @@ solver: str, optional
     object
         self
         """
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
-            else input_relation.__genSQL__()
+            else input_relation._genSQL()
         )
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
+            self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
@@ -1301,10 +1305,10 @@ solver: str, optional
         self.ts, self.deploy_predict_ = quote_ident(ts), []
         self.X, schema = (
             [quote_ident(elem) for elem in X],
-            schema_relation(self.name)[0],
+            schema_relation(self.model_name)[0],
         )
         model = LinearRegression(
-            name=self.name,
+            name=self.model_name,
             solver=self.parameters["solver"],
             max_iter=self.parameters["max_iter"],
             tol=self.parameters["tol"],
@@ -1362,7 +1366,7 @@ solver: str, optional
         for idx, elem in enumerate(self.coef_):
             model_save["coef_{}".format(idx)] = elem.values
         insert_verticapy_schema(
-            model_name=self.name, model_type="VAR", model_save=model_save,
+            model_name=self.model_name, model_type="VAR", model_save=model_save,
         )
         return self
 
@@ -1459,7 +1463,7 @@ solver: str, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vDataFrameSQL(relation=self.input_relation)
+            vdf = vDataFrame(self.input_relation)
         delta_limit, limit = (
             limit,
             max(max(limit, self.parameters["p"] + 1 + nlast), 200),
@@ -1499,8 +1503,8 @@ solver: str, optional
         )
         y, prediction = X[X_idx], "_verticapy_prediction_{}_".format(X_idx)
         error_eps = 1.96 * math.sqrt(self.score(method="mse").values["mse"][X_idx])
-        print_info = OPTIONS["print_info"]
-        OPTIONS["print_info"] = False
+        print_info = _options["print_info"]
+        _options["print_info"] = False
         try:
             result = (
                 result_all.select([ts, y, prediction])
@@ -1510,9 +1514,9 @@ solver: str, optional
                 .values
             )
         except:
-            OPTIONS["print_info"] = print_info
+            _options["print_info"] = print_info
             raise
-        OPTIONS["print_info"] = print_info
+        _options["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1529,16 +1533,16 @@ solver: str, optional
             ],
         )
         if dynamic:
-            print_info = OPTIONS["print_info"]
-            OPTIONS["print_info"] = False
+            print_info = _options["print_info"]
+            _options["print_info"] = False
             try:
                 result = (
                     result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
                 )
             except:
-                OPTIONS["print_info"] = print_info
+                _options["print_info"] = print_info
                 raise
-            OPTIONS["print_info"] = print_info
+            _options["print_info"] = print_info
             columns = [elem for elem in result]
             if isinstance(result[columns[0]][0], str):
                 result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1578,7 +1582,7 @@ solver: str, optional
             if ISNOTEBOOK:
                 fig.set_size_inches(10, 6)
             ax.grid()
-        colors = gen_colors()
+        colors = get_colors()
         param1 = {
             "color": colors[2],
             "linewidth": 2,
@@ -1693,19 +1697,20 @@ solver: str, optional
             ts = self.ts
         if not (X):
             X = self.X
-        X, ts = vdf.format_colnames(X, ts)
+        X, ts = vdf._format_colnames(X, ts)
         all_pred, names = [], []
         transform_relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts)
         for idx, elem in enumerate(X):
             name_tmp = (
-                "{}_".format(self.type) + "".join(ch for ch in elem if ch.isalnum())
+                "{}_".format(self.MODEL_TYPE)
+                + "".join(ch for ch in elem if ch.isalnum())
                 if len(name) != len(X)
                 else name[idx]
             )
             all_pred += ["{} AS {}".format(self.deploySQL()[idx], name_tmp)]
             transform_relation = transform_relation.replace("[X{}]".format(idx), elem)
         columns = vdf.get_columns() + all_pred
-        relation = vdf.__genSQL__()
+        relation = vdf._genSQL()
         for i in range(nlead):
             query = "SELECT /*+LABEL('learn.tsa.VAR.predict')*/ ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
@@ -1756,7 +1761,7 @@ solver: str, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vDataFrameSQL(final_relation, "VAR")
+        result = vDataFrame(final_relation)
         if nlead > 0:
             for elem in X:
                 result[elem].apply(
@@ -1806,7 +1811,7 @@ solver: str, optional
             method, adj = "r2", True
         elif method == "rmse":
             method, root = "mse", True
-        result = tablesample({"index": [index]})
+        result = TableSample({"index": [index]})
         fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
 
         # Table Formatting

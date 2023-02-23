@@ -14,24 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
+import datetime, json, os, uuid
 import numpy as np
-import os, uuid, json
-import datetime
 
-# VerticaPy Modules
-from verticapy._utils._logo import gen_verticapy_logo_html
-from verticapy._utils._cast import to_category
-
-#
-#
-# Functions to use to create an nteractive table.
-#
+from verticapy._utils._sql._cast import to_category
+from verticapy._utils._logo import verticapy_logo_html
 
 
 def _table_header(
@@ -46,7 +33,7 @@ def _table_header(
     thead_style_first = "border: 1px solid #AAAAAA; min-width: 95px; max-width: 95px;"
     for i in range(0, len(head)):
         if i == 0:
-            logo = f'<div style="padding-left: 15px;">{gen_verticapy_logo_html(size="45px")}</div>'
+            logo = f'<div style="padding-left: 15px;">{verticapy_logo_html(size="45px")}</div>'
             thead += f'<td style="{thead_style_first}">{logo}</td>'
         else:
             thead += f'<td style="{thead_style}">{head[i]}</td>'

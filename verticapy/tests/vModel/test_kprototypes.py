@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 # VerticaPy
 from verticapy.tests.conftest import get_version
 from verticapy import drop, set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_iris
 from verticapy.learn.cluster import KPrototypes
 
@@ -179,7 +179,7 @@ class TestKPrototypes:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT APPLY_KPROTOTYPES(5.006, 3.418, 1.464, 0.244, 'Iris-setosa' USING PARAMETERS model_name = '{0}', match_by_pos=True)".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -197,7 +197,8 @@ class TestKPrototypes:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT APPLY_KPROTOTYPES(5.006, 3.418, 1.464, 0.244, 'Iris-setosa' USING PARAMETERS model_name = '{0}', match_by_pos=True)::float, {1}::float".format(
-                model.name, model.to_sql([5.006, 3.418, 1.464, 0.244, "'Iris-setosa'"]),
+                model.model_name,
+                model.to_sql([5.006, 3.418, 1.464, 0.244, "'Iris-setosa'"]),
             )
         )
         prediction = current_cursor().fetchone()

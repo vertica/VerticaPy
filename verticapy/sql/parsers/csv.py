@@ -14,24 +14,19 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import os, warnings
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql import _executeSQL
-from verticapy.errors import ExtensionError, ParameterError, MissingRelation
+from verticapy._utils._sql._format import clean_query, format_schema_table, quote_ident
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.errors import ExtensionError, MissingRelation, ParameterError
+
+from verticapy.sql.create import create_table
+from verticapy.sql.drop import drop
 from verticapy.sql.flex import compute_flextable_keys
-from verticapy.sql._utils._format import format_schema_table, clean_query
 from verticapy.sql.parsers._utils import extract_compression, get_first_file
-from verticapy.sql._utils._format import quote_ident
-from verticapy._config.config import OPTIONS
 
 
 def guess_sep(file_str: str):
@@ -158,8 +153,6 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    from verticapy.sql.drop import drop
-
     if record_terminator == "\n":
         record_terminator = "\\n"
     if not (flex_name):
@@ -337,8 +330,7 @@ See Also
 --------
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
-    from verticapy.sql.create import create_table
+    from verticapy.core.vdataframe.base import vDataFrame
 
     if schema:
         temporary_local_table = False
@@ -551,6 +543,6 @@ read_json : Ingests a JSON file into the Vertica database.
             _executeSQL(
                 query2, title="Ingesting the data.",
             )
-            if not (insert) and not (temporary_local_table) and OPTIONS["print_info"]:
+            if not (insert) and not (temporary_local_table) and _options["print_info"]:
                 print(f"The table {input_relation} has been successfully created.")
             return vDataFrame(table_name, schema=schema)

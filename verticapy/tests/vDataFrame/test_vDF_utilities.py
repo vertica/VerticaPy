@@ -34,7 +34,7 @@ from verticapy import (
     read_csv,
     read_json,
 )
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 import verticapy.stats as st
 from verticapy.datasets import load_titanic, load_cities, load_amazon, load_world
 from verticapy.sql.sys import current_session, username
@@ -372,29 +372,29 @@ class TestvDFUtilities:
     def test_vDF_del_catalog(self, titanic_vd):
         result = titanic_vd.copy()
         result.describe(method="numerical")
-        assert "max" in result["age"].catalog
-        assert "avg" in result["age"].catalog
+        assert "max" in result["age"]._catalog
+        assert "avg" in result["age"]._catalog
         result.del_catalog()
-        assert "max" not in result["age"].catalog
-        assert "avg" not in result["age"].catalog
+        assert "max" not in result["age"]._catalog
+        assert "avg" not in result["age"]._catalog
 
     def test_vDF_load(self, titanic_vd):
         result = titanic_vd.copy()
-        result._VERTICAPY_VARIABLES_["saving"] = []
+        result._vars["saving"] = []
         result.save()
-        assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
+        assert len(result._vars["saving"]) == 1
         result.filter("age < 40")
         result["embarked"].drop()
         assert result.shape() == (760, 13)
         result = result.load()
-        assert len(result._VERTICAPY_VARIABLES_["saving"]) == 0
+        assert len(result._vars["saving"]) == 0
         assert result.shape() == (1234, 14)
 
     def test_vDF_save(self, titanic_vd):
         result = titanic_vd.copy()
-        result._VERTICAPY_VARIABLES_["saving"] = []
+        result._vars["saving"] = []
         result.save()
-        assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
+        assert len(result._vars["saving"]) == 1
 
     def test_vDF_catcol(self, titanic_vd):
         result = [
@@ -601,9 +601,9 @@ class TestvDFUtilities:
                     fare 
                  FROM titanic 
                  WHERE age IS NOT NULL;;"""
-        vdf = vDataFrame(sql=sql)
+        vdf = vDataFrame(sql)
         assert vdf.shape() == (997, 2)
-        vdf = vDataFrame(sql=sql, usecols=["age"])
+        vdf = vDataFrame(sql, usecols=["age"])
         assert vdf.shape() == (997, 1)
 
     def test_vDF_store_usage(self, titanic_vd):

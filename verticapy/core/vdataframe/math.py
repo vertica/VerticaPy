@@ -14,16 +14,18 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union, Literal
 import random
-from verticapy.sql._utils._format import quote_ident
-from verticapy.core._utils._map import verticapy_agg_name
+from typing import Literal, Union
+
+from verticapy._utils._map import verticapy_agg_name
+from verticapy._utils._sql._cast import to_category
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import MissingColumn, ParameterError, QueryError
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.str_sql import str_sql
+
+from verticapy.core.str_sql.base import str_sql
+
 from verticapy.sql.dtypes import get_data_types
-from verticapy._utils._cast import to_category
-from verticapy.sql.read import vDataFrameSQL
 from verticapy.sql.functions.conditional import decode
 
 
@@ -84,7 +86,7 @@ class vDFMATH:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.numcol() if not (columns) else self.format_colnames(columns)
+        columns = self.numcol() if not (columns) else self._format_colnames(columns)
         func = {}
         for column in columns:
             if not (self[column].isbool()):
@@ -191,7 +193,7 @@ class vDFMATH:
                 columns = [columns]
             else:
                 columns = []
-        columns, by = self.format_colnames(columns, by)
+        columns, by = self._format_colnames(columns, by)
         by_name = ["by"] + by if (by) else []
         by_order = ["order_by"] + [elem for elem in order_by] if (order_by) else []
         if not (name):
@@ -199,7 +201,7 @@ class vDFMATH:
         func = func.lower()
         by = ", ".join(by)
         by = f"PARTITION BY {by}" if (by) else ""
-        order_by = self.__get_sort_syntax__(order_by)
+        order_by = self._get_sort_syntax(order_by)
         func = verticapy_agg_name(func.lower(), method="vertica")
         if func in (
             "max",
@@ -222,7 +224,7 @@ class vDFMATH:
             "iqr",
             "sem",
         ) or ("%" in func):
-            if order_by and not (OPTIONS["print_info"]):
+            if order_by and not (_options["print_info"]):
                 print(
                     f"\u26A0 '{func}' analytic method doesn't need an "
                     "order by clause, it was ignored"
@@ -239,7 +241,7 @@ class vDFMATH:
                 median_name = f"{column_str}_median_{random_nb}"
                 std_name = f"{column_str}_std_{random_nb}"
                 count_name = f"{column_str}_count_{random_nb}"
-                all_cols = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+                all_cols = [elem for elem in self._vars["columns"]]
                 if func == "mad":
                     self.eval(median_name, f"MEDIAN({columns[0]}) OVER ({by})")
                 else:
@@ -449,15 +451,15 @@ class vDFMATH:
                     "flexibility use the 'eval' method."
                 )
         if func in ("kurtosis", "skewness", "jb"):
-            self._VERTICAPY_VARIABLES_["exclude_columns"] += [
+            self._vars["exclude_columns"] += [
                 quote_ident(mean_name),
                 quote_ident(std_name),
                 quote_ident(count_name),
             ]
         elif func == "aad":
-            self._VERTICAPY_VARIABLES_["exclude_columns"] += [quote_ident(mean_name)]
+            self._vars["exclude_columns"] += [quote_ident(mean_name)]
         elif func == "mad":
-            self._VERTICAPY_VARIABLES_["exclude_columns"] += [quote_ident(median_name)]
+            self._vars["exclude_columns"] += [quote_ident(median_name)]
         return self
 
     @save_verticapy_logs
@@ -484,7 +486,7 @@ class vDFMATH:
     vDataFrame.applymap : Applies a function to all vDataColumns.
     vDataFrame.eval     : Evaluates a customized expression.
         """
-        func = self.format_colnames(func)
+        func = self._format_colnames(func)
         for column in func:
             self[column].apply(func[column])
         return self
@@ -565,7 +567,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -587,7 +589,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -615,7 +617,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -625,51 +627,49 @@ class vDCMATH:
         """
         if isinstance(func, str_sql):
             func = str(func)
-        func_apply = func.replace("{}", self.alias)
-        alias_sql_repr = self.alias.replace('"', "")
+        func_apply = func.replace("{}", self._alias)
+        alias_sql_repr = self._alias.replace('"', "")
         try:
             ctype = get_data_types(
                 expr=f"""
                     SELECT 
                         {func_apply} AS apply_test_feature 
-                    FROM {self.parent.__genSQL__()} 
-                    WHERE {self.alias} IS NOT NULL 
+                    FROM {self._parent._genSQL()} 
+                    WHERE {self._alias} IS NOT NULL 
                     LIMIT 0""",
                 column="apply_test_feature",
             )
             category = to_category(ctype=ctype)
-            all_cols, max_floor = self.parent.get_columns(), 0
+            all_cols, max_floor = self._parent.get_columns(), 0
             for column in all_cols:
                 try:
                     column_str = column.replace('"', "")
                     if (quote_ident(column) in func) or (
                         re.search(re.compile(f"\\b{column_str}\\b"), func,)
                     ):
-                        max_floor = max(
-                            len(self.parent[column].transformations), max_floor
-                        )
+                        max_floor = max(len(self._parent[column]._transf), max_floor)
                 except:
                     pass
-            max_floor -= len(self.transformations)
+            max_floor -= len(self._transf)
             if copy_name:
                 copy_name_str = copy_name.replace('"', "")
                 self.add_copy(name=copy_name)
                 for k in range(max_floor):
-                    self.parent[copy_name].transformations += [
+                    self._parent[copy_name]._transf += [
                         ("{}", self.ctype(), self.category())
                     ]
-                self.parent[copy_name].transformations += [(func, ctype, category)]
-                self.parent[copy_name].catalog = self.catalog
+                self._parent[copy_name]._transf += [(func, ctype, category)]
+                self._parent[copy_name]._catalog = self._catalog
             else:
                 for k in range(max_floor):
-                    self.transformations += [("{}", self.ctype(), self.category())]
-                self.transformations += [(func, ctype, category)]
-                self.parent.__update_catalog__(erase=True, columns=[self.alias])
-            self.parent.__add_to_history__(
+                    self._transf += [("{}", self.ctype(), self.category())]
+                self._transf += [(func, ctype, category)]
+                self._parent._update_catalog(erase=True, columns=[self._alias])
+            self._parent._add_to_history(
                 f"[Apply]: The vDataColumn '{alias_sql_repr}' was "
                 f"transformed with the func 'x -> {func_apply}'."
             )
-            return self.parent
+            return self._parent
         except Exception as e:
             raise QueryError(
                 f"{e}\nError when applying the func 'x -> {func_apply}' "
@@ -764,7 +764,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -820,7 +820,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -844,7 +844,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -869,7 +869,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -894,15 +894,15 @@ class vDCMATH:
             fun = "APPLY_COUNT_ELEMENTS"
         else:
             fun = "LENGTH"
-        elem_to_select = f"{fun}({self.alias})"
-        init_transf = f"{fun}({self.init_transf})"
-        new_alias = quote_ident(self.alias[1:-1] + ".length")
+        elem_to_select = f"{fun}({self._alias})"
+        init_transf = f"{fun}({self._init_transf})"
+        new_alias = quote_ident(self._alias[1:-1] + ".length")
         query = f"""
-            (SELECT 
+            SELECT 
                 {elem_to_select} AS {new_alias} 
-            FROM {self.parent.__genSQL__()}) VERTICAPY_SUBTABLE"""
-        vcol = vDataFrameSQL(query)[new_alias]
-        vcol.init_transf = init_transf
+            FROM {self._parent._genSQL()}"""
+        vcol = self._parent._new_vdataframe(query)[new_alias]
+        vcol._init_transf = init_transf
         return vcol
 
     @save_verticapy_logs
@@ -918,7 +918,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -944,7 +944,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -970,7 +970,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------

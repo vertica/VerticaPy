@@ -14,9 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ExtensionError
 
 
@@ -42,6 +41,8 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
+    from verticapy.core.vdataframe.base import vDataFrame
+
     file = path.split("/")[-1]
     file_extension = file[-3 : len(file)]
     if file_extension != "shp":
@@ -63,6 +64,4 @@ vDataFrame
     )
     _executeSQL(query, title="Ingesting the data.")
     print(f'The table "{schema}"."{table_name}" has been successfully created.')
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
-
     return vDataFrame(table_name, schema=schema)

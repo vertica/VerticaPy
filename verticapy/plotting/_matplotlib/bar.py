@@ -14,19 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Modules
 import warnings
 
-# MATPLOTLIB
-import matplotlib.ticker as mticker
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 
-# VerticaPy Modules
-from verticapy.plotting._matplotlib.base import updated_dict
+from verticapy._config.colors import get_colors
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.errors import ParameterError
-from verticapy.plotting._matplotlib.base import compute_plot_variables
-from verticapy.plotting._colors import gen_colors
+
+from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
 
 def bar(
@@ -48,9 +45,9 @@ def bar(
             fig.set_size_inches(10, min(int(len(x) / 1.8) + 1, 600))
         ax.xaxis.grid()
         ax.set_axisbelow(True)
-    param = {"color": gen_colors()[0], "alpha": 0.86}
+    param = {"color": get_colors()[0], "alpha": 0.86}
     ax.barh(x, y, h, **updated_dict(param, style_kwds, 0))
-    ax.set_ylabel(vdf.alias)
+    ax.set_ylabel(vdf._alias)
     if is_categorical:
         if vdf.category() == "text":
             new_z = []
@@ -89,7 +86,7 @@ def bar2D(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_colors()
     if fully_stacked:
         if method != "density":
             raise ParameterError(
@@ -271,9 +268,9 @@ def hist(
             fig.set_size_inches(min(int(len(x) / 1.8) + 1, 600), 6)
         ax.set_axisbelow(True)
         ax.yaxis.grid()
-    param = {"color": gen_colors()[0], "alpha": 0.86}
+    param = {"color": get_colors()[0], "alpha": 0.86}
     ax.bar(x, y, h, **updated_dict(param, style_kwds))
-    ax.set_xlabel(vdf.alias)
+    ax.set_xlabel(vdf._alias)
     if is_categorical:
         if not (is_numeric):
             new_z = []
@@ -312,7 +309,7 @@ def hist2D(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_colors()
     all_columns = vdf.pivot_table(
         columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
     ).values
@@ -400,7 +397,7 @@ def multiple_hist(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_colors()
     if len(columns) > 5:
         raise ParameterError(
             "The number of column must be <= 5 to use 'multiple_hist' method"
@@ -435,7 +432,7 @@ def multiple_hist(
                 alpha -= 0.2
                 all_columns += [columns[idx]]
             else:
-                if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+                if vdf._vars["display"]["print_info"]:
                     warning_message = (
                         f"The Virtual Column {column} is not numerical."
                         " Its histogram will not be drawn."

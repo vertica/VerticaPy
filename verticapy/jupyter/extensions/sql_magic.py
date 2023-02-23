@@ -14,8 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
 ##
 #  _____  _____ _      ___  ___  ___  _____ _____ _____
 # /  ___||  _  | |     |  \/  | / _ \|  __ \_   _/  __ \
@@ -25,36 +23,33 @@ permissions and limitations under the License.
 # \____/  \_/\_\_____/ \_|  |_/\_| |_/\____/\___/ \____/
 #
 ##
-#
+import re, time, warnings
 
-# Jupyter Modules
 from IPython.core.magic import needs_local_scope
-from IPython.display import HTML, display
+from IPython.display import display, HTML
 
-# Standard Python Modules
-import warnings, re, time
-
-# VerticaPy Modules
-from verticapy.connect import SPECIAL_SYMBOLS
+from verticapy._config.config import _options, set_option
+from verticapy._config.connection import SPECIAL_SYMBOLS
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._dblink import replace_external_queries_in_query
+from verticapy._utils._sql._format import (
+    clean_query,
+    replace_vars_in_query,
+)
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import QueryError, ParameterError
-from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
-from verticapy.sql._utils._format import replace_vars_in_query, clean_query
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
-from verticapy._config.config import OPTIONS
+
 from verticapy.jupyter.extensions._utils import get_magic_options
-from verticapy._config.config import set_option
 
 
 @save_verticapy_logs
 @needs_local_scope
 def sql_magic(line, cell="", local_ns=None):
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.
-    sql_on, time_on = OPTIONS["sql_on"], OPTIONS["time_on"]
+    sql_on, time_on = _options["sql_on"], _options["time_on"]
     set_option("sql_on", False)
     set_option("time_on", False)
 
@@ -101,7 +96,7 @@ def sql_magic(line, cell="", local_ns=None):
                         raise ParameterError("Duplicate option '-ncols'.")
                     options["-ncols"] = int(all_options_dict[option])
 
-            elif OPTIONS["print_info"]:
+            elif _options["print_info"]:
                 warning_message = (
                     f"\u26A0 Warning : The option '{option}' doesn't "
                     "exist, it was skipped."
@@ -241,7 +236,7 @@ def sql_magic(line, cell="", local_ns=None):
                 except Exception as e:
                     error = str(e)
 
-                if OPTIONS["print_info"] and (
+                if _options["print_info"] and (
                     "Severity: ERROR, Message: User defined transform must return at least one column"
                     in error
                     and "DBLINK" in error
@@ -251,7 +246,7 @@ def sql_magic(line, cell="", local_ns=None):
                 elif error:
                     raise QueryError(error)
 
-                elif OPTIONS["print_info"]:
+                elif _options["print_info"]:
                     print(query_type)
 
             else:
@@ -259,13 +254,13 @@ def sql_magic(line, cell="", local_ns=None):
                 error = ""
 
                 try:
-                    result = vDataFrameSQL(f"({query}) VSQL_MAGIC")
-                    result._VERTICAPY_VARIABLES_["sql_magic_result"] = True
+                    result = vDataFrame(query)
+                    result._vars["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:
-                        result._VERTICAPY_VARIABLES_["max_rows"] = options["-nrows"]
+                        result._vars["max_rows"] = options["-nrows"]
                     if "-ncols" in options:
-                        result._VERTICAPY_VARIABLES_["max_columns"] = options["-ncols"]
+                        result._vars["max_columns"] = options["-ncols"]
 
                 except:
 
@@ -273,9 +268,9 @@ def sql_magic(line, cell="", local_ns=None):
                         final_result = _executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
                         )
-                        if final_result and OPTIONS["print_info"]:
+                        if final_result and _options["print_info"]:
                             print(final_result)
-                        elif OPTIONS["print_info"]:
+                        elif _options["print_info"]:
                             print(query_type)
 
                     except Exception as e:
@@ -289,7 +284,7 @@ def sql_magic(line, cell="", local_ns=None):
                     and "DBLINK" in error
                 ):
 
-                    if OPTIONS["print_info"]:
+                    if _options["print_info"]:
                         print(query_type)
 
                 elif error:
@@ -308,7 +303,7 @@ def sql_magic(line, cell="", local_ns=None):
 
         elapsed_time = round(time.time() - start_time, 3)
 
-        if OPTIONS["print_info"]:
+        if _options["print_info"]:
             display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
 
         return result

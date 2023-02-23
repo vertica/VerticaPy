@@ -14,8 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy._config.config import OPTIONS
 from functools import wraps
+
+from verticapy._config.config import _options
+from verticapy._config.connection import SESSION_IDENTIFIER
+from verticapy.connection.connect import current_cursor
 
 
 def save_to_query_profile(
@@ -52,12 +55,9 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
-    from verticapy._utils._sql import _executeSQL
-    from verticapy.connect import SESSION_IDENTIFIER
-
-    if not (OPTIONS["save_query_profile"]) or (
-        isinstance(OPTIONS["save_query_profile"], list)
-        and name not in OPTIONS["save_query_profile"]
+    if not (_options["save_query_profile"]) or (
+        isinstance(_options["save_query_profile"], list)
+        and name not in _options["save_query_profile"]
     ):
         return False
     try:
@@ -68,8 +68,9 @@ bool
             json_dict: dict = {},
             add_identifier: bool = False,
         ):
-            from verticapy.core.vdataframe.vdataframe import vDataFrame
-            from verticapy.learn.vmodel import vModel
+            from verticapy.core.vdataframe.base import vDataFrame
+
+            from verticapy.machine_learning.vertica.base import vModel
 
             json = "{"
             if name:
@@ -87,10 +88,10 @@ bool
                 elif json_dict[key] is None:
                     json += "null"
                 elif isinstance(json_dict[key], vDataFrame):
-                    json_dict_str = json_dict[key].__genSQL__().replace('"', '\\"')
+                    json_dict_str = json_dict[key]._genSQL().replace('"', '\\"')
                     json += f'"{json_dict_str}"'
                 elif isinstance(json_dict[key], vModel):
-                    json += f'"{json_dict[key].type}"'
+                    json += f'"{json_dict[key].MODEL_TYPE}"'
                 elif isinstance(json_dict[key], dict):
                     json += dict_to_json_string(json_dict=json_dict[key])
                 elif isinstance(json_dict[key], list):
@@ -110,11 +111,7 @@ bool
         query = f"SELECT /*+LABEL('{query_label_str}')*/ '{dict_to_json_string_str}'"
         if return_query:
             return query
-        _executeSQL(
-            query=query,
-            title="Sending query to save the information in query profile table.",
-            print_time_sql=False,
-        )
+        current_cursor().execute(query)
         return True
     except:
         return False
@@ -141,7 +138,7 @@ identifies which function to save to the QUERY PROFILES table.
                         and path == "pipeline"
                         and isinstance(arg, list)
                     ):
-                        json_dict[var_names[idx]] = [item[1].type for item in arg]
+                        json_dict[var_names[idx]] = [item[1].MODEL_TYPE for item in arg]
                     else:
                         json_dict[var_names[idx]] = arg
                 else:

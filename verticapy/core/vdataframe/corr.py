@@ -16,27 +16,27 @@ permissions and limitations under the License.
 """
 import decimal, math
 from collections.abc import Iterable
-from typing import Union, Literal
-
-# Other modules
+from typing import Literal, Union
 from tqdm.auto import tqdm
 import numpy as np
 import scipy.stats as scipy_st
 import scipy.special as scipy_special
 
-# VerticaPy Modules
-from verticapy.core.tablesample import tablesample
-from verticapy.sql.read import to_tablesample
-import verticapy.plotting._matplotlib as plt
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import EmptyParameter
-from verticapy.sql.drop import drop
-from verticapy._version import vertica_version
+from verticapy._config.colors import get_cmap
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy._utils._sql import _executeSQL
-from verticapy.plotting._colors import gen_cmap
-from verticapy.sql._utils._format import quote_ident
-from verticapy._config.config import OPTIONS
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import vertica_version
+from verticapy.errors import EmptyParameter
+
+from verticapy.core.tablesample.base import TableSample
+
+import verticapy.plotting._matplotlib as plt
+
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample
 
 
 class vDFCORR:
@@ -63,7 +63,7 @@ class vDFCORR:
         if method == "cov":
             method_name = "Covariance"
             method_type = ""
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         if method != "cramer":
             for column in columns:
                 assert self[column].isnum(), TypeError(
@@ -83,7 +83,7 @@ class vDFCORR:
             elif method == "cov":
                 return self[columns[0]].var()
         elif len(columns) == 2:
-            pre_comp_val = self.__get_catalog_value__(method=method, columns=columns)
+            pre_comp_val = self._get_catalog_value(method=method, columns=columns)
             if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                 return pre_comp_val
             cast_0 = "::int" if (self[columns[0]].isbool()) else ""
@@ -92,13 +92,13 @@ class vDFCORR:
                 if columns[1] == columns[0]:
                     return 1
                 if method == "pearson":
-                    table = self.__genSQL__()
+                    table = self._genSQL()
                 else:
                     table = f"""
                         (SELECT 
                             RANK() OVER (ORDER BY {columns[0]}) AS {columns[0]}, 
                             RANK() OVER (ORDER BY {columns[1]}) AS {columns[1]} 
-                        FROM {self.__genSQL__()}) rank_spearman_table
+                        FROM {self._genSQL()}) rank_spearman_table
                     """
                 query = f"""
                     SELECT 
@@ -151,7 +151,7 @@ class vDFCORR:
                        * SQRT(SUM({column_b}{cast_b}) 
                        * SUM(1 - {column_b}{cast_b}) 
                        / COUNT(*) / COUNT(*)) 
-                    FROM {self.__genSQL__()} 
+                    FROM {self._genSQL()} 
                     WHERE {column_b} IS NOT NULL 
                       AND {column_n} IS NOT NULL;"""
                 title = (
@@ -166,7 +166,7 @@ class vDFCORR:
                         {columns[0]}, 
                         {columns[1]}, 
                         COUNT(*) AS nij 
-                    FROM {self.__genSQL__()} 
+                    FROM {self._genSQL()} 
                     WHERE {columns[0]} IS NOT NULL 
                       AND {columns[1]} IS NOT NULL 
                     GROUP BY 1, 2"""
@@ -174,7 +174,7 @@ class vDFCORR:
                     SELECT 
                         {columns[0]}, 
                         COUNT(*) AS ni 
-                    FROM {self.__genSQL__()} 
+                    FROM {self._genSQL()} 
                     WHERE {columns[0]} IS NOT NULL 
                       AND {columns[1]} IS NOT NULL 
                     GROUP BY 1"""
@@ -182,7 +182,7 @@ class vDFCORR:
                     SELECT 
                         {columns[1]}, 
                         COUNT(*) AS nj 
-                    FROM {self.__genSQL__()} 
+                    FROM {self._genSQL()} 
                     WHERE {columns[0]} IS NOT NULL 
                       AND {columns[1]} IS NOT NULL 
                     GROUP BY 1"""
@@ -192,13 +192,13 @@ class vDFCORR:
                             COUNT(*) AS n, 
                             APPROXIMATE_COUNT_DISTINCT({columns[0]}) AS k, 
                             APPROXIMATE_COUNT_DISTINCT({columns[1]}) AS r 
-                         FROM {self.__genSQL__()} 
+                         FROM {self._genSQL()} 
                          WHERE {columns[0]} IS NOT NULL 
                            AND {columns[1]} IS NOT NULL""",
                     title="Computing the columns cardinalities.",
                     method="fetchrow",
-                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
                 chi2 = f"""
                     SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
@@ -219,8 +219,8 @@ class vDFCORR:
                         f"and {columns[1]} (Chi2 Statistic)."
                     ),
                     method="fetchfirstelem",
-                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
                 if min(k - 1, r - 1) == 0:
                     result = float("nan")
@@ -254,18 +254,18 @@ class vDFCORR:
                         (SELECT 
                             {columns[0]}, 
                             {columns[1]} 
-                         FROM {self.__genSQL__()}) x 
+                         FROM {self._genSQL()}) x 
                         CROSS JOIN 
                         (SELECT 
                             {columns[0]}, 
                             {columns[1]} 
-                         FROM {self.__genSQL__()}) y"""
+                         FROM {self._genSQL()}) y"""
                 title = f"Computing the kendall correlation between {columns[0]} and {columns[1]}."
             elif method == "cov":
                 query = f"""
                     SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
                         COVAR_POP({columns[0]}{cast_0}, {columns[1]}{cast_1}) 
-                    FROM {self.__genSQL__()}"""
+                    FROM {self._genSQL()}"""
                 title = (
                     f"Computing the covariance between {columns[0]} and {columns[1]}."
                 )
@@ -274,15 +274,15 @@ class vDFCORR:
                     query=query,
                     title=title,
                     method="fetchfirstelem",
-                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
             except:
                 result = float("nan")
-            self.__update_catalog__(
+            self._update_catalog(
                 values={columns[1]: result}, matrix=method, column=columns[0]
             )
-            self.__update_catalog__(
+            self._update_catalog(
                 values={columns[0]: result}, matrix=method, column=columns[1]
             )
             if isinstance(result, decimal.Decimal):
@@ -293,7 +293,7 @@ class vDFCORR:
                 nb_precomputed, n = 0, len(columns)
                 for column1 in columns:
                     for column2 in columns:
-                        pre_comp_val = self.__get_catalog_value__(
+                        pre_comp_val = self._get_catalog_value(
                             method=method, columns=[column1, column2]
                         )
                         if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
@@ -303,7 +303,7 @@ class vDFCORR:
                 )
                 fun = "DENSE_RANK" if method == "spearmand" else "RANK"
                 if method == "pearson":
-                    table = self.__genSQL__()
+                    table = self._genSQL()
                 else:
                     columns_str = ", ".join(
                         [
@@ -311,7 +311,9 @@ class vDFCORR:
                             for column in columns
                         ]
                     )
-                    table = f"(SELECT {columns_str} FROM {self.__genSQL__()}) spearman_table"
+                    table = (
+                        f"(SELECT {columns_str} FROM {self._genSQL()}) spearman_table"
+                    )
                 vertica_version(condition=[9, 2, 1])
                 result = _executeSQL(
                     query=f"""SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
@@ -356,7 +358,7 @@ class vDFCORR:
                     title = "Covariance Matrix"
                     i0, step = 0, 1
                 n = len(columns)
-                loop = tqdm(range(i0, n)) if OPTIONS["tqdm"] else range(i0, n)
+                loop = tqdm(range(i0, n)) if _options["tqdm"] else range(i0, n)
                 try:
                     all_list = []
                     nb_precomputed = 0
@@ -366,7 +368,7 @@ class vDFCORR:
                             nb_loop += 1
                             cast_i = "::int" if (self[columns[i]].isbool()) else ""
                             cast_j = "::int" if (self[columns[j]].isbool()) else ""
-                            pre_comp_val = self.__get_catalog_value__(
+                            pre_comp_val = self._get_catalog_value(
                                 method=method, columns=[columns[i], columns[j]]
                             )
                             if pre_comp_val == None or pre_comp_val != pre_comp_val:
@@ -419,13 +421,13 @@ class vDFCORR:
                             f"{fun}() OVER (ORDER BY {column}) AS {column}"
                             for column in columns
                         ]
-                        table = f"(SELECT {', '.join(rank)} FROM {self.__genSQL__()}) rank_spearman_table"
+                        table = f"(SELECT {', '.join(rank)} FROM {self._genSQL()}) rank_spearman_table"
                     elif method == "kendall":
                         table = f"""
-                            (SELECT {", ".join(columns)} FROM {self.__genSQL__()}) x 
-                 CROSS JOIN (SELECT {", ".join(columns)} FROM {self.__genSQL__()}) y"""
+                            (SELECT {", ".join(columns)} FROM {self._genSQL()}) x 
+                 CROSS JOIN (SELECT {", ".join(columns)} FROM {self._genSQL()}) y"""
                     else:
-                        table = self.__genSQL__()
+                        table = self._genSQL()
                     if nb_precomputed == nb_loop:
                         result = _executeSQL(
                             query=f"""
@@ -444,8 +446,8 @@ class vDFCORR:
                                 FROM {table}""",
                             title=title_query,
                             method="fetchrow",
-                            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                            sql_push_ext=self._vars["sql_push_ext"],
+                            symbol=self._vars["symbol"],
                         )
                 except:
                     n = len(columns)
@@ -490,7 +492,7 @@ class vDFCORR:
                     else None
                 )
                 if "cmap" not in style_kwds:
-                    cm1, cm2 = gen_cmap()
+                    cm1, cm2 = get_cmap()
                     cmap = cm1 if (method == "cramer") else cm2
                     style_kwds["cmap"] = cmap
                 plt.cmatrix(
@@ -515,8 +517,8 @@ class vDFCORR:
                     val = {}
                     for idx, column2 in enumerate(values["index"]):
                         val[column2] = values[column1][idx]
-                    self.__update_catalog__(values=val, matrix=method, column=column1)
-            return tablesample(values=values).decimal_to_float()
+                    self._update_catalog(values=val, matrix=method, column=column1)
+            return TableSample(values=values).decimal_to_float()
         else:
             if method == "cramer":
                 cols = self.catcol()
@@ -563,7 +565,7 @@ class vDFCORR:
                     "No numerical column found in the vDataFrame."
                 )
         else:
-            cols = self.format_colnames(columns)
+            cols = self._format_colnames(columns)
         if method != "cramer":
             method_name = "Correlation"
             method_type = f" using the method = '{method}'"
@@ -590,7 +592,7 @@ class vDFCORR:
                     ):
                         all_cols += [column]
                     cast_j = "::int" if (self[column].isbool()) else ""
-                    pre_comp_val = self.__get_catalog_value__(
+                    pre_comp_val = self._get_catalog_value(
                         method=method, columns=[focus, column]
                     )
                     if pre_comp_val == None or pre_comp_val != pre_comp_val:
@@ -639,13 +641,13 @@ class vDFCORR:
                         f"{fun}() OVER (ORDER BY {column}) AS {column}"
                         for column in all_cols
                     ]
-                    table = f"(SELECT {', '.join(rank)} FROM {self.__genSQL__()}) rank_spearman_table"
+                    table = f"(SELECT {', '.join(rank)} FROM {self._genSQL()}) rank_spearman_table"
                 elif method == "kendall":
                     table = f"""
-                        (SELECT {", ".join(all_cols)} FROM {self.__genSQL__()}) x 
-             CROSS JOIN (SELECT {", ".join(all_cols)} FROM {self.__genSQL__()}) y"""
+                        (SELECT {", ".join(all_cols)} FROM {self._genSQL()}) x 
+             CROSS JOIN (SELECT {", ".join(all_cols)} FROM {self._genSQL()}) y"""
                 else:
-                    table = self.__genSQL__()
+                    table = self._genSQL()
                 if nb_precomputed == len(cols):
                     result = _executeSQL(
                         query=f"""
@@ -665,8 +667,8 @@ class vDFCORR:
                             LIMIT 1""",
                         title=f"Computing the Correlation Vector ({method})",
                         method="fetchrow",
-                        sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                        symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                        sql_push_ext=self._vars["sql_push_ext"],
+                        symbol=self._vars["symbol"],
                     )
                 vector = [elem for elem in result]
             except:
@@ -709,7 +711,7 @@ class vDFCORR:
                 else None
             )
             if "cmap" not in style_kwds:
-                cm1, cm2 = gen_cmap()
+                cm1, cm2 = get_cmap()
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwds["cmap"] = cmap
             title = f"Correlation Vector of {focus} ({method})"
@@ -728,13 +730,13 @@ class vDFCORR:
                 **style_kwds,
             )
         for idx, column in enumerate(cols):
-            self.__update_catalog__(
+            self._update_catalog(
                 values={focus: vector[idx]}, matrix=method, column=column
             )
-            self.__update_catalog__(
+            self._update_catalog(
                 values={column: vector[idx]}, matrix=method, column=focus
             )
-        return tablesample(values={"index": cols, focus: vector}).decimal_to_float()
+        return TableSample(values={"index": cols, focus: vector}).decimal_to_float()
 
     @save_verticapy_logs
     def corr(
@@ -784,9 +786,9 @@ class vDFCORR:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -798,7 +800,7 @@ class vDFCORR:
         method = str(method).lower()
         if isinstance(columns, str):
             columns = [columns]
-        columns, focus = self.format_colnames(columns, focus)
+        columns, focus = self._format_colnames(columns, focus)
         fun = self.__aggregate_matrix__
         argv = []
         kwds = {
@@ -866,7 +868,7 @@ class vDFCORR:
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
         method = str(method).lower()
-        column1, column2 = self.format_colnames(column1, column2)
+        column1, column2 = self._format_colnames(column1, column2)
         if method[0:7] == "kendall":
             if method == "kendall":
                 kendall_type = "b"
@@ -880,14 +882,14 @@ class vDFCORR:
         sql = f"""
             SELECT 
                 /*+LABEL('vDataframe.corr_pvalue')*/ COUNT(*) 
-            FROM {self.__genSQL__()} 
+            FROM {self._genSQL()} 
             WHERE {column1} IS NOT NULL AND {column2} IS NOT NULL;"""
         n = _executeSQL(
             sql,
             title="Computing the number of elements.",
             method="fetchfirstelem",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         if method in ("pearson", "biserial"):
             x = val * math.sqrt((n - 2) / (1 - val * val))
@@ -919,11 +921,11 @@ class vDFCORR:
             table = f"""
                 (SELECT 
                     {", ".join([column1, column2])} 
-                 FROM {self.__genSQL__()}) x 
+                 FROM {self._genSQL()}) x 
                 CROSS JOIN 
                 (SELECT 
                     {", ".join([column1, column2])} 
-                 FROM {self.__genSQL__()}) y"""
+                 FROM {self._genSQL()}) y"""
             nc, nd = _executeSQL(
                 query=f"""
                     SELECT 
@@ -933,8 +935,8 @@ class vDFCORR:
                     FROM {table};""",
                 title="Computing nc and nd.",
                 method="fetchrow",
-                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self._vars["sql_push_ext"],
+                symbol=self._vars["symbol"],
             )
             if kendall_type == "a":
                 val = (nc - nd) / (n * (n - 1) / 2)
@@ -951,12 +953,12 @@ class vDFCORR:
                             (SELECT 
                                 {column1}, 
                                 COUNT(*) AS ni 
-                             FROM {self.__genSQL__()} 
+                             FROM {self._genSQL()} 
                              GROUP BY 1) VERTICAPY_SUBTABLE""",
                     title="Computing vti.",
                     method="fetchrow",
-                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
                 vu, v1_1, v2_1 = _executeSQL(
                     query=f"""
@@ -969,12 +971,12 @@ class vDFCORR:
                             (SELECT 
                                 {column2}, 
                                 COUNT(*) AS ni 
-                             FROM {self.__genSQL__()} 
+                             FROM {self._genSQL()} 
                              GROUP BY 1) VERTICAPY_SUBTABLE""",
                     title="Computing vui.",
                     method="fetchrow",
-                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
                 v0 = n * (n - 1) * (2 * n + 5)
                 v1 = v1_0 * v1_1 / (2 * n * (n - 1))
@@ -986,13 +988,13 @@ class vDFCORR:
                             SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                                 APPROXIMATE_COUNT_DISTINCT({column1}) AS k, 
                                 APPROXIMATE_COUNT_DISTINCT({column2}) AS r 
-                            FROM {self.__genSQL__()} 
+                            FROM {self._genSQL()} 
                             WHERE {column1} IS NOT NULL 
                               AND {column2} IS NOT NULL""",
                         title="Computing the columns categories in the pivot table.",
                         method="fetchrow",
-                        sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                        symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                        sql_push_ext=self._vars["sql_push_ext"],
+                        symbol=self._vars["symbol"],
                     )
                     m = min(k, r)
                     val = 2 * (nc - nd) / (n * n * (m - 1) / m)
@@ -1003,13 +1005,13 @@ class vDFCORR:
                     SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                         APPROXIMATE_COUNT_DISTINCT({column1}) AS k, 
                         APPROXIMATE_COUNT_DISTINCT({column2}) AS r 
-                    FROM {self.__genSQL__()} 
+                    FROM {self._genSQL()} 
                     WHERE {column1} IS NOT NULL 
                       AND {column2} IS NOT NULL""",
                 title="Computing the columns categories in the pivot table.",
                 method="fetchrow",
-                sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self._vars["sql_push_ext"],
+                symbol=self._vars["symbol"],
             )
             x = val * val * n * min(k, r)
             pvalue = scipy_st.chi2.sf(x, (k - 1) * (r - 1))
@@ -1043,9 +1045,9 @@ class vDFCORR:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -1057,7 +1059,7 @@ class vDFCORR:
         if isinstance(columns, str):
             columns = [columns]
 
-        columns, focus = self.format_colnames(columns, focus)
+        columns, focus = self._format_colnames(columns, focus)
         fun = self.__aggregate_matrix__
         argv = []
         kwds = {
@@ -1149,9 +1151,9 @@ class vDFCORR:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -1165,13 +1167,13 @@ class vDFCORR:
         method = str(method).lower()
         if isinstance(by, str):
             by = [by]
-        by, column, ts = self.format_colnames(by, column, ts)
+        by, column, ts = self._format_colnames(by, column, ts)
         if unit == "rows":
-            table = self.__genSQL__()
+            table = self._genSQL()
         else:
             table = self.interpolate(
                 ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
-            ).__genSQL__()
+            )._genSQL()
         if isinstance(p, (int, float)):
             p = range(1, p + 1)
         by = f"PARTITION BY {', '.join(by)} " if (by) else ""
@@ -1179,11 +1181,11 @@ class vDFCORR:
             f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
             for i in p
         ]
-        relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) acf"
+        query = f"SELECT {', '.join([column] + columns)} FROM {table}"
         if len(p) == 1:
-            return self.__vDataFrameSQL__(relation, "acf", "").corr([], method=method)
+            return self._new_vdataframe(query).corr([], method=method)
         elif acf_type == "heatmap":
-            return self.__vDataFrameSQL__(relation, "acf", "").corr(
+            return self._new_vdataframe(query).corr(
                 [],
                 method=method,
                 round_nb=round_nb,
@@ -1192,7 +1194,7 @@ class vDFCORR:
                 **style_kwds,
             )
         else:
-            result = self.__vDataFrameSQL__(relation, "acf", "").corr(
+            result = self._new_vdataframe(query).corr(
                 [], method=method, focus=column, show=False
             )
             columns = [elem for elem in result.values["index"]]
@@ -1278,9 +1280,9 @@ class vDFCORR:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -1290,7 +1292,6 @@ class vDFCORR:
     vDataFrame.cov    : Computes the covariance matrix of the vDataFrame.
         """
         from verticapy.machine_learning.vertica.linear_model import LinearRegression
-        from verticapy.core.vdataframe.vdataframe import vDataFrame
 
         if isinstance(by, str):
             by = [by]
@@ -1300,13 +1301,13 @@ class vDFCORR:
                 return 1.0
             elif p == 1:
                 return self.acf(ts=ts, column=column, by=by, p=[1], unit=unit)
-            by, column, ts = self.format_colnames(by, column, ts)
+            by, column, ts = self._format_colnames(by, column, ts)
             if unit == "rows":
-                table = self.__genSQL__()
+                table = self._genSQL()
             else:
                 table = self.interpolate(
                     ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
-                ).__genSQL__()
+                )._genSQL()
             by = f"PARTITION BY {', '.join(by)} " if (by) else ""
             columns = [
                 f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
@@ -1314,13 +1315,13 @@ class vDFCORR:
             ]
             relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) pacf"
             tmp_view_name = gen_tmp_name(
-                schema=OPTIONS["temp_schema"], name="linear_reg_view"
+                schema=_options["temp_schema"], name="linear_reg_view"
             )
             tmp_lr0_name = gen_tmp_name(
-                schema=OPTIONS["temp_schema"], name="linear_reg0"
+                schema=_options["temp_schema"], name="linear_reg0"
             )
             tmp_lr1_name = gen_tmp_name(
-                schema=OPTIONS["temp_schema"], name="linear_reg1"
+                schema=_options["temp_schema"], name="linear_reg1"
             )
             try:
                 drop(tmp_view_name, method="view")
@@ -1328,7 +1329,7 @@ class vDFCORR:
                     CREATE VIEW {tmp_view_name} 
                         AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"""
                 _executeSQL(query, print_time_sql=False)
-                vdf = vDataFrame(tmp_view_name)
+                vdf = self._new_vdataframe(tmp_view_name)
                 drop(tmp_lr0_name, method="model")
                 model = LinearRegression(name=tmp_lr0_name, solver="Newton")
                 model.fit(
@@ -1358,7 +1359,7 @@ class vDFCORR:
         else:
             if isinstance(p, (float, int)):
                 p = range(0, p + 1)
-            loop = tqdm(p) if OPTIONS["tqdm"] else p
+            loop = tqdm(p) if _options["tqdm"] else p
             pacf = []
             for i in loop:
                 pacf += [self.pacf(ts=ts, column=column, by=by, p=[i], unit=unit)]
@@ -1372,7 +1373,7 @@ class vDFCORR:
                         / math.sqrt(self[column].count() - k + 1)
                         * math.sqrt((1 + 2 * sum([pacf[i] ** 2 for i in range(1, k)])))
                     ]
-            result = tablesample({"index": columns, "value": pacf})
+            result = TableSample({"index": columns, "value": pacf})
             if pacf_band:
                 result.values["confidence"] = pacf_band
             if show:
@@ -1442,9 +1443,9 @@ class vDFCORR:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -1465,7 +1466,7 @@ class vDFCORR:
             assert columns, EmptyParameter(
                 "No numerical column found in the vDataFrame."
             )
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         for column in columns:
             assert self[column].isnum(), TypeError(
                 f"vDataColumn {column} must be numerical to compute the Regression Matrix."
@@ -1476,7 +1477,7 @@ class vDFCORR:
             for j in range(0, n):
                 cast_i = "::int" if (self[columns[i]].isbool()) else ""
                 cast_j = "::int" if (self[columns[j]].isbool()) else ""
-                pre_comp_val = self.__get_catalog_value__(
+                pre_comp_val = self._get_catalog_value(
                     method=method, columns=[columns[i], columns[j]]
                 )
                 if pre_comp_val == None or pre_comp_val != pre_comp_val:
@@ -1504,11 +1505,11 @@ class vDFCORR:
                         SELECT 
                             /*+LABEL('vDataframe.regr')*/
                             {", ".join(all_list)} 
-                        FROM {self.__genSQL__()}""",
+                        FROM {self._genSQL()}""",
                     title=f"Computing the {method.upper()} Matrix.",
                     method="fetchrow",
-                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
             if n == 1:
                 return result[0]
@@ -1524,11 +1525,11 @@ class vDFCORR:
                                     /*+LABEL('vDataframe.regr')*/ 
                                     {method.upper()}({columns[i]}{cast_i}, 
                                                      {columns[j]}{cast_j}) 
-                                FROM {self.__genSQL__()}""",
+                                FROM {self._genSQL()}""",
                             title=f"Computing the {method.upper()} aggregation, one at a time.",
                             method="fetchfirstelem",
-                            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                            sql_push_ext=self._vars["sql_push_ext"],
+                            symbol=self._vars["symbol"],
                         )
                     ]
         matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
@@ -1571,8 +1572,8 @@ class vDFCORR:
                 val = {}
                 for idx, column2 in enumerate(values["index"]):
                     val[column2] = values[column1][idx]
-                self.__update_catalog__(values=val, matrix=method, column=column1)
-        return tablesample(values=values).decimal_to_float()
+                self._update_catalog(values=val, matrix=method, column=column1)
+        return TableSample(values=values).decimal_to_float()
 
     @save_verticapy_logs
     def iv_woe(
@@ -1604,9 +1605,9 @@ class vDFCORR:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -1615,7 +1616,7 @@ class vDFCORR:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns, y = self.format_colnames(columns, y)
+        columns, y = self._format_colnames(columns, y)
         if not (columns):
             columns = self.get_columns(exclude_columns=[y])
         coeff_importances = {}
@@ -1628,7 +1629,7 @@ class vDFCORR:
         iv = [coeff_importances[elem] for elem in coeff_importances]
         data = [(index[i], iv[i]) for i in range(len(iv))]
         data = sorted(data, key=lambda tup: tup[1], reverse=True)
-        return tablesample(
+        return TableSample(
             {"index": [elem[0] for elem in data], "iv": [elem[1] for elem in data],}
         )
 
@@ -1650,47 +1651,47 @@ class vDCCORR:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
     vDataFrame.iv_woe : Computes the Information Value (IV) Table.
         """
-        y = self.parent.format_colnames(y)
-        assert self.parent[y].nunique() == 2, TypeError(
+        y = self._parent._format_colnames(y)
+        assert self._parent[y].nunique() == 2, TypeError(
             f"vDataColumn {y} must be binary to use iv_woe."
         )
-        response_cat = self.parent[y].distinct()
+        response_cat = self._parent[y].distinct()
         response_cat.sort()
         assert response_cat == [0, 1], TypeError(
             f"vDataColumn {y} must be binary to use iv_woe."
         )
-        self.parent[y].distinct()
+        self._parent[y].distinct()
         trans = self.discretize(
             method="same_width" if self.isnum() else "topk",
             nbins=nbins,
             k=nbins,
             new_category="Others",
             return_enum_trans=True,
-        )[0].replace("{}", self.alias)
+        )[0].replace("{}", self._alias)
         query = f"""
             SELECT 
-                {trans} AS {self.alias}, 
-                {self.alias} AS ord, 
+                {trans} AS {self._alias}, 
+                {self._alias} AS ord, 
                 {y}::int AS {y} 
-            FROM {self.parent.__genSQL__()}"""
+            FROM {self._parent._genSQL()}"""
         query = f"""
             SELECT 
-                {self.alias}, 
+                {self._alias}, 
                 MIN(ord) AS ord, 
                 SUM(1 - {y}) AS non_events, 
                 SUM({y}) AS events 
             FROM ({query}) x GROUP BY 1"""
         query = f"""
             SELECT 
-                {self.alias}, 
+                {self._alias}, 
                 ord, 
                 non_events, 
                 events, 
@@ -1699,7 +1700,7 @@ class vDCCORR:
             FROM ({query}) x"""
         query = f"""
             SELECT 
-                {self.alias} AS index, 
+                {self._alias} AS index, 
                 non_events, 
                 events, 
                 pt_non_events, 
@@ -1715,12 +1716,12 @@ class vDCCORR:
                         / NULLIFZERO(pt_events))) 
                 END AS iv 
             FROM ({query}) x ORDER BY ord"""
-        title = f"Computing WOE & IV of {self.alias} (response = {y})."
+        title = f"Computing WOE & IV of {self._alias} (response = {y})."
         result = to_tablesample(
             query,
             title=title,
-            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self._parent._vars["sql_push_ext"],
+            symbol=self._parent._vars["symbol"],
         )
         result.values["index"] += ["total"]
         result.values["non_events"] += [sum(result["non_events"])]

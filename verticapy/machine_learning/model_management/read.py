@@ -14,18 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident, schema_relation
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import vertica_version
 
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql import _executeSQL
+from verticapy.core.tablesample.base import TableSample
+
 from verticapy.sql.read import to_tablesample
-from verticapy._version import vertica_version
-from verticapy.core.tablesample import tablesample
-from verticapy.sql._utils._format import quote_ident, schema_relation
 
 
 def does_model_exist(
@@ -125,6 +121,8 @@ Returns
 model
     The model.
     """
+    import verticapy.machine_learning.vertica as vml
+
     does_exist = does_model_exist(name=name, raise_error=False)
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
@@ -159,28 +157,20 @@ model
                 result_tmp = "None"
             model_save[val[0]] = result_tmp
         if model_save["type"] == "NearestCentroid":
-            from verticapy.learn.neighbors import NearestCentroid
-
-            model = NearestCentroid(name, model_save["p"])
-            model.centroids_ = tablesample(model_save["centroids"])
+            model = vml.NearestCentroid(name, model_save["p"])
+            model.centroids_ = TableSample(model_save["centroids"])
             model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsClassifier":
-            from verticapy.learn.neighbors import KNeighborsClassifier
-
-            model = KNeighborsClassifier(
+            model = vml.KNeighborsClassifier(
                 name, model_save["n_neighbors"], model_save["p"]
             )
             model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsRegressor":
-            from verticapy.learn.neighbors import KNeighborsRegressor
-
-            model = KNeighborsRegressor(
+            model = vml.KNeighborsRegressor(
                 name, model_save["n_neighbors"], model_save["p"]
             )
         elif model_save["type"] == "KernelDensity":
-            from verticapy.learn.neighbors import KernelDensity
-
-            model = KernelDensity(
+            model = vml.KernelDensity(
                 name,
                 model_save["bandwidth"],
                 model_save["kernel"],
@@ -195,22 +185,18 @@ model
             model.map = model_save["map"]
             model.tree_name = model_save["tree_name"]
         elif model_save["type"] == "LocalOutlierFactor":
-            from verticapy.learn.neighbors import LocalOutlierFactor
-
-            model = LocalOutlierFactor(name, model_save["n_neighbors"], model_save["p"])
+            model = vml.LocalOutlierFactor(
+                name, model_save["n_neighbors"], model_save["p"]
+            )
             model.n_errors_ = model_save["n_errors"]
         elif model_save["type"] == "DBSCAN":
-            from verticapy.learn.cluster import DBSCAN
-
-            model = DBSCAN(
+            model = vml.DBSCAN(
                 name, model_save["eps"], model_save["min_samples"], model_save["p"]
             )
             model.n_cluster_ = model_save["n_cluster"]
             model.n_noise_ = model_save["n_noise"]
         elif model_save["type"] == "CountVectorizer":
-            from verticapy.learn.preprocessing import CountVectorizer
-
-            model = CountVectorizer(
+            model = vml.CountVectorizer(
                 name,
                 model_save["lowercase"],
                 model_save["max_df"],
@@ -222,9 +208,7 @@ model
             model.stop_words_ = model.compute_stop_words()
             model.vocabulary_ = model.compute_vocabulary()
         elif model_save["type"] == "SARIMAX":
-            from verticapy.learn.tsa import SARIMAX
-
-            model = SARIMAX(
+            model = vml.SARIMAX(
                 name,
                 model_save["p"],
                 model_save["d"],
@@ -240,19 +224,17 @@ model
                 model_save["papprox_ma"],
             )
             model.transform_relation = model_save["transform_relation"]
-            model.coef_ = tablesample(model_save["coef"])
+            model.coef_ = TableSample(model_save["coef"])
             model.ma_avg_ = model_save["ma_avg"]
             if isinstance(model_save["ma_piq"], dict):
-                model.ma_piq_ = tablesample(model_save["ma_piq"])
+                model.ma_piq_ = TableSample(model_save["ma_piq"])
             else:
                 model.ma_piq_ = None
             model.ts = model_save["ts"]
             model.exogenous = model_save["exogenous"]
             model.deploy_predict_ = model_save["deploy_predict"]
         elif model_save["type"] == "VAR":
-            from verticapy.learn.tsa import VAR
-
-            model = VAR(
+            model = vml.VAR(
                 name,
                 model_save["p"],
                 model_save["tol"],
@@ -262,7 +244,7 @@ model
             model.transform_relation = model_save["transform_relation"]
             model.coef_ = []
             for i in range(len(model_save["X"])):
-                model.coef_ += [tablesample(model_save[f"coef_{i}"])]
+                model.coef_ += [TableSample(model_save[f"coef_{i}"])]
             model.ts = model_save["ts"]
             model.deploy_predict_ = model_save["deploy_predict"]
             model.X = model_save["X"]
@@ -287,16 +269,19 @@ model
         )
         if model_type.lower() in ("kmeans", "kprototypes",):
             info = _executeSQL(
-                f"SELECT /*+LABEL('learn.tools.load_model')*/ GET_MODEL_SUMMARY (USING PARAMETERS model_name = '{name}')",
+                query=f"""
+                    SELECT 
+                        /*+LABEL('learn.tools.load_model')*/ 
+                        GET_MODEL_SUMMARY 
+                        (USING PARAMETERS 
+                        model_name = '{name}')""",
                 method="fetchfirstelem",
                 print_time_sql=False,
             ).replace("\n", " ")
             mtype = model_type.lower() + "("
             info = mtype + info.split(mtype)[1]
         elif model_type.lower() == "normalize_fit":
-            from verticapy.learn.preprocessing import Normalizer
-
-            model = Normalizer(name)
+            model = vml.Normalizer(name)
             model.param_ = model.get_attr("details")
             model.X = ['"' + item + '"' for item in model.param_.values["column_name"]]
             if "avg" in model.param_.values:
@@ -308,9 +293,13 @@ model
             return model
         else:
             info = _executeSQL(
-                "SELECT /*+LABEL('learn.tools.load_model')*/ GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '"
-                + name
-                + "', attr_name = 'call_string')",
+                query=f"""
+                    SELECT 
+                        /*+LABEL('learn.tools.load_model')*/ 
+                        GET_MODEL_ATTRIBUTE 
+                        (USING PARAMETERS 
+                        model_name = '{name}',
+                        attr_name = 'call_string')""",
                 method="fetchfirstelem",
                 print_time_sql=False,
             ).replace("\n", " ")
@@ -352,9 +341,7 @@ model
         else:
             epsilon = 0.001
         if model_type == "rf_regressor":
-            from verticapy.learn.ensemble import RandomForestRegressor
-
-            model = RandomForestRegressor(
+            model = vml.RandomForestRegressor(
                 name,
                 int(parameters_dict["ntree"]),
                 int(parameters_dict["mtry"]),
@@ -366,9 +353,7 @@ model
                 int(parameters_dict["nbins"]),
             )
         elif model_type == "rf_classifier":
-            from verticapy.learn.ensemble import RandomForestClassifier
-
-            model = RandomForestClassifier(
+            model = vml.RandomForestClassifier(
                 name,
                 int(parameters_dict["ntree"]),
                 int(parameters_dict["mtry"]),
@@ -380,9 +365,7 @@ model
                 int(parameters_dict["nbins"]),
             )
         elif model_type == "iforest":
-            from verticapy.learn.ensemble import IsolationForest
-
-            model = IsolationForest(
+            model = vml.IsolationForest(
                 name,
                 int(parameters_dict["ntree"]),
                 int(parameters_dict["max_depth"]),
@@ -391,9 +374,7 @@ model
                 float(parameters_dict["col_sample_by_tree"]),
             )
         elif model_type == "xgb_classifier":
-            from verticapy.learn.ensemble import XGBoostClassifier
-
-            model = XGBoostClassifier(
+            model = vml.XGBoostClassifier(
                 name,
                 int(parameters_dict["max_ntree"]),
                 int(parameters_dict["max_depth"]),
@@ -406,9 +387,7 @@ model
                 float(parameters_dict["sampling_size"]),
             )
         elif model_type == "xgb_regressor":
-            from verticapy.learn.ensemble import XGBoostRegressor
-
-            model = XGBoostRegressor(
+            model = vml.XGBoostRegressor(
                 name,
                 int(parameters_dict["max_ntree"]),
                 int(parameters_dict["max_depth"]),
@@ -421,9 +400,7 @@ model
                 float(parameters_dict["sampling_size"]),
             )
         elif model_type == "logistic_reg":
-            from verticapy.learn.linear_model import LogisticRegression
-
-            model = LogisticRegression(
+            model = vml.LogisticRegression(
                 name,
                 parameters_dict["regularization"],
                 float(parameters_dict["epsilon"]),
@@ -433,22 +410,15 @@ model
                 float(parameters_dict["alpha"]),
             )
         elif model_type == "linear_reg":
-            from verticapy.learn.linear_model import (
-                LinearRegression,
-                Lasso,
-                Ridge,
-                ElasticNet,
-            )
-
             if parameters_dict["regularization"] == "none":
-                model = LinearRegression(
+                model = vml.LinearRegression(
                     name,
                     float(parameters_dict["epsilon"]),
                     int(parameters_dict["max_iterations"]),
                     parameters_dict["optimizer"],
                 )
             elif parameters_dict["regularization"] == "l1":
-                model = Lasso(
+                model = vml.Lasso(
                     name,
                     float(parameters_dict["epsilon"]),
                     float(parameters_dict["lambda"]),
@@ -456,7 +426,7 @@ model
                     parameters_dict["optimizer"],
                 )
             elif parameters_dict["regularization"] == "l2":
-                model = Ridge(
+                model = vml.Ridge(
                     name,
                     float(parameters_dict["epsilon"]),
                     float(parameters_dict["lambda"]),
@@ -464,7 +434,7 @@ model
                     parameters_dict["optimizer"],
                 )
             else:
-                model = ElasticNet(
+                model = vml.ElasticNet(
                     name,
                     float(parameters_dict["epsilon"]),
                     float(parameters_dict["lambda"]),
@@ -473,13 +443,9 @@ model
                     float(parameters_dict["alpha"]),
                 )
         elif model_type == "naive_bayes":
-            from verticapy.learn.naive_bayes import NaiveBayes
-
-            model = NaiveBayes(name, float(parameters_dict["alpha"]))
+            model = vml.NaiveBayes(name, float(parameters_dict["alpha"]))
         elif model_type == "svm_regressor":
-            from verticapy.learn.svm import LinearSVR
-
-            model = LinearSVR(
+            model = vml.LinearSVR(
                 name,
                 float(parameters_dict["epsilon"]),
                 float(parameters_dict["C"]),
@@ -490,15 +456,13 @@ model
                 int(parameters_dict["max_iterations"]),
             )
         elif model_type == "svm_classifier":
-            from verticapy.learn.svm import LinearSVC
-
             class_weights = parameters_dict["class_weights"].split(",")
             for idx, elem in enumerate(class_weights):
                 try:
                     class_weights[idx] = float(class_weights[idx])
                 except:
                     class_weights[idx] = None
-            model = LinearSVC(
+            model = vml.LinearSVC(
                 name,
                 float(parameters_dict["epsilon"]),
                 float(parameters_dict["C"]),
@@ -509,10 +473,8 @@ model
                 int(parameters_dict["max_iterations"]),
             )
         elif model_type in ("kmeans", "kprototypes"):
-            from verticapy.learn.cluster import KMeans, KPrototypes
-
             if model_type == "kmeans":
-                model = KMeans(
+                model = vml.KMeans(
                     name,
                     int(info.split(",")[-1]),
                     parameters_dict["init_method"],
@@ -520,7 +482,7 @@ model
                     float(parameters_dict["epsilon"]),
                 )
             else:
-                model = KPrototypes(
+                model = vml.KPrototypes(
                     name,
                     int(info.split(",")[-1]),
                     parameters_dict["init_method"],
@@ -555,11 +517,9 @@ model
                 / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
                 result.split("Converged: ")[1].split("\n")[0] == "True",
             ]
-            model.metrics_ = tablesample(values)
+            model.metrics_ = TableSample(values)
         elif model_type == "bisecting_kmeans":
-            from verticapy.learn.cluster import BisectingKMeans
-
-            model = BisectingKMeans(
+            model = vml.BisectingKMeans(
                 name,
                 int(info.split(",")[-1]),
                 int(parameters_dict["bisection_iterations"]),
@@ -573,22 +533,16 @@ model
             model.metrics_ = model.get_attr("Metrics")
             model.cluster_centers_ = model.get_attr("BKTree")
         elif model_type == "pca":
-            from verticapy.learn.decomposition import PCA
-
-            model = PCA(name, 0, bool(parameters_dict["scale"]))
+            model = vml.PCA(name, 0, bool(parameters_dict["scale"]))
             model.components_ = model.get_attr("principal_components")
             model.explained_variance_ = model.get_attr("singular_values")
             model.mean_ = model.get_attr("columns")
         elif model_type == "svd":
-            from verticapy.learn.decomposition import SVD
-
-            model = SVD(name)
+            model = vml.SVD(name)
             model.singular_values_ = model.get_attr("right_singular_vectors")
             model.explained_variance_ = model.get_attr("singular_values")
         elif model_type == "one_hot_encoder_fit":
-            from verticapy.learn.preprocessing import OneHotEncoder
-
-            model = OneHotEncoder(name)
+            model = vml.OneHotEncoder(name)
             try:
                 model.param_ = to_tablesample(
                     query=f"""
@@ -600,13 +554,13 @@ model
                             (SELECT 
                                 GET_MODEL_ATTRIBUTE(
                                     USING PARAMETERS
-                                    model_name = '{model.name}',
+                                    model_name = '{model.model_name}',
                                     attr_name = 'integer_categories')) VERTICAPY_SUBTABLE 
                             UNION ALL 
                              SELECT 
                                 GET_MODEL_ATTRIBUTE(
                                     USING PARAMETERS 
-                                    model_name = '{model.name}',
+                                    model_name = '{model.model_name}',
                                     attr_name = 'varchar_categories')""",
                 )
             except:

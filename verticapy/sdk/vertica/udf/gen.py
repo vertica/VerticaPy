@@ -17,7 +17,8 @@ permissions and limitations under the License.
 import os
 from typing import Union
 
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
+
 from verticapy.sdk.vertica.udf.utils import get_set_add_function
 
 

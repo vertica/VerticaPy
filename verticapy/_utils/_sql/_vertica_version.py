@@ -15,10 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from functools import wraps
+from typing import Callable
 
+from verticapy.connection.connect import current_cursor
 from verticapy.errors import VersionError
 
-__version__ = "0.13.0"
 MINIMUM_VERTICA_VERSION = {
     "Balance": [8, 1, 1],
     "BernoulliNB": [8, 0, 0],
@@ -69,10 +70,9 @@ MINIMUM_VERTICA_VERSION = {
     "XGBoostClassifier": [10, 1, 0],
     "XGBoostRegressor": [10, 1, 0],
 }
-VERTICA_VERSION = None
 
 
-def check_minimum_version(func):
+def check_minimum_version(func: Callable) -> Callable:
     """
 check_minimum_version decorator. It simplifies the code by checking if the
 feature is available in the user's version.
@@ -91,7 +91,7 @@ feature is available in the user's version.
     return func_prec_check_minimum_version
 
 
-def vertica_version(condition: list = []):
+def vertica_version(condition: list = []) -> list[int]:
     """
 Returns the Vertica Version.
 
@@ -107,30 +107,20 @@ list
     List containing the version information.
     [MAJOR, MINOR, PATCH, POST]
     """
-    from verticapy._utils._sql import _executeSQL
-
-    global VERTICA_VERSION
-
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
-    if not (VERTICA_VERSION):
-        current_version = _executeSQL(
-            "SELECT /*+LABEL('utilities.version')*/ version();",
-            title="Getting the version.",
-            method="fetchfirstelem",
-        ).split("Vertica Analytic Database v")[1]
-        current_version = current_version.split(".")
-        result = []
-        try:
-            result += [int(current_version[0])]
-            result += [int(current_version[1])]
-            result += [int(current_version[2].split("-")[0])]
-            result += [int(current_version[2].split("-")[1])]
-        except:
-            pass
-        VERTICA_VERSION = result
-    else:
-        result = VERTICA_VERSION
+    current_cursor().execute("SELECT /*+LABEL('_version')*/ version();")
+    current_version = current_cursor().fetchone()[0]
+    current_version = current_version.split("Vertica Analytic Database v")[1]
+    current_version = current_version.split(".")
+    result = []
+    try:
+        result += [int(current_version[0])]
+        result += [int(current_version[1])]
+        result += [int(current_version[2].split("-")[0])]
+        result += [int(current_version[2].split("-")[1])]
+    except:
+        pass
     if condition:
         if condition[0] < result[0]:
             test = True

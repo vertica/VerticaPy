@@ -14,18 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
-import warnings, math
-from typing import Union, Literal
+import math, warnings
+from typing import Literal, Union
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import ParameterError
-from verticapy._utils._cast import to_varchar
-from verticapy._config.config import OPTIONS
-from verticapy.sql.drop import drop
-from verticapy._utils._sql import _executeSQL
+from verticapy._config.config import _options
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._cast import to_varchar
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.errors import ParameterError
+
+from verticapy.sql.drop import drop
 
 
 class vDFENCODE:
@@ -73,7 +72,7 @@ class vDFENCODE:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         if not (columns):
             columns = self.get_columns()
         cols_hand = True if (columns) else False
@@ -82,7 +81,7 @@ class vDFENCODE:
                 self[column].get_dummies(
                     "", prefix_sep, drop_first, use_numbers_as_suffix
                 )
-            elif cols_hand and OPTIONS["print_info"]:
+            elif cols_hand and _options["print_info"]:
                 warning_message = (
                     f"The vDataColumn '{column}' was ignored because of "
                     "its high cardinality.\nIncrease the parameter "
@@ -122,7 +121,7 @@ class vDCENCODE:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -138,7 +137,7 @@ class vDCENCODE:
             "Length of parameter breaks must be equal to the length of parameter "
             "'labels' + 1 or parameter 'labels' must be empty."
         )
-        conditions, column = [], self.alias
+        conditions, column = [], self._alias
         for idx in range(len(breaks) - 1):
             first_elem, second_elem = breaks[idx], breaks[idx + 1]
             if right:
@@ -211,7 +210,7 @@ class vDCENCODE:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -220,13 +219,13 @@ class vDCENCODE:
     vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
     vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
-        from verticapy.learn.ensemble import (
-            RandomForestRegressor,
+        from verticapy.machine_learning.vertica.ensemble import (
             RandomForestClassifier,
+            RandomForestRegressor,
         )
 
         if self.isnum() and method == "smart":
-            schema = OPTIONS["temp_schema"]
+            schema = _options["temp_schema"]
             if not (schema):
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
@@ -239,11 +238,11 @@ class vDCENCODE:
                 "Parameter 'response' can not be empty in case of "
                 "discretization using the method 'smart'."
             )
-            response = self.parent.format_colnames(response)
+            response = self._parent._format_colnames(response)
             drop(tmp_view_name, method="view")
-            self.parent.to_db(tmp_view_name)
+            self._parent.to_db(tmp_view_name)
             drop(tmp_model_name, method="model")
-            if self.parent[response].category() == "float":
+            if self._parent[response].category() == "float":
                 model = RandomForestRegressor(tmp_model_name)
             else:
                 model = RandomForestClassifier(tmp_model_name)
@@ -251,7 +250,7 @@ class vDCENCODE:
             model.set_params(RFmodel_params)
             parameters = model.get_params()
             try:
-                model.fit(tmp_view_name, [self.alias], response)
+                model.fit(tmp_view_name, [self._alias], response)
                 query = [
                     f"""
                     (SELECT 
@@ -276,8 +275,8 @@ class vDCENCODE:
                     query=query,
                     title="Computing the optimized histogram nbins using Random Forest.",
                     method="fetchall",
-                    sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self._parent._vars["sql_push_ext"],
+                    symbol=self._parent._vars["symbol"],
                 )
                 result = [x[0] for x in result]
             finally:
@@ -320,18 +319,18 @@ class vDCENCODE:
             where = f"WHERE _verticapy_row_nb_ IN ({possibilities})"
             query = f"""
                 SELECT /*+LABEL('vDataColumn.discretize')*/ 
-                    {self.alias} 
+                    {self._alias} 
                 FROM (SELECT 
-                        {self.alias}, 
-                        ROW_NUMBER() OVER (ORDER BY {self.alias}) AS _verticapy_row_nb_ 
-                      FROM {self.parent.__genSQL__()} 
-                      WHERE {self.alias} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
+                        {self._alias}, 
+                        ROW_NUMBER() OVER (ORDER BY {self._alias}) AS _verticapy_row_nb_ 
+                      FROM {self._parent._genSQL()} 
+                      WHERE {self._alias} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
             result = _executeSQL(
                 query=query,
                 title="Computing the equal frequency histogram bins.",
                 method="fetchall",
-                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self._parent._vars["sql_push_ext"],
+                symbol=self._parent._vars["symbol"],
             )
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
@@ -375,23 +374,23 @@ class vDCENCODE:
         if return_enum_trans:
             return trans
         else:
-            self.transformations += [trans]
+            self._transf += [trans]
             sauv = {}
-            for elem in self.catalog:
-                sauv[elem] = self.catalog[elem]
-            self.parent.__update_catalog__(erase=True, columns=[self.alias])
+            for elem in self._catalog:
+                sauv[elem] = self._catalog[elem]
+            self._parent._update_catalog(erase=True, columns=[self._alias])
             try:
                 if "count" in sauv:
-                    self.catalog["count"] = sauv["count"]
-                    self.catalog["percent"] = (
-                        100 * sauv["count"] / self.parent.shape()[0]
+                    self._catalog["count"] = sauv["count"]
+                    self._catalog["percent"] = (
+                        100 * sauv["count"] / self._parent.shape()[0]
                     )
             except:
                 pass
-            self.parent.__add_to_history__(
-                f"[Discretize]: The vDataColumn {self.alias} was discretized."
+            self._parent._add_to_history(
+                f"[Discretize]: The vDataColumn {self._alias} was discretized."
             )
-        return self.parent
+        return self._parent
 
     @save_verticapy_logs
     def one_hot_encode(
@@ -418,7 +417,7 @@ class vDCENCODE:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -427,13 +426,11 @@ class vDCENCODE:
     vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
     vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
-
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
             all_new_features = []
             if not (prefix):
-                prefix = self.alias.replace('"', "") + prefix_sep.replace('"', "_")
+                prefix = self._alias.replace('"', "") + prefix_sep.replace('"', "_")
             else:
                 prefix = prefix.replace('"', "_") + prefix_sep.replace('"', "_")
             n = 1 if drop_first else 0
@@ -443,7 +440,7 @@ class vDCENCODE:
                     name = f'"{prefix}{k}"'
                 else:
                     name = f'"{prefix}{distinct_elements_k}"'
-                assert not (self.parent.is_colname_in(name)), NameError(
+                assert not (self._parent.is_colname_in(name)), NameError(
                     "A vDataColumn has already the alias of one of "
                     f"the dummies ({name}).\nIt can be the result "
                     "of using previously the method on the vDataColumn "
@@ -465,32 +462,32 @@ class vDCENCODE:
                     .replace("'", "_")
                 )
                 expr = f"DECODE({{}}, '{distinct_elements_k}', 1, 0)"
-                transformations = self.transformations + [(expr, "bool", "int")]
-                new_vDataColumn = vDataColumn(
+                transformations = self._transf + [(expr, "bool", "int")]
+                new_vDataColumn = self._parent._new_vdatacolumn(
                     name,
-                    parent=self.parent,
+                    parent=self._parent,
                     transformations=transformations,
                     catalog={
                         "min": 0,
                         "max": 1,
-                        "count": self.parent.shape()[0],
+                        "count": self._parent.shape()[0],
                         "percent": 100.0,
                         "unique": 2,
                         "approx_unique": 2,
                         "prod": 0,
                     },
                 )
-                setattr(self.parent, name, new_vDataColumn)
-                setattr(self.parent, name.replace('"', ""), new_vDataColumn)
-                self.parent._VERTICAPY_VARIABLES_["columns"] += [name]
+                setattr(self._parent, name, new_vDataColumn)
+                setattr(self._parent, name.replace('"', ""), new_vDataColumn)
+                self._parent._vars["columns"] += [name]
                 all_new_features += [name]
             conj = "s were " if len(all_new_features) > 1 else " was "
-            self.parent.__add_to_history__(
+            self._parent._add_to_history(
                 "[Get Dummies]: One hot encoder was applied to the vDataColumn "
-                f"{self.alias}\n{len(all_new_features)} feature{conj}created: "
+                f"{self._alias}\n{len(all_new_features)} feature{conj}created: "
                 f"{', '.join(all_new_features)}."
             )
-        return self.parent
+        return self._parent
 
     get_dummies = one_hot_encode
 
@@ -503,7 +500,7 @@ class vDCENCODE:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -526,15 +523,15 @@ class vDCENCODE:
                 expr += [f"'{distinct_elements_k}', {k}"]
                 text_info += f"\t{distinct_elements[k]} => {k}"
             expr = f"{', '.join(expr)}, {len(distinct_elements)})"
-            self.transformations += [(expr, "int", "int")]
-            self.parent.__update_catalog__(erase=True, columns=[self.alias])
-            self.catalog["count"] = self.parent.shape()[0]
-            self.catalog["percent"] = 100
-            self.parent.__add_to_history__(
+            self._transf += [(expr, "int", "int")]
+            self._parent._update_catalog(erase=True, columns=[self._alias])
+            self._catalog["count"] = self._parent.shape()[0]
+            self._catalog["percent"] = 100
+            self._parent._add_to_history(
                 "[Label Encoding]: Label Encoding was applied to the vDataColumn"
-                f" {self.alias} using the following mapping:{text_info}"
+                f" {self._alias} using the following mapping:{text_info}"
             )
-        return self.parent
+        return self._parent
 
     @save_verticapy_logs
     def mean_encode(self, response: str):
@@ -550,7 +547,7 @@ class vDCENCODE:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -559,23 +556,19 @@ class vDCENCODE:
     vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
     vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
         """
-        response = self.parent.format_colnames(response)
-        assert self.parent[response].isnum(), TypeError(
+        response = self._parent._format_colnames(response)
+        assert self._parent[response].isnum(), TypeError(
             "The response column must be numerical to use a mean encoding"
         )
-        max_floor = len(self.parent[response].transformations) - len(
-            self.transformations
-        )
+        max_floor = len(self._parent[response]._transf) - len(self._transf)
         for k in range(max_floor):
-            self.transformations += [("{}", self.ctype(), self.category())]
-        self.transformations += [
-            (f"AVG({response}) OVER (PARTITION BY {{}})", "int", "float",)
-        ]
-        self.parent.__update_catalog__(erase=True, columns=[self.alias])
-        self.parent.__add_to_history__(
-            f"[Mean Encode]: The vDataColumn {self.alias} was transformed "
+            self._transf += [("{}", self.ctype(), self.category())]
+        self._transf += [(f"AVG({response}) OVER (PARTITION BY {{}})", "int", "float",)]
+        self._parent._update_catalog(erase=True, columns=[self._alias])
+        self._parent._add_to_history(
+            f"[Mean Encode]: The vDataColumn {self._alias} was transformed "
             f"using a mean encoding with {response} as Response Column."
         )
-        if OPTIONS["print_info"]:
+        if _options["print_info"]:
             print("The mean encoding was successfully done.")
-        return self.parent
+        return self._parent

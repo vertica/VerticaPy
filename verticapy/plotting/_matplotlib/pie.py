@@ -14,18 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# MATPLOTLIB
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
-
-# NUMPY
 import numpy as np
 
-# VerticaPy Modules
-from verticapy.plotting._matplotlib.base import updated_dict
+from verticapy._config.colors import get_colors
 from verticapy._config.config import ISNOTEBOOK
-from verticapy.plotting._matplotlib.base import compute_plot_variables
-from verticapy.plotting._colors import gen_colors
+
+from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
 
 def nested_pie(
@@ -48,7 +44,7 @@ def nested_pie(
     elif "color" in style_kwds:
         colors, n = style_kwds["color"], len(columns)
     else:
-        colors, n = gen_colors(), len(columns)
+        colors, n = get_colors(), len(columns)
     m, k = len(colors), 0
     if isinstance(h, (int, float, type(None))):
         h = (h,) * n
@@ -135,7 +131,7 @@ def pie(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_colors()
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, max_cardinality=max_cardinality, method=method, of=of, pie=True
     )
@@ -166,7 +162,7 @@ def pie(
             return my_autopct
 
         if (method.lower() in ["sum", "count"]) or (
-            (method.lower() in ["min", "max"]) and (vdf.parent[of].category == "int")
+            (method.lower() in ["min", "max"]) and (vdf._parent[of].category == "int")
         ):
             category = "int"
         else:
@@ -198,7 +194,7 @@ def pie(
         ax.legend(
             handles,
             labels,
-            title=vdf.alias,
+            title=vdf._alias,
             loc="center left",
             bbox_to_anchor=[1, 0.5],
         )
@@ -226,9 +222,9 @@ def pie(
         }
         colors = updated_dict(param, style_kwds, -1)["color"]
         if isinstance(colors, str):
-            colors = [colors] + gen_colors()
+            colors = [colors] + get_colors()
         else:
-            colors = colors + gen_colors()
+            colors = colors + get_colors()
         style_kwds["color"] = colors
         ax.bar(
             rad, y, width=width, **updated_dict(param, style_kwds, -1),
@@ -252,7 +248,7 @@ def pie(
             z,
             bbox_to_anchor=[1.1, 0.5],
             loc="center left",
-            title=vdf.alias,
+            title=vdf._alias,
             labelspacing=1,
         )
         box = ax.get_position()

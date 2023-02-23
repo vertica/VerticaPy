@@ -14,35 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Modules
 import math
 
-# VerticaPy Modules
-from verticapy._utils._cast import to_varchar
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._cast import to_varchar
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.sql._utils._format import quote_ident
-
-#
-##
-#   /$$$$$$$  /$$        /$$$$$$  /$$$$$$$$
-#  | $$__  $$| $$       /$$__  $$|__  $$__/
-#  | $$  \ $$| $$      | $$  \ $$   | $$
-#  | $$$$$$$/| $$      | $$  | $$   | $$
-#  | $$____/ | $$      | $$  | $$   | $$
-#  | $$      | $$      | $$  | $$   | $$
-#  | $$      | $$$$$$$$|  $$$$$$/   | $$
-#  |__/      |________/ \______/    |__/
-##
-#
-#
-# Functions used by vDataFrames to draw graphics which are not useful independently.
-#
 
 
 def compute_plot_variables(
@@ -87,7 +64,7 @@ def compute_plot_variables(
     elif isinstance(method, str):
         aggregate = method
         other_columns = ", " + ", ".join(
-            vdf.parent.get_columns(exclude_columns=[vdf.alias])
+            vdf._parent.get_columns(exclude_columns=[vdf._alias])
         )
     else:
         raise ParameterError(
@@ -97,7 +74,7 @@ def compute_plot_variables(
     # depending on the cardinality, the type, the vDataColumn can be treated as categorical or not
     cardinality, count, is_numeric, is_date, is_categorical = (
         vdf.nunique(True),
-        vdf.parent.shape()[0],
+        vdf._parent.shape()[0],
         vdf.isnum() and not (vdf.isbool()),
         (vdf.category() == "date"),
         False,
@@ -110,31 +87,31 @@ def compute_plot_variables(
         if (is_numeric) and not (pie):
             query = f"""
                 SELECT 
-                    {vdf.alias},
+                    {vdf._alias},
                     {aggregate}
-                FROM {vdf.parent.__genSQL__()} 
-                WHERE {vdf.alias} IS NOT NULL 
-                GROUP BY {vdf.alias} 
-                ORDER BY {vdf.alias} ASC 
+                FROM {vdf._parent._genSQL()} 
+                WHERE {vdf._alias} IS NOT NULL 
+                GROUP BY {vdf._alias} 
+                ORDER BY {vdf._alias} ASC 
                 LIMIT {max_cardinality}"""
         else:
-            table = vdf.parent.__genSQL__()
+            table = vdf._parent._genSQL()
             if (pie) and (is_numeric):
                 enum_trans = (
                     vdf.discretize(h=h, return_enum_trans=True)[0].replace(
-                        "{}", vdf.alias
+                        "{}", vdf._alias
                     )
                     + " AS "
-                    + vdf.alias
+                    + vdf._alias
                 )
                 if of:
                     enum_trans += f" , {of}"
                 table = f"(SELECT {enum_trans + other_columns} FROM {table}) enum_table"
-            cast_alias = to_varchar(vdf.category(), vdf.alias)
+            cast_alias = to_varchar(vdf.category(), vdf._alias)
             query = f"""
                 (SELECT 
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/ 
-                    {cast_alias} AS {vdf.alias},
+                    {cast_alias} AS {vdf._alias},
                     {aggregate}
                  FROM {table} 
                  GROUP BY {cast_alias} 
@@ -147,11 +124,11 @@ def compute_plot_variables(
                         'Others',
                         {aggregate} 
                      FROM {table}
-                     WHERE {vdf.alias} NOT IN
+                     WHERE {vdf._alias} NOT IN
                      (SELECT 
-                        {vdf.alias} 
+                        {vdf._alias} 
                       FROM {table}
-                      GROUP BY {vdf.alias}
+                      GROUP BY {vdf._alias}
                       ORDER BY {aggregate} DESC
                       LIMIT {max_cardinality}))"""
         query_result = _executeSQL(
@@ -177,22 +154,22 @@ def compute_plot_variables(
                 query=f"""
                     SELECT 
                         /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
-                        DATEDIFF('second', MIN({vdf.alias}), MAX({vdf.alias}))
-                    FROM {vdf.parent.__genSQL__()}""",
+                        DATEDIFF('second', MIN({vdf._alias}), MAX({vdf._alias}))
+                    FROM {vdf._parent._genSQL()}""",
                 title="Computing the histogram interval",
                 method="fetchrow",
             )
             h = float(query_result[0]) / nbins
         min_date = vdf.min()
-        converted_date = f"DATEDIFF('second', '{min_date}', {vdf.alias})"
+        converted_date = f"DATEDIFF('second', '{min_date}', {vdf._alias})"
         query_result = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
                     FLOOR({converted_date} / {h}) * {h}, 
                     {aggregate} 
-                FROM {vdf.parent.__genSQL__()}
-                WHERE {vdf.alias} IS NOT NULL 
+                FROM {vdf._parent._genSQL()}
+                WHERE {vdf._alias} IS NOT NULL 
                 GROUP BY 1 
                 ORDER BY 1""",
             title="Computing the histogram heights",
@@ -238,10 +215,10 @@ def compute_plot_variables(
             query=f"""
                 SELECT
                     /*+LABEL('plotting._matplotlib.compute_plot_variables')*/
-                    FLOOR({vdf.alias} / {h}) * {h},
+                    FLOOR({vdf._alias} / {h}) * {h},
                     {aggregate} 
-                FROM {vdf.parent.__genSQL__()}
-                WHERE {vdf.alias} IS NOT NULL
+                FROM {vdf._parent._genSQL()}
+                WHERE {vdf._alias} IS NOT NULL
                 GROUP BY 1
                 ORDER BY 1""",
             title="Computing the histogram heights",

@@ -14,29 +14,27 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-# Jupyter Modules
-from IPython.core.magic import needs_local_scope
-from IPython.display import HTML, display
-
-# Standard Python Modules
 import time, warnings
 
-# VerticaPy
+from IPython.core.magic import needs_local_scope
+from IPython.display import display, HTML
+
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import clean_query, replace_vars_in_query
 from verticapy.errors import ParameterError
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.core.tablesample import tablesample
-from verticapy.plotting._highcharts import hchartSQL
-from verticapy.sql._utils._format import replace_vars_in_query, clean_query
-from verticapy._config.config import OPTIONS
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.jupyter.extensions._utils import get_magic_options
+
+from verticapy.plotting._highcharts.base import hchartSQL
 
 
 @save_verticapy_logs
 @needs_local_scope
 def hchart_magic(line, cell="", local_ns=None):
-    from verticapy.jupyter.extensions._utils import get_magic_options
-
     # Initialization
     query = "" if (not (cell) and (line)) else cell
 
@@ -74,7 +72,7 @@ def hchart_magic(line, cell="", local_ns=None):
                     raise ParameterError("Duplicate option '-k'.")
                 options["-k"] = all_options_dict[option]
 
-        elif OPTIONS["print_info"]:
+        elif _options["print_info"]:
             warning_message = (
                 f"\u26A0 Warning : The option '{option}' doesn't exist - skipping."
             )

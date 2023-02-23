@@ -14,22 +14,22 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
 import os
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql import _executeSQL
-from verticapy.errors import ExtensionError, ParameterError, MissingRelation
-from verticapy.sql.flex import compute_flextable_keys
-from verticapy.sql._utils._format import (
+from verticapy._utils._sql._format import (
     quote_ident,
     format_schema_table,
     clean_query,
 )
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.errors import ExtensionError, ParameterError, MissingRelation
+
+from verticapy.sql.drop import drop
+from verticapy.sql.flex import compute_flextable_keys
 from verticapy.sql.parsers._utils import extract_compression
-from verticapy._config.config import OPTIONS
 
 
 def pjson(path: str, ingest_local: bool = True):
@@ -54,8 +54,6 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
-    from verticapy.sql.drop import drop
-
     flex_name = gen_tmp_name(name="flex")[1:-1]
     _executeSQL(
         query=f"""
@@ -209,8 +207,7 @@ See Also
 --------
 read_csv : Ingests a CSV file into the Vertica database.
 	"""
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
-    from verticapy.sql.drop import drop
+    from verticapy.core.vdataframe.base import vDataFrame
 
     if use_complex_dt:
         assert not (new_name), ParameterError(
@@ -410,7 +407,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             _executeSQL(
                 query3, title="Creating table.",
             )
-            if not (temporary_local_table) and OPTIONS["print_info"]:
+            if not (temporary_local_table) and _options["print_info"]:
                 print(f"The table {input_relation} has been successfully created.")
         else:
             column_name_dtype = {}

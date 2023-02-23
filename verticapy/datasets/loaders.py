@@ -14,23 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import os, vertica_python
 
-#
-#
-# Modules
-#
-# Standard Python Modules
-import os
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.connection import current_cursor
 
-# VerticaPy Modules
-import verticapy, vertica_python
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.connect import current_cursor
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
-from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import quote_ident
 
 
 def load_dataset(
@@ -39,6 +31,7 @@ def load_dataset(
     """
     General Function to ingest a dataset
     """
+    from verticapy.core.vdataframe.base import vDataFrame
 
     try:
 
@@ -52,12 +45,12 @@ def load_dataset(
 
         try:
 
-            path = os.path.dirname(verticapy.__file__)
+            path = os.path.dirname(__file__)
             if dataset_name in ("laliga",):
-                path += f"/datasets/data/{dataset_name}/*.json"
+                path += f"/data/{dataset_name}/*.json"
                 query = f"COPY {schema}.{name} FROM {{}} PARSER FJsonParser();"
             else:
-                path += f"/datasets/data/{dataset_name}.csv"
+                path += f"/data/{dataset_name}.csv"
                 if not (copy_cols):
                     copy_cols = [quote_ident(col) for col in dtype]
                 query = f"""

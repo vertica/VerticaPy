@@ -14,19 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 from collections.abc import Iterable
 
-# VerticaPy Modules
-from verticapy.connect import current_cursor
-from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
-from verticapy.plotting._colors import gen_colors
+from verticapy._config.colors import get_colors
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.connection import current_cursor
 
 from verticapy.plotting._highcharts.bar import bar
 from verticapy.plotting._highcharts.boxplot import boxplot
@@ -38,22 +30,6 @@ from verticapy.plotting._highcharts.negative_bar import negative_bar
 from verticapy.plotting._highcharts.pie import pie
 from verticapy.plotting._highcharts.scatter import scatter
 from verticapy.plotting._highcharts.spider import spider
-
-#
-##
-#
-#  ___  ___  ________  ___  ___  ________  ________  _________
-# |\  \|\  \|\   ____\|\  \|\  \|\   __  \|\   __  \|\___   ___\
-# \ \  \\\  \ \  \___|\ \  \\\  \ \  \|\  \ \  \|\  \|___ \  \_|
-#  \ \   __  \ \  \    \ \   __  \ \   __  \ \   _  _\   \ \  \
-#   \ \  \ \  \ \  \____\ \  \ \  \ \  \ \  \ \  \\  \|   \ \  \
-#    \ \__\ \__\ \_______\ \__\ \__\ \__\ \__\ \__\\ _\    \ \__\
-#     \|__|\|__|\|_______|\|__|\|__|\|__|\|__|\|__|\|__|    \|__|
-#
-##
-#
-# Functions used to simplify the code.
-#
 
 
 def sort_classes(categories):
@@ -83,11 +59,6 @@ def data_to_columns(data: list, n: int):
     return columns
 
 
-#
-# Functions used by vDataFrames to draw graphics using High Chart API.
-#
-
-
 def hchart_from_vdf(
     vdf,
     x=None,
@@ -108,7 +79,7 @@ def hchart_from_vdf(
 ):
     if not (x):
         x = vdf.numcol()
-    x, y, z, c = vdf.format_colnames(x, y, z, c, raise_error=False)
+    x, y, z, c = vdf._format_colnames(x, y, z, c, raise_error=False)
     groupby = " GROUP BY 1 " if (aggregate) else ""
     if drilldown:
         if not (z):
@@ -121,14 +92,14 @@ def hchart_from_vdf(
             f"""SELECT 
                     {x},
                     {z}
-                FROM {vdf.__genSQL__()} 
+                FROM {vdf._genSQL()} 
                 GROUP BY 1
                 LIMIT {limit}""",
             f"""SELECT 
                     {x},
                     {y},
                     {z}
-                FROM {vdf.__genSQL__()}
+                FROM {vdf._genSQL()}
                 GROUP BY 1, 2
                 LIMIT {limit}""",
         ]
@@ -158,7 +129,7 @@ def hchart_from_vdf(
                             /*+LABEL('highchart.hchart_from_vdf')*/ 
                             {x},
                             {y} 
-                        FROM {vdf.__genSQL__()}
+                        FROM {vdf._genSQL()}
                         GROUP BY 1
                         ORDER BY 2 DESC
                         LIMIT {max_cardinality}""",
@@ -180,7 +151,7 @@ def hchart_from_vdf(
             SELECT 
                 {x},
                 {y}
-            FROM {vdf.__genSQL__()}
+            FROM {vdf._genSQL()}
             {groupby}
             {order_by}
             LIMIT {limit}"""
@@ -248,7 +219,7 @@ def hchart_from_vdf(
                 {x},
                 {y},
                 {z} 
-            FROM {vdf.__genSQL__()}
+            FROM {vdf._genSQL()}
             {where}
             {groupby}
             LIMIT {limit}"""
@@ -267,7 +238,7 @@ def hchart_from_vdf(
                 SELECT 
                     {x}{cast},
                     {y}
-                FROM {vdf.__genSQL__()}
+                FROM {vdf._genSQL()}
                 WHERE {x} IS NOT NULL
                 {groupby}
                 {order_by}
@@ -299,7 +270,7 @@ def hchart_from_vdf(
                     {x}{cast},
                     {y},
                     {z}
-                FROM {vdf.__genSQL__()}
+                FROM {vdf._genSQL()}
                 WHERE {x} IS NOT NULL
                   AND {y} IS NOT NULL
                 LIMIT {max(int(limit / unique), 1)} 
@@ -314,7 +285,7 @@ def hchart_from_vdf(
                 SELECT 
                     {x}{cast},
                     {y} 
-                FROM {vdf.__genSQL__()} 
+                FROM {vdf._genSQL()} 
                 WHERE {x} IS NOT NULL 
                   AND {y} IS NOT NULL 
                 LIMIT {limit}"""
@@ -324,7 +295,7 @@ def hchart_from_vdf(
                     {x}{cast},
                     {y},
                     {z}
-                FROM {vdf.__genSQL__()}
+                FROM {vdf._genSQL()}
                 WHERE {x} IS NOT NULL 
                   AND {y} IS NOT NULL 
                   AND {z} IS NOT NULL 
@@ -362,7 +333,7 @@ def hchart_from_vdf(
                     {x}{cast},
                     {y}{z_str},
                     {c} 
-                FROM {vdf.__genSQL__()} 
+                FROM {vdf._genSQL()} 
                 WHERE {x} IS NOT NULL 
                   AND {y} IS NOT NULL
                   {z_is_not_null}
@@ -378,7 +349,7 @@ def hchart_from_vdf(
             SELECT
                 {x}{cast},
                 {", ".join(y)}
-            FROM {vdf.__genSQL__()}
+            FROM {vdf._genSQL()}
             {groupby}
             {order_by}
             LIMIT {limit}"""
@@ -406,7 +377,7 @@ def hchart_from_vdf(
                                 /*+LABEL('highchart.hchart_from_vdf')*/ 
                                 {x}, 
                                 {y[0]} 
-                            FROM {vdf.__genSQL__()} 
+                            FROM {vdf._genSQL()} 
                             GROUP BY 1 
                             ORDER BY 2 DESC 
                             LIMIT {max_cardinality}""",
@@ -437,7 +408,7 @@ def hchart_from_vdf(
             SELECT 
                 {x}, 
                 {", ".join(y)} 
-            FROM {vdf.__genSQL__()}
+            FROM {vdf._genSQL()}
             {groupby} 
             LIMIT {limit}"""
     elif kind == "candlestick":
@@ -457,7 +428,7 @@ def hchart_from_vdf(
                         APPROXIMATE_PERCENTILE({y} 
                           USING PARAMETERS percentile = {alpha}) AS close,
                         SUM({y}) AS volume
-                	FROM {vdf.__genSQL__()} 
+                	FROM {vdf._genSQL()} 
                     GROUP BY 1 
                     ORDER BY 1"""
             else:
@@ -465,7 +436,7 @@ def hchart_from_vdf(
                     SELECT 
                         {x}::timestamp, 
                         {", ".join(y)} 
-                    FROM {vdf.__genSQL__()} 
+                    FROM {vdf._genSQL()} 
                     GROUP BY 1 
                     ORDER BY 1"""
         else:
@@ -473,7 +444,7 @@ def hchart_from_vdf(
                 SELECT 
                     {x}::timestamp, 
                     {', '.join(y)} 
-                FROM {vdf.__genSQL__()} 
+                FROM {vdf._genSQL()} 
                 ORDER BY 1"""
     if drilldown:
         return drilldown_chart(
@@ -524,7 +495,7 @@ def hchart_from_vdf(
     elif kind == "heatmap":
         chart = heatmap(query=query, width=width, height=height)
         chart.set_dict_options(
-            {"colorAxis": {"maxColor": gen_colors()[0], "minColor": "#FFFFFF"}}
+            {"colorAxis": {"maxColor": get_colors()[0], "minColor": "#FFFFFF"}}
         )
         chart.set_dict_options(options)
         return chart
@@ -546,8 +517,8 @@ def hchart_from_vdf(
                 "xAxis": {"categories": narrow_data[1]},
                 "yAxis": {"categories": narrow_data[2]},
                 "colorAxis": {
-                    "minColor": gen_colors()[1],
-                    "maxColor": gen_colors()[0],
+                    "minColor": get_colors()[1],
+                    "maxColor": get_colors()[0],
                     "min": -1,
                     "max": 1,
                 },
@@ -558,10 +529,10 @@ def hchart_from_vdf(
                 {
                     "colorAxis": {
                         "stops": [
-                            [0, gen_colors()[1]],
+                            [0, get_colors()[1]],
                             [0.45, "#FFFFFF"],
                             [0.55, "#FFFFFF"],
-                            [1, gen_colors()[0]],
+                            [1, get_colors()[0]],
                         ]
                     }
                 }
@@ -573,7 +544,7 @@ def hchart_from_vdf(
                         "stops": [
                             [0, "#FFFFFF"],
                             [0.2, "#FFFFFF"],
-                            [1, gen_colors()[0]],
+                            [1, get_colors()[0]],
                         ],
                         "min": 0,
                     }
@@ -586,6 +557,8 @@ def hchart_from_vdf(
 def hchartSQL(
     query: str, kind="auto", width: int = 600, height: int = 400, options: dict = {},
 ):
+    from verticapy.core.vdataframe.base import vDataFrame
+
     aggregate, stock = False, False
     data = _executeSQL(
         query=f"""
@@ -596,7 +569,7 @@ def hchartSQL(
         print_time_sql=False,
     )
     names = [desc[0] for desc in current_cursor().description]
-    vdf = vDataFrameSQL(f"({query}) VERTICAPY_SUBTABLE")
+    vdf = vDataFrame(query)
     allnum = vdf.numcol()
     if kind == "auto":
         if len(names) == 1:

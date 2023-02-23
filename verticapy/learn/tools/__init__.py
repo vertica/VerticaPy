@@ -14,5 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.machine_learning.model_management.read import *
-from verticapy.machine_learning.memmodel.memmodel import matrix_rotation
+from verticapy.machine_learning.model_management.read import (
+    does_model_exist,
+    load_model,
+)
+from verticapy.machine_learning.memmodel.base import matrix_rotation

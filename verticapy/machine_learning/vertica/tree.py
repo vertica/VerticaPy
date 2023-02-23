@@ -14,30 +14,24 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Literal, Union
 
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.learn.vmodel import MulticlassClassifier, Regressor, Tree
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._vertica_version import check_minimum_version
 
-# Standard Python Modules
-from typing import Union, Literal
-
-#
-# Functions used to simplify the code
-#
+from verticapy.machine_learning.vertica.base import (
+    MulticlassClassifier,
+    Regressor,
+    Tree,
+)
 
 
 def get_tree_list_of_arrays(
     tree, X: list, model_type: str, return_probability: bool = False
 ):
     """
-    Takes as input a tree which is represented by a tablesample
+    Takes as input a tree which is represented by a TableSample
     It returns a list of arrays. Each index of the arrays represents
     a node value.
     """
@@ -91,11 +85,6 @@ def get_tree_list_of_arrays(
     return tree_list
 
 
-#
-# Tree Algorithms
-#
-
-
 class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """
     A DecisionTreeClassifier made of a single tree.
@@ -129,6 +118,12 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         and 1000, inclusive.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "CLASSIFIER"
+    MODEL_TYPE = "RandomForestClassifier"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -141,11 +136,7 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        self.type, self.name = "RandomForestClassifier", name
-        self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.model_name = name
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
@@ -191,6 +182,12 @@ class DecisionTreeRegressor(Regressor, Tree):
         and 1000, inclusive.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "REGRESSOR"
+    MODEL_TYPE = "RandomForestRegressor"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -203,11 +200,7 @@ class DecisionTreeRegressor(Regressor, Tree):
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        self.type, self.name = "RandomForestRegressor", name
-        self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.model_name = name
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
@@ -231,14 +224,16 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
         Name of the the model. The model will be stored in the DB.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "CLASSIFIER"
+    MODEL_TYPE = "RandomForestClassifier"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str):
-        self.type, self.name = "RandomForestClassifier", name
-        self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.model_name = name
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",
@@ -262,14 +257,16 @@ class DummyTreeRegressor(Regressor, Tree):
         Name of the the model. The model will be stored in the DB.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "REGRESSOR"
+    MODEL_TYPE = "RandomForestRegressor"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str):
-        self.type, self.name = "RandomForestRegressor", name
-        self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.model_name = name
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",

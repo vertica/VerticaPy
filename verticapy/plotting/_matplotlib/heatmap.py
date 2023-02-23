@@ -14,28 +14,27 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-# Standard Modules
 import math, statistics, copy
 from typing import Union
-
-# MATPLOTLIB
-import matplotlib.pyplot as plt
-
-# NUMPY
 import numpy as np
 
-# VerticaPy Modules
-from verticapy.core.tablesample import tablesample
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._utils._cast import to_varchar
+import matplotlib.pyplot as plt
+
+from verticapy._config.colors import get_cmap, get_colors
 from verticapy._config.config import ISNOTEBOOK
-from verticapy.sql.read import to_tablesample
-from verticapy._utils._sql import _executeSQL
-from verticapy.core.str_sql import str_sql
+from verticapy._utils._sql._cast import to_varchar
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.plotting._colors import gen_colors, gen_cmap
-from verticapy.sql._utils._format import quote_ident
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.str_sql.base import str_sql
+
+from verticapy.datasets import gen_meshgrid
+
+from verticapy.plotting._matplotlib.base import updated_dict
+
+from verticapy.sql.read import to_tablesample
 
 
 def cmatrix(
@@ -90,7 +89,7 @@ def cmatrix(
             fig.set_size_inches(8, 6)
     else:
         fig = plt
-    param = {"cmap": gen_cmap()[0], "interpolation": "nearest"}
+    param = {"cmap": get_cmap()[0], "interpolation": "nearest"}
     if ((vmax == 1) and vmin in [0, -1]) and not (extent):
         im = ax.imshow(
             matrix_array, vmax=vmax, vmin=vmin, **updated_dict(param, style_kwds),
@@ -142,8 +141,6 @@ def contour_plot(
         X, Y = np.meshgrid(xlist, ylist)
         Z = func(X, Y)
     else:
-        from verticapy.datasets import gen_meshgrid
-
         vdf_tmp = gen_meshgrid(
             {
                 quote_ident(columns[1])[1:-1]: {
@@ -162,14 +159,14 @@ def contour_plot(
         if isinstance(func, (str, str_sql)):
             vdf_tmp["verticapy_predict"] = func
         else:
-            if func.type in (
+            if func.MODEL_TYPE in (
                 "XGBoostClassifier",
                 "RandomForestClassifier",
                 "NaiveBayes",
                 "NearestCentroid",
                 "KNeighborsClassifier",
             ):
-                if func.type in ("NearestCentroid", "KNeighborsClassifier"):
+                if func.MODEL_TYPE in ("NearestCentroid", "KNeighborsClassifier"):
                     vdf_tmp = func.predict_proba(
                         vdf=vdf_tmp,
                         X=columns,
@@ -186,7 +183,7 @@ def contour_plot(
                         pos_label=pos_label,
                     )
             else:
-                if func.type == "KNeighborsRegressor":
+                if func.MODEL_TYPE == "KNeighborsRegressor":
                     vdf_tmp = func.predict(
                         vdf=vdf_tmp,
                         X=columns,
@@ -240,7 +237,7 @@ def contour_plot(
         del param["cmap"]
     ax.contour(X, Y, Z, **param)
     param = {
-        "cmap": gen_cmap([gen_colors()[2], "#FFFFFF", gen_colors()[0]]),
+        "cmap": get_cmap([get_colors()[2], "#FFFFFF", get_colors()[0]]),
         "levels": 14,
     }
     param = updated_dict(param, style_kwds)
@@ -304,7 +301,7 @@ def hexbin(
                 {columns[0]},
                 {columns[1]},
                 {aggregate}{over}
-            FROM {vdf.__genSQL__()}
+            FROM {vdf._genSQL()}
             GROUP BY {columns[0]}, {columns[1]}""",
         title="Grouping all the elements for the Hexbin Plot",
         method="fetchall",
@@ -337,7 +334,7 @@ def hexbin(
         ax.imshow(im, extent=bbox)
     ax.set_ylabel(columns[1])
     ax.set_xlabel(columns[0])
-    param = {"cmap": gen_cmap()[0], "gridsize": 10, "mincnt": 1, "edgecolors": None}
+    param = {"cmap": get_cmap()[0], "gridsize": 10, "mincnt": 1, "edgecolors": None}
     imh = ax.hexbin(
         column1,
         column2,
@@ -367,7 +364,7 @@ def pivot_table(
     extent: list = [],
     **style_kwds,
 ):
-    columns, of = vdf.format_colnames(columns, of)
+    columns, of = vdf._format_colnames(columns, of)
     other_columns = ""
     method = method.lower()
     if method == "median":
@@ -476,7 +473,7 @@ def pivot_table(
                 SELECT 
                     {cast} AS {columns[0]},
                     {aggregate}{over} 
-                FROM {vdf.__genSQL__()}
+                FROM {vdf._genSQL()}
                 {where}
                 GROUP BY 1 {order_by}"""
         )
@@ -506,7 +503,7 @@ def pivot_table(
                           {all_columns[1]} AS {columns[1]}
                           {aggr}
                           {other_columns} 
-                       FROM {vdf.__genSQL__()}{where}) 
+                       FROM {vdf._genSQL()}{where}) 
                        pivot_table) pivot_table_date
             WHERE {columns[0]} IS NOT NULL 
               AND {columns[1]} IS NOT NULL
@@ -574,4 +571,4 @@ def pivot_table(
     del all_columns[0]
     for column in all_columns:
         values[column[0]] = column[1 : len(column)]
-    return tablesample(values=values)
+    return TableSample(values=values)

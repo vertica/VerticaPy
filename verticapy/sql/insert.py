@@ -14,17 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings, sys, time
+import sys, time, warnings
 
-from verticapy._config.config import OPTIONS
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql import _executeSQL
-from verticapy.errors import MissingRelation
-from verticapy.sql._utils._format import (
-    format_schema_table,
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import (
     clean_query,
+    format_schema_table,
     quote_ident,
 )
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.errors import MissingRelation
 
 
 @save_verticapy_logs
@@ -64,10 +64,10 @@ int
 
 See Also
 --------
-pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
+read_pandas : Ingests a pandas DataFrame into the Vertica database.
     """
     if not (schema):
-        schema = OPTIONS["temp_schema"]
+        schema = _options["temp_schema"]
     input_relation = format_schema_table(schema, table_name)
     if not (column_names):
         result = _executeSQL(

@@ -16,13 +16,13 @@ permissions and limitations under the License.
 """
 from typing import Union
 
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.connection import current_cursor
 from verticapy.errors import ParameterError
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import quote_ident
-from verticapy.connect import current_cursor
 
-from verticapy.core.str_sql import str_sql
+from verticapy.core.str_sql.base import str_sql
 
 
 @save_verticapy_logs
@@ -90,14 +90,14 @@ Returns
 List of tuples
     List of virtual column names and their respective frequencies.
     """
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame
 
     vmap = quote_ident(vmap_col)
     if isinstance(expr, vDataFrame):
         assert expr[vmap_col].isvmap(), ParameterError(
             f"Virtual column {vmap_col} is not a VMAP."
         )
-        expr = expr.__genSQL__()
+        expr = expr._genSQL()
     result = _executeSQL(
         (
             "SELECT /*+LABEL('utilities.compute_vmap_keys')*/ keys, COUNT(*) FROM "
@@ -157,12 +157,11 @@ Returns
 bool
     True if the column is a VMap.
     """
-    # -#
     from verticapy.vdataframe import vDataFrame
 
     column = quote_ident(column)
     if isinstance(expr, vDataFrame):
-        expr = expr.__genSQL__()
+        expr = expr._genSQL()
     sql = f"SELECT MAPVERSION({column}) AS isvmap, {column} FROM {expr} WHERE {column} IS NOT NULL LIMIT 1;"
     try:
         result = _executeSQL(

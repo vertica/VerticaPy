@@ -14,26 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Modules
-import warnings, copy
-
-# MATPLOTLIB
-from matplotlib.lines import Line2D
-import matplotlib.pyplot as plt
-
-# NUMPY
+import copy, warnings
 import numpy as np
 
-# VerticaPy Modules
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import current_random
-from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._sql import _executeSQL
-from verticapy.errors import ParameterError
-from verticapy.plotting._matplotlib.base import compute_plot_variables
-from verticapy.plotting._colors import gen_colors, gen_cmap, get_color
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
-# Global Variables
+
+from verticapy._config.colors import get_cmap, get_colors
+from verticapy._config.config import ISNOTEBOOK
+from verticapy._utils._sql._random import _current_random
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.errors import ParameterError
+
+from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
+
 MARKERS = ["^", "o", "+", "*", "h", "x", "D", "1"]
 
 
@@ -58,11 +53,11 @@ def bubble(
     elif "colors" in style_kwds:
         colors = style_kwds["colors"]
     else:
-        colors = gen_colors()
+        colors = get_colors()
     if isinstance(colors, str):
         colors = [colors]
     if not (catcol) and not (cmap_col):
-        tablesample = max_nb_points / vdf.shape()[0]
+        TableSample = max_nb_points / vdf.shape()[0]
         query_result = _executeSQL(
             query=f"""
                 SELECT 
@@ -70,8 +65,8 @@ def bubble(
                     {columns[0]}, 
                     {columns[1]}, 
                     {columns[2]} 
-                FROM {vdf.__genSQL__(True)} 
-                WHERE __verticapy_split__ < {tablesample} 
+                FROM {vdf._genSQL(True)} 
+                WHERE __verticapy_split__ < {TableSample} 
                   AND {columns[0]} IS NOT NULL
                   AND {columns[1]} IS NOT NULL
                   AND {columns[2]} IS NOT NULL 
@@ -169,7 +164,7 @@ def bubble(
             ax.imshow(im, extent=bbox)
         others = []
         count = vdf.shape()[0]
-        tablesample = 0.1 if (count > 10000) else 0.9
+        TableSample = 0.1 if (count > 10000) else 0.9
         if columns[2] != 1:
             max_size, min_size = (
                 float(vdf[columns[2]].max()),
@@ -188,8 +183,8 @@ def bubble(
                             {columns[0]},
                             {columns[1]},
                             {columns[2]} 
-                        FROM {vdf.__genSQL__(True)}
-                        WHERE  __verticapy_split__ < {tablesample} 
+                        FROM {vdf._genSQL(True)}
+                        WHERE  __verticapy_split__ < {TableSample} 
                            AND {catcol} = '{category_str}'
                            AND {columns[0]} IS NOT NULL
                            AND {columns[1]} IS NOT NULL
@@ -236,8 +231,8 @@ def bubble(
                         {columns[1]},
                         {columns[2]},
                         {cmap_col}
-                    FROM {vdf.__genSQL__(True)}
-                    WHERE  __verticapy_split__ < {tablesample} 
+                    FROM {vdf._genSQL(True)}
+                    WHERE  __verticapy_split__ < {TableSample} 
                        AND {columns[0]} IS NOT NULL
                        AND {columns[1]} IS NOT NULL
                        AND {columns[2]} IS NOT NULL
@@ -263,7 +258,7 @@ def bubble(
             )
             param = {
                 "alpha": 0.8,
-                "cmap": gen_cmap()[0],
+                "cmap": get_cmap()[0],
                 "edgecolors": "black",
             }
             im = ax.scatter(
@@ -339,7 +334,7 @@ def outliers_contour_plot(
     **style_kwds,
 ):
     if not (cmap):
-        cmap = gen_cmap(gen_colors()[2])
+        cmap = get_cmap(get_colors()[2])
     all_agg = vdf.agg(["avg", "std", "min", "max"], columns)
     xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
     if not (ax):
@@ -451,7 +446,7 @@ def outliers_contour_plot(
 def scatter_matrix(
     vdf, columns: list = [], **style_kwds,
 ):
-    columns = vdf.format_colnames(columns)
+    columns = vdf._format_colnames(columns)
     if not (columns):
         columns = vdf.numcol()
     elif len(columns) == 1:
@@ -463,14 +458,14 @@ def scatter_matrix(
     else:
         figsize = min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
-    random_func = current_random()
+    random_func = _current_random()
     all_scatter_points = _executeSQL(
         query=f"""
             SELECT 
                 /*+LABEL('plotting._matplotlib.scatter_matrix')*/
                 {", ".join(columns)},
                 {random_func} AS rand
-            FROM {vdf.__genSQL__(True)}
+            FROM {vdf._genSQL(True)}
             WHERE __verticapy_split__ < 0.5
             ORDER BY rand 
             LIMIT 1000""",
@@ -493,13 +488,13 @@ def scatter_matrix(
                 x0, y0, z0, h0, is_categorical = compute_plot_variables(
                     vdf[x], method="density", max_cardinality=1
                 )
-                param = {"color": get_color(style_kwds, 0), "edgecolor": "black"}
+                param = {"color": get_colors(style_kwds, 0), "edgecolor": "black"}
                 if "edgecolor" in style_kwds:
                     param["edgecolor"] = style_kwds["edgecolor"]
                 axes[i, j].bar(x0, y0, h0 / 0.94, **param)
             else:
                 param = {
-                    "color": get_color(style_kwds, 1),
+                    "color": get_colors(style_kwds, 1),
                     "edgecolor": "black",
                     "alpha": 0.9,
                     "s": 40,
@@ -526,7 +521,7 @@ def scatter(
     ax=None,
     **style_kwds,
 ):
-    columns, catcol = vdf.format_colnames(columns, catcol, expected_nb_of_cols=[2, 3])
+    columns, catcol = vdf._format_colnames(columns, catcol, expected_nb_of_cols=[2, 3])
     n = len(columns)
     for col in columns:
         if not (vdf[col].isnum()):
@@ -540,7 +535,7 @@ def scatter(
         )
         warnings.warn(warning_message, Warning)
         bbox = []
-    colors = gen_colors()
+    colors = get_colors()
     markers = MARKERS * 10
     param = {
         "s": 50,
@@ -560,10 +555,10 @@ def scatter(
             ax = plt.axes(projection="3d")
     all_scatter, others = [], []
     if not (catcol):
-        tablesample = max_nb_points / vdf.shape()[0]
+        TableSample = max_nb_points / vdf.shape()[0]
         limit = max_nb_points
     else:
-        tablesample = 10 if (vdf.shape()[0] > 10000) else 90
+        TableSample = 10 if (vdf.shape()[0] > 10000) else 90
         if cat_priority:
             all_categories = copy.deepcopy(cat_priority)
         else:
@@ -576,12 +571,12 @@ def scatter(
             {columns[0]},
             {columns[1]}
             {{}}
-        FROM {vdf.__genSQL__(True)}
+        FROM {vdf._genSQL(True)}
         WHERE {{}}
               {columns[0]} IS NOT NULL
           AND {columns[1]} IS NOT NULL
           {{}}
-          AND __verticapy_split__ < {tablesample} 
+          AND __verticapy_split__ < {TableSample} 
         LIMIT {limit}"""
     if n == 3:
         condition = [f", {columns[2]}", f"{columns[2]} IS NOT NULL AND"]

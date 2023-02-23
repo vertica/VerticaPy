@@ -14,15 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# VerticaPy Modules
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy._utils._sql._format import quote_ident
+
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_into
-from verticapy.sql._utils._format import quote_ident
 
 
 def load_dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
+    from verticapy.core.vdataframe.base import vDataFrame
+
     # Classification Dataset
 
     data = [
@@ -58,6 +59,8 @@ def load_dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
 
 
 def load_dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
+    from verticapy.core.vdataframe.base import vDataFrame
+
     # Regression Dataset
 
     data = [
@@ -93,6 +96,8 @@ def load_dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
 
 
 def load_dataset_num(table_name: str = "dataset_num", schema: str = "public"):
+    from verticapy.core.vdataframe.base import vDataFrame
+
     # Numerical Dataset
 
     data = [

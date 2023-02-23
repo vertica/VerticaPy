@@ -16,12 +16,13 @@ permissions and limitations under the License.
 """
 import warnings
 
-# VerticaPy Modules
-from verticapy.vdataframe import vDataFrame
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.tablesample import tablesample
-from verticapy.sql.read import to_tablesample, vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.sql.read import to_tablesample
 
 
 @save_verticapy_logs
@@ -33,7 +34,7 @@ def create_index(
     overwrite: bool = False,
     max_mem_mb: int = 256,
     skip_nonindexable_polygons: bool = False,
-) -> tablesample:
+) -> TableSample:
     """
 Creates a spatial index on a set of polygons to speed up spatial 
 intersection with a set of points.
@@ -67,11 +68,11 @@ skip_nonindexable_polygons: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    gid, g = vdf.format_colnames(gid, g)
+    gid, g = vdf._format_colnames(gid, g)
     query = f"""
         SELECT 
             STV_Create_Index({gid}, {g} 
@@ -81,12 +82,12 @@ tablesample
                 max_mem_mb={max_mem_mb}, 
                 skip_nonindexable_polygons={skip_nonindexable_polygons}) 
             OVER() 
-        FROM {vdf.__genSQL__()}"""
+        FROM {vdf._genSQL()}"""
     return to_tablesample(query)
 
 
 @save_verticapy_logs
-def describe_index(name: str = "", list_polygons: bool = False) -> tablesample:
+def describe_index(name: str = "", list_polygons: bool = False) -> TableSample:
     """
 Retrieves information about an index that contains a set of polygons. If 
 you do not pass any parameters, this function returns all defined indexes.
@@ -98,15 +99,14 @@ name: str, optional
 list_polygons: bool, optional
     Boolean that specifies whether to list the polygons in the index.
     If set to True, the function will return a vDataFrame instead of
-    a tablesample.
+    a TableSample.
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-
     if not (name):
         query = f"SELECT STV_Describe_Index () OVER ()"
     else:
@@ -119,7 +119,7 @@ tablesample
             OVER()"""
 
     if list_polygons:
-        result = vDataFrameSQL(f"({query}) x")
+        result = vDataFrame(query)
     else:
         result = to_tablesample(query)
 

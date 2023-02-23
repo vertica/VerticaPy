@@ -15,38 +15,76 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
+
 import pandas as pd
-from verticapy._config.config import OPTIONS
+
+from verticapy._config.config import _options
+from verticapy._utils._sql._cast import to_dtype_category
+from verticapy.errors import ParsingError
 
 
-def clean_query(query: str):
-    res = re.sub(r"--.+(\n|\Z)", "", query)
-    res = res.replace("\t", " ").replace("\n", " ")
-    res = re.sub(" +", " ", res)
+def clean_query(query: str) -> str:
+    query = re.sub(r"--.+(\n|\Z)", "", query)
+    query = query.replace("\t", " ").replace("\n", " ")
+    query = re.sub(" +", " ", query)
 
-    while len(res) > 0 and (res[-1] in (";", " ")):
-        res = res[0:-1]
+    while len(query) > 0 and (query[-1] in (";", " ")):
+        query = query[0:-1]
 
-    while len(res) > 0 and (res[0] in (";", " ")):
-        res = res[1:]
+    while len(query) > 0 and (query[0] in (";", " ")):
+        query = query[1:]
 
-    return res
+    return query.strip()
 
 
-def erase_label(query: str):
+def erase_comment(query: str) -> str:
+    query = re.sub(r"--.+(\n|\Z)", "", query)
+    query = re.sub(r"/\*(.+?)\*/", "", query)
+    return query.strip()
+
+
+def erase_label(query: str) -> str:
     labels = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
     for label in labels:
         query = query.replace(f"/*+LABEL{label}*/", "")
-    return query
+    return query.strip()
+
+
+def extract_subquery(query: str) -> str:
+    query_tmp = clean_query(query)
+    query_tmp = erase_comment(query_tmp)
+    if query_tmp[0] == "(" and query_tmp[-1] != ")":
+        query = ")".join("(".join(query_tmp.split("(")[1:]).split(")")[:-1])
+    return query.strip()
+
+
+def extract_and_rename_subquery(query: str, alias: str):
+    query_tmp = extract_subquery(query)
+    query_clean = clean_query(query)
+    query_clean = erase_comment(query)
+    if query != query_tmp or query_clean[0:6].lower() == "select":
+        query = f"({query_tmp})"
+    return f"{query} AS {quote_ident(alias)}"
+
+
+def extract_precision_scale(ctype: str) -> tuple:
+    if "(" not in ctype:
+        return (0, 0)
+    else:
+        precision_scale = ctype.split("(")[1].split(")")[0].split(",")
+        if len(precision_scale) == 1:
+            precision, scale = int(precision_scale[0]), 0
+        else:
+            precision, scale = precision_scale
+        return int(precision), int(scale)
 
 
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
-    from verticapy.core.str_sql import str_sql
-    from verticapy._utils._cast import to_dtype_category
-    from verticapy.core.vdataframe.vdataframe import vDataColumn
+    from verticapy.core.str_sql.base import str_sql
+    from verticapy.core.vdataframe.base import vDataColumn
 
     if isinstance(x, vDataColumn):
-        val = x.alias
+        val = x._alias
     elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
         x, str_sql
     ):
@@ -127,13 +165,17 @@ def quote_ident(column: str):
     if len(tmp_column) >= 2 and (tmp_column[0] == tmp_column[-1] == '"'):
         tmp_column = tmp_column[1:-1]
     temp_column_str = str(tmp_column).replace('"', '""')
-    return f'"{temp_column_str}"'
+    temp_column_str = f'"{temp_column_str}"'
+    if temp_column_str == '""':
+        return ""
+    return temp_column_str
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
-    from verticapy.core.tablesample import tablesample
-    from verticapy.sql.parsers.pandas import pandas_to_vertica
+    from verticapy.core.tablesample.base import TableSample
+    from verticapy.core.vdataframe.base import vDataFrame
+
+    from verticapy.sql.parsers.pandas import read_pandas
 
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
@@ -165,11 +207,11 @@ def replace_vars_in_query(query: str, locals_dict: dict):
                 fail = True
         if not (fail):
             if isinstance(val, vDataFrame):
-                val = val.__genSQL__()
-            elif isinstance(val, tablesample):
+                val = val._genSQL()
+            elif isinstance(val, TableSample):
                 val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
             elif isinstance(val, pd.DataFrame):
-                val = pandas_to_vertica(val).__genSQL__()
+                val = read_pandas(val)._genSQL()
             elif isinstance(val, list):
                 val = ", ".join(["NULL" if elem is None else str(elem) for elem in val])
             query_tmp = query_tmp.replace(v, str(val))
@@ -177,10 +219,10 @@ def replace_vars_in_query(query: str, locals_dict: dict):
 
 
 def schema_relation(relation):
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame
 
     if isinstance(relation, vDataFrame):
-        schema, relation = OPTIONS["temp_schema"], ""
+        schema, relation = _options["temp_schema"], ""
     else:
         quote_nb = relation.count('"')
         if quote_nb not in (0, 2, 4):

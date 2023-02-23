@@ -14,22 +14,20 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-# Standard Python Modules
 import warnings
 
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql import _executeSQL
-from verticapy.errors import ExtensionError, ParameterError
-from verticapy.sql._utils._format import (
-    quote_ident,
-    format_schema_table,
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import (
     clean_query,
+    format_schema_table,
+    quote_ident,
 )
-from verticapy.sql.parsers._utils import extract_compression, extract_col_dt_from_query
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy.errors import ExtensionError, ParameterError
+
+from verticapy.sql.parsers._utils import extract_col_dt_from_query, extract_compression
 
 
 @check_minimum_version
@@ -107,7 +105,7 @@ Returns
 vDataFrame
     The vDataFrame of the relation.
     """
-    from verticapy.core.vdataframe.vdataframe import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame
 
     assert not (ingest_local) or insert, ParameterError(
         "Ingest local to create new relations is not yet supported for 'read_file'"
@@ -166,15 +164,20 @@ vDataFrame
         table_name = gen_tmp_name(name=basename)
     if not (table_name):
         table_name = basename
-    sql = (
-        f"SELECT INFER_TABLE_DDL ('{path}' USING PARAMETERS "
-        f"format='{file_format}', table_name='y_verticapy', "
-        "table_schema='x_verticapy', table_type='native', "
-        "with_copy_statement=true, one_line_result=true, "
-        f"max_files={max_files}, max_candidates=1);"
-    )
     result = _executeSQL(
-        sql, title="Generating the CREATE and COPY statement.", method="fetchfirstelem",
+        query=f"""
+            SELECT INFER_TABLE_DDL ('{path}' 
+                                    USING PARAMETERS
+                                    format='{file_format}',
+                                    table_name='y_verticapy',
+                                    table_schema='x_verticapy',
+                                    table_type='native',
+                                    with_copy_statement=true,
+                                    one_line_result=true,
+                                    max_files={max_files},
+                                    max_candidates=1);""",
+        title="Generating the CREATE and COPY statement.",
+        method="fetchfirstelem",
     )
     result = result.replace("UNKNOWN", unknown)
     result = "create" + "create".join(result.split("create")[1:])

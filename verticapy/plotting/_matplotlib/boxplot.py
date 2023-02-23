@@ -14,16 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Modules
 import math, warnings
 
-# MATPLOTLIB
 import matplotlib.pyplot as plt
 
-# VerticaPy Modules
+from verticapy._config.colors import get_colors
 from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._sql import _executeSQL
-from verticapy.plotting._colors import gen_colors
+from verticapy._utils._sql._sys import _executeSQL
 
 
 def boxplot(
@@ -48,7 +45,7 @@ def boxplot(
         else:
             colors = style_kwds["colors"]
         del style_kwds["colors"]
-    colors += gen_colors()
+    colors += get_colors()
     # SINGLE BOXPLOT
     if by == "":
         if not (ax):
@@ -59,13 +56,13 @@ def boxplot(
         if not (vdf.isnum()):
             raise TypeError("The column must be numerical in order to draw a boxplot")
         summarize = (
-            vdf.parent.describe(method="numerical", columns=[vdf.alias], unique=False)
+            vdf._parent.describe(method="numerical", columns=[vdf._alias], unique=False)
             .transpose()
-            .values[vdf.alias]
+            .values[vdf._alias]
         )
         for i in range(0, 2):
             del summarize[0]
-        ax.set_xlabel(vdf.alias)
+        ax.set_xlabel(vdf._alias)
         box = ax.boxplot(
             summarize,
             notch=False,
@@ -87,28 +84,28 @@ def boxplot(
     else:
         try:
             try:
-                by = vdf.format_colnames(by)
+                by = vdf._format_colnames(by)
             except:
-                by = vdf.parent.format_colnames(by)
-            if vdf.alias == by:
+                by = vdf._parent._format_colnames(by)
+            if vdf._alias == by:
                 raise NameError(
                     "The parameter 'column' and the parameter 'groupby' can not be the same"
                 )
-            count = vdf.parent.shape()[0]
-            is_numeric = vdf.parent[by].isnum()
-            is_categorical = (vdf.parent[by].nunique(True) <= max_cardinality) or not (
+            count = vdf._parent.shape()[0]
+            is_numeric = vdf._parent[by].isnum()
+            is_categorical = (vdf._parent[by].nunique(True) <= max_cardinality) or not (
                 is_numeric
             )
-            table = vdf.parent.__genSQL__()
+            table = vdf._parent._genSQL()
             if not (is_categorical):
                 enum_trans = (
-                    vdf.parent[by]
+                    vdf._parent[by]
                     .discretize(h=h, return_enum_trans=True)[0]
                     .replace("{}", by)
                     + " AS "
                     + by
                 )
-                enum_trans += f", {vdf.alias}"
+                enum_trans += f", {vdf._alias}"
                 table = f"(SELECT {enum_trans} FROM {table}) enum_table"
             if not (cat_priority):
                 query_result = _executeSQL(
@@ -117,7 +114,7 @@ def boxplot(
                             /*+LABEL('plotting._matplotlib.boxplot')*/ 
                             {by} 
                         FROM {table} 
-                        WHERE {vdf.alias} IS NOT NULL 
+                        WHERE {vdf._alias} IS NOT NULL 
                         GROUP BY {by} 
                         ORDER BY COUNT(*) DESC 
                         LIMIT {max_cardinality}""",
@@ -137,14 +134,14 @@ def boxplot(
                     where = f"WHERE {by} = '{category_str}'"
                 tmp_query = f"""
                     SELECT 
-                        MIN({vdf.alias}) AS min,
-                        APPROXIMATE_PERCENTILE ({vdf.alias} 
+                        MIN({vdf._alias}) AS min,
+                        APPROXIMATE_PERCENTILE ({vdf._alias} 
                                USING PARAMETERS percentile = 0.25) AS Q1,
-                        APPROXIMATE_PERCENTILE ({vdf.alias} 
+                        APPROXIMATE_PERCENTILE ({vdf._alias} 
                                USING PARAMETERS percentile = 0.5) AS Median, 
-                        APPROXIMATE_PERCENTILE ({vdf.alias} 
+                        APPROXIMATE_PERCENTILE ({vdf._alias} 
                                USING PARAMETERS percentile = 0.75) AS Q3, 
-                        MAX({vdf.alias}) AS max, '{category}' 
+                        MAX({vdf._alias}) AS max, '{category}' 
                     FROM vdf_table
                     {where}"""
                 all_queries += [tmp_query]
@@ -176,7 +173,7 @@ def boxplot(
             result = [[float(item[i]) for i in range(0, 5)] for item in query_result]
             result.reverse()
             cat_priority.reverse()
-            if vdf.parent[by].category() == "text":
+            if vdf._parent[by].category() == "text":
                 labels = []
                 for item in cat_priority:
                     labels += [item[0:47] + "..."] if (len(str(item)) > 50) else [item]
@@ -187,7 +184,7 @@ def boxplot(
                 if ISNOTEBOOK:
                     fig.set_size_inches(10, 6)
                 ax.yaxis.grid()
-            ax.set_ylabel(vdf.alias)
+            ax.set_ylabel(vdf._alias)
             ax.set_xlabel(by)
             other_labels = []
             other_result = []
@@ -266,12 +263,12 @@ def boxplot2D(
         else:
             colors = style_kwds["colors"]
         del style_kwds["colors"]
-    colors += gen_colors()
+    colors += get_colors()
     if not (columns):
         columns = vdf.numcol()
     for column in columns:
         if column not in vdf.numcol():
-            if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+            if vdf._vars["display"]["print_info"]:
                 warning_message = f"The Virtual Column {column} is not numerical.\nIt will be ignored."
                 warnings.warn(warning_message, Warning)
             columns.remove(column)

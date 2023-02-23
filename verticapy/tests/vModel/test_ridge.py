@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 # VerticaPy
 from verticapy.tests.conftest import get_version
 from verticapy import drop, set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import Ridge
 
@@ -183,7 +183,7 @@ class TestRidge:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT PREDICT_LINEAR_REG(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -194,7 +194,7 @@ class TestRidge:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT PREDICT_LINEAR_REG(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
-                model.name, model.to_sql([3.0, 11.0, 93.0])
+                model.model_name, model.to_sql([3.0, 11.0, 93.0])
             )
         )
         prediction = current_cursor().fetchone()

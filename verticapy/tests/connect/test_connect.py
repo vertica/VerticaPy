@@ -16,7 +16,8 @@ permissions and limitations under the License.
 """
 import os
 import verticapy as vp
-from verticapy.connect import *
+from verticapy.connection import *
+from verticapy._config.connection import _connection, SESSION_IDENTIFIER
 
 
 class TestConnect:
@@ -38,7 +39,7 @@ class TestConnect:
         change_auto_connection("vp_test_config")
         # auto_connect
         auto_connect()
-        cur = CONNECTION["conn"].cursor()
+        cur = _connection["conn"].cursor()
         cur.execute("SELECT 1;")
         result2 = cur.fetchone()
         assert result2 == [1]

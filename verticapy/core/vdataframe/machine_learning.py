@@ -14,24 +14,19 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
-import random, warnings, datetime, math
-from typing import Union, Literal
+import datetime, math, random, warnings
+from typing import Literal, Union
 from itertools import combinations_with_replacement
-
-# Other modules
 import numpy as np
 import scipy.stats as scipy_st
 
-# VerticaPy Modules
-from verticapy.core.tablesample import tablesample
-from verticapy.learn.memmodel import memModel
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import quote_ident
-from verticapy._config.config import OPTIONS
+
+from verticapy.core.tablesample.base import TableSample
 
 
 class vDFML:
@@ -54,7 +49,7 @@ class vDFML:
         the output vDataFrame
         """
         if isinstance(weight, str):
-            weight = self.format_colnames(weight)
+            weight = self._format_colnames(weight)
             assert self[weight].category() == "int", TypeError(
                 "The weight vDataColumn category must be "
                 f"'integer', found {self[weight].category()}."
@@ -129,7 +124,7 @@ class vDFML:
         if isinstance(columns, str):
             columns = [columns]
         if columns:
-            columns = self.format_colnames(columns)
+            columns = self._format_colnames(columns)
         else:
             columns = self.get_columns()
         vdf = self.copy()
@@ -207,6 +202,7 @@ class vDFML:
         learn.memmodel.
         """
         from verticapy.machine_learning._utils import get_match_index
+        from verticapy.machine_learning.memmodel.base import memModel
 
         if "process" not in kwds or kwds["process"]:
             if isinstance(columns, str):
@@ -278,15 +274,15 @@ class vDFML:
                                 {column}, 
                                 {response}, 
                                 COUNT(*) AS cnt 
-                             FROM {self.__genSQL__()} 
+                             FROM {self._genSQL()} 
                              WHERE {split_predictor} IS NOT NULL 
                                AND {response} IS NOT NULL 
                              GROUP BY 1, 2) x 
                         ORDER BY 1;""",
                     title="Computing the CHAID tree probability.",
                     method="fetchall",
-                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
             else:
                 result = []
@@ -373,7 +369,7 @@ class vDFML:
                     remove_cols += [col]
         else:
             remove_cols = []
-            columns_tmp = self.format_colnames(columns_tmp)
+            columns_tmp = self._format_colnames(columns_tmp)
             for col in columns_tmp:
                 if self[col].category() not in ("float", "int", "text") or (
                     self[col].category() == "text"
@@ -432,7 +428,7 @@ class vDFML:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns) if (columns) else self.numcol()
+        columns = self._format_colnames(columns) if (columns) else self.numcol()
         if not (robust):
             result = self.aggregate(func=["std", "avg"], columns=columns).values
         else:
@@ -497,13 +493,13 @@ class vDFML:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns, response = self.format_colnames(columns, response)
+        columns, response = self._format_colnames(columns, response)
         assert 2 <= nbins <= 16, ParameterError(
             "Parameter 'nbins' must be between 2 and 16, inclusive."
         )
@@ -530,7 +526,7 @@ class vDFML:
                     response=response,
                     RFmodel_params=RFmodel_params,
                 )
-        response = vdf.format_colnames(response)
+        response = vdf._format_colnames(response)
         if response in columns:
             columns.remove(response)
         chi2_list = []
@@ -564,7 +560,7 @@ class vDFML:
             "categories": [chi2[4] for chi2 in chi2_list],
             "is_numerical": [chi2[5] for chi2 in chi2_list],
         }
-        return tablesample(result)
+        return TableSample(result)
 
     @save_verticapy_logs
     def polynomial_comb(self, columns: Union[str, list] = [], r: int = 2):
@@ -590,7 +586,7 @@ class vDFML:
         if not (columns):
             numcol = self.numcol()
         else:
-            numcol = self.format_colnames(columns)
+            numcol = self._format_colnames(columns)
         vdf = self.copy()
         all_comb = combinations_with_replacement(numcol, r=r)
         for elem in all_comb:
@@ -651,7 +647,7 @@ class vDFML:
     vDataFrame
         The vDataFrame of the recommendation.
         """
-        unique_id, item_id, ts = self.format_colnames(unique_id, item_id, ts)
+        unique_id, item_id, ts = self._format_colnames(unique_id, item_id, ts)
         vdf = self.copy()
         assert (
             method == "count" or rating
@@ -664,7 +660,7 @@ class vDFML:
             assert (
                 method != "count"
             ), "Method 'count' can not be used if parameter 'rating' is defined."
-            rating = self.format_colnames(rating)
+            rating = self._format_colnames(rating)
         if ts:
             if start_date and end_date:
                 vdf = self.search(f"{ts} BETWEEN '{start_date}' AND '{end_date}'")
@@ -759,8 +755,8 @@ class vDFML:
 
     Returns
     -------
-    float / tablesample
-        score / tablesample of the curve
+    float / TableSample
+        score / TableSample of the curve
 
     See Also
     --------
@@ -768,9 +764,9 @@ class vDFML:
         """
         from verticapy.machine_learning.metrics import FUNCTIONS_DICTIONNARY
 
-        y_true, y_score = self.format_colnames(y_true, y_score)
+        y_true, y_score = self._format_colnames(y_true, y_score)
         fun = FUNCTIONS_DICTIONNARY[method]
-        argv = [y_true, y_score, self.__genSQL__()]
+        argv = [y_true, y_score, self._genSQL()]
         kwds = {}
         if method in ("accuracy", "acc"):
             kwds["pos_label"] = None
@@ -820,7 +816,7 @@ class vDFML:
         """
         if isinstance(by, str):
             by = [by]
-        by, ts = self.format_colnames(by, ts)
+        by, ts = self._format_colnames(by, ts)
         partition = ""
         if by:
             partition = f"PARTITION BY {', '.join(by)}"
@@ -863,9 +859,9 @@ class vDFML:
         """
         if isinstance(order_by, str):
             order_by = [order_by]
-        order_by = self.__get_sort_syntax__(order_by)
+        order_by = self._get_sort_syntax(order_by)
         if not random_state:
-            random_state = OPTIONS["random_state"]
+            random_state = _options["random_state"]
         random_seed = (
             random_state
             if isinstance(random_state, int)
@@ -878,19 +874,19 @@ class vDFML:
                     /*+LABEL('vDataframe.train_test_split')*/ 
                     APPROXIMATE_PERCENTILE({random_func} 
                         USING PARAMETERS percentile = {test_size}) 
-                FROM {self.__genSQL__()}""",
+                FROM {self._genSQL()}""",
             title="Computing the seeded numbers quantile.",
             method="fetchfirstelem",
         )
         test_table = f"""
-            (SELECT * 
-             FROM {self.__genSQL__()} 
-             WHERE {random_func} < {q}{order_by}) x"""
+            SELECT * 
+            FROM {self._genSQL()} 
+            WHERE {random_func} < {q}{order_by}"""
         train_table = f"""
-            (SELECT * 
-             FROM {self.__genSQL__()} 
-             WHERE {random_func} > {q}{order_by}) x"""
+            SELECT * 
+            FROM {self._genSQL()} 
+            WHERE {random_func} > {q}{order_by}"""
         return (
-            vDataFrameSQL(relation=train_table),
-            vDataFrameSQL(relation=test_table),
+            self._new_vdataframe(train_table),
+            self._new_vdataframe(test_table),
         )

@@ -16,9 +16,8 @@ permissions and limitations under the License.
 """
 import datetime
 
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql.read import vDataFrameSQL
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.errors import ParameterError
 
 
@@ -55,6 +54,8 @@ Returns
 vDataFrame
     Generated dataset.
     """
+    from verticapy.core.vdataframe.base import vDataFrame
+
     sql = []
 
     for param in features_ranges:
@@ -115,14 +116,18 @@ vDataFrame
             raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
 
     query = f"""
-        (SELECT {', '.join(sql)} FROM 
-            (SELECT tm FROM 
+        SELECT 
+            {', '.join(sql)} 
+        FROM 
+            (SELECT 
+                tm 
+            FROM 
                 (SELECT '03-11-1993'::TIMESTAMP + INTERVAL '1 second' AS t 
                  UNION ALL 
                  SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{nrows} seconds' AS t) x 
-                TIMESERIES tm AS '1 second' OVER(ORDER BY t)) y) z"""
+                TIMESERIES tm AS '1 second' OVER(ORDER BY t)) VERTICAPY_SUBTABLE"""
 
-    return vDataFrameSQL(query)
+    return vDataFrame(query)
 
 
 @save_verticapy_logs
@@ -158,6 +163,8 @@ Returns
 vDataFrame
     generated dataset.
     """
+    from verticapy.core.vdataframe.base import vDataFrame
+
     sql = []
 
     for idx, param in enumerate(features_ranges):
@@ -239,6 +246,6 @@ vDataFrame
             ptype = features_ranges[param]["type"]
             raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
 
-    query = f"(SELECT * FROM {' CROSS JOIN '.join(sql)}) x"
+    query = f"SELECT * FROM {' CROSS JOIN '.join(sql)}"
 
-    return vDataFrameSQL(query)
+    return vDataFrame(query)

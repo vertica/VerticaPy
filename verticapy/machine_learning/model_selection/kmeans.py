@@ -14,22 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union, Literal
-
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.core.tablesample import tablesample
-from verticapy._config.config import ISNOTEBOOK
-from verticapy.plotting._colors import gen_colors
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import OPTIONS
-from verticapy.sql._utils._format import schema_relation, quote_ident
-from verticapy._utils._gen import gen_tmp_name
-
-# Other Python Modules
-import matplotlib.pyplot as plt
+from typing import Literal, Union
 from tqdm.auto import tqdm
+
+import matplotlib.pyplot as plt
+
+from verticapy._config.colors import get_colors
+from verticapy._config.config import ISNOTEBOOK, _options
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._format import quote_ident, schema_relation
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.plotting._matplotlib.base import updated_dict
 
 
 @save_verticapy_logs
@@ -91,7 +90,7 @@ int
     elif not (init):
         init = "kmeanspp"
 
-    from verticapy.learn.cluster import KMeans, KPrototypes
+    from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
@@ -100,9 +99,9 @@ int
         L.sort()
     schema, relation = schema_relation(input_relation)
     if not (schema):
-        schema = OPTIONS["temp_schema"]
+        schema = _options["temp_schema"]
     schema = quote_ident(schema)
-    if OPTIONS["tqdm"] and (
+    if _options["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         loop = tqdm(L)
@@ -180,9 +179,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if isinstance(X, str):
         X = [X]
@@ -190,7 +189,7 @@ tablesample
         init = "random"
     elif not (init):
         init = "kmeanspp"
-    from verticapy.learn.cluster import KMeans, KPrototypes
+    from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
@@ -207,7 +206,7 @@ tablesample
     else:
         L = n_cluster
         L.sort()
-    if OPTIONS["tqdm"]:
+    if _options["tqdm"]:
         loop = tqdm(L)
     else:
         loop = L
@@ -227,7 +226,7 @@ tablesample
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
     param = {
-        "color": gen_colors()[0],
+        "color": get_colors()[0],
         "marker": "o",
         "markerfacecolor": "white",
         "markersize": 7,
@@ -238,4 +237,4 @@ tablesample
     ax.set_xlabel("Number of Clusters")
     ax.set_ylabel("Between-Cluster SS / Total SS")
     values = {"index": L, "Within-Cluster SS": all_within_cluster_SS}
-    return tablesample(values=values)
+    return TableSample(values=values)

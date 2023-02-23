@@ -15,9 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Union
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.sql._utils._format import quote_ident
-from verticapy._utils._sql import _executeSQL
+
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
+
+from verticapy.core.vdataframe.base import vDataFrame
 
 
 def _compute_tn_fn_fp_tp(
@@ -103,7 +105,7 @@ float or tuple of floats
     if isinstance(input_relation, str):
         relation = input_relation
     else:
-        relation = input_relation.__genSQL__()
+        relation = input_relation._genSQL()
     if fetchfirstelem:
         method = "fetchfirstelem"
     else:

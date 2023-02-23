@@ -24,8 +24,8 @@ import os
 
 # VerticaPy
 import vertica_python, verticapy
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.connect import current_cursor, SESSION_IDENTIFIER
+from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.connection import current_cursor
 from verticapy.utilities import *
 from verticapy.datasets import (
     load_cities,
@@ -38,6 +38,7 @@ from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
 from verticapy.learn.linear_model import LinearRegression
 from verticapy._config.config import set_option
+from verticapy._config.connection import SESSION_IDENTIFIER
 
 set_option("print_info", False)
 
@@ -76,12 +77,12 @@ class TestUtilities:
         vdf = laliga_vd.copy()
         vdf["away_team_managers"] = vdf["away_team"]["managers"]
         vdf["home_team_managers"] = vdf["home_team"]["managers"]
-        vdf["away_team_managers"].transformations[-1] = (
+        vdf["away_team_managers"]._transf[-1] = (
             '"away_team"."managers"',
             "Array",
             "complex",
         )  # doing it manually because the vertica-python client does not support cdt yet
-        vdf["home_team_managers"].transformations[-1] = (
+        vdf["home_team_managers"]._transf[-1] = (
             '"home_team"."managers"',
             "Array",
             "complex",
@@ -102,7 +103,7 @@ class TestUtilities:
             589.698581560284
         )
         # testing apply_fun - count
-        vdf["all_managers"].transformations[-1] = (
+        vdf["all_managers"]._transf[-1] = (
             'ARRAY_CAT("away_team_managers", "home_team_managers")',
             "Array",
             "complex",
@@ -110,67 +111,67 @@ class TestUtilities:
         assert vdf["all_managers"].apply_fun(func="length")
         assert vdf["all_managers"].max() == 2.0
         # testing apply_fun - min
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="min")
         assert vdf2["x"].sum() == 12
         # testing apply_fun - max
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="max")
         assert vdf2["x"].sum() == 18
         # testing apply_fun - avg
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="avg")
         assert vdf2["x"].sum() == 15
         # testing apply_fun - sum
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="sum")
         assert vdf2["x"].sum() == 45
         # testing apply_fun - contain
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="contain", x=1)
         assert vdf2["x"].sum() == 1
         # testing apply_fun - len
-        vdf2 = tablesample({"x": [[1, 2, 3], [4, 5, 6], [7]]}).to_vdf()
-        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7]]}).to_vdf()
+        vdf2["x"]._transf[-1] = ('"x"', "Array", "complex")
         vdf2["x"].apply_fun(func="len")
         assert vdf2["x"].sum() == 7
         # testing apply_fun - find
-        vdf2 = tablesample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2 = TableSample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
         vdf2["x"].apply_fun(func="find", x=2)
         assert vdf2["x"].sum() == 0
         # testing string to array
-        vdf2 = tablesample(
+        vdf2 = TableSample(
             {"x": ["[1, -2, 3]", "[2,    5,    6]", "[7,   8]"]}
         ).to_vdf()
         vdf2["x"].astype("array")
         vdf2["x"].apply_fun(func="len")
         assert vdf2["x"].sum() == 8
-        # tablesample with ROW and arrays
-        vdf2 = tablesample(
+        # TableSample with ROW and arrays
+        vdf2 = TableSample(
             {
                 "x": [[1, 2, 3], [4, 5, 6], [7]],
                 "y": [{"a": 1, "b": 2}, {"a": 2, "b": 3}, {"a": 4, "b": 5}],
             }
         ).to_vdf()
         assert vdf2["y"]["a"].sum() == 7
-        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        vdf2["x"]._transf[-1] = ('"x"', "Array", "complex")
         vdf2["x"].apply_fun(func="len")
         assert vdf2["x"].sum() == 7.0
         # Complex to JSON
-        vdf2 = tablesample(
+        vdf2 = TableSample(
             {
                 "x": [[1, 2, 3], [4, 5, 6], [7]],
                 "y": [{"a": 1, "b": 2}, {"a": 2, "b": 3}, {"a": 4, "b": 5}],
             }
         ).to_vdf()
-        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        vdf2["x"]._transf[-1] = ('"x"', "Array", "complex")
         vdf2["x"].astype("json")
         vdf2["y"].astype("json")
-        assert vdf2["x"].transformations[-1][0] == "TO_JSON({})"
-        assert vdf2["y"].transformations[-1][0] == "TO_JSON({})"
+        assert vdf2["x"]._transf[-1][0] == "TO_JSON({})"
+        assert vdf2["y"]._transf[-1][0] == "TO_JSON({})"
         # Test get_len
-        vdf2 = tablesample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
-        vdf2["x"].transformations[-1] = ('"x"', "Array", "complex")
+        vdf2 = TableSample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
+        vdf2["x"]._transf[-1] = ('"x"', "Array", "complex")
         assert vdf2["x"].get_len().sum() == 9
 
     def test_create_schema_table(self):
@@ -341,13 +342,13 @@ class TestUtilities:
         vdf["away_team.managers"].astype(str)
         assert vdf["away_team.managers"].category() == "text"
         assert (
-            vdf["away_team.managers"].transformations[-1][0]
+            vdf["away_team.managers"]._transf[-1][0]
             == "MAPTOSTRING({} USING PARAMETERS canonical_json=false)::varchar"
         )
         vdf["away_team.managers2"].astype("json")
         assert vdf["away_team.managers2"].category() == "text"
         assert (
-            vdf["away_team.managers2"].transformations[-1][0]
+            vdf["away_team.managers2"]._transf[-1][0]
             == "MAPTOSTRING({} USING PARAMETERS canonical_json=true)"
         )
         # Testing vDataFrame.__set__ using VMAP sub category
@@ -355,7 +356,7 @@ class TestUtilities:
             "0.country.id"
         ]
         assert (
-            vdf["home_team.managers.0.country.id"].transformations[-1][0]
+            vdf["home_team.managers.0.country.id"]._transf[-1][0]
             == "MAPLOOKUP(\"home_team.managers\", '0.country.id')"
         )
         # Materialising the flex table - TODO
@@ -421,24 +422,24 @@ class TestUtilities:
         drop(name="public.iris", method="table")
         assert result == 150
 
-    def test_pandas_to_vertica(self, titanic_vd):
+    def test_read_pandas(self, titanic_vd):
         df = titanic_vd.to_pandas()
         drop("titanic_pandas")
-        vdf = pandas_to_vertica(df=df, name="titanic_pandas")
+        vdf = read_pandas(df=df, name="titanic_pandas")
         assert vdf.shape() == (1234, 14)
         drop("titanic_pandas")
-        vdf = pandas_to_vertica(df=df)
+        vdf = read_pandas(df=df)
         assert vdf.shape() == (1234, 14)
         drop("test_df")
-        pandas_to_vertica(df, name="test_df", schema="public")
-        pandas_to_vertica(df, name="test_df", schema="public", insert=True)
-        vdf = pandas_to_vertica(df, name="test_df", schema="public", insert=True)
+        read_pandas(df, name="test_df", schema="public")
+        read_pandas(df, name="test_df", schema="public", insert=True)
+        vdf = read_pandas(df, name="test_df", schema="public", insert=True)
         assert vdf.shape() == (3702, 14)
         drop("test_df")
         # Problem with '\'
         # d = {"col1": [1, 2, 3, 4], "col2": ["red", 'gre"en', "b\lue", 'p\i""nk']}
         # df = pd.DataFrame(data=d)
-        # vdf = pandas_to_vertica(df)
+        # vdf = read_pandas(df)
         # assert vdf.shape() == (4, 2)
 
     def test_pcsv(self):
@@ -581,7 +582,6 @@ class TestUtilities:
             ingest_local=True,
             use_complex_dt=False,
         )
-        assert vdf._VERTICAPY_VARIABLES_["schema"] == "public"
         assert drop("public.laliga_verticapy_test_json", method="table",)
 
         # testing local temporary table
@@ -592,7 +592,6 @@ class TestUtilities:
             ingest_local=True,
             use_complex_dt=False,
         )
-        assert vdf._VERTICAPY_VARIABLES_["schema"] == "v_temp_schema"
         assert drop("v_temp_schema.laliga_verticapy_test_json2", method="table",)
 
         # Checking flextables and materialize option
@@ -801,9 +800,7 @@ class TestUtilities:
 
         # testing insert
         vdf = read_file(path)
-        vdf = read_file(
-            path, table_name=vdf._VERTICAPY_VARIABLES_["input_relation"], insert=True,
-        )
+        vdf = read_file(path, table_name=vdf._vars["main_relation"], insert=True,)
         assert vdf.shape() == (904, 14)
 
     def test_read_shp(self, cities_vd):
@@ -913,8 +910,8 @@ class TestUtilities:
         q3 = current_cursor().fetchone()[0]
         assert q == q3
 
-    def test_tablesample(self):
-        result = tablesample(
+    def test_TableSample(self):
+        result = TableSample(
             {"index": ["Apple", "Banana", "Orange"], "price": [1, 2, 3]}
         )
         assert result["index"] == ["Apple", "Banana", "Orange"]
@@ -943,8 +940,8 @@ class TestUtilities:
         result = to_tablesample('SELECT 1 AS "verticapy test *+""";')
         assert result['verticapy test *+"'] == [1]
 
-    def test_vDataFrameSQL(self):
-        result = vDataFrameSQL('(SELECT 1 AS "verticapy test *+") x',)
+    def test_vDataFrame_sql(self):
+        result = vDataFrame('(SELECT 1 AS "verticapy test *+") x',)
         assert result["verticapy test *+"].avg() == 1.0
 
     @pytest.mark.skip(reason="this test will be implemented later")

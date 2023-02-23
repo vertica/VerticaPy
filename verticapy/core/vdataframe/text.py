@@ -15,7 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal
-from verticapy._utils._collect import save_verticapy_logs
+
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name
 
 
@@ -89,7 +90,7 @@ class vDFTEXT:
     --------
     vDataFrame.eval : Evaluates a customized expression.
         """
-        column = self.format_colnames(column)
+        column = self._format_colnames(column)
         pattern_str = pattern.replace("'", "''")
         expr = f"REGEXP_{method.upper()}({column}, '{pattern_str}'"
         if method == "replace":
@@ -121,7 +122,7 @@ class vDCTEXT:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -150,7 +151,7 @@ class vDCTEXT:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -179,7 +180,7 @@ class vDCTEXT:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -210,7 +211,7 @@ class vDCTEXT:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -241,7 +242,7 @@ class vDCTEXT:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------

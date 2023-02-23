@@ -16,21 +16,21 @@ permissions and limitations under the License.
 """
 import datetime
 from typing import Union
-
-# Other Python Modules
-from scipy.stats import chi2, norm, f
 import numpy as np
+from scipy.stats import chi2, norm, f
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql.drop import drop
-from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample import tablesample
+from verticapy._config.config import _options
 from verticapy._utils._gen import gen_tmp_name
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.sql._utils._format import schema_relation
-from verticapy._utils._sql import _executeSQL
-from verticapy._config.config import OPTIONS
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import schema_relation
+from verticapy._utils._sql._sys import _executeSQL
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
+from verticapy.sql.drop import drop
 
 
 @save_verticapy_logs
@@ -66,11 +66,10 @@ regresults: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
     def critical_value(alpha, N, with_trend):
         if not (with_trend):
@@ -184,9 +183,9 @@ tablesample
                 else:
                     return -3.41
 
-    ts, column, by = vdf.format_colnames(ts, column, by)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
-    relation_name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg_view")
+    ts, column, by = vdf._format_colnames(ts, column, by)
+    name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
+    relation_name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg_view")
     drop(name, method="model")
     drop(relation_name, method="view")
     lag = [
@@ -219,7 +218,7 @@ tablesample
         "TIMESTAMPDIFF(SECOND, {}, MIN({}) OVER ())".format(ts, ts)
         if vdf[ts].isdate()
         else ts,
-        vdf.__genSQL__(),
+        vdf._genSQL(),
     )
     _executeSQL(query, print_time_sql=False)
     model = LinearRegression(name, solver="Newton", max_iter=1000)
@@ -236,7 +235,7 @@ tablesample
     DF = coef.values["lag1"][0] / (max(coef.values["lag1"][1], 1e-99))
     p_value = coef.values["lag1"][3]
     count = vdf.shape()[0]
-    result = tablesample(
+    result = TableSample(
         {
             "index": [
                 "ADF Test Statistic",
@@ -302,26 +301,26 @@ model
      - r2_          : R2
     """
     if isinstance(vdf, str):
-        vdf_tmp = vDataFrameSQL(vdf)
+        vdf_tmp = vDataFrame(vdf)
     else:
         vdf_tmp = vdf.copy()
-    ts = vdf.format_colnames(ts)
-    name = gen_tmp_name(schema=schema_relation(model.name)[0], name="linear")
+    ts = vdf._format_colnames(ts)
+    name = gen_tmp_name(schema=schema_relation(model.model_name)[0], name="linear")
     param = model.get_params()
     model_tmp = type(model)(name)
     model_tmp.set_params(param)
     X, y = model.X, model.y
-    print_info = OPTIONS["print_info"]
-    OPTIONS["print_info"] = False
+    print_info = _options["print_info"]
+    _options["print_info"] = False
     if prais_winsten:
         vdf_tmp = vdf_tmp[X + [y, ts]].dropna()
-    OPTIONS["print_info"] = print_info
+    _options["print_info"] = print_info
     prediction_name = gen_tmp_name(name="prediction")[1:-1]
     eps_name = gen_tmp_name(name="eps")[1:-1]
     model.predict(vdf_tmp, X=X, name=prediction_name)
     vdf_tmp[eps_name] = vdf_tmp[y] - vdf_tmp[prediction_name]
     query = "SELECT /*+LABEL('statistical_tests.cochrane_orcutt')*/ SUM(num) / SUM(den) FROM (SELECT {0} * LAG({0}) OVER (ORDER BY {1}) AS num,  POWER({0}, 2) AS den FROM {2}) x".format(
-        eps_name, ts, vdf_tmp.__genSQL__()
+        eps_name, ts, vdf_tmp._genSQL()
     )
     pho = _executeSQL(
         query, title="Computing the Cochrane Orcutt pho.", method="fetchfirstelem"
@@ -363,14 +362,14 @@ Returns
 float
     Durbin Watson statistic
     """
-    eps, ts, by = vdf.format_colnames(eps, ts, by)
+    eps, ts, by = vdf._format_colnames(eps, ts, by)
     query = "(SELECT et, LAG(et) OVER({}ORDER BY {}) AS lag_et FROM (SELECT {} AS et, {}{} FROM {}) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE".format(
         "PARTITION BY {} ".format(", ".join(by)) if (by) else "",
         ts,
         eps,
         ts,
         (", " + ", ".join(by)) if (by) else "",
-        vdf.__genSQL__(),
+        vdf._genSQL(),
     )
     d = _executeSQL(
         "SELECT /*+LABEL('statistical_tests.durbin_watson')*/ SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(
@@ -403,13 +402,11 @@ p: int, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
-    eps, ts, by = vdf.format_colnames(eps, ts, by)
+    eps, ts, by = vdf._format_colnames(eps, ts, by)
     X = []
     X_names = []
     for i in range(0, p + 1):
@@ -419,11 +416,9 @@ tablesample
             )
         ]
         X_names += ["lag_{}".format(i)]
-    query = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-        ", ".join(X), vdf.__genSQL__()
-    )
-    vdf_lags = vDataFrameSQL(query)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+    query = "SELECT {} FROM {}".format(", ".join(X), vdf._genSQL())
+    vdf_lags = vDataFrame(query)
+    name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
@@ -440,7 +435,7 @@ tablesample
     lm_pvalue = chi2.sf(LM, p)
     F = (n - 2 * p - 1) * R2 / (1 - R2) / p
     f_pvalue = f.sf(F, p, n - 2 * p - 1)
-    result = tablesample(
+    result = TableSample(
         {
             "index": [
                 "Lagrange Multiplier Statistic",
@@ -488,11 +483,11 @@ box_pierce: bool
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    column, ts, by = vdf.format_colnames(column, ts, by)
+    column, ts, by = vdf._format_colnames(column, ts, by)
     acf = vdf.acf(column=column, ts=ts, by=by, p=p, show=False)
     if p >= 2:
         acf = acf.values["value"][1:]
@@ -502,7 +497,7 @@ tablesample
     name = (
         "Ljung–Box Test Statistic" if not (box_pierce) else "Box-Pierce Test Statistic"
     )
-    result = tablesample(
+    result = TableSample(
         {"index": [], name: [], "p_value": [], "Serial Correlation": []}
     )
     Q = 0
@@ -542,12 +537,12 @@ alpha: int / float, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    column, ts = vdf.format_colnames(column, ts)
-    table = f"(SELECT {column}, {ts} FROM {vdf.__genSQL__()})"
+    column, ts = vdf._format_colnames(column, ts)
+    table = f"(SELECT {column}, {ts} FROM {vdf._genSQL()})"
     query = f"SELECT /*+LABEL('statistical_tests.mkt')*/ SUM(SIGN(y.{column} - x.{column})) FROM {table} x CROSS JOIN {table} y WHERE y.{ts} > x.{ts}"
     S = _executeSQL(
         query, title="Computing the Mann Kendall S.", method="fetchfirstelem"
@@ -558,7 +553,7 @@ tablesample
         S = None
     n = vdf[column].count()
     query = "SELECT /*+LABEL('statistical_tests.mkt')*/ SQRT(({0} * ({0} - 1) * (2 * {0} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {1}) AS row FROM {2}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
-        n, column, vdf.__genSQL__()
+        n, column, vdf._genSQL()
     )
     STDS = _executeSQL(
         query,
@@ -588,7 +583,7 @@ tablesample
     )
     if not (result):
         trend = "no trend"
-    result = tablesample(
+    result = TableSample(
         {
             "index": [
                 "Mann Kendall Test Statistic",
@@ -657,14 +652,12 @@ Returns
 vDataFrame
     object containing (ts, column, TS seasonal part, TS trend, TS noise).
     """
-    from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
     if isinstance(by, str):
         by = [by]
     assert period > 0 or polynomial_order > 0, ParameterError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
     )
-    ts, column, by = vdf.format_colnames(ts, column, by)
+    ts, column, by = vdf._format_colnames(ts, column, by)
     if rule:
         vdf_tmp = vdf.interpolate(ts=ts, rule=period, method={column: "linear"}, by=by)
     else:
@@ -699,7 +692,7 @@ vDataFrame
         for i in range(1, polynomial_order + 1):
             vdf_poly[f"t_{i}"] = f"POWER(ROW_NUMBER() OVER ({by}ORDER BY {ts}), {i})"
             X += [f"t_{i}"]
-        name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_poly, X, column)
@@ -741,7 +734,7 @@ vDataFrame
             "t_sin"
         ] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
         X = ["t_cos", "t_sin"]
-        name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_seasonality, X, seasonal_name)

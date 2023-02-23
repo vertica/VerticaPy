@@ -14,33 +14,24 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard modules
 import warnings
-
-# MATPLOTLIB
-from matplotlib.lines import Line2D
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
-
-# NUMPY
 import numpy as np
 
-# VerticaPy Modules
+import matplotlib.animation as animation
+from matplotlib.lines import Line2D
+import matplotlib.pyplot as plt
+
+from verticapy._config.colors import get_cmap, get_colors
+from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
+from verticapy._utils._sql._sys import _executeSQL
+
 from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._sql import _executeSQL
-from verticapy.plotting._colors import gen_cmap, gen_colors
 
 if ISNOTEBOOK:
     from IPython.display import HTML
 
-# Optional
-try:
+if PARSER_IMPORT:
     from dateutil.parser import parse
-
-    PARSER_IMPORT = True
-except:
-    PARSER_IMPORT = False
 
 
 def parse_datetime(D: list):
@@ -85,7 +76,7 @@ def animated_bar(
         def date_f(x):
             return str(x)
 
-    colors = gen_colors()
+    colors = get_colors()
     for c in ["color", "colors"]:
         if c in style_kwds:
             colors = style_kwds[c]
@@ -112,7 +103,7 @@ def animated_bar(
                 (SELECT 
                     {order_by},
                     {", ".join(columns)} 
-                 FROM {vdf.__genSQL__()} 
+                 FROM {vdf._genSQL()} 
                  WHERE {order_by} IS NOT NULL 
                    AND {condition}
                    {order_by_start_str}
@@ -346,7 +337,7 @@ def animated_bubble_plot(
     elif "colors" in style_kwds:
         colors = style_kwds["colors"]
     else:
-        colors = gen_colors()
+        colors = get_colors()
     if isinstance(colors, str):
         colors = [colors]
     param = {
@@ -357,7 +348,7 @@ def animated_bubble_plot(
         if vdf[by].isnum():
             param = {
                 "alpha": 0.8,
-                "cmap": gen_cmap()[0],
+                "cmap": get_cmap()[0],
                 "edgecolors": "black",
             }
         else:
@@ -393,7 +384,7 @@ def animated_bubble_plot(
                     {order_by}, 
                     {", ".join([str(column) for column in columns])}, 
                     {by} 
-                 FROM {vdf.__genSQL__(True)} 
+                 FROM {vdf._genSQL(True)} 
                  WHERE  {columns[0]} IS NOT NULL 
                     AND {columns[1]} IS NOT NULL 
                     AND {columns[2]} IS NOT NULL
@@ -592,7 +583,7 @@ def animated_ts_plot(
         columns = vdf.numcol()
     for column in columns:
         if not (vdf[column].isnum()):
-            if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+            if vdf._vars["display"]["print_info"]:
                 warning_message = (
                     f"The Virtual Column {column} is "
                     "not numerical.\nIt will be ignored."
@@ -617,7 +608,7 @@ def animated_ts_plot(
                 /*+LABEL('plotting._matplotlib.animated_ts_plot')*/ 
                 {order_by},
                 {", ".join(columns)} 
-            FROM {vdf.__genSQL__()} 
+            FROM {vdf._genSQL()} 
             WHERE {order_by} IS NOT NULL
                   {order_by_start_str}
                   {order_by_end_str}
@@ -641,7 +632,7 @@ def animated_ts_plot(
     else:
         fig = plt
     all_plots = []
-    colors = gen_colors()
+    colors = get_colors()
     for i in range(0, len(columns)):
         param = {
             "linewidth": 1,

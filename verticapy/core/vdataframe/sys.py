@@ -14,40 +14,33 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
-import time, re, warnings, copy
+import copy, re, time, warnings
 from typing import Union
 
-# VerticaPy Modules
-from verticapy.core.tablesample import tablesample
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._config.config import _options
+from verticapy._utils._map import verticapy_agg_name
+from verticapy._utils._sql._cast import to_varchar
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import indentSQL, quote_ident
+from verticapy._utils._sql._random import _current_random
+from verticapy._utils._sql._sys import _executeSQL
+
+from verticapy.core.tablesample.base import TableSample
+
 from verticapy.sql.flex import isvmap
-from verticapy._config.config import current_random
-from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
-from verticapy.sql._utils._format import quote_ident
-from verticapy.core._utils._map import verticapy_agg_name
-from verticapy._config.config import OPTIONS
-from verticapy._utils._cast import to_varchar
 
 
 class vDFSYS:
-    #
-    # Semi Special Methods
-    #
-
-    def __add_to_history__(self, message: str):
+    def _add_to_history(self, message: str):
         """
     VERTICAPY stores the user modification and help the user to look at 
     what he/she did. This method is to use to add a customized message in the 
     vDataFrame history attribute.
         """
-        self._VERTICAPY_VARIABLES_["history"] += [
-            "{" + time.strftime("%c") + "}" + " " + message
-        ]
+        self._vars["history"] += ["{" + time.strftime("%c") + "}" + " " + message]
         return self
 
-    def __genSQL__(
+    def _genSQL(
         self, split: bool = False, transformations: dict = {}, force_columns: list = [],
     ):
         """
@@ -76,10 +69,10 @@ class vDFSYS:
         all_imputations_grammar = []
         force_columns_copy = [col for col in force_columns]
         if not (force_columns):
-            force_columns = [col for col in self._VERTICAPY_VARIABLES_["columns"]]
+            force_columns = [col for col in self._vars["columns"]]
         for column in force_columns:
             all_imputations_grammar += [
-                [transformation[0] for transformation in self[column].transformations]
+                [transformation[0] for transformation in self[column]._transf]
             ]
         for column in transformations:
             all_imputations_grammar += [transformations[column]]
@@ -91,11 +84,11 @@ class vDFSYS:
             if diff > 0:
                 imputations += ["{}"] * diff
         # We find the position of all filters in order to write them at the correct floor
-        where_positions = [item[1] for item in self._VERTICAPY_VARIABLES_["where"]]
+        where_positions = [item[1] for item in self._vars["where"]]
         max_where_pos = max(where_positions + [0])
         all_where = [[] for item in range(max_where_pos + 1)]
-        for i in range(0, len(self._VERTICAPY_VARIABLES_["where"])):
-            all_where[where_positions[i]] += [self._VERTICAPY_VARIABLES_["where"][i][0]]
+        for i in range(0, len(self._vars["where"])):
+            all_where[where_positions[i]] += [self._vars["where"][i][0]]
         all_where = [
             " AND ".join([f"({elem})" for elem in condition]) for condition in all_where
         ]
@@ -113,14 +106,14 @@ class vDFSYS:
                 first_values[i] = f"{first_values[i]} AS {columns[i]}"
                 transformations_first_floor = True
         if (transformations_first_floor) or (
-            self._VERTICAPY_VARIABLES_["allcols_ind"] != len(first_values)
+            self._vars["allcols_ind"] != len(first_values)
         ):
             table = f"""
                 SELECT 
                     {', '.join(first_values)} 
-                FROM {self._VERTICAPY_VARIABLES_['main_relation']}"""
+                FROM {self._vars['main_relation']}"""
         else:
-            table = f"""SELECT * FROM {self._VERTICAPY_VARIABLES_["main_relation"]}"""
+            table = f"""SELECT * FROM {self._vars["main_relation"]}"""
         # We compute the other floors
         for i in range(1, max_transformation_floor):
             values = [item[i] for item in all_imputations_grammar]
@@ -133,8 +126,8 @@ class vDFSYS:
             table = f"SELECT {', '.join(values)} FROM ({table}) VERTICAPY_SUBTABLE"
             if len(all_where) > i - 1:
                 table += all_where[i - 1]
-            if (i - 1) in self._VERTICAPY_VARIABLES_["order_by"]:
-                table += self._VERTICAPY_VARIABLES_["order_by"][i - 1]
+            if (i - 1) in self._vars["order_by"]:
+                table += self._vars["order_by"][i - 1]
         where_final = (
             all_where[max_transformation_floor - 1]
             if (len(all_where) > max_transformation_floor - 1)
@@ -143,9 +136,7 @@ class vDFSYS:
         # Only the last order_by matters as the order_by will never change
         # the final relation
         try:
-            order_final = self._VERTICAPY_VARIABLES_["order_by"][
-                max_transformation_floor - 1
-            ]
+            order_final = self._vars["order_by"][max_transformation_floor - 1]
         except:
             order_final = ""
         for vml_undefined in [
@@ -154,7 +145,7 @@ class vDFSYS:
             "___VERTICAPY_UNDEFINED___",
         ]:
             table = table.replace(vml_undefined, "")
-        random_func = current_random()
+        random_func = _current_random()
         split = f", {random_func} AS __verticapy_split__" if (split) else ""
         if (where_final == "") and (order_final == ""):
             if split:
@@ -163,7 +154,7 @@ class vDFSYS:
         else:
             table = f"({table}) VERTICAPY_SUBTABLE{where_final}{order_final}"
             table = f"(SELECT *{split} FROM {table}) VERTICAPY_SUBTABLE"
-        if (self._VERTICAPY_VARIABLES_["exclude_columns"]) and not (split):
+        if (self._vars["exclude_columns"]) and not (split):
             if not (force_columns_copy):
                 force_columns_copy = self.get_columns()
             force_columns_copy = ", ".join(force_columns_copy)
@@ -171,12 +162,12 @@ class vDFSYS:
                 (SELECT 
                     {force_columns_copy}{split} 
                 FROM {table}) VERTICAPY_SUBTABLE"""
-        main_relation = self._VERTICAPY_VARIABLES_["main_relation"]
+        main_relation = self._vars["main_relation"]
         all_main_relation = f"(SELECT * FROM {main_relation}) VERTICAPY_SUBTABLE"
         table = table.replace(all_main_relation, main_relation)
         return table
 
-    def __get_catalog_value__(
+    def _get_catalog_value(
         self, column: str = "", key: str = "", method: str = "", columns: list = []
     ):
         """
@@ -184,30 +175,30 @@ class vDFSYS:
     computations. This method returns the stored aggregation if it was already 
     computed.
         """
-        if not (OPTIONS["cache"]):
+        if not (_options["cache"]):
             return "VERTICAPY_NOT_PRECOMPUTED"
         if column == "VERTICAPY_COUNT":
-            if self._VERTICAPY_VARIABLES_["count"] < 0:
+            if self._vars["count"] < 0:
                 return "VERTICAPY_NOT_PRECOMPUTED"
-            total = self._VERTICAPY_VARIABLES_["count"]
+            total = self._vars["count"]
             if not (isinstance(total, (int, float))):
                 return "VERTICAPY_NOT_PRECOMPUTED"
             return total
         elif method:
             method = verticapy_agg_name(method.lower())
-            if columns[1] in self[columns[0]].catalog[method]:
-                return self[columns[0]].catalog[method][columns[1]]
+            if columns[1] in self[columns[0]]._catalog[method]:
+                return self[columns[0]]._catalog[method][columns[1]]
             else:
                 return "VERTICAPY_NOT_PRECOMPUTED"
         key = verticapy_agg_name(key.lower())
-        column = self.format_colnames(column)
+        column = self._format_colnames(column)
         try:
-            if (key == "approx_unique") and ("unique" in self[column].catalog):
+            if (key == "approx_unique") and ("unique" in self[column]._catalog):
                 key = "unique"
             result = (
                 "VERTICAPY_NOT_PRECOMPUTED"
-                if key not in self[column].catalog
-                else self[column].catalog[key]
+                if key not in self[column]._catalog
+                else self[column]._catalog[key]
             )
         except:
             result = "VERTICAPY_NOT_PRECOMPUTED"
@@ -217,19 +208,19 @@ class vDFSYS:
             return "VERTICAPY_NOT_PRECOMPUTED"
         return result
 
-    def __get_last_order_by__(self):
+    def _get_last_order_by(self):
         """
     Returns the last column used to sort the data.
         """
         max_pos, order_by = 0, ""
         columns_tmp = [elem for elem in self.get_columns()]
         for column in columns_tmp:
-            max_pos = max(max_pos, len(self[column].transformations) - 1)
-        if max_pos in self._VERTICAPY_VARIABLES_["order_by"]:
-            order_by = self._VERTICAPY_VARIABLES_["order_by"][max_pos]
+            max_pos = max(max_pos, len(self[column]._transf) - 1)
+        if max_pos in self._vars["order_by"]:
+            order_by = self._vars["order_by"][max_pos]
         return order_by
 
-    def __get_sort_syntax__(self, columns: list):
+    def _get_sort_syntax(self, columns: list):
         """
     Returns the SQL syntax to use to sort the input columns.
         """
@@ -238,7 +229,7 @@ class vDFSYS:
         if isinstance(columns, dict):
             order_by = []
             for col in columns:
-                column_name = self.format_colnames(col)
+                column_name = self._format_colnames(col)
                 if columns[col].lower() not in ("asc", "desc"):
                     warning_message = (
                         f"Method of {column_name} must be in (asc, desc), "
@@ -251,13 +242,7 @@ class vDFSYS:
             order_by = [quote_ident(col) for col in columns]
         return f" ORDER BY {', '.join(order_by)}"
 
-    def __isexternal__(self):
-        """
-    Returns true if it is an external vDataFrame.
-        """
-        return self._VERTICAPY_VARIABLES_["external"]
-
-    def __update_catalog__(
+    def _update_catalog(
         self,
         values: dict = {},
         erase: bool = False,
@@ -269,7 +254,7 @@ class vDFSYS:
     VERTICAPY stores the already computed aggregations to avoid useless 
     computations. This method stores the input aggregation in the vDataColumn catalog.
         """
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         agg_dict = {
             "cov": {},
             "pearson": {},
@@ -292,8 +277,8 @@ class vDFSYS:
             if not (columns):
                 columns = self.get_columns()
             for column in columns:
-                self[column].catalog = copy.deepcopy(agg_dict)
-            self._VERTICAPY_VARIABLES_["count"] = -1
+                self[column]._catalog = copy.deepcopy(agg_dict)
+            self._vars["count"] = -1
         elif matrix:
             matrix = verticapy_agg_name(matrix.lower())
             if matrix in agg_dict:
@@ -303,7 +288,7 @@ class vDFSYS:
                         val = float(val)
                     except:
                         pass
-                    self[column].catalog[matrix][elem] = val
+                    self[column]._catalog[matrix][elem] = val
         else:
             columns = [elem for elem in values]
             columns.remove("index")
@@ -320,20 +305,7 @@ class vDFSYS:
                             pass
                         if val != val:
                             val = None
-                        self[column].catalog[key] = val
-
-    def __vDataFrameSQL__(self, table: str, func: str, history: str):
-        """
-    This method is to use to build a vDataFrame based on a relation
-        """
-        schema = self._VERTICAPY_VARIABLES_["schema"]
-        history = self._VERTICAPY_VARIABLES_["history"] + [history]
-        saving = self._VERTICAPY_VARIABLES_["saving"]
-        return vDataFrameSQL(table, func, schema, history, saving)
-
-    #
-    # Methods
-    #
+                        self[column]._catalog[key] = val
 
     def current_relation(self, reindent: bool = True):
         """
@@ -349,12 +321,10 @@ class vDFSYS:
     str
         The formatted current vDataFrame relation.
         """
-        from verticapy.sql._utils._format import indentSQL
-
         if reindent:
-            return indentSQL(self.__genSQL__())
+            return indentSQL(self._genSQL())
         else:
-            return self.__genSQL__()
+            return self._genSQL()
 
     def del_catalog(self):
         """
@@ -365,7 +335,7 @@ class vDFSYS:
     vDataFrame
         self
         """
-        self.__update_catalog__(erase=True)
+        self._update_catalog(erase=True)
         return self
 
     def empty(self):
@@ -395,9 +365,9 @@ class vDFSYS:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
@@ -496,7 +466,7 @@ class vDFSYS:
         total += values["header"][0]
         total_expected += values["header"][0]
         values["rawsize"] = [total_expected, total, ""]
-        return tablesample(values=values).transpose()
+        return TableSample(values=values).transpose()
 
     @save_verticapy_logs
     def explain(self, digraph: bool = False):
@@ -519,11 +489,11 @@ class vDFSYS:
                 EXPLAIN 
                 SELECT 
                     /*+LABEL('vDataframe.explain')*/ * 
-                FROM {self.__genSQL__()}""",
+                FROM {self._genSQL()}""",
             title="Explaining the Current Relation",
             method="fetchall",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         result = [elem[0] for elem in result]
         result = "\n".join(result)
@@ -544,14 +514,14 @@ class vDFSYS:
     str
         information on the vDataFrame modifications
         """
-        if len(self._VERTICAPY_VARIABLES_["history"]) == 0:
+        if len(self._vars["history"]) == 0:
             result = "The vDataFrame was never modified."
-        elif len(self._VERTICAPY_VARIABLES_["history"]) == 1:
+        elif len(self._vars["history"]) == 1:
             result = "The vDataFrame was modified with only one action: "
-            result += "\n * " + self._VERTICAPY_VARIABLES_["history"][0]
+            result += "\n * " + self._vars["history"][0]
         else:
             result = "The vDataFrame was modified many times: "
-            for modif in self._VERTICAPY_VARIABLES_["history"]:
+            for modif in self._vars["history"]:
                 result += "\n * " + modif
         return result
 
@@ -562,26 +532,24 @@ class vDFSYS:
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
 
     See Also
     --------
     vDataFrame.expected_store_usage : Returns the expected store usage.
         """
-        total = sum(
-            [sys.getsizeof(elem) for elem in self._VERTICAPY_VARIABLES_]
-        ) + sys.getsizeof(self)
+        total = sum([sys.getsizeof(elem) for elem in self._vars]) + sys.getsizeof(self)
         values = {"index": ["object"], "value": [total]}
-        columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+        columns = [elem for elem in self._vars["columns"]]
         for column in columns:
             values["index"] += [column]
             values["value"] += [self[column].memory_usage()]
             total += self[column].memory_usage()
         values["index"] += ["total"]
         values["value"] += [total]
-        return tablesample(values=values)
+        return TableSample(values=values)
 
     @save_verticapy_logs
     def swap(self, column1: Union[int, str], column2: Union[int, str]):
@@ -616,8 +584,8 @@ class vDFSYS:
                 "index of the column to swap."
             )
             column2 = self.get_columns()[column2]
-        column1, column2 = self.format_colnames(column1, column2)
-        columns = self._VERTICAPY_VARIABLES_["columns"]
+        column1, column2 = self._format_colnames(column1, column2)
+        columns = self._vars["columns"]
         all_cols = {}
         for idx, elem in enumerate(columns):
             all_cols[elem] = idx
@@ -641,36 +609,34 @@ class vDCSYS:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
     vDataFrame.eval : Evaluates a customized expression.
         """
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
-
         name = quote_ident(name.replace('"', "_"))
         assert name.replace('"', ""), EmptyParameter(
             "The parameter 'name' must not be empty"
         )
-        assert not (self.parent.is_colname_in(name)), NameError(
+        assert not (self._parent.is_colname_in(name)), NameError(
             f"A vDataColumn has already the alias {name}.\nBy changing "
             "the parameter 'name', you'll be able to solve this issue."
         )
-        new_vDataColumn = vDataColumn(
+        new_vDataColumn = self._parent._new_vdatacolumn(
             name,
-            parent=self.parent,
-            transformations=[item for item in self.transformations],
-            catalog=self.catalog,
+            parent=self._parent,
+            transformations=[item for item in self._transf],
+            catalog=self._catalog,
         )
-        setattr(self.parent, name, new_vDataColumn)
-        setattr(self.parent, name[1:-1], new_vDataColumn)
-        self.parent._VERTICAPY_VARIABLES_["columns"] += [name]
-        self.parent.__add_to_history__(
-            f"[Add Copy]: A copy of the vDataColumn {self.alias} "
+        setattr(self._parent, name, new_vDataColumn)
+        setattr(self._parent, name[1:-1], new_vDataColumn)
+        self._parent._vars["columns"] += [name]
+        self._parent._add_to_history(
+            f"[Add Copy]: A copy of the vDataColumn {self._alias} "
             f"named {name} was added to the vDataFrame."
         )
-        return self.parent
+        return self._parent
 
     @save_verticapy_logs
     def memory_usage(self):
@@ -688,11 +654,11 @@ class vDCSYS:
         """
         total = (
             sys.getsizeof(self)
-            + sys.getsizeof(self.alias)
-            + sys.getsizeof(self.transformations)
-            + sys.getsizeof(self.catalog)
+            + sys.getsizeof(self._alias)
+            + sys.getsizeof(self._transf)
+            + sys.getsizeof(self._catalog)
         )
-        for elem in self.catalog:
+        for elem in self._catalog:
             total += sys.getsizeof(elem)
         return total
 
@@ -710,23 +676,23 @@ class vDCSYS:
     --------
     vDataFrame.expected_store_usage : Returns the vDataFrame expected store usage.
         """
-        pre_comp = self.parent.__get_catalog_value__(self.alias, "store_usage")
+        pre_comp = self._parent._get_catalog_value(self._alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return pre_comp
-        alias_sql_repr = to_varchar(self.category(), self.alias)
+        alias_sql_repr = to_varchar(self.category(), self._alias)
         store_usage = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataColumn.storage_usage')*/ 
                     ZEROIFNULL(SUM(LENGTH({alias_sql_repr}::varchar))) 
-                FROM {self.parent.__genSQL__()}""",
-            title=f"Computing the Store Usage of the vDataColumn {self.alias}.",
+                FROM {self._parent._genSQL()}""",
+            title=f"Computing the Store Usage of the vDataColumn {self._alias}.",
             method="fetchfirstelem",
-            sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self._parent._vars["sql_push_ext"],
+            symbol=self._parent._vars["symbol"],
         )
-        self.parent.__update_catalog__(
-            {"index": ["store_usage"], self.alias: [store_usage]}
+        self._parent._update_catalog(
+            {"index": ["store_usage"], self._alias: [store_usage]}
         )
         return store_usage
 
@@ -747,22 +713,22 @@ class vDCSYS:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
     vDataFrame.add_copy : Creates a copy of the vDataColumn.
         """
-        old_name = quote_ident(self.alias)
+        old_name = quote_ident(self._alias)
         new_name = new_name.replace('"', "")
-        assert not (self.parent.is_colname_in(new_name)), NameError(
+        assert not (self._parent.is_colname_in(new_name)), NameError(
             f"A vDataColumn has already the alias {new_name}.\n"
             "By changing the parameter 'new_name', you'll "
             "be able to solve this issue."
         )
         self.add_copy(new_name)
         parent = self.drop(add_history=False)
-        parent.__add_to_history__(
+        parent._add_to_history(
             f"[Rename]: The vDataColumn {old_name} was renamed '{new_name}'."
         )
         return parent

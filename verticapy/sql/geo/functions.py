@@ -16,13 +16,14 @@ permissions and limitations under the License.
 """
 from typing import Union
 
-# VerticaPy Modules
-import verticapy.sql.functions.math as mt
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
+
 from verticapy.datasets.generators import gen_meshgrid
-from verticapy.vdataframe import vDataFrame
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql.read import vDataFrameSQL
-from verticapy._utils._sql import _executeSQL
+
+from verticapy.core.vdataframe.base import vDataFrame
+
+import verticapy.sql.functions.math as mt
 
 
 @save_verticapy_logs
@@ -59,7 +60,7 @@ Returns
 vDataFrame
     result of the transformation.
     """
-    x, y = vdf.format_colnames(x, y)
+    x, y = vdf._format_colnames(x, y)
 
     result = vdf.copy()
 
@@ -107,7 +108,7 @@ Returns
 vDataFrame
     object containing the result of the intersection.
     """
-    x, y, gid, g = vdf.format_colnames(x, y, gid, g)
+    x, y, gid, g = vdf._format_colnames(x, y, gid, g)
 
     if g:
         params = f"{gid}, {g}"
@@ -120,14 +121,14 @@ vDataFrame
         raise ParameterError("Either 'x' and 'y' or 'g' must not be empty.")
 
     query = f"""
-        (SELECT 
+        SELECT 
             STV_Intersect({params} 
             USING PARAMETERS 
                 index='{index}') 
             OVER (PARTITION BEST) AS (point_id, polygon_gid) 
-        FROM {vdf.__genSQL__()}) x"""
+        FROM {vdf._genSQL()}"""
 
-    return vDataFrameSQL(query)
+    return vDataFrame(query)
 
 
 @save_verticapy_logs

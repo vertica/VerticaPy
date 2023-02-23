@@ -14,23 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-# Standard Python Modules
 import os, csv
 import pandas as pd
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._format import format_schema_table
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
+
 from verticapy.sql.parsers.csv import read_csv
-from verticapy.sql._utils._format import format_schema_table
-from verticapy._config.config import OPTIONS
 
 
 @save_verticapy_logs
-def pandas_to_vertica(
+def read_pandas(
     df: pd.DataFrame,
     name: str = "",
     schema: str = "",
@@ -86,7 +84,7 @@ read_csv  : Ingests a  CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
     if not (schema):
-        schema = OPTIONS["temp_schema"]
+        schema = _options["temp_schema"]
     assert name or not (insert), ParameterError(
         "Parameter 'name' can not be empty when parameter 'insert' is set to True."
     )
@@ -142,7 +140,7 @@ read_json : Ingests a JSON file into the Vertica database.
                     SKIP 1;""",
                 title="Inserting the pandas.DataFrame.",
             )
-            from verticapy.core.vdataframe.vdataframe import vDataFrame
+            from verticapy.core.vdataframe.base import vDataFrame
 
             vdf = vDataFrame(name, schema=schema)
         elif tmp_name:

@@ -14,15 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random, warnings, datetime
-from typing import Union, Literal
+import datetime, random, warnings
+from typing import Literal, Union
 from collections.abc import Iterable
+
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import clean_query, quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy._config.config import OPTIONS
-from verticapy.sql._utils._format import clean_query
-from verticapy._utils._sql import _executeSQL
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql._utils._format import quote_ident
 
 
 class vDFFILTER:
@@ -52,7 +52,7 @@ class vDFFILTER:
     vDataFrame.filter       : Filters the data using the input expression.
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
-        self.filter(f"{self.format_colnames(ts)}::time = '{time}'")
+        self.filter(f"{self._format_colnames(ts)}::time = '{time}'")
         return self
 
     @save_verticapy_logs
@@ -89,7 +89,7 @@ class vDFFILTER:
     vDataFrame
         balanced vDataFrame
         """
-        column, order_by = self.format_colnames(column, order_by)
+        column, order_by = self._format_colnames(column, order_by)
         if isinstance(order_by, str):
             order_by = [order_by]
         assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
@@ -148,7 +148,7 @@ class vDFFILTER:
     vDataFrame.last    : Filters the data by only keeping the last records.
         """
         self.filter(
-            f"{self.format_colnames(ts)}::time BETWEEN '{start_time}' AND '{end_time}'",
+            f"{self._format_colnames(ts)}::time BETWEEN '{start_time}' AND '{end_time}'",
         )
         return self
 
@@ -172,7 +172,7 @@ class vDFFILTER:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         for column in columns:
             self[column].drop()
         return self
@@ -203,7 +203,7 @@ class vDFFILTER:
         count = self.duplicated(columns=columns, count=True)
         if count:
             columns = (
-                self.get_columns() if not (columns) else self.format_colnames(columns)
+                self.get_columns() if not (columns) else self._format_colnames(columns)
             )
             name = (
                 "__verticapy_duplicated_index__"
@@ -215,8 +215,8 @@ class vDFFILTER:
                 expr=f"""ROW_NUMBER() OVER (PARTITION BY {", ".join(columns)})""",
             )
             self.filter(f'"{name}" = 1')
-            self._VERTICAPY_VARIABLES_["exclude_columns"] += [f'"{name}"']
-        elif OPTIONS["print_info"]:
+            self._vars["exclude_columns"] += [f'"{name}"']
+        elif _options["print_info"]:
             print("No duplicates detected.")
         return self
 
@@ -241,14 +241,16 @@ class vDFFILTER:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.get_columns() if not (columns) else self.format_colnames(columns)
+        columns = (
+            self.get_columns() if not (columns) else self._format_colnames(columns)
+        )
         total = self.shape()[0]
-        print_info = OPTIONS["print_info"]
+        print_info = _options["print_info"]
         for column in columns:
-            OPTIONS["print_info"] = False
+            _options["print_info"] = False
             self[column].dropna()
-            OPTIONS["print_info"] = print_info
-        if OPTIONS["print_info"]:
+            _options["print_info"] = print_info
+        if _options["print_info"]:
             total -= self.shape()[0]
             if total == 0:
                 print("Nothing was filtered.")
@@ -295,37 +297,37 @@ class vDFFILTER:
                 self.filter(str(condition), print_info=False)
             count -= self.shape()[0]
             if count > 0:
-                if OPTIONS["print_info"]:
+                if _options["print_info"]:
                     print(f"{count} element{conj}filtered")
-                self.__add_to_history__(
+                self._add_to_history(
                     f"[Filter]: {count} element{conj}filtered "
                     f"using the filter '{conditions}'"
                 )
-            elif OPTIONS["print_info"]:
+            elif _options["print_info"]:
                 print("Nothing was filtered.")
         else:
             max_pos = 0
-            columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+            columns_tmp = [elem for elem in self._vars["columns"]]
             for column in columns_tmp:
-                max_pos = max(max_pos, len(self[column].transformations) - 1)
+                max_pos = max(max_pos, len(self[column]._transf) - 1)
             new_count = self.shape()[0]
-            self._VERTICAPY_VARIABLES_["where"] += [(conditions, max_pos)]
+            self._vars["where"] += [(conditions, max_pos)]
             try:
                 new_count = _executeSQL(
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataframe.filter')*/ 
                             COUNT(*) 
-                        FROM {self.__genSQL__()}""",
+                        FROM {self._genSQL()}""",
                     title="Computing the new number of elements.",
                     method="fetchfirstelem",
-                    sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-                    symbol=self._VERTICAPY_VARIABLES_["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
                 count -= new_count
             except:
-                del self._VERTICAPY_VARIABLES_["where"][-1]
-                if OPTIONS["print_info"]:
+                del self._vars["where"][-1]
+                if _options["print_info"]:
                     warning_message = (
                         f"The expression '{conditions}' is incorrect.\n"
                         "Nothing was filtered."
@@ -333,19 +335,19 @@ class vDFFILTER:
                     warnings.warn(warning_message, Warning)
                 return self
             if count > 0:
-                self.__update_catalog__(erase=True)
-                self._VERTICAPY_VARIABLES_["count"] = new_count
+                self._update_catalog(erase=True)
+                self._vars["count"] = new_count
                 conj = "s were " if count > 1 else " was "
-                if OPTIONS["print_info"] and "print_info" not in kwds:
+                if _options["print_info"] and "print_info" not in kwds:
                     print(f"{count} element{conj}filtered.")
                 conditions_clean = clean_query(conditions)
-                self.__add_to_history__(
+                self._add_to_history(
                     f"[Filter]: {count} element{conj}filtered using "
                     f"the filter '{conditions_clean}'"
                 )
             else:
-                del self._VERTICAPY_VARIABLES_["where"][-1]
-                if OPTIONS["print_info"] and "print_info" not in kwds:
+                del self._vars["where"][-1]
+                if _options["print_info"] and "print_info" not in kwds:
                     print("Nothing was filtered.")
         return self
 
@@ -375,17 +377,17 @@ class vDFFILTER:
     vDataFrame.filter       : Filters the data using the input expression.
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
-        ts = self.format_colnames(ts)
+        ts = self._format_colnames(ts)
         first_date = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.first')*/ 
                     (MIN({ts}) + '{offset}'::interval)::varchar 
-                FROM {self.__genSQL__()}""",
+                FROM {self._genSQL()}""",
             title="Getting the vDataFrame first values.",
             method="fetchfirstelem",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         self.filter(f"{ts} <= '{first_date}'")
         return self
@@ -409,7 +411,7 @@ class vDFFILTER:
     vDataFrame
         The vDataFrame of the search.
         """
-        val = self.format_colnames(val)
+        val = self._format_colnames(val)
         n = len(val[list(val.keys())[0]])
         result = []
         for i in range(n):
@@ -449,17 +451,17 @@ class vDFFILTER:
     vDataFrame.first        : Filters the data by only keeping the first records.
     vDataFrame.filter       : Filters the data using the input expression.
         """
-        ts = self.format_colnames(ts)
+        ts = self._format_colnames(ts)
         last_date = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.last')*/ 
                     (MAX({ts}) - '{offset}'::interval)::varchar 
-                FROM {self.__genSQL__()}""",
+                FROM {self._genSQL()}""",
             title="Getting the vDataFrame last values.",
             method="fetchfirstelem",
-            sql_push_ext=self._VERTICAPY_VARIABLES_["sql_push_ext"],
-            symbol=self._VERTICAPY_VARIABLES_["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         self.filter(f"{ts} >= '{last_date}'")
         return self
@@ -519,25 +521,25 @@ class vDFFILTER:
             )
         if isinstance(by, str):
             by = [by]
-        by = self.format_colnames(by)
+        by = self._format_colnames(by)
         random_int = random.randint(0, 10000000)
         name = f"__verticapy_random_{random_int}__"
         name2 = f"__verticapy_random_{random_int + 1}__"
         vdf = self.copy()
         assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
         if method == "random":
-            random_state = OPTIONS["random_state"]
+            random_state = _options["random_state"]
             random_seed = random.randint(-10e6, 10e6)
             if isinstance(random_state, int):
                 random_seed = random_state
             random_func = f"SEEDED_RANDOM({random_seed})"
             vdf.eval(name, random_func)
             q = vdf[name].quantile(x)
-            print_info_init = OPTIONS["print_info"]
-            OPTIONS["print_info"] = False
+            print_info_init = _options["print_info"]
+            _options["print_info"] = False
             vdf.filter(f"{name} <= {q}")
-            OPTIONS["print_info"] = print_info_init
-            vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
+            _options["print_info"] = print_info_init
+            vdf._vars["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
             assert method != "stratified" or (by), ParameterError(
                 "Parameter 'by' must include at least one "
@@ -551,11 +553,11 @@ class vDFFILTER:
                 f"""MIN({name}) OVER (PARTITION BY CAST({name} * {x} AS Integer) 
                     ORDER BY {name} ROWS BETWEEN UNBOUNDED PRECEDING AND 0 FOLLOWING)""",
             )
-            print_info_init = OPTIONS["print_info"]
-            OPTIONS["print_info"] = False
+            print_info_init = _options["print_info"]
+            _options["print_info"] = False
             vdf.filter(f"{name} = {name2}")
-            OPTIONS["print_info"] = print_info_init
-            vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name, name2]
+            _options["print_info"] = print_info_init
+            vdf._vars["exclude_columns"] += [name, name2]
         return vdf
 
     @save_verticapy_logs
@@ -605,11 +607,8 @@ class vDFFILTER:
         if conditions:
             conditions = f" WHERE {conditions}"
         all_cols = ", ".join(["*"] + expr)
-        table = f"""
-            (SELECT 
-                {all_cols} 
-            FROM {self.__genSQL__()}{conditions}) VERTICAPY_SUBTABLE"""
-        result = self.__vDataFrameSQL__(table, "search", "")
+        query = f"SELECT {all_cols} FROM {self._genSQL()}{conditions}"
+        result = self._new_vdataframe(query)
         if usecols:
             result = result.select(usecols)
         return result.sort(order_by)
@@ -633,35 +632,33 @@ class vDCFILTER:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
     vDataFrame.drop: Drops the input vDataColumns from the vDataFrame.
         """
         try:
-            parent = self.parent
-            force_columns = [
-                column for column in self.parent._VERTICAPY_VARIABLES_["columns"]
-            ]
-            force_columns.remove(self.alias)
+            parent = self._parent
+            force_columns = [column for column in self._parent._vars["columns"]]
+            force_columns.remove(self._alias)
             _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('vDataColumn.drop')*/ * 
-                    FROM {self.parent.__genSQL__(force_columns=force_columns)} 
+                    FROM {self._parent._genSQL(force_columns=force_columns)} 
                     LIMIT 10""",
                 print_time_sql=False,
-                sql_push_ext=self.parent._VERTICAPY_VARIABLES_["sql_push_ext"],
-                symbol=self.parent._VERTICAPY_VARIABLES_["symbol"],
+                sql_push_ext=self._parent._vars["sql_push_ext"],
+                symbol=self._parent._vars["symbol"],
             )
-            self.parent._VERTICAPY_VARIABLES_["columns"].remove(self.alias)
-            delattr(self.parent, self.alias)
+            self._parent._vars["columns"].remove(self._alias)
+            delattr(self._parent, self._alias)
         except:
-            self.parent._VERTICAPY_VARIABLES_["exclude_columns"] += [self.alias]
+            self._parent._vars["exclude_columns"] += [self._alias]
         if add_history:
-            self.parent.__add_to_history__(
-                f"[Drop]: vDataColumn {self.alias} was deleted from the vDataFrame."
+            self._parent._add_to_history(
+                f"[Drop]: vDataColumn {self._alias} was deleted from the vDataFrame."
             )
         return parent
 
@@ -690,7 +687,7 @@ class vDCFILTER:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
@@ -700,19 +697,19 @@ class vDCFILTER:
         """
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
-            self.parent.filter(
+            self._parent.filter(
                 f"""
-                    ABS({self.alias} - {result["avg"][0]}) 
+                    ABS({self._alias} - {result["avg"][0]}) 
                   / {result["std"][0]} < {threshold}"""
             )
         else:
             p_alpha, p_1_alpha = (
-                self.parent.quantile([alpha, 1 - alpha], [self.alias])
+                self._parent.quantile([alpha, 1 - alpha], [self._alias])
                 .transpose()
-                .values[self.alias]
+                .values[self._alias]
             )
-            self.parent.filter(f"({self.alias} BETWEEN {p_alpha} AND {p_1_alpha})")
-        return self.parent
+            self._parent.filter(f"({self._alias} BETWEEN {p_alpha} AND {p_1_alpha})")
+        return self._parent
 
     @save_verticapy_logs
     def dropna(self):
@@ -722,14 +719,14 @@ class vDCFILTER:
     Returns
     -------
     vDataFrame
-        self.parent
+        self._parent
 
     See Also
     --------
     vDataFrame.filter: Filters the data using the input expression.
         """
-        self.parent.filter(f"{self.alias} IS NOT NULL")
-        return self.parent
+        self._parent.filter(f"{self._alias} IS NOT NULL")
+        return self._parent
 
     @save_verticapy_logs
     def isin(
@@ -759,5 +756,5 @@ class vDCFILTER:
         if isinstance(val, str) or not (isinstance(val, Iterable)):
             val = [val]
         val += list(args)
-        val = {self.alias: val}
-        return self.parent.isin(val)
+        val = {self._alias: val}
+        return self._parent.isin(val)

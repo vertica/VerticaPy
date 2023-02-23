@@ -20,5 +20,5 @@ from verticapy.sql.create import create_schema, create_table, create_verticapy_s
 from verticapy.sql.drop import drop
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.insert import insert_into
-from verticapy.sql.read import readSQL, to_tablesample, vDataFrameSQL
+from verticapy.sql.read import readSQL, to_tablesample
 from verticapy.sql.sys import current_session, username

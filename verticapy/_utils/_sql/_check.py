@@ -14,28 +14,19 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.connect.external import (
-    EXTERNAL_CONNECTION,
-    SPECIAL_SYMBOLS,
-    set_external_connection,
-)
-from verticapy.connect.connect import (
-    VERTICAPY_AUTO_CONNECTION,
-    SESSION_IDENTIFIER,
-    SESSION_LABEL,
-    CONNECTION,
-    auto_connect,
-    close_connection,
-    connect,
-    current_connection,
-    current_cursor,
-    set_connection,
-    vertica_connection,
-    verticalab_connection,
-)
-from verticapy.connect.write import (
-    change_auto_connection,
-    delete_connection,
-    new_connection,
-)
-from verticapy.connect.read import available_connections, read_dsn
+from verticapy._utils._sql._format import clean_query, erase_comment
+
+
+def is_longvar(ctype: str) -> bool:
+    return ctype.lower()[0:12] in ("long varbina", "long varchar")
+
+
+def is_sql_select(query: str) -> bool:
+    result = False
+    query = clean_query(query)
+    query = erase_comment(query)
+    for idx, q in enumerate(query):
+        if q not in (" ", "("):
+            result = "select " == query[idx : idx + 7].lower()
+            break
+    return result

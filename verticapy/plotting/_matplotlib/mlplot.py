@@ -14,27 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
 import math
 from typing import Union
+import numpy as np
+import scipy.spatial as scipy_st
 
-# Other Python Modules
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
-import numpy as np
 
-# VerticaPy Modules
+from verticapy._config.colors import get_colors
 from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._sql import _executeSQL
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
-from verticapy.plotting._colors import gen_colors, get_color
-from verticapy.sql._utils._format import quote_ident
+
 from verticapy.plotting._matplotlib.base import updated_dict
 
 
@@ -50,14 +44,14 @@ def logit_plot(
     param0 = {
         "marker": "o",
         "s": 50,
-        "color": gen_colors()[0],
+        "color": get_colors()[0],
         "edgecolors": "black",
         "alpha": 0.8,
     }
     param1 = {
         "marker": "o",
         "s": 50,
-        "color": gen_colors()[1],
+        "color": get_colors()[1],
         "edgecolors": "black",
     }
 
@@ -235,11 +229,11 @@ def lof_plot(
     input_relation: str,
     columns: list,
     lof: str,
-    tablesample: Union[int, float] = -1,
+    TableSample: Union[int, float] = -1,
     ax=None,
     **style_kwds,
 ):
-    tablesample = f"TABLESAMPLE({tablesample})" if (0 < tablesample < 100) else ""
+    TableSample = f"TABLESAMPLE({TableSample})" if (0 < TableSample < 100) else ""
     colors = []
     if "color" in style_kwds:
         if isinstance(style_kwds["color"], str):
@@ -253,7 +247,7 @@ def lof_plot(
         else:
             colors = style_kwds["colors"]
         del style_kwds["colors"]
-    colors += gen_colors()
+    colors += get_colors()
     param = {
         "s": 50,
         "edgecolors": "black",
@@ -267,7 +261,7 @@ def lof_plot(
                     /*+LABEL('plotting._matplotlib.lof_plot')*/ 
                     {column}, 
                     {lof} 
-                FROM {input_relation} {tablesample} 
+                FROM {input_relation} {TableSample} 
                 WHERE {column} IS NOT NULL""",
             method="fetchall",
             print_time_sql=False,
@@ -305,7 +299,7 @@ def lof_plot(
                 {columns[0]}, 
                 {columns[1]}, 
                 {lof} 
-            FROM {input_relation} {tablesample} 
+            FROM {input_relation} {TableSample} 
             WHERE {columns[0]} IS NOT NULL 
               AND {columns[1]} IS NOT NULL""",
             method="fetchall",
@@ -345,7 +339,7 @@ def lof_plot(
                 {columns[1]}, 
                 {columns[2]}, 
                 {lof} 
-            FROM {input_relation} {tablesample} 
+            FROM {input_relation} {TableSample} 
             WHERE {columns[0]} IS NOT NULL 
               AND {columns[1]} IS NOT NULL 
               AND {columns[2]} IS NOT NULL""",
@@ -386,146 +380,6 @@ def lof_plot(
     return ax
 
 
-def plot_importance(
-    coeff_importances: dict,
-    coeff_sign: dict = {},
-    print_legend: bool = True,
-    ax=None,
-    **style_kwds,
-):
-    coefficients, importances, signs = [], [], []
-    for coeff in coeff_importances:
-        coefficients += [coeff]
-        importances += [coeff_importances[coeff]]
-        signs += [coeff_sign[coeff]] if (coeff in coeff_sign) else [1]
-    importances, coefficients, signs = zip(
-        *sorted(zip(importances, coefficients, signs))
-    )
-    if not (ax):
-        fig, ax = plt.subplots()
-        if ISNOTEBOOK:
-            fig.set_size_inches(12, int(len(importances) / 2) + 1)
-        ax.set_axisbelow(True)
-        ax.grid()
-    color = []
-    for item in signs:
-        color += (
-            [get_color(style_kwds, 0)] if (item == 1) else [get_color(style_kwds, 1)]
-        )
-    plus, minus = get_color(style_kwds, 0), get_color(style_kwds, 1)
-    param = {"alpha": 0.86}
-    style_kwds = updated_dict(param, style_kwds)
-    style_kwds["color"] = color
-    ax.barh(range(0, len(importances)), importances, 0.9, **style_kwds)
-    if print_legend:
-        orange = mpatches.Patch(color=minus, label="sign -")
-        blue = mpatches.Patch(color=plus, label="sign +")
-        ax.legend(handles=[blue, orange], loc="center left", bbox_to_anchor=[1, 0.5])
-        box = ax.get_position()
-        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-    ax.set_ylabel("Features")
-    ax.set_xlabel("Importance")
-    ax.set_yticks(range(0, len(importances)))
-    ax.set_yticklabels(coefficients)
-    return ax
-
-
-def plot_stepwise_ml(
-    x: list,
-    y: list,
-    z: list = [],
-    w: list = [],
-    var: list = [],
-    x_label: str = "n_features",
-    y_label: str = "score",
-    direction="forward",
-    ax=None,
-    **style_kwds,
-):
-    colors = gen_colors()
-    if not (ax):
-        fig, ax = plt.subplots()
-        if ISNOTEBOOK:
-            fig.set_size_inches(8, 6)
-        ax.grid(axis="y")
-        ax.set_axisbelow(True)
-    sign = "+" if direction == "forward" else "-"
-    x_new, y_new, z_new = [], [], []
-    for idx in range(len(x)):
-        if idx == 0 or w[idx][0] == sign:
-            x_new += [x[idx]]
-            y_new += [y[idx]]
-            z_new += [z[idx]]
-    if len(var[0]) > 3:
-        var0 = var[0][0:2] + ["..."] + var[0][-1:]
-    else:
-        var0 = var[0]
-    if len(var[1]) > 3:
-        var1 = var[1][0:2] + ["..."] + var[1][-1:]
-    else:
-        var1 = var[1]
-    if "color" in style_kwds:
-        if isinstance(style_kwds["color"], str):
-            c0, c1 = style_kwds["color"], colors[1]
-        else:
-            c0, c1 = style_kwds["color"][0], style_kwds["color"][1]
-    else:
-        c0, c1 = colors[0], colors[1]
-    if "color" in style_kwds:
-        del style_kwds["color"]
-    if direction == "forward":
-        delta_ini, delta_final = 0.1, -0.15
-        rot_ini, rot_final = -90, 90
-        verticalalignment_init, verticalalignment_final = "top", "bottom"
-        horizontalalignment = "center"
-    else:
-        delta_ini, delta_final = 0.35, -0.3
-        rot_ini, rot_final = 90, -90
-        verticalalignment_init, verticalalignment_final = "top", "bottom"
-        horizontalalignment = "left"
-    param = {"marker": "s", "alpha": 0.5, "edgecolors": "black", "s": 400}
-    ax.scatter(x_new[1:-1], y_new[1:-1], c=c0, **updated_dict(param, style_kwds))
-    ax.scatter(
-        [x_new[0], x_new[-1]],
-        [y_new[0], y_new[-1]],
-        c=c1,
-        **updated_dict(param, style_kwds),
-    )
-    ax.text(
-        x_new[0] + delta_ini,
-        y_new[0],
-        f"Initial Variables: [{', '.join(var0)}]",
-        rotation=rot_ini,
-        verticalalignment=verticalalignment_init,
-    )
-    for idx in range(1, len(x_new)):
-        dx, dy = x_new[idx] - x_new[idx - 1], y_new[idx] - y_new[idx - 1]
-        ax.arrow(x_new[idx - 1], y_new[idx - 1], dx, dy, fc="k", ec="k", alpha=0.2)
-        ax.text(
-            (x_new[idx] + x_new[idx - 1]) / 2,
-            (y_new[idx] + y_new[idx - 1]) / 2,
-            sign + " " + z_new[idx],
-            rotation=rot_ini,
-        )
-    if direction == "backward":
-        ax.set_xlim(
-            max(x) + 0.1 * (1 + max(x) - min(x)),
-            min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)),
-        )
-    ax.text(
-        x_new[-1] + delta_final,
-        y_new[-1],
-        f"Final Variables: [{', '.join(var1)}]",
-        rotation=rot_final,
-        verticalalignment=verticalalignment_final,
-        horizontalalignment=horizontalalignment,
-    )
-    ax.set_xticks(x_new)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
-    return ax
-
-
 def plot_bubble_ml(
     x: list,
     y: list,
@@ -554,7 +408,7 @@ def plot_bubble_ml(
         x = [elem[0] for elem in data]
         y = [elem[1] for elem in data]
         z = [elem[2] for elem in data]
-    colors = gen_colors()
+    colors = get_colors()
     if not (ax):
         fig, ax = plt.subplots()
         if ISNOTEBOOK:
@@ -652,7 +506,7 @@ def plot_bubble_ml(
             ha="center",
             va="center",
             bbox=dict(
-                boxstyle="round", ec=gen_colors()[0], fc=gen_colors()[0], alpha=0.3
+                boxstyle="round", ec=get_colors()[0], fc=get_colors()[0], alpha=0.3,
             ),
         )
         plt.text(
@@ -664,7 +518,7 @@ def plot_bubble_ml(
             ha="center",
             va="center",
             bbox=dict(
-                boxstyle="round", ec=gen_colors()[1], fc=gen_colors()[1], alpha=0.3
+                boxstyle="round", ec=get_colors()[1], fc=get_colors()[1], alpha=0.3,
             ),
         )
         plt.text(
@@ -676,7 +530,7 @@ def plot_bubble_ml(
             ha="center",
             va="center",
             bbox=dict(
-                boxstyle="round", ec=gen_colors()[2], fc=gen_colors()[2], alpha=0.3
+                boxstyle="round", ec=get_colors()[2], fc=get_colors()[2], alpha=0.3,
             ),
         )
         plt.text(
@@ -688,12 +542,56 @@ def plot_bubble_ml(
             ha="center",
             va="center",
             bbox=dict(
-                boxstyle="round", ec=gen_colors()[3], fc=gen_colors()[3], alpha=0.3
+                boxstyle="round", ec=get_colors()[3], fc=get_colors()[3], alpha=0.3,
             ),
         )
     else:
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
+    return ax
+
+
+def plot_importance(
+    coeff_importances: dict,
+    coeff_sign: dict = {},
+    print_legend: bool = True,
+    ax=None,
+    **style_kwds,
+):
+    coefficients, importances, signs = [], [], []
+    for coeff in coeff_importances:
+        coefficients += [coeff]
+        importances += [coeff_importances[coeff]]
+        signs += [coeff_sign[coeff]] if (coeff in coeff_sign) else [1]
+    importances, coefficients, signs = zip(
+        *sorted(zip(importances, coefficients, signs))
+    )
+    if not (ax):
+        fig, ax = plt.subplots()
+        if ISNOTEBOOK:
+            fig.set_size_inches(12, int(len(importances) / 2) + 1)
+        ax.set_axisbelow(True)
+        ax.grid()
+    color = []
+    for item in signs:
+        color += (
+            [get_colors(style_kwds, 0)] if (item == 1) else [get_colors(style_kwds, 1)]
+        )
+    plus, minus = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
+    param = {"alpha": 0.86}
+    style_kwds = updated_dict(param, style_kwds)
+    style_kwds["color"] = color
+    ax.barh(range(0, len(importances)), importances, 0.9, **style_kwds)
+    if print_legend:
+        orange = mpatches.Patch(color=minus, label="sign -")
+        blue = mpatches.Patch(color=plus, label="sign +")
+        ax.legend(handles=[blue, orange], loc="center left", bbox_to_anchor=[1, 0.5])
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.set_ylabel("Features")
+    ax.set_xlabel("Importance")
+    ax.set_yticks(range(0, len(importances)))
+    ax.set_yticklabels(coefficients)
     return ax
 
 
@@ -706,7 +604,7 @@ def plot_pca_circle(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_colors()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
     circle1 = plt.Circle((0, 0), 1, edgecolor=colors[0], facecolor="none")
@@ -741,6 +639,102 @@ def plot_pca_circle(
     return ax
 
 
+def plot_stepwise_ml(
+    x: list,
+    y: list,
+    z: list = [],
+    w: list = [],
+    var: list = [],
+    x_label: str = "n_features",
+    y_label: str = "score",
+    direction="forward",
+    ax=None,
+    **style_kwds,
+):
+    colors = get_colors()
+    if not (ax):
+        fig, ax = plt.subplots()
+        if ISNOTEBOOK:
+            fig.set_size_inches(8, 6)
+        ax.grid(axis="y")
+        ax.set_axisbelow(True)
+    sign = "+" if direction == "forward" else "-"
+    x_new, y_new, z_new = [], [], []
+    for idx in range(len(x)):
+        if idx == 0 or w[idx][0] == sign:
+            x_new += [x[idx]]
+            y_new += [y[idx]]
+            z_new += [z[idx]]
+    if len(var[0]) > 3:
+        var0 = var[0][0:2] + ["..."] + var[0][-1:]
+    else:
+        var0 = var[0]
+    if len(var[1]) > 3:
+        var1 = var[1][0:2] + ["..."] + var[1][-1:]
+    else:
+        var1 = var[1]
+    if "color" in style_kwds:
+        if isinstance(style_kwds["color"], str):
+            c0, c1 = style_kwds["color"], colors[1]
+        else:
+            c0, c1 = style_kwds["color"][0], style_kwds["color"][1]
+    else:
+        c0, c1 = colors[0], colors[1]
+    if "color" in style_kwds:
+        del style_kwds["color"]
+    if direction == "forward":
+        delta_ini, delta_final = 0.1, -0.15
+        rot_ini, rot_final = -90, 90
+        verticalalignment_init, verticalalignment_final = "top", "bottom"
+        horizontalalignment = "center"
+    else:
+        delta_ini, delta_final = 0.35, -0.3
+        rot_ini, rot_final = 90, -90
+        verticalalignment_init, verticalalignment_final = "top", "bottom"
+        horizontalalignment = "left"
+    param = {"marker": "s", "alpha": 0.5, "edgecolors": "black", "s": 400}
+    ax.scatter(x_new[1:-1], y_new[1:-1], c=c0, **updated_dict(param, style_kwds))
+    ax.scatter(
+        [x_new[0], x_new[-1]],
+        [y_new[0], y_new[-1]],
+        c=c1,
+        **updated_dict(param, style_kwds),
+    )
+    ax.text(
+        x_new[0] + delta_ini,
+        y_new[0],
+        f"Initial Variables: [{', '.join(var0)}]",
+        rotation=rot_ini,
+        verticalalignment=verticalalignment_init,
+    )
+    for idx in range(1, len(x_new)):
+        dx, dy = x_new[idx] - x_new[idx - 1], y_new[idx] - y_new[idx - 1]
+        ax.arrow(x_new[idx - 1], y_new[idx - 1], dx, dy, fc="k", ec="k", alpha=0.2)
+        ax.text(
+            (x_new[idx] + x_new[idx - 1]) / 2,
+            (y_new[idx] + y_new[idx - 1]) / 2,
+            sign + " " + z_new[idx],
+            rotation=rot_ini,
+        )
+    if direction == "backward":
+        ax.set_xlim(
+            max(x) + 0.1 * (1 + max(x) - min(x)),
+            min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)),
+        )
+    ax.text(
+        x_new[-1] + delta_final,
+        y_new[-1],
+        f"Final Variables: [{', '.join(var1)}]",
+        rotation=rot_final,
+        verticalalignment=verticalalignment_final,
+        horizontalalignment=horizontalalignment,
+    )
+    ax.set_xticks(x_new)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    return ax
+
+
 def plot_var(
     x: list,
     y: list,
@@ -751,7 +745,7 @@ def plot_var(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_colors()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
     if not (ax):
@@ -813,7 +807,7 @@ def regression_plot(
 ):
     param = {
         "marker": "o",
-        "color": gen_colors()[0],
+        "color": get_colors()[0],
         "s": 50,
         "edgecolors": "black",
     }
@@ -949,7 +943,7 @@ def regression_tree_plot(
     ax.step(x1, y1, color=color)
     param = {
         "marker": "o",
-        "color": gen_colors()[0],
+        "color": get_colors()[0],
         "s": 50,
         "edgecolors": "black",
     }
@@ -970,13 +964,13 @@ def svm_classifier_plot(
 ):
     param0 = {
         "marker": "o",
-        "color": gen_colors()[0],
+        "color": get_colors()[0],
         "s": 50,
         "edgecolors": "black",
     }
     param1 = {
         "marker": "o",
-        "color": gen_colors()[1],
+        "color": get_colors()[1],
         "s": 50,
         "edgecolors": "black",
     }
@@ -1165,8 +1159,6 @@ def voronoi_plot(
     ax=None,
     **style_kwds,
 ):
-    from scipy.spatial import voronoi_plot_2d, Voronoi
-
     min_x, max_x, min_y, max_y = (
         min([elem[0] for elem in clusters]),
         max([elem[0] for elem in clusters]),
@@ -1179,14 +1171,14 @@ def voronoi_plot(
         [max_x + 999, min_y - 999],
         [max_x + 999, max_y + 999],
     ]
-    v = Voronoi(clusters + dummies_point)
+    v = scipy_st.Voronoi(clusters + dummies_point)
     param = {"show_vertices": False}
-    voronoi_plot_2d(v, ax=ax, **updated_dict(param, style_kwds))
+    scipy_st.voronoi_plot_2d(v, ax=ax, **updated_dict(param, style_kwds))
     if not (ax):
         ax = plt
         ax.xlabel(columns[0])
         ax.ylabel(columns[1])
-    colors = gen_colors()
+    colors = get_colors()
     for idx, region in enumerate(v.regions):
         if not -1 in region:
             polygon = [v.vertices[i] for i in region]

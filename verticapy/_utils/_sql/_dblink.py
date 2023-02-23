@@ -14,23 +14,26 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.errors import ConnectionError
 import re
-from verticapy.sql._utils._format import clean_query
-from verticapy.connect import EXTERNAL_CONNECTION
+
+from verticapy._config.connection import _external_connections
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._format import clean_query, quote_ident
+from verticapy.connection.connect import current_cursor
+from verticapy.errors import ConnectionError
 
 
 def get_dblink_fun(query: str, symbol: str = "$"):
-    if symbol not in EXTERNAL_CONNECTION:
+    if symbol not in _external_connections:
         raise ConnectionError(
             "External Query detected but no corresponding "
             "Connection Identifier Database is defined (Using "
             f"the symbol '{symbol}'). Use the function connect."
             "set_external_connection to set one with the correct symbol."
         )
-    cid = EXTERNAL_CONNECTION[symbol]["cid"].replace("'", "''")
+    cid = _external_connections[symbol]["cid"].replace("'", "''")
     query = query.replace("'", "''")
-    rowset = EXTERNAL_CONNECTION[symbol]["rowset"]
+    rowset = _external_connections[symbol]["rowset"]
     query = f"""
         SELECT 
             DBLINK(USING PARAMETERS 
@@ -41,9 +44,6 @@ def get_dblink_fun(query: str, symbol: str = "$"):
 
 
 def replace_external_queries_in_query(query: str):
-    from verticapy._utils._gen import gen_tmp_name
-    from verticapy._utils._sql import _executeSQL
-
     sql_keyword = (
         "select ",
         "create ",
@@ -54,7 +54,7 @@ def replace_external_queries_in_query(query: str):
         "update ",
     )
     nb_external_queries = 0
-    for s in EXTERNAL_CONNECTION:
+    for s in _external_connections:
         external_queries = re.findall(f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", query)
         for external_query in external_queries:
             if external_query.strip().lower().startswith(sql_keyword):
@@ -67,20 +67,14 @@ def replace_external_queries_in_query(query: str):
             if " " in external_query.strip():
                 alias = f"VERTICAPY_EXTERNAL_TABLE_{nb_external_queries}"
             else:
-                alias = '"' + external_query.strip().replace('"', '""') + '"'
+                alias = quote_ident(external_query.strip())
             if nb_external_queries >= 1:
-                temp_table_name = '"' + gen_tmp_name(name=alias).replace('"', "") + '"'
+                temp_table_name = quote_ident(gen_tmp_name(name=alias))
                 create_statement = f"""
                     CREATE LOCAL TEMPORARY TABLE {temp_table_name} 
                     ON COMMIT PRESERVE ROWS 
                     AS {query_dblink_template}"""
-                _executeSQL(
-                    create_statement,
-                    title=(
-                        "Creating a temporary local table to "
-                        f"store the {nb_external_queries} external table."
-                    ),
-                )
+                current_cursor().execute(create_statement)
                 query_dblink_template = f"v_temp_schema.{temp_table_name} AS {alias}"
             else:
                 if subquery_flag:

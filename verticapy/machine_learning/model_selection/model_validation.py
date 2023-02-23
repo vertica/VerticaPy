@@ -14,28 +14,28 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import statistics, random, time
+import random, statistics, time
 from collections.abc import Iterable
-from typing import Union, Literal
-
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample import tablesample
-from verticapy._config.config import ISNOTEBOOK
-from verticapy.errors import ParameterError
-from verticapy.plotting._colors import gen_colors, get_color
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import OPTIONS
-from verticapy.machine_learning._utils import compute_area
-from verticapy._utils._sql import _executeSQL
-
-# Other Python Modules
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+from typing import Literal, Union
 from tqdm.auto import tqdm
+
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+
+from verticapy._config.colors import get_colors
+from verticapy._config.config import ISNOTEBOOK, _options
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy.errors import ParameterError
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.machine_learning._utils import compute_area
+
+from verticapy.plotting._matplotlib.base import updated_dict
+from verticapy.plotting._matplotlib.timeseries import range_curve
 
 
 def _compute_function_metrics(
@@ -55,7 +55,7 @@ def _compute_function_metrics(
     if isinstance(input_relation, str):
         table = input_relation
     else:
-        table = input_relation.__genSQL__()
+        table = input_relation._genSQL()
     if fun_sql_name == "roc":
         X = ["decision_boundary", "false_positive_rate", "true_positive_rate"]
     elif fun_sql_name == "prc":
@@ -165,17 +165,17 @@ training_score: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
  	An object containing the result. For more information, see
- 	utilities.tablesample.
+ 	utilities.TableSample.
 	"""
     if isinstance(X, str):
         X = [X]
     if isinstance(input_relation, str):
-        input_relation = vDataFrameSQL(input_relation)
+        input_relation = vDataFrame(input_relation)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
-    if estimator.MODEL_SUBTYPE == "REGRESSOR":
+    if estimator.MODEL_SUBCATEGORY == "REGRESSOR":
         all_metrics = [
             "explained_variance",
             "max_error",
@@ -188,7 +188,7 @@ tablesample
             "aic",
             "bic",
         ]
-    elif estimator.MODEL_SUBTYPE == "CLASSIFIER":
+    elif estimator.MODEL_SUBCATEGORY == "CLASSIFIER":
         all_metrics = [
             "auc",
             "prc_auc",
@@ -216,7 +216,7 @@ tablesample
     if training_score:
         result_train = {"index": final_metrics}
     total_time = []
-    if OPTIONS["tqdm"] and (
+    if _options["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         loop = tqdm(range(cv))
@@ -227,7 +227,7 @@ tablesample
             estimator.drop()
         except:
             pass
-        random_state = OPTIONS["random_state"]
+        random_state = _options["random_state"]
         random_state = (
             random.randint(-10e6, 10e6) if not (random_state) else random_state + i
         )
@@ -239,7 +239,7 @@ tablesample
             train, X, y, test,
         )
         total_time += [time.time() - start_time]
-        if estimator.MODEL_SUBTYPE == "REGRESSOR":
+        if estimator.MODEL_SUBCATEGORY == "REGRESSOR":
             if metric == "all":
                 result[f"{i + 1}-fold"] = estimator.regression_report().values["value"]
                 if training_score:
@@ -352,11 +352,11 @@ tablesample
         statistics.mean([float(elem) for elem in total_time]),
         statistics.stdev([float(elem) for elem in total_time]),
     ]
-    result = tablesample(values=result).transpose()
+    result = TableSample(values=result).transpose()
     if show_time:
         result.values["time"] = total_time
     if training_score:
-        result_train = tablesample(values=result_train).transpose()
+        result_train = TableSample(values=result_train).transpose()
         if show_time:
             result_train.values["time"] = total_time
     if training_score:
@@ -445,23 +445,21 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    from verticapy.plotting._matplotlib import range_curve
-
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
-    if estimator.MODEL_SUBTYPE == "REGRESSOR" and metric == "auto":
+    if estimator.MODEL_SUBCATEGORY == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
     if isinstance(input_relation, str):
-        input_relation = vDataFrameSQL(input_relation)
+        input_relation = vDataFrame(input_relation)
     lc_result_final = []
     sizes = sorted(set(sizes))
-    if OPTIONS["tqdm"]:
+    if _options["tqdm"]:
         loop = tqdm(sizes)
     else:
         loop = sizes
@@ -495,7 +493,7 @@ tablesample
         lc_result_final.sort(key=lambda tup: tup[0])
     else:
         lc_result_final.sort(key=lambda tup: tup[5])
-    result = tablesample(
+    result = TableSample(
         {
             "n": [elem[0] for elem in lc_result_final],
             metric: [elem[1] for elem in lc_result_final],
@@ -617,9 +615,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     decision_boundary, positive_prediction_ratio, lift = _compute_function_metrics(
         y_true=y_true,
@@ -637,17 +635,17 @@ tablesample
     ax.set_xlabel("Cumulative Data Fraction")
     max_value = max([0 if elem != elem else elem for elem in lift])
     lift = [max_value if elem != elem else elem for elem in lift]
-    param1 = {"color": gen_colors()[0]}
+    param1 = {"color": get_colors()[0]}
     ax.plot(decision_boundary, lift, **updated_dict(param1, style_kwds, 0))
-    param2 = {"color": gen_colors()[1]}
+    param2 = {"color": get_colors()[1]}
     ax.plot(
         decision_boundary,
         positive_prediction_ratio,
         **updated_dict(param2, style_kwds, 1),
     )
-    color1, color2 = get_color(style_kwds, 0), get_color(style_kwds, 1)
+    color1, color2 = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
     if color1 == color2:
-        color2 = gen_colors()[1]
+        color2 = get_colors()[1]
     ax.fill_between(
         decision_boundary, positive_prediction_ratio, lift, facecolor=color1, alpha=0.2,
     )
@@ -666,7 +664,7 @@ tablesample
     ax.legend(handles=[color1, color2], loc="center left", bbox_to_anchor=[1, 0.5])
     ax.set_xlim(0, 1)
     ax.set_ylim(0)
-    return tablesample(
+    return TableSample(
         values={
             "decision_boundary": decision_boundary,
             "positive_prediction_ratio": positive_prediction_ratio,
@@ -716,9 +714,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     threshold, recall, precision = _compute_function_metrics(
         y_true=y_true,
@@ -737,13 +735,13 @@ tablesample
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
-    param = {"color": get_color(style_kwds, 0)}
+    param = {"color": get_colors(style_kwds, 0)}
     ax.plot(recall, precision, **updated_dict(param, style_kwds))
     ax.fill_between(
         recall,
         [0 for item in recall],
         precision,
-        facecolor=get_color(style_kwds, 0),
+        facecolor=get_colors(style_kwds, 0),
         alpha=0.1,
     )
     ax.set_ylim(0, 1)
@@ -759,7 +757,7 @@ tablesample
     )
     ax.set_axisbelow(True)
     ax.grid()
-    return tablesample(
+    return TableSample(
         values={"threshold": threshold, "recall": recall, "precision": precision}
     )
 
@@ -813,9 +811,9 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     threshold, false_positive, true_positive = _compute_function_metrics(
         y_true=y_true,
@@ -838,21 +836,21 @@ tablesample
         fig, ax = plt.subplots()
         if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
-    color1, color2 = get_color(style_kwds, 0), get_color(style_kwds, 1)
+    color1, color2 = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
     if color1 == color2:
-        color2 = gen_colors()[1]
+        color2 = get_colors()[1]
     if cutoff_curve:
         ax.plot(
             threshold,
             [1 - item for item in false_positive],
             label="Specificity",
-            **updated_dict({"color": gen_colors()[0]}, style_kwds),
+            **updated_dict({"color": get_colors()[0]}, style_kwds),
         )
         ax.plot(
             threshold,
             true_positive,
             label="Sensitivity",
-            **updated_dict({"color": gen_colors()[1]}, style_kwds),
+            **updated_dict({"color": get_colors()[1]}, style_kwds),
         )
         ax.fill_between(
             threshold,
@@ -870,7 +868,7 @@ tablesample
         ax.plot(
             false_positive,
             true_positive,
-            **updated_dict({"color": gen_colors()[0]}, style_kwds),
+            **updated_dict({"color": get_colors()[0]}, style_kwds),
         )
         ax.fill_between(
             false_positive, false_positive, true_positive, facecolor=color1, alpha=0.1,
@@ -890,7 +888,7 @@ tablesample
     ax.set_xlim(0, 1)
     ax.set_axisbelow(True)
     ax.grid()
-    return tablesample(
+    return TableSample(
         values={
             "threshold": threshold,
             "false_positive": false_positive,

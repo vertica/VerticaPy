@@ -15,11 +15,13 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Union
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.sql._utils._format import quote_ident
-from verticapy.sql.flex import compute_vmap_keys
+
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
 from verticapy.errors import EmptyParameter
-from verticapy.core._utils._merge import gen_coalesce, group_similar_names
+
+from verticapy.sql.flex import compute_vmap_keys
 
 
 class vDFPIVOT:
@@ -107,15 +109,8 @@ class vDFPIVOT:
             skip_word = [skip_word]
         columns = self.get_columns()
         group_dict = group_similar_names(columns, skip_word=skip_word)
-        sql = f"""
-            (SELECT 
-                {gen_coalesce(group_dict)} 
-            FROM {self.__genSQL__()}) VERTICAPY_SUBTABLE"""
-        return self.__vDataFrameSQL__(
-            sql,
-            "merge_similar_names",
-            "[merge_similar_names]: The columns were merged.",
-        )
+        sql = f"SELECT {gen_coalesce(group_dict)} FROM {self._genSQL()}"
+        return self._new_vdataframe(sql)
 
     @save_verticapy_logs
     def narrow(
@@ -150,7 +145,7 @@ class vDFPIVOT:
     --------
     vDataFrame.pivot : Returns the pivot table of the vDataFrame.
         """
-        index, columns = self.format_colnames(index, columns)
+        index, columns = self._format_colnames(index, columns)
         if isinstance(columns, str):
             columns = [columns]
         if isinstance(index, str):
@@ -180,13 +175,10 @@ class vDFPIVOT:
                     {', '.join(index)}, 
                     '{column_str}' AS {col_name}, 
                     {column}{conv} AS {val_name} 
-                FROM {self.__genSQL__()})"""
+                FROM {self._genSQL()})"""
             ]
         query = " UNION ALL ".join(query)
-        query = f"({query}) VERTICAPY_SUBTABLE"
-        return self.__vDataFrameSQL__(
-            query, "narrow", f"[Narrow]: Narrow table using index = {index}",
-        )
+        return self._new_vdataframe(query)
 
     melt = narrow
 
@@ -229,7 +221,7 @@ class vDFPIVOT:
     vDataFrame.pivot_table : Draws the pivot table of one or two columns based on an 
         aggregation.
         """
-        index, columns, values = self.format_colnames(index, columns, values)
+        index, columns, values = self._format_colnames(index, columns, values)
         aggr = aggr.upper()
         if "{}" not in aggr:
             aggr += "({})"
@@ -252,16 +244,11 @@ class vDFPIVOT:
                     )
                     + f"AS '{prefix}{elem}'"
                 ]
-        return self.__vDataFrameSQL__(
+        return self._new_vdataframe(
             f"""
-            (SELECT 
+            SELECT 
                 {index},
                 {", ".join(new_cols_trans)}
-             FROM {self.__genSQL__()}
-             GROUP BY 1) VERTICAPY_SUBTABLE""",
-            "pivot",
-            (
-                f"[Pivot]: Pivot table using index = {index} & "
-                f"columns = {columns} & values = {values}"
-            ),
+            FROM {self._genSQL()}
+            GROUP BY 1""",
         )

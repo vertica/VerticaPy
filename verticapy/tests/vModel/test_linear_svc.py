@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_winequality
 from verticapy.learn.svm import LinearSVC
 
@@ -169,7 +169,7 @@ class TestLinearSVC:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -178,7 +178,7 @@ class TestLinearSVC:
         )
         current_cursor().execute(
             "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', type='probability', class=1, match_by_pos=True)".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -219,7 +219,7 @@ class TestLinearSVC:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True), {}".format(
-                model.name, model.to_sql([3.0, 11.0])
+                model.model_name, model.to_sql([3.0, 11.0])
             )
         )
         prediction = current_cursor().fetchone()

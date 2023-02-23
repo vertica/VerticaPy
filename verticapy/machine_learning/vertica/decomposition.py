@@ -14,21 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.plotting._matplotlib.mlplot import plot_var
-from verticapy.plotting._colors import gen_colors, gen_cmap
-from verticapy.learn.vmodel import Decomposition
-from verticapy.core.tablesample import tablesample
-
-# Standard Module
 from typing import Literal
+
+from verticapy._config.colors import get_cmap, get_colors
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._vertica_version import check_minimum_version
+
+from verticapy.core.tablesample.base import TableSample
+
+from verticapy.machine_learning.vertica.base import Decomposition
+
+from verticapy.plotting._matplotlib.mlplot import plot_var
 
 
 class MCA(Decomposition):
@@ -44,15 +40,17 @@ name: str
     Name of the the model. The model will be stored in the database.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "PCA"
+    VERTICA_transfORM_FUNCTION_SQL = "APPLY_PCA"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "DECOMPOSITION"
+    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
+    MODEL_TYPE = "MCA"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str):
-        self.type, self.name = "MCA", name
-        self.VERTICA_FIT_FUNCTION_SQL = "PCA"
-        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "DECOMPOSITION"
-        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
+        self.model_name = name
         self.parameters = {}
 
     def plot_var(
@@ -110,8 +108,8 @@ name: str
                 ]
             style_kwds["c"] = c
             if "cmap" not in style_kwds:
-                style_kwds["cmap"] = gen_cmap(
-                    color=[gen_colors()[0], gen_colors()[1], gen_colors()[2]]
+                style_kwds["cmap"] = get_cmap(
+                    color=[get_colors()[0], get_colors()[1], get_colors()[2],]
                 )
         explained_variance = self.explained_variance_["explained_variance"]
         return plot_var(
@@ -154,7 +152,7 @@ name: str
         variables, contribution = zip(
             *sorted(zip(self.X, contrib), key=lambda t: t[1], reverse=True)
         )
-        contrib = tablesample(
+        contrib = TableSample(
             {"row_nb": [i + 1 for i in range(n)], "contrib": contribution}
         ).to_vdf()
         contrib["row_nb_2"] = contrib["row_nb"] + 0.5
@@ -203,7 +201,7 @@ name: str
         variables, quality = zip(
             *sorted(zip(self.X, quality), key=lambda t: t[1], reverse=True)
         )
-        quality = tablesample({"variables": variables, "quality": quality}).to_vdf()
+        quality = TableSample({"variables": variables, "quality": quality}).to_vdf()
         ax = quality["variables"].hist(
             method="avg", of="quality", max_cardinality=n, ax=ax, **style_kwds
         )
@@ -236,6 +234,13 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "PCA"
+    VERTICA_transfORM_FUNCTION_SQL = "APPLY_PCA"
+    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "DECOMPOSITION"
+    MODEL_TYPE = "PCA"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -245,12 +250,7 @@ method: str, optional
         scale: bool = False,
         method: Literal["lapack"] = "lapack",
     ):
-        self.type, self.name = "PCA", name
-        self.VERTICA_FIT_FUNCTION_SQL = "PCA"
-        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
-        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "DECOMPOSITION"
+        self.model_name = name
         self.parameters = {
             "n_components": n_components,
             "scale": scale,
@@ -278,17 +278,19 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "SVD"
+    VERTICA_transfORM_FUNCTION_SQL = "APPLY_SVD"
+    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "APPLY_INVERSE_SVD"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "DECOMPOSITION"
+    MODEL_TYPE = "SVD"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self, name: str, n_components: int = 0, method: Literal["lapack"] = "lapack"
     ):
-        self.type, self.name = "SVD", name
-        self.VERTICA_FIT_FUNCTION_SQL = "SVD"
-        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_SVD"
-        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_SVD"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "DECOMPOSITION"
+        self.model_name = name
         self.parameters = {
             "n_components": n_components,
             "method": str(method).lower(),

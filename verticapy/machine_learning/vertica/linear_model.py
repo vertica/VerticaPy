@@ -14,20 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._version import vertica_version
-from verticapy.errors import ParameterError
-from verticapy.learn.vmodel import Regressor, BinaryClassifier
-
-# Standard Module
 from typing import Literal, Union
+
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._vertica_version import (
+    check_minimum_version,
+    vertica_version,
+)
+from verticapy.errors import ParameterError
+
+from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 
 
 class ElasticNet(Regressor):
@@ -64,6 +60,12 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "REGRESSOR"
+    MODEL_TYPE = "LinearRegression"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -76,11 +78,7 @@ fit_intercept: bool, optional
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
-        self.type, self.name = "LinearRegression", name
-        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.model_name = name
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -127,6 +125,12 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "REGRESSOR"
+    MODEL_TYPE = "LinearRegression"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -138,11 +142,7 @@ fit_intercept: bool, optional
         solver: Literal["newton", "bfgs", "cgd"] = "cgd",
         fit_intercept: bool = True,
     ):
-        self.type, self.name = "LinearRegression", name
-        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.model_name = name
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -184,6 +184,12 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "REGRESSOR"
+    MODEL_TYPE = "LinearRegression"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -194,11 +200,7 @@ fit_intercept: bool, optional
         solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
     ):
-        self.type, self.name = "LinearRegression", name
-        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.model_name = name
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -250,6 +252,12 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "LOGISTIC_REG"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LOGISTIC_REG"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "CLASSIFIER"
+    MODEL_TYPE = "LogisticRegression"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -265,11 +273,7 @@ fit_intercept: bool, optional
     ):
         penalty = str(penalty).lower()
         solver = str(solver).lower()
-        self.type, self.name = "LogisticRegression", name
-        self.VERTICA_FIT_FUNCTION_SQL = "LOGISTIC_REG"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LOGISTIC_REG"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.model_name = name
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "
@@ -324,6 +328,12 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "REGRESSOR"
+    MODEL_TYPE = "LinearRegression"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -335,11 +345,7 @@ fit_intercept: bool, optional
         solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
     ):
-        self.type, self.name = "LinearRegression", name
-        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.model_name = name
         if vertica_version()[0] < 12 and not (fit_intercept):
             raise ParameterError(
                 "The parameter fit_intercept is only available for Vertica "

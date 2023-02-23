@@ -14,29 +14,24 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# Standard Python Modules
-import os
+import os, vertica_python
 from typing import Literal, Union
 
-# VerticaPy Modules
-import vertica_python
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.connect import current_cursor
-from verticapy.sql.drop import drop
+from verticapy._config.config import _options
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql import _executeSQL
-from verticapy.learn.vmodel import Clustering, Tree, vModel
-from verticapy.learn.tools import does_model_exist
-from verticapy.sql._utils._format import quote_ident, schema_relation
+from verticapy._utils._sql._format import quote_ident, schema_relation
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy.connection import current_cursor
+
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.machine_learning.vertica.base import Clustering, Tree, vModel
+from verticapy.machine_learning.model_management.read import does_model_exist
+
+from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_verticapy_schema
-from verticapy._config.config import OPTIONS
 
 
 class BisectingKMeans(Clustering, Tree):
@@ -87,6 +82,12 @@ tol: float, optional
     'tol' from the previous iteration.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "BISECTING_KMEANS"
+    VERTICA_PREDICT_FUNCTION_SQL = "APPLY_BISECTING_KMEANS"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "CLUSTERING"
+    MODEL_TYPE = "BisectingKMeans"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -101,11 +102,7 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        self.type, self.name = "BisectingKMeans", name
-        self.VERTICA_FIT_FUNCTION_SQL = "BISECTING_KMEANS"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_BISECTING_KMEANS"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.model_name = name
         self.parameters = {
             "n_cluster": n_cluster,
             "bisection_iterations": bisection_iterations,
@@ -156,13 +153,15 @@ p: int, optional
 	The p of the p-distance (distance metric used during the model computation).
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_PREDICT_FUNCTION_SQL = ""
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "CLUSTERING"
+    MODEL_TYPE = "DBSCAN"
+
     @save_verticapy_logs
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
-        self.type, self.name = "DBSCAN", name
-        self.VERTICA_FIT_FUNCTION_SQL = ""
-        self.VERTICA_PREDICT_FUNCTION_SQL = ""
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.model_name = name
         self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
 
     def fit(
@@ -197,14 +196,14 @@ p: int, optional
             key_columns = [key_columns]
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
-            input_relation = input_relation.__genSQL__()
+            input_relation = input_relation._genSQL()
         else:
             if not (X):
                 X = vDataFrame(input_relation).numcol()
@@ -265,7 +264,7 @@ p: int, optional
                       {name_main} AS x 
                       CROSS JOIN 
                       {name_main} AS y) distance_table"""
-            if isinstance(OPTIONS["random_state"], int):
+            if isinstance(_options["random_state"], int):
                 order_by = "ORDER BY node_id, nn_id"
             else:
                 order_by = ""
@@ -337,7 +336,7 @@ p: int, optional
             self.n_cluster_ = i
             _executeSQL(
                 query=f"""
-                    CREATE TABLE {self.name} AS 
+                    CREATE TABLE {self.model_name} AS 
                        SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/
                             {', '.join(self.X + self.key_columns)}, 
                             COALESCE(cluster, -1) AS dbscan_cluster 
@@ -351,7 +350,7 @@ p: int, optional
                     SELECT 
                         /*+LABEL('learn.cluster.DBSCAN.fit')*/ 
                         COUNT(*) 
-                    FROM {self.name} 
+                    FROM {self.model_name} 
                     WHERE dbscan_cluster = -1""",
                 method="fetchfirstelem",
                 print_time_sql=False,
@@ -371,7 +370,7 @@ p: int, optional
             "n_noise": self.n_noise_,
         }
         insert_verticapy_schema(
-            model_name=self.name, model_type="DBSCAN", model_save=model_save,
+            model_name=self.model_name, model_type="DBSCAN", model_save=model_save,
         )
         return self
 
@@ -384,7 +383,7 @@ p: int, optional
 	vDataFrame
  		the vDataFrame including the prediction.
 		"""
-        return vDataFrame(self.name)
+        return vDataFrame(self.model_name)
 
 
 class KMeans(Clustering):
@@ -415,6 +414,12 @@ tol: float, optional
 	previous iteration.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "KMEANS"
+    VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KMEANS"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "CLUSTERING"
+    MODEL_TYPE = "KMeans"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -425,11 +430,7 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        self.type, self.name = "KMeans", name
-        self.VERTICA_FIT_FUNCTION_SQL = "KMEANS"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KMEANS"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.model_name = name
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,
@@ -467,7 +468,7 @@ tol: float, optional
                 SELECT 
                     /*+LABEL('learn.cluster.KMeans.plot_voronoi')*/ 
                     GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                        model_name = '{self.name}', 
+                                        model_name = '{self.model_name}', 
                                         attr_name = 'centers')""",
                 print_time_sql=False,
                 method="fetchall",
@@ -512,6 +513,12 @@ gamma: float, optional
     importance of numerical and categorical attributes.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "KPROTOTYPES"
+    VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KPROTOTYPES"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "CLUSTERING"
+    MODEL_TYPE = "KPrototypes"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -523,11 +530,7 @@ gamma: float, optional
         tol: float = 1e-4,
         gamma: float = 1.0,
     ):
-        self.type, self.name = "KPrototypes", name
-        self.VERTICA_FIT_FUNCTION_SQL = "KPROTOTYPES"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KPROTOTYPES"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "CLUSTERING"
+        self.model_name = name
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,

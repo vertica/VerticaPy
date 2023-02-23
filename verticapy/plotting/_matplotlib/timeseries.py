@@ -14,26 +14,19 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Modules
 import warnings
 
-# MATPLOTLIB
 import matplotlib.pyplot as plt
 
-# VerticaPy Modules
+from verticapy._config.colors import get_colors
+from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
+
 from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._sql import _executeSQL
-from verticapy.plotting._colors import get_color, gen_colors
-from verticapy.sql._utils._format import quote_ident
 
-# Optional
-try:
+if PARSER_IMPORT:
     from dateutil.parser import parse
-
-    PARSER_IMPORT = True
-except:
-    PARSER_IMPORT = False
 
 
 def parse_datetime(D: list):
@@ -59,7 +52,7 @@ def acf_plot(
     if "color" in style_kwds:
         color = style_kwds["color"]
     else:
-        color = gen_colors()[0]
+        color = get_colors()[0]
     if not (ax):
         fig, ax = plt.subplots()
         if ISNOTEBOOK:
@@ -128,7 +121,7 @@ def multi_ts_plot(
         columns = vdf.numcol()
     for column in columns:
         if not (vdf[column].isnum()):
-            if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+            if vdf._vars["display"]["print_info"]:
                 warning_message = (
                     f"The Virtual Column {column} is "
                     "not numerical.\nIt will be ignored."
@@ -137,7 +130,7 @@ def multi_ts_plot(
             columns.remove(column)
     if not (columns):
         raise EmptyParameter("No numerical columns found to draw the multi TS plot")
-    colors = gen_colors()
+    colors = get_colors()
     order_by_start_str, order_by_end_str = "", ""
     if order_by_start:
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
@@ -150,7 +143,7 @@ def multi_ts_plot(
                 /*+LABEL('plotting._matplotlib.multi_ts_plot')*/ 
                 {order_by}, 
                 {", ".join(columns)} 
-            FROM {vdf.__genSQL__()} 
+            FROM {vdf._genSQL()} 
             WHERE {order_by} IS NOT NULL
             {condition}
             ORDER BY {order_by}""",
@@ -210,7 +203,7 @@ def multi_ts_plot(
                 }
         param["color"] = color
         if "color" in style_kwds and len(order_by_values) < 20:
-            param["markerfacecolor"] = get_color(style_kwds, i)
+            param["markerfacecolor"] = get_colors(style_kwds, i)
         if kind == "step":
             ax.step(order_by_values, points, **param)
         else:
@@ -267,9 +260,9 @@ def range_curve(
             alpha1, alpha2 = 0.3, 0.5
         else:
             alpha1, alpha2 = 0.5, 0.9
-        param = {"facecolor": get_color(style_kwds, i)}
+        param = {"facecolor": get_colors(style_kwds, i)}
         ax.fill_between(X, y[0], y[2], alpha=alpha1, **param)
-        param = {"color": get_color(style_kwds, i)}
+        param = {"color": get_colors(style_kwds, i)}
         for j in [0, 2]:
             ax.plot(
                 X, y[j], alpha=alpha2, **updated_dict(param, style_kwds, i),
@@ -312,12 +305,12 @@ def range_curve_vdf(
         SELECT 
             /*+LABEL('plotting._matplotlib.range_curve_vdf')*/ 
             {order_by}, 
-            APPROXIMATE_PERCENTILE({vdf.alias} USING PARAMETERS percentile = {q[0]}),
-            APPROXIMATE_MEDIAN({vdf.alias}),
-            APPROXIMATE_PERCENTILE({vdf.alias} USING PARAMETERS percentile = {q[1]})
-        FROM {vdf.parent.__genSQL__()} 
+            APPROXIMATE_PERCENTILE({vdf._alias} USING PARAMETERS percentile = {q[0]}),
+            APPROXIMATE_MEDIAN({vdf._alias}),
+            APPROXIMATE_PERCENTILE({vdf._alias} USING PARAMETERS percentile = {q[1]})
+        FROM {vdf._parent._genSQL()} 
         WHERE {order_by} IS NOT NULL 
-          AND {vdf.alias} IS NOT NULL
+          AND {vdf._alias} IS NOT NULL
           {order_by_start_str}
           {order_by_end_str}
         GROUP BY 1 ORDER BY 1""",
@@ -338,7 +331,7 @@ def range_curve_vdf(
         order_by_values,
         column_values,
         order_by,
-        vdf.alias,
+        vdf._alias,
         ax,
         [],
         True,
@@ -370,21 +363,21 @@ def ts_plot(
         SELECT 
             /*+LABEL('plotting._matplotlib.ts_plot')*/ 
             {order_by},
-            {vdf.alias}
-        FROM {vdf.parent.__genSQL__()}
+            {vdf._alias}
+        FROM {vdf._parent._genSQL()}
         WHERE {order_by} IS NOT NULL 
-          AND {vdf.alias} IS NOT NULL
+          AND {vdf._alias} IS NOT NULL
           {order_by_start_str}
           {order_by_end_str}
           {{}}
-        ORDER BY {order_by}, {vdf.alias}"""
+        ORDER BY {order_by}, {vdf._alias}"""
     title = "Selecting points to draw the curve"
     if not (ax):
         fig, ax = plt.subplots()
         if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
-    colors = gen_colors()
+    colors = get_colors()
     plot_fun = ax.step if step else ax.plot
     plot_param = {
         "marker": "o",
@@ -418,11 +411,11 @@ def ts_plot(
         for tick in ax.get_xticklabels():
             tick.set_rotation(90)
         ax.set_xlabel(order_by)
-        ax.set_ylabel(vdf.alias)
+        ax.set_ylabel(vdf._alias)
         ax.set_xlim(min(order_by_values), max(order_by_values))
     else:
         by = quote_ident(by)
-        cat = vdf.parent[by].distinct()
+        cat = vdf._parent[by].distinct()
         all_data = []
         for column in cat:
             column_str = str(column).replace("'", "''")
@@ -448,10 +441,10 @@ def ts_plot(
                     **param,
                     "markerfacecolor": colors[idx % len(colors)],
                 }
-            param["markerfacecolor"] = get_color(style_kwds, idx)
+            param["markerfacecolor"] = get_colors(style_kwds, idx)
             plot_fun(d[0], d[1], label=d[2], **updated_dict(param, style_kwds, idx))
         ax.set_xlabel(order_by)
-        ax.set_ylabel(vdf.alias)
+        ax.set_ylabel(vdf._alias)
         ax.legend(title=by, loc="center left", bbox_to_anchor=[1, 0.5])
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

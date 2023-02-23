@@ -14,14 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random, datetime
+import datetime, random
 from typing import Union
 
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import ParameterError
-from verticapy.sql._utils._format import quote_ident
-from verticapy.core._utils._map import verticapy_agg_name
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name
+from verticapy._utils._map import verticapy_agg_name
+from verticapy._utils._sql._format import quote_ident
+from verticapy.errors import ParameterError
 
 
 class vDFROLL:
@@ -138,22 +138,19 @@ class vDFROLL:
         if not (name):
             name = gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]])
             name = f"moving_{name}"
-        columns, by = self.format_colnames(columns, by)
+        columns, by = self._format_colnames(columns, by)
         by = "" if not (by) else "PARTITION BY " + ", ".join(by)
         if not (order_by):
             order_by = f" ORDER BY {columns[0]}"
         else:
-            order_by = self.__get_sort_syntax__(order_by)
+            order_by = self._get_sort_syntax(order_by)
         func = verticapy_agg_name(func.lower(), method="vertica")
         windows_frame = f""" 
             OVER ({by}{order_by} 
             {method.upper()} 
             BETWEEN {window[0]} {rule[0]} 
             AND {window[1]} {rule[1]})"""
-        all_cols = [
-            elem.replace('"', "").lower()
-            for elem in self._VERTICAPY_VARIABLES_["columns"]
-        ]
+        all_cols = [elem.replace('"', "").lower() for elem in self._vars["columns"]]
         if func in ("kurtosis", "skewness", "aad", "prod", "jb"):
             if func in ("skewness", "kurtosis", "aad", "jb"):
                 columns_0_str = columns[0].replace('"', "").lower()
@@ -235,13 +232,13 @@ class vDFROLL:
         expr = expr.replace("#", windows_frame)
         self.eval(name=name, expr=expr)
         if func in ("kurtosis", "skewness", "jb"):
-            self._VERTICAPY_VARIABLES_["exclude_columns"] += [
+            self._vars["exclude_columns"] += [
                 quote_ident(mean_name),
                 quote_ident(std_name),
                 quote_ident(count_name),
             ]
         elif func == "aad":
-            self._VERTICAPY_VARIABLES_["exclude_columns"] += [quote_ident(mean_name)]
+            self._vars["exclude_columns"] += [quote_ident(mean_name)]
         return self
 
     @save_verticapy_logs

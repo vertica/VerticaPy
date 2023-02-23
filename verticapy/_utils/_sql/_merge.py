@@ -14,13 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.sql._utils._format import quote_ident
-
-
-#
-#
-# Tools to merge similar names/categories together.
-#
+from verticapy._utils._sql._format import quote_ident
 
 
 def erase_prefix_in_name(name: str, prefix: list = []):

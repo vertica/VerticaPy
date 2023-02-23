@@ -14,11 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# High Chart
 from vertica_highcharts import Highchart
 
-# VerticaPy Modules
-from verticapy.plotting._colors import gen_colors
+from verticapy._config.colors import get_colors
 
 
 def boxplot(
@@ -38,7 +36,7 @@ def boxplot(
         "xAxis": {"title": {"text": ""}},
         "yAxis": {"title": {"text": ""}},
     }
-    default_options["colors"] = gen_colors()
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     aggregations = ["min", "approx_25%", "approx_50%", "approx_75%", "max"]
     if (vdf) and not (by):

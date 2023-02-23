@@ -14,23 +14,23 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
 import re
 from typing import Union
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._cast import to_category
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import QueryError
-from verticapy.sql.flex import isvmap
-from verticapy._utils._cast import to_category
-from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import quote_ident
+
+from verticapy.core.str_sql.base import str_sql
+
 from verticapy.sql.dtypes import get_data_types
+from verticapy.sql.flex import isvmap
 
 
 class vDFEVAL:
     def __setattr__(self, attr, val):
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
+        from verticapy.core.vdataframe.base import vDataColumn
 
         if isinstance(val, (str, str_sql, int, float)) and not isinstance(
             val, vDataColumn
@@ -40,10 +40,10 @@ class vDFEVAL:
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
-        elif isinstance(val, vDataColumn) and not (val.init):
-            final_trans, n = val.init_transf, len(val.transformations)
+        elif isinstance(val, vDataColumn) and not (val._init):
+            final_trans, n = val._init_transf, len(val._transf)
             for i in range(1, n):
-                final_trans = val.transformations[i][0].replace("{}", final_trans)
+                final_trans = val._transf[i][0].replace("{}", final_trans)
             self.eval(name=attr, expr=final_trans)
         else:
             self.__dict__[attr] = val
@@ -75,8 +75,6 @@ class vDFEVAL:
     vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
         analytical function on a specific vDataColumn.
         """
-        from verticapy.core.vdataframe.vdataframe import vDataColumn
-
         if isinstance(expr, str_sql):
             expr = str(expr)
         name = quote_ident(name.replace('"', "_"))
@@ -87,7 +85,7 @@ class vDFEVAL:
                 "be able to solve this issue."
             )
         try:
-            query = f"SELECT {expr} AS {name} FROM {self.__genSQL__()} LIMIT 0"
+            query = f"SELECT {expr} AS {name} FROM {self._genSQL()} LIMIT 0"
             ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
         except:
             raise QueryError(
@@ -99,7 +97,7 @@ class vDFEVAL:
         if not (ctype):
             ctype = "undefined"
         elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
-            self._VERTICAPY_VARIABLES_["isflex"]
+            self._vars["isflex"]
             or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
         ):
             category = "vmap"
@@ -112,7 +110,7 @@ class vDFEVAL:
             if (quote_ident(column) in expr) or (
                 re.search(re.compile(f"\\b{column_str}\\b"), expr)
             ):
-                max_floor = max(len(self[column].transformations), max_floor)
+                max_floor = max(len(self[column]._transf), max_floor)
         transformations = [
             (
                 "___VERTICAPY_UNDEFINED___",
@@ -121,15 +119,15 @@ class vDFEVAL:
             )
             for i in range(max_floor)
         ] + [(expr, ctype, category)]
-        new_vDataColumn = vDataColumn(
+        new_vDataColumn = self._new_vdatacolumn(
             name, parent=self, transformations=transformations
         )
         setattr(self, name, new_vDataColumn)
         setattr(self, name.replace('"', ""), new_vDataColumn)
-        new_vDataColumn.init = False
-        new_vDataColumn.init_transf = name
-        self._VERTICAPY_VARIABLES_["columns"] += [name]
-        self.__add_to_history__(
+        new_vDataColumn._init = False
+        new_vDataColumn._init_transf = name
+        self._vars["columns"] += [name]
+        self._add_to_history(
             f"[Eval]: A new vDataColumn {name} was added to the vDataFrame."
         )
         return self

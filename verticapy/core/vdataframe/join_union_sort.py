@@ -14,16 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Standard Python Modules
-from typing import Union, Literal
+from typing import Literal, Union
 
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.errors import ParameterError
-from verticapy._version import vertica_version
-from verticapy.core.str_sql import str_sql
-from verticapy.sql._utils._format import quote_ident
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import extract_and_rename_subquery
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._vertica_version import vertica_version
+from verticapy.errors import ParameterError
+
+from verticapy.core.str_sql.base import str_sql
 
 
 class vDFJUS:
@@ -68,21 +68,21 @@ class vDFJUS:
     vDataFrame.join    : Joins the vDataFrame with another relation.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        from verticapy.core.vdataframe.vdataframe import vDataFrame
+        from verticapy.core.vdataframe.base import vDataFrame
 
         if isinstance(expr1, str):
             expr1 = [expr1]
         if isinstance(expr2, str):
             expr2 = [expr2]
-        first_relation = self.__genSQL__()
+        first_relation = self._genSQL()
         if isinstance(input_relation, str):
             second_relation = input_relation
         elif isinstance(input_relation, vDataFrame):
-            second_relation = input_relation.__genSQL__()
+            second_relation = input_relation._genSQL()
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)
         union = "UNION" if not (union_all) else "UNION ALL"
-        table = f"""
+        query = f"""
             (SELECT 
                 {columns} 
              FROM {first_relation}) 
@@ -90,11 +90,7 @@ class vDFJUS:
             (SELECT 
                 {columns2} 
              FROM {second_relation})"""
-        return self.__vDataFrameSQL__(
-            f"({table}) append_table",
-            self._VERTICAPY_VARIABLES_["input_relation"],
-            "[Append]: Union of two relations",
-        )
+        return self._new_vdataframe(query)
 
     @save_verticapy_logs
     def join(
@@ -184,7 +180,7 @@ class vDFJUS:
     vDataFrame.groupby : Aggregates the vDataFrame.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        from verticapy.core.vdataframe.vdataframe import vDataFrame
+        from verticapy.core.vdataframe.base import vDataFrame
 
         if isinstance(expr1, str):
             expr1 = [expr1]
@@ -192,18 +188,6 @@ class vDFJUS:
             expr2 = [expr2]
         if isinstance(on, tuple):
             on = [on]
-        # Giving the right alias to the right relation
-        def create_final_relation(relation: str, alias: str):
-            if (
-                ("SELECT" in relation.upper())
-                and ("FROM" in relation.upper())
-                and ("(" in relation)
-                and (")" in relation)
-            ):
-                return f"(SELECT * FROM {relation}) AS {alias}"
-            else:
-                return f"{relation} AS {alias}"
-
         # List with the operators
         if str(how).lower() == "natural" and (on or on_interpolate):
             raise ParameterError(
@@ -218,15 +202,15 @@ class vDFJUS:
             on_list += [elem for elem in on]
         on_list += [(key, on[key], "linterpolate") for key in on_interpolate]
         # Checks
-        self.format_colnames([elem[0] for elem in on_list])
+        self._format_colnames([elem[0] for elem in on_list])
         if isinstance(input_relation, vDataFrame):
-            input_relation.format_colnames([elem[1] for elem in on_list])
-            relation = input_relation.__genSQL__()
+            input_relation._format_colnames([elem[1] for elem in on_list])
+            relation = input_relation._genSQL()
         else:
             relation = input_relation
         # Relations
-        first_relation = create_final_relation(self.__genSQL__(), alias="x")
-        second_relation = create_final_relation(relation, alias="y")
+        first_relation = extract_and_rename_subquery(self._genSQL(), alias="x")
+        second_relation = extract_and_rename_subquery(relation, alias="y")
         # ON
         on_join = []
         all_operators = [
@@ -283,14 +267,10 @@ class vDFJUS:
         expr = "*" if not (expr) else ", ".join(expr)
         if how:
             how = " " + how.upper() + " "
-        table = (
+        query = (
             f"SELECT {expr} FROM {first_relation}{how}JOIN {second_relation} {on_join}"
         )
-        return self.__vDataFrameSQL__(
-            f"({table}) VERTICAPY_SUBTABLE",
-            "join",
-            "[Join]: Two relations were joined together",
-        )
+        return self._new_vdataframe(query)
 
     @save_verticapy_logs
     def sort(self, columns: Union[str, dict, list]):
@@ -317,12 +297,10 @@ class vDFJUS:
         """
         if isinstance(columns, str):
             columns = [columns]
-        columns = self.format_colnames(columns)
+        columns = self._format_colnames(columns)
         max_pos = 0
-        columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+        columns_tmp = [elem for elem in self._vars["columns"]]
         for column in columns_tmp:
-            max_pos = max(max_pos, len(self[column].transformations) - 1)
-        self._VERTICAPY_VARIABLES_["order_by"][max_pos] = self.__get_sort_syntax__(
-            columns
-        )
+            max_pos = max(max_pos, len(self[column]._transf) - 1)
+        self._vars["order_by"][max_pos] = self._get_sort_syntax(columns)
         return self

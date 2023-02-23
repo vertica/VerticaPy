@@ -14,31 +14,34 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random, math, itertools
-import numpy as np
+import itertools, math, random
+from typing import Literal, Union
 from collections.abc import Iterable
-from typing import Union, Literal
-
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.sql.drop import drop
-from verticapy.sql.read import vDataFrameSQL
-from verticapy.core.tablesample import tablesample
-from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql import _executeSQL
-from verticapy.errors import ParameterError
-from verticapy.plotting._colors import gen_colors
-from verticapy.learn.tools import does_model_exist
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy.machine_learning._utils import reverse_score
-from verticapy._config.config import OPTIONS
-from verticapy.machine_learning.model_selection.model_validation import cross_validate
-
-# Other Python Modules
-import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
+import numpy as np
+
+import matplotlib.pyplot as plt
+
+from verticapy._config.colors import get_colors
+from verticapy._config.config import ISNOTEBOOK, _options
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.errors import ParameterError
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.datasets.generators import gen_meshgrid, gen_dataset
+
+from verticapy.plotting._matplotlib.base import updated_dict
+from verticapy.plotting._matplotlib.timeseries import range_curve
+
+from verticapy.machine_learning._utils import reverse_score
+from verticapy.machine_learning.model_selection.model_validation import cross_validate
+from verticapy.machine_learning.model_management.read import does_model_exist
+
+from verticapy.sql.drop import drop
 
 
 @save_verticapy_logs
@@ -137,9 +140,9 @@ print_info: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if print_info:
         print(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
@@ -189,8 +192,8 @@ tablesample
                 result["max_features"][idx] = int(np.floor(np.sqrt(len(X))) + 1)
             elif elem == "max":
                 result["max_features"][idx] = int(len(X))
-    result = tablesample(result).to_sql()
-    schema = OPTIONS["temp_schema"]
+    result = TableSample(result).to_sql()
+    schema = _options["temp_schema"]
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
     drop(relation, method="table")
@@ -200,7 +203,7 @@ tablesample
             f"\033[1m\033[4mStep 2 - Fitting the RF model with "
             "the hyperparameters data\033[0m\033[0m\n"
         )
-    if OPTIONS["tqdm"] and print_info:
+    if _options["tqdm"] and print_info:
         loop = tqdm(range(1))
     else:
         loop = range(1)
@@ -222,14 +225,12 @@ tablesample
                 },
             }
         all_params = list(dict.fromkeys(model_grid))
-        from verticapy.learn.ensemble import RandomForestRegressor
+        from verticapy.machine_learning.vertica.ensemble import RandomForestRegressor
 
         hyper_param_estimator = RandomForestRegressor(
-            name=estimator.name, **RFmodel_params
+            name=estimator.model_name, **RFmodel_params
         )
         hyper_param_estimator.fit(relation, all_params, "score")
-        from verticapy.datasets.generators import gen_meshgrid, gen_dataset
-
         if random_grid:
             vdf = gen_dataset(model_grid, nrows=nrows)
         else:
@@ -353,10 +354,12 @@ print_info: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
+    import verticapy.machine_learning.vertica as vml
+
     param_grid = parameter_grid(
         {
             "solver": ["cgd"],
@@ -369,12 +372,9 @@ tablesample
             else [0.1, 0.5, 0.9],
         }
     )
-
-    from verticapy.learn.linear_model import LogisticRegression, ElasticNet
-
     if estimator_type == "auto":
         if not (isinstance(input_relation, vDataFrame)):
-            vdf = vDataFrameSQL(input_relation)
+            vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation
         if sorted(vdf[y].distinct()) == [0, 1]:
@@ -382,11 +382,13 @@ tablesample
         else:
             estimator_type = "enet"
     if estimator_type == "logit":
-        estimator = LogisticRegression(
-            gen_tmp_name(schema=OPTIONS["temp_schema"], name="logit")
+        estimator = vml.LogisticRegression(
+            gen_tmp_name(schema=_options["temp_schema"], name="logit")
         )
     else:
-        estimator = ElasticNet(gen_tmp_name(schema=OPTIONS["temp_schema"], name="enet"))
+        estimator = vml.ElasticNet(
+            gen_tmp_name(schema=_options["temp_schema"], name="enet")
+        )
     result = bayesian_search_cv(
         estimator,
         input_relation,
@@ -434,51 +436,24 @@ optimized_grid: int, optional
     
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
-    from verticapy.learn.cluster import KMeans, KPrototypes, BisectingKMeans, DBSCAN
-    from verticapy.learn.decomposition import PCA, SVD
-    from verticapy.learn.ensemble import (
-        RandomForestRegressor,
-        RandomForestClassifier,
-        XGBoostRegressor,
-        XGBoostClassifier,
-    )
-    from verticapy.learn.linear_model import (
-        LinearRegression,
-        ElasticNet,
-        Lasso,
-        Ridge,
-        LogisticRegression,
-    )
-    from verticapy.learn.naive_bayes import NaiveBayes
-    from verticapy.learn.neighbors import (
-        KNeighborsRegressor,
-        KNeighborsClassifier,
-        LocalOutlierFactor,
-        NearestCentroid,
-    )
-    from verticapy.learn.preprocessing import Normalizer, OneHotEncoder
-    from verticapy.learn.svm import LinearSVC, LinearSVR
-    from verticapy.learn.tree import (
-        DummyTreeRegressor,
-        DummyTreeClassifier,
-        DecisionTreeRegressor,
-        DecisionTreeClassifier,
-    )
+    import verticapy.machine_learning.vertica as vml
 
     params_grid = {}
-    if isinstance(estimator, (DummyTreeRegressor, DummyTreeClassifier, OneHotEncoder)):
+    if isinstance(
+        estimator, (vml.DummyTreeRegressor, vml.DummyTreeClassifier, vml.OneHotEncoder)
+    ):
         return params_grid
     elif isinstance(
         estimator,
         (
-            RandomForestRegressor,
-            RandomForestClassifier,
-            DecisionTreeRegressor,
-            DecisionTreeClassifier,
+            vml.RandomForestRegressor,
+            vml.RandomForestClassifier,
+            vml.DecisionTreeRegressor,
+            vml.DecisionTreeClassifier,
         ),
     ):
         if optimized_grid == 0:
@@ -495,7 +470,9 @@ tablesample
                 ],
                 "nbins": list(range(2, 100, math.ceil(100 / nbins))),
             }
-            if isinstance(RandomForestRegressor, RandomForestClassifier):
+            if isinstance(
+                estimator, (vml.RandomForestRegressor, vml.RandomForestClassifier)
+            ):
                 params_grid["sample"] = [
                     elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
                 ]
@@ -511,7 +488,9 @@ tablesample
                 "min_info_gain": [0.0, 0.1, 0.2],
                 "nbins": [10, 15, 20, 25, 30, 35, 40],
             }
-            if isinstance(RandomForestRegressor, RandomForestClassifier):
+            if isinstance(
+                estimator, (vml.RandomForestRegressor, vml.RandomForestClassifier)
+            ):
                 params_grid["sample"] = [
                     0.1,
                     0.2,
@@ -534,7 +513,9 @@ tablesample
                 "min_info_gain": [0.0],
                 "nbins": [32],
             }
-            if isinstance(RandomForestRegressor, RandomForestClassifier):
+            if isinstance(
+                estimator, (vml.RandomForestRegressor, vml.RandomForestClassifier)
+            ):
                 params_grid["sample"] = [0.7]
                 params_grid["n_estimators"] = [20]
         elif optimized_grid == -666:
@@ -550,7 +531,9 @@ tablesample
                 "min_info_gain": {"type": float, "range": [0.0, 0.1], "nbins": nbins,},
                 "nbins": {"type": int, "range": [10, 1000], "nbins": nbins},
             }
-            if isinstance(RandomForestRegressor, RandomForestClassifier):
+            if isinstance(
+                estimator, (vml.RandomForestRegressor, vml.RandomForestClassifier)
+            ):
                 result["sample"] = {
                     "type": float,
                     "range": [0.1, 1.0],
@@ -562,7 +545,7 @@ tablesample
                     "nbins": nbins,
                 }
             return result
-    elif isinstance(estimator, (LinearSVC, LinearSVR)):
+    elif isinstance(estimator, (vml.LinearSVC, vml.LinearSVR)):
         if optimized_grid == 0:
             params_grid = {
                 "tol": [1e-4, 1e-6, 1e-8],
@@ -598,7 +581,7 @@ tablesample
                 },
                 "max_iter": {"type": int, "range": [10, 1000], "nbins": nbins},
             }
-    elif isinstance(estimator, (XGBoostClassifier, XGBoostRegressor)):
+    elif isinstance(estimator, (vml.XGBoostClassifier, vml.XGBoostRegressor)):
         if optimized_grid == 0:
             params_grid = {
                 "nbins": list(range(2, 100, math.ceil(100 / nbins))),
@@ -653,7 +636,7 @@ tablesample
                 "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
                 "max_ntree": {"type": int, "range": [1, 20], "nbins": nbins},
             }
-    elif isinstance(estimator, NaiveBayes):
+    elif isinstance(estimator, vml.NaiveBayes):
         if optimized_grid == 0:
             params_grid = {
                 "alpha": [
@@ -668,14 +651,14 @@ tablesample
             return {
                 "alpha": {"type": float, "range": [0.00001, 1000.0], "nbins": nbins}
             }
-    elif isinstance(estimator, (PCA, SVD)):
+    elif isinstance(estimator, (vml.PCA, vml.SVD)):
         if optimized_grid == 0:
             params_grid = {
                 "max_features": list(
                     range(1, max_nfeatures, math.ceil(max_nfeatures / nbins))
                 )
             }
-        if isinstance(estimator, (PCA)):
+        if isinstance(estimator, vml.PCA):
             params_grid["scale"] = [False, True]
         if optimized_grid == -666:
             return {
@@ -686,7 +669,7 @@ tablesample
                     "nbins": nbins,
                 },
             }
-    elif isinstance(estimator, (Normalizer)):
+    elif isinstance(estimator, vml.Normalizer):
         params_grid = {"method": ["minmax", "robust_zscore", "zscore"]}
         if optimized_grid == -666:
             return {
@@ -698,10 +681,10 @@ tablesample
     elif isinstance(
         estimator,
         (
-            KNeighborsRegressor,
-            KNeighborsClassifier,
-            LocalOutlierFactor,
-            NearestCentroid,
+            vml.KNeighborsRegressor,
+            vml.KNeighborsClassifier,
+            vml.LocalOutlierFactor,
+            vml.NearestCentroid,
         ),
     ):
         if optimized_grid == 0:
@@ -710,7 +693,11 @@ tablesample
             }
             if isinstance(
                 estimator,
-                (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor),
+                (
+                    vml.KNeighborsRegressor,
+                    vml.KNeighborsClassifier,
+                    vml.LocalOutlierFactor,
+                ),
             ):
                 params_grid["n_neighbors"] = list(
                     range(1, 100, math.ceil(100 / (nbins)))
@@ -719,14 +706,22 @@ tablesample
             params_grid = {"p": [1, 2, 3, 4]}
             if isinstance(
                 estimator,
-                (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor),
+                (
+                    vml.KNeighborsRegressor,
+                    vml.KNeighborsClassifier,
+                    vml.LocalOutlierFactor,
+                ),
             ):
                 params_grid["n_neighbors"] = [1, 2, 3, 4, 5, 10, 20, 100]
         elif optimized_grid == 2:
             params_grid = {"p": [1, 2]}
             if isinstance(
                 estimator,
-                (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor),
+                (
+                    vml.KNeighborsRegressor,
+                    vml.KNeighborsClassifier,
+                    vml.LocalOutlierFactor,
+                ),
             ):
                 params_grid["n_neighbors"] = [5, 10]
         elif optimized_grid == -666:
@@ -734,7 +729,7 @@ tablesample
                 "p": {"type": int, "range": [1, 10], "nbins": nbins},
                 "n_neighbors": {"type": int, "range": [1, 100], "nbins": nbins},
             }
-    elif isinstance(estimator, (DBSCAN)):
+    elif isinstance(estimator, vml.DBSCAN):
         if optimized_grid == 0:
             params_grid = {
                 "p": [1, 2] + list(range(3, 100, math.ceil(100 / (nbins - 2)))),
@@ -756,37 +751,54 @@ tablesample
                 "min_samples": {"type": int, "range": [1, 100], "nbins": nbins},
             }
     elif isinstance(
-        estimator, (LogisticRegression, LinearRegression, ElasticNet, Lasso, Ridge)
+        estimator,
+        (
+            vml.LogisticRegression,
+            vml.LinearRegression,
+            vml.ElasticNet,
+            vml.Lasso,
+            vml.Ridge,
+        ),
     ):
         if optimized_grid == 0:
             params_grid = {"tol": [1e-4, 1e-6, 1e-8], "max_iter": [100, 500, 1000]}
-            if isinstance(estimator, LogisticRegression):
+            if isinstance(estimator, vml.LogisticRegression):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
-            if isinstance(estimator, LinearRegression):
+            if isinstance(estimator, vml.LinearRegression):
                 params_grid["solver"] = ["newton", "bfgs"]
-            elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
+            elif isinstance(
+                estimator, (vml.Lasso, vml.LogisticRegression, vml.ElasticNet)
+            ):
                 params_grid["solver"] = ["newton", "bfgs", "cgd"]
-            if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
+            if isinstance(
+                estimator,
+                (vml.Lasso, vml.Ridge, vml.ElasticNet, vml.LogisticRegression),
+            ):
                 params_grid["C"] = [
                     elem / 1000 for elem in range(1, 5000, math.ceil(5000 / nbins))
                 ]
-            if isinstance(estimator, (LogisticRegression, ElasticNet)):
+            if isinstance(estimator, (vml.LogisticRegression, vml.ElasticNet)):
                 params_grid["l1_ratio"] = [
                     elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
                 ]
         elif optimized_grid == 1:
             params_grid = {"tol": [1e-6], "max_iter": [100]}
-            if isinstance(estimator, LogisticRegression):
+            if isinstance(estimator, vml.LogisticRegression):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
-            if isinstance(estimator, LinearRegression):
+            if isinstance(estimator, vml.LinearRegression):
                 params_grid["solver"] = ["newton", "bfgs"]
-            elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
+            elif isinstance(
+                estimator, (vml.Lasso, vml.LogisticRegression, vml.ElasticNet)
+            ):
                 params_grid["solver"] = ["newton", "bfgs", "cgd"]
-            if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
+            if isinstance(
+                estimator,
+                (vml.Lasso, vml.Ridge, vml.ElasticNet, vml.LogisticRegression),
+            ):
                 params_grid["C"] = [1e-1, 0.0, 1.0, 10.0]
-            if isinstance(estimator, (LogisticRegression)):
+            if isinstance(estimator, vml.LogisticRegression):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
-            if isinstance(estimator, (LogisticRegression, ElasticNet)):
+            if isinstance(estimator, (vml.LogisticRegression, vml.ElasticNet)):
                 params_grid["l1_ratio"] = [
                     0.1,
                     0.2,
@@ -800,51 +812,61 @@ tablesample
                 ]
         elif optimized_grid == 2:
             params_grid = {"tol": [1e-6], "max_iter": [100]}
-            if isinstance(estimator, LogisticRegression):
+            if isinstance(estimator, vml.LogisticRegression):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
-            if isinstance(estimator, LinearRegression):
+            if isinstance(estimator, vml.LinearRegression):
                 params_grid["solver"] = ["newton", "bfgs"]
-            elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
+            elif isinstance(
+                estimator, (vml.Lasso, vml.LogisticRegression, vml.ElasticNet)
+            ):
                 params_grid["solver"] = ["bfgs", "cgd"]
-            if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
+            if isinstance(
+                estimator,
+                (vml.Lasso, vml.Ridge, vml.ElasticNet, vml.LogisticRegression),
+            ):
                 params_grid["C"] = [1.0]
-            if isinstance(estimator, (LogisticRegression)):
+            if isinstance(estimator, vml.LogisticRegression):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
-            if isinstance(estimator, (LogisticRegression, ElasticNet)):
+            if isinstance(estimator, (vml.LogisticRegression, vml.ElasticNet)):
                 params_grid["l1_ratio"] = [0.5]
         elif optimized_grid == -666:
             result = {
                 "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
                 "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins},
             }
-            if isinstance(estimator, LogisticRegression):
+            if isinstance(estimator, vml.LogisticRegression):
                 result["penalty"] = {
                     "type": str,
                     "values": ["none", "l1", "l2", "enet"],
                 }
-            if isinstance(estimator, LinearRegression):
+            if isinstance(estimator, vml.LinearRegression):
                 result["solver"] = {"type": str, "values": ["newton", "bfgs"]}
-            elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
+            elif isinstance(
+                estimator, (vml.Lasso, vml.LogisticRegression, vml.ElasticNet)
+            ):
                 result["solver"] = {"type": str, "values": ["bfgs", "cgd"]}
-            if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
+            if isinstance(
+                estimator,
+                (vml.Lasso, vml.Ridge, vml.ElasticNet, vml.LogisticRegression),
+            ):
                 result["C"] = {
                     "type": float,
                     "range": [0.0, 1000.0],
                     "nbins": nbins,
                 }
-            if isinstance(estimator, (LogisticRegression)):
+            if isinstance(estimator, vml.LogisticRegression):
                 result["penalty"] = {
                     "type": str,
                     "values": ["none", "l1", "l2", "enet"],
                 }
-            if isinstance(estimator, (LogisticRegression, ElasticNet)):
+            if isinstance(estimator, (vml.LogisticRegression, vml.ElasticNet)):
                 result["l1_ratio"] = {
                     "type": float,
                     "range": [0.0, 1.0],
                     "nbins": nbins,
                 }
             return result
-    elif isinstance(estimator, KMeans):
+    elif isinstance(estimator, vml.KMeans):
         if optimized_grid == 0:
             params_grid = {
                 "n_cluster": list(range(2, 100, math.ceil(100 / nbins))),
@@ -890,7 +912,7 @@ tablesample
                 "n_cluster": {"type": int, "range": [1, 10000], "nbins": nbins},
                 "init": {"type": str, "values": ["kmeanspp", "random"]},
             }
-    elif isinstance(estimator, KPrototypes):
+    elif isinstance(estimator, vml.KPrototypes):
         if optimized_grid == 0:
             params_grid = {
                 "n_cluster": list(range(2, 100, math.ceil(100 / nbins))),
@@ -940,7 +962,7 @@ tablesample
                 "gamma": {"type": float, "range": [1e-2, 100], "nbins": nbins},
                 "init": {"type": str, "values": ["random"]},
             }
-    elif isinstance(estimator, BisectingKMeans):
+    elif isinstance(estimator, vml.BisectingKMeans):
         if optimized_grid == 0:
             params_grid = {
                 "n_cluster": list(range(2, 100, math.ceil(100 / nbins))),
@@ -1108,13 +1130,13 @@ print_info: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if isinstance(X, str):
         X = [X]
-    if estimator.MODEL_SUBTYPE == "REGRESSOR" and metric == "auto":
+    if estimator.MODEL_SUBCATEGORY == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -1144,7 +1166,7 @@ tablesample
     if all_configuration == []:
         all_configuration = [{}]
     if (
-        OPTIONS["tqdm"]
+        _options["tqdm"]
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
@@ -1211,7 +1233,7 @@ tablesample
                 raise (e)
     if not (data):
         if training_score:
-            return tablesample(
+            return TableSample(
                 {
                     "parameters": [],
                     "avg_score": [],
@@ -1222,13 +1244,13 @@ tablesample
                 }
             )
         else:
-            return tablesample(
+            return TableSample(
                 {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
             )
     reverse = reverse_score(metric)
     data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
-        result = tablesample(
+        result = TableSample(
             {
                 "parameters": [d[0] for d in data],
                 "avg_score": [d[1] for d in data],
@@ -1250,7 +1272,7 @@ tablesample
                 f"\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
             )
     else:
-        result = tablesample(
+        result = TableSample(
             {
                 "parameters": [d[0] for d in data],
                 "avg_score": [d[1] for d in data],
@@ -1325,9 +1347,9 @@ p: int/list, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if isinstance(by, str):
         by = [by]
@@ -1338,11 +1360,11 @@ tablesample
     if "color" in style_kwds:
         color = style_kwds["color"]
     else:
-        color = gen_colors()[0]
-    by, column, ts = vdf.format_colnames(by, column, ts)
+        color = get_colors()[0]
+    by, column, ts = vdf._format_colnames(by, column, ts)
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
-    result = tablesample(
+    result = TableSample(
         {
             "index": [i for i in range(0, len(acf.values["value"]))],
             "acf": acf.values["value"],
@@ -1469,9 +1491,9 @@ print_info: bool, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     param_grid = gen_params_grid(estimator, nbins, len(X), lmax, optimized_grid)
     return grid_search_cv(
@@ -1566,14 +1588,12 @@ ax: Matplotlib axes object, optional
 
 Returns
 -------
-tablesample
+TableSample
     An object containing the result. For more information, see
-    utilities.tablesample.
+    utilities.TableSample.
     """
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
         param_range = [param_range]
-    from verticapy.plotting._matplotlib import range_curve
-
     gs_result = grid_search_cv(
         estimator,
         {param_name: param_range},
@@ -1612,7 +1632,7 @@ tablesample
             [elem[1] + std_coeff * elem[3] for elem in gs_result_final],
         ],
     ]
-    result = tablesample(
+    result = TableSample(
         {
             param_name: X,
             "training_score_lower": Y[0][0],

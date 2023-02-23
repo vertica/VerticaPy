@@ -14,36 +14,42 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy._utils._collect import save_verticapy_logs
-import verticapy.learn.metrics as mt
-from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample, vDataFrameSQL
-from verticapy.sql.insert import insert_verticapy_schema
-from verticapy.core.tablesample import tablesample
-from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy._utils._sql import _executeSQL
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.learn.model_selection import roc_curve, prc_curve, lift_chart
-from verticapy.errors import ParameterError
-from verticapy.learn.vmodel import MulticlassClassifier, vModel, Regressor, Tree
-from verticapy.learn.tools import does_model_exist
-from verticapy.sql._utils._format import quote_ident, schema_relation
-from verticapy.sql._utils._format import clean_query
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy._config.config import OPTIONS
-
-# Standard Python Modules
 import warnings, itertools
-from typing import Union, Literal
 from collections.abc import Iterable
+from typing import Literal, Union
+
 import matplotlib.pyplot as plt
+
+from verticapy._config.colors import get_colors
+from verticapy._config.config import ISNOTEBOOK, _options
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.errors import ParameterError
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.plotting._matplotlib.base import updated_dict
+
+import verticapy.machine_learning.metrics as mt
+from verticapy.machine_learning.model_selection.model_validation import (
+    prc_curve,
+    roc_curve,
+    lift_chart,
+)
+from verticapy.machine_learning.model_management.read import does_model_exist
+from verticapy.machine_learning.vertica.base import (
+    MulticlassClassifier,
+    Regressor,
+    Tree,
+    vModel,
+)
+
+from verticapy.sql.drop import drop
+from verticapy.sql.read import to_tablesample
+from verticapy.sql.insert import insert_verticapy_schema
 
 
 class NearestCentroid(MulticlassClassifier):
@@ -62,13 +68,15 @@ p: int, optional
 	to compute the model).
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_PREDICT_FUNCTION_SQL = ""
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "CLASSIFIER"
+    MODEL_TYPE = "NearestCentroid"
+
     @save_verticapy_logs
     def __init__(self, name: str, p: int = 2):
-        self.type, self.name = "NearestCentroid", name
-        self.VERTICA_FIT_FUNCTION_SQL = ""
-        self.VERTICA_PREDICT_FUNCTION_SQL = ""
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.model_name = name
         self.parameters = {"p": p}
 
     def fit(
@@ -99,17 +107,17 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
         if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
+            self.input_relation = input_relation._genSQL()
         else:
             self.input_relation = input_relation
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
+            self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
@@ -140,7 +148,9 @@ p: int, optional
             "classes": self.classes_,
         }
         insert_verticapy_schema(
-            model_name=self.name, model_type="NearestCentroid", model_save=model_save,
+            model_name=self.model_name,
+            model_type="NearestCentroid",
+            model_save=model_save,
         )
         return self
 
@@ -166,13 +176,15 @@ p: int, optional
 	to compute the model).
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_PREDICT_FUNCTION_SQL = ""
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "CLASSIFIER"
+    MODEL_TYPE = "KNeighborsClassifier"
+
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
-        self.type, self.name = "KNeighborsClassifier", name
-        self.VERTICA_FIT_FUNCTION_SQL = ""
-        self.VERTICA_PREDICT_FUNCTION_SQL = ""
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     def deploySQL(
@@ -298,16 +310,16 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
+            self.input_relation = input_relation._genSQL()
         else:
             self.input_relation = input_relation
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
+            self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
@@ -337,7 +349,7 @@ p: int, optional
             "classes": self.classes_,
         }
         insert_verticapy_schema(
-            model_name=self.name,
+            model_name=self.model_name,
             model_type="KNeighborsClassifier",
             model_save=model_save,
         )
@@ -364,9 +376,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if not (isinstance(labels, Iterable)) or isinstance(labels, str):
             labels = [labels]
@@ -393,9 +405,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
@@ -431,9 +443,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         pos_label = (
             self.classes_[1]
@@ -450,7 +462,7 @@ p: int, optional
             if pos_label == 1:
                 return result
             else:
-                return tablesample(
+                return TableSample(
                     values={
                         "index": [f"Non-{pos_label}", str(pos_label),],
                         f"Non-{pos_label}": result.values[0],
@@ -486,9 +498,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
@@ -519,9 +531,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
@@ -576,7 +588,7 @@ p: int, optional
             "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -588,7 +600,7 @@ p: int, optional
         else:
             key_columns_str = ""
         if not (name):
-            name = gen_name([self.type, self.name])
+            name = gen_name([self.MODEL_TYPE, self.model_name])
 
         if (
             len(self.classes_) == 2
@@ -596,7 +608,7 @@ p: int, optional
             and self.classes_[1] in [1, "1"]
         ):
             table = self.deploySQL(
-                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
+                X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
             )
             sql = f"""
                 (SELECT 
@@ -611,19 +623,19 @@ p: int, optional
         else:
             table = self.deploySQL(
                 X=X,
-                test_relation=vdf.__genSQL__(),
+                test_relation=vdf._genSQL(),
                 key_columns=key_columns_arg,
                 predict=True,
             )
             sql = f"""
-                (SELECT 
+                SELECT 
                     {", ".join(X)}{key_columns_str}, 
                     predict_neighbors AS {name} 
-                 FROM {table}) VERTICAPY_SUBTABLE"""
+                 FROM {table}"""
         if inplace:
-            return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
+            return vdf.__init__(sql)
         else:
-            return vDataFrameSQL(name="Neighbors", relation=sql)
+            return vDataFrame(sql)
 
     def predict_proba(
         self,
@@ -672,11 +684,11 @@ p: int, optional
             )
         )
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(relation=vdf)
+            vdf = vDataFrame(vdf)
         X = [quote_ident(x) for x in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if not (name):
-            name = gen_name([self.type, self.name])
+            name = gen_name([self.MODEL_TYPE, self.model_name])
         if "key_columns" in kwargs:
             key_columns_arg = None
         else:
@@ -703,20 +715,20 @@ p: int, optional
         else:
             key_columns_str = ""
         table = self.deploySQL(
-            X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
+            X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
         )
         sql = f"""
-            (SELECT 
+            SELECT 
                 {", ".join(X)}{key_columns_str}, 
                 {", ".join(predict)} 
              FROM {table} 
-             GROUP BY {", ".join(X + key_columns)}) VERTICAPY_SUBTABLE"""
+             GROUP BY {", ".join(X + key_columns)}"""
 
         # Result
         if inplace:
-            return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
+            return vdf.__init__(sql)
         else:
-            return vDataFrameSQL(name="Neighbors", relation=sql)
+            return vDataFrame(sql)
 
     def roc_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
@@ -736,9 +748,9 @@ p: int, optional
 
     Returns
     -------
-    tablesample
+    TableSample
         An object containing the result. For more information, see
-        utilities.tablesample.
+        utilities.TableSample.
         """
         pos_label = (
             self.classes_[1]
@@ -897,6 +909,12 @@ xlim: list, optional
     List of tuples use to compute the kernel window.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "PREPROCESSING"
+    MODEL_TYPE = "KernelDensity"
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -911,11 +929,7 @@ xlim: list, optional
         xlim: list = [],
         **kwargs,
     ):
-        self.type, self.name = "KernelDensity", name
-        self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "PREPROCESSING"
+        self.model_name = name
         self.parameters = {
             "nbins": nbins,
             "p": p,
@@ -949,23 +963,23 @@ xlim: list, optional
         """
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
             vdf = input_relation
-            input_relation = input_relation.__genSQL__()
+            input_relation = input_relation._genSQL()
         else:
             try:
                 vdf = vDataFrame(input_relation)
             except:
-                vdf = vDataFrameSQL(input_relation)
+                vdf = vDataFrame(input_relation)
             if not (X):
                 X = vdf.numcol()
-        X = vdf.format_colnames(X)
+        X = vdf._format_colnames(X)
 
         def density_compute(
             vdf: vDataFrame,
@@ -1014,7 +1028,7 @@ xlim: list, optional
                         SELECT 
                             /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
                             {", ".join(L)} 
-                        FROM {vdf.__genSQL__()}"""
+                        FROM {vdf._genSQL()}"""
                     result = _executeSQL(
                         query, title="Computing the KDE", method="fetchrow"
                     )
@@ -1022,7 +1036,7 @@ xlim: list, optional
                 else:
                     return 0
 
-            columns = vdf.format_colnames(columns)
+            columns = vdf._format_colnames(columns)
             x_vars = []
             y = []
             for idx, column in enumerate(columns):
@@ -1063,14 +1077,14 @@ xlim: list, optional
             self.parameters["nbins"],
             self.parameters["p"],
         )
-        name_str = self.name.replace('"', "")
+        name_str = self.model_name.replace('"', "")
         if self.verticapy_store:
             _executeSQL(
                 query=f"""CREATE TABLE {name_str}_KernelDensity_Map AS    
                             SELECT 
                                 /*+LABEL('learn.neighbors.KernelDensity.fit')*/
                                 {", ".join(X)}, 0.0::float AS KDE 
-                            FROM {vdf.__genSQL__()} 
+                            FROM {vdf._genSQL()} 
                             LIMIT 0""",
                 print_time_sql=False,
             )
@@ -1095,7 +1109,7 @@ xlim: list, optional
             self.tree_name = f"{name_str}_KernelDensity_Tree"
             self.y = "KDE"
 
-            from verticapy.learn.tree import DecisionTreeRegressor
+            from verticapy.machine_learning.vertica.tree import DecisionTreeRegressor
 
             model = DecisionTreeRegressor(
                 name=self.tree_name,
@@ -1122,7 +1136,9 @@ xlim: list, optional
                 "xlim": self.parameters["xlim"],
             }
             insert_verticapy_schema(
-                model_name=self.name, model_type="KernelDensity", model_save=model_save,
+                model_name=self.model_name,
+                model_type="KernelDensity",
+                model_save=model_save,
             )
         else:
             self.X, self.input_relation = X, input_relation
@@ -1163,10 +1179,8 @@ xlim: list, optional
                     fig.set_size_inches(7, 5)
                 ax.grid()
                 ax.set_axisbelow(True)
-            from verticapy.plotting._colors import gen_colors
-
             param = {
-                "color": gen_colors()[0],
+                "color": get_colors()[0],
             }
             ax.plot(x, y, **updated_dict(param, style_kwds))
             ax.fill_between(
@@ -1247,13 +1261,15 @@ p: int, optional
 	the model computation).
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_PREDICT_FUNCTION_SQL = ""
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "REGRESSOR"
+    MODEL_TYPE = "KNeighborsRegressor"
+
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
-        self.type, self.name = "KNeighborsRegressor", name
-        self.VERTICA_FIT_FUNCTION_SQL = ""
-        self.VERTICA_PREDICT_FUNCTION_SQL = ""
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     def deploySQL(
@@ -1280,7 +1296,7 @@ p: int, optional
     str/list
         the SQL code needed to deploy the model.
         """
-        from verticapy.sql._utils._format import clean_query
+        from verticapy._utils._sql._format import clean_query
 
         if isinstance(X, str):
             X = [X]
@@ -1359,16 +1375,16 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
+            self.input_relation = input_relation._genSQL()
         else:
             self.input_relation = input_relation
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
+            self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
@@ -1385,7 +1401,7 @@ p: int, optional
             "n_neighbors": self.parameters["n_neighbors"],
         }
         insert_verticapy_schema(
-            model_name=self.name,
+            model_name=self.model_name,
             model_type="KNeighborsRegressor",
             model_save=model_save,
         )
@@ -1424,7 +1440,7 @@ p: int, optional
         if isinstance(X, str):
             X = [X]
         if isinstance(vdf, str):
-            vdf = vDataFrameSQL(vdf)
+            vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -1432,23 +1448,25 @@ p: int, optional
         else:
             key_columns_arg = key_columns
         if not (name):
-            name = f"{self.type}_" + "".join(ch for ch in self.name if ch.isalnum())
+            name = f"{self.MODEL_TYPE}_" + "".join(
+                ch for ch in self.model_name if ch.isalnum()
+            )
         if key_columns:
             key_columns_str = ", " + ", ".join(key_columns)
         else:
             key_columns_str = ""
         table = self.deploySQL(
-            X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
+            X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
         )
         sql = f"""
-            (SELECT 
+            SELECT 
                 {", ".join(X)}{key_columns_str}, 
                 predict_neighbors AS {name} 
-             FROM {table}) VERTICAPY_SUBTABLE"""
+             FROM {table}"""
         if inplace:
-            return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
+            return vdf.__init__(sql)
         else:
-            return vDataFrameSQL(name="Neighbors", relation=sql)
+            return vDataFrame(sql)
 
 
 class LocalOutlierFactor(vModel):
@@ -1476,13 +1494,15 @@ p: int, optional
 	The p of the p-distances (distance metric used during the model computation).
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_PREDICT_FUNCTION_SQL = ""
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "ANOMALY_DETECTION"
+    MODEL_TYPE = "LocalOutlierFactor"
+
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
-        self.type, self.name = "LocalOutlierFactor", name
-        self.VERTICA_FIT_FUNCTION_SQL = ""
-        self.VERTICA_PREDICT_FUNCTION_SQL = ""
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "ANOMALY_DETECTION"
+        self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     def fit(
@@ -1517,13 +1537,13 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         self.key_columns = [quote_ident(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
+            self.input_relation = input_relation._genSQL()
             if not (X):
                 X = input_relation.numcol()
         else:
@@ -1639,7 +1659,7 @@ p: int, optional
             )
             _executeSQL(
                 query=f"""
-                    CREATE TABLE {self.name} AS 
+                    CREATE TABLE {self.model_name} AS 
                         SELECT 
                             /*+LABEL('learn.neighbors.LocalOutlierFactor.fit')*/ 
                             {', '.join(X + self.key_columns)}, 
@@ -1676,7 +1696,7 @@ p: int, optional
             "n_errors": self.n_errors_,
         }
         insert_verticapy_schema(
-            model_name=self.name,
+            model_name=self.model_name,
             model_type="LocalOutlierFactor",
             model_save=model_save,
         )
@@ -1691,4 +1711,4 @@ p: int, optional
 	vDataFrame
  		the vDataFrame including the prediction.
 		"""
-        return vDataFrame(self.name)
+        return vDataFrame(self.model_name)

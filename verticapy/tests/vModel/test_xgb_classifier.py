@@ -28,13 +28,13 @@ import xgboost as xgb
 # VerticaPy
 import verticapy
 from verticapy.tests.conftest import get_version
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.utilities import drop
 from verticapy._config.config import set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_cl
 from verticapy.learn.ensemble import XGBoostClassifier
-from verticapy.sql._utils._format import clean_query
+from verticapy._utils._sql._format import clean_query
 
 set_option("print_info", False)
 

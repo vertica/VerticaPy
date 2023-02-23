@@ -18,20 +18,18 @@ import math
 from collections.abc import Iterable
 from typing import Union
 
-# VerticaPy Modules
-from verticapy._version import check_minimum_version
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy.core.vdataframe.vdataframe import vDataFrame
-from verticapy.machine_learning.model_selection.model_validation import (
-    prc_curve,
-    roc_curve,
-)
-from verticapy.sql.read import to_tablesample
-from verticapy.core.tablesample import tablesample
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._vertica_version import check_minimum_version
+
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.machine_learning._utils import (
-    _compute_tn_fn_fp_tp,
     _compute_metric_query,
+    _compute_tn_fn_fp_tp,
 )
+
+from verticapy.sql.read import to_tablesample
 
 
 @save_verticapy_logs
@@ -124,6 +122,8 @@ Returns
 float
 	score
 	"""
+    from verticapy.machine_learning.model_selection.model_validation import roc_curve
+
     return roc_curve(
         y_true, y_score, input_relation, pos_label, nbins=nbins, auc_roc=True
     )
@@ -172,10 +172,12 @@ nbins: int, optional
 
 Returns
 -------
-tablesample
+TableSample
  	An object containing the result. For more information, see
- 	utilities.tablesample.
+ 	utilities.TableSample.
 	"""
+    from verticapy.machine_learning.model_selection.model_validation import roc_curve
+
     if estimator:
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes != 2) else [estimator.classes_[1]]
@@ -289,7 +291,7 @@ tablesample
             csi,
             current_cutoff,
         ]
-    return tablesample(values)
+    return TableSample(values)
 
 
 @check_minimum_version
@@ -320,14 +322,14 @@ pos_label: str / int / float, optional
 
 Returns
 -------
-tablesample
+TableSample
  	An object containing the result. For more information, see
- 	utilities.tablesample.
+ 	utilities.TableSample.
 	"""
     if isinstance(input_relation, str):
         relation = input_relation
     else:
-        relation = input_relation.__genSQL__()
+        relation = input_relation._genSQL()
     result = to_tablesample(
         query=f"""
         SELECT 
@@ -604,14 +606,14 @@ labels: list
 
 Returns
 -------
-tablesample
+TableSample
  	An object containing the result. For more information, see
- 	utilities.tablesample.
+ 	utilities.TableSample.
 	"""
     if isinstance(input_relation, str):
         relation = input_relation
     else:
-        relation = input_relation.__genSQL__()
+        relation = input_relation._genSQL()
     num_classes = str(len(labels))
     query = f"""
         SELECT 
@@ -707,6 +709,8 @@ Returns
 float
 	score
 	"""
+    from verticapy.machine_learning.model_selection.model_validation import prc_curve
+
     return prc_curve(
         y_true, y_score, input_relation, pos_label, nbins=nbins, auc_prc=True
     )

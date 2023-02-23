@@ -19,8 +19,8 @@ permissions and limitations under the License.
 import pytest
 
 # VerticaPy
-from verticapy import drop, set_option, tablesample
-from verticapy.connect import current_cursor
+from verticapy import drop, set_option, TableSample
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import LinearRegression, LogisticRegression
 from verticapy.learn.preprocessing import Normalizer, MinMaxScaler
@@ -54,7 +54,7 @@ def model(winequality_vd):
 
 class TestPipeline:
     def test_index(self, model):
-        assert model[0].type == "Normalizer"
+        assert model[0].MODEL_TYPE == "Normalizer"
         assert model[0:][0][0] == "NormalizerWine"
 
     def test_drop(self, winequality_vd):
@@ -94,7 +94,7 @@ class TestPipeline:
 
     def test_to_python(self, model):
         predict_function = model.to_python()
-        test_record = tablesample(
+        test_record = TableSample(
             {"citric_acid": [3.0], "residual_sugar": [11.0], "alcohol": [93.0]}
         ).to_vdf()
         prediction = model.predict(

@@ -23,9 +23,10 @@ import matplotlib.pyplot as plt
 
 # VerticaPy
 import verticapy
-from verticapy.core.vdataframe.vdataframe import vDataFrame
+from verticapy import drop
+from verticapy.core.vdataframe.base import vDataFrame
 from verticapy._config.config import set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_amazon, load_winequality
 from verticapy.learn.model_selection import *
 from verticapy.learn.linear_model import *
