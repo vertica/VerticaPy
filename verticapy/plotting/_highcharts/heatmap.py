@@ -40,7 +40,7 @@ def heatmap(
         },
         "title": {"text": ""},
         "legend": {},
-        "colorAxis": {"minColor": "#FFFFFF", "maxColor": get_colors(idx=None)[0]},
+        "colorAxis": {"minColor": "#FFFFFF", "maxColor": get_colors()[0]},
         "xAxis": {"title": {"text": ""}},
         "yAxis": {"title": {"text": ""}},
         "tooltip": {
@@ -52,7 +52,7 @@ def heatmap(
             )
         },
     }
-    default_options["colors"] = get_colors(idx=None)
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     if query:
         data = _executeSQL(

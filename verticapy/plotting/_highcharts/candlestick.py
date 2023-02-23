@@ -53,7 +53,7 @@ def candlestick(query: str, options: dict = {}, width: int = 600, height: int = 
             },
         ],
     }
-    default_options["colors"] = get_colors(idx=None)
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     for i in range(len(data)):
         for j in range(1, n):

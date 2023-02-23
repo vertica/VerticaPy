@@ -40,7 +40,7 @@ def spider(
             "The first column of the Spider Plot must have at "
             f"least 3 categories. Found {int(unique)}."
         )
-    colors = get_colors(idx=None)
+    colors = get_colors()
     all_columns = vdf.pivot_table(
         columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
     ).values

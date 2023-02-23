@@ -36,7 +36,7 @@ def boxplot(
         "xAxis": {"title": {"text": ""}},
         "yAxis": {"title": {"text": ""}},
     }
-    default_options["colors"] = get_colors(idx=None)
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     aggregations = ["min", "approx_25%", "approx_50%", "approx_75%", "max"]
     if (vdf) and not (by):

@@ -1180,7 +1180,7 @@ xlim: list, optional
                 ax.grid()
                 ax.set_axisbelow(True)
             param = {
-                "color": get_colors(idx=None)[0],
+                "color": get_colors()[0],
             }
             ax.plot(x, y, **updated_dict(param, style_kwds))
             ax.fill_between(

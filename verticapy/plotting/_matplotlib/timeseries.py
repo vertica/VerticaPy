@@ -52,7 +52,7 @@ def acf_plot(
     if "color" in style_kwds:
         color = style_kwds["color"]
     else:
-        color = get_colors(idx=None)[0]
+        color = get_colors()[0]
     if not (ax):
         fig, ax = plt.subplots()
         if ISNOTEBOOK:
@@ -130,7 +130,7 @@ def multi_ts_plot(
             columns.remove(column)
     if not (columns):
         raise EmptyParameter("No numerical columns found to draw the multi TS plot")
-    colors = get_colors(idx=None)
+    colors = get_colors()
     order_by_start_str, order_by_end_str = "", ""
     if order_by_start:
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
@@ -377,7 +377,7 @@ def ts_plot(
         if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
-    colors = get_colors(idx=None)
+    colors = get_colors()
     plot_fun = ax.step if step else ax.plot
     plot_param = {
         "marker": "o",

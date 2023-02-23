@@ -68,7 +68,7 @@ def negative_bar(query: str, options: dict = {}, width: int = 600, height: int =
             + "</b> : ' + Math.abs(this.point.y);}"
         },
     }
-    default_options["colors"] = get_colors(idx=None)
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     dict_categories = {}
     for elem in all_categories:

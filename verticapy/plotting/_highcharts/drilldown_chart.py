@@ -51,7 +51,7 @@ def drilldown_chart(
             "pointFormat": '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b><br/>',
         },
     }
-    default_options["colors"] = get_colors(idx=None)
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     if chart_type == "bar":
         chart.set_dict_options({"chart": {"inverted": True}})

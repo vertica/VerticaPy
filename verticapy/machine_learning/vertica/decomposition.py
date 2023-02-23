@@ -109,11 +109,7 @@ name: str
             style_kwds["c"] = c
             if "cmap" not in style_kwds:
                 style_kwds["cmap"] = get_cmap(
-                    color=[
-                        get_colors(idx=None)[0],
-                        get_colors(idx=None)[1],
-                        get_colors(idx=None)[2],
-                    ]
+                    color=[get_colors()[0], get_colors()[1], get_colors()[2],]
                 )
         explained_variance = self.explained_variance_["explained_variance"]
         return plot_var(

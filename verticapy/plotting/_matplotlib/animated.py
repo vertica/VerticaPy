@@ -76,7 +76,7 @@ def animated_bar(
         def date_f(x):
             return str(x)
 
-    colors = get_colors(idx=None)
+    colors = get_colors()
     for c in ["color", "colors"]:
         if c in style_kwds:
             colors = style_kwds[c]
@@ -337,7 +337,7 @@ def animated_bubble_plot(
     elif "colors" in style_kwds:
         colors = style_kwds["colors"]
     else:
-        colors = get_colors(idx=None)
+        colors = get_colors()
     if isinstance(colors, str):
         colors = [colors]
     param = {
@@ -632,7 +632,7 @@ def animated_ts_plot(
     else:
         fig = plt
     all_plots = []
-    colors = get_colors(idx=None)
+    colors = get_colors()
     for i in range(0, len(columns)):
         param = {
             "linewidth": 1,

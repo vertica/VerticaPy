@@ -66,7 +66,7 @@ def bar(
             "yAxis": {"title": {"text": names[-1]}},
             "legend": {"enabled": False},
         }
-    default_options["colors"] = get_colors(idx=None)
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     columns = data_to_columns(data, n)
     if n == 2:

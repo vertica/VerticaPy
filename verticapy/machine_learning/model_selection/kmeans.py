@@ -226,7 +226,7 @@ TableSample
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
     param = {
-        "color": get_colors(idx=None)[0],
+        "color": get_colors()[0],
         "marker": "o",
         "markerfacecolor": "white",
         "markersize": 7,

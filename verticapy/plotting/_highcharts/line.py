@@ -87,7 +87,7 @@ def line(
                 }
             },
         }
-    default_options["colors"] = get_colors(idx=None)
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     for i in range(len(data)):
         if "datetime" in str(type(data[i][0])):
@@ -177,7 +177,7 @@ def line(
                 "area": {
                     "fillColor": {
                         "linearGradient": {"x1": 0, "y1": 0, "x2": 0, "y2": 1},
-                        "stops": [[0, "#FFFFFF"], [1, get_colors(idx=None)[0]]],
+                        "stops": [[0, "#FFFFFF"], [1, get_colors()[0]]],
                     },
                     "marker": {"radius": 2},
                     "lineWidth": 1,

@@ -53,7 +53,7 @@ def bubble(
     elif "colors" in style_kwds:
         colors = style_kwds["colors"]
     else:
-        colors = get_colors(idx=None)
+        colors = get_colors()
     if isinstance(colors, str):
         colors = [colors]
     if not (catcol) and not (cmap_col):
@@ -334,7 +334,7 @@ def outliers_contour_plot(
     **style_kwds,
 ):
     if not (cmap):
-        cmap = get_cmap(get_colors(idx=None)[2])
+        cmap = get_cmap(get_colors()[2])
     all_agg = vdf.agg(["avg", "std", "min", "max"], columns)
     xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
     if not (ax):
@@ -535,7 +535,7 @@ def scatter(
         )
         warnings.warn(warning_message, Warning)
         bbox = []
-    colors = get_colors(idx=None)
+    colors = get_colors()
     markers = MARKERS * 10
     param = {
         "s": 50,
