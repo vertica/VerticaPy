@@ -149,7 +149,7 @@ class BernoulliNB(NaiveBayes):
 
     def __init__(self, name: str, alpha: float = 1.0):
 
-        super().__init__(name, alpha, "bernoulli")
+        super().__init__(name, alpha, nbtype="bernoulli")
 
 
 class CategoricalNB(NaiveBayes):
@@ -157,7 +157,7 @@ class CategoricalNB(NaiveBayes):
 
     def __init__(self, name: str, alpha: float = 1.0):
 
-        super().__init__(name, alpha, "categorical")
+        super().__init__(name, alpha, nbtype="categorical")
 
 
 class GaussianNB(NaiveBayes):
@@ -173,4 +173,4 @@ class MultinomialNB(NaiveBayes):
 
     def __init__(self, name: str, alpha: float = 1.0):
 
-        super().__init__(name, alpha, "multinomial")
+        super().__init__(name, alpha, nbtype="multinomial")

@@ -37,7 +37,7 @@ def get_colors(d: Optional[dict] = {}, idx: Optional[int] = None) -> Union[list,
                 colors = COLORS_OPTIONS["default"]
             else:
                 colors = copy.deepcopy(_options["colors"])
-            all_colors = copy.deepcopy(plt.cnames)
+            all_colors = [plt.cnames[key] for key in plt.cnames]
             shuffle(all_colors)
             for c in all_colors:
                 if c not in colors:

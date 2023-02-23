@@ -65,7 +65,7 @@ from verticapy.sql.read import to_tablesample
 
 class vModel:
     """
-Main Class for Vertica Model
+Base Class for Vertica Models.
 	"""
 
     @property
