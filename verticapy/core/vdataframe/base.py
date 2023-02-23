@@ -21,6 +21,10 @@ import numpy as np
 import pandas as pd
 
 from verticapy._config.config import _options
+from verticapy._config.connection import (
+    _external_connections,
+    SPECIAL_SYMBOLS,
+)
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._check import is_longvar, is_sql_select
@@ -31,10 +35,6 @@ from verticapy._utils._sql._format import (
     format_schema_table,
     quote_ident,
     schema_relation,
-)
-from verticapy.connection._global import (
-    _external_connections,
-    SPECIAL_SYMBOLS,
 )
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import (

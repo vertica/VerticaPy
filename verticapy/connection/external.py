@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal
 
-from verticapy.connection._global import _external_connections, SPECIAL_SYMBOLS
+from verticapy._config.connection import _external_connections, SPECIAL_SYMBOLS
 
 
 def set_external_connection(

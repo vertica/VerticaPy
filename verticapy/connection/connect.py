@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import vertica_python
 
-from verticapy.connection._global import (
+from verticapy._config.connection import (
     _connection,
     SESSION_LABEL,
     VERTICAPY_AUTO_CONNECTION,

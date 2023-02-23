@@ -26,7 +26,6 @@ import os
 import vertica_python, verticapy
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.connection import current_cursor
-from verticapy.connection._global import SESSION_IDENTIFIER
 from verticapy.utilities import *
 from verticapy.datasets import (
     load_cities,
@@ -39,6 +38,7 @@ from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
 from verticapy.learn.linear_model import LinearRegression
 from verticapy._config.config import set_option
+from verticapy._config.connection import SESSION_IDENTIFIER
 
 set_option("print_info", False)
 

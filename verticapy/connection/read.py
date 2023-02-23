@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import os
 
-from verticapy.connection._global import SESSION_LABEL, VERTICAPY_AUTO_CONNECTION
+from verticapy._config.connection import SESSION_LABEL, VERTICAPY_AUTO_CONNECTION
 from verticapy.connection.utils import get_confparser
 from verticapy.errors import ParameterError
 

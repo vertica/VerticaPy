@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from functools import wraps
 
 from verticapy._config.config import _options
-from verticapy.connection._global import SESSION_IDENTIFIER
+from verticapy._config.connection import SESSION_IDENTIFIER
 from verticapy.connection.connect import current_cursor
 
 

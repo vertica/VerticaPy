@@ -29,6 +29,7 @@ from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
 
 from verticapy._config.config import _options, set_option
+from verticapy._config.connection import SPECIAL_SYMBOLS
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._dblink import replace_external_queries_in_query
 from verticapy._utils._sql._format import (
@@ -36,7 +37,6 @@ from verticapy._utils._sql._format import (
     replace_vars_in_query,
 )
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.connection._global import SPECIAL_SYMBOLS
 from verticapy.errors import QueryError, ParameterError
 
 from verticapy.jupyter.extensions._utils import get_magic_options

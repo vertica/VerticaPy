@@ -18,7 +18,6 @@ import uuid
 
 from verticapy import __version__
 
-VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
 SESSION_IDENTIFIER = str(uuid.uuid1()).replace("-", "")
 SESSION_LABEL = f"verticapy-{__version__}-{SESSION_IDENTIFIER}"
 SPECIAL_SYMBOLS = [
@@ -33,6 +32,7 @@ SPECIAL_SYMBOLS = [
     "?",
     "!",
 ]
+VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
 _connection = {
     "conn": None,
     "section": None,

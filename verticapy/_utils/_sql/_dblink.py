@@ -16,9 +16,9 @@ permissions and limitations under the License.
 """
 import re
 
+from verticapy._config.connection import _external_connections
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import clean_query, quote_ident
-from verticapy.connection._global import _external_connections
 from verticapy.connection.connect import current_cursor
 from verticapy.errors import ConnectionError
 

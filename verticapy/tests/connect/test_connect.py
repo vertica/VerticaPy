@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import os
 import verticapy as vp
 from verticapy.connection import *
-from verticapy.connection._global import SESSION_IDENTIFIER
+from verticapy._config.connection import SESSION_IDENTIFIER
 
 
 class TestConnect:
