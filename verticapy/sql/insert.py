@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import sys, time, warnings
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import (
@@ -67,7 +67,7 @@ See Also
 read_pandas : Ingests a pandas DataFrame into the Vertica database.
     """
     if not (schema):
-        schema = OPTIONS["temp_schema"]
+        schema = _options["temp_schema"]
     input_relation = format_schema_table(schema, table_name)
     if not (column_names):
         result = _executeSQL(

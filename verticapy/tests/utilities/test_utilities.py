@@ -25,7 +25,8 @@ import os
 # VerticaPy
 import vertica_python, verticapy
 from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.connect import current_cursor, SESSION_IDENTIFIER
+from verticapy.connection import current_cursor
+from verticapy.connection._global import SESSION_IDENTIFIER
 from verticapy.utilities import *
 from verticapy.datasets import (
     load_cities,

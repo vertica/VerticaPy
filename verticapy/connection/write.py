@@ -14,8 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.connect.connect import connect, VERTICAPY_AUTO_CONNECTION
-from verticapy.connect.utils import get_confparser, get_connection_file
+from verticapy.connection._global import VERTICAPY_AUTO_CONNECTION
+from verticapy.connection.connect import connect
+from verticapy.connection.utils import get_confparser, get_connection_file
 
 
 def change_auto_connection(name: str):

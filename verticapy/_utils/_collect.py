@@ -16,9 +16,9 @@ permissions and limitations under the License.
 """
 from functools import wraps
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy.connect import SESSION_IDENTIFIER
+from verticapy.connection._global import SESSION_IDENTIFIER
 
 
 def save_to_query_profile(
@@ -55,9 +55,9 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
-    if not (OPTIONS["save_query_profile"]) or (
-        isinstance(OPTIONS["save_query_profile"], list)
-        and name not in OPTIONS["save_query_profile"]
+    if not (_options["save_query_profile"]) or (
+        isinstance(_options["save_query_profile"], list)
+        and name not in _options["save_query_profile"]
     ):
         return False
     try:

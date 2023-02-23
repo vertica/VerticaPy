@@ -19,7 +19,7 @@ import vertica_python, warnings
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident, format_schema_table
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.errors import ParameterError
 
 from verticapy.sql.drop import drop

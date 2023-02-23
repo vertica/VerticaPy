@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_winequality
 from verticapy.learn.svm import LinearSVC
 

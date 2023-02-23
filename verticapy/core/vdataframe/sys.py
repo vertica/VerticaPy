@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import copy, re, time, warnings
 from typing import Union
 
-from verticapy._config.config import current_random, OPTIONS
+from verticapy._config.config import _current_random, _options
 from verticapy._utils._cast import to_varchar
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._map import verticapy_agg_name
@@ -144,7 +144,7 @@ class vDFSYS:
             "___VERTICAPY_UNDEFINED___",
         ]:
             table = table.replace(vml_undefined, "")
-        random_func = current_random()
+        random_func = _current_random()
         split = f", {random_func} AS __verticapy_split__" if (split) else ""
         if (where_final == "") and (order_final == ""):
             if split:
@@ -174,7 +174,7 @@ class vDFSYS:
     computations. This method returns the stored aggregation if it was already 
     computed.
         """
-        if not (OPTIONS["cache"]):
+        if not (_options["cache"]):
             return "VERTICAPY_NOT_PRECOMPUTED"
         if column == "VERTICAPY_COUNT":
             if self._vars["count"] < 0:

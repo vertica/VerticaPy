@@ -19,7 +19,7 @@ import os, vertica_python
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop

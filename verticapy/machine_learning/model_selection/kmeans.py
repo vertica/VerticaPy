@@ -19,7 +19,7 @@ from tqdm.auto import tqdm
 
 import matplotlib.pyplot as plt
 
-from verticapy._config.config import ISNOTEBOOK, OPTIONS
+from verticapy._config.config import ISNOTEBOOK, _options
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
@@ -99,9 +99,9 @@ int
         L.sort()
     schema, relation = schema_relation(input_relation)
     if not (schema):
-        schema = OPTIONS["temp_schema"]
+        schema = _options["temp_schema"]
     schema = quote_ident(schema)
-    if OPTIONS["tqdm"] and (
+    if _options["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         loop = tqdm(L)
@@ -206,7 +206,7 @@ TableSample
     else:
         L = n_cluster
         L.sort()
-    if OPTIONS["tqdm"]:
+    if _options["tqdm"]:
         loop = tqdm(L)
     else:
         loop = L

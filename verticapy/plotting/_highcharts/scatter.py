@@ -19,7 +19,7 @@ from collections.abc import Iterable
 from vertica_highcharts import Highchart
 
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 
 from verticapy.plotting._colors import gen_colors
 

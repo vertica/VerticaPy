@@ -28,7 +28,7 @@ from verticapy import (
     drop,
     set_option,
 )
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality, load_dataset_num
 from verticapy.learn.cluster import BisectingKMeans
 

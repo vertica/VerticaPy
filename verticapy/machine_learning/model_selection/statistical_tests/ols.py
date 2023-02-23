@@ -20,7 +20,7 @@ import numpy as np
 from scipy.stats import chi2, f
 
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._gen import gen_tmp_name
 
 from verticapy.core.tablesample.base import TableSample
@@ -50,7 +50,7 @@ TableSample
     utilities.TableSample.
     """
     eps, X = vdf._format_colnames(eps, X)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         model.fit(vdf, X, eps)
@@ -102,7 +102,7 @@ TableSample
     utilities.TableSample.
     """
     eps, X = vdf._format_colnames(eps, X)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     vdf_copy = vdf.copy()
     vdf_copy["v_eps2"] = vdf_copy[eps] ** 2
@@ -184,7 +184,7 @@ TableSample
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
@@ -240,7 +240,7 @@ TableSample
         ", ".join(variables), eps, vdf._genSQL()
     )
     vdf_white = vDataFrame(query)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         model.fit(vdf_white, variables_names, "v_eps2")
@@ -308,7 +308,7 @@ float
             if i != X_idx:
                 X_r += [X[i]]
         y_r = X[X_idx]
-        name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
         model = LinearRegression(name)
         try:
             model.fit(vdf, X_r, y_r)

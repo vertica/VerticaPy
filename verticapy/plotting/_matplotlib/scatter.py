@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 
-from verticapy._config.config import current_random, ISNOTEBOOK
+from verticapy._config.config import _current_random, ISNOTEBOOK
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy.errors import ParameterError
 
@@ -457,7 +457,7 @@ def scatter_matrix(
     else:
         figsize = min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
-    random_func = current_random()
+    random_func = _current_random()
     all_scatter_points = _executeSQL(
         query=f"""
             SELECT 

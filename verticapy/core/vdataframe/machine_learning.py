@@ -21,7 +21,7 @@ import numpy as np
 import scipy.stats as scipy_st
 
 from verticapy._utils._collect import save_verticapy_logs
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import ParameterError
@@ -861,7 +861,7 @@ class vDFML:
             order_by = [order_by]
         order_by = self._get_sort_syntax(order_by)
         if not random_state:
-            random_state = OPTIONS["random_state"]
+            random_state = _options["random_state"]
         random_seed = (
             random_state
             if isinstance(random_state, int)

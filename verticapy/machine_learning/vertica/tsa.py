@@ -19,7 +19,7 @@ from typing import Literal, Union
 
 import matplotlib.pyplot as plt
 
-from verticapy._config.config import ISNOTEBOOK, OPTIONS, PARSER_IMPORT
+from verticapy._config.config import ISNOTEBOOK, _options, PARSER_IMPORT
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._version import check_minimum_version
 
@@ -311,7 +311,7 @@ papprox_ma: int, optional
         model
         """
         # Initialization
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -759,8 +759,8 @@ papprox_ma: int, optional
             vdf=vdf, y=y, ts=ts, X=X, nlead=0, name="_verticapy_prediction_"
         )
         error_eps = 1.96 * math.sqrt(self.score(method="mse"))
-        print_info = OPTIONS["print_info"]
-        OPTIONS["print_info"] = False
+        print_info = _options["print_info"]
+        _options["print_info"] = False
         try:
             result = (
                 result.select([ts, y, "_verticapy_prediction_"])
@@ -770,9 +770,9 @@ papprox_ma: int, optional
                 .values
             )
         except:
-            OPTIONS["print_info"] = print_info
+            _options["print_info"] = print_info
             raise
-        OPTIONS["print_info"] = print_info
+        _options["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1288,7 +1288,7 @@ solver: str, optional
     object
         self
         """
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -1504,8 +1504,8 @@ solver: str, optional
         )
         y, prediction = X[X_idx], "_verticapy_prediction_{}_".format(X_idx)
         error_eps = 1.96 * math.sqrt(self.score(method="mse").values["mse"][X_idx])
-        print_info = OPTIONS["print_info"]
-        OPTIONS["print_info"] = False
+        print_info = _options["print_info"]
+        _options["print_info"] = False
         try:
             result = (
                 result_all.select([ts, y, prediction])
@@ -1515,9 +1515,9 @@ solver: str, optional
                 .values
             )
         except:
-            OPTIONS["print_info"] = print_info
+            _options["print_info"] = print_info
             raise
-        OPTIONS["print_info"] = print_info
+        _options["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1534,16 +1534,16 @@ solver: str, optional
             ],
         )
         if dynamic:
-            print_info = OPTIONS["print_info"]
-            OPTIONS["print_info"] = False
+            print_info = _options["print_info"]
+            _options["print_info"] = False
             try:
                 result = (
                     result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
                 )
             except:
-                OPTIONS["print_info"] = print_info
+                _options["print_info"] = print_info
                 raise
-            OPTIONS["print_info"] = print_info
+            _options["print_info"] = print_info
             columns = [elem for elem in result]
             if isinstance(result[columns[0]][0], str):
                 result[columns[0]] = [parse(elem) for elem in result[columns[0]]]

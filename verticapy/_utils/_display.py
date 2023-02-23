@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import html, shutil
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._cast import to_category
 from verticapy._utils._logo import gen_verticapy_logo_html
 
@@ -122,7 +122,7 @@ def print_table(
                     val = "[null]"
                     color = "#999999"
                 else:
-                    if isinstance(val, bool) and (OPTIONS["mode"] in ("full", None)):
+                    if isinstance(val, bool) and (_options["mode"] in ("full", None)):
                         val = (
                             "<center>&#9989;</center>"
                             if (val)
@@ -130,14 +130,14 @@ def print_table(
                         )
                     color = "black"
                 html_table += '<td style="background-color: '
-                if (j == 0) or (i == 0) or (OPTIONS["mode"] not in ("full", None)):
+                if (j == 0) or (i == 0) or (_options["mode"] not in ("full", None)):
                     html_table += " #FFFFFF; "
                 elif val == "[null]":
                     html_table += " #EEEEEE; "
                 else:
                     html_table += " #FAFAFA; "
                 html_table += f"color: {color}; white-space:nowrap; "
-                if OPTIONS["mode"] in ("full", None):
+                if _options["mode"] in ("full", None):
                     if (j == 0) or (i == 0):
                         html_table += "border: 1px solid #AAAAAA; "
                     else:
@@ -163,7 +163,7 @@ def print_table(
                     if j != 0:
                         type_val, category, missing_values = "", "", ""
                         if data_columns[j][0] in dtype and (
-                            OPTIONS["mode"] in ("full", None)
+                            _options["mode"] in ("full", None)
                         ):
                             if dtype[data_columns[j][0]] != "undefined":
                                 type_val = dtype[data_columns[j][0]].capitalize()
@@ -219,7 +219,7 @@ def print_table(
                     else:
                         ctype, missing_values, category = "", "", ""
                     if (i == 0) and (j == 0):
-                        if dtype and (OPTIONS["mode"] in ("full", None)):
+                        if dtype and (_options["mode"] in ("full", None)):
                             val = gen_verticapy_logo_html(size="45px")
                         else:
                             val = ""
@@ -231,7 +231,7 @@ def print_table(
                     html_table += f">{category}<b>{val}</b>{ctype}{missing_values}</td>"
                 elif cell_width[j] > 240:
                     background = "#EEEEEE" if val == "[null]" else "#FAFAFA"
-                    if OPTIONS["mode"] not in ("full", None):
+                    if _options["mode"] not in ("full", None):
                         background = "#FFFFFF"
                     html_table += (
                         f'><input style="background-color: {val}; border: none; '

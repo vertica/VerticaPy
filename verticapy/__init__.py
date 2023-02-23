@@ -69,16 +69,16 @@ from verticapy._utils._logo import gen_verticapy_logo_html, gen_verticapy_logo_s
 from verticapy._help import help_start
 from verticapy._version import __version__, vertica_version
 
-from verticapy.connect.connect import (
+from verticapy.connection.connect import (
     close_connection,
     connect,
     current_connection,
     current_cursor,
     set_connection,
 )
-from verticapy.connect.external import set_external_connection
-from verticapy.connect.read import available_connections
-from verticapy.connect.write import (
+from verticapy.connection.external import set_external_connection
+from verticapy.connection.read import available_connections
+from verticapy.connection.write import (
     change_auto_connection,
     delete_connection,
     new_connection,

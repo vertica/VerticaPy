@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import math, warnings
 from typing import Literal, Union
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
 
@@ -66,7 +66,7 @@ class vDFNORM:
                 self[column].normalize(method=method)
             elif (no_cols) and (self[column].isbool()):
                 pass
-            elif OPTIONS["print_info"]:
+            elif _options["print_info"]:
                 warning_message = (
                     f"The vDataColumn {column} was skipped.\n"
                     "Normalize only accept numerical data types."

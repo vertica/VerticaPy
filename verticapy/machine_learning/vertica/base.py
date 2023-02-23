@@ -19,7 +19,7 @@ from typing import Literal, Union, get_type_hints
 from collections.abc import Iterable
 import numpy as np
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
@@ -1481,7 +1481,7 @@ class Supervised(vModel):
 		"""
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -1511,7 +1511,7 @@ class Supervised(vModel):
             "RandomForestRegressor",
             "XGBoostClassifier",
             "XGBoostRegressor",
-        ) and isinstance(OPTIONS["random_state"], int):
+        ) and isinstance(_options["random_state"], int):
             id_column = f""", 
                 ROW_NUMBER() OVER 
                 (ORDER BY {', '.join(X)}) 
@@ -1577,9 +1577,9 @@ class Supervised(vModel):
             "RandomForestRegressor",
             "XGBoostClassifier",
             "XGBoostRegressor",
-        ) and isinstance(OPTIONS["random_state"], int):
+        ) and isinstance(_options["random_state"], int):
             query += f""", 
-                seed={OPTIONS['random_state']}, 
+                seed={_options['random_state']}, 
                 id_column='{id_column_name}'"""
         query += ")"
         try:
@@ -3034,13 +3034,13 @@ class Unsupervised(vModel):
 		"""
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
         if self.MODEL_TYPE in ("BisectingKMeans", "IsolationForest") and isinstance(
-            OPTIONS["random_state"], int
+            _options["random_state"], int
         ):
             X_str = ", ".join([quote_ident(x) for x in X])
             id_column = f", ROW_NUMBER() OVER (ORDER BY {X_str}) AS {id_column_name}"
@@ -3146,14 +3146,14 @@ class Unsupervised(vModel):
             query += f"init_method = '{self.parameters['init']}', "
         query += ", ".join([f"{p} = {parameters[p]}" for p in parameters])
         if self.MODEL_TYPE == "BisectingKMeans" and isinstance(
-            OPTIONS["random_state"], int
+            _options["random_state"], int
         ):
-            query += f", kmeans_seed={OPTIONS['random_state']}"
+            query += f", kmeans_seed={_options['random_state']}"
             query += f", id_column='{id_column_name}'"
         elif self.MODEL_TYPE == "IsolationForest" and isinstance(
-            OPTIONS["random_state"], int
+            _options["random_state"], int
         ):
-            query += f", seed={OPTIONS['random_state']}"
+            query += f", seed={_options['random_state']}"
             query += f", id_column='{id_column_name}'"
         query += ")"
         try:

@@ -20,7 +20,7 @@ from typing import Literal, Union
 
 import matplotlib.pyplot as plt
 
-from verticapy._config.config import ISNOTEBOOK, OPTIONS
+from verticapy._config.config import ISNOTEBOOK, _options
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
@@ -106,7 +106,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -309,7 +309,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -962,7 +962,7 @@ xlim: list, optional
         """
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -1376,7 +1376,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -1538,7 +1538,7 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)

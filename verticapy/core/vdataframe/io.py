@@ -21,11 +21,11 @@ import numpy as np
 
 import pandas as pd
 
-from verticapy._config.config import current_random, GEOPANDAS_ON
+from verticapy._config.config import _current_random, GEOPANDAS_ON
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.errors import ParameterError, ParsingError
 
 from verticapy.sql.read import to_tablesample
@@ -324,7 +324,7 @@ class vDFIO:
                 select += [column]
             select = ", ".join(select)
         insert_usecols = ", ".join([quote_ident(column) for column in usecols])
-        random_func = current_random(nb_split)
+        random_func = _current_random(nb_split)
         nb_split = f", {random_func} AS _verticapy_split_" if (nb_split > 0) else ""
         if isinstance(db_filter, Iterable) and not (isinstance(db_filter, str)):
             db_filter = " AND ".join([f"({elem})" for elem in db_filter])

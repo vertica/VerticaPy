@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from typing import Union
 from tqdm.auto import tqdm
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._collect import save_verticapy_logs
 
 from verticapy.core.vdataframe.base import vDataFrame
@@ -128,7 +128,7 @@ model_: object
         """
         from verticapy.machine_learning.vertica.automl import AutoDataPrep
 
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -160,7 +160,7 @@ model_: object
             )
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mBuilding the Final Model\033[0m\033[0m\n")
-        if OPTIONS["tqdm"] and self.parameters["print_info"]:
+        if _options["tqdm"] and self.parameters["print_info"]:
             loop = tqdm(range(1))
         else:
             loop = range(1)

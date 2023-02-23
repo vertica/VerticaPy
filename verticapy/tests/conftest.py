@@ -52,7 +52,7 @@ def get_version():
     base_class = VerticaPyTestBase()
     base_class.setUp()
     create_conn_file()
-    verticapy.connect(
+    verticapy.connection(
         "vp_test_config",
         os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
     )
@@ -70,7 +70,7 @@ def base():
     base_class = VerticaPyTestBase()
     base_class.setUp()
     create_conn_file()
-    verticapy.connect(
+    verticapy.connection(
         "vp_test_config",
         os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
     )

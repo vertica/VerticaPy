@@ -224,7 +224,7 @@ class vDFMATH:
             "iqr",
             "sem",
         ) or ("%" in func):
-            if order_by and not (OPTIONS["print_info"]):
+            if order_by and not (_options["print_info"]):
                 print(
                     f"\u26A0 '{func}' analytic method doesn't need an "
                     "order by clause, it was ignored"

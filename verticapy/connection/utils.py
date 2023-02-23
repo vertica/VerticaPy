@@ -33,7 +33,7 @@ def get_confparser(dsn: str = ""):
 def get_connection_file():
     """
 Gets (and creates, if necessary) the auto-connection file.
-If the environment variable 'VERTICAPY_CONNECTIONS' is set, it is assumed 
+If the environment variable 'VERTICAPY_CONNECTION' is set, it is assumed 
 to be the full path to the auto-connection file.
 Otherwise, we reference "connections.verticapy" in the hidden ".verticapy" 
 folder in the user's home directory.
@@ -43,8 +43,8 @@ Returns
 string
     the full path to the auto-connection file.
     """
-    if "VERTICAPY_CONNECTIONS" in os.environ:
-        return os.environ["VERTICAPY_CONNECTIONS"]
+    if "VERTICAPY_CONNECTION" in os.environ:
+        return os.environ["VERTICAPY_CONNECTION"]
     path = os.path.join(os.path.expanduser("~"), ".vertica")
     os.makedirs(path, 0o700, exist_ok=True)
     path = os.path.join(path, "connections.verticapy")

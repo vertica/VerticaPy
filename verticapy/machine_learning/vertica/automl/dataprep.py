@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import datetime
 from typing import Literal, Union
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
@@ -131,7 +131,7 @@ final_relation_: vDataFrame
         self.MODEL_TYPE, self.model_name = "AutoDataPrep", name
         if not (self.model_name):
             self.model_name = gen_tmp_name(
-                schema=OPTIONS["temp_schema"], name="autodataprep"
+                schema=_options["temp_schema"], name="autodataprep"
             )
         self.parameters = {
             "cat_method": cat_method,
@@ -176,12 +176,12 @@ final_relation_: vDataFrame
     object
         the cleaned relation
         """
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
-        current_print_info = OPTIONS["print_info"]
-        OPTIONS["print_info"] = False
+        current_print_info = _options["print_info"]
+        _options["print_info"] = False
         assert not (by) or (ts), ParameterError(
             "Parameter 'by' must be empty if 'ts' is not defined."
         )
@@ -350,5 +350,5 @@ final_relation_: vDataFrame
         if self.parameters["save"]:
             vdf.to_db(name=self.model_name, relation_type="table", inplace=True)
         self.final_relation_ = vdf
-        OPTIONS["print_info"] = current_print_info
+        _options["print_info"] = current_print_info
         return self.final_relation_

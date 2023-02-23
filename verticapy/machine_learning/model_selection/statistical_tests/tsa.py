@@ -19,7 +19,7 @@ from typing import Union
 import numpy as np
 from scipy.stats import chi2, norm, f
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
@@ -184,8 +184,8 @@ TableSample
                     return -3.41
 
     ts, column, by = vdf._format_colnames(ts, column, by)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
-    relation_name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg_view")
+    name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
+    relation_name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg_view")
     drop(name, method="model")
     drop(relation_name, method="view")
     lag = [
@@ -310,11 +310,11 @@ model
     model_tmp = type(model)(name)
     model_tmp.set_params(param)
     X, y = model.X, model.y
-    print_info = OPTIONS["print_info"]
-    OPTIONS["print_info"] = False
+    print_info = _options["print_info"]
+    _options["print_info"] = False
     if prais_winsten:
         vdf_tmp = vdf_tmp[X + [y, ts]].dropna()
-    OPTIONS["print_info"] = print_info
+    _options["print_info"] = print_info
     prediction_name = gen_tmp_name(name="prediction")[1:-1]
     eps_name = gen_tmp_name(name="eps")[1:-1]
     model.predict(vdf_tmp, X=X, name=prediction_name)
@@ -418,7 +418,7 @@ TableSample
         X_names += ["lag_{}".format(i)]
     query = "SELECT {} FROM {}".format(", ".join(X), vdf._genSQL())
     vdf_lags = vDataFrame(query)
-    name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+    name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
     model = LinearRegression(name)
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
@@ -692,7 +692,7 @@ vDataFrame
         for i in range(1, polynomial_order + 1):
             vdf_poly[f"t_{i}"] = f"POWER(ROW_NUMBER() OVER ({by}ORDER BY {ts}), {i})"
             X += [f"t_{i}"]
-        name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_poly, X, column)
@@ -734,7 +734,7 @@ vDataFrame
             "t_sin"
         ] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
         X = ["t_cos", "t_sin"]
-        name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="linear_reg")
+        name = gen_tmp_name(schema=_options["temp_schema"], name="linear_reg")
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_seasonality, X, seasonal_name)

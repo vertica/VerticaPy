@@ -16,19 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal
 
-EXTERNAL_CONNECTION = {}
-SPECIAL_SYMBOLS = [
-    "$",
-    "€",
-    "£",
-    "%",
-    "@",
-    "&",
-    "§",
-    "%",
-    "?",
-    "!",
-]
+from verticapy.connection._global import _external_connections, SPECIAL_SYMBOLS
 
 
 def set_external_connection(
@@ -54,9 +42,9 @@ symbol: str, optional
     with the input cid by writing $$$QUERY$$$, where QUERY represents 
     a custom query.
     """
-    global EXTERNAL_CONNECTION
+    global _external_connections
     if isinstance(cid, str) and isinstance(rowset, int) and symbol in SPECIAL_SYMBOLS:
-        EXTERNAL_CONNECTION[symbol] = {
+        _external_connections[symbol] = {
             "cid": cid,
             "rowset": rowset,
         }

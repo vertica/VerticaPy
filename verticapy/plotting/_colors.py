@@ -19,7 +19,7 @@ from random import shuffle
 
 import matplotlib.colors as plt
 
-from verticapy._config.config import COLORS_OPTIONS, OPTIONS
+from verticapy._config.config import COLORS_OPTIONS, _options
 
 
 def get_color(d: dict, idx: int = 0):
@@ -55,11 +55,11 @@ def gen_cmap(color: str = "", reverse: bool = False):
 
 
 def gen_colors():
-    if not (OPTIONS["colors"]) or not (isinstance(OPTIONS["colors"], list)):
-        if not (OPTIONS["colors"]):
+    if not (_options["colors"]) or not (isinstance(_options["colors"], list)):
+        if not (_options["colors"]):
             colors = COLORS_OPTIONS["default"]
         else:
-            colors = copy.deepcopy(OPTIONS["colors"])
+            colors = copy.deepcopy(_options["colors"])
         all_colors = [item for item in plt.cnames]
         shuffle(all_colors)
         for c in all_colors:
@@ -67,4 +67,4 @@ def gen_colors():
                 colors += [c]
         return colors
     else:
-        return OPTIONS["colors"]
+        return _options["colors"]

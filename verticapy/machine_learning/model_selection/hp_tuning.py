@@ -22,7 +22,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from verticapy._config.config import ISNOTEBOOK, OPTIONS
+from verticapy._config.config import ISNOTEBOOK, _options
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
@@ -193,7 +193,7 @@ TableSample
             elif elem == "max":
                 result["max_features"][idx] = int(len(X))
     result = TableSample(result).to_sql()
-    schema = OPTIONS["temp_schema"]
+    schema = _options["temp_schema"]
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
     drop(relation, method="table")
@@ -203,7 +203,7 @@ TableSample
             f"\033[1m\033[4mStep 2 - Fitting the RF model with "
             "the hyperparameters data\033[0m\033[0m\n"
         )
-    if OPTIONS["tqdm"] and print_info:
+    if _options["tqdm"] and print_info:
         loop = tqdm(range(1))
     else:
         loop = range(1)
@@ -383,11 +383,11 @@ TableSample
             estimator_type = "enet"
     if estimator_type == "logit":
         estimator = vml.LogisticRegression(
-            gen_tmp_name(schema=OPTIONS["temp_schema"], name="logit")
+            gen_tmp_name(schema=_options["temp_schema"], name="logit")
         )
     else:
         estimator = vml.ElasticNet(
-            gen_tmp_name(schema=OPTIONS["temp_schema"], name="enet")
+            gen_tmp_name(schema=_options["temp_schema"], name="enet")
         )
     result = bayesian_search_cv(
         estimator,
@@ -1166,7 +1166,7 @@ TableSample
     if all_configuration == []:
         all_configuration = [{}]
     if (
-        OPTIONS["tqdm"]
+        _options["tqdm"]
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):

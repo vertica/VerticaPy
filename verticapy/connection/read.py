@@ -16,8 +16,8 @@ permissions and limitations under the License.
 """
 import os
 
-from verticapy.connect.connect import SESSION_LABEL, VERTICAPY_AUTO_CONNECTION
-from verticapy.connect.utils import get_confparser
+from verticapy.connection._global import SESSION_LABEL, VERTICAPY_AUTO_CONNECTION
+from verticapy.connection.utils import get_confparser
 from verticapy.errors import ParameterError
 
 
@@ -42,7 +42,7 @@ available_auto_connection = available_connections
 
 def read_dsn(section: str, dsn: str = ""):
     """
-Reads the DSN information from the VERTICAPY_CONNECTIONS environment 
+Reads the DSN information from the VERTICAPY_CONNECTION environment 
 variable or the input file.
 
 Parameters
@@ -51,7 +51,7 @@ section: str
     Name of the section in the configuration file.
 dsn: str, optional
     Path to the file containing the credentials. If empty, the 
-    VERTICAPY_CONNECTIONS environment variable will be used.
+    VERTICAPY_CONNECTION environment variable will be used.
 
 Returns
 -------

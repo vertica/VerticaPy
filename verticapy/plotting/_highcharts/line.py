@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from vertica_highcharts import Highchart, Highstock
 
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 
 from verticapy.plotting._colors import gen_colors
 

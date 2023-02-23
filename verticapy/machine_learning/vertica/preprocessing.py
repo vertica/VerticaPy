@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal, Union
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
@@ -209,7 +209,7 @@ max_text_size: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)

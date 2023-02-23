@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Union
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy.errors import ParameterError, ModelError
 
@@ -122,7 +122,7 @@ steps: list
             vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation
-        if OPTIONS["overwrite_model"]:
+        if _options["overwrite_model"]:
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)

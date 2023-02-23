@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import os, warnings
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._execute import _executeSQL
@@ -543,6 +543,6 @@ read_json : Ingests a JSON file into the Vertica database.
             _executeSQL(
                 query2, title="Ingesting the data.",
             )
-            if not (insert) and not (temporary_local_table) and OPTIONS["print_info"]:
+            if not (insert) and not (temporary_local_table) and _options["print_info"]:
                 print(f"The table {input_relation} has been successfully created.")
             return vDataFrame(table_name, schema=schema)

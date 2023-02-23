@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
-from typing import Literal, Union, overload
+from typing import Literal, Union, Optional, overload
 
 try:
     from geopandas import GeoDataFrame
@@ -71,7 +71,7 @@ COLORS_OPTIONS = {
     "default": ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"],
 }
 
-OPTIONS = {
+_options = {
     "cache": True,
     "colors": None,
     "interactive": False,
@@ -92,11 +92,11 @@ OPTIONS = {
 }
 
 
-def current_random(rand_int: int = None):
+def _current_random(rand_int: Optional[int] = None) -> str:
     """
     TODO 
     """
-    random_state = OPTIONS["random_state"]
+    random_state = _options["random_state"]
     if isinstance(rand_int, int):
         if isinstance(random_state, int):
             random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
@@ -110,9 +110,10 @@ def current_random(rand_int: int = None):
     return random_func
 
 
-def init_interactive_mode(all_interactive=False):
+def init_interactive_mode(all_interactive: bool = False) -> None:
     """Activate the datatables representation for all the vDataFrames."""
     set_option("interactive", all_interactive)
+    return None
 
 
 def get_option(
@@ -135,7 +136,7 @@ def get_option(
         "tqdm",
     ],
 ) -> Union[bool, int, str, list, None]:
-    return OPTIONS[option]
+    return _options[option]
 
 
 @overload
@@ -239,43 +240,41 @@ def set_option(
     value: object, optional
         New value of option.
     """
-    from verticapy._utils._sql._execute import _executeSQL
-
     wrong_value = False
     if option == "colors":
         if isinstance(value, list):
-            OPTIONS["colors"] = [str(elem) for elem in value]
+            _options["colors"] = [str(elem) for elem in value]
         else:
             wrong_value = True
     elif option == "color_style":
         if value == None:
             value = "default"
         if value in COLORS_OPTIONS:
-            OPTIONS["colors"] = COLORS_OPTIONS[value]
+            _options["colors"] = COLORS_OPTIONS[value]
         else:
             wrong_value = True
     elif option == "max_columns":
         if isinstance(value, int) and value > 0:
-            OPTIONS["max_columns"] = int(value)
+            _options["max_columns"] = int(value)
         else:
             wrong_value = True
     elif option == "max_rows":
         if isinstance(value, int) and value >= 0:
-            OPTIONS["max_rows"] = int(value)
+            _options["max_rows"] = int(value)
         else:
             wrong_value = True
     elif option == "mode":
         if value in ["light", "full"]:
-            OPTIONS["mode"] = value
+            _options["mode"] = value
         else:
             wrong_value = True
     elif option == "random_state":
         if isinstance(value, int) and (value < 0):
             raise ParameterError("Random State Value must be positive.")
         if isinstance(value, int):
-            OPTIONS["random_state"] = value
+            _options["random_state"] = value
         elif value == None:
-            OPTIONS["random_state"] = None
+            _options["random_state"] = None
         else:
             wrong_value = True
     elif option in (
@@ -291,7 +290,7 @@ def set_option(
         "interactive",
     ):
         if value in (True, False, None):
-            OPTIONS[option] = value
+            _options[option] = value
         else:
             wrong_value = True
     elif option == "save_query_profile":
@@ -302,22 +301,10 @@ def set_option(
         else:
             wrong_value = True
         if not (wrong_value):
-            OPTIONS[option] = value
+            _options[option] = value
     elif option == "temp_schema":
         if isinstance(value, str):
-            value_str = value.replace("'", "''")
-            query = f"""
-                SELECT /*+LABEL('utilities.set_option')*/
-                  schema_name 
-               FROM v_catalog.schemata 
-               WHERE schema_name = '{value_str}' LIMIT 1;"""
-            res = _executeSQL(
-                query, title="Checking if the schema exists.", method="fetchrow"
-            )
-            if res:
-                OPTIONS["temp_schema"] = str(value)
-            else:
-                raise ParameterError(f"The schema '{value}' could not be found.")
+            _options["temp_schema"] = value
         else:
             wrong_value = True
     else:
@@ -325,3 +312,4 @@ def set_option(
     if wrong_value:
         warning_message = "The parameter value is incorrect. Nothing was changed."
         warnings.warn(warning_message, Warning)
+    return None

@@ -20,7 +20,7 @@ import numpy as np
 
 import pandas as pd
 
-from verticapy._config.config import OPTIONS
+from verticapy._config.config import _options
 from verticapy._utils._cast import to_category
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._check import is_longvar, is_sql_select
@@ -33,8 +33,8 @@ from verticapy._utils._sql._format import (
     quote_ident,
     schema_relation,
 )
-from verticapy.connect import (
-    EXTERNAL_CONNECTION,
+from verticapy.connection._global import (
+    _external_connections,
     SPECIAL_SYMBOLS,
 )
 from verticapy.errors import (
@@ -246,7 +246,7 @@ vDataColumns : vDataColumn
             else:
                 query = sql
 
-            if symbol in EXTERNAL_CONNECTION:
+            if symbol in _external_connections:
                 sql = symbol * 3 + query + symbol * 3
 
             else:

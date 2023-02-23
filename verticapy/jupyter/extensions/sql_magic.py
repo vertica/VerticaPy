@@ -28,16 +28,18 @@ import re, time, warnings
 from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
 
-from verticapy._config.config import OPTIONS, set_option
+from verticapy._config.config import _options, set_option
 from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._sql._execute import _executeSQL
-from verticapy._utils._sql._format import clean_query, replace_vars_in_query
-from verticapy.connect import SPECIAL_SYMBOLS
+from verticapy._utils._sql._format import (
+    clean_query,
+    replace_external_queries_in_query,
+    replace_vars_in_query,
+)
+from verticapy.connection._global import SPECIAL_SYMBOLS
 from verticapy.errors import QueryError, ParameterError
 
 from verticapy.jupyter.extensions._utils import get_magic_options
-
-from verticapy.sdk.vertica.dblink import replace_external_queries_in_query
 
 
 @save_verticapy_logs
@@ -47,7 +49,7 @@ def sql_magic(line, cell="", local_ns=None):
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.
-    sql_on, time_on = OPTIONS["sql_on"], OPTIONS["time_on"]
+    sql_on, time_on = _options["sql_on"], _options["time_on"]
     set_option("sql_on", False)
     set_option("time_on", False)
 
@@ -94,7 +96,7 @@ def sql_magic(line, cell="", local_ns=None):
                         raise ParameterError("Duplicate option '-ncols'.")
                     options["-ncols"] = int(all_options_dict[option])
 
-            elif OPTIONS["print_info"]:
+            elif _options["print_info"]:
                 warning_message = (
                     f"\u26A0 Warning : The option '{option}' doesn't "
                     "exist, it was skipped."
@@ -234,7 +236,7 @@ def sql_magic(line, cell="", local_ns=None):
                 except Exception as e:
                     error = str(e)
 
-                if OPTIONS["print_info"] and (
+                if _options["print_info"] and (
                     "Severity: ERROR, Message: User defined transform must return at least one column"
                     in error
                     and "DBLINK" in error
@@ -244,7 +246,7 @@ def sql_magic(line, cell="", local_ns=None):
                 elif error:
                     raise QueryError(error)
 
-                elif OPTIONS["print_info"]:
+                elif _options["print_info"]:
                     print(query_type)
 
             else:
@@ -266,9 +268,9 @@ def sql_magic(line, cell="", local_ns=None):
                         final_result = _executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
                         )
-                        if final_result and OPTIONS["print_info"]:
+                        if final_result and _options["print_info"]:
                             print(final_result)
-                        elif OPTIONS["print_info"]:
+                        elif _options["print_info"]:
                             print(query_type)
 
                     except Exception as e:
@@ -282,7 +284,7 @@ def sql_magic(line, cell="", local_ns=None):
                     and "DBLINK" in error
                 ):
 
-                    if OPTIONS["print_info"]:
+                    if _options["print_info"]:
                         print(query_type)
 
                 elif error:
@@ -301,7 +303,7 @@ def sql_magic(line, cell="", local_ns=None):
 
         elapsed_time = round(time.time() - start_time, 3)
 
-        if OPTIONS["print_info"]:
+        if _options["print_info"]:
             display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
 
         return result

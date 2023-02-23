@@ -14,20 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import uuid, vertica_python
+import vertica_python
 
-from verticapy._version import __version__
-from verticapy.connect.utils import get_confparser, get_connection_file
+from verticapy.connection._global import (
+    _connection,
+    SESSION_LABEL,
+    VERTICAPY_AUTO_CONNECTION,
+)
+from verticapy.connection.read import read_dsn
+from verticapy.connection.utils import get_confparser, get_connection_file
 from verticapy.errors import ConnectionError, ParameterError
-
-VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
-SESSION_IDENTIFIER = str(uuid.uuid1()).replace("-", "")
-SESSION_LABEL = f"verticapy-{__version__}-{SESSION_IDENTIFIER}"
-CONNECTION = {
-    "conn": None,
-    "section": None,
-    "dsn": None,
-}
 
 
 def auto_connect():
@@ -54,8 +50,8 @@ def close_connection():
     """
 Closes the connection to the database.
     """
-    if CONNECTION["conn"] and not (CONNECTION["conn"].closed()):
-        CONNECTION["conn"].close()
+    if _connection["conn"] and not (_connection["conn"].closed()):
+        _connection["conn"].close()
 
 
 def connect(section: str, dsn: str = ""):
@@ -70,16 +66,16 @@ dsn: str, optional
     Path to the file containing the credentials. If empty, the 
     Connection File will be used.
     """
-    global CONNECTION
-    prev_conn = CONNECTION["conn"]
+    global _connection
+    prev_conn = _connection["conn"]
     if not (dsn):
         dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
     try:
-        CONNECTION["conn"] = vertica_connection(section, dsn)
-        CONNECTION["dsn"] = dsn
-        CONNECTION["section"] = section
+        _connection["conn"] = vertica_connection(section, dsn)
+        _connection["dsn"] = dsn
+        _connection["section"] = section
     except Exception as e:
         if "The DSN Section" in str(e):
             raise ConnectionError(
@@ -104,14 +100,14 @@ stored credentials. If this also fails, VerticaPy attempts to connect using
 an auto connection. Otherwise, VerticaPy attempts to connect to a 
 VerticaLab Environment.
     """
-    global CONNECTION
+    global _connection
     # Look if the connection does not exist or is closed
-    if not (CONNECTION["conn"]) or CONNECTION["conn"].closed():
+    if not (_connection["conn"]) or _connection["conn"].closed():
 
         # Connection using the existing credentials
-        if CONNECTION["section"] and CONNECTION["dsn"]:
+        if _connection["section"] and _connection["dsn"]:
             connect(
-                CONNECTION["section"], CONNECTION["dsn"],
+                _connection["section"], _connection["dsn"],
             )
 
         else:
@@ -125,12 +121,12 @@ VerticaLab Environment.
                 try:
                     # Connection to the VerticaLab environment
                     conn = verticalab_connection()
-                    CONNECTION["conn"] = conn
+                    _connection["conn"] = conn
 
                 except:
                     raise (e)
 
-    return CONNECTION["conn"]
+    return _connection["conn"]
 
 
 def current_cursor():
@@ -152,16 +148,16 @@ Parameters
 conn: object
     Connection object.
     """
-    global CONNECTION
+    global _connection
     try:
         conn.cursor().execute("SELECT /*+LABEL('connect.set_connection')*/ 1;")
         res = conn.cursor().fetchone()[0]
         assert res == 1
     except:
         ParameterError("The input connector is not working properly.")
-    CONNECTION["conn"] = conn
-    CONNECTION["dsn"] = None
-    CONNECTION["section"] = None
+    _connection["conn"] = conn
+    _connection["dsn"] = None
+    _connection["section"] = None
 
 
 def vertica_connection(section: str, dsn: str = ""):
@@ -174,15 +170,13 @@ section: str
     Name of the section in the configuration file.
 dsn: str, optional
     Path to the file containing the credentials. If empty, the 
-    VERTICAPY_CONNECTIONS environment variable will be used.
+    VERTICAPY_CONNECTION environment variable will be used.
 
 Returns
 -------
 conn
     Database connection.
     """
-    from verticapy.connect.read import read_dsn
-
     return vertica_python.connect(**read_dsn(section, dsn))
 
 

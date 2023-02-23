@@ -34,7 +34,7 @@ from verticapy import (
     read_csv,
     read_json,
 )
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 import verticapy.stats as st
 from verticapy.datasets import load_titanic, load_cities, load_amazon, load_world
 from verticapy.sql.sys import current_session, username
