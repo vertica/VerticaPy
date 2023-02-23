@@ -16,13 +16,14 @@ permissions and limitations under the License.
 """
 import copy
 from random import shuffle
+from typing import Union, Optional
 
 import matplotlib.colors as plt
 
 from verticapy._config.config import COLORS_OPTIONS, _options
 
 
-def get_colors(d: dict = {}, idx: int = None):
+def get_colors(d: Optional[dict] = {}, idx: Optional[int] = None) -> Union[list, str]:
     if "color" in d:
         if isinstance(d["color"], str):
             return d["color"]
@@ -36,7 +37,7 @@ def get_colors(d: dict = {}, idx: int = None):
                 colors = COLORS_OPTIONS["default"]
             else:
                 colors = copy.deepcopy(_options["colors"])
-            all_colors = [item for item in plt.cnames]
+            all_colors = copy.deepcopy(plt.cnames)
             shuffle(all_colors)
             for c in all_colors:
                 if c not in colors:
@@ -49,7 +50,7 @@ def get_colors(d: dict = {}, idx: int = None):
         return colors[idx % len(colors)]
 
 
-def get_cmap(color: str = "", reverse: bool = False):
+def get_cmap(color: str = "", reverse: bool = False) -> plt.LinearSegmentedColormap:
     if not (color):
         cm1 = plt.LinearSegmentedColormap.from_list(
             "verticapy", ["#FFFFFF", get_colors()[0]], N=1000

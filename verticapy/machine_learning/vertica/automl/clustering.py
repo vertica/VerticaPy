@@ -72,11 +72,11 @@ model_: object
     Final model used for the clustering.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_PREDICT_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "CLUSTERING"
-    MODEL_TYPE = "AutoClustering"
+    _vertica_fit_sql = ""
+    _vertica_predict_sql = ""
+    _model_category = "UNSUPERVISED"
+    _model_subcategory = "CLUSTERING"
+    _model_type = "AutoClustering"
 
     @save_verticapy_logs
     def __init__(

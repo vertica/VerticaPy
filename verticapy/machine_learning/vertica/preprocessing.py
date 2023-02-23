@@ -109,12 +109,29 @@ max_text_size: int, optional
 	columns during the fitting.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_transfORM_FUNCTION_SQL = ""
-    VERTICA_INVERSE_transfORM_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "PREPROCESSING"
-    MODEL_TYPE = "CountVectorizer"
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_transform_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_inverse_transform_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["PREPROCESSING"]:
+        return "PREPROCESSING"
+
+    @property
+    def _model_type(self) -> Literal["CountVectorizer"]:
+        return "CountVectorizer"
 
     @save_verticapy_logs
     def __init__(
@@ -309,12 +326,29 @@ method: str, optional
 		(x - min) / (max - min)
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "NORMALIZE_FIT"
-    VERTICA_transfORM_FUNCTION_SQL = "APPLY_NORMALIZE"
-    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "REVERSE_NORMALIZE"
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "PREPROCESSING"
-    MODEL_TYPE = "Normalizer"
+    @property
+    def _vertica_fit_sql(self) -> Literal["NORMALIZE_FIT"]:
+        return "NORMALIZE_FIT"
+
+    @property
+    def _vertica_transform_sql(self) -> Literal["APPLY_NORMALIZE"]:
+        return "APPLY_NORMALIZE"
+
+    @property
+    def _vertica_inverse_transform_sql(self) -> Literal["REVERSE_NORMALIZE"]:
+        return "REVERSE_NORMALIZE"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["PREPROCESSING"]:
+        return "PREPROCESSING"
+
+    @property
+    def _model_type(self) -> Literal["Normalizer"]:
+        return "Normalizer"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -379,12 +413,29 @@ null_column_name: str, optional
     ignore_null is set to false and column_naming is set to values or values_relaxed.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "ONE_HOT_ENCODER_FIT"
-    VERTICA_transfORM_FUNCTION_SQL = "APPLY_ONE_HOT_ENCODER"
-    VERTICA_INVERSE_transfORM_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "PREPROCESSING"
-    MODEL_TYPE = "OneHotEncoder"
+    @property
+    def _vertica_fit_sql(self) -> Literal["ONE_HOT_ENCODER_FIT"]:
+        return "ONE_HOT_ENCODER_FIT"
+
+    @property
+    def _vertica_transform_sql(self) -> Literal["APPLY_ONE_HOT_ENCODER"]:
+        return "APPLY_ONE_HOT_ENCODER"
+
+    @property
+    def _vertica_inverse_transform_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["PREPROCESSING"]:
+        return "PREPROCESSING"
+
+    @property
+    def _model_type(self) -> Literal["OneHotEncoder"]:
+        return "OneHotEncoder"
 
     @check_minimum_version
     @save_verticapy_logs

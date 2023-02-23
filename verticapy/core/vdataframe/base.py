@@ -196,8 +196,8 @@ vDataColumns : vDataColumn
     def __init__(
         self,
         input_relation: Union[str, pd.DataFrame, np.ndarray, list, TableSample, dict],
-        columns: Union[str, list] = [],
-        usecols: Union[str, list] = [],
+        columns: Union[str, list[str]] = [],
+        usecols: Union[str, list[str]] = [],
         schema: str = "",
         external: bool = False,
         symbol: Literal[tuple(SPECIAL_SYMBOLS)] = "$",

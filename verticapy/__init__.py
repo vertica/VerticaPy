@@ -54,15 +54,15 @@ VerticaPy aims  to  do  all  of  the above.  The idea is
 simple:  instead of moving data around  for  processing, 
 VerticaPy brings the logic to the data.
 """
-__author__ = "Badr Ouali"
-__author_email__ = "badr.ouali@vertica.com"
-__description__ = (
+__author__: str = "Badr Ouali"
+__author_email__: str = "badr.ouali@vertica.com"
+__description__: str = (
     "VerticaPy simplifies data exploration, data cleaning"
     " and machine learning in Vertica."
 )
-__url__ = "https://github.com/vertica/verticapy/"
-__license__ = "Apache License, Version 2.0"
-__version__ = "0.13.0"
+__url__: str = "https://github.com/vertica/verticapy/"
+__license__: str = "Apache License, Version 2.0"
+__version__: str = "0.13.0"
 
 from verticapy._config.config import set_option
 from verticapy._utils._sql._vertica_version import vertica_version

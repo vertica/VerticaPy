@@ -133,7 +133,7 @@ TableSample
     """
     if isinstance(X, str):
         X = [X]
-    if estimator.MODEL_SUBCATEGORY == "REGRESSOR" and metric == "auto":
+    if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"

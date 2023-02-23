@@ -67,13 +67,37 @@ class vModel:
 Main Class for Vertica Model
 	"""
 
+    @property
+    @abstractmethod
+    def _vertica_fit_sql(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def _model_category(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def _model_subcategory(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def _model_type(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
     def __repr__(self):
         """
 	Returns the model Representation.
 		"""
         try:
             rep = ""
-            if self.MODEL_TYPE not in (
+            if self._model_type not in (
                 "DBSCAN",
                 "NearestCentroid",
                 "VAR",
@@ -86,7 +110,7 @@ Main Class for Vertica Model
             ):
                 name = (
                     self.tree_name
-                    if self.MODEL_TYPE == "KernelDensity"
+                    if self._model_type == "KernelDensity"
                     else self.model_name
                 )
                 try:
@@ -100,17 +124,17 @@ Main Class for Vertica Model
                     method="fetchfirstelem",
                 )
                 return res
-            elif self.MODEL_TYPE == "AutoML":
+            elif self._model_type == "AutoML":
                 rep = self.best_model_.__repr__()
-            elif self.MODEL_TYPE == "AutoDataPrep":
+            elif self._model_type == "AutoDataPrep":
                 rep = self.final_relation_.__repr__()
-            elif self.MODEL_TYPE == "DBSCAN":
+            elif self._model_type == "DBSCAN":
                 rep = f"=======\ndetails\n=======\nNumber of Clusters: {self.n_cluster_}\nNumber of Outliers: {self.n_noise_}"
-            elif self.MODEL_TYPE == "LocalOutlierFactor":
+            elif self._model_type == "LocalOutlierFactor":
                 rep = f"=======\ndetails\n=======\nNumber of Errors: {self.n_errors_}"
-            elif self.MODEL_TYPE == "NearestCentroid":
+            elif self._model_type == "NearestCentroid":
                 rep = "=======\ndetails\n=======\n" + self.centroids_.__repr__()
-            elif self.MODEL_TYPE == "VAR":
+            elif self._model_type == "VAR":
                 rep = "=======\ndetails\n======="
                 for idx, elem in enumerate(self.X):
                     rep += "\n\n # " + str(elem) + "\n\n" + self.coef_[idx].__repr__()
@@ -118,7 +142,7 @@ Main Class for Vertica Model
                 rep += f"\nInput Relation : {self.input_relation}"
                 rep += f"\nX : {', '.join(self.X)}"
                 rep += f"\nts : {self.ts}"
-            elif self.MODEL_TYPE == "SARIMAX":
+            elif self._model_type == "SARIMAX":
                 rep = "=======\ndetails\n======="
                 rep += "\n\n# Coefficients\n\n" + self.coef_.__repr__()
                 if self.ma_piq_:
@@ -131,7 +155,7 @@ Main Class for Vertica Model
                     rep += f"\nExogenous Variables : {', '.join(self.exogenous)}"
                 if self.ma_avg_:
                     rep += f"\nMA AVG : {self.ma_avg_}"
-            elif self.MODEL_TYPE == "CountVectorizer":
+            elif self._model_type == "CountVectorizer":
                 rep = "=======\ndetails\n======="
                 if self.vocabulary_:
                     voc = [str(elem) for elem in self.vocabulary_]
@@ -145,7 +169,7 @@ Main Class for Vertica Model
                 rep += "\n\n===============\nAdditional Info\n==============="
                 rep += f"\nInput Relation : {self.input_relation}"
                 rep += f"\nX : {', '.join(self.X)}"
-            if self.MODEL_TYPE in (
+            if self._model_type in (
                 "DBSCAN",
                 "NearestCentroid",
                 "LocalOutlierFactor",
@@ -155,7 +179,7 @@ Main Class for Vertica Model
                 rep += "\n\n===============\nAdditional Info\n==============="
                 rep += f"\nInput Relation : {self.input_relation}"
                 rep += f"\nX : {', '.join(self.X)}"
-            if self.MODEL_TYPE in (
+            if self._model_type in (
                 "NearestCentroid",
                 "KNeighborsRegressor",
                 "KNeighborsClassifier",
@@ -163,7 +187,7 @@ Main Class for Vertica Model
                 rep += f"\ny : {self.y}"
             return rep
         except:
-            return f"<{self.MODEL_TYPE}>"
+            return f"<{self._model_type}>"
 
     def contour(
         self,
@@ -193,7 +217,7 @@ Main Class for Vertica Model
     ax
         Matplotlib axes object
         """
-        if self.MODEL_TYPE in (
+        if self._model_type in (
             "RandomForestClassifier",
             "XGBoostClassifier",
             "NaiveBayes",
@@ -202,7 +226,7 @@ Main Class for Vertica Model
         ):
             if not (pos_label):
                 pos_label = sorted(self.classes_)[-1]
-            if self.MODEL_TYPE in (
+            if self._model_type in (
                 "RandomForestClassifier",
                 "XGBoostClassifier",
                 "NaiveBayes",
@@ -226,18 +250,18 @@ Main Class for Vertica Model
                     ax=ax,
                     **style_kwds,
                 )
-        elif self.MODEL_TYPE == "KNeighborsRegressor":
+        elif self._model_type == "KNeighborsRegressor":
             return vDataFrame(self.input_relation).contour(
                 self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
             )
-        elif self.MODEL_TYPE in (
+        elif self._model_type in (
             "KMeans",
             "BisectingKMeans",
             "KPrototypes",
             "IsolationForest",
         ):
             cbar_title = "cluster"
-            if self.MODEL_TYPE == "IsolationForest":
+            if self._model_type == "IsolationForest":
                 cbar_title = "anomaly_score"
             return vDataFrame(self.input_relation).contour(
                 self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds,
@@ -269,31 +293,31 @@ Main Class for Vertica Model
 		"""
         if isinstance(X, str):
             X = [X]
-        if self.MODEL_TYPE == "AutoML":
+        if self._model_type == "AutoML":
             return self.best_model_.deploySQL(X)
-        if self.MODEL_TYPE not in ("DBSCAN", "LocalOutlierFactor"):
+        if self._model_type not in ("DBSCAN", "LocalOutlierFactor"):
             name = (
                 self.tree_name
-                if self.MODEL_TYPE == "KernelDensity"
+                if self._model_type == "KernelDensity"
                 else self.model_name
             )
             X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
             sql = f"""
-                {self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} 
+                {self._vertica_predict_sql}({', '.join(X)} 
                                                     USING PARAMETERS 
                                                     model_name = '{name}',
                                                     match_by_pos = 'true')"""
             return clean_query(sql)
         else:
             raise FunctionError(
-                f"Method 'deploySQL' for '{self.MODEL_TYPE}' doesn't exist."
+                f"Method 'deploySQL' for '{self._model_type}' doesn't exist."
             )
 
     def drop(self):
         """
 	Drops the model from the Vertica database.
 		"""
-        drop(self.model_name, method="model", model_type=self.MODEL_TYPE)
+        drop(self.model_name, method="model", model_type=self._model_type)
 
     def features_importance(
         self, ax=None, tree_id: int = None, show: bool = True, **style_kwds
@@ -318,7 +342,7 @@ Main Class for Vertica Model
 			An object containing the result. For more information, see
 			utilities.TableSample.
 		"""
-        if self.MODEL_TYPE == "AutoML":
+        if self._model_type == "AutoML":
             if self.stepwise_:
                 coeff_importances = {}
                 for idx in range(len(self.stepwise_["importance"])):
@@ -330,7 +354,7 @@ Main Class for Vertica Model
                     coeff_importances, print_legend=False, ax=ax, **style_kwds
                 )
             return self.best_model_.features_importance(ax, tree_id, show, **style_kwds)
-        if self.MODEL_TYPE in (
+        if self._model_type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
             "KernelDensity",
@@ -339,10 +363,10 @@ Main Class for Vertica Model
         ):
             name = (
                 self.tree_name
-                if self.MODEL_TYPE == "KernelDensity"
+                if self._model_type == "KernelDensity"
                 else self.model_name
             )
-            if self.MODEL_TYPE in ("XGBoostClassifier", "XGBoostRegressor",):
+            if self._model_type in ("XGBoostClassifier", "XGBoostRegressor",):
                 vertica_version(condition=[12, 0, 3])
                 fname = "XGB_PREDICTOR_IMPORTANCE"
                 var = "avg_gain"
@@ -362,7 +386,7 @@ Main Class for Vertica Model
                                     VERTICAPY_SUBTABLE 
                         ORDER BY 2 DESC;"""
             print_legend = False
-        elif self.MODEL_TYPE in (
+        elif self._model_type in (
             "LinearRegression",
             "LogisticRegression",
             "LinearSVC",
@@ -391,7 +415,7 @@ Main Class for Vertica Model
             print_legend = True
         else:
             raise FunctionError(
-                f"Method 'features_importance' for '{self.MODEL_TYPE}' doesn't exist."
+                f"Method 'features_importance' for '{self._model_type}' doesn't exist."
             )
         result = _executeSQL(
             query, title="Computing Features Importance.", method="fetchall"
@@ -427,9 +451,9 @@ Main Class for Vertica Model
 	TableSample
 		model attribute
 		"""
-        if self.MODEL_TYPE == "AutoML":
+        if self._model_type == "AutoML":
             return self.best_model_.get_attr(attr_name)
-        if self.MODEL_TYPE not in (
+        if self._model_type not in (
             "DBSCAN",
             "LocalOutlierFactor",
             "VAR",
@@ -441,7 +465,7 @@ Main Class for Vertica Model
         ):
             name = (
                 self.tree_name
-                if self.MODEL_TYPE == "KernelDensity"
+                if self._model_type == "KernelDensity"
                 else self.model_name
             )
             vertica_version(condition=[8, 1, 1])
@@ -457,7 +481,7 @@ Main Class for Vertica Model
                 title="Getting Model Attributes.",
             )
             return result
-        elif self.MODEL_TYPE == "DBSCAN":
+        elif self._model_type == "DBSCAN":
             if attr_name == "n_cluster":
                 return self.n_cluster_
             elif attr_name == "n_noise":
@@ -472,7 +496,7 @@ Main Class for Vertica Model
                 return result
             else:
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self.MODEL_TYPE == "CountVectorizer":
+        elif self._model_type == "CountVectorizer":
             if attr_name == "lowercase":
                 return self.parameters["lowercase"]
             elif attr_name == "max_df":
@@ -507,7 +531,7 @@ Main Class for Vertica Model
                 return result
             else:
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self.MODEL_TYPE == "NearestCentroid":
+        elif self._model_type == "NearestCentroid":
             if attr_name == "p":
                 return self.parameters["p"]
             elif attr_name == "centroids":
@@ -521,7 +545,7 @@ Main Class for Vertica Model
                 return result
             else:
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self.MODEL_TYPE == "KNeighborsClassifier":
+        elif self._model_type == "KNeighborsClassifier":
             if attr_name == "p":
                 return self.parameters["p"]
             elif attr_name == "n_neighbors":
@@ -535,7 +559,7 @@ Main Class for Vertica Model
                 return result
             else:
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self.MODEL_TYPE == "KNeighborsRegressor":
+        elif self._model_type == "KNeighborsRegressor":
             if attr_name == "p":
                 return self.parameters["p"]
             elif attr_name == "n_neighbors":
@@ -545,7 +569,7 @@ Main Class for Vertica Model
                 return result
             else:
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self.MODEL_TYPE == "LocalOutlierFactor":
+        elif self._model_type == "LocalOutlierFactor":
             if attr_name == "n_errors":
                 return self.n_errors_
             elif not (attr_name):
@@ -555,7 +579,7 @@ Main Class for Vertica Model
                 return result
             else:
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self.MODEL_TYPE == "SARIMAX":
+        elif self._model_type == "SARIMAX":
             if attr_name == "coefficients":
                 return self.coef_
             elif attr_name == "ma_avg":
@@ -569,7 +593,7 @@ Main Class for Vertica Model
                 return result
             else:
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self.MODEL_TYPE == "VAR":
+        elif self._model_type == "VAR":
             if attr_name == "coefficients":
                 return self.coef_
             elif not (attr_name):
@@ -577,7 +601,7 @@ Main Class for Vertica Model
                 return result
             else:
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self.MODEL_TYPE == "KernelDensity":
+        elif self._model_type == "KernelDensity":
             if attr_name == "map":
                 return self.map_
             elif not (attr_name):
@@ -587,7 +611,7 @@ Main Class for Vertica Model
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         else:
             raise FunctionError(
-                f"Method 'get_attr' for '{self.MODEL_TYPE}' doesn't exist."
+                f"Method 'get_attr' for '{self._model_type}' doesn't exist."
             )
 
     def get_params(self):
@@ -645,16 +669,16 @@ Main Class for Vertica Model
 
         for param in self.parameters:
 
-            if self.MODEL_TYPE in ("LinearSVC", "LinearSVR") and param == "C":
+            if self._model_type in ("LinearSVC", "LinearSVR") and param == "C":
                 parameters[param] = self.parameters[param]
 
             elif (
-                self.MODEL_TYPE in ("LinearRegression", "LogisticRegression")
+                self._model_type in ("LinearRegression", "LogisticRegression")
                 and param == "C"
             ):
                 parameters["lambda"] = self.parameters[param]
 
-            elif self.MODEL_TYPE == "BisectingKMeans" and param in (
+            elif self._model_type == "BisectingKMeans" and param in (
                 "init",
                 "max_iter",
                 "tol",
@@ -709,14 +733,14 @@ Main Class for Vertica Model
     ax
         Matplotlib axes object
 		"""
-        if self.MODEL_TYPE in (
+        if self._model_type in (
             "LinearRegression",
             "LogisticRegression",
             "LinearSVC",
             "LinearSVR",
         ):
             coefficients = self.coef_.values["coefficient"]
-            if self.MODEL_TYPE == "LogisticRegression":
+            if self._model_type == "LogisticRegression":
                 return logit_plot(
                     self.X,
                     self.y,
@@ -726,7 +750,7 @@ Main Class for Vertica Model
                     ax=ax,
                     **style_kwds,
                 )
-            elif self.MODEL_TYPE == "LinearSVC":
+            elif self._model_type == "LinearSVC":
                 return svm_classifier_plot(
                     self.X,
                     self.y,
@@ -746,15 +770,15 @@ Main Class for Vertica Model
                     ax=ax,
                     **style_kwds,
                 )
-        elif self.MODEL_TYPE in (
+        elif self._model_type in (
             "KMeans",
             "BisectingKMeans",
             "KPrototypes",
             "DBSCAN",
             "IsolationForest",
         ):
-            if self.MODEL_TYPE in ("KMeans", "BisectingKMeans", "KPrototypes",):
-                if self.MODEL_TYPE == "KPrototypes":
+            if self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",):
+                if self._model_type == "KPrototypes":
                     if any(
                         [
                             ("char" in self.cluster_centers_.dtype[key].lower())
@@ -765,12 +789,12 @@ Main Class for Vertica Model
                             "KPrototypes' plots with categorical inputs is not yet supported."
                         )
                 vdf = vDataFrame(self.input_relation)
-                catcol = f"{self.MODEL_TYPE.lower()}_cluster"
+                catcol = f"{self._model_type.lower()}_cluster"
                 self.predict(vdf, name=catcol)
-            elif self.MODEL_TYPE == "DBSCAN":
+            elif self._model_type == "DBSCAN":
                 vdf = vDataFrame(self.model_name)
                 catcol = "dbscan_cluster"
-            elif self.MODEL_TYPE == "IsolationForest":
+            elif self._model_type == "IsolationForest":
                 vdf = vDataFrame(self.input_relation)
                 self.predict(vdf, name="anomaly_score")
                 return vdf.bubble(
@@ -788,7 +812,7 @@ Main Class for Vertica Model
                 ax=ax,
                 **style_kwds,
             )
-        elif self.MODEL_TYPE == "LocalOutlierFactor":
+        elif self._model_type == "LocalOutlierFactor":
             cnt = _executeSQL(
                 query=f"SELECT /*+LABEL('learn.vModel.plot')*/ COUNT(*) FROM {self.model_name}",
                 method="fetchfirstelem",
@@ -798,7 +822,7 @@ Main Class for Vertica Model
             return lof_plot(
                 self.model_name, self.X, "lof_score", 100, ax=ax, **style_kwds
             )
-        elif self.MODEL_TYPE in ("RandomForestRegressor", "XGBoostRegressor"):
+        elif self._model_type in ("RandomForestRegressor", "XGBoostRegressor"):
             return regression_tree_plot(
                 self.X + [self.deploySQL()],
                 self.y,
@@ -808,7 +832,9 @@ Main Class for Vertica Model
                 **style_kwds,
             )
         else:
-            raise FunctionError(f"Method 'plot' for '{self.MODEL_TYPE}' doesn't exist.")
+            raise FunctionError(
+                f"Method 'plot' for '{self._model_type}' doesn't exist."
+            )
 
     def set_params(self, parameters: dict = {}):
         """
@@ -846,9 +872,9 @@ Main Class for Vertica Model
         from verticapy.machine_learning.memmodel.base import memModel
         from verticapy.machine_learning.vertica.tree import get_tree_list_of_arrays
 
-        if self.MODEL_TYPE == "AutoML":
+        if self._model_type == "AutoML":
             return self.best_model_.to_memmodel()
-        elif self.MODEL_TYPE in (
+        elif self._model_type in (
             "LinearRegression",
             "LogisticRegression",
             "LinearSVC",
@@ -858,7 +884,7 @@ Main Class for Vertica Model
                 "coefficients": self.coef_["coefficient"][1:],
                 "intercept": self.coef_["coefficient"][0],
             }
-        elif self.MODEL_TYPE == "BisectingKMeans":
+        elif self._model_type == "BisectingKMeans":
             attributes = {
                 "clusters": self.cluster_centers_.to_numpy()[:, 1 : len(self.X) + 1],
                 "left_child": self.cluster_centers_["left_child"],
@@ -871,27 +897,27 @@ Main Class for Vertica Model
                 ],
                 "p": 2,
             }
-        elif self.MODEL_TYPE in ("KMeans", "KPrototypes"):
+        elif self._model_type in ("KMeans", "KPrototypes"):
             attributes = {"clusters": self.cluster_centers_.to_numpy(), "p": 2}
-            if self.MODEL_TYPE == "KPrototypes":
+            if self._model_type == "KPrototypes":
                 attributes["gamma"] = self.parameters["gamma"]
                 attributes["is_categorical"] = [
                     ("char" in self.cluster_centers_.dtype[key].lower())
                     for key in self.cluster_centers_.dtype
                 ]
-        elif self.MODEL_TYPE == "NearestCentroid":
+        elif self._model_type == "NearestCentroid":
             attributes = {
                 "clusters": self.centroids_.to_numpy()[:, 0:-1],
                 "p": self.parameters["p"],
                 "classes": self.classes_,
             }
-        elif self.MODEL_TYPE == "NaiveBayes":
+        elif self._model_type == "NaiveBayes":
             attributes = {
                 "attributes": self.get_var_info(),
                 "prior": self.get_attr("prior")["probability"],
                 "classes": self.classes_,
             }
-        elif self.MODEL_TYPE == "OneHotEncoder":
+        elif self._model_type == "OneHotEncoder":
 
             def get_one_hot_encode_X_cat(L: list):
                 # Allows to split the One Hot Encoder Array by features categories
@@ -923,31 +949,31 @@ Main Class for Vertica Model
                 "drop_first": self.parameters["drop_first"],
                 "column_naming": self.parameters["column_naming"],
             }
-        elif self.MODEL_TYPE == "PCA":
+        elif self._model_type == "PCA":
             attributes = {
                 "principal_components": self.get_attr(
                     "principal_components"
                 ).to_numpy(),
                 "mean": self.get_attr("columns")["mean"],
             }
-        elif self.MODEL_TYPE == "SVD":
+        elif self._model_type == "SVD":
             attributes = {
                 "vectors": self.get_attr("right_singular_vectors").to_numpy(),
                 "values": self.get_attr("singular_values")["value"],
             }
-        elif self.MODEL_TYPE == "Normalizer":
+        elif self._model_type == "Normalizer":
             attributes = {
                 "values": self.get_attr("details").to_numpy()[:, 1:].astype(float),
                 "method": self.parameters["method"],
             }
-        elif self.MODEL_TYPE in (
+        elif self._model_type in (
             "XGBoostClassifier",
             "XGBoostRegressor",
             "RandomForestClassifier",
             "RandomForestRegressor",
             "IsolationForest",
         ):
-            if self.MODEL_TYPE in (
+            if self._model_type in (
                 "RandomForestClassifier",
                 "RandomForestRegressor",
                 "IsolationForest",
@@ -956,21 +982,21 @@ Main Class for Vertica Model
             else:
                 n = self.get_attr("tree_count")["tree_count"][0]
             trees = []
-            if self.MODEL_TYPE in ("XGBoostRegressor", "RandomForestRegressor"):
+            if self._model_type in ("XGBoostRegressor", "RandomForestRegressor"):
                 tree_type = "BinaryTreeRegressor"
-            elif self.MODEL_TYPE in ("XGBoostClassifier", "RandomForestClassifier"):
+            elif self._model_type in ("XGBoostClassifier", "RandomForestClassifier"):
                 tree_type = "BinaryTreeClassifier"
             else:
                 tree_type = "BinaryTreeAnomaly"
-            return_prob_rf = self.MODEL_TYPE == "RandomForestClassifier"
-            is_iforest = self.MODEL_TYPE == "IsolationForest"
+            return_prob_rf = self._model_type == "RandomForestClassifier"
+            is_iforest = self._model_type == "IsolationForest"
             for i in range(n):
                 if ("return_tree" in kwds and kwds["return_tree"] == i) or (
                     "return_tree" not in kwds
                 ):
                     tree = self.get_tree(i)
                     tree = get_tree_list_of_arrays(
-                        tree, self.X, self.MODEL_TYPE, return_prob_rf
+                        tree, self.X, self._model_type, return_prob_rf
                     )
                     tree_attributes = {
                         "children_left": tree[0],
@@ -993,7 +1019,7 @@ Main Class for Vertica Model
                             float(val) if isinstance(val, str) else val
                             for val in tree_attributes["value"]
                         ]
-                    if self.MODEL_TYPE == "XGBoostClassifier":
+                    if self._model_type == "XGBoostClassifier":
                         tree_attributes["value"] = tree[6]
                         for idx in range(len(tree[6])):
                             if tree[6][idx] != None:
@@ -1001,7 +1027,7 @@ Main Class for Vertica Model
                                 for c in self.classes_:
                                     all_classes_logodss += [tree[6][idx][str(c)]]
                                 tree_attributes["value"][idx] = all_classes_logodss
-                    elif self.MODEL_TYPE == "RandomForestClassifier":
+                    elif self._model_type == "RandomForestClassifier":
                         for idx in range(len(tree_attributes["value"])):
                             if tree_attributes["value"][idx] != None:
                                 prob = [0.0 for i in range(len(self.classes_))]
@@ -1030,9 +1056,9 @@ Main Class for Vertica Model
                         return model
                     trees += [model]
             attributes = {"trees": trees}
-            if self.MODEL_TYPE in ("XGBoostRegressor", "XGBoostClassifier"):
+            if self._model_type in ("XGBoostRegressor", "XGBoostClassifier"):
                 attributes["learning_rate"] = self.parameters["learning_rate"]
-                if self.MODEL_TYPE == "XGBoostRegressor":
+                if self._model_type == "XGBoostRegressor":
                     attributes["mean"] = self.prior_
                 elif not (isinstance(self.prior_, list)):
                     attributes["logodds"] = [
@@ -1043,9 +1069,9 @@ Main Class for Vertica Model
                     attributes["logodds"] = self.prior_.copy()
         else:
             raise ModelError(
-                f"Model type '{self.MODEL_TYPE}' can not be converted to memModel."
+                f"Model type '{self._model_type}' can not be converted to memModel."
             )
-        return memModel(model_type=self.MODEL_TYPE, attributes=attributes)
+        return memModel(model_type=self._model_type, attributes=attributes)
 
     def to_python(
         self,
@@ -1091,7 +1117,7 @@ Main Class for Vertica Model
             exec(func, {}, all_vars)
             return all_vars[name]
         func = f"def {name}(X):\n\timport numpy as np\n\t"
-        if self.MODEL_TYPE in (
+        if self._model_type in (
             "LinearRegression",
             "LinearSVR",
             "LogisticRegression",
@@ -1099,13 +1125,13 @@ Main Class for Vertica Model
         ):
             a, b = self.coef_["coefficient"][0], self.coef_["coefficient"][1:]
             x = f"{a} + np.sum(np.array({b}) * np.array(X), axis=1)"
-            if self.MODEL_TYPE in ("LogisticRegression", "LinearSVC"):
+            if self._model_type in ("LogisticRegression", "LinearSVC"):
                 func += f"result = 1 / (1 + np.exp(- ({x})))"
             else:
                 func += f"result =  {x}"
-            if return_proba and self.MODEL_TYPE in ("LogisticRegression", "LinearSVC"):
+            if return_proba and self._model_type in ("LogisticRegression", "LinearSVC"):
                 func += "\n\treturn np.column_stack((1 - result, result))"
-            elif not (return_proba) and self.MODEL_TYPE in (
+            elif not (return_proba) and self._model_type in (
                 "LogisticRegression",
                 "LinearSVC",
             ):
@@ -1113,7 +1139,7 @@ Main Class for Vertica Model
             else:
                 func += "\n\treturn result"
             return func
-        elif self.MODEL_TYPE == "BisectingKMeans":
+        elif self._model_type == "BisectingKMeans":
             bktree = self.get_attr("BKTree")
             cluster = [elem[1:-7] for elem in bktree.to_list()]
             func += f"centroids = np.array({cluster})\n"
@@ -1136,7 +1162,7 @@ Main Class for Vertica Model
             )
             func += "\treturn np.apply_along_axis(predict_tree_final, 1, X)\n"
             return func
-        elif self.MODEL_TYPE in ("KPrototypes",):
+        elif self._model_type in ("KPrototypes",):
             centroids = self.cluster_centers_.to_list()
             func += f"centroids = np.array({centroids})\n\n"
             func += "\tdef compute_distance_row(X):\n"
@@ -1168,35 +1194,35 @@ Main Class for Vertica Model
             else:
                 func += "\treturn result\n"
             return func
-        elif self.MODEL_TYPE in ("NearestCentroid", "KMeans",):
+        elif self._model_type in ("NearestCentroid", "KMeans",):
             centroids = (
                 self.centroids_.to_list()
-                if self.MODEL_TYPE == "NearestCentroid"
+                if self._model_type == "NearestCentroid"
                 else self.cluster_centers_.to_list()
             )
-            if self.MODEL_TYPE == "NearestCentroid":
+            if self._model_type == "NearestCentroid":
                 for center in centroids:
                     del center[-1]
             func += f"centroids = np.array({centroids})\n"
-            if self.MODEL_TYPE == "NearestCentroid":
+            if self._model_type == "NearestCentroid":
                 func += f"\tclasses = np.array({self.classes_})\n"
             func += "\tresult = []\n"
             func += "\tfor centroid in centroids:\n"
-            if self.MODEL_TYPE == "NearestCentroid":
+            if self._model_type == "NearestCentroid":
                 p = self.parameters["p"]
             else:
                 p = 2
             func += f"\t\tresult += [np.sum((np.array(centroid) - X) ** {p}, axis=1) ** (1 / {p})]\n"
             func += "\tresult = np.column_stack(result)\n"
             if (
-                self.MODEL_TYPE == "NearestCentroid"
+                self._model_type == "NearestCentroid"
                 and return_proba
                 and not (return_distance_clusters)
             ):
                 func += "\tresult = 1 / (result + 1e-99) / np.sum(1 / (result + 1e-99), axis=1)[:,None]\n"
             elif not (return_distance_clusters):
                 func += "\tresult = np.argmin(result, axis=1)\n"
-                if self.MODEL_TYPE == "NearestCentroid" and self.classes_ != [
+                if self._model_type == "NearestCentroid" and self.classes_ != [
                     i for i in range(len(self.classes_))
                 ]:
                     func += "\tclass_is_str = isinstance(classes[0], str)\n"
@@ -1207,7 +1233,7 @@ Main Class for Vertica Model
                     func += "\t\tresult = np.where(result == tmp_idx, c, result)\n"
             func += "\treturn result\n"
             return func
-        elif self.MODEL_TYPE in ("PCA", "MCA"):
+        elif self._model_type in ("PCA", "MCA"):
             avg = self.get_attr("columns")["mean"]
             pca = []
             attr = self.get_attr("principal_components")
@@ -1223,7 +1249,7 @@ Main Class for Vertica Model
             func += "\tresult = np.column_stack(L)\n"
             func += "\treturn result\n"
             return func
-        elif self.MODEL_TYPE == "Normalizer":
+        elif self._model_type == "Normalizer":
             details = self.get_attr("details")
             sql = []
             if "min" in details.values:
@@ -1239,7 +1265,7 @@ Main Class for Vertica Model
                 func += f"\tstd_values = np.array({details['std_dev']})\n"
                 func += "\treturn (X - avg_values) / std_values\n"
             return func
-        elif self.MODEL_TYPE == "SVD":
+        elif self._model_type == "SVD":
             sv = []
             attr = self.get_attr("right_singular_vectors")
             n = len(attr["vector1"])
@@ -1256,7 +1282,7 @@ Main Class for Vertica Model
             func += "\tresult = np.column_stack(L)\n"
             func += "\treturn result\n"
             return func
-        elif self.MODEL_TYPE == "NaiveBayes":
+        elif self._model_type == "NaiveBayes":
             var_info_simplified = self.get_var_info()
             prior = self.get_attr("prior").values["probability"]
             func += f"var_info_simplified = {var_info_simplified}\n"
@@ -1287,7 +1313,7 @@ Main Class for Vertica Model
                 func += "\t\treturn classes[np.argmax(result)]\n"
             func += "\treturn np.apply_along_axis(naive_bayes_score_row, 1, X)\n"
             return func
-        elif self.MODEL_TYPE == "OneHotEncoder":
+        elif self._model_type == "OneHotEncoder":
             predictors = self.X
             details = self.param_.values
             n, m = len(predictors), len(details["category_name"])
@@ -1316,7 +1342,7 @@ Main Class for Vertica Model
             func += "\treturn result\n"
             func += "\treturn np.apply_along_axis(ooe_row, 1, X)\n"
             return func
-        elif self.MODEL_TYPE in (
+        elif self._model_type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
             "XGBoostRegressor",
@@ -1324,7 +1350,7 @@ Main Class for Vertica Model
             "IsolationForest",
         ):
             result = []
-            if self.MODEL_TYPE in (
+            if self._model_type in (
                 "RandomForestClassifier",
                 "RandomForestRegressor",
                 "IsolationForest",
@@ -1333,15 +1359,15 @@ Main Class for Vertica Model
             else:
                 n = self.get_attr("tree_count")["tree_count"][0]
             func += f"n = {n}\n"
-            if self.MODEL_TYPE in ("XGBoostClassifier", "RandomForestClassifier"):
+            if self._model_type in ("XGBoostClassifier", "RandomForestClassifier"):
                 classes_str = [str(c) for c in self.classes_]
                 func += f"\tclasses = np.array({classes_str})\n"
             func += "\ttree_list = []\n"
             for i in range(n):
                 tree = self.get_tree(i)
-                tree_list = get_tree_list_of_arrays(tree, self.X, self.MODEL_TYPE)
+                tree_list = get_tree_list_of_arrays(tree, self.X, self._model_type)
                 func += f"\ttree_list += [{tree_list}]\n"
-            if self.MODEL_TYPE == "IsolationForest":
+            if self._model_type == "IsolationForest":
                 func += "\tdef heuristic_length(i):\n"
                 func += "\t\tGAMMA = 0.5772156649\n"
                 func += "\t\tif i == 2:\n"
@@ -1352,16 +1378,16 @@ Main Class for Vertica Model
                 func += "\t\t\treturn 0\n"
             func += "\tdef predict_tree(tree, node_id, X):\n"
             func += "\t\tif tree[0][node_id] == tree[1][node_id]:\n"
-            if self.MODEL_TYPE in ("RandomForestRegressor", "XGBoostRegressor",):
+            if self._model_type in ("RandomForestRegressor", "XGBoostRegressor",):
                 func += "\t\t\treturn float(tree[4][node_id])\n"
-            elif self.MODEL_TYPE == "IsolationForest":
+            elif self._model_type == "IsolationForest":
                 psy = int(
                     self.parameters["sample"]
                     * int(self.get_attr("accepted_row_count")["accepted_row_count"][0])
                 )
                 func += f"\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4]"
                 func += f"[node_id][1])) / heuristic_length({psy})\n"
-            elif self.MODEL_TYPE == "RandomForestClassifier":
+            elif self._model_type == "RandomForestClassifier":
                 func += "\t\t\treturn tree[4][node_id]\n"
             else:
                 func += "\t\t\treturn tree[6][node_id]\n"
@@ -1375,12 +1401,12 @@ Main Class for Vertica Model
             func += "\t\t\t\treturn predict_tree(tree, right_node, X)\n"
             func += "\tdef predict_tree_final(X):\n"
             func += "\t\tresult = [predict_tree(tree, 0, X) for tree in tree_list]\n"
-            if self.MODEL_TYPE in ("XGBoostClassifier", "RandomForestClassifier"):
+            if self._model_type in ("XGBoostClassifier", "RandomForestClassifier"):
                 func += "\t\tall_classes_score = {}\n"
                 func += "\t\tfor elem in classes:\n"
                 func += "\t\t\tall_classes_score[elem] = 0\n"
-            if self.MODEL_TYPE in ("XGBoostRegressor", "XGBoostClassifier"):
-                if self.MODEL_TYPE == "XGBoostRegressor":
+            if self._model_type in ("XGBoostRegressor", "XGBoostClassifier"):
+                if self._model_type == "XGBoostRegressor":
                     avg = self.prior_
                     func += f"\t\treturn {avg} + {self.parameters['learning_rate']} "
                     func += "* np.sum(result)\n"
@@ -1399,9 +1425,9 @@ Main Class for Vertica Model
                     func += "all_classes_score[elem])))\n"
                     func += "\t\tresult = [all_classes_score[elem] for elem in "
                     func += "all_classes_score]\n"
-            elif self.MODEL_TYPE == "RandomForestRegressor":
+            elif self._model_type == "RandomForestRegressor":
                 func += "\t\treturn np.mean(result)\n"
-            elif self.MODEL_TYPE == "IsolationForest":
+            elif self._model_type == "IsolationForest":
                 func += "\t\treturn 2 ** ( - np.mean(result))\n"
             else:
                 func += "\t\tfor elem in result:\n"
@@ -1410,7 +1436,7 @@ Main Class for Vertica Model
                 func += "\t\tresult = []\n"
                 func += "\t\tfor elem in all_classes_score:\n"
                 func += "\t\t\tresult += [all_classes_score[elem]]\n"
-            if self.MODEL_TYPE in ("XGBoostClassifier", "RandomForestClassifier"):
+            if self._model_type in ("XGBoostClassifier", "RandomForestClassifier"):
                 if return_proba:
                     func += "\t\treturn np.array(result) / np.sum(result)\n"
                 else:
@@ -1422,7 +1448,7 @@ Main Class for Vertica Model
             return func
         else:
             raise ModelError(
-                f"Function to_python not yet available for model type '{self.MODEL_TYPE}'."
+                f"Function to_python not yet available for model type '{self._model_type}'."
             )
 
     def to_sql(self, X: list = [], return_proba: bool = False):
@@ -1446,7 +1472,7 @@ Main Class for Vertica Model
         if not X:
             X = self.X
         model = self.to_memmodel()
-        if self.MODEL_TYPE in ("PCA", "SVD", "Normalizer", "MCA", "OneHotEncoder"):
+        if self._model_type in ("PCA", "SVD", "Normalizer", "MCA", "OneHotEncoder"):
             return model.transform_sql(X)
         else:
             if return_proba:
@@ -1456,6 +1482,12 @@ Main Class for Vertica Model
 
 
 class Supervised(vModel):
+    @property
+    @abstractmethod
+    def _vertica_predict_sql(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -1496,7 +1528,7 @@ class Supervised(vModel):
             "multinomial": "int",
             "gaussian": "float",
         }
-        if (self.MODEL_TYPE == "NaiveBayes") and (
+        if (self._model_type == "NaiveBayes") and (
             self.parameters["nbtype"] in nb_lookup_table
         ):
             new_types = {}
@@ -1509,7 +1541,7 @@ class Supervised(vModel):
             input_relation.astype(new_types)
         does_model_exist(name=self.model_name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
-        if self.MODEL_TYPE in (
+        if self._model_type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
             "XGBoostClassifier",
@@ -1562,11 +1594,11 @@ class Supervised(vModel):
                 parameters["mtry"] = int(len(self.X) / 3 + 1)
             elif parameters["mtry"] == "'max'":
                 parameters["mtry"] = len(self.X)
-        fun = self.VERTICA_FIT_FUNCTION_SQL
+        fun = self._vertica_fit_sql
         query = f"""
             SELECT 
                 /*+LABEL('learn.vModel.fit')*/ 
-                {self.VERTICA_FIT_FUNCTION_SQL}
+                {self._vertica_fit_sql}
                 ('{self.model_name}', 
                  '{relation}',
                  '{self.y}',
@@ -1575,7 +1607,7 @@ class Supervised(vModel):
                  {', '.join([f"{p} = {parameters[p]}" for p in parameters])}"""
         if alpha != None:
             query += f", alpha = {alpha}"
-        if self.MODEL_TYPE in (
+        if self._model_type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
             "XGBoostClassifier",
@@ -1590,7 +1622,7 @@ class Supervised(vModel):
         finally:
             if tmp_view:
                 drop(relation, method="view")
-        if self.MODEL_TYPE in (
+        if self._model_type in (
             "LinearSVC",
             "LinearSVR",
             "LogisticRegression",
@@ -1598,7 +1630,7 @@ class Supervised(vModel):
             "SARIMAX",
         ):
             self.coef_ = self.get_attr("details")
-        elif self.MODEL_TYPE in (
+        elif self._model_type in (
             "RandomForestClassifier",
             "NaiveBayes",
             "XGBoostClassifier",
@@ -1618,7 +1650,7 @@ class Supervised(vModel):
                 self.classes_ = [c[0] for c in classes]
             else:
                 self.classes_ = input_relation[self.y].distinct()
-        if self.MODEL_TYPE in ("XGBoostClassifier", "XGBoostRegressor"):
+        if self._model_type in ("XGBoostClassifier", "XGBoostRegressor"):
             self.prior_ = self.get_prior()
         return self
 
@@ -1692,7 +1724,9 @@ class Tree:
 		An object containing the result. For more information, see
 		utilities.TableSample.
 		"""
-        name = self.tree_name if self.MODEL_TYPE == "KernelDensity" else self.model_name
+        name = (
+            self.tree_name if self._model_type == "KernelDensity" else self.model_name
+        )
         query = f"""SELECT * FROM (SELECT READ_TREE (USING PARAMETERS 
                                                      model_name = '{name}', 
                                                      tree_id = {tree_id}, 
@@ -1775,8 +1809,10 @@ class Tree:
             An object containing the result. For more information, see
             utilities.TableSample.
         """
-        name = self.tree_name if self.MODEL_TYPE == "KernelDensity" else self.model_name
-        if self.MODEL_TYPE in ("XGBoostClassifier", "XGBoostRegressor",):
+        name = (
+            self.tree_name if self._model_type == "KernelDensity" else self.model_name
+        )
+        if self._model_type in ("XGBoostClassifier", "XGBoostRegressor",):
             vertica_version(condition=[12, 0, 3])
             fname = "XGB_PREDICTOR_IMPORTANCE"
         else:
@@ -1875,7 +1911,7 @@ class BinaryClassifier(Classifier):
         else:
             X = [quote_ident(elem) for elem in X]
         sql = f"""
-            {self.VERTICA_PREDICT_FUNCTION_SQL}
+            {self._vertica_predict_sql}
             ({', '.join(X)} USING PARAMETERS
                             model_name = '{self.model_name}',
                             type = 'probability',
@@ -1991,7 +2027,7 @@ class BinaryClassifier(Classifier):
             vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X]
         if not (name):
-            name = gen_name([self.MODEL_TYPE, self.model_name])
+            name = gen_name([self._model_type, self.model_name])
 
         # In Place
         vdf_return = vdf if inplace else vdf.copy()
@@ -2043,7 +2079,7 @@ class BinaryClassifier(Classifier):
             vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X]
         if not (name):
-            name = gen_name([self.MODEL_TYPE, self.model_name])
+            name = gen_name([self._model_type, self.model_name])
 
         # In Place
         vdf_return = vdf if inplace else vdf.copy()
@@ -2304,7 +2340,7 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        if self.MODEL_TYPE == "NearestCentroid":
+        if self._model_type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
                 get_match_index(pos_label, self.classes_, False)
             ]
@@ -2357,9 +2393,9 @@ class MulticlassClassifier(Classifier):
             X = [X]
         else:
             X = [quote_ident(x) for x in X]
-        fun = self.VERTICA_PREDICT_FUNCTION_SQL
+        fun = self._vertica_predict_sql
 
-        if self.MODEL_TYPE == "NearestCentroid":
+        if self._model_type == "NearestCentroid":
             sql = self.to_memmodel().predict_proba_sql(X)
         else:
             sql = [
@@ -2378,7 +2414,7 @@ class MulticlassClassifier(Classifier):
             ]
         if not (allSQL):
             if pos_label in self.classes_:
-                if self.MODEL_TYPE == "NearestCentroid":
+                if self._model_type == "NearestCentroid":
                     sql = sql[get_match_index(pos_label, self.classes_, False)]
                 else:
                     sql = sql[0].format(pos_label)
@@ -2400,7 +2436,7 @@ class MulticlassClassifier(Classifier):
                         non_pos_label = self.classes_[1]
                     sql = sql.format(non_pos_label)
             elif pos_label not in self.classes_:
-                if self.MODEL_TYPE == "NearestCentroid":
+                if self._model_type == "NearestCentroid":
                     sql = self.to_memmodel().predict_sql(X)
                 else:
                     sql = sql[1]
@@ -2445,7 +2481,7 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        if self.MODEL_TYPE == "NearestCentroid":
+        if self._model_type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
                 get_match_index(pos_label, self.classes_, False)
             ]
@@ -2496,7 +2532,7 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        if self.MODEL_TYPE == "NearestCentroid":
+        if self._model_type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
                 get_match_index(pos_label, self.classes_, False)
             ]
@@ -2554,7 +2590,7 @@ class MulticlassClassifier(Classifier):
         else:
             X = [quote_ident(elem) for elem in X]
         if not (name):
-            name = gen_name([self.MODEL_TYPE, self.model_name])
+            name = gen_name([self._model_type, self.model_name])
         assert 0 <= cutoff <= 1, ParameterError(
             "Incorrect parameter 'cutoff'.\nThe cutoff "
             "must be between 0 and 1, inclusive."
@@ -2630,7 +2666,7 @@ class MulticlassClassifier(Classifier):
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         if not (name):
-            name = gen_name([self.MODEL_TYPE, self.model_name])
+            name = gen_name([self._model_type, self.model_name])
 
         # In Place
         vdf_return = vdf if inplace else vdf.copy()
@@ -2680,7 +2716,7 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        if self.MODEL_TYPE == "NearestCentroid":
+        if self._model_type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
                 get_match_index(pos_label, self.classes_, False)
             ]
@@ -2749,7 +2785,7 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        if self.MODEL_TYPE == "NearestCentroid":
+        if self._model_type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
                 get_match_index(pos_label, self.classes_, False)
             ]
@@ -2820,7 +2856,7 @@ class Regressor(Supervised):
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         if not (name):
-            name = f"{self.MODEL_TYPE}_" + "".join(
+            name = f"{self._model_type}_" + "".join(
                 ch for ch in self.model_name if ch.isalnum()
             )
         if inplace:
@@ -2849,16 +2885,16 @@ class Regressor(Supervised):
 		An object containing the result. For more information, see
 		utilities.TableSample.
 		"""
-        if method in ("anova", "details") and self.MODEL_TYPE in (
+        if method in ("anova", "details") and self._model_type in (
             "SARIMAX",
             "VAR",
             "KernelDensity",
         ):
             raise ModelError(
-                f"'{method}' method is not available for {self.MODEL_TYPE} models."
+                f"'{method}' method is not available for {self._model_type} models."
             )
         prediction = self.deploySQL()
-        if self.MODEL_TYPE == "SARIMAX":
+        if self._model_type == "SARIMAX":
             test_relation = self.transform_relation
             test_relation = f"""
                 (SELECT 
@@ -2877,10 +2913,10 @@ class Regressor(Supervised):
             for idx, elem in enumerate(self.exogenous):
                 test_relation = test_relation.replace(f"[X{idx}]", elem)
             prediction = "prediction"
-        elif self.MODEL_TYPE == "KNeighborsRegressor":
+        elif self._model_type == "KNeighborsRegressor":
             test_relation = self.deploySQL()
             prediction = "predict_neighbors"
-        elif self.MODEL_TYPE == "VAR":
+        elif self._model_type == "VAR":
             relation = self.transform_relation.replace(
                 "[VerticaPy_ts]", self.ts
             ).format(self.test_relation)
@@ -2909,7 +2945,7 @@ class Regressor(Supervised):
                     len(self.X) * self.parameters["p"],
                 ).values["value"]
             return result
-        elif self.MODEL_TYPE == "KernelDensity":
+        elif self._model_type == "KernelDensity":
             test_relation = self.map
         else:
             test_relation = self.test_relation
@@ -2945,7 +2981,7 @@ class Regressor(Supervised):
                     ],
                     "value": [
                         self.y,
-                        self.MODEL_TYPE,
+                        self._model_type,
                         n,
                         len(self.X),
                         R2,
@@ -3004,9 +3040,9 @@ class Regressor(Supervised):
         fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
 
         # Scoring
-        if self.MODEL_TYPE == "KNeighborsRegressor":
+        if self._model_type == "KNeighborsRegressor":
             test_relation, prediction = self.deploySQL(), "predict_neighbors"
-        elif self.MODEL_TYPE == "KernelDensity":
+        elif self._model_type == "KernelDensity":
             test_relation, prediction = self.map, self.deploySQL()
         else:
             test_relation, prediction = self.test_relation, self.deploySQL()
@@ -3042,12 +3078,12 @@ class Unsupervised(vModel):
         else:
             does_model_exist(name=self.model_name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
-        if self.MODEL_TYPE in ("BisectingKMeans", "IsolationForest") and isinstance(
+        if self._model_type in ("BisectingKMeans", "IsolationForest") and isinstance(
             _options["random_state"], int
         ):
             X_str = ", ".join([quote_ident(x) for x in X])
             id_column = f", ROW_NUMBER() OVER (ORDER BY {X_str}) AS {id_column_name}"
-        if isinstance(input_relation, str) and self.MODEL_TYPE == "MCA":
+        if isinstance(input_relation, str) and self._model_type == "MCA":
             input_relation = vDataFrame(input_relation)
         tmp_view = False
         if isinstance(input_relation, vDataFrame) or (id_column):
@@ -3056,7 +3092,7 @@ class Unsupervised(vModel):
                 self.input_relation = input_relation._genSQL()
             else:
                 self.input_relation = input_relation
-            if self.MODEL_TYPE == "MCA":
+            if self._model_type == "MCA":
                 result = input_relation.sum(columns=X)
                 if isinstance(result, (int, float)):
                     result = [result]
@@ -3081,7 +3117,7 @@ class Unsupervised(vModel):
                         FROM {self.input_relation}""",
                 title="Creating a temporary view to fit the model.",
             )
-            if not (X) and (self.MODEL_TYPE == "KPrototypes"):
+            if not (X) and (self._model_type == "KPrototypes"):
                 X = input_relation.get_columns()
             elif not (X):
                 X = input_relation.numcol()
@@ -3094,26 +3130,26 @@ class Unsupervised(vModel):
         parameters = self.get_vertica_param_dict()
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
-        fun = self.VERTICA_FIT_FUNCTION_SQL if self.MODEL_TYPE != "MCA" else "PCA"
+        fun = self._vertica_fit_sql if self._model_type != "MCA" else "PCA"
         query = f"""
             SELECT 
                 /*+LABEL('learn.vModel.fit')*/ 
                 {fun}('{self.model_name}', '{relation}', '{', '.join(self.X)}'"""
-        if self.MODEL_TYPE in ("BisectingKMeans", "KMeans", "KPrototypes",):
+        if self._model_type in ("BisectingKMeans", "KMeans", "KPrototypes",):
             query += f", {parameters['n_cluster']}"
-        elif self.MODEL_TYPE == "Normalizer":
+        elif self._model_type == "Normalizer":
             query += f", {parameters['method']}"
             del parameters["method"]
-        if self.MODEL_TYPE not in ("Normalizer", "MCA"):
+        if self._model_type not in ("Normalizer", "MCA"):
             query += " USING PARAMETERS "
         if (
             "init_method" in parameters
             and not (isinstance(parameters["init_method"], str))
-            and self.MODEL_TYPE in ("KMeans", "BisectingKMeans", "KPrototypes",)
+            and self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",)
         ):
             name_init = gen_tmp_name(
                 schema=schema_relation(self.model_name)[0],
-                name=f"{self.MODEL_TYPE.lower()}_init",
+                name=f"{self._model_type.lower()}_init",
             )
             del parameters["init_method"]
             drop(name_init, method="table")
@@ -3148,12 +3184,12 @@ class Unsupervised(vModel):
             del parameters["init_method"]
             query += f"init_method = '{self.parameters['init']}', "
         query += ", ".join([f"{p} = {parameters[p]}" for p in parameters])
-        if self.MODEL_TYPE == "BisectingKMeans" and isinstance(
+        if self._model_type == "BisectingKMeans" and isinstance(
             _options["random_state"], int
         ):
             query += f", kmeans_seed={_options['random_state']}"
             query += f", id_column='{id_column_name}'"
-        elif self.MODEL_TYPE == "IsolationForest" and isinstance(
+        elif self._model_type == "IsolationForest" and isinstance(
             _options["random_state"], int
         ):
             query += f", seed={_options['random_state']}"
@@ -3165,19 +3201,19 @@ class Unsupervised(vModel):
             if (
                 "init_method" in parameters
                 and not (isinstance(parameters["init_method"], str))
-                and self.MODEL_TYPE in ("KMeans", "BisectingKMeans", "KPrototypes",)
+                and self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",)
             ):
                 drop(name_init, method="table")
             raise
         finally:
             if tmp_view:
                 drop(relation, method="view")
-        if self.MODEL_TYPE in ("KMeans", "BisectingKMeans", "KPrototypes",):
+        if self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",):
             if "init_method" in parameters and not (
                 isinstance(parameters["init_method"], str)
             ):
                 drop(name_init, method="table")
-            if self.MODEL_TYPE in ("KMeans", "KPrototypes",):
+            if self._model_type in ("KMeans", "KPrototypes",):
                 self.cluster_centers_ = self.get_attr("centers")
                 result = self.get_attr("metrics").values["metrics"][0]
                 values = {
@@ -3210,12 +3246,12 @@ class Unsupervised(vModel):
                     result.split("Converged: ")[1].split("\n")[0] == "True",
                 ]
                 self.metrics_ = TableSample(values)
-            elif self.MODEL_TYPE == "BisectingKMeans":
+            elif self._model_type == "BisectingKMeans":
                 self.metrics_ = self.get_attr("Metrics")
                 self.cluster_centers_ = self.get_attr("BKTree")
-        elif self.MODEL_TYPE in ("PCA", "MCA"):
+        elif self._model_type in ("PCA", "MCA"):
             self.components_ = self.get_attr("principal_components")
-            if self.MODEL_TYPE == "MCA":
+            if self._model_type == "MCA":
                 self.cos2_ = self.components_.to_list()
                 for i in range(len(self.cos2_)):
                     self.cos2_[i] = [elem ** 2 for elem in self.cos2_[i]]
@@ -3228,12 +3264,12 @@ class Unsupervised(vModel):
                 self.cos2_ = TableSample(values)
             self.explained_variance_ = self.get_attr("singular_values")
             self.mean_ = self.get_attr("columns")
-        elif self.MODEL_TYPE == "SVD":
+        elif self._model_type == "SVD":
             self.singular_values_ = self.get_attr("right_singular_vectors")
             self.explained_variance_ = self.get_attr("singular_values")
-        elif self.MODEL_TYPE == "Normalizer":
+        elif self._model_type == "Normalizer":
             self.param_ = self.get_attr("details")
-        elif self.MODEL_TYPE == "OneHotEncoder":
+        elif self._model_type == "OneHotEncoder":
             query = f"""SELECT 
                             category_name, 
                             category_level::varchar, 
@@ -3262,6 +3298,18 @@ class Unsupervised(vModel):
 
 
 class Preprocessing(Unsupervised):
+    @property
+    @abstractmethod
+    def _vertica_transform_sql(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def _vertica_inverse_transform_sql(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
     def deploySQL(
         self,
         key_columns: Union[str, list] = [],
@@ -3302,7 +3350,7 @@ class Preprocessing(Unsupervised):
         if exclude_columns:
             exclude_columns = ", ".join([quote_ident(col) for col in exclude_columns])
         sql = f"""
-            {self.VERTICA_transfORM_FUNCTION_SQL}({', '.join(X)} 
+            {self._vertica_transform_sql}({', '.join(X)} 
                USING PARAMETERS 
                model_name = '{self.model_name}',
                match_by_pos = 'true'"""
@@ -3310,7 +3358,7 @@ class Preprocessing(Unsupervised):
             sql += f", key_columns = '{key_columns}'"
         if exclude_columns:
             sql += f", exclude_columns = '{exclude_columns}'"
-        if self.MODEL_TYPE == "OneHotEncoder":
+        if self._model_type == "OneHotEncoder":
             if self.parameters["separator"] == None:
                 separator = "null"
             else:
@@ -3367,12 +3415,12 @@ class Preprocessing(Unsupervised):
             X = [X]
         else:
             X = [quote_ident(x) for x in X]
-        if self.MODEL_TYPE == "OneHotEncoder":
+        if self._model_type == "OneHotEncoder":
             raise ModelError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
         sql = f"""
-            {self.VERTICA_INVERSE_transfORM_FUNCTION_SQL}({', '.join(X)} 
+            {self._vertica_inverse_transform_sql}({', '.join(X)} 
                                                           USING PARAMETERS 
                                                           model_name = '{self.model_name}',
                                                           match_by_pos = 'true'"""
@@ -3407,15 +3455,15 @@ class Preprocessing(Unsupervised):
         X = [quote_ident(elem) for elem in X]
         if not (X):
             X = self.X
-        if self.MODEL_TYPE in ("PCA", "SVD", "MCA") and not (inverse):
-            if self.MODEL_TYPE in ("PCA", "SVD"):
+        if self._model_type in ("PCA", "SVD", "MCA") and not (inverse):
+            if self._model_type in ("PCA", "SVD"):
                 n = self.parameters["n_components"]
                 if not (n):
                     n = len(self.X)
             else:
                 n = len(self.X)
             return [f"col{i}" for i in range(1, n + 1)]
-        elif self.MODEL_TYPE == "OneHotEncoder" and not (inverse):
+        elif self._model_type == "OneHotEncoder" and not (inverse):
             names = []
             for column in self.X:
                 k = 0
@@ -3466,7 +3514,7 @@ class Preprocessing(Unsupervised):
         """
         if isinstance(X, str):
             X = [X]
-        if self.MODEL_TYPE == "OneHotEncoder":
+        if self._model_type == "OneHotEncoder":
             raise ModelError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
@@ -3565,8 +3613,8 @@ class Decomposition(Preprocessing):
             X = self.X
         else:
             X = [quote_ident(elem) for elem in X]
-        fun = self.VERTICA_transfORM_FUNCTION_SQL
-        sql = f"""{self.VERTICA_transfORM_FUNCTION_SQL}({', '.join(X)} 
+        fun = self._vertica_transform_sql
+        sql = f"""{self._vertica_transform_sql}({', '.join(X)} 
                                                         USING PARAMETERS
                                                         model_name = '{self.model_name}',
                                                         match_by_pos = 'true'"""
@@ -3633,7 +3681,7 @@ class Decomposition(Preprocessing):
     ax
         Matplotlib axes object
         """
-        if self.MODEL_TYPE == "SVD":
+        if self._model_type == "SVD":
             x = self.singular_values_[f"vector{dimensions[0]}"]
             y = self.singular_values_[f"vector{dimensions[1]}"]
         else:
@@ -3745,7 +3793,7 @@ class Decomposition(Preprocessing):
         method = str(method).upper()
         if method == "MEDIAN":
             method = "APPROXIMATE_MEDIAN"
-        if self.MODEL_TYPE in ("PCA", "SVD"):
+        if self._model_type in ("PCA", "SVD"):
             n_components = self.parameters["n_components"]
             if not (n_components):
                 n_components = len(X)
@@ -3755,7 +3803,7 @@ class Decomposition(Preprocessing):
         col_init_2 = [f"col_init{idx}" for idx in range(len(X))]
         cols = [f"col{idx + 1}" for idx in range(n_components)]
         query = f"""SELECT 
-                        {self.VERTICA_transfORM_FUNCTION_SQL}
+                        {self._vertica_transform_sql}
                         ({', '.join(self.X)} 
                             USING PARAMETERS 
                             model_name = '{self.model_name}', 
@@ -3768,7 +3816,7 @@ class Decomposition(Preprocessing):
             FROM ({query}) VERTICAPY_SUBTABLE"""
         query = f"""
             SELECT 
-                {self.VERTICA_INVERSE_transfORM_FUNCTION_SQL}
+                {self._vertica_inverse_transform_sql}
                 ({', '.join(col_init_2 + cols)} 
                     USING PARAMETERS 
                     model_name = '{self.model_name}', 
@@ -3839,6 +3887,12 @@ class Decomposition(Preprocessing):
 
 
 class Clustering(Unsupervised):
+    @property
+    @abstractmethod
+    def _vertica_predict_sql(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
     def predict(
         self,
         vdf: Union[str, vDataFrame],
@@ -3875,7 +3929,7 @@ class Clustering(Unsupervised):
         X = [quote_ident(elem) for elem in X]
         if not (name):
             name = (
-                self.MODEL_TYPE
+                self._model_type
                 + "_"
                 + "".join(ch for ch in self.model_name if ch.isalnum())
             )

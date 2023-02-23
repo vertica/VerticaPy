@@ -82,11 +82,25 @@ tol: float, optional
     'tol' from the previous iteration.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = "BISECTING_KMEANS"
-    VERTICA_PREDICT_FUNCTION_SQL = "APPLY_BISECTING_KMEANS"
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "CLUSTERING"
-    MODEL_TYPE = "BisectingKMeans"
+    @property
+    def _vertica_fit_sql(self) -> Literal["BISECTING_KMEANS"]:
+        return "BISECTING_KMEANS"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["APPLY_BISECTING_KMEANS"]:
+        return "APPLY_BISECTING_KMEANS"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLUSTERING"]:
+        return "CLUSTERING"
+
+    @property
+    def _model_type(self) -> Literal["BisectingKMeans"]:
+        return "BisectingKMeans"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -153,11 +167,25 @@ p: int, optional
 	The p of the p-distance (distance metric used during the model computation).
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_PREDICT_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "CLUSTERING"
-    MODEL_TYPE = "DBSCAN"
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLUSTERING"]:
+        return "CLUSTERING"
+
+    @property
+    def _model_type(self) -> Literal["DBSCAN"]:
+        return "DBSCAN"
 
     @save_verticapy_logs
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
@@ -414,11 +442,25 @@ tol: float, optional
 	previous iteration.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "KMEANS"
-    VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KMEANS"
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "CLUSTERING"
-    MODEL_TYPE = "KMeans"
+    @property
+    def _vertica_fit_sql(self) -> Literal["KMEANS"]:
+        return "KMEANS"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["APPLY_KMEANS"]:
+        return "APPLY_KMEANS"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLUSTERING"]:
+        return "CLUSTERING"
+
+    @property
+    def _model_type(self) -> Literal["KMeans"]:
+        return "KMeans"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -513,11 +555,25 @@ gamma: float, optional
     importance of numerical and categorical attributes.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = "KPROTOTYPES"
-    VERTICA_PREDICT_FUNCTION_SQL = "APPLY_KPROTOTYPES"
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "CLUSTERING"
-    MODEL_TYPE = "KPrototypes"
+    @property
+    def _vertica_fit_sql(self) -> Literal["KPROTOTYPES"]:
+        return "KPROTOTYPES"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["APPLY_KPROTOTYPES"]:
+        return "APPLY_KPROTOTYPES"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLUSTERING"]:
+        return "CLUSTERING"
+
+    @property
+    def _model_type(self) -> Literal["KPrototypes"]:
+        return "KPrototypes"
 
     @check_minimum_version
     @save_verticapy_logs

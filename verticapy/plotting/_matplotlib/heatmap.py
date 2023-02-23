@@ -159,14 +159,14 @@ def contour_plot(
         if isinstance(func, (str, str_sql)):
             vdf_tmp["verticapy_predict"] = func
         else:
-            if func.MODEL_TYPE in (
+            if func._model_type in (
                 "XGBoostClassifier",
                 "RandomForestClassifier",
                 "NaiveBayes",
                 "NearestCentroid",
                 "KNeighborsClassifier",
             ):
-                if func.MODEL_TYPE in ("NearestCentroid", "KNeighborsClassifier"):
+                if func._model_type in ("NearestCentroid", "KNeighborsClassifier"):
                     vdf_tmp = func.predict_proba(
                         vdf=vdf_tmp,
                         X=columns,
@@ -183,7 +183,7 @@ def contour_plot(
                         pos_label=pos_label,
                     )
             else:
-                if func.MODEL_TYPE == "KNeighborsRegressor":
+                if func._model_type == "KNeighborsRegressor":
                     vdf_tmp = func.predict(
                         vdf=vdf_tmp,
                         X=columns,

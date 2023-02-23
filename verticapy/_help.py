@@ -85,6 +85,3 @@ VERTICAPY Interactive Help (FAQ).
         else:
             message = f"Please go to <a href='{link}'>{link}</a>"
     display(Markdown(message)) if (ISNOTEBOOK) else print(message)
-
-
-vHelp = help_start

@@ -54,7 +54,7 @@ def model(winequality_vd):
 
 class TestPipeline:
     def test_index(self, model):
-        assert model[0].MODEL_TYPE == "Normalizer"
+        assert model[0]._model_type == "Normalizer"
         assert model[0:][0][0] == "NormalizerWine"
 
     def test_drop(self, winequality_vd):

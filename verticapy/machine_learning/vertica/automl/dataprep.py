@@ -103,12 +103,12 @@ final_relation_: vDataFrame
     Relation created after fitting the model.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_transfORM_FUNCTION_SQL = ""
-    VERTICA_INVERSE_transfORM_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "PREPROCESSING"
-    MODEL_TYPE = "AutoDataPrep"
+    _vertica_fit_sql = ""
+    _vertica_transform_sql = ""
+    _vertica_inverse_transform_sql = ""
+    _model_category = "UNSUPERVISED"
+    _model_subcategory = "PREPROCESSING"
+    _model_type = "AutoDataPrep"
 
     @save_verticapy_logs
     def __init__(
@@ -128,7 +128,7 @@ final_relation_: vDataFrame
         identify_ts: bool = True,
         save: bool = True,
     ):
-        self.MODEL_TYPE, self.model_name = "AutoDataPrep", name
+        self._model_type, self.model_name = "AutoDataPrep", name
         if not (self.model_name):
             self.model_name = gen_tmp_name(
                 schema=_options["temp_schema"], name="autodataprep"

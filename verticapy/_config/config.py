@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import warnings
 from typing import Any, Literal, Union, Optional, overload
 
+GEOPANDAS_ON: bool
 try:
     from geopandas import GeoDataFrame
     from shapely import wkt
@@ -25,6 +26,7 @@ try:
 except:
     GEOPANDAS_ON = False
 
+GRAPHVIZ_ON: bool
 try:
     import graphviz
 
@@ -32,7 +34,7 @@ try:
 except:
     GRAPHVIZ_ON = False
 
-ISNOTEBOOK = False
+ISNOTEBOOK: bool = False
 try:
     import IPython
 
@@ -42,6 +44,7 @@ try:
 except:
     pass
 
+PARSER_IMPORT: bool
 try:
     from dateutil.parser import parse
 
@@ -51,7 +54,7 @@ except:
 
 from verticapy.errors import ParameterError
 
-COLORS_OPTIONS = {
+COLORS_OPTIONS: dict[str, list] = {
     "rgb": ["red", "green", "blue", "orange", "yellow", "gray"],
     "sunset": ["#36688D", "#F3CD05", "#F49F05", "#F18904", "#BDA589"],
     "retro": ["#A7414A", "#282726", "#6A8A82", "#A37C27", "#563838"],
@@ -71,7 +74,7 @@ COLORS_OPTIONS = {
     "default": ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"],
 }
 
-_options = {
+_options: dict = {
     "cache": True,
     "colors": None,
     "interactive": False,

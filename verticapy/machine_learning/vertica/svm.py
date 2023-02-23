@@ -61,11 +61,25 @@ max_iter: int, optional
 	The maximum number of iterations that the algorithm performs.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "SVM_CLASSIFIER"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_CLASSIFIER"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "CLASSIFIER"
-    MODEL_TYPE = "LinearSVC"
+    @property
+    def _vertica_fit_sql(self) -> Literal["SVM_CLASSIFIER"]:
+        return "SVM_CLASSIFIER"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_SVM_CLASSIFIER"]:
+        return "PREDICT_SVM_CLASSIFIER"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
+
+    @property
+    def _model_type(self) -> Literal["LinearSVC"]:
+        return "LinearSVC"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -148,11 +162,25 @@ test_relation: str
 	attribute of the object.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "SVM_REGRESSOR"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_REGRESSOR"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "REGRESSOR"
-    MODEL_TYPE = "LinearSVR"
+    @property
+    def _vertica_fit_sql(self) -> Literal["SVM_REGRESSOR"]:
+        return "SVM_REGRESSOR"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_SVM_REGRESSOR"]:
+        return "PREDICT_SVM_REGRESSOR"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["LinearSVR"]:
+        return "LinearSVR"
 
     @check_minimum_version
     @save_verticapy_logs

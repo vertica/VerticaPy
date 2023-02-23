@@ -84,11 +84,25 @@ papprox_ma: int, optional
     the p of the AR(p) used to approximate the MA coefficients.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "TIMESERIES"
-    MODEL_TYPE = "SARIMAX"
+    @property
+    def _vertica_fit_sql(self) -> Literal["LINEAR_REG"]:
+        return "LINEAR_REG"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_LINEAR_REG"]:
+        return "PREDICT_LINEAR_REG"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["TIMESERIES"]:
+        return "TIMESERIES"
+
+    @property
+    def _model_type(self) -> Literal["SARIMAX"]:
+        return "SARIMAX"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -964,7 +978,7 @@ papprox_ma: int, optional
             X = self.exogenous
         y, ts = vdf._format_colnames(y, ts)
         name = (
-            "{}_".format(self.MODEL_TYPE)
+            "{}_".format(self._model_type)
             + "".join(ch for ch in self.model_name if ch.isalnum())
             if not (name)
             else name
@@ -1140,11 +1154,25 @@ solver: str, optional
         bfgs   : Broyden Fletcher Goldfarb Shanno
     """
 
-    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "TIMESERIES"
-    MODEL_TYPE = "VAR"
+    @property
+    def _vertica_fit_sql(self) -> Literal["LINEAR_REG"]:
+        return "LINEAR_REG"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_LINEAR_REG"]:
+        return "PREDICT_LINEAR_REG"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["TIMESERIES"]:
+        return "TIMESERIES"
+
+    @property
+    def _model_type(self) -> Literal["VAR"]:
+        return "VAR"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -1702,7 +1730,7 @@ solver: str, optional
         transform_relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts)
         for idx, elem in enumerate(X):
             name_tmp = (
-                "{}_".format(self.MODEL_TYPE)
+                "{}_".format(self._model_type)
                 + "".join(ch for ch in elem if ch.isalnum())
                 if len(name) != len(X)
                 else name[idx]
