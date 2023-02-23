@@ -832,7 +832,7 @@ papprox_ma: int, optional
             if ISNOTEBOOK:
                 fig.set_size_inches(10, 6)
             ax.grid()
-        colors = get_colors()
+        colors = get_colors(idx=None)
         param1 = {
             "color": colors[2],
             "linewidth": 2,
@@ -1582,7 +1582,7 @@ solver: str, optional
             if ISNOTEBOOK:
                 fig.set_size_inches(10, 6)
             ax.grid()
-        colors = get_colors()
+        colors = get_colors(idx=None)
         param1 = {
             "color": colors[2],
             "linewidth": 2,

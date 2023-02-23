@@ -495,7 +495,7 @@ def hchart_from_vdf(
     elif kind == "heatmap":
         chart = heatmap(query=query, width=width, height=height)
         chart.set_dict_options(
-            {"colorAxis": {"maxColor": get_colors()[0], "minColor": "#FFFFFF"}}
+            {"colorAxis": {"maxColor": get_colors(idx=None)[0], "minColor": "#FFFFFF"}}
         )
         chart.set_dict_options(options)
         return chart
@@ -517,8 +517,8 @@ def hchart_from_vdf(
                 "xAxis": {"categories": narrow_data[1]},
                 "yAxis": {"categories": narrow_data[2]},
                 "colorAxis": {
-                    "minColor": get_colors()[1],
-                    "maxColor": get_colors()[0],
+                    "minColor": get_colors(idx=None)[1],
+                    "maxColor": get_colors(idx=None)[0],
                     "min": -1,
                     "max": 1,
                 },
@@ -529,10 +529,10 @@ def hchart_from_vdf(
                 {
                     "colorAxis": {
                         "stops": [
-                            [0, get_colors()[1]],
+                            [0, get_colors(idx=None)[1]],
                             [0.45, "#FFFFFF"],
                             [0.55, "#FFFFFF"],
-                            [1, get_colors()[0]],
+                            [1, get_colors(idx=None)[0]],
                         ]
                     }
                 }
@@ -544,7 +544,7 @@ def hchart_from_vdf(
                         "stops": [
                             [0, "#FFFFFF"],
                             [0.2, "#FFFFFF"],
-                            [1, get_colors()[0]],
+                            [1, get_colors(idx=None)[0]],
                         ],
                         "min": 0,
                     }

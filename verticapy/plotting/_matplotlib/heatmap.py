@@ -237,7 +237,7 @@ def contour_plot(
         del param["cmap"]
     ax.contour(X, Y, Z, **param)
     param = {
-        "cmap": get_cmap([get_colors()[2], "#FFFFFF", get_colors()[0]]),
+        "cmap": get_cmap([get_colors(idx=None)[2], "#FFFFFF", get_colors(idx=None)[0]]),
         "levels": 14,
     }
     param = updated_dict(param, style_kwds)

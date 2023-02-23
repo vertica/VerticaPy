@@ -57,7 +57,7 @@ def pie(
         "tooltip": {"pointFormat": str(names[1]) + ": <b>{point.y}</b>"},
     }
     if "3d" not in chart_type:
-        default_options["colors"] = get_colors()
+        default_options["colors"] = get_colors(idx=None)
     chart.set_dict_options(default_options)
     if "3d" in chart_type:
         chart.set_dict_options(

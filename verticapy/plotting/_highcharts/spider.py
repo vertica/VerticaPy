@@ -52,7 +52,7 @@ def spider(query: str, options: dict = {}, width: int = 600, height: int = 400):
             "layout": "vertical",
         },
     }
-    default_options["colors"] = get_colors()
+    default_options["colors"] = get_colors(idx=None)
     chart.set_dict_options(default_options)
     columns = data_to_columns(data, n)
     chart.set_dict_options({"xAxis": {"categories": columns[0]}})

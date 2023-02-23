@@ -22,13 +22,13 @@ import matplotlib.colors as plt
 from verticapy._config.config import COLORS_OPTIONS, _options
 
 
-def get_colors(d: dict = {}, idx: int = 0):
+def get_colors(d: dict = None, idx: int = 0):
     if "color" in d:
         if isinstance(d["color"], str):
             return d["color"]
         else:
             return d["color"][idx % len(d["color"])]
-    elif not (d):
+    elif d == None and idx == None:
         if not (_options["colors"]) or not (isinstance(_options["colors"], list)):
             if not (_options["colors"]):
                 colors = COLORS_OPTIONS["default"]
@@ -43,16 +43,19 @@ def get_colors(d: dict = {}, idx: int = 0):
         else:
             return _options["colors"]
     else:
-        return get_colors()[idx % len(get_colors())]
+        colors = get_colors(idx=None)
+        return colors[idx % len(colors)]
 
 
 def get_cmap(color: str = "", reverse: bool = False):
     if not (color):
         cm1 = plt.LinearSegmentedColormap.from_list(
-            "verticapy", ["#FFFFFF", get_colors()[0]], N=1000
+            "verticapy", ["#FFFFFF", get_colors(idx=None)[0]], N=1000
         )
         cm2 = plt.LinearSegmentedColormap.from_list(
-            "verticapy", [get_colors()[1], "#FFFFFF", get_colors()[0]], N=1000
+            "verticapy",
+            [get_colors(idx=None)[1], "#FFFFFF", get_colors(idx=None)[0]],
+            N=1000,
         )
         return (cm1, cm2)
     else:

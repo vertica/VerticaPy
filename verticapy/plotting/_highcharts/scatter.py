@@ -62,7 +62,7 @@ def scatter(
         },
     }
     if chart_type != "3d":
-        default_options["colors"] = get_colors()
+        default_options["colors"] = get_colors(idx=None)
     chart.set_dict_options(default_options)
     for i in range(len(data)):
         for j in range(n):

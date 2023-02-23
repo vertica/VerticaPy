@@ -45,7 +45,7 @@ def boxplot(
         else:
             colors = style_kwds["colors"]
         del style_kwds["colors"]
-    colors += get_colors()
+    colors += get_colors(idx=None)
     # SINGLE BOXPLOT
     if by == "":
         if not (ax):
@@ -263,7 +263,7 @@ def boxplot2D(
         else:
             colors = style_kwds["colors"]
         del style_kwds["colors"]
-    colors += get_colors()
+    colors += get_colors(idx=None)
     if not (columns):
         columns = vdf.numcol()
     for column in columns:
