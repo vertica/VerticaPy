@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy._utils._sql._format import format_magic
-from verticapy._version import check_minimum_version
+from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.str_sql.base import str_sql
 

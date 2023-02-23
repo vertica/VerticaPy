@@ -18,11 +18,11 @@ import os, vertica_python
 from typing import Literal, Union
 
 from verticapy._config.config import _options
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident, schema_relation
-from verticapy._version import check_minimum_version
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.connection import current_cursor
 
 from verticapy.core.vdataframe.base import vDataFrame

@@ -18,11 +18,11 @@ import time
 from typing import Literal
 
 from verticapy._config.config import _options
+from verticapy._utils._sql._dblink import replace_external_queries_in_query
 from verticapy._utils._sql._display import print_query, print_time
 from verticapy._utils._sql._format import (
     clean_query,
     erase_label,
-    replace_external_queries_in_query,
 )
 from verticapy.connection.connect import current_cursor
 from verticapy.connection._global import SPECIAL_SYMBOLS

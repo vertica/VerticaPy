@@ -21,9 +21,12 @@ import numpy as np
 
 from verticapy._config.config import _options
 from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
-from verticapy._version import check_minimum_version, vertica_version
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import (
+    check_minimum_version,
+    vertica_version,
+)
 from verticapy.errors import ConversionError, FunctionError, ParameterError, ModelError
 
 from verticapy.core.tablesample.base import TableSample

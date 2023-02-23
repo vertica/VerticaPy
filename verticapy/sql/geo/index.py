@@ -16,12 +16,13 @@ permissions and limitations under the License.
 """
 import warnings
 
-# VerticaPy Modules
-from verticapy.vdataframe import vDataFrame
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
+
 from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.read import to_tablesample
-from verticapy._utils._sql._execute import _executeSQL
 
 
 @save_verticapy_logs

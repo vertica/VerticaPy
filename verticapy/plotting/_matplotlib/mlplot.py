@@ -24,8 +24,8 @@ import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
 
 from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
 from verticapy.plotting._colors import gen_colors, get_color

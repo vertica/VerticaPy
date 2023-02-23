@@ -62,12 +62,12 @@ __description__ = (
 )
 __url__ = "https://github.com/vertica/verticapy/"
 __license__ = "Apache License, Version 2.0"
+__version__ = "0.13.0"
 
 from verticapy._config.config import set_option
-from verticapy._utils._collect import save_to_query_profile
-from verticapy._utils._logo import gen_verticapy_logo_html, gen_verticapy_logo_str
+from verticapy._utils._sql._vertica_version import vertica_version
+from verticapy._utils._logo import verticapy_logo_html, verticapy_logo_str
 from verticapy._help import help_start
-from verticapy._version import __version__, vertica_version
 
 from verticapy.connection.connect import (
     close_connection,

@@ -17,8 +17,8 @@ permissions and limitations under the License.
 import re
 from typing import Union
 
-from verticapy._utils._cast import to_category
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._cast import to_category
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import QueryError
 

@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import uuid
 
-from verticapy._version import __version__
+from verticapy import __version__
 
 VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
 SESSION_IDENTIFIER = str(uuid.uuid1()).replace("-", "")

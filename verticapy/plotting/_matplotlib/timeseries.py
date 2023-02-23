@@ -19,8 +19,8 @@ import warnings
 import matplotlib.pyplot as plt
 
 from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.plotting._matplotlib.base import updated_dict

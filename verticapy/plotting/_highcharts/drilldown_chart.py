@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from vertica_highcharts import Highchart
 
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
 from verticapy.plotting._colors import gen_colors

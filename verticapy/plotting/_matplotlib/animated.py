@@ -22,7 +22,7 @@ from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
 from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.plotting._colors import gen_cmap, gen_colors
 from verticapy.plotting._matplotlib.base import updated_dict

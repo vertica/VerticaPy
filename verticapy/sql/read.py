@@ -18,11 +18,11 @@ import time
 from typing import Union
 
 from verticapy._config.config import _options
-from verticapy._utils._cast import to_category
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._cast import to_category
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._display import print_query, print_time
+from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.str_sql.base import str_sql
 

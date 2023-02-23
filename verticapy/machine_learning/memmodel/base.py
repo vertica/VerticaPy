@@ -18,7 +18,7 @@ from typing import Literal, Union
 import numpy as np
 
 from verticapy._config.config import GRAPHVIZ_ON
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query
 from verticapy.errors import ParameterError, FunctionError
 

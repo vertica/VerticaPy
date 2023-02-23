@@ -20,7 +20,7 @@ from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 
 from verticapy._config.config import ISNOTEBOOK, _options
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
 

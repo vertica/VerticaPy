@@ -18,11 +18,11 @@ from typing import Union
 from collections.abc import Iterable
 
 from verticapy._config.config import ISNOTEBOOK, _options
-from verticapy._utils._cast import to_varchar
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._cast import to_varchar
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
-from verticapy._utils._sql._execute import _executeSQL
-from verticapy._version import vertica_version
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.core.str_sql.base import str_sql
 

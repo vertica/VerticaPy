@@ -16,8 +16,8 @@ permissions and limitations under the License.
 """
 from typing import Union
 
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.vdataframe.base import vDataFrame
 

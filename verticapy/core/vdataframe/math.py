@@ -17,9 +17,9 @@ permissions and limitations under the License.
 import random
 from typing import Literal, Union
 
-from verticapy._utils._cast import to_category
-from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._map import verticapy_agg_name
+from verticapy._utils._sql._cast import to_category
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import MissingColumn, ParameterError, QueryError
 

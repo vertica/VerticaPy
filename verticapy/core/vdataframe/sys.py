@@ -17,12 +17,13 @@ permissions and limitations under the License.
 import copy, re, time, warnings
 from typing import Union
 
-from verticapy._config.config import _current_random, _options
-from verticapy._utils._cast import to_varchar
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._config.config import _options
 from verticapy._utils._map import verticapy_agg_name
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._cast import to_varchar
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import indentSQL, quote_ident
+from verticapy._utils._sql._random import _current_random
+from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
 

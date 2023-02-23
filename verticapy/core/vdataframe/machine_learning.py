@@ -20,10 +20,10 @@ from itertools import combinations_with_replacement
 import numpy as np
 import scipy.stats as scipy_st
 
-from verticapy._utils._collect import save_verticapy_logs
 from verticapy._config.config import _options
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample

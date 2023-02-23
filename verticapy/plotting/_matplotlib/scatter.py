@@ -21,8 +21,9 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 
-from verticapy._config.config import _current_random, ISNOTEBOOK
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._config.config import ISNOTEBOOK
+from verticapy._utils._sql._random import _current_random
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
 from verticapy.plotting._colors import gen_cmap, gen_colors, get_color

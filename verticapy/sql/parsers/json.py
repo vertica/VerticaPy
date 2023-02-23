@@ -17,14 +17,14 @@ permissions and limitations under the License.
 import os
 
 from verticapy._config.config import _options
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy._utils._sql._format import (
     quote_ident,
     format_schema_table,
     clean_query,
 )
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 
 from verticapy.sql.drop import drop

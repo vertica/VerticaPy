@@ -17,8 +17,8 @@ permissions and limitations under the License.
 from functools import wraps
 
 from verticapy._config.config import _options
-from verticapy._utils._sql._execute import _executeSQL
 from verticapy.connection._global import SESSION_IDENTIFIER
+from verticapy.connection.connect import current_cursor
 
 
 def save_to_query_profile(
@@ -111,11 +111,7 @@ bool
         query = f"SELECT /*+LABEL('{query_label_str}')*/ '{dict_to_json_string_str}'"
         if return_query:
             return query
-        _executeSQL(
-            query=query,
-            title="Sending query to save the information in query profile table.",
-            print_time_sql=False,
-        )
+        current_cursor.execute(query)
         return True
     except:
         return False

@@ -20,7 +20,7 @@ from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
 
 from verticapy._config.config import _options
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, replace_vars_in_query
 from verticapy.errors import ParameterError
 

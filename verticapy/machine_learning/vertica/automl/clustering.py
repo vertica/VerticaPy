@@ -18,7 +18,7 @@ from typing import Union
 from tqdm.auto import tqdm
 
 from verticapy._config.config import _options
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
 
 from verticapy.core.vdataframe.base import vDataFrame
 

@@ -29,10 +29,12 @@ from verticapy import (
     set_option,
     TableSample,
 )
-from verticapy._utils._format import get_dblink_fun
+from verticapy._utils._sql._dblink import (
+    get_dblink_fun,
+    replace_external_queries_in_query,
+)
 from verticapy.datasets import load_titanic
 from verticapy.jupyter.extensions.sql_magic import sql_magic as sql
-from verticapy._utils._format import replace_external_queries_in_query
 
 set_option("print_info", False)
 

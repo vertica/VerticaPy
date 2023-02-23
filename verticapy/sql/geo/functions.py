@@ -16,12 +16,14 @@ permissions and limitations under the License.
 """
 from typing import Union
 
-# VerticaPy Modules
-import verticapy.sql.functions.math as mt
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
+
 from verticapy.datasets.generators import gen_meshgrid
-from verticapy.vdataframe import vDataFrame
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql._execute import _executeSQL
+
+from verticapy.core.vdataframe.base import vDataFrame
+
+import verticapy.sql.functions.math as mt
 
 
 @save_verticapy_logs

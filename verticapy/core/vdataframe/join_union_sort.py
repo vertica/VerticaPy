@@ -16,11 +16,11 @@ permissions and limitations under the License.
 """
 from typing import Literal, Union
 
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import extract_and_rename_subquery
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident
-from verticapy._version import vertica_version
+from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import ParameterError
 
 from verticapy.core.str_sql.base import str_sql

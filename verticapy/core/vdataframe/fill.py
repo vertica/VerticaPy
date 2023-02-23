@@ -19,13 +19,13 @@ from itertools import combinations_with_replacement
 from typing import Literal, Union
 
 from verticapy._config.config import _options
-from verticapy._utils._cast import to_category, to_varchar
-from verticapy._utils._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._cast import to_category, to_varchar
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
-from verticapy._version import vertica_version
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import EmptyParameter, ParameterError, QueryError
 
 from verticapy.core.str_sql.base import str_sql

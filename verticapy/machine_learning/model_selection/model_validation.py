@@ -23,9 +23,9 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
 from verticapy._config.config import ISNOTEBOOK, _options
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql._execute import _executeSQL
-from verticapy._version import check_minimum_version
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample

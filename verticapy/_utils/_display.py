@@ -17,8 +17,8 @@ permissions and limitations under the License.
 import html, shutil
 
 from verticapy._config.config import _options
-from verticapy._utils._cast import to_category
-from verticapy._utils._logo import gen_verticapy_logo_html
+from verticapy._utils._sql._cast import to_category
+from verticapy._utils._logo import verticapy_logo_html
 
 
 def print_table(
@@ -220,7 +220,7 @@ def print_table(
                         ctype, missing_values, category = "", "", ""
                     if (i == 0) and (j == 0):
                         if dtype and (_options["mode"] in ("full", None)):
-                            val = gen_verticapy_logo_html(size="45px")
+                            val = verticapy_logo_html(size="45px")
                         else:
                             val = ""
                     elif cell_width[j] > 240:

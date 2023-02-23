@@ -14,22 +14,24 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy._utils._sql._sys import _executeSQL
+from typing import Optional
+
+from verticapy._config.config import _options
 
 
-def current_session():
-    res = _executeSQL(
-        query="SELECT /*+LABEL(current_session)*/ CURRENT_SESSION();",
-        method="fetchfirstelem",
-        print_time_sql=False,
-    )
-    return int(res.split(":")[1], base=16)
-
-
-def username():
-    res = _executeSQL(
-        query="SELECT /*+LABEL(username)*/ USERNAME();",
-        method="fetchfirstelem",
-        print_time_sql=False,
-    )
-    return res
+def _current_random(rand_int: Optional[int] = None) -> str:
+    """
+    TODO 
+    """
+    random_state = _options["random_state"]
+    if isinstance(rand_int, int):
+        if isinstance(random_state, int):
+            random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
+        else:
+            random_func = f"RANDOMINT({rand_int})"
+    else:
+        if isinstance(random_state, int):
+            random_func = f"SEEDED_RANDOM({random_state})"
+        else:
+            random_func = "RANDOM()"
+    return random_func

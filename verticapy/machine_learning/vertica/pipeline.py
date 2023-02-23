@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from typing import Union
 
 from verticapy._config.config import _options
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy.errors import ParameterError, ModelError
 
 from verticapy.core.vdataframe.base import vDataFrame

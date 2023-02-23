@@ -21,10 +21,11 @@ import numpy as np
 
 import pandas as pd
 
-from verticapy._config.config import _current_random, GEOPANDAS_ON
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._config.config import GEOPANDAS_ON
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._random import _current_random
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 from verticapy.errors import ParameterError, ParsingError
 

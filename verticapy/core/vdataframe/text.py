@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal
 
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name
 
 

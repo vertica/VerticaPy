@@ -16,8 +16,8 @@ permissions and limitations under the License.
 """
 import datetime
 
-from verticapy._utils._collect import save_verticapy_logs
-from verticapy._version import check_minimum_version
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.errors import ParameterError
 
 

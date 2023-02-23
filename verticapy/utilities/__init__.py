@@ -15,9 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy._config.config import set_option
-from verticapy._utils._collect import save_to_query_profile
+from verticapy._utils._sql._collect import save_to_query_profile
+from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy._help import help_start, vHelp
-from verticapy._version import vertica_version
 
 from verticapy.core.tablesample.base import TableSample
 

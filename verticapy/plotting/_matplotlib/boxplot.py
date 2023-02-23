@@ -19,7 +19,7 @@ import math, warnings
 import matplotlib.pyplot as plt
 
 from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.plotting._colors import gen_colors
 

@@ -21,9 +21,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from verticapy._config.config import ISNOTEBOOK
-from verticapy._utils._cast import to_varchar
-from verticapy._utils._sql._execute import _executeSQL
+from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample

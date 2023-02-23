@@ -16,9 +16,9 @@ permissions and limitations under the License.
 """
 from typing import Literal, Union
 
-from verticapy._utils._collect import save_verticapy_logs
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
-from verticapy._version import check_minimum_version
+from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.machine_learning.vertica.base import (
     MulticlassClassifier,

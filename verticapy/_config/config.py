@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
-from typing import Literal, Union, Optional, overload
+from typing import Any, Literal, Union, Optional, overload
 
 try:
     from geopandas import GeoDataFrame
@@ -92,24 +92,6 @@ _options = {
 }
 
 
-def _current_random(rand_int: Optional[int] = None) -> str:
-    """
-    TODO 
-    """
-    random_state = _options["random_state"]
-    if isinstance(rand_int, int):
-        if isinstance(random_state, int):
-            random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
-        else:
-            random_func = f"RANDOMINT({rand_int})"
-    else:
-        if isinstance(random_state, int):
-            random_func = f"SEEDED_RANDOM({random_state})"
-        else:
-            random_func = "RANDOM()"
-    return random_func
-
-
 def init_interactive_mode(all_interactive: bool = False) -> None:
     """Activate the datatables representation for all the vDataFrames."""
     set_option("interactive", all_interactive)
@@ -135,7 +117,7 @@ def get_option(
         "time_on",
         "tqdm",
     ],
-) -> Union[bool, int, str, list, None]:
+) -> Any:
     return _options[option]
 
 
@@ -172,7 +154,7 @@ def set_option(
         "time_on",
         "tqdm",
     ],
-    value: Union[bool, int, str, list, None] = None,
+    value: Any = None,
 ) -> None:
     """
     Sets VerticaPy options.
@@ -296,9 +278,7 @@ def set_option(
     elif option == "save_query_profile":
         if value == "all":
             value = True
-        elif isinstance(value, (bool, list)):
-            pass
-        else:
+        elif not (isinstance(value, (bool, list))):
             wrong_value = True
         if not (wrong_value):
             _options[option] = value
