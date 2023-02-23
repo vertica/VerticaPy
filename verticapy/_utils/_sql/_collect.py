@@ -111,7 +111,7 @@ bool
         query = f"SELECT /*+LABEL('{query_label_str}')*/ '{dict_to_json_string_str}'"
         if return_query:
             return query
-        current_cursor.execute(query)
+        current_cursor().execute(query)
         return True
     except:
         return False

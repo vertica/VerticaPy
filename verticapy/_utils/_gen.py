@@ -31,8 +31,8 @@ def gen_name(L: list):
 
 
 def gen_tmp_name(schema: str = "", name: str = ""):
-    current_cursor.execute("SELECT CURRENT_SESSION(), USERNAME();")
-    current_session, username = current_cursor.fetchone()
+    current_cursor().execute("SELECT CURRENT_SESSION(), USERNAME();")
+    current_session, username = current_cursor().fetchone()
     session_user = f"{current_session}_{username}"
     L = session_user.split("_")
     L[0] = "".join(filter(str.isalnum, L[0]))

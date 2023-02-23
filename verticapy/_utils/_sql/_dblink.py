@@ -74,7 +74,7 @@ def replace_external_queries_in_query(query: str):
                     CREATE LOCAL TEMPORARY TABLE {temp_table_name} 
                     ON COMMIT PRESERVE ROWS 
                     AS {query_dblink_template}"""
-                current_cursor.execute(create_statement)
+                current_cursor().execute(create_statement)
                 query_dblink_template = f"v_temp_schema.{temp_table_name} AS {alias}"
             else:
                 if subquery_flag:
