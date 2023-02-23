@@ -19,7 +19,7 @@ from tqdm.auto import tqdm
 
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_color
+from verticapy._config.colors import get_colors
 from verticapy._config.config import ISNOTEBOOK, _options
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
@@ -226,7 +226,7 @@ TableSample
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
     param = {
-        "color": get_color()[0],
+        "color": get_colors()[0],
         "marker": "o",
         "markerfacecolor": "white",
         "markersize": 7,

@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from vertica_highcharts import Highchart
 
-from verticapy._config.colors import get_color
+from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
@@ -51,7 +51,7 @@ def drilldown_chart(
             "pointFormat": '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b><br/>',
         },
     }
-    default_options["colors"] = get_color()
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     if chart_type == "bar":
         chart.set_dict_options({"chart": {"inverted": True}})

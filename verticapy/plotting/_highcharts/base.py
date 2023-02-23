@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from collections.abc import Iterable
 
-from verticapy._config.colors import get_color
+from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
@@ -495,7 +495,7 @@ def hchart_from_vdf(
     elif kind == "heatmap":
         chart = heatmap(query=query, width=width, height=height)
         chart.set_dict_options(
-            {"colorAxis": {"maxColor": get_color()[0], "minColor": "#FFFFFF"}}
+            {"colorAxis": {"maxColor": get_colors()[0], "minColor": "#FFFFFF"}}
         )
         chart.set_dict_options(options)
         return chart
@@ -517,8 +517,8 @@ def hchart_from_vdf(
                 "xAxis": {"categories": narrow_data[1]},
                 "yAxis": {"categories": narrow_data[2]},
                 "colorAxis": {
-                    "minColor": get_color()[1],
-                    "maxColor": get_color()[0],
+                    "minColor": get_colors()[1],
+                    "maxColor": get_colors()[0],
                     "min": -1,
                     "max": 1,
                 },
@@ -529,10 +529,10 @@ def hchart_from_vdf(
                 {
                     "colorAxis": {
                         "stops": [
-                            [0, get_color()[1]],
+                            [0, get_colors()[1]],
                             [0.45, "#FFFFFF"],
                             [0.55, "#FFFFFF"],
-                            [1, get_color()[0]],
+                            [1, get_colors()[0]],
                         ]
                     }
                 }
@@ -544,7 +544,7 @@ def hchart_from_vdf(
                         "stops": [
                             [0, "#FFFFFF"],
                             [0.2, "#FFFFFF"],
-                            [1, get_color()[0]],
+                            [1, get_colors()[0]],
                         ],
                         "min": 0,
                     }

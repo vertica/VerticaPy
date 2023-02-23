@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 
-from verticapy._config.colors import get_cmap, get_color
+from verticapy._config.colors import get_cmap, get_colors
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
@@ -53,7 +53,7 @@ def bubble(
     elif "colors" in style_kwds:
         colors = style_kwds["colors"]
     else:
-        colors = get_color()
+        colors = get_colors()
     if isinstance(colors, str):
         colors = [colors]
     if not (catcol) and not (cmap_col):
@@ -334,7 +334,7 @@ def outliers_contour_plot(
     **style_kwds,
 ):
     if not (cmap):
-        cmap = get_cmap(get_color()[2])
+        cmap = get_cmap(get_colors()[2])
     all_agg = vdf.agg(["avg", "std", "min", "max"], columns)
     xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
     if not (ax):
@@ -488,13 +488,13 @@ def scatter_matrix(
                 x0, y0, z0, h0, is_categorical = compute_plot_variables(
                     vdf[x], method="density", max_cardinality=1
                 )
-                param = {"color": get_color(style_kwds, 0), "edgecolor": "black"}
+                param = {"color": get_colors(style_kwds, 0), "edgecolor": "black"}
                 if "edgecolor" in style_kwds:
                     param["edgecolor"] = style_kwds["edgecolor"]
                 axes[i, j].bar(x0, y0, h0 / 0.94, **param)
             else:
                 param = {
-                    "color": get_color(style_kwds, 1),
+                    "color": get_colors(style_kwds, 1),
                     "edgecolor": "black",
                     "alpha": 0.9,
                     "s": 40,
@@ -535,7 +535,7 @@ def scatter(
         )
         warnings.warn(warning_message, Warning)
         bbox = []
-    colors = get_color()
+    colors = get_colors()
     markers = MARKERS * 10
     param = {
         "s": 50,

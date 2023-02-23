@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from vertica_highcharts import Highchart
 
-from verticapy._config.colors import get_color
+from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
@@ -52,7 +52,7 @@ def spider(query: str, options: dict = {}, width: int = 600, height: int = 400):
             "layout": "vertical",
         },
     }
-    default_options["colors"] = get_color()
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     columns = data_to_columns(data, n)
     chart.set_dict_options({"xAxis": {"categories": columns[0]}})

@@ -18,7 +18,7 @@ import warnings
 
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_color
+from verticapy._config.colors import get_colors
 from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -52,7 +52,7 @@ def acf_plot(
     if "color" in style_kwds:
         color = style_kwds["color"]
     else:
-        color = get_color()[0]
+        color = get_colors()[0]
     if not (ax):
         fig, ax = plt.subplots()
         if ISNOTEBOOK:
@@ -130,7 +130,7 @@ def multi_ts_plot(
             columns.remove(column)
     if not (columns):
         raise EmptyParameter("No numerical columns found to draw the multi TS plot")
-    colors = get_color()
+    colors = get_colors()
     order_by_start_str, order_by_end_str = "", ""
     if order_by_start:
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
@@ -203,7 +203,7 @@ def multi_ts_plot(
                 }
         param["color"] = color
         if "color" in style_kwds and len(order_by_values) < 20:
-            param["markerfacecolor"] = get_color(style_kwds, i)
+            param["markerfacecolor"] = get_colors(style_kwds, i)
         if kind == "step":
             ax.step(order_by_values, points, **param)
         else:
@@ -260,9 +260,9 @@ def range_curve(
             alpha1, alpha2 = 0.3, 0.5
         else:
             alpha1, alpha2 = 0.5, 0.9
-        param = {"facecolor": get_color(style_kwds, i)}
+        param = {"facecolor": get_colors(style_kwds, i)}
         ax.fill_between(X, y[0], y[2], alpha=alpha1, **param)
-        param = {"color": get_color(style_kwds, i)}
+        param = {"color": get_colors(style_kwds, i)}
         for j in [0, 2]:
             ax.plot(
                 X, y[j], alpha=alpha2, **updated_dict(param, style_kwds, i),
@@ -377,7 +377,7 @@ def ts_plot(
         if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
-    colors = get_color()
+    colors = get_colors()
     plot_fun = ax.step if step else ax.plot
     plot_param = {
         "marker": "o",
@@ -441,7 +441,7 @@ def ts_plot(
                     **param,
                     "markerfacecolor": colors[idx % len(colors)],
                 }
-            param["markerfacecolor"] = get_color(style_kwds, idx)
+            param["markerfacecolor"] = get_colors(style_kwds, idx)
             plot_fun(d[0], d[1], label=d[2], **updated_dict(param, style_kwds, idx))
         ax.set_xlabel(order_by)
         ax.set_ylabel(vdf._alias)

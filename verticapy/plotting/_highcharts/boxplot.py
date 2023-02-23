@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from vertica_highcharts import Highchart
 
-from verticapy._config.colors import get_color
+from verticapy._config.colors import get_colors
 
 
 def boxplot(
@@ -36,7 +36,7 @@ def boxplot(
         "xAxis": {"title": {"text": ""}},
         "yAxis": {"title": {"text": ""}},
     }
-    default_options["colors"] = get_color()
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     aggregations = ["min", "approx_25%", "approx_50%", "approx_75%", "max"]
     if (vdf) and not (by):

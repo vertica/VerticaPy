@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from vertica_highcharts import Highchart
 
-from verticapy._config.colors import get_color
+from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
@@ -40,7 +40,7 @@ def heatmap(
         },
         "title": {"text": ""},
         "legend": {},
-        "colorAxis": {"minColor": "#FFFFFF", "maxColor": get_color()[0]},
+        "colorAxis": {"minColor": "#FFFFFF", "maxColor": get_colors()[0]},
         "xAxis": {"title": {"text": ""}},
         "yAxis": {"title": {"text": ""}},
         "tooltip": {
@@ -52,7 +52,7 @@ def heatmap(
             )
         },
     }
-    default_options["colors"] = get_color()
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     if query:
         data = _executeSQL(

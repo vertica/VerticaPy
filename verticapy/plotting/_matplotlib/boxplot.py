@@ -18,7 +18,7 @@ import math, warnings
 
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_color
+from verticapy._config.colors import get_colors
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -45,7 +45,7 @@ def boxplot(
         else:
             colors = style_kwds["colors"]
         del style_kwds["colors"]
-    colors += get_color()
+    colors += get_colors()
     # SINGLE BOXPLOT
     if by == "":
         if not (ax):
@@ -263,7 +263,7 @@ def boxplot2D(
         else:
             colors = style_kwds["colors"]
         del style_kwds["colors"]
-    colors += get_color()
+    colors += get_colors()
     if not (columns):
         columns = vdf.numcol()
     for column in columns:

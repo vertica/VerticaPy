@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from vertica_highcharts import Highstock
 
-from verticapy._config.colors import get_color
+from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
@@ -53,7 +53,7 @@ def candlestick(query: str, options: dict = {}, width: int = 600, height: int = 
             },
         ],
     }
-    default_options["colors"] = get_color()
+    default_options["colors"] = get_colors()
     chart.set_dict_options(default_options)
     for i in range(len(data)):
         for j in range(1, n):

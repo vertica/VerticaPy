@@ -20,7 +20,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_cmap, get_color
+from verticapy._config.colors import get_cmap, get_colors
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import quote_ident
@@ -237,7 +237,7 @@ def contour_plot(
         del param["cmap"]
     ax.contour(X, Y, Z, **param)
     param = {
-        "cmap": get_cmap([get_color()[2], "#FFFFFF", get_color()[0]]),
+        "cmap": get_cmap([get_colors()[2], "#FFFFFF", get_colors()[0]]),
         "levels": 14,
     }
     param = updated_dict(param, style_kwds)

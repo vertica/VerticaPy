@@ -21,7 +21,7 @@ import matplotlib.animation as animation
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_cmap, get_color
+from verticapy._config.colors import get_cmap, get_colors
 from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -76,7 +76,7 @@ def animated_bar(
         def date_f(x):
             return str(x)
 
-    colors = get_color()
+    colors = get_colors()
     for c in ["color", "colors"]:
         if c in style_kwds:
             colors = style_kwds[c]
@@ -337,7 +337,7 @@ def animated_bubble_plot(
     elif "colors" in style_kwds:
         colors = style_kwds["colors"]
     else:
-        colors = get_color()
+        colors = get_colors()
     if isinstance(colors, str):
         colors = [colors]
     param = {
@@ -632,7 +632,7 @@ def animated_ts_plot(
     else:
         fig = plt
     all_plots = []
-    colors = get_color()
+    colors = get_colors()
     for i in range(0, len(columns)):
         param = {
             "linewidth": 1,

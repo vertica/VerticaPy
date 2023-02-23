@@ -22,7 +22,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_color
+from verticapy._config.colors import get_colors
 from verticapy._config.config import ISNOTEBOOK, _options
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -1360,7 +1360,7 @@ TableSample
     if "color" in style_kwds:
         color = style_kwds["color"]
     else:
-        color = get_color()[0]
+        color = get_colors()[0]
     by, column, ts = vdf._format_colnames(by, column, ts)
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
