@@ -22,12 +22,26 @@ import matplotlib.colors as plt
 from verticapy._config.config import COLORS_OPTIONS, _options
 
 
-def get_color(d: dict, idx: int = 0):
+def get_color(d: dict = {}, idx: int = 0):
     if "color" in d:
         if isinstance(d["color"], str):
             return d["color"]
         else:
             return d["color"][idx % len(d["color"])]
+    elif not (d):
+        if not (_options["colors"]) or not (isinstance(_options["colors"], list)):
+            if not (_options["colors"]):
+                colors = COLORS_OPTIONS["default"]
+            else:
+                colors = copy.deepcopy(_options["colors"])
+            all_colors = [item for item in plt.cnames]
+            shuffle(all_colors)
+            for c in all_colors:
+                if c not in colors:
+                    colors += [c]
+            return colors
+        else:
+            return _options["colors"]
     else:
         return get_color()[idx % len(get_color())]
 
@@ -52,19 +66,3 @@ def get_cmap(color: str = "", reverse: bool = False):
             return plt.LinearSegmentedColormap.from_list(
                 "verticapy", ["#FFFFFF", color], N=1000
             )
-
-
-def get_color():
-    if not (_options["colors"]) or not (isinstance(_options["colors"], list)):
-        if not (_options["colors"]):
-            colors = COLORS_OPTIONS["default"]
-        else:
-            colors = copy.deepcopy(_options["colors"])
-        all_colors = [item for item in plt.cnames]
-        shuffle(all_colors)
-        for c in all_colors:
-            if c not in colors:
-                colors += [c]
-        return colors
-    else:
-        return _options["colors"]

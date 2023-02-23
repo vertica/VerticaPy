@@ -18,9 +18,9 @@ import math
 
 import matplotlib.pyplot as plt
 
+from verticapy._config.colors import get_color
 from verticapy.errors import ParameterError
 
-from verticapy.plotting._colors import gen_colors
 from verticapy.plotting._matplotlib.base import updated_dict
 
 
@@ -40,7 +40,7 @@ def spider(
             "The first column of the Spider Plot must have at "
             f"least 3 categories. Found {int(unique)}."
         )
-    colors = gen_colors()
+    colors = get_color()
     all_columns = vdf.pivot_table(
         columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
     ).values

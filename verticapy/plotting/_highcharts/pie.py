@@ -16,10 +16,9 @@ permissions and limitations under the License.
 """
 from vertica_highcharts import Highchart
 
+from verticapy._config.colors import get_color
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
-
-from verticapy.plotting._colors import gen_colors
 
 
 def pie(
@@ -58,7 +57,7 @@ def pie(
         "tooltip": {"pointFormat": str(names[1]) + ": <b>{point.y}</b>"},
     }
     if "3d" not in chart_type:
-        default_options["colors"] = gen_colors()
+        default_options["colors"] = get_color()
     chart.set_dict_options(default_options)
     if "3d" in chart_type:
         chart.set_dict_options(

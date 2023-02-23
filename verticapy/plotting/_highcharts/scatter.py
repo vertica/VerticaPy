@@ -18,10 +18,9 @@ from collections.abc import Iterable
 
 from vertica_highcharts import Highchart
 
+from verticapy._config.colors import get_color
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
-
-from verticapy.plotting._colors import gen_colors
 
 
 def scatter(
@@ -63,7 +62,7 @@ def scatter(
         },
     }
     if chart_type != "3d":
-        default_options["colors"] = gen_colors()
+        default_options["colors"] = get_color()
     chart.set_dict_options(default_options)
     for i in range(len(data)):
         for j in range(n):

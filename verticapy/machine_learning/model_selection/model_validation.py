@@ -22,6 +22,7 @@ from tqdm.auto import tqdm
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
+from verticapy._config.colors import get_color
 from verticapy._config.config import ISNOTEBOOK, _options
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -33,7 +34,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning._utils import compute_area
 
-from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.timeseries import range_curve
 
@@ -635,9 +635,9 @@ TableSample
     ax.set_xlabel("Cumulative Data Fraction")
     max_value = max([0 if elem != elem else elem for elem in lift])
     lift = [max_value if elem != elem else elem for elem in lift]
-    param1 = {"color": gen_colors()[0]}
+    param1 = {"color": get_color()[0]}
     ax.plot(decision_boundary, lift, **updated_dict(param1, style_kwds, 0))
-    param2 = {"color": gen_colors()[1]}
+    param2 = {"color": get_color()[1]}
     ax.plot(
         decision_boundary,
         positive_prediction_ratio,
@@ -645,7 +645,7 @@ TableSample
     )
     color1, color2 = get_color(style_kwds, 0), get_color(style_kwds, 1)
     if color1 == color2:
-        color2 = gen_colors()[1]
+        color2 = get_color()[1]
     ax.fill_between(
         decision_boundary, positive_prediction_ratio, lift, facecolor=color1, alpha=0.2,
     )
@@ -838,19 +838,19 @@ TableSample
             fig.set_size_inches(8, 6)
     color1, color2 = get_color(style_kwds, 0), get_color(style_kwds, 1)
     if color1 == color2:
-        color2 = gen_colors()[1]
+        color2 = get_color()[1]
     if cutoff_curve:
         ax.plot(
             threshold,
             [1 - item for item in false_positive],
             label="Specificity",
-            **updated_dict({"color": gen_colors()[0]}, style_kwds),
+            **updated_dict({"color": get_color()[0]}, style_kwds),
         )
         ax.plot(
             threshold,
             true_positive,
             label="Sensitivity",
-            **updated_dict({"color": gen_colors()[1]}, style_kwds),
+            **updated_dict({"color": get_color()[1]}, style_kwds),
         )
         ax.fill_between(
             threshold,
@@ -868,7 +868,7 @@ TableSample
         ax.plot(
             false_positive,
             true_positive,
-            **updated_dict({"color": gen_colors()[0]}, style_kwds),
+            **updated_dict({"color": get_color()[0]}, style_kwds),
         )
         ax.fill_between(
             false_positive, false_positive, true_positive, facecolor=color1, alpha=0.1,

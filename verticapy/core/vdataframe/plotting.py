@@ -520,7 +520,7 @@ class vDFPLOT:
                     f"vDataColumn {column} is not numerical to draw KDE"
                 )
         assert columns, EmptyParameter("No Numerical Columns found to draw KDE.")
-        colors = gen_colors()
+        colors = get_color()
         min_max = self.agg(func=["min", "max"], columns=columns)
         if not xlim:
             xmin = min(min_max["min"])
@@ -1620,7 +1620,7 @@ class vDCPLOT:
 
         if by:
             by = self._parent._format_colnames(by)
-            colors = plt.gen_colors()
+            colors = plt.get_color()
             if not xlim:
                 xmin = self.min()
                 xmax = self.max()
@@ -1713,10 +1713,10 @@ class vDCPLOT:
             column = self._parent._format_colnames(column)
             columns += [column]
             if not ("cmap" in kwargs):
-                kwargs["cmap"] = gen_cmap()[0]
+                kwargs["cmap"] = get_cmap()[0]
         else:
             if not ("color" in kwargs):
-                kwargs["color"] = gen_colors()[0]
+                kwargs["color"] = get_color()[0]
         if not ("legend" in kwargs):
             kwargs["legend"] = True
         if not ("figsize" in kwargs):

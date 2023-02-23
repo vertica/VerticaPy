@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal
 
+from verticapy._config.colors import get_cmap, get_color
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
@@ -23,7 +24,6 @@ from verticapy.core.tablesample.base import TableSample
 
 from verticapy.machine_learning.vertica.base import Decomposition
 
-from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.plotting._matplotlib.mlplot import plot_var
 
 
@@ -108,8 +108,8 @@ name: str
                 ]
             style_kwds["c"] = c
             if "cmap" not in style_kwds:
-                style_kwds["cmap"] = gen_cmap(
-                    color=[gen_colors()[0], gen_colors()[1], gen_colors()[2]]
+                style_kwds["cmap"] = get_cmap(
+                    color=[get_color()[0], get_color()[1], get_color()[2]]
                 )
         explained_variance = self.explained_variance_["explained_variance"]
         return plot_var(

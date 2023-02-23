@@ -18,11 +18,11 @@ import warnings
 
 import matplotlib.pyplot as plt
 
+from verticapy._config.colors import get_color
 from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 
-from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.plotting._matplotlib.base import updated_dict
 
 if PARSER_IMPORT:
@@ -52,7 +52,7 @@ def acf_plot(
     if "color" in style_kwds:
         color = style_kwds["color"]
     else:
-        color = gen_colors()[0]
+        color = get_color()[0]
     if not (ax):
         fig, ax = plt.subplots()
         if ISNOTEBOOK:
@@ -130,7 +130,7 @@ def multi_ts_plot(
             columns.remove(column)
     if not (columns):
         raise EmptyParameter("No numerical columns found to draw the multi TS plot")
-    colors = gen_colors()
+    colors = get_color()
     order_by_start_str, order_by_end_str = "", ""
     if order_by_start:
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
@@ -377,7 +377,7 @@ def ts_plot(
         if ISNOTEBOOK:
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
-    colors = gen_colors()
+    colors = get_color()
     plot_fun = ax.step if step else ax.plot
     plot_param = {
         "marker": "o",

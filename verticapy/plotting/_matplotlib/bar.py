@@ -19,10 +19,10 @@ import warnings
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+from verticapy._config.colors import get_color
 from verticapy._config.config import ISNOTEBOOK
 from verticapy.errors import ParameterError
 
-from verticapy.plotting._colors import gen_colors
 from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
 
@@ -45,7 +45,7 @@ def bar(
             fig.set_size_inches(10, min(int(len(x) / 1.8) + 1, 600))
         ax.xaxis.grid()
         ax.set_axisbelow(True)
-    param = {"color": gen_colors()[0], "alpha": 0.86}
+    param = {"color": get_color()[0], "alpha": 0.86}
     ax.barh(x, y, h, **updated_dict(param, style_kwds, 0))
     ax.set_ylabel(vdf._alias)
     if is_categorical:
@@ -86,7 +86,7 @@ def bar2D(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_color()
     if fully_stacked:
         if method != "density":
             raise ParameterError(
@@ -268,7 +268,7 @@ def hist(
             fig.set_size_inches(min(int(len(x) / 1.8) + 1, 600), 6)
         ax.set_axisbelow(True)
         ax.yaxis.grid()
-    param = {"color": gen_colors()[0], "alpha": 0.86}
+    param = {"color": get_color()[0], "alpha": 0.86}
     ax.bar(x, y, h, **updated_dict(param, style_kwds))
     ax.set_xlabel(vdf._alias)
     if is_categorical:
@@ -309,7 +309,7 @@ def hist2D(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_color()
     all_columns = vdf.pivot_table(
         columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
     ).values
@@ -397,7 +397,7 @@ def multiple_hist(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_color()
     if len(columns) > 5:
         raise ParameterError(
             "The number of column must be <= 5 to use 'multiple_hist' method"

@@ -20,6 +20,7 @@ from typing import Literal, Union
 
 import matplotlib.pyplot as plt
 
+from verticapy._config.colors import get_color
 from verticapy._config.config import ISNOTEBOOK, _options
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
@@ -1178,10 +1179,8 @@ xlim: list, optional
                     fig.set_size_inches(7, 5)
                 ax.grid()
                 ax.set_axisbelow(True)
-            from verticapy.plotting._colors import gen_colors
-
             param = {
-                "color": gen_colors()[0],
+                "color": get_color()[0],
             }
             ax.plot(x, y, **updated_dict(param, style_kwds))
             ax.fill_between(

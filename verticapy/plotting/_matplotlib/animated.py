@@ -21,10 +21,10 @@ import matplotlib.animation as animation
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
+from verticapy._config.colors import get_cmap, get_color
 from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
 from verticapy._utils._sql._sys import _executeSQL
 
-from verticapy.plotting._colors import gen_cmap, gen_colors
 from verticapy.plotting._matplotlib.base import updated_dict
 
 if ISNOTEBOOK:
@@ -76,7 +76,7 @@ def animated_bar(
         def date_f(x):
             return str(x)
 
-    colors = gen_colors()
+    colors = get_color()
     for c in ["color", "colors"]:
         if c in style_kwds:
             colors = style_kwds[c]
@@ -337,7 +337,7 @@ def animated_bubble_plot(
     elif "colors" in style_kwds:
         colors = style_kwds["colors"]
     else:
-        colors = gen_colors()
+        colors = get_color()
     if isinstance(colors, str):
         colors = [colors]
     param = {
@@ -348,7 +348,7 @@ def animated_bubble_plot(
         if vdf[by].isnum():
             param = {
                 "alpha": 0.8,
-                "cmap": gen_cmap()[0],
+                "cmap": get_cmap()[0],
                 "edgecolors": "black",
             }
         else:
@@ -632,7 +632,7 @@ def animated_ts_plot(
     else:
         fig = plt
     all_plots = []
-    colors = gen_colors()
+    colors = get_color()
     for i in range(0, len(columns)):
         param = {
             "linewidth": 1,

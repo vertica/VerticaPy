@@ -23,12 +23,12 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
 
+from verticapy._config.colors import get_color
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
-from verticapy.plotting._colors import gen_colors, get_color
 from verticapy.plotting._matplotlib.base import updated_dict
 
 
@@ -44,14 +44,14 @@ def logit_plot(
     param0 = {
         "marker": "o",
         "s": 50,
-        "color": gen_colors()[0],
+        "color": get_color()[0],
         "edgecolors": "black",
         "alpha": 0.8,
     }
     param1 = {
         "marker": "o",
         "s": 50,
-        "color": gen_colors()[1],
+        "color": get_color()[1],
         "edgecolors": "black",
     }
 
@@ -247,7 +247,7 @@ def lof_plot(
         else:
             colors = style_kwds["colors"]
         del style_kwds["colors"]
-    colors += gen_colors()
+    colors += get_color()
     param = {
         "s": 50,
         "edgecolors": "black",
@@ -408,7 +408,7 @@ def plot_bubble_ml(
         x = [elem[0] for elem in data]
         y = [elem[1] for elem in data]
         z = [elem[2] for elem in data]
-    colors = gen_colors()
+    colors = get_color()
     if not (ax):
         fig, ax = plt.subplots()
         if ISNOTEBOOK:
@@ -506,7 +506,7 @@ def plot_bubble_ml(
             ha="center",
             va="center",
             bbox=dict(
-                boxstyle="round", ec=gen_colors()[0], fc=gen_colors()[0], alpha=0.3
+                boxstyle="round", ec=get_color()[0], fc=get_color()[0], alpha=0.3
             ),
         )
         plt.text(
@@ -518,7 +518,7 @@ def plot_bubble_ml(
             ha="center",
             va="center",
             bbox=dict(
-                boxstyle="round", ec=gen_colors()[1], fc=gen_colors()[1], alpha=0.3
+                boxstyle="round", ec=get_color()[1], fc=get_color()[1], alpha=0.3
             ),
         )
         plt.text(
@@ -530,7 +530,7 @@ def plot_bubble_ml(
             ha="center",
             va="center",
             bbox=dict(
-                boxstyle="round", ec=gen_colors()[2], fc=gen_colors()[2], alpha=0.3
+                boxstyle="round", ec=get_color()[2], fc=get_color()[2], alpha=0.3
             ),
         )
         plt.text(
@@ -542,7 +542,7 @@ def plot_bubble_ml(
             ha="center",
             va="center",
             bbox=dict(
-                boxstyle="round", ec=gen_colors()[3], fc=gen_colors()[3], alpha=0.3
+                boxstyle="round", ec=get_color()[3], fc=get_color()[3], alpha=0.3
             ),
         )
     else:
@@ -604,7 +604,7 @@ def plot_pca_circle(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_color()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
     circle1 = plt.Circle((0, 0), 1, edgecolor=colors[0], facecolor="none")
@@ -651,7 +651,7 @@ def plot_stepwise_ml(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_color()
     if not (ax):
         fig, ax = plt.subplots()
         if ISNOTEBOOK:
@@ -745,7 +745,7 @@ def plot_var(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_color()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
     if not (ax):
@@ -807,7 +807,7 @@ def regression_plot(
 ):
     param = {
         "marker": "o",
-        "color": gen_colors()[0],
+        "color": get_color()[0],
         "s": 50,
         "edgecolors": "black",
     }
@@ -943,7 +943,7 @@ def regression_tree_plot(
     ax.step(x1, y1, color=color)
     param = {
         "marker": "o",
-        "color": gen_colors()[0],
+        "color": get_color()[0],
         "s": 50,
         "edgecolors": "black",
     }
@@ -964,13 +964,13 @@ def svm_classifier_plot(
 ):
     param0 = {
         "marker": "o",
-        "color": gen_colors()[0],
+        "color": get_color()[0],
         "s": 50,
         "edgecolors": "black",
     }
     param1 = {
         "marker": "o",
-        "color": gen_colors()[1],
+        "color": get_color()[1],
         "s": 50,
         "edgecolors": "black",
     }
@@ -1178,7 +1178,7 @@ def voronoi_plot(
         ax = plt
         ax.xlabel(columns[0])
         ax.ylabel(columns[1])
-    colors = gen_colors()
+    colors = get_color()
     for idx, region in enumerate(v.regions):
         if not -1 in region:
             polygon = [v.vertices[i] for i in region]

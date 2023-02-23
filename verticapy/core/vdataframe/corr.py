@@ -22,6 +22,7 @@ import numpy as np
 import scipy.stats as scipy_st
 import scipy.special as scipy_special
 
+from verticapy._config.colors import get_cmap
 from verticapy._config.config import _options
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
@@ -32,7 +33,6 @@ from verticapy.errors import EmptyParameter
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.plotting._colors import gen_cmap
 import verticapy.plotting._matplotlib as plt
 
 from verticapy.sql.drop import drop
@@ -492,7 +492,7 @@ class vDFCORR:
                     else None
                 )
                 if "cmap" not in style_kwds:
-                    cm1, cm2 = gen_cmap()
+                    cm1, cm2 = get_cmap()
                     cmap = cm1 if (method == "cramer") else cm2
                     style_kwds["cmap"] = cmap
                 plt.cmatrix(
@@ -711,7 +711,7 @@ class vDFCORR:
                 else None
             )
             if "cmap" not in style_kwds:
-                cm1, cm2 = gen_cmap()
+                cm1, cm2 = get_cmap()
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwds["cmap"] = cmap
             title = f"Correlation Vector of {focus} ({method})"

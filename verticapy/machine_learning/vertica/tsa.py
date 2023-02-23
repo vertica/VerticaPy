@@ -19,6 +19,7 @@ from typing import Literal, Union
 
 import matplotlib.pyplot as plt
 
+from verticapy._config.colors import get_color
 from verticapy._config.config import ISNOTEBOOK, _options, PARSER_IMPORT
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -29,7 +30,6 @@ from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting._colors import gen_colors
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.mlplot import plot_importance
 
@@ -832,7 +832,7 @@ papprox_ma: int, optional
             if ISNOTEBOOK:
                 fig.set_size_inches(10, 6)
             ax.grid()
-        colors = gen_colors()
+        colors = get_color()
         param1 = {
             "color": colors[2],
             "linewidth": 2,
@@ -1582,7 +1582,7 @@ solver: str, optional
             if ISNOTEBOOK:
                 fig.set_size_inches(10, 6)
             ax.grid()
-        colors = gen_colors()
+        colors = get_color()
         param1 = {
             "color": colors[2],
             "linewidth": 2,

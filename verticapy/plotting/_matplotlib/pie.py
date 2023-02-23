@@ -18,10 +18,10 @@ from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import numpy as np
 
+from verticapy._config.colors import get_color
 from verticapy._config.config import ISNOTEBOOK
 
 from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
-from verticapy.plotting._colors import gen_colors
 
 
 def nested_pie(
@@ -44,7 +44,7 @@ def nested_pie(
     elif "color" in style_kwds:
         colors, n = style_kwds["color"], len(columns)
     else:
-        colors, n = gen_colors(), len(columns)
+        colors, n = get_color(), len(columns)
     m, k = len(colors), 0
     if isinstance(h, (int, float, type(None))):
         h = (h,) * n
@@ -131,7 +131,7 @@ def pie(
     ax=None,
     **style_kwds,
 ):
-    colors = gen_colors()
+    colors = get_color()
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, max_cardinality=max_cardinality, method=method, of=of, pie=True
     )
@@ -222,9 +222,9 @@ def pie(
         }
         colors = updated_dict(param, style_kwds, -1)["color"]
         if isinstance(colors, str):
-            colors = [colors] + gen_colors()
+            colors = [colors] + get_color()
         else:
-            colors = colors + gen_colors()
+            colors = colors + get_color()
         style_kwds["color"] = colors
         ax.bar(
             rad, y, width=width, **updated_dict(param, style_kwds, -1),

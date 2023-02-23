@@ -21,12 +21,12 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 
+from verticapy._config.colors import get_cmap, get_color
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
-from verticapy.plotting._colors import gen_cmap, gen_colors, get_color
 from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
 MARKERS = ["^", "o", "+", "*", "h", "x", "D", "1"]
@@ -53,7 +53,7 @@ def bubble(
     elif "colors" in style_kwds:
         colors = style_kwds["colors"]
     else:
-        colors = gen_colors()
+        colors = get_color()
     if isinstance(colors, str):
         colors = [colors]
     if not (catcol) and not (cmap_col):
@@ -258,7 +258,7 @@ def bubble(
             )
             param = {
                 "alpha": 0.8,
-                "cmap": gen_cmap()[0],
+                "cmap": get_cmap()[0],
                 "edgecolors": "black",
             }
             im = ax.scatter(
@@ -334,7 +334,7 @@ def outliers_contour_plot(
     **style_kwds,
 ):
     if not (cmap):
-        cmap = gen_cmap(gen_colors()[2])
+        cmap = get_cmap(get_color()[2])
     all_agg = vdf.agg(["avg", "std", "min", "max"], columns)
     xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
     if not (ax):
@@ -535,7 +535,7 @@ def scatter(
         )
         warnings.warn(warning_message, Warning)
         bbox = []
-    colors = gen_colors()
+    colors = get_color()
     markers = MARKERS * 10
     param = {
         "s": 50,

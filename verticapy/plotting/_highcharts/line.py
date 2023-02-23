@@ -16,10 +16,9 @@ permissions and limitations under the License.
 """
 from vertica_highcharts import Highchart, Highstock
 
+from verticapy._config.colors import get_color
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
-
-from verticapy.plotting._colors import gen_colors
 
 
 def line(
@@ -88,7 +87,7 @@ def line(
                 }
             },
         }
-    default_options["colors"] = gen_colors()
+    default_options["colors"] = get_color()
     chart.set_dict_options(default_options)
     for i in range(len(data)):
         if "datetime" in str(type(data[i][0])):
@@ -178,7 +177,7 @@ def line(
                 "area": {
                     "fillColor": {
                         "linearGradient": {"x1": 0, "y1": 0, "x2": 0, "y2": 1},
-                        "stops": [[0, "#FFFFFF"], [1, gen_colors()[0]]],
+                        "stops": [[0, "#FFFFFF"], [1, get_color()[0]]],
                     },
                     "marker": {"radius": 2},
                     "lineWidth": 1,

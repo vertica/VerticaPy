@@ -20,6 +20,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+from verticapy._config.colors import get_cmap, get_color
 from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import quote_ident
@@ -31,7 +32,6 @@ from verticapy.core.str_sql.base import str_sql
 
 from verticapy.datasets import gen_meshgrid
 
-from verticapy.plotting._colors import gen_colors, gen_cmap
 from verticapy.plotting._matplotlib.base import updated_dict
 
 from verticapy.sql.read import to_tablesample
@@ -89,7 +89,7 @@ def cmatrix(
             fig.set_size_inches(8, 6)
     else:
         fig = plt
-    param = {"cmap": gen_cmap()[0], "interpolation": "nearest"}
+    param = {"cmap": get_cmap()[0], "interpolation": "nearest"}
     if ((vmax == 1) and vmin in [0, -1]) and not (extent):
         im = ax.imshow(
             matrix_array, vmax=vmax, vmin=vmin, **updated_dict(param, style_kwds),
@@ -237,7 +237,7 @@ def contour_plot(
         del param["cmap"]
     ax.contour(X, Y, Z, **param)
     param = {
-        "cmap": gen_cmap([gen_colors()[2], "#FFFFFF", gen_colors()[0]]),
+        "cmap": get_cmap([get_color()[2], "#FFFFFF", get_color()[0]]),
         "levels": 14,
     }
     param = updated_dict(param, style_kwds)
@@ -334,7 +334,7 @@ def hexbin(
         ax.imshow(im, extent=bbox)
     ax.set_ylabel(columns[1])
     ax.set_xlabel(columns[0])
-    param = {"cmap": gen_cmap()[0], "gridsize": 10, "mincnt": 1, "edgecolors": None}
+    param = {"cmap": get_cmap()[0], "gridsize": 10, "mincnt": 1, "edgecolors": None}
     imh = ax.hexbin(
         column1,
         column2,
