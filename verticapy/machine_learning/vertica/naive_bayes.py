@@ -55,6 +55,12 @@ nbtype: str, optional
      - gaussian    : Casts the variables to float.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "NAIVE_BAYES"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_NAIVE_BAYES"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "CLASSIFIER"
+    MODEL_TYPE = "NaiveBayes"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -65,11 +71,7 @@ nbtype: str, optional
             "auto", "bernoulli", "categorical", "multinomial", "gaussian"
         ] = "auto",
     ):
-        self.type, self.name = "NaiveBayes", name
-        self.VERTICA_FIT_FUNCTION_SQL = "NAIVE_BAYES"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_NAIVE_BAYES"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.model_name = name
         self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
 
     def get_var_info(self):

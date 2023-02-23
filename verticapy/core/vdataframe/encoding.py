@@ -121,7 +121,7 @@ class vDCENCODE:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -137,7 +137,7 @@ class vDCENCODE:
             "Length of parameter breaks must be equal to the length of parameter "
             "'labels' + 1 or parameter 'labels' must be empty."
         )
-        conditions, column = [], self._ALIAS
+        conditions, column = [], self._alias
         for idx in range(len(breaks) - 1):
             first_elem, second_elem = breaks[idx], breaks[idx + 1]
             if right:
@@ -210,7 +210,7 @@ class vDCENCODE:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -238,11 +238,11 @@ class vDCENCODE:
                 "Parameter 'response' can not be empty in case of "
                 "discretization using the method 'smart'."
             )
-            response = self._PARENT._format_colnames(response)
+            response = self._parent._format_colnames(response)
             drop(tmp_view_name, method="view")
-            self._PARENT.to_db(tmp_view_name)
+            self._parent.to_db(tmp_view_name)
             drop(tmp_model_name, method="model")
-            if self._PARENT[response].category() == "float":
+            if self._parent[response].category() == "float":
                 model = RandomForestRegressor(tmp_model_name)
             else:
                 model = RandomForestClassifier(tmp_model_name)
@@ -250,7 +250,7 @@ class vDCENCODE:
             model.set_params(RFmodel_params)
             parameters = model.get_params()
             try:
-                model.fit(tmp_view_name, [self._ALIAS], response)
+                model.fit(tmp_view_name, [self._alias], response)
                 query = [
                     f"""
                     (SELECT 
@@ -275,8 +275,8 @@ class vDCENCODE:
                     query=query,
                     title="Computing the optimized histogram nbins using Random Forest.",
                     method="fetchall",
-                    sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                    symbol=self._PARENT._VARS["symbol"],
+                    sql_push_ext=self._parent._vars["sql_push_ext"],
+                    symbol=self._parent._vars["symbol"],
                 )
                 result = [x[0] for x in result]
             finally:
@@ -319,18 +319,18 @@ class vDCENCODE:
             where = f"WHERE _verticapy_row_nb_ IN ({possibilities})"
             query = f"""
                 SELECT /*+LABEL('vDataColumn.discretize')*/ 
-                    {self._ALIAS} 
+                    {self._alias} 
                 FROM (SELECT 
-                        {self._ALIAS}, 
-                        ROW_NUMBER() OVER (ORDER BY {self._ALIAS}) AS _verticapy_row_nb_ 
-                      FROM {self._PARENT._genSQL()} 
-                      WHERE {self._ALIAS} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
+                        {self._alias}, 
+                        ROW_NUMBER() OVER (ORDER BY {self._alias}) AS _verticapy_row_nb_ 
+                      FROM {self._parent._genSQL()} 
+                      WHERE {self._alias} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
             result = _executeSQL(
                 query=query,
                 title="Computing the equal frequency histogram bins.",
                 method="fetchall",
-                sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                symbol=self._PARENT._VARS["symbol"],
+                sql_push_ext=self._parent._vars["sql_push_ext"],
+                symbol=self._parent._vars["symbol"],
             )
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
@@ -374,23 +374,23 @@ class vDCENCODE:
         if return_enum_trans:
             return trans
         else:
-            self._TRANSF += [trans]
+            self._transf += [trans]
             sauv = {}
-            for elem in self._CATALOG:
-                sauv[elem] = self._CATALOG[elem]
-            self._PARENT._update_catalog(erase=True, columns=[self._ALIAS])
+            for elem in self._catalog:
+                sauv[elem] = self._catalog[elem]
+            self._parent._update_catalog(erase=True, columns=[self._alias])
             try:
                 if "count" in sauv:
-                    self._CATALOG["count"] = sauv["count"]
-                    self._CATALOG["percent"] = (
-                        100 * sauv["count"] / self._PARENT.shape()[0]
+                    self._catalog["count"] = sauv["count"]
+                    self._catalog["percent"] = (
+                        100 * sauv["count"] / self._parent.shape()[0]
                     )
             except:
                 pass
-            self._PARENT._add_to_history(
-                f"[Discretize]: The vDataColumn {self._ALIAS} was discretized."
+            self._parent._add_to_history(
+                f"[Discretize]: The vDataColumn {self._alias} was discretized."
             )
-        return self._PARENT
+        return self._parent
 
     @save_verticapy_logs
     def one_hot_encode(
@@ -417,7 +417,7 @@ class vDCENCODE:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -430,7 +430,7 @@ class vDCENCODE:
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
             all_new_features = []
             if not (prefix):
-                prefix = self._ALIAS.replace('"', "") + prefix_sep.replace('"', "_")
+                prefix = self._alias.replace('"', "") + prefix_sep.replace('"', "_")
             else:
                 prefix = prefix.replace('"', "_") + prefix_sep.replace('"', "_")
             n = 1 if drop_first else 0
@@ -440,7 +440,7 @@ class vDCENCODE:
                     name = f'"{prefix}{k}"'
                 else:
                     name = f'"{prefix}{distinct_elements_k}"'
-                assert not (self._PARENT.is_colname_in(name)), NameError(
+                assert not (self._parent.is_colname_in(name)), NameError(
                     "A vDataColumn has already the alias of one of "
                     f"the dummies ({name}).\nIt can be the result "
                     "of using previously the method on the vDataColumn "
@@ -462,32 +462,32 @@ class vDCENCODE:
                     .replace("'", "_")
                 )
                 expr = f"DECODE({{}}, '{distinct_elements_k}', 1, 0)"
-                transformations = self._TRANSF + [(expr, "bool", "int")]
-                new_vDataColumn = self._PARENT._new_vdatacolumn(
+                transformations = self._transf + [(expr, "bool", "int")]
+                new_vDataColumn = self._parent._new_vdatacolumn(
                     name,
-                    parent=self._PARENT,
+                    parent=self._parent,
                     transformations=transformations,
                     catalog={
                         "min": 0,
                         "max": 1,
-                        "count": self._PARENT.shape()[0],
+                        "count": self._parent.shape()[0],
                         "percent": 100.0,
                         "unique": 2,
                         "approx_unique": 2,
                         "prod": 0,
                     },
                 )
-                setattr(self._PARENT, name, new_vDataColumn)
-                setattr(self._PARENT, name.replace('"', ""), new_vDataColumn)
-                self._PARENT._VARS["columns"] += [name]
+                setattr(self._parent, name, new_vDataColumn)
+                setattr(self._parent, name.replace('"', ""), new_vDataColumn)
+                self._parent._vars["columns"] += [name]
                 all_new_features += [name]
             conj = "s were " if len(all_new_features) > 1 else " was "
-            self._PARENT._add_to_history(
+            self._parent._add_to_history(
                 "[Get Dummies]: One hot encoder was applied to the vDataColumn "
-                f"{self._ALIAS}\n{len(all_new_features)} feature{conj}created: "
+                f"{self._alias}\n{len(all_new_features)} feature{conj}created: "
                 f"{', '.join(all_new_features)}."
             )
-        return self._PARENT
+        return self._parent
 
     get_dummies = one_hot_encode
 
@@ -500,7 +500,7 @@ class vDCENCODE:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -523,15 +523,15 @@ class vDCENCODE:
                 expr += [f"'{distinct_elements_k}', {k}"]
                 text_info += f"\t{distinct_elements[k]} => {k}"
             expr = f"{', '.join(expr)}, {len(distinct_elements)})"
-            self._TRANSF += [(expr, "int", "int")]
-            self._PARENT._update_catalog(erase=True, columns=[self._ALIAS])
-            self._CATALOG["count"] = self._PARENT.shape()[0]
-            self._CATALOG["percent"] = 100
-            self._PARENT._add_to_history(
+            self._transf += [(expr, "int", "int")]
+            self._parent._update_catalog(erase=True, columns=[self._alias])
+            self._catalog["count"] = self._parent.shape()[0]
+            self._catalog["percent"] = 100
+            self._parent._add_to_history(
                 "[Label Encoding]: Label Encoding was applied to the vDataColumn"
-                f" {self._ALIAS} using the following mapping:{text_info}"
+                f" {self._alias} using the following mapping:{text_info}"
             )
-        return self._PARENT
+        return self._parent
 
     @save_verticapy_logs
     def mean_encode(self, response: str):
@@ -547,7 +547,7 @@ class vDCENCODE:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -556,19 +556,19 @@ class vDCENCODE:
     vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
     vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
         """
-        response = self._PARENT._format_colnames(response)
-        assert self._PARENT[response].isnum(), TypeError(
+        response = self._parent._format_colnames(response)
+        assert self._parent[response].isnum(), TypeError(
             "The response column must be numerical to use a mean encoding"
         )
-        max_floor = len(self._PARENT[response]._TRANSF) - len(self._TRANSF)
+        max_floor = len(self._parent[response]._transf) - len(self._transf)
         for k in range(max_floor):
-            self._TRANSF += [("{}", self.ctype(), self.category())]
-        self._TRANSF += [(f"AVG({response}) OVER (PARTITION BY {{}})", "int", "float",)]
-        self._PARENT._update_catalog(erase=True, columns=[self._ALIAS])
-        self._PARENT._add_to_history(
-            f"[Mean Encode]: The vDataColumn {self._ALIAS} was transformed "
+            self._transf += [("{}", self.ctype(), self.category())]
+        self._transf += [(f"AVG({response}) OVER (PARTITION BY {{}})", "int", "float",)]
+        self._parent._update_catalog(erase=True, columns=[self._alias])
+        self._parent._add_to_history(
+            f"[Mean Encode]: The vDataColumn {self._alias} was transformed "
             f"using a mean encoding with {response} as Response Column."
         )
         if OPTIONS["print_info"]:
             print("The mean encoding was successfully done.")
-        return self._PARENT
+        return self._parent

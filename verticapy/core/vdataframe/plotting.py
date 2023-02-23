@@ -1395,7 +1395,7 @@ class vDCPLOT:
         optimal bar width.
         """
         if method == "auto":
-            pre_comp = self._PARENT._get_catalog_value(self._ALIAS, "numh")
+            pre_comp = self._parent._get_catalog_value(self._alias, "numh")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 return pre_comp
         assert self.isnum() or self.isdate(), ParameterError(
@@ -1403,11 +1403,11 @@ class vDCPLOT:
         )
         if self.isnum():
             result = (
-                self._PARENT.describe(
-                    method="numerical", columns=[self._ALIAS], unique=False
+                self._parent.describe(
+                    method="numerical", columns=[self._alias], unique=False
                 )
                 .transpose()
-                .values[self._ALIAS]
+                .values[self._alias]
             )
             (
                 count,
@@ -1426,23 +1426,23 @@ class vDCPLOT:
             result = _executeSQL(
                 f"""
                 SELECT 
-                    /*+LABEL('vDataColumn.numh')*/ COUNT({self._ALIAS}) AS NAs, 
-                    MIN({self._ALIAS}) AS min, 
-                    APPROXIMATE_PERCENTILE({self._ALIAS} 
+                    /*+LABEL('vDataColumn.numh')*/ COUNT({self._alias}) AS NAs, 
+                    MIN({self._alias}) AS min, 
+                    APPROXIMATE_PERCENTILE({self._alias} 
                         USING PARAMETERS percentile = 0.25) AS Q1, 
-                    APPROXIMATE_PERCENTILE({self._ALIAS} 
+                    APPROXIMATE_PERCENTILE({self._alias} 
                         USING PARAMETERS percentile = 0.75) AS Q3, 
-                    MAX({self._ALIAS}) AS max 
+                    MAX({self._alias}) AS max 
                 FROM 
                     (SELECT 
                         DATEDIFF('second', 
                                  '{self.min()}'::timestamp, 
-                                 {self._ALIAS}) AS {self._ALIAS} 
-                    FROM {self._PARENT._genSQL()}) VERTICAPY_OPTIMAL_H_TABLE""",
+                                 {self._alias}) AS {self._alias} 
+                    FROM {self._parent._genSQL()}) VERTICAPY_OPTIMAL_H_TABLE""",
                 title="Different aggregations to compute the optimal h.",
                 method="fetchrow",
-                sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                symbol=self._PARENT._VARS["symbol"],
+                sql_push_ext=self._parent._vars["sql_push_ext"],
+                symbol=self._parent._vars["symbol"],
             )
             (
                 count,
@@ -1465,7 +1465,7 @@ class vDCPLOT:
             best_h = fd
         else:
             best_h = max(sturges, fd)
-            self._PARENT._update_catalog({"index": ["numh"], self._ALIAS: [best_h]})
+            self._parent._update_catalog({"index": ["numh"], self._alias: [best_h]})
         if self.category() == "int":
             best_h = max(math.floor(best_h), 1)
         return best_h
@@ -1519,7 +1519,7 @@ class vDCPLOT:
     --------
     vDataFrame[].hist : Draws the histogram of the vDataColumn based on an aggregation.
         """
-        of = self._PARENT._format_colnames(of)
+        of = self._parent._format_colnames(of)
         return plt.bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     @save_verticapy_logs
@@ -1565,7 +1565,7 @@ class vDCPLOT:
         """
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
-        by = self._PARENT._format_colnames(by)
+        by = self._parent._format_colnames(by)
         return plt.boxplot(
             self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds
         )
@@ -1619,7 +1619,7 @@ class vDCPLOT:
         from verticapy.machine_learning.vertica import KernelDensity
 
         if by:
-            by = self._PARENT._format_colnames(by)
+            by = self._parent._format_colnames(by)
             colors = plt.gen_colors()
             if not xlim:
                 xmin = self.min()
@@ -1627,11 +1627,11 @@ class vDCPLOT:
             else:
                 xmin, xmax = xlim
             custom_lines = []
-            columns = self._PARENT[by].distinct()
+            columns = self._parent[by].distinct()
             for idx, column in enumerate(columns):
                 param = {"color": colors[idx % len(colors)]}
-                ax = self._PARENT.search(f"{self._PARENT[by]._ALIAS} = '{column}'")[
-                    self._ALIAS
+                ax = self._parent.search(f"{self._parent[by]._alias} = '{column}'")[
+                    self._alias
                 ].density(
                     bandwidth=bandwidth,
                     kernel=kernel,
@@ -1656,7 +1656,7 @@ class vDCPLOT:
                 loc="center left",
                 bbox_to_anchor=[1, 0.5],
             )
-            ax.set_xlabel(self._ALIAS)
+            ax.set_xlabel(self._alias)
             return ax
         kernel = kernel.lower()
         schema = OPTIONS["temp_schema"]
@@ -1676,7 +1676,7 @@ class vDCPLOT:
             store=False,
         )
         try:
-            result = model.fit(self._PARENT._genSQL(), [self._ALIAS]).plot(
+            result = model.fit(self._parent._genSQL(), [self._alias]).plot(
                 ax=ax, **style_kwds
             )
             return result
@@ -1701,7 +1701,7 @@ class vDCPLOT:
     ax
         Matplotlib axes object
         """
-        columns = [self._ALIAS]
+        columns = [self._alias]
         check = True
         if len(args) > 0:
             column = args[0]
@@ -1710,7 +1710,7 @@ class vDCPLOT:
         else:
             check = False
         if check:
-            column = self._PARENT._format_colnames(column)
+            column = self._parent._format_colnames(column)
             columns += [column]
             if not ("cmap" in kwargs):
                 kwargs["cmap"] = gen_cmap()[0]
@@ -1721,7 +1721,7 @@ class vDCPLOT:
             kwargs["legend"] = True
         if not ("figsize" in kwargs):
             kwargs["figsize"] = (14, 10)
-        return self._PARENT[columns].to_geopandas(self._ALIAS).plot(*args, **kwargs)
+        return self._parent[columns].to_geopandas(self._alias).plot(*args, **kwargs)
 
     @save_verticapy_logs
     def hist(
@@ -1772,7 +1772,7 @@ class vDCPLOT:
     --------
     vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
-        of = self._PARENT._format_colnames(of)
+        of = self._parent._format_colnames(of)
         return plt.hist(
             self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds
         )
@@ -1831,7 +1831,7 @@ class vDCPLOT:
     vDataFrame.donut : Draws the donut chart of the vDataColumn based on an aggregation.
         """
         donut, rose = (pie_type == "donut"), (pie_type == "rose")
-        of = self._PARENT._format_colnames(of)
+        of = self._parent._format_colnames(of)
         return plt.pie(
             self, method, of, max_cardinality, h, donut, rose, ax=None, **style_kwds,
         )
@@ -1882,7 +1882,7 @@ class vDCPLOT:
     --------
     vDataFrame.plot : Draws the time series.
         """
-        ts, by = self._PARENT._format_colnames(ts, by)
+        ts, by = self._parent._format_colnames(ts, by)
         return plt.ts_plot(
             self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwds,
         )
@@ -1931,7 +1931,7 @@ class vDCPLOT:
     --------
     vDataFrame.plot : Draws the time series.
         """
-        ts = self._PARENT._format_colnames(ts)
+        ts = self._parent._format_colnames(ts)
         return plt.range_curve_vdf(
             self, ts, q, start_date, end_date, plot_median, ax=ax, **style_kwds,
         )
@@ -1987,10 +1987,10 @@ class vDCPLOT:
     --------
     vDataFrame.bar : Draws the Bar Chart of the input vDataColumns based on an aggregation.
         """
-        by, of = self._PARENT._format_colnames(by, of)
-        columns = [self._ALIAS]
+        by, of = self._parent._format_colnames(by, of)
+        columns = [self._alias]
         if by:
             columns += [by]
         return plt.spider(
-            self._PARENT, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
+            self._parent, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
         )

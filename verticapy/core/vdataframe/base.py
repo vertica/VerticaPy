@@ -165,7 +165,7 @@ _empty: bool, optional
 
 Attributes
 ----------
-_VARS: dict
+_vars: dict
     Dictionary containing all vDataFrame attributes.
         allcols_ind, int      : Integer, used to optimize the SQL 
                                 code generation.
@@ -205,7 +205,7 @@ vDataColumns : vDataColumn
         _empty: bool = False,
     ) -> None:
         # Main Attributes
-        self._VARS = {
+        self._vars = {
             "allcols_ind": -1,
             "count": -1,
             "exclude_columns": [],
@@ -257,8 +257,8 @@ vDataColumns : vDataColumn
                     "one with the correct symbol."
                 )
 
-        self._VARS = {
-            **self._VARS,
+        self._vars = {
+            **self._vars,
             "sql_push_ext": external and sql_push_ext,
             "symbol": symbol,
         }
@@ -308,7 +308,7 @@ vDataColumns : vDataColumn
 
             argv = input_relation[usecols] if usecols else input_relation
             vdf = read_pandas(argv)
-            self.__init__(input_relation=vdf._VARS["main_relation"])
+            self.__init__(input_relation=vdf._vars["main_relation"])
 
         elif not (_empty):
 
@@ -359,8 +359,8 @@ vDataColumns : vDataColumn
                 allcols_ind = len(columns)
             else:
                 allcols_ind = -1
-            self._VARS = {
-                **self._VARS,
+            self._vars = {
+                **self._vars,
                 "allcols_ind": allcols_ind,
                 "columns": columns,
                 "isflex": isflex,
@@ -373,7 +373,7 @@ vDataColumns : vDataColumn
                 category = to_category(ctype)
                 if is_longvar(ctype):
                     if isflex or isvmap(
-                        expr=self._VARS["main_relation"], column=column,
+                        expr=self._vars["main_relation"], column=column,
                     ):
                         category = "vmap"
                         precision = extract_precision_scale(ctype)[0]
@@ -388,7 +388,7 @@ vDataColumns : vDataColumn
                 )
                 setattr(self, column_ident, new_vDataColumn)
                 setattr(self, column_ident[1:-1], new_vDataColumn)
-                new_vDataColumn._INIT = False
+                new_vDataColumn._init = False
 
     def _new_vdatacolumn(self, *argv, **kwds):
         return vDataColumn(*argv, **kwds)
@@ -453,10 +453,10 @@ Attributes
     def __init__(
         self, alias: str, transformations: list = [], parent=None, catalog: dict = {},
     ) -> None:
-        self._PARENT = parent
-        self._ALIAS = alias
-        self._TRANSF = copy.deepcopy(transformations)
-        self._CATALOG = {
+        self._parent = parent
+        self._alias = alias
+        self._transf = copy.deepcopy(transformations)
+        self._catalog = {
             "cov": {},
             "pearson": {},
             "spearman": {},
@@ -475,8 +475,8 @@ Attributes
             "regr_syy": {},
         }
         for key in catalog:
-            self._CATALOG[key] = catalog[key]
-        self._INIT_TRANSF = self._TRANSF[0][0]
-        if self._INIT_TRANSF == "___VERTICAPY_UNDEFINED___":
-            self._INIT_TRANSF = self._ALIAS
-        self._INIT = True
+            self._catalog[key] = catalog[key]
+        self._init_transf = self._transf[0][0]
+        if self._init_transf == "___VERTICAPY_UNDEFINED___":
+            self._init_transf = self._alias
+        self._init = True

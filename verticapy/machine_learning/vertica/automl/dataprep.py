@@ -103,6 +103,13 @@ final_relation_: vDataFrame
     Relation created after fitting the model.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_transfORM_FUNCTION_SQL = ""
+    VERTICA_INVERSE_transfORM_FUNCTION_SQL = ""
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "PREPROCESSING"
+    MODEL_TYPE = "AutoDataPrep"
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -121,9 +128,11 @@ final_relation_: vDataFrame
         identify_ts: bool = True,
         save: bool = True,
     ):
-        self.type, self.name = "AutoDataPrep", name
-        if not (self.name):
-            self.name = gen_tmp_name(schema=OPTIONS["temp_schema"], name="autodataprep")
+        self.MODEL_TYPE, self.model_name = "AutoDataPrep", name
+        if not (self.model_name):
+            self.model_name = gen_tmp_name(
+                schema=OPTIONS["temp_schema"], name="autodataprep"
+            )
         self.parameters = {
             "cat_method": cat_method,
             "num_method": num_method,
@@ -170,7 +179,7 @@ final_relation_: vDataFrame
         if OPTIONS["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         current_print_info = OPTIONS["print_info"]
         OPTIONS["print_info"] = False
         assert not (by) or (ts), ParameterError(
@@ -330,7 +339,7 @@ final_relation_: vDataFrame
         self.by = by
         self.ts = ts
         if self.parameters["apply_pca"] and not (ts):
-            model_pca = PCA(self.name + "_pca")
+            model_pca = PCA(self.model_name + "_pca")
             model_pca.drop()
             model_pca.fit(vdf, self.X_out)
             vdf = model_pca.transform()
@@ -339,7 +348,7 @@ final_relation_: vDataFrame
             )
         self.sql_ = vdf._genSQL()
         if self.parameters["save"]:
-            vdf.to_db(name=self.name, relation_type="table", inplace=True)
+            vdf.to_db(name=self.model_name, relation_type="table", inplace=True)
         self.final_relation_ = vdf
         OPTIONS["print_info"] = current_print_info
         return self.final_relation_

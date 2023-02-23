@@ -47,7 +47,7 @@ def bar(
         ax.set_axisbelow(True)
     param = {"color": gen_colors()[0], "alpha": 0.86}
     ax.barh(x, y, h, **updated_dict(param, style_kwds, 0))
-    ax.set_ylabel(vdf._ALIAS)
+    ax.set_ylabel(vdf._alias)
     if is_categorical:
         if vdf.category() == "text":
             new_z = []
@@ -270,7 +270,7 @@ def hist(
         ax.yaxis.grid()
     param = {"color": gen_colors()[0], "alpha": 0.86}
     ax.bar(x, y, h, **updated_dict(param, style_kwds))
-    ax.set_xlabel(vdf._ALIAS)
+    ax.set_xlabel(vdf._alias)
     if is_categorical:
         if not (is_numeric):
             new_z = []
@@ -432,7 +432,7 @@ def multiple_hist(
                 alpha -= 0.2
                 all_columns += [columns[idx]]
             else:
-                if vdf._VARS["display"]["print_info"]:
+                if vdf._vars["display"]["print_info"]:
                     warning_message = (
                         f"The Virtual Column {column} is not numerical."
                         " Its histogram will not be drawn."

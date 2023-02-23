@@ -241,7 +241,7 @@ class vDFMATH:
                 median_name = f"{column_str}_median_{random_nb}"
                 std_name = f"{column_str}_std_{random_nb}"
                 count_name = f"{column_str}_count_{random_nb}"
-                all_cols = [elem for elem in self._VARS["columns"]]
+                all_cols = [elem for elem in self._vars["columns"]]
                 if func == "mad":
                     self.eval(median_name, f"MEDIAN({columns[0]}) OVER ({by})")
                 else:
@@ -451,15 +451,15 @@ class vDFMATH:
                     "flexibility use the 'eval' method."
                 )
         if func in ("kurtosis", "skewness", "jb"):
-            self._VARS["exclude_columns"] += [
+            self._vars["exclude_columns"] += [
                 quote_ident(mean_name),
                 quote_ident(std_name),
                 quote_ident(count_name),
             ]
         elif func == "aad":
-            self._VARS["exclude_columns"] += [quote_ident(mean_name)]
+            self._vars["exclude_columns"] += [quote_ident(mean_name)]
         elif func == "mad":
-            self._VARS["exclude_columns"] += [quote_ident(median_name)]
+            self._vars["exclude_columns"] += [quote_ident(median_name)]
         return self
 
     @save_verticapy_logs
@@ -567,7 +567,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -589,7 +589,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -617,7 +617,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -627,49 +627,49 @@ class vDCMATH:
         """
         if isinstance(func, str_sql):
             func = str(func)
-        func_apply = func.replace("{}", self._ALIAS)
-        alias_sql_repr = self._ALIAS.replace('"', "")
+        func_apply = func.replace("{}", self._alias)
+        alias_sql_repr = self._alias.replace('"', "")
         try:
             ctype = get_data_types(
                 expr=f"""
                     SELECT 
                         {func_apply} AS apply_test_feature 
-                    FROM {self._PARENT._genSQL()} 
-                    WHERE {self._ALIAS} IS NOT NULL 
+                    FROM {self._parent._genSQL()} 
+                    WHERE {self._alias} IS NOT NULL 
                     LIMIT 0""",
                 column="apply_test_feature",
             )
             category = to_category(ctype=ctype)
-            all_cols, max_floor = self._PARENT.get_columns(), 0
+            all_cols, max_floor = self._parent.get_columns(), 0
             for column in all_cols:
                 try:
                     column_str = column.replace('"', "")
                     if (quote_ident(column) in func) or (
                         re.search(re.compile(f"\\b{column_str}\\b"), func,)
                     ):
-                        max_floor = max(len(self._PARENT[column]._TRANSF), max_floor)
+                        max_floor = max(len(self._parent[column]._transf), max_floor)
                 except:
                     pass
-            max_floor -= len(self._TRANSF)
+            max_floor -= len(self._transf)
             if copy_name:
                 copy_name_str = copy_name.replace('"', "")
                 self.add_copy(name=copy_name)
                 for k in range(max_floor):
-                    self._PARENT[copy_name]._TRANSF += [
+                    self._parent[copy_name]._transf += [
                         ("{}", self.ctype(), self.category())
                     ]
-                self._PARENT[copy_name]._TRANSF += [(func, ctype, category)]
-                self._PARENT[copy_name]._CATALOG = self._CATALOG
+                self._parent[copy_name]._transf += [(func, ctype, category)]
+                self._parent[copy_name]._catalog = self._catalog
             else:
                 for k in range(max_floor):
-                    self._TRANSF += [("{}", self.ctype(), self.category())]
-                self._TRANSF += [(func, ctype, category)]
-                self._PARENT._update_catalog(erase=True, columns=[self._ALIAS])
-            self._PARENT._add_to_history(
+                    self._transf += [("{}", self.ctype(), self.category())]
+                self._transf += [(func, ctype, category)]
+                self._parent._update_catalog(erase=True, columns=[self._alias])
+            self._parent._add_to_history(
                 f"[Apply]: The vDataColumn '{alias_sql_repr}' was "
                 f"transformed with the func 'x -> {func_apply}'."
             )
-            return self._PARENT
+            return self._parent
         except Exception as e:
             raise QueryError(
                 f"{e}\nError when applying the func 'x -> {func_apply}' "
@@ -764,7 +764,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -820,7 +820,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -844,7 +844,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -869,7 +869,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -894,15 +894,15 @@ class vDCMATH:
             fun = "APPLY_COUNT_ELEMENTS"
         else:
             fun = "LENGTH"
-        elem_to_select = f"{fun}({self._ALIAS})"
-        init_transf = f"{fun}({self._INIT_TRANSF})"
-        new_alias = quote_ident(self._ALIAS[1:-1] + ".length")
+        elem_to_select = f"{fun}({self._alias})"
+        init_transf = f"{fun}({self._init_transf})"
+        new_alias = quote_ident(self._alias[1:-1] + ".length")
         query = f"""
             SELECT 
                 {elem_to_select} AS {new_alias} 
-            FROM {self._PARENT._genSQL()}"""
-        vcol = self._PARENT._new_vdataframe(query)[new_alias]
-        vcol._INIT_TRANSF = init_transf
+            FROM {self._parent._genSQL()}"""
+        vcol = self._parent._new_vdataframe(query)[new_alias]
+        vcol._init_transf = init_transf
         return vcol
 
     @save_verticapy_logs
@@ -918,7 +918,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -944,7 +944,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -970,7 +970,7 @@ class vDCMATH:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------

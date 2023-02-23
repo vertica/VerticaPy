@@ -194,7 +194,7 @@ class vDCFILL:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -215,7 +215,7 @@ class vDCFILL:
         )
         func = f"(CASE {lower_when}{upper_when}ELSE {{}} END)"
         self.apply(func=func)
-        return self._PARENT
+        return self._parent
 
     @save_verticapy_logs
     def fill_outliers(
@@ -251,7 +251,7 @@ class vDCFILL:
         Returns
         -------
         vDataFrame
-            self._PARENT
+            self._parent
 
     See Also
     --------
@@ -268,15 +268,15 @@ class vDCFILL:
         else:
             query = f"""
                 SELECT /*+LABEL('vDataColumn.fill_outliers')*/ 
-                    PERCENTILE_CONT({alpha}) WITHIN GROUP (ORDER BY {self._ALIAS}) OVER (), 
-                    PERCENTILE_CONT(1 - {alpha}) WITHIN GROUP (ORDER BY {self._ALIAS}) OVER () 
-                FROM {self._PARENT._genSQL()} LIMIT 1"""
+                    PERCENTILE_CONT({alpha}) WITHIN GROUP (ORDER BY {self._alias}) OVER (), 
+                    PERCENTILE_CONT(1 - {alpha}) WITHIN GROUP (ORDER BY {self._alias}) OVER () 
+                FROM {self._parent._genSQL()} LIMIT 1"""
             p_alpha, p_1_alpha = _executeSQL(
                 query=query,
-                title=f"Computing the quantiles of {self._ALIAS}.",
+                title=f"Computing the quantiles of {self._alias}.",
                 method="fetchrow",
-                sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                symbol=self._PARENT._VARS["symbol"],
+                sql_push_ext=self._parent._vars["sql_push_ext"],
+                symbol=self._parent._vars["symbol"],
             )
         if method == "winsorize":
             self.clip(lower=p_alpha, upper=p_1_alpha)
@@ -289,22 +289,22 @@ class vDCFILL:
                 WITH vdf_table AS 
                     (SELECT 
                         /*+LABEL('vDataColumn.fill_outliers')*/ * 
-                    FROM {self._PARENT._genSQL()}) 
+                    FROM {self._parent._genSQL()}) 
                     (SELECT 
-                        AVG({self._ALIAS}) 
-                    FROM vdf_table WHERE {self._ALIAS} < {p_alpha}) 
+                        AVG({self._alias}) 
+                    FROM vdf_table WHERE {self._alias} < {p_alpha}) 
                     UNION ALL 
                     (SELECT 
-                        AVG({self._ALIAS}) 
-                    FROM vdf_table WHERE {self._ALIAS} > {p_1_alpha})"""
+                        AVG({self._alias}) 
+                    FROM vdf_table WHERE {self._alias} > {p_1_alpha})"""
             mean_alpha, mean_1_alpha = [
                 item[0]
                 for item in _executeSQL(
                     query=query,
-                    title=f"Computing the average of the {self._ALIAS}'s lower and upper outliers.",
+                    title=f"Computing the average of the {self._alias}'s lower and upper outliers.",
                     method="fetchall",
-                    sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                    symbol=self._PARENT._VARS["symbol"],
+                    sql_push_ext=self._parent._vars["sql_push_ext"],
+                    symbol=self._parent._vars["symbol"],
                 )
             ]
             if mean_alpha == None:
@@ -321,7 +321,7 @@ class vDCFILL:
                         ELSE {{}} 
                     END)"""
             )
-        return self._PARENT
+        return self._parent
 
     @save_verticapy_logs
     def fillna(
@@ -369,13 +369,13 @@ class vDCFILL:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
     vDataFrame[].dropna : Drops the vDataColumn missing values.
         """
-        by, order_by = self._PARENT._format_colnames(by, order_by)
+        by, order_by = self._parent._format_colnames(by, order_by)
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):
@@ -388,11 +388,11 @@ class vDCFILL:
             val = self.mode(dropna=True)
             if val == None:
                 warning_message = (
-                    f"The vDataColumn {self._ALIAS} has no mode "
+                    f"The vDataColumn {self._alias} has no mode "
                     "(only missing values).\nNothing was filled."
                 )
                 warnings.warn(warning_message, Warning)
-                return self._PARENT
+                return self._parent
         if isinstance(val, str):
             val = val.replace("'", "''")
         if val != None:
@@ -409,22 +409,22 @@ class vDCFILL:
                 elif fun == "MEDIAN":
                     val = self.median()
                 new_column = f"COALESCE({{}}, {val})"
-            elif (len(by) == 1) and (self._PARENT[by[0]].nunique() < 50):
+            elif (len(by) == 1) and (self._parent[by[0]].nunique() < 50):
                 try:
                     if fun == "MEDIAN":
                         fun = "APPROXIMATE_MEDIAN"
                     query = f"""
                         SELECT 
                             /*+LABEL('vDataColumn.fillna')*/ {by[0]}, 
-                            {fun}({self._ALIAS})
-                        FROM {self._PARENT._genSQL()} 
+                            {fun}({self._alias})
+                        FROM {self._parent._genSQL()} 
                         GROUP BY {by[0]};"""
                     result = _executeSQL(
                         query=query,
                         title="Computing the different aggregations.",
                         method="fetchall",
-                        sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                        symbol=self._PARENT._VARS["symbol"],
+                        sql_push_ext=self._parent._vars["sql_push_ext"],
+                        symbol=self._parent._vars["symbol"],
                     )
                     for idx, x in enumerate(result):
                         if x[0] == None:
@@ -439,12 +439,12 @@ class vDCFILL:
                         query=f"""
                             SELECT 
                                 /*+LABEL('vDataColumn.fillna')*/ 
-                                {new_column.format(self._ALIAS)} 
-                            FROM {self._PARENT._genSQL()} 
+                                {new_column.format(self._alias)} 
+                            FROM {self._parent._genSQL()} 
                             LIMIT 1""",
                         print_time_sql=False,
-                        sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                        symbol=self._PARENT._VARS["symbol"],
+                        sql_push_ext=self._parent._vars["sql_push_ext"],
+                        symbol=self._parent._vars["symbol"],
                     )
                 except:
                     new_column = f"""
@@ -472,7 +472,7 @@ class vDCFILL:
             category, ctype = "int", "bool"
         else:
             category, ctype = self.category(), self.ctype()
-        copy_trans = [elem for elem in self._TRANSF]
+        copy_trans = [elem for elem in self._transf]
         total = self.count()
         if method not in ["mode", "0ifnull"]:
             max_floor = 0
@@ -480,27 +480,27 @@ class vDCFILL:
             if method in ["ffill", "pad", "bfill", "backfill"]:
                 all_partition += [elem for elem in order_by]
             for elem in all_partition:
-                if len(self._PARENT[elem]._TRANSF) > max_floor:
-                    max_floor = len(self._PARENT[elem]._TRANSF)
-            max_floor -= len(self._TRANSF)
+                if len(self._parent[elem]._transf) > max_floor:
+                    max_floor = len(self._parent[elem]._transf)
+            max_floor -= len(self._transf)
             for k in range(max_floor):
-                self._TRANSF += [("{}", self.ctype(), self.category())]
-        self._TRANSF += [(new_column, ctype, category)]
+                self._transf += [("{}", self.ctype(), self.category())]
+        self._transf += [(new_column, ctype, category)]
         try:
             sauv = {}
-            for elem in self._CATALOG:
-                sauv[elem] = self._CATALOG[elem]
-            self._PARENT._update_catalog(erase=True, columns=[self._ALIAS])
+            for elem in self._catalog:
+                sauv[elem] = self._catalog[elem]
+            self._parent._update_catalog(erase=True, columns=[self._alias])
             total = abs(self.count() - total)
         except Exception as e:
-            self._TRANSF = [elem for elem in copy_trans]
+            self._transf = [elem for elem in copy_trans]
             raise QueryError(f"{e}\nAn Error happened during the filling.")
         if total > 0:
             try:
                 if "count" in sauv:
-                    self._CATALOG["count"] = int(sauv["count"]) + total
-                    self._CATALOG["percent"] = (
-                        100 * (int(sauv["count"]) + total) / self._PARENT.shape()[0]
+                    self._catalog["count"] = int(sauv["count"]) + total
+                    self._catalog["percent"] = (
+                        100 * (int(sauv["count"]) + total) / self._parent.shape()[0]
                     )
             except:
                 pass
@@ -508,13 +508,13 @@ class vDCFILL:
             conj = "s were " if total > 1 else " was "
             if OPTIONS["print_info"]:
                 print(f"{total} element{conj}filled.")
-            self._PARENT._add_to_history(
-                f"[Fillna]: {total} {self._ALIAS} missing value{conj} filled."
+            self._parent._add_to_history(
+                f"[Fillna]: {total} {self._alias} missing value{conj} filled."
             )
         else:
             if OPTIONS["print_info"]:
                 print("Nothing was filled.")
-            self._TRANSF = [t for t in copy_trans]
+            self._transf = [t for t in copy_trans]
             for s in sauv:
-                self._CATALOG[s] = sauv[s]
-        return self._PARENT
+                self._catalog[s] = sauv[s]
+        return self._parent

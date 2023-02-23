@@ -97,7 +97,7 @@ class XGBoost:
 
             def xgboost_tree_dict(model, tree_id: int, c: str = None):
                 tree = model.get_tree(tree_id)
-                attributes = get_tree_list_of_arrays(tree, model.X, model.type)
+                attributes = get_tree_list_of_arrays(tree, model.X, model.MODEL_TYPE)
                 n_nodes = len(attributes[0])
                 split_conditions = []
                 parents = [0 for i in range(n_nodes)]
@@ -111,7 +111,7 @@ class XGBoost:
                     if attributes[5][i]:
                         split_conditions += [attributes[3][i]]
                     elif attributes[5][i] == None:
-                        if model.type == "XGBoostRegressor":
+                        if model.MODEL_TYPE == "XGBoostRegressor":
                             split_conditions += [
                                 float(attributes[4][i])
                                 * model.parameters["learning_rate"]
@@ -162,7 +162,7 @@ class XGBoost:
 
             def xgboost_tree_dict_list(model):
                 n = model.get_attr("tree_count")["tree_count"][0]
-                if model.type == "XGBoostClassifier" and (
+                if model.MODEL_TYPE == "XGBoostClassifier" and (
                     len(model.classes_) > 2
                     or model.classes_[1] != 1
                     or model.classes_[0] != 0
@@ -209,7 +209,7 @@ class XGBoost:
                     f"{model.y} IS NOT NULL"
                 ]
                 n = model.get_attr("tree_count")["tree_count"][0]
-                if model.type == "XGBoostRegressor" or (
+                if model.MODEL_TYPE == "XGBoostRegressor" or (
                     len(model.classes_) == 2
                     and model.classes_[1] == 1
                     and model.classes_[0] == 0
@@ -220,7 +220,7 @@ class XGBoost:
                         "reg_loss_param",
                         {"scale_pos_weight": "1"},
                     )
-                    if model.type == "XGBoostRegressor":
+                    if model.MODEL_TYPE == "XGBoostRegressor":
                         objective = "reg:squarederror"
                         attributes_dict = {
                             "scikit_learn": '{"n_estimators": '
@@ -353,7 +353,7 @@ class XGBoost:
                 {{}}
             FROM {self.input_relation} 
             WHERE {' AND '.join(condition)}{{}}"""
-        if self.type == "XGBoostRegressor" or (
+        if self.MODEL_TYPE == "XGBoostRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
             prior_ = _executeSQL(
@@ -405,6 +405,12 @@ col_sample_by_tree: float, optional
     which are chosen at random, used when building each tree.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "IFOREST"
+    VERTICA_PREDICT_FUNCTION_SQL = "APPLY_IFOREST"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "ANOMALY_DETECTION"
+    MODEL_TYPE = "IsolationForest"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -416,11 +422,7 @@ col_sample_by_tree: float, optional
         sample: float = 0.632,
         col_sample_by_tree: float = 1.0,
     ):
-        self.type, self.name = "IsolationForest", name
-        self.VERTICA_FIT_FUNCTION_SQL = "IFOREST"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "APPLY_IFOREST"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "ANOMALY_DETECTION"
+        self.model_name = name
         self.parameters = {
             "n_estimators": n_estimators,
             "max_depth": max_depth,
@@ -463,7 +465,7 @@ col_sample_by_tree: float, optional
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         if not (name):
-            name = gen_name([self.type, self.name])
+            name = gen_name([self.MODEL_TYPE, self.model_name])
 
         # In Place
         vdf_return = vdf if inplace else vdf.copy()
@@ -523,7 +525,7 @@ col_sample_by_tree: float, optional
             other_parameters = f", contamination = {contamination}"
         else:
             other_parameters = f", threshold = {cutoff}"
-        sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{self.name}', match_by_pos = 'true'{other_parameters})"
+        sql = f"{self.VERTICA_PREDICT_FUNCTION_SQL}({', '.join(X)} USING PARAMETERS model_name = '{self.model_name}', match_by_pos = 'true'{other_parameters})"
         if return_score:
             sql = f"({sql}).anomaly_score"
         else:
@@ -575,7 +577,7 @@ col_sample_by_tree: float, optional
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         if not (name):
-            name = gen_name([self.type, self.name])
+            name = gen_name([self.MODEL_TYPE, self.model_name])
 
         # In Place
         vdf_return = vdf if inplace else vdf.copy()
@@ -625,6 +627,12 @@ nbins: int, optional
     inclusive.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "CLASSIFIER"
+    MODEL_TYPE = "RandomForestClassifier"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -639,11 +647,7 @@ nbins: int, optional
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        self.type, self.name = "RandomForestClassifier", name
-        self.VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.model_name = name
         self.parameters = {
             "n_estimators": n_estimators,
             "max_features": max_features,
@@ -695,6 +699,12 @@ nbins: int, optional
     inclusive.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "REGRESSOR"
+    MODEL_TYPE = "RandomForestRegressor"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -709,11 +719,7 @@ nbins: int, optional
         min_info_gain: Union[int, float] = 0.0,
         nbins: int = 32,
     ):
-        self.type, self.name = "RandomForestRegressor", name
-        self.VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.model_name = name
         self.parameters = {
             "n_estimators": n_estimators,
             "max_features": max_features,
@@ -772,6 +778,12 @@ col_sample_by_node: float, optional
     chosen at random, to use when evaluating each split.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "XGB_CLASSIFIER"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_CLASSIFIER"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "CLASSIFIER"
+    MODEL_TYPE = "XGBoostClassifier"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -789,11 +801,7 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        self.type, self.name = "XGBoostClassifier", name
-        self.VERTICA_FIT_FUNCTION_SQL = "XGB_CLASSIFIER"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_CLASSIFIER"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.model_name = name
         params = {
             "max_ntree": max_ntree,
             "max_depth": max_depth,
@@ -859,6 +867,12 @@ col_sample_by_node: float, optional
     chosen at random, to use when evaluating each split.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "XGB_REGRESSOR"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_REGRESSOR"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "REGRESSOR"
+    MODEL_TYPE = "XGBoostRegressor"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -876,11 +890,7 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        self.type, self.name = "XGBoostRegressor", name
-        self.VERTICA_FIT_FUNCTION_SQL = "XGB_REGRESSOR"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_XGB_REGRESSOR"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.model_name = name
         params = {
             "max_ntree": max_ntree,
             "max_depth": max_depth,

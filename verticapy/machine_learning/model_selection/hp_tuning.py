@@ -228,7 +228,7 @@ TableSample
         from verticapy.machine_learning.vertica.ensemble import RandomForestRegressor
 
         hyper_param_estimator = RandomForestRegressor(
-            name=estimator.name, **RFmodel_params
+            name=estimator.model_name, **RFmodel_params
         )
         hyper_param_estimator.fit(relation, all_params, "score")
         if random_grid:
@@ -1136,7 +1136,7 @@ TableSample
     """
     if isinstance(X, str):
         X = [X]
-    if estimator.MODEL_SUBTYPE == "REGRESSOR" and metric == "auto":
+    if estimator.MODEL_SUBCATEGORY == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"

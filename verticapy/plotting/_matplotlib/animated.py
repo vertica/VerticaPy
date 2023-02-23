@@ -583,7 +583,7 @@ def animated_ts_plot(
         columns = vdf.numcol()
     for column in columns:
         if not (vdf[column].isnum()):
-            if vdf._VARS["display"]["print_info"]:
+            if vdf._vars["display"]["print_info"]:
                 warning_message = (
                     f"The Virtual Column {column} is "
                     "not numerical.\nIt will be ignored."

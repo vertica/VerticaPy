@@ -84,7 +84,7 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
     from verticapy.core.vdataframe.base import vDataColumn
 
     if isinstance(x, vDataColumn):
-        val = x._ALIAS
+        val = x._alias
     elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
         x, str_sql
     ):

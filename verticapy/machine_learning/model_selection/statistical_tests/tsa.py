@@ -305,7 +305,7 @@ model
     else:
         vdf_tmp = vdf.copy()
     ts = vdf._format_colnames(ts)
-    name = gen_tmp_name(schema=schema_relation(model.name)[0], name="linear")
+    name = gen_tmp_name(schema=schema_relation(model.model_name)[0], name="linear")
     param = model.get_params()
     model_tmp = type(model)(name)
     model_tmp.set_params(param)

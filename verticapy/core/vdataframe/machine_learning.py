@@ -281,8 +281,8 @@ class vDFML:
                         ORDER BY 1;""",
                     title="Computing the CHAID tree probability.",
                     method="fetchall",
-                    sql_push_ext=self._VARS["sql_push_ext"],
-                    symbol=self._VARS["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
             else:
                 result = []

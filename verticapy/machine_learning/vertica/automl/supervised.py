@@ -154,6 +154,12 @@ model_grid_ : TableSample
     Grid containing the different models information.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_PREDICT_FUNCTION_SQL = ""
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = ""
+    MODEL_TYPE = "AutoML"
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -176,10 +182,9 @@ model_grid_ : TableSample
         preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
     ):
-        assert optimized_grid in [0, 1, 2], ParameterError(
-            "Optimized Grid must be an integer between 0 and 2."
-        )
-        self.type, self.name = "AutoML", name
+        if optimized_grid not in [0, 1, 2]:
+            raise ParameterError("Optimized Grid must be an integer between 0 and 2.")
+        self.model_name = name
         self.parameters = {
             "estimator": estimator,
             "estimator_type": estimator_type,
@@ -220,7 +225,7 @@ model_grid_ : TableSample
         if OPTIONS["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         if not (X):
             if not (y):
                 exclude_columns = []
@@ -247,56 +252,64 @@ model_grid_ : TableSample
             ):
                 self.parameters["estimator_type"] = "binary"
                 self.parameters["estimator"] = [
-                    LogisticRegression(self.name),
-                    NaiveBayes(self.name),
+                    LogisticRegression(self.model_name),
+                    NaiveBayes(self.model_name),
                 ]
                 if estimator_method in ("native", "all"):
                     if v[0] > 10 or (v[0] == 10 and v[1] >= 1):
-                        self.parameters["estimator"] += [XGBoostClassifier(self.name)]
+                        self.parameters["estimator"] += [
+                            XGBoostClassifier(self.model_name)
+                        ]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
-                            LinearSVC(self.name),
-                            RandomForestClassifier(self.name),
+                            LinearSVC(self.model_name),
+                            RandomForestClassifier(self.model_name),
                         ]
                 if estimator_method == "all":
                     self.parameters["estimator"] += [
-                        KNeighborsClassifier(self.name),
-                        NearestCentroid(self.name),
+                        KNeighborsClassifier(self.model_name),
+                        NearestCentroid(self.model_name),
                     ]
             elif self.parameters["estimator_type"].lower() == "regressor" or (
                 self.parameters["estimator_type"].lower() == "auto" and vdf[y].isnum()
             ):
                 self.parameters["estimator_type"] = "regressor"
                 self.parameters["estimator"] = [
-                    LinearRegression(self.name),
-                    ElasticNet(self.name),
-                    Ridge(self.name),
-                    Lasso(self.name),
+                    LinearRegression(self.model_name),
+                    ElasticNet(self.model_name),
+                    Ridge(self.model_name),
+                    Lasso(self.model_name),
                 ]
                 if estimator_method in ("native", "all"):
                     if v[0] > 10 or (v[0] == 10 and v[1] >= 1):
-                        self.parameters["estimator"] += [XGBoostRegressor(self.name)]
-                    if v[0] >= 9:
                         self.parameters["estimator"] += [
-                            LinearSVR(self.name),
-                            RandomForestRegressor(self.name),
+                            XGBoostRegressor(self.model_name)
                         ]
-                if estimator_method == "all":
-                    self.parameters["estimator"] += [KNeighborsRegressor(self.name)]
-            elif self.parameters["estimator_type"].lower() in ("multi", "auto"):
-                self.parameters["estimator_type"] = "multi"
-                self.parameters["estimator"] = [NaiveBayes(self.name)]
-                if estimator_method in ("native", "all"):
-                    if v[0] >= 10 and v[1] >= 1:
-                        self.parameters["estimator"] += [XGBoostClassifier(self.name)]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
-                            RandomForestClassifier(self.name)
+                            LinearSVR(self.model_name),
+                            RandomForestRegressor(self.model_name),
                         ]
                 if estimator_method == "all":
                     self.parameters["estimator"] += [
-                        KNeighborsClassifier(self.name),
-                        NearestCentroid(self.name),
+                        KNeighborsRegressor(self.model_name)
+                    ]
+            elif self.parameters["estimator_type"].lower() in ("multi", "auto"):
+                self.parameters["estimator_type"] = "multi"
+                self.parameters["estimator"] = [NaiveBayes(self.model_name)]
+                if estimator_method in ("native", "all"):
+                    if v[0] >= 10 and v[1] >= 1:
+                        self.parameters["estimator"] += [
+                            XGBoostClassifier(self.model_name)
+                        ]
+                    if v[0] >= 9:
+                        self.parameters["estimator"] += [
+                            RandomForestClassifier(self.model_name)
+                        ]
+                if estimator_method == "all":
+                    self.parameters["estimator"] += [
+                        KNeighborsClassifier(self.model_name),
+                        NearestCentroid(self.model_name),
                     ]
             else:
                 raise ParameterError(
@@ -348,15 +361,17 @@ model_grid_ : TableSample
                     f"estimator must be a list of VerticaPy estimators. Found {elem}."
                 )
         if self.parameters["estimator_type"] == "auto":
-            self.parameters["estimator_type"] = self.parameters["estimator"][0].type
+            self.parameters["estimator_type"] = self.parameters["estimator"][
+                0
+            ].MODEL_TYPE
         for elem in self.parameters["estimator"]:
             assert (
                 self.parameters["estimator_type"] in ("binary", "multi")
-                and elem.MODEL_SUBTYPE == "CLASSIFIER"
+                and elem.MODEL_SUBCATEGORY == "CLASSIFIER"
                 or self.parameters["estimator_type"] == "regressor"
-                and elem.MODEL_SUBTYPE == "REGRESSOR"
+                and elem.MODEL_SUBCATEGORY == "REGRESSOR"
             ), ParameterError(
-                f"Incorrect list for parameter 'estimator'. Expected type '{self.parameters['estimator_type']}', found type '{elem.MODEL_SUBTYPE}'."
+                f"Incorrect list for parameter 'estimator'. Expected type '{self.parameters['estimator_type']}', found type '{elem.MODEL_SUBCATEGORY}'."
             )
         if (
             self.parameters["estimator_type"] == "regressor"
@@ -378,7 +393,7 @@ model_grid_ : TableSample
             }
         )
         if self.parameters["preprocess_data"]:
-            schema, name = schema_relation(self.name)
+            schema, name = schema_relation(self.model_name)
             name = gen_tmp_name(schema=schema, name="autodataprep")
             model_preprocess = AutoDataPrep(
                 name=name, **self.parameters["preprocess_dict"]
@@ -471,7 +486,7 @@ model_grid_ : TableSample
             print(
                 f"{result['model_type'][0]}; Best_Parameters: {result['parameters'][0]}; \033[91mBest_Test_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;\n\n"
             )
-        best_model = result["model_class"][0](self.name)
+        best_model = result["model_class"][0](self.model_name)
         best_model.set_params(result["parameters"][0])
         self.stepwise_ = None
         if self.parameters["stepwise"]:

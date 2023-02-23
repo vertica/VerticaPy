@@ -150,7 +150,7 @@ class vDFROLL:
             {method.upper()} 
             BETWEEN {window[0]} {rule[0]} 
             AND {window[1]} {rule[1]})"""
-        all_cols = [elem.replace('"', "").lower() for elem in self._VARS["columns"]]
+        all_cols = [elem.replace('"', "").lower() for elem in self._vars["columns"]]
         if func in ("kurtosis", "skewness", "aad", "prod", "jb"):
             if func in ("skewness", "kurtosis", "aad", "jb"):
                 columns_0_str = columns[0].replace('"', "").lower()
@@ -232,13 +232,13 @@ class vDFROLL:
         expr = expr.replace("#", windows_frame)
         self.eval(name=name, expr=expr)
         if func in ("kurtosis", "skewness", "jb"):
-            self._VARS["exclude_columns"] += [
+            self._vars["exclude_columns"] += [
                 quote_ident(mean_name),
                 quote_ident(std_name),
                 quote_ident(count_name),
             ]
         elif func == "aad":
-            self._VARS["exclude_columns"] += [quote_ident(mean_name)]
+            self._vars["exclude_columns"] += [quote_ident(mean_name)]
         return self
 
     @save_verticapy_logs

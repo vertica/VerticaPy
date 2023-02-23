@@ -102,8 +102,8 @@ class vDFTYPING:
                         FROM {self._genSQL()}""",
                     title="Looking at columns with low cardinality.",
                     method="fetchfirstelem",
-                    sql_push_ext=self._VARS["sql_push_ext"],
-                    symbol=self._VARS["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
             elif self[column].category() == "float":
                 is_cat = False
@@ -197,7 +197,7 @@ class vDCTYPING:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -212,9 +212,9 @@ class vDCTYPING:
                     vertica_version(condition=[10, 0, 0])
                 query = f"""
                     SELECT 
-                        {self._ALIAS} 
-                    FROM {self._PARENT._genSQL()} 
-                    ORDER BY LENGTH({self._ALIAS}) DESC 
+                        {self._alias} 
+                    FROM {self._parent._genSQL()} 
+                    ORDER BY LENGTH({self._alias}) DESC 
                     LIMIT 1"""
                 biggest_str = _executeSQL(
                     query, title="getting the biggest string", method="fetchfirstelem",
@@ -276,28 +276,28 @@ class vDCTYPING:
             else:
                 transformation_2 = f"{{}}::{dtype}"
             transformation_2 = clean_query(transformation_2)
-            transformation = (transformation_2.format(self._ALIAS), transformation_2)
+            transformation = (transformation_2.format(self._alias), transformation_2)
             query = f"""
                 SELECT 
                     /*+LABEL('vDataColumn.astype')*/ 
-                    {transformation[0]} AS {self._ALIAS} 
-                FROM {self._PARENT._genSQL()} 
-                WHERE {self._ALIAS} IS NOT NULL 
+                    {transformation[0]} AS {self._alias} 
+                FROM {self._parent._genSQL()} 
+                WHERE {self._alias} IS NOT NULL 
                 LIMIT 20"""
             _executeSQL(
                 query,
                 title="Testing the Type casting.",
-                sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                symbol=self._PARENT._VARS["symbol"],
+                sql_push_ext=self._parent._vars["sql_push_ext"],
+                symbol=self._parent._vars["symbol"],
             )
-            self._TRANSF += [(transformation[1], dtype, to_category(ctype=dtype),)]
-            self._PARENT._add_to_history(
-                f"[AsType]: The vDataColumn {self._ALIAS} was converted to {dtype}."
+            self._transf += [(transformation[1], dtype, to_category(ctype=dtype),)]
+            self._parent._add_to_history(
+                f"[AsType]: The vDataColumn {self._alias} was converted to {dtype}."
             )
-            return self._PARENT
+            return self._parent
         except Exception as e:
             raise ConversionError(
-                f"{e}\nThe vDataColumn {self._ALIAS} can not be converted to {dtype}"
+                f"{e}\nThe vDataColumn {self._alias} can not be converted to {dtype}"
             )
 
     def category(self):
@@ -314,7 +314,7 @@ class vDCTYPING:
     --------
     vDataFrame[].ctype : Returns the vDataColumn database type.
         """
-        return self._TRANSF[-1][2]
+        return self._transf[-1][2]
 
     def ctype(self):
         """
@@ -325,7 +325,7 @@ class vDCTYPING:
     str
         vDataColumn DB type.
         """
-        return self._TRANSF[-1][1].lower()
+        return self._transf[-1][1].lower()
 
     dtype = ctype
 
@@ -398,5 +398,5 @@ class vDCTYPING:
         True if the vDataColumn category is VMap.
         """
         return self.category() == "vmap" or isvmap(
-            column=self._ALIAS, expr=self._PARENT._genSQL()
+            column=self._alias, expr=self._parent._genSQL()
         )

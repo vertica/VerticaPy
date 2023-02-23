@@ -132,7 +132,7 @@ class TestXGBR:
     def test_to_python(self, model, titanic_vd):
         current_cursor().execute(
             "SELECT PREDICT_XGB_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)::float".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -143,7 +143,7 @@ class TestXGBR:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT PREDICT_XGB_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(
-                model.name, model.to_sql()
+                model.model_name, model.to_sql()
             )
         )
         prediction = current_cursor().fetchone()

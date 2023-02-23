@@ -91,7 +91,7 @@ bool
                     json_dict_str = json_dict[key]._genSQL().replace('"', '\\"')
                     json += f'"{json_dict_str}"'
                 elif isinstance(json_dict[key], vModel):
-                    json += f'"{json_dict[key].type}"'
+                    json += f'"{json_dict[key].MODEL_TYPE}"'
                 elif isinstance(json_dict[key], dict):
                     json += dict_to_json_string(json_dict=json_dict[key])
                 elif isinstance(json_dict[key], list):
@@ -142,7 +142,7 @@ identifies which function to save to the QUERY PROFILES table.
                         and path == "pipeline"
                         and isinstance(arg, list)
                     ):
-                        json_dict[var_names[idx]] = [item[1].type for item in arg]
+                        json_dict[var_names[idx]] = [item[1].MODEL_TYPE for item in arg]
                     else:
                         json_dict[var_names[idx]] = arg
                 else:

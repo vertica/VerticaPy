@@ -72,6 +72,12 @@ model_: object
     Final model used for the clustering.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_PREDICT_FUNCTION_SQL = ""
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "CLUSTERING"
+    MODEL_TYPE = "AutoClustering"
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -91,7 +97,7 @@ model_: object
         },
         print_info: bool = True,
     ):
-        self.type, self.name = "AutoClustering", name
+        self.model_name = name
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,
@@ -125,7 +131,7 @@ model_: object
         if OPTIONS["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoClustering\033[0m\033[0m\n")
         if self.parameters["preprocess_data"]:
@@ -161,7 +167,7 @@ model_: object
         for i in loop:
             if self.parameters["use_kprototype"]:
                 self.model_ = KPrototypes(
-                    self.name,
+                    self.model_name,
                     n_cluster=self.parameters["n_cluster"],
                     init=self.parameters["init"],
                     max_iter=self.parameters["max_iter"],
@@ -170,7 +176,7 @@ model_: object
                 )
             else:
                 self.model_ = KMeans(
-                    self.name,
+                    self.model_name,
                     n_cluster=self.parameters["n_cluster"],
                     init=self.parameters["init"],
                     max_iter=self.parameters["max_iter"],

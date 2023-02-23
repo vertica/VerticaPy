@@ -76,12 +76,12 @@ class TestUtilities:
         vdf = laliga_vd.copy()
         vdf["away_team_managers"] = vdf["away_team"]["managers"]
         vdf["home_team_managers"] = vdf["home_team"]["managers"]
-        vdf["away_team_managers"]._TRANSF[-1] = (
+        vdf["away_team_managers"]._transf[-1] = (
             '"away_team"."managers"',
             "Array",
             "complex",
         )  # doing it manually because the vertica-python client does not support cdt yet
-        vdf["home_team_managers"]._TRANSF[-1] = (
+        vdf["home_team_managers"]._transf[-1] = (
             '"home_team"."managers"',
             "Array",
             "complex",
@@ -102,7 +102,7 @@ class TestUtilities:
             589.698581560284
         )
         # testing apply_fun - count
-        vdf["all_managers"]._TRANSF[-1] = (
+        vdf["all_managers"]._transf[-1] = (
             'ARRAY_CAT("away_team_managers", "home_team_managers")',
             "Array",
             "complex",
@@ -131,7 +131,7 @@ class TestUtilities:
         assert vdf2["x"].sum() == 1
         # testing apply_fun - len
         vdf2 = TableSample({"x": [[1, 2, 3], [4, 5, 6], [7]]}).to_vdf()
-        vdf2["x"]._TRANSF[-1] = ('"x"', "Array", "complex")
+        vdf2["x"]._transf[-1] = ('"x"', "Array", "complex")
         vdf2["x"].apply_fun(func="len")
         assert vdf2["x"].sum() == 7
         # testing apply_fun - find
@@ -153,7 +153,7 @@ class TestUtilities:
             }
         ).to_vdf()
         assert vdf2["y"]["a"].sum() == 7
-        vdf2["x"]._TRANSF[-1] = ('"x"', "Array", "complex")
+        vdf2["x"]._transf[-1] = ('"x"', "Array", "complex")
         vdf2["x"].apply_fun(func="len")
         assert vdf2["x"].sum() == 7.0
         # Complex to JSON
@@ -163,14 +163,14 @@ class TestUtilities:
                 "y": [{"a": 1, "b": 2}, {"a": 2, "b": 3}, {"a": 4, "b": 5}],
             }
         ).to_vdf()
-        vdf2["x"]._TRANSF[-1] = ('"x"', "Array", "complex")
+        vdf2["x"]._transf[-1] = ('"x"', "Array", "complex")
         vdf2["x"].astype("json")
         vdf2["y"].astype("json")
-        assert vdf2["x"]._TRANSF[-1][0] == "TO_JSON({})"
-        assert vdf2["y"]._TRANSF[-1][0] == "TO_JSON({})"
+        assert vdf2["x"]._transf[-1][0] == "TO_JSON({})"
+        assert vdf2["y"]._transf[-1][0] == "TO_JSON({})"
         # Test get_len
         vdf2 = TableSample({"x": [[1, 2, 3], [2, 5, 6], [7, 8, 9]]}).to_vdf()
-        vdf2["x"]._TRANSF[-1] = ('"x"', "Array", "complex")
+        vdf2["x"]._transf[-1] = ('"x"', "Array", "complex")
         assert vdf2["x"].get_len().sum() == 9
 
     def test_create_schema_table(self):
@@ -341,13 +341,13 @@ class TestUtilities:
         vdf["away_team.managers"].astype(str)
         assert vdf["away_team.managers"].category() == "text"
         assert (
-            vdf["away_team.managers"]._TRANSF[-1][0]
+            vdf["away_team.managers"]._transf[-1][0]
             == "MAPTOSTRING({} USING PARAMETERS canonical_json=false)::varchar"
         )
         vdf["away_team.managers2"].astype("json")
         assert vdf["away_team.managers2"].category() == "text"
         assert (
-            vdf["away_team.managers2"]._TRANSF[-1][0]
+            vdf["away_team.managers2"]._transf[-1][0]
             == "MAPTOSTRING({} USING PARAMETERS canonical_json=true)"
         )
         # Testing vDataFrame.__set__ using VMAP sub category
@@ -355,7 +355,7 @@ class TestUtilities:
             "0.country.id"
         ]
         assert (
-            vdf["home_team.managers.0.country.id"]._TRANSF[-1][0]
+            vdf["home_team.managers.0.country.id"]._transf[-1][0]
             == "MAPLOOKUP(\"home_team.managers\", '0.country.id')"
         )
         # Materialising the flex table - TODO
@@ -799,7 +799,7 @@ class TestUtilities:
 
         # testing insert
         vdf = read_file(path)
-        vdf = read_file(path, table_name=vdf._VARS["main_relation"], insert=True,)
+        vdf = read_file(path, table_name=vdf._vars["main_relation"], insert=True,)
         assert vdf.shape() == (904, 14)
 
     def test_read_shp(self, cities_vd):

@@ -40,15 +40,17 @@ name: str
     Name of the the model. The model will be stored in the database.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "PCA"
+    VERTICA_transfORM_FUNCTION_SQL = "APPLY_PCA"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "DECOMPOSITION"
+    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
+    MODEL_TYPE = "MCA"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str):
-        self.type, self.name = "MCA", name
-        self.VERTICA_FIT_FUNCTION_SQL = "PCA"
-        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "DECOMPOSITION"
-        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
+        self.model_name = name
         self.parameters = {}
 
     def plot_var(
@@ -232,6 +234,13 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "PCA"
+    VERTICA_transfORM_FUNCTION_SQL = "APPLY_PCA"
+    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "DECOMPOSITION"
+    MODEL_TYPE = "PCA"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -241,12 +250,7 @@ method: str, optional
         scale: bool = False,
         method: Literal["lapack"] = "lapack",
     ):
-        self.type, self.name = "PCA", name
-        self.VERTICA_FIT_FUNCTION_SQL = "PCA"
-        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_PCA"
-        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "DECOMPOSITION"
+        self.model_name = name
         self.parameters = {
             "n_components": n_components,
             "scale": scale,
@@ -274,17 +278,19 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "SVD"
+    VERTICA_transfORM_FUNCTION_SQL = "APPLY_SVD"
+    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "APPLY_INVERSE_SVD"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "DECOMPOSITION"
+    MODEL_TYPE = "SVD"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self, name: str, n_components: int = 0, method: Literal["lapack"] = "lapack"
     ):
-        self.type, self.name = "SVD", name
-        self.VERTICA_FIT_FUNCTION_SQL = "SVD"
-        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_SVD"
-        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "APPLY_INVERSE_SVD"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "DECOMPOSITION"
+        self.model_name = name
         self.parameters = {
             "n_components": n_components,
             "method": str(method).lower(),

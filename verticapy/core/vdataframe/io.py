@@ -68,7 +68,7 @@ class vDFIO:
     --------
     vDataFrame.save : Saves the current vDataFrame structure.
         """
-        save = self._VARS["saving"][offset]
+        save = self._vars["saving"][offset]
         vdf = pickle.loads(save)
         return vdf
 
@@ -88,7 +88,7 @@ class vDFIO:
     vDataFrame.load : Loads a saving.
         """
         vdf = self.copy()
-        self._VARS["saving"] += [pickle.dumps(vdf)]
+        self._vars["saving"] += [pickle.dumps(vdf)]
         return self
 
     @save_verticapy_logs
@@ -210,8 +210,8 @@ class vDFIO:
                     OFFSET {current_nb_rows_written}""",
                 title="Reading the data.",
                 method="fetchall",
-                sql_push_ext=self._VARS["sql_push_ext"],
-                symbol=self._VARS["symbol"],
+                sql_push_ext=self._vars["sql_push_ext"],
+                symbol=self._vars["symbol"],
             )
             for row in result:
                 tmp_row = []
@@ -306,7 +306,7 @@ class vDFIO:
             relation_type += " table"
         elif relation_type == "local":
             relation_type += " temporary table"
-        isflex = self._VARS["isflex"]
+        isflex = self._vars["isflex"]
         if not (usecols):
             usecols = self.get_columns()
         if not (usecols) and not (isflex):
@@ -364,19 +364,19 @@ class vDFIO:
         )
         if inplace:
             history, saving = (
-                self._VARS["history"],
-                self._VARS["saving"],
+                self._vars["history"],
+                self._vars["saving"],
             )
             catalog_vars = {}
             for column in usecols:
-                catalog_vars[column] = self[column]._CATALOG
+                catalog_vars[column] = self[column]._catalog
             if relation_type == "local temporary table":
                 self.__init__("v_temp_schema." + name)
             else:
                 self.__init__(name)
-            self._VARS["history"] = history
+            self._vars["history"] = history
             for column in usecols:
-                self[column]._CATALOG = catalog_vars[column]
+                self[column]._catalog = catalog_vars[column]
         return self
 
     @save_verticapy_logs
@@ -515,8 +515,8 @@ class vDFIO:
                     OFFSET {current_nb_rows_written}""",
                 title="Reading the data.",
                 method="fetchall",
-                sql_push_ext=self._VARS["sql_push_ext"],
-                symbol=self._VARS["symbol"],
+                sql_push_ext=self._vars["sql_push_ext"],
+                symbol=self._vars["symbol"],
             )
             for row in result:
                 tmp_row = []
@@ -567,8 +567,8 @@ class vDFIO:
                 {self._get_last_order_by()}""",
             title="Getting the vDataFrame values.",
             method="fetchall",
-            sql_push_ext=self._VARS["sql_push_ext"],
-            symbol=self._VARS["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         final_result = []
         for elem in result:
@@ -613,8 +613,8 @@ class vDFIO:
                 FROM {self._genSQL()}{self._get_last_order_by()}""",
             title="Getting the vDataFrame values.",
             method="fetchall",
-            sql_push_ext=self._VARS["sql_push_ext"],
-            symbol=self._VARS["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         column_names = [column[0] for column in current_cursor().description]
         df = pd.DataFrame(data)
@@ -730,8 +730,8 @@ class vDFIO:
                           OVER({partition}{self._get_sort_syntax(order_by)}) 
                        AS SELECT * FROM {self._genSQL()};""",
             title="Exporting data to Parquet format.",
-            sql_push_ext=self._VARS["sql_push_ext"],
-            symbol=self._VARS["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         return result
 

@@ -221,8 +221,8 @@ class vDFAGG:
                     FROM {main_table}""",
                 title="Computing the number of duplicates.",
                 method="fetchfirstelem",
-                sql_push_ext=self._VARS["sql_push_ext"],
-                symbol=self._VARS["symbol"],
+                sql_push_ext=self._vars["sql_push_ext"],
+                symbol=self._vars["symbol"],
             )
             return total
         result = to_tablesample(
@@ -233,8 +233,8 @@ class vDFAGG:
                 FROM {main_table} 
                 GROUP BY {columns} 
                 ORDER BY occurrence DESC LIMIT {limit}""",
-            sql_push_ext=self._VARS["sql_push_ext"],
-            symbol=self._VARS["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         result.count = _executeSQL(
             query=f"""
@@ -248,8 +248,8 @@ class vDFAGG:
                      GROUP BY {columns}) t""",
             title="Computing the number of distinct duplicates.",
             method="fetchfirstelem",
-            sql_push_ext=self._VARS["sql_push_ext"],
-            symbol=self._VARS["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         return result
 
@@ -703,8 +703,8 @@ class vDFAGG:
                         LIMIT 1""",
                     title="Computing the different aggregations.",
                     method="fetchrow",
-                    sql_push_ext=self._VARS["sql_push_ext"],
-                    symbol=self._VARS["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
             result = [item for item in res]
             try:
@@ -748,8 +748,8 @@ class vDFAGG:
                         query,
                         title="Computing the different aggregations using UNION ALL.",
                         method="fetchall",
-                        sql_push_ext=self._VARS["sql_push_ext"],
-                        symbol=self._VARS["symbol"],
+                        sql_push_ext=self._vars["sql_push_ext"],
+                        symbol=self._vars["symbol"],
                     )
 
                 for idx, elem in enumerate(result):
@@ -780,8 +780,8 @@ class vDFAGG:
                                         "Computing the different aggregations one "
                                         "vDataColumn at a time."
                                     ),
-                                    sql_push_ext=self._VARS["sql_push_ext"],
-                                    symbol=self._VARS["symbol"],
+                                    sql_push_ext=self._vars["sql_push_ext"],
+                                    symbol=self._vars["symbol"],
                                 )
                                 pre_comp_val = []
                                 break
@@ -810,8 +810,8 @@ class vDFAGG:
                                         "vDataColumn & one agg at a time."
                                     ),
                                     method="fetchfirstelem",
-                                    sql_push_ext=self._VARS["sql_push_ext"],
-                                    symbol=self._VARS["symbol"],
+                                    sql_push_ext=self._vars["sql_push_ext"],
+                                    symbol=self._vars["symbol"],
                                 )
                             else:
                                 result = pre_comp
@@ -1840,13 +1840,13 @@ class vDCAGG:
         if (is_date) and not (method == "categorical"):
             result = self.aggregate(["count", "min", "max"])
             index = result.values["index"]
-            result = result.values[self._ALIAS]
+            result = result.values[self._alias]
         elif (method == "cat_stats") and (numcol != ""):
-            numcol = self._PARENT._format_colnames(numcol)
-            assert self._PARENT[numcol].category() in ("float", "int"), TypeError(
+            numcol = self._parent._format_colnames(numcol)
+            assert self._parent[numcol].category() in ("float", "int"), TypeError(
                 "The column 'numcol' must be numerical"
             )
-            cast = "::int" if (self._PARENT[numcol].isbool()) else ""
+            cast = "::int" if (self._parent[numcol].isbool()) else ""
             query, cat = [], self.distinct()
             if len(cat) == 1:
                 lp, rp = "(", ")"
@@ -1856,8 +1856,8 @@ class vDCAGG:
                 tmp_query = f"""
                     SELECT 
                         '{category}' AS 'index', 
-                        COUNT({self._ALIAS}) AS count, 
-                        100 * COUNT({self._ALIAS}) / {self._PARENT.shape()[0]} AS percent, 
+                        COUNT({self._alias}) AS count, 
+                        100 * COUNT({self._alias}) / {self._parent.shape()[0]} AS percent, 
                         AVG({numcol}{cast}) AS mean, 
                         STDDEV({numcol}{cast}) AS std, 
                         MIN({numcol}{cast}) AS min, 
@@ -1874,9 +1874,9 @@ class vDCAGG:
                         MAX({numcol}{cast}) AS max 
                    FROM vdf_table"""
                 if category in ("None", None):
-                    tmp_query += f" WHERE {self._ALIAS} IS NULL"
+                    tmp_query += f" WHERE {self._alias} IS NULL"
                 else:
-                    alias_sql_repr = to_varchar(self.category(), self._ALIAS)
+                    alias_sql_repr = to_varchar(self.category(), self._alias)
                     tmp_query += f" WHERE {alias_sql_repr} = '{category}'"
                 query += [lp + tmp_query + rp]
             values = to_tablesample(
@@ -1884,11 +1884,11 @@ class vDCAGG:
                     WITH vdf_table AS 
                         (SELECT 
                             * 
-                        FROM {self._PARENT._genSQL()}) 
+                        FROM {self._parent._genSQL()}) 
                         {' UNION ALL '.join(query)}""",
-                title=f"Describes the statics of {numcol} partitioned by {self._ALIAS}.",
-                sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                symbol=self._PARENT._VARS["symbol"],
+                title=f"Describes the statics of {numcol} partitioned by {self._alias}.",
+                sql_push_ext=self._parent._vars["sql_push_ext"],
+                symbol=self._parent._vars["symbol"],
             ).values
         elif (
             ((distinct_count < max_cardinality + 1) and (method != "numerical"))
@@ -1896,10 +1896,10 @@ class vDCAGG:
             or (method == "categorical")
         ):
             query = f"""(SELECT 
-                            {self._ALIAS} || '', 
+                            {self._alias} || '', 
                             COUNT(*) 
                         FROM vdf_table 
-                        GROUP BY {self._ALIAS} 
+                        GROUP BY {self._alias} 
                         ORDER BY COUNT(*) DESC 
                         LIMIT {max_cardinality})"""
             if distinct_count > max_cardinality:
@@ -1911,8 +1911,8 @@ class vDCAGG:
                         (SELECT 
                             COUNT(*) AS count 
                          FROM vdf_table 
-                         WHERE {self._ALIAS} IS NOT NULL 
-                         GROUP BY {self._ALIAS} 
+                         WHERE {self._alias} IS NOT NULL 
+                         GROUP BY {self._alias} 
                          ORDER BY COUNT(*) DESC 
                          OFFSET {max_cardinality + 1}) VERTICAPY_SUBTABLE) 
                      ORDER BY count DESC"""
@@ -1921,21 +1921,21 @@ class vDCAGG:
                     WITH vdf_table AS 
                         (SELECT 
                             /*+LABEL('vDataColumn.describe')*/ * 
-                         FROM {self._PARENT._genSQL()}) {query}""",
-                title=f"Computing the descriptive statistics of {self._ALIAS}.",
+                         FROM {self._parent._genSQL()}) {query}""",
+                title=f"Computing the descriptive statistics of {self._alias}.",
                 method="fetchall",
-                sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                symbol=self._PARENT._VARS["symbol"],
+                sql_push_ext=self._parent._vars["sql_push_ext"],
+                symbol=self._parent._vars["symbol"],
             )
             result = [distinct_count, self.count()] + [item[1] for item in query_result]
             index = ["unique", "count"] + [item[0] for item in query_result]
         else:
             result = (
-                self._PARENT.describe(
-                    method="numerical", columns=[self._ALIAS], unique=False
+                self._parent.describe(
+                    method="numerical", columns=[self._alias], unique=False
                 )
                 .transpose()
-                .values[self._ALIAS]
+                .values[self._alias]
             )
             result = [distinct_count] + result
             index = [
@@ -1952,12 +1952,12 @@ class vDCAGG:
         if method != "cat_stats":
             values = {
                 "index": ["name", "dtype"] + index,
-                "value": [self._ALIAS, self.ctype()] + result,
+                "value": [self._alias, self.ctype()] + result,
             }
             if ((is_date) and not (method == "categorical")) or (
                 method == "is_numeric"
             ):
-                self._PARENT._update_catalog({"index": index, self._ALIAS: result})
+                self._parent._update_catalog({"index": index, self._alias: result})
         for elem in values:
             for i in range(len(values[elem])):
                 if isinstance(values[elem][i], decimal.Decimal):
@@ -1978,7 +1978,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["aad"]).values[self._ALIAS][0]
+        return self.aggregate(["aad"]).values[self._alias][0]
 
     @save_verticapy_logs
     def aggregate(self, func: list):
@@ -2029,7 +2029,7 @@ class vDCAGG:
     vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
         analytical function on a specific vDataColumn.
         """
-        return self._PARENT.aggregate(func=func, columns=[self._ALIAS]).transpose()
+        return self._parent.aggregate(func=func, columns=[self._alias]).transpose()
 
     agg = aggregate
 
@@ -2047,7 +2047,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["avg"]).values[self._ALIAS][0]
+        return self.aggregate(["avg"]).values[self._alias][0]
 
     mean = avg
 
@@ -2065,7 +2065,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["count"]).values[self._ALIAS][0]
+        return self.aggregate(["count"]).values[self._alias][0]
 
     def distinct(self, **kwargs):
         """
@@ -2080,34 +2080,34 @@ class vDCAGG:
     --------
     vDataFrame.topk : Returns the vDataColumn most occurent elements.
         """
-        alias_sql_repr = to_varchar(self.category(), self._ALIAS)
+        alias_sql_repr = to_varchar(self.category(), self._alias)
         if "agg" not in kwargs:
             query = f"""
                 SELECT 
                     /*+LABEL('vDataColumn.distinct')*/ 
-                    {alias_sql_repr} AS {self._ALIAS} 
-                FROM {self._PARENT._genSQL()} 
-                WHERE {self._ALIAS} IS NOT NULL 
-                GROUP BY {self._ALIAS} 
-                ORDER BY {self._ALIAS}"""
+                    {alias_sql_repr} AS {self._alias} 
+                FROM {self._parent._genSQL()} 
+                WHERE {self._alias} IS NOT NULL 
+                GROUP BY {self._alias} 
+                ORDER BY {self._alias}"""
         else:
             query = f"""
                 SELECT 
-                    /*+LABEL('vDataColumn.distinct')*/ {self._ALIAS} 
+                    /*+LABEL('vDataColumn.distinct')*/ {self._alias} 
                 FROM 
                     (SELECT 
-                        {alias_sql_repr} AS {self._ALIAS}, 
+                        {alias_sql_repr} AS {self._alias}, 
                         {kwargs['agg']} AS verticapy_agg 
-                     FROM {self._PARENT._genSQL()} 
-                     WHERE {self._ALIAS} IS NOT NULL 
+                     FROM {self._parent._genSQL()} 
+                     WHERE {self._alias} IS NOT NULL 
                      GROUP BY 1) x 
                 ORDER BY verticapy_agg DESC"""
         query_result = _executeSQL(
             query=query,
-            title=f"Computing the distinct categories of {self._ALIAS}.",
+            title=f"Computing the distinct categories of {self._alias}.",
             method="fetchall",
-            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-            symbol=self._PARENT._VARS["symbol"],
+            sql_push_ext=self._parent._vars["sql_push_ext"],
+            symbol=self._parent._vars["symbol"],
         )
         return [item for sublist in query_result for item in sublist]
 
@@ -2125,7 +2125,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["kurtosis"]).values[self._ALIAS][0]
+        return self.aggregate(["kurtosis"]).values[self._alias][0]
 
     kurt = kurtosis
 
@@ -2143,7 +2143,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["mad"]).values[self._ALIAS][0]
+        return self.aggregate(["mad"]).values[self._alias][0]
 
     @save_verticapy_logs
     def max(self):
@@ -2159,7 +2159,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["max"]).values[self._ALIAS][0]
+        return self.aggregate(["max"]).values[self._alias][0]
 
     @save_verticapy_logs
     def median(
@@ -2199,7 +2199,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["min"]).values[self._ALIAS][0]
+        return self.aggregate(["min"]).values[self._alias][0]
 
     @save_verticapy_logs
     def mode(self, dropna: bool = False, n: int = 1):
@@ -2224,37 +2224,37 @@ class vDCAGG:
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
         if n == 1:
-            pre_comp = self._PARENT._get_catalog_value(self._ALIAS, "top")
+            pre_comp = self._parent._get_catalog_value(self._alias, "top")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 if not (dropna) and (pre_comp != None):
                     return pre_comp
         assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
-        where = f" WHERE {self._ALIAS} IS NOT NULL " if (dropna) else " "
+        where = f" WHERE {self._alias} IS NOT NULL " if (dropna) else " "
         result = _executeSQL(
             f"""
             SELECT 
-                /*+LABEL('vDataColumn.mode')*/ {self._ALIAS} 
+                /*+LABEL('vDataColumn.mode')*/ {self._alias} 
             FROM (
                 SELECT 
-                    {self._ALIAS}, 
+                    {self._alias}, 
                     COUNT(*) AS _verticapy_cnt_ 
-                FROM {self._PARENT._genSQL()}
-                {where}GROUP BY {self._ALIAS} 
+                FROM {self._parent._genSQL()}
+                {where}GROUP BY {self._alias} 
                 ORDER BY _verticapy_cnt_ DESC 
                 LIMIT {n}) VERTICAPY_SUBTABLE 
                 ORDER BY _verticapy_cnt_ ASC 
                 LIMIT 1""",
             title="Computing the mode.",
             method="fetchall",
-            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-            symbol=self._PARENT._VARS["symbol"],
+            sql_push_ext=self._parent._vars["sql_push_ext"],
+            symbol=self._parent._vars["symbol"],
         )
         top = None if not (result) else result[0][0]
         if not (dropna):
             n = "" if (n == 1) else str(int(n))
             if isinstance(top, decimal.Decimal):
                 top = float(top)
-            self._PARENT._update_catalog({"index": [f"top{n}"], self._ALIAS: [top]})
+            self._parent._update_catalog({"index": [f"top{n}"], self._alias: [top]})
         return top
 
     @save_verticapy_logs
@@ -2270,7 +2270,7 @@ class vDCAGG:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -2300,9 +2300,9 @@ class vDCAGG:
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
         if approx:
-            return self.aggregate(func=["approx_unique"]).values[self._ALIAS][0]
+            return self.aggregate(func=["approx_unique"]).values[self._alias][0]
         else:
-            return self.aggregate(func=["unique"]).values[self._ALIAS][0]
+            return self.aggregate(func=["unique"]).values[self._alias][0]
 
     @save_verticapy_logs
     def product(self):
@@ -2318,7 +2318,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["prod"]).values[self._ALIAS][0]
+        return self.aggregate(func=["prod"]).values[self._alias][0]
 
     prod = product
 
@@ -2346,7 +2346,7 @@ class vDCAGG:
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
         prefix = "approx_" if approx else ""
-        return self.aggregate(func=[f"{prefix}{x * 100}%"]).values[self._ALIAS][0]
+        return self.aggregate(func=[f"{prefix}{x * 100}%"]).values[self._alias][0]
 
     @save_verticapy_logs
     def sem(self):
@@ -2362,7 +2362,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["sem"]).values[self._ALIAS][0]
+        return self.aggregate(["sem"]).values[self._alias][0]
 
     @save_verticapy_logs
     def skewness(self):
@@ -2378,7 +2378,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["skewness"]).values[self._ALIAS][0]
+        return self.aggregate(["skewness"]).values[self._alias][0]
 
     skew = skewness
 
@@ -2396,7 +2396,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["stddev"]).values[self._ALIAS][0]
+        return self.aggregate(["stddev"]).values[self._alias][0]
 
     stddev = std
 
@@ -2414,7 +2414,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["sum"]).values[self._ALIAS][0]
+        return self.aggregate(["sum"]).values[self._alias][0]
 
     @save_verticapy_logs
     def var(self):
@@ -2430,7 +2430,7 @@ class vDCAGG:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(["variance"]).values[self._ALIAS][0]
+        return self.aggregate(["variance"]).values[self._alias][0]
 
     variance = var
 
@@ -2484,24 +2484,24 @@ class vDCAGG:
             limit = f"LIMIT {k}"
             topk_cat = k
         if dropna:
-            where = f" WHERE {self._ALIAS} IS NOT NULL"
-        alias_sql_repr = to_varchar(self.category(), self._ALIAS)
+            where = f" WHERE {self._alias} IS NOT NULL"
+        alias_sql_repr = to_varchar(self.category(), self._alias)
         result = _executeSQL(
             query=f"""
             SELECT 
                 /*+LABEL('vDataColumn.topk')*/
-                {alias_sql_repr} AS {self._ALIAS},
+                {alias_sql_repr} AS {self._alias},
                 COUNT(*) AS _verticapy_cnt_,
-                100 * COUNT(*) / {self._PARENT.shape()[0]} AS percent
-            FROM {self._PARENT._genSQL()}
+                100 * COUNT(*) / {self._parent.shape()[0]} AS percent
+            FROM {self._parent._genSQL()}
             {where} 
             GROUP BY {alias_sql_repr} 
             ORDER BY _verticapy_cnt_ DESC
             {limit}""",
-            title=f"Computing the top{topk_cat} categories of {self._ALIAS}.",
+            title=f"Computing the top{topk_cat} categories of {self._alias}.",
             method="fetchall",
-            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-            symbol=self._PARENT._VARS["symbol"],
+            sql_push_ext=self._parent._vars["sql_push_ext"],
+            symbol=self._parent._vars["symbol"],
         )
         values = {
             "index": [item[0] for item in result],

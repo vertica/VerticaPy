@@ -37,9 +37,14 @@ steps: list
     in the order in which they are chained, with the last object an estimator.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_PREDICT_FUNCTION_SQL = ""
+    MODEL_CATEGORY = ""
+    MODEL_SUBCATEGORY = ""
+    MODEL_TYPE = "Pipeline"
+
     @save_verticapy_logs
     def __init__(self, steps: list):
-        self.type = "Pipeline"
         self.steps = []
         for idx, s in enumerate(steps):
             if len(s) != 2:
@@ -120,7 +125,7 @@ steps: list
         if OPTIONS["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         X_new = [elem for elem in X]
         current_vdf = vdf
         for idx, step in enumerate(self.steps):

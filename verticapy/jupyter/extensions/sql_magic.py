@@ -253,12 +253,12 @@ def sql_magic(line, cell="", local_ns=None):
 
                 try:
                     result = vDataFrame(query)
-                    result._VARS["sql_magic_result"] = True
+                    result._vars["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:
-                        result._VARS["max_rows"] = options["-nrows"]
+                        result._vars["max_rows"] = options["-nrows"]
                     if "-ncols" in options:
-                        result._VARS["max_columns"] = options["-ncols"]
+                        result._vars["max_columns"] = options["-ncols"]
 
                 except:
 

@@ -85,6 +85,12 @@ papprox_ma: int, optional
     the p of the AR(p) used to approximate the MA coefficients.
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "TIMESERIES"
+    MODEL_TYPE = "SARIMAX"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -111,9 +117,7 @@ papprox_ma: int, optional
             assert D > 0 or P > 0 or Q > 0, ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
-        self.type, self.name = "SARIMAX", name
-        self.VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+        self.model_name = name
         self.parameters = {
             "p": p,
             "d": d,
@@ -310,7 +314,7 @@ papprox_ma: int, optional
         if OPTIONS["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
@@ -325,13 +329,13 @@ papprox_ma: int, optional
         self.y, self.ts, self.deploy_predict_ = quote_ident(y), quote_ident(ts), ""
         self.coef_ = TableSample({"predictor": [], "coefficient": []})
         self.ma_avg_, self.ma_piq_ = None, None
-        X, schema = [quote_ident(x) for x in X], schema_relation(self.name)[0]
+        X, schema = [quote_ident(x) for x in X], schema_relation(self.model_name)[0]
         self.X, self.exogenous = [], X
         relation = (
             "(SELECT *, [VerticaPy_y] AS VerticaPy_y_copy FROM {}) VERTICAPY_SUBTABLE "
         )
         model = LinearRegression(
-            name=self.name,
+            name=self.model_name,
             solver=self.parameters["solver"],
             max_iter=self.parameters["max_iter"],
             tol=self.parameters["tol"],
@@ -662,7 +666,7 @@ papprox_ma: int, optional
             "papprox_ma": self.parameters["papprox_ma"],
         }
         insert_verticapy_schema(
-            model_name=self.name, model_type="SARIMAX", model_save=model_save,
+            model_name=self.model_name, model_type="SARIMAX", model_save=model_save,
         )
         return self
 
@@ -961,7 +965,8 @@ papprox_ma: int, optional
             X = self.exogenous
         y, ts = vdf._format_colnames(y, ts)
         name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
+            "{}_".format(self.MODEL_TYPE)
+            + "".join(ch for ch in self.model_name if ch.isalnum())
             if not (name)
             else name
         )
@@ -1136,6 +1141,12 @@ solver: str, optional
         bfgs   : Broyden Fletcher Goldfarb Shanno
     """
 
+    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "TIMESERIES"
+    MODEL_TYPE = "VAR"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -1146,7 +1157,7 @@ solver: str, optional
         max_iter: int = 1000,
         solver: Literal["newton", "bfgs"] = "newton",
     ):
-        self.type, self.name = "VAR", name
+        self.model_name = name
         assert p > 0, ParameterError(
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
@@ -1280,7 +1291,7 @@ solver: str, optional
         if OPTIONS["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
@@ -1295,10 +1306,10 @@ solver: str, optional
         self.ts, self.deploy_predict_ = quote_ident(ts), []
         self.X, schema = (
             [quote_ident(elem) for elem in X],
-            schema_relation(self.name)[0],
+            schema_relation(self.model_name)[0],
         )
         model = LinearRegression(
-            name=self.name,
+            name=self.model_name,
             solver=self.parameters["solver"],
             max_iter=self.parameters["max_iter"],
             tol=self.parameters["tol"],
@@ -1356,7 +1367,7 @@ solver: str, optional
         for idx, elem in enumerate(self.coef_):
             model_save["coef_{}".format(idx)] = elem.values
         insert_verticapy_schema(
-            model_name=self.name, model_type="VAR", model_save=model_save,
+            model_name=self.model_name, model_type="VAR", model_save=model_save,
         )
         return self
 
@@ -1692,7 +1703,8 @@ solver: str, optional
         transform_relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts)
         for idx, elem in enumerate(X):
             name_tmp = (
-                "{}_".format(self.type) + "".join(ch for ch in elem if ch.isalnum())
+                "{}_".format(self.MODEL_TYPE)
+                + "".join(ch for ch in elem if ch.isalnum())
                 if len(name) != len(X)
                 else name[idx]
             )

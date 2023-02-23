@@ -554,13 +554,13 @@ model
                             (SELECT 
                                 GET_MODEL_ATTRIBUTE(
                                     USING PARAMETERS
-                                    model_name = '{model.name}',
+                                    model_name = '{model.model_name}',
                                     attr_name = 'integer_categories')) VERTICAPY_SUBTABLE 
                             UNION ALL 
                              SELECT 
                                 GET_MODEL_ATTRIBUTE(
                                     USING PARAMETERS 
-                                    model_name = '{model.name}',
+                                    model_name = '{model.model_name}',
                                     attr_name = 'varchar_categories')""",
                 )
             except:

@@ -175,7 +175,7 @@ TableSample
         input_relation = vDataFrame(input_relation)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
-    if estimator.MODEL_SUBTYPE == "REGRESSOR":
+    if estimator.MODEL_SUBCATEGORY == "REGRESSOR":
         all_metrics = [
             "explained_variance",
             "max_error",
@@ -188,7 +188,7 @@ TableSample
             "aic",
             "bic",
         ]
-    elif estimator.MODEL_SUBTYPE == "CLASSIFIER":
+    elif estimator.MODEL_SUBCATEGORY == "CLASSIFIER":
         all_metrics = [
             "auc",
             "prc_auc",
@@ -239,7 +239,7 @@ TableSample
             train, X, y, test,
         )
         total_time += [time.time() - start_time]
-        if estimator.MODEL_SUBTYPE == "REGRESSOR":
+        if estimator.MODEL_SUBCATEGORY == "REGRESSOR":
             if metric == "all":
                 result[f"{i + 1}-fold"] = estimator.regression_report().values["value"]
                 if training_score:
@@ -451,7 +451,7 @@ TableSample
     """
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
-    if estimator.MODEL_SUBTYPE == "REGRESSOR" and metric == "auto":
+    if estimator.MODEL_SUBCATEGORY == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"

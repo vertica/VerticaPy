@@ -123,7 +123,7 @@ class TestNormalizer:
         # Zscore
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -136,7 +136,7 @@ class TestNormalizer:
         model2.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model2.name
+                model2.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -150,7 +150,7 @@ class TestNormalizer:
         model3.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model3.name
+                model3.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -163,7 +163,7 @@ class TestNormalizer:
         # Zscore
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -180,7 +180,7 @@ class TestNormalizer:
         model2.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model2.name
+                model2.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -198,7 +198,7 @@ class TestNormalizer:
         model3.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model3.name
+                model3.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -215,7 +215,7 @@ class TestNormalizer:
         # Zscore
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -240,7 +240,7 @@ class TestNormalizer:
         model2.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model2.name
+                model2.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -266,7 +266,7 @@ class TestNormalizer:
         model3.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model3.name
+                model3.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]

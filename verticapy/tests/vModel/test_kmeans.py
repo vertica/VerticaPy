@@ -175,7 +175,7 @@ class TestKMeans:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT APPLY_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -191,7 +191,7 @@ class TestKMeans:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT APPLY_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
-                model.name, model.to_sql([5.006, 3.418, 1.464, 0.244])
+                model.model_name, model.to_sql([5.006, 3.418, 1.464, 0.244])
             )
         )
         prediction = current_cursor().fetchone()

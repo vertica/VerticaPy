@@ -40,10 +40,10 @@ class vDFEVAL:
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
-        elif isinstance(val, vDataColumn) and not (val._INIT):
-            final_trans, n = val._INIT_TRANSF, len(val._TRANSF)
+        elif isinstance(val, vDataColumn) and not (val._init):
+            final_trans, n = val._init_transf, len(val._transf)
             for i in range(1, n):
-                final_trans = val._TRANSF[i][0].replace("{}", final_trans)
+                final_trans = val._transf[i][0].replace("{}", final_trans)
             self.eval(name=attr, expr=final_trans)
         else:
             self.__dict__[attr] = val
@@ -97,7 +97,7 @@ class vDFEVAL:
         if not (ctype):
             ctype = "undefined"
         elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
-            self._VARS["isflex"]
+            self._vars["isflex"]
             or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
         ):
             category = "vmap"
@@ -110,7 +110,7 @@ class vDFEVAL:
             if (quote_ident(column) in expr) or (
                 re.search(re.compile(f"\\b{column_str}\\b"), expr)
             ):
-                max_floor = max(len(self[column]._TRANSF), max_floor)
+                max_floor = max(len(self[column]._transf), max_floor)
         transformations = [
             (
                 "___VERTICAPY_UNDEFINED___",
@@ -124,9 +124,9 @@ class vDFEVAL:
         )
         setattr(self, name, new_vDataColumn)
         setattr(self, name.replace('"', ""), new_vDataColumn)
-        new_vDataColumn._INIT = False
-        new_vDataColumn._INIT_TRANSF = name
-        self._VARS["columns"] += [name]
+        new_vDataColumn._init = False
+        new_vDataColumn._init_transf = name
+        self._vars["columns"] += [name]
         self._add_to_history(
             f"[Eval]: A new vDataColumn {name} was added to the vDataFrame."
         )

@@ -114,7 +114,7 @@ class TestOneHotEncoder:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT pclass_1, pclass_2, sex_1, embarked_1, embarked_2 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=True) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -129,7 +129,7 @@ class TestOneHotEncoder:
     def test_to_memmodel(self, model):
         current_cursor().execute(
             "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -160,7 +160,7 @@ class TestOneHotEncoder:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2, 0 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [int(elem) for elem in current_cursor().fetchone()]

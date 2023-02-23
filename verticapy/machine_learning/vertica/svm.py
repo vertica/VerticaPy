@@ -61,6 +61,12 @@ max_iter: int, optional
 	The maximum number of iterations that the algorithm performs.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "SVM_CLASSIFIER"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_CLASSIFIER"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "CLASSIFIER"
+    MODEL_TYPE = "LinearSVC"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -74,11 +80,7 @@ max_iter: int, optional
         class_weight: Union[Literal["auto", "none"], list] = [1, 1],
         max_iter: int = 100,
     ):
-        self.type, self.name = "LinearSVC", name
-        self.VERTICA_FIT_FUNCTION_SQL = "SVM_CLASSIFIER"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_CLASSIFIER"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "CLASSIFIER"
+        self.model_name = name
         self.parameters = {
             "tol": tol,
             "C": C,
@@ -146,6 +148,12 @@ test_relation: str
 	attribute of the object.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "SVM_REGRESSOR"
+    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_REGRESSOR"
+    MODEL_CATEGORY = "SUPERVISED"
+    MODEL_SUBCATEGORY = "REGRESSOR"
+    MODEL_TYPE = "LinearSVR"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -159,11 +167,7 @@ test_relation: str
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
-        self.type, self.name = "LinearSVR", name
-        self.VERTICA_FIT_FUNCTION_SQL = "SVM_REGRESSOR"
-        self.VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_SVM_REGRESSOR"
-        self.MODEL_TYPE = "SUPERVISED"
-        self.MODEL_SUBTYPE = "REGRESSOR"
+        self.model_name = name
         self.parameters = {
             "tol": tol,
             "C": C,

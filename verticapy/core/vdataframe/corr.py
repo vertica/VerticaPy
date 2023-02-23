@@ -197,8 +197,8 @@ class vDFCORR:
                            AND {columns[1]} IS NOT NULL""",
                     title="Computing the columns cardinalities.",
                     method="fetchrow",
-                    sql_push_ext=self._VARS["sql_push_ext"],
-                    symbol=self._VARS["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
                 chi2 = f"""
                     SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
@@ -219,8 +219,8 @@ class vDFCORR:
                         f"and {columns[1]} (Chi2 Statistic)."
                     ),
                     method="fetchfirstelem",
-                    sql_push_ext=self._VARS["sql_push_ext"],
-                    symbol=self._VARS["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
                 if min(k - 1, r - 1) == 0:
                     result = float("nan")
@@ -274,8 +274,8 @@ class vDFCORR:
                     query=query,
                     title=title,
                     method="fetchfirstelem",
-                    sql_push_ext=self._VARS["sql_push_ext"],
-                    symbol=self._VARS["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
             except:
                 result = float("nan")
@@ -446,8 +446,8 @@ class vDFCORR:
                                 FROM {table}""",
                             title=title_query,
                             method="fetchrow",
-                            sql_push_ext=self._VARS["sql_push_ext"],
-                            symbol=self._VARS["symbol"],
+                            sql_push_ext=self._vars["sql_push_ext"],
+                            symbol=self._vars["symbol"],
                         )
                 except:
                     n = len(columns)
@@ -667,8 +667,8 @@ class vDFCORR:
                             LIMIT 1""",
                         title=f"Computing the Correlation Vector ({method})",
                         method="fetchrow",
-                        sql_push_ext=self._VARS["sql_push_ext"],
-                        symbol=self._VARS["symbol"],
+                        sql_push_ext=self._vars["sql_push_ext"],
+                        symbol=self._vars["symbol"],
                     )
                 vector = [elem for elem in result]
             except:
@@ -888,8 +888,8 @@ class vDFCORR:
             sql,
             title="Computing the number of elements.",
             method="fetchfirstelem",
-            sql_push_ext=self._VARS["sql_push_ext"],
-            symbol=self._VARS["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         if method in ("pearson", "biserial"):
             x = val * math.sqrt((n - 2) / (1 - val * val))
@@ -935,8 +935,8 @@ class vDFCORR:
                     FROM {table};""",
                 title="Computing nc and nd.",
                 method="fetchrow",
-                sql_push_ext=self._VARS["sql_push_ext"],
-                symbol=self._VARS["symbol"],
+                sql_push_ext=self._vars["sql_push_ext"],
+                symbol=self._vars["symbol"],
             )
             if kendall_type == "a":
                 val = (nc - nd) / (n * (n - 1) / 2)
@@ -957,8 +957,8 @@ class vDFCORR:
                              GROUP BY 1) VERTICAPY_SUBTABLE""",
                     title="Computing vti.",
                     method="fetchrow",
-                    sql_push_ext=self._VARS["sql_push_ext"],
-                    symbol=self._VARS["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
                 vu, v1_1, v2_1 = _executeSQL(
                     query=f"""
@@ -975,8 +975,8 @@ class vDFCORR:
                              GROUP BY 1) VERTICAPY_SUBTABLE""",
                     title="Computing vui.",
                     method="fetchrow",
-                    sql_push_ext=self._VARS["sql_push_ext"],
-                    symbol=self._VARS["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
                 v0 = n * (n - 1) * (2 * n + 5)
                 v1 = v1_0 * v1_1 / (2 * n * (n - 1))
@@ -993,8 +993,8 @@ class vDFCORR:
                               AND {column2} IS NOT NULL""",
                         title="Computing the columns categories in the pivot table.",
                         method="fetchrow",
-                        sql_push_ext=self._VARS["sql_push_ext"],
-                        symbol=self._VARS["symbol"],
+                        sql_push_ext=self._vars["sql_push_ext"],
+                        symbol=self._vars["symbol"],
                     )
                     m = min(k, r)
                     val = 2 * (nc - nd) / (n * n * (m - 1) / m)
@@ -1010,8 +1010,8 @@ class vDFCORR:
                       AND {column2} IS NOT NULL""",
                 title="Computing the columns categories in the pivot table.",
                 method="fetchrow",
-                sql_push_ext=self._VARS["sql_push_ext"],
-                symbol=self._VARS["symbol"],
+                sql_push_ext=self._vars["sql_push_ext"],
+                symbol=self._vars["symbol"],
             )
             x = val * val * n * min(k, r)
             pvalue = scipy_st.chi2.sf(x, (k - 1) * (r - 1))
@@ -1508,8 +1508,8 @@ class vDFCORR:
                         FROM {self._genSQL()}""",
                     title=f"Computing the {method.upper()} Matrix.",
                     method="fetchrow",
-                    sql_push_ext=self._VARS["sql_push_ext"],
-                    symbol=self._VARS["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
             if n == 1:
                 return result[0]
@@ -1528,8 +1528,8 @@ class vDFCORR:
                                 FROM {self._genSQL()}""",
                             title=f"Computing the {method.upper()} aggregation, one at a time.",
                             method="fetchfirstelem",
-                            sql_push_ext=self._VARS["sql_push_ext"],
-                            symbol=self._VARS["symbol"],
+                            sql_push_ext=self._vars["sql_push_ext"],
+                            symbol=self._vars["symbol"],
                         )
                     ]
         matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
@@ -1659,39 +1659,39 @@ class vDCCORR:
     --------
     vDataFrame.iv_woe : Computes the Information Value (IV) Table.
         """
-        y = self._PARENT._format_colnames(y)
-        assert self._PARENT[y].nunique() == 2, TypeError(
+        y = self._parent._format_colnames(y)
+        assert self._parent[y].nunique() == 2, TypeError(
             f"vDataColumn {y} must be binary to use iv_woe."
         )
-        response_cat = self._PARENT[y].distinct()
+        response_cat = self._parent[y].distinct()
         response_cat.sort()
         assert response_cat == [0, 1], TypeError(
             f"vDataColumn {y} must be binary to use iv_woe."
         )
-        self._PARENT[y].distinct()
+        self._parent[y].distinct()
         trans = self.discretize(
             method="same_width" if self.isnum() else "topk",
             nbins=nbins,
             k=nbins,
             new_category="Others",
             return_enum_trans=True,
-        )[0].replace("{}", self._ALIAS)
+        )[0].replace("{}", self._alias)
         query = f"""
             SELECT 
-                {trans} AS {self._ALIAS}, 
-                {self._ALIAS} AS ord, 
+                {trans} AS {self._alias}, 
+                {self._alias} AS ord, 
                 {y}::int AS {y} 
-            FROM {self._PARENT._genSQL()}"""
+            FROM {self._parent._genSQL()}"""
         query = f"""
             SELECT 
-                {self._ALIAS}, 
+                {self._alias}, 
                 MIN(ord) AS ord, 
                 SUM(1 - {y}) AS non_events, 
                 SUM({y}) AS events 
             FROM ({query}) x GROUP BY 1"""
         query = f"""
             SELECT 
-                {self._ALIAS}, 
+                {self._alias}, 
                 ord, 
                 non_events, 
                 events, 
@@ -1700,7 +1700,7 @@ class vDCCORR:
             FROM ({query}) x"""
         query = f"""
             SELECT 
-                {self._ALIAS} AS index, 
+                {self._alias} AS index, 
                 non_events, 
                 events, 
                 pt_non_events, 
@@ -1716,12 +1716,12 @@ class vDCCORR:
                         / NULLIFZERO(pt_events))) 
                 END AS iv 
             FROM ({query}) x ORDER BY ord"""
-        title = f"Computing WOE & IV of {self._ALIAS} (response = {y})."
+        title = f"Computing WOE & IV of {self._alias} (response = {y})."
         result = to_tablesample(
             query,
             title=title,
-            sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-            symbol=self._PARENT._VARS["symbol"],
+            sql_push_ext=self._parent._vars["sql_push_ext"],
+            symbol=self._parent._vars["symbol"],
         )
         result.values["index"] += ["total"]
         result.values["non_events"] += [sum(result["non_events"])]

@@ -215,7 +215,7 @@ class vDFFILTER:
                 expr=f"""ROW_NUMBER() OVER (PARTITION BY {", ".join(columns)})""",
             )
             self.filter(f'"{name}" = 1')
-            self._VARS["exclude_columns"] += [f'"{name}"']
+            self._vars["exclude_columns"] += [f'"{name}"']
         elif OPTIONS["print_info"]:
             print("No duplicates detected.")
         return self
@@ -307,11 +307,11 @@ class vDFFILTER:
                 print("Nothing was filtered.")
         else:
             max_pos = 0
-            columns_tmp = [elem for elem in self._VARS["columns"]]
+            columns_tmp = [elem for elem in self._vars["columns"]]
             for column in columns_tmp:
-                max_pos = max(max_pos, len(self[column]._TRANSF) - 1)
+                max_pos = max(max_pos, len(self[column]._transf) - 1)
             new_count = self.shape()[0]
-            self._VARS["where"] += [(conditions, max_pos)]
+            self._vars["where"] += [(conditions, max_pos)]
             try:
                 new_count = _executeSQL(
                     query=f"""
@@ -321,12 +321,12 @@ class vDFFILTER:
                         FROM {self._genSQL()}""",
                     title="Computing the new number of elements.",
                     method="fetchfirstelem",
-                    sql_push_ext=self._VARS["sql_push_ext"],
-                    symbol=self._VARS["symbol"],
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
                 )
                 count -= new_count
             except:
-                del self._VARS["where"][-1]
+                del self._vars["where"][-1]
                 if OPTIONS["print_info"]:
                     warning_message = (
                         f"The expression '{conditions}' is incorrect.\n"
@@ -336,7 +336,7 @@ class vDFFILTER:
                 return self
             if count > 0:
                 self._update_catalog(erase=True)
-                self._VARS["count"] = new_count
+                self._vars["count"] = new_count
                 conj = "s were " if count > 1 else " was "
                 if OPTIONS["print_info"] and "print_info" not in kwds:
                     print(f"{count} element{conj}filtered.")
@@ -346,7 +346,7 @@ class vDFFILTER:
                     f"the filter '{conditions_clean}'"
                 )
             else:
-                del self._VARS["where"][-1]
+                del self._vars["where"][-1]
                 if OPTIONS["print_info"] and "print_info" not in kwds:
                     print("Nothing was filtered.")
         return self
@@ -386,8 +386,8 @@ class vDFFILTER:
                 FROM {self._genSQL()}""",
             title="Getting the vDataFrame first values.",
             method="fetchfirstelem",
-            sql_push_ext=self._VARS["sql_push_ext"],
-            symbol=self._VARS["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         self.filter(f"{ts} <= '{first_date}'")
         return self
@@ -460,8 +460,8 @@ class vDFFILTER:
                 FROM {self._genSQL()}""",
             title="Getting the vDataFrame last values.",
             method="fetchfirstelem",
-            sql_push_ext=self._VARS["sql_push_ext"],
-            symbol=self._VARS["symbol"],
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
         )
         self.filter(f"{ts} >= '{last_date}'")
         return self
@@ -539,7 +539,7 @@ class vDFFILTER:
             OPTIONS["print_info"] = False
             vdf.filter(f"{name} <= {q}")
             OPTIONS["print_info"] = print_info_init
-            vdf._VARS["exclude_columns"] += [name]
+            vdf._vars["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
             assert method != "stratified" or (by), ParameterError(
                 "Parameter 'by' must include at least one "
@@ -557,7 +557,7 @@ class vDFFILTER:
             OPTIONS["print_info"] = False
             vdf.filter(f"{name} = {name2}")
             OPTIONS["print_info"] = print_info_init
-            vdf._VARS["exclude_columns"] += [name, name2]
+            vdf._vars["exclude_columns"] += [name, name2]
         return vdf
 
     @save_verticapy_logs
@@ -632,33 +632,33 @@ class vDCFILTER:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
     vDataFrame.drop: Drops the input vDataColumns from the vDataFrame.
         """
         try:
-            parent = self._PARENT
-            force_columns = [column for column in self._PARENT._VARS["columns"]]
-            force_columns.remove(self._ALIAS)
+            parent = self._parent
+            force_columns = [column for column in self._parent._vars["columns"]]
+            force_columns.remove(self._alias)
             _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('vDataColumn.drop')*/ * 
-                    FROM {self._PARENT._genSQL(force_columns=force_columns)} 
+                    FROM {self._parent._genSQL(force_columns=force_columns)} 
                     LIMIT 10""",
                 print_time_sql=False,
-                sql_push_ext=self._PARENT._VARS["sql_push_ext"],
-                symbol=self._PARENT._VARS["symbol"],
+                sql_push_ext=self._parent._vars["sql_push_ext"],
+                symbol=self._parent._vars["symbol"],
             )
-            self._PARENT._VARS["columns"].remove(self._ALIAS)
-            delattr(self._PARENT, self._ALIAS)
+            self._parent._vars["columns"].remove(self._alias)
+            delattr(self._parent, self._alias)
         except:
-            self._PARENT._VARS["exclude_columns"] += [self._ALIAS]
+            self._parent._vars["exclude_columns"] += [self._alias]
         if add_history:
-            self._PARENT._add_to_history(
-                f"[Drop]: vDataColumn {self._ALIAS} was deleted from the vDataFrame."
+            self._parent._add_to_history(
+                f"[Drop]: vDataColumn {self._alias} was deleted from the vDataFrame."
             )
         return parent
 
@@ -687,7 +687,7 @@ class vDCFILTER:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
@@ -697,19 +697,19 @@ class vDCFILTER:
         """
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
-            self._PARENT.filter(
+            self._parent.filter(
                 f"""
-                    ABS({self._ALIAS} - {result["avg"][0]}) 
+                    ABS({self._alias} - {result["avg"][0]}) 
                   / {result["std"][0]} < {threshold}"""
             )
         else:
             p_alpha, p_1_alpha = (
-                self._PARENT.quantile([alpha, 1 - alpha], [self._ALIAS])
+                self._parent.quantile([alpha, 1 - alpha], [self._alias])
                 .transpose()
-                .values[self._ALIAS]
+                .values[self._alias]
             )
-            self._PARENT.filter(f"({self._ALIAS} BETWEEN {p_alpha} AND {p_1_alpha})")
-        return self._PARENT
+            self._parent.filter(f"({self._alias} BETWEEN {p_alpha} AND {p_1_alpha})")
+        return self._parent
 
     @save_verticapy_logs
     def dropna(self):
@@ -719,14 +719,14 @@ class vDCFILTER:
     Returns
     -------
     vDataFrame
-        self._PARENT
+        self._parent
 
     See Also
     --------
     vDataFrame.filter: Filters the data using the input expression.
         """
-        self._PARENT.filter(f"{self._ALIAS} IS NOT NULL")
-        return self._PARENT
+        self._parent.filter(f"{self._alias} IS NOT NULL")
+        return self._parent
 
     @save_verticapy_logs
     def isin(
@@ -756,5 +756,5 @@ class vDCFILTER:
         if isinstance(val, str) or not (isinstance(val, Iterable)):
             val = [val]
         val += list(args)
-        val = {self._ALIAS: val}
-        return self._PARENT.isin(val)
+        val = {self._alias: val}
+        return self._parent.isin(val)

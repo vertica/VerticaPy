@@ -109,6 +109,13 @@ max_text_size: int, optional
 	columns during the fitting.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = ""
+    VERTICA_transfORM_FUNCTION_SQL = ""
+    VERTICA_INVERSE_transfORM_FUNCTION_SQL = ""
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "PREPROCESSING"
+    MODEL_TYPE = "CountVectorizer"
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -120,9 +127,7 @@ max_text_size: int, optional
         ignore_special: bool = True,
         max_text_size: int = 2000,
     ):
-        self.type, self.name = "CountVectorizer", name
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "PREPROCESSING"
+        self.model_name = name
         self.parameters = {
             "lowercase": lowercase,
             "max_df": max_df,
@@ -176,7 +181,7 @@ max_text_size: int, optional
                             token, 
                             COUNT(*) AS cnt, 
                             RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
-                        FROM {self.name} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
+                        FROM {self.model_name} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
                         WHERE {{}}(df BETWEEN {self.parameters['min_df']} 
                                    AND {self.parameters['max_df']})"""
         if return_main_table:
@@ -207,7 +212,7 @@ max_text_size: int, optional
         if OPTIONS["overwrite_model"]:
             self.drop()
         else:
-            does_model_exist(name=self.name, raise_error=True)
+            does_model_exist(name=self.model_name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.get_columns()
@@ -217,7 +222,7 @@ max_text_size: int, optional
                 X = vDataFrame(input_relation).get_columns()
             self.input_relation = input_relation
         self.X = [quote_ident(elem) for elem in X]
-        schema, relation = schema_relation(self.name)
+        schema, relation = schema_relation(self.model_name)
         schema = quote_ident(schema)
         tmp_name = gen_tmp_name(schema=schema, name="countvectorizer")
         try:
@@ -248,7 +253,7 @@ max_text_size: int, optional
         )
         _executeSQL(
             query=f"""
-                CREATE TEXT INDEX {self.name} 
+                CREATE TEXT INDEX {self.model_name} 
                 ON {tmp_name}(id, text) stemmer NONE;""",
             title="Computing the CountVectorizer [Step 2].",
         )
@@ -268,7 +273,9 @@ max_text_size: int, optional
             "max_text_size": self.parameters["max_text_size"],
         }
         insert_verticapy_schema(
-            model_name=self.name, model_type="CountVectorizer", model_save=model_save,
+            model_name=self.model_name,
+            model_type="CountVectorizer",
+            model_save=model_save,
         )
         return self
 
@@ -302,17 +309,19 @@ method: str, optional
 		(x - min) / (max - min)
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "NORMALIZE_FIT"
+    VERTICA_transfORM_FUNCTION_SQL = "APPLY_NORMALIZE"
+    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "REVERSE_NORMALIZE"
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "PREPROCESSING"
+    MODEL_TYPE = "Normalizer"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self, name: str, method: Literal["zscore", "robust_zscore", "minmax"] = "zscore"
     ):
-        self.type, self.name = "Normalizer", name
-        self.VERTICA_FIT_FUNCTION_SQL = "NORMALIZE_FIT"
-        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_NORMALIZE"
-        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = "REVERSE_NORMALIZE"
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "PREPROCESSING"
+        self.model_name = name
         self.parameters = {"method": str(method).lower()}
 
 
@@ -370,6 +379,13 @@ null_column_name: str, optional
     ignore_null is set to false and column_naming is set to values or values_relaxed.
 	"""
 
+    VERTICA_FIT_FUNCTION_SQL = "ONE_HOT_ENCODER_FIT"
+    VERTICA_transfORM_FUNCTION_SQL = "APPLY_ONE_HOT_ENCODER"
+    VERTICA_INVERSE_transfORM_FUNCTION_SQL = ""
+    MODEL_CATEGORY = "UNSUPERVISED"
+    MODEL_SUBCATEGORY = "PREPROCESSING"
+    MODEL_TYPE = "OneHotEncoder"
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -382,12 +398,7 @@ null_column_name: str, optional
         column_naming: Literal["indices", "values", "values_relaxed"] = "indices",
         null_column_name: str = "null",
     ):
-        self.type, self.name = "OneHotEncoder", name
-        self.VERTICA_FIT_FUNCTION_SQL = "ONE_HOT_ENCODER_FIT"
-        self.VERTICA_TRANSFORM_FUNCTION_SQL = "APPLY_ONE_HOT_ENCODER"
-        self.VERTICA_INVERSE_TRANSFORM_FUNCTION_SQL = ""
-        self.MODEL_TYPE = "UNSUPERVISED"
-        self.MODEL_SUBTYPE = "PREPROCESSING"
+        self.model_name = name
         self.parameters = {
             "extra_levels": extra_levels,
             "drop_first": drop_first,

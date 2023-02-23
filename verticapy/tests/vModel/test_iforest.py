@@ -192,7 +192,7 @@ class TestIsolationForest:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT (APPLY_IFOREST('Male', 0, 'Cheap', 'Low', 1 USING PARAMETERS model_name = '{}', match_by_pos=True)).anomaly_score::float".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -204,7 +204,7 @@ class TestIsolationForest:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT (APPLY_IFOREST(* USING PARAMETERS model_name = '{}', match_by_pos=True)).anomaly_score::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\", 1 AS Transportation) x".format(
-                model.name, model.to_sql()
+                model.model_name, model.to_sql()
             )
         )
         prediction = current_cursor().fetchone()

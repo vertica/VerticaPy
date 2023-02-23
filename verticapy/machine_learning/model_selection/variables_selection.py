@@ -133,7 +133,7 @@ TableSample
     """
     if isinstance(X, str):
         X = [X]
-    if estimator.MODEL_SUBTYPE == "REGRESSOR" and metric == "auto":
+    if estimator.MODEL_SUBCATEGORY == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -351,7 +351,7 @@ TableSample
         X = [X]
     assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
     if not (OPTIONS["overwrite_model"]):
-        does_model_exist(name=estimator.name, raise_error=True)
+        does_model_exist(name=estimator.model_name, raise_error=True)
     result, current_step = [], 0
     table = (
         input_relation if isinstance(input_relation, str) else input_relation._genSQL()

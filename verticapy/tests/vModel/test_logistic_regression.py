@@ -168,7 +168,7 @@ class TestLogisticRegression:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -177,7 +177,7 @@ class TestLogisticRegression:
         )
         current_cursor().execute(
             "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', type='probability', class=1, match_by_pos=True)".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -188,7 +188,7 @@ class TestLogisticRegression:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
-                model.name, model.to_sql([3.0, 11.0])
+                model.model_name, model.to_sql([3.0, 11.0])
             )
         )
         prediction = current_cursor().fetchone()

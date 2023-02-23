@@ -121,7 +121,7 @@ def multi_ts_plot(
         columns = vdf.numcol()
     for column in columns:
         if not (vdf[column].isnum()):
-            if vdf._VARS["display"]["print_info"]:
+            if vdf._vars["display"]["print_info"]:
                 warning_message = (
                     f"The Virtual Column {column} is "
                     "not numerical.\nIt will be ignored."
@@ -305,12 +305,12 @@ def range_curve_vdf(
         SELECT 
             /*+LABEL('plotting._matplotlib.range_curve_vdf')*/ 
             {order_by}, 
-            APPROXIMATE_PERCENTILE({vdf._ALIAS} USING PARAMETERS percentile = {q[0]}),
-            APPROXIMATE_MEDIAN({vdf._ALIAS}),
-            APPROXIMATE_PERCENTILE({vdf._ALIAS} USING PARAMETERS percentile = {q[1]})
-        FROM {vdf._PARENT._genSQL()} 
+            APPROXIMATE_PERCENTILE({vdf._alias} USING PARAMETERS percentile = {q[0]}),
+            APPROXIMATE_MEDIAN({vdf._alias}),
+            APPROXIMATE_PERCENTILE({vdf._alias} USING PARAMETERS percentile = {q[1]})
+        FROM {vdf._parent._genSQL()} 
         WHERE {order_by} IS NOT NULL 
-          AND {vdf._ALIAS} IS NOT NULL
+          AND {vdf._alias} IS NOT NULL
           {order_by_start_str}
           {order_by_end_str}
         GROUP BY 1 ORDER BY 1""",
@@ -331,7 +331,7 @@ def range_curve_vdf(
         order_by_values,
         column_values,
         order_by,
-        vdf._ALIAS,
+        vdf._alias,
         ax,
         [],
         True,
@@ -363,14 +363,14 @@ def ts_plot(
         SELECT 
             /*+LABEL('plotting._matplotlib.ts_plot')*/ 
             {order_by},
-            {vdf._ALIAS}
-        FROM {vdf._PARENT._genSQL()}
+            {vdf._alias}
+        FROM {vdf._parent._genSQL()}
         WHERE {order_by} IS NOT NULL 
-          AND {vdf._ALIAS} IS NOT NULL
+          AND {vdf._alias} IS NOT NULL
           {order_by_start_str}
           {order_by_end_str}
           {{}}
-        ORDER BY {order_by}, {vdf._ALIAS}"""
+        ORDER BY {order_by}, {vdf._alias}"""
     title = "Selecting points to draw the curve"
     if not (ax):
         fig, ax = plt.subplots()
@@ -411,11 +411,11 @@ def ts_plot(
         for tick in ax.get_xticklabels():
             tick.set_rotation(90)
         ax.set_xlabel(order_by)
-        ax.set_ylabel(vdf._ALIAS)
+        ax.set_ylabel(vdf._alias)
         ax.set_xlim(min(order_by_values), max(order_by_values))
     else:
         by = quote_ident(by)
-        cat = vdf._PARENT[by].distinct()
+        cat = vdf._parent[by].distinct()
         all_data = []
         for column in cat:
             column_str = str(column).replace("'", "''")
@@ -444,7 +444,7 @@ def ts_plot(
             param["markerfacecolor"] = get_color(style_kwds, idx)
             plot_fun(d[0], d[1], label=d[2], **updated_dict(param, style_kwds, idx))
         ax.set_xlabel(order_by)
-        ax.set_ylabel(vdf._ALIAS)
+        ax.set_ylabel(vdf._alias)
         ax.legend(title=by, loc="center left", bbox_to_anchor=[1, 0.5])
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

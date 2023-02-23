@@ -51,7 +51,7 @@ class TestSQL:
         result = sql('  -c "SELECT * FROM titanic;"', "")
         assert result.shape() == (1234, 14)
         assert (
-            result._VARS["main_relation"]
+            result._vars["main_relation"]
             == "(SELECT * FROM titanic) VERTICAPY_SUBTABLE"
         )
 
@@ -66,14 +66,14 @@ class TestSQL:
         # SQL line Test -nrows -ncols
         result = sql('  -c "SELECT * FROM titanic;"   -ncols 4    -nrows 70', "")
         assert result.shape() == (1234, 14)
-        assert result._VARS["max_columns"] == 4
-        assert result._VARS["max_rows"] == 70
+        assert result._vars["max_columns"] == 4
+        assert result._vars["max_rows"] == 70
 
         # SQL Cell Test -nrows -ncols
         result = sql("  -ncols 4    -nrows 70", "SELECT * FROM titanic;")
         assert result.shape() == (1234, 14)
-        assert result._VARS["max_columns"] == 4
-        assert result._VARS["max_rows"] == 70
+        assert result._vars["max_columns"] == 4
+        assert result._vars["max_rows"] == 70
 
         # SQL cell Test
         result = sql(
