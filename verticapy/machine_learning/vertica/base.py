@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import copy, warnings
 from typing import Literal, Union, get_type_hints
+from abc import abstractmethod
 from collections.abc import Iterable
 import numpy as np
 
