@@ -180,8 +180,6 @@ class vDFJoinUnionSort:
     vDataFrame.groupby : Aggregates the vDataFrame.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(expr1, str):
             expr1 = [expr1]
         if isinstance(expr2, str):
@@ -203,7 +201,10 @@ class vDFJoinUnionSort:
         on_list += [(key, on[key], "linterpolate") for key in on_interpolate]
         # Checks
         self._format_colnames([elem[0] for elem in on_list])
-        if isinstance(input_relation, vDataFrame):
+        object_type = None
+        if hasattr(input_relation, "_object_type"):
+            object_type = input_relation._object_type
+        if object_type == "vDataFrame":
             input_relation._format_colnames([elem[1] for elem in on_list])
             relation = input_relation._genSQL()
         else:

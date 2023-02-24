@@ -21,6 +21,10 @@ from verticapy.errors import ParameterError
 
 
 class StringSQL:
+    @property
+    def _object_type(self) -> Literal["StringSQL"]:
+        return "StringSQL"
+
     def __init__(self, alias, category="", init_transf=""):
         self._alias = alias
         self.category_ = category

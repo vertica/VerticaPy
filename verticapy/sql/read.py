@@ -73,8 +73,8 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         except:
             result = to_tablesample(query)
     finally:
-        conf.get_option("time_on", time_on_init)
-        conf.get_option("sql_on", sql_on_init)
+        conf.set_option("time_on", time_on_init)
+        conf.set_option("sql_on", sql_on_init)
     result.count = count
     if conf.get_option("percent_bar"):
         vdf = vDataFrame(query)

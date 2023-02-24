@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
+from typing import Any
 
 import pandas as pd
 
@@ -80,13 +81,13 @@ def extract_precision_scale(ctype: str) -> tuple:
 
 
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
-    from verticapy.core.string_sql.base import StringSQL
-    from verticapy.core.vdataframe.base import vDataColumn
-
-    if isinstance(x, vDataColumn):
+    object_type = None
+    if hasattr(x, "_object_type"):
+        object_type = x._object_type
+    if object_type == "vDataColumn":
         val = x._alias
-    elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
-        x, StringSQL
+    elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or (
+        object_type == "StringSQL"
     ):
         val = x
     elif isinstance(x, type(None)):
@@ -172,9 +173,6 @@ def quote_ident(column: str):
 
 
 def replace_vars_in_query(query: str, locals_dict: dict):
-    from verticapy.core.tablesample.base import TableSample
-    from verticapy.core.vdataframe.base import vDataFrame
-
     from verticapy.sql.parsers.pandas import read_pandas
 
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
@@ -206,9 +204,12 @@ def replace_vars_in_query(query: str, locals_dict: dict):
                 warnings.warn(warning_message, Warning)
                 fail = True
         if not (fail):
-            if isinstance(val, vDataFrame):
+            object_type = None
+            if hasattr(val, "_object_type"):
+                object_type = val._object_type
+            if object_type == "vDataFrame":
                 val = val._genSQL()
-            elif isinstance(val, TableSample):
+            elif object_type == "TableSample":
                 val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
             elif isinstance(val, pd.DataFrame):
                 val = read_pandas(val)._genSQL()
@@ -218,12 +219,8 @@ def replace_vars_in_query(query: str, locals_dict: dict):
     return query_tmp
 
 
-def schema_relation(relation):
-    from verticapy.core.vdataframe.base import vDataFrame
-
-    if isinstance(relation, vDataFrame):
-        schema, relation = conf.get_option("temp_schema"), ""
-    else:
+def schema_relation(relation: Any) -> tuple[str, str]:
+    if isinstance(relation, str):
         quote_nb = relation.count('"')
         if quote_nb not in (0, 2, 4):
             raise ParsingError("The format of the input relation is incorrect.")
@@ -243,6 +240,8 @@ def schema_relation(relation):
             schema, relation = "public", relation
         else:
             schema, relation = schema_input_relation[0], schema_input_relation[1]
+    else:
+        schema, relation = conf.get_option("temp_schema"), ""
     return (quote_ident(schema), quote_ident(relation))
 
 

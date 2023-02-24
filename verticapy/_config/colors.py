@@ -56,30 +56,6 @@ def color_validator(val: Union[str, list, None]) -> Literal[True]:
         )
 
 
-def get_colors(d: Optional[dict] = {}, idx: Optional[int] = None) -> Union[list, str]:
-    if "color" in d:
-        if isinstance(d["color"], str):
-            return d["color"]
-        else:
-            if idx == None:
-                idx = 0
-            return d["color"][idx % len(d["color"])]
-    elif idx == None:
-        if not (conf.get_option("colors")):
-            colors = COLORS_OPTIONS["default"]
-            all_colors = [plt.cnames[key] for key in plt.cnames]
-            shuffle(all_colors)
-            for c in all_colors:
-                if c not in colors:
-                    colors += [c]
-            return colors
-        else:
-            return conf.get_option("colors")
-    else:
-        colors = get_colors()
-        return colors[idx % len(colors)]
-
-
 def get_cmap(
     color: Optional[str] = None, reverse: bool = False
 ) -> plt.LinearSegmentedColormap:
@@ -104,6 +80,30 @@ def get_cmap(
             return plt.LinearSegmentedColormap.from_list(
                 "verticapy_cmap", ["#FFFFFF", color], N=1000
             )
+
+
+def get_colors(d: Optional[dict] = {}, idx: Optional[int] = None) -> Union[list, str]:
+    if "color" in d:
+        if isinstance(d["color"], str):
+            return d["color"]
+        else:
+            if idx == None:
+                idx = 0
+            return d["color"][idx % len(d["color"])]
+    elif idx == None:
+        if not (conf.get_option("colors")):
+            colors = COLORS_OPTIONS["default"]
+            all_colors = [plt.cnames[key] for key in plt.cnames]
+            shuffle(all_colors)
+            for c in all_colors:
+                if c not in colors:
+                    colors += [c]
+            return colors
+        else:
+            return conf.get_option("colors")
+    else:
+        colors = get_colors()
+        return colors[idx % len(colors)]
 
 
 colors_option = conf.Option("colors", None, "", color_validator, COLORS_OPTIONS)

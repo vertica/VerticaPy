@@ -67,10 +67,6 @@ bool
             json_dict: dict = {},
             add_identifier: bool = False,
         ):
-            from verticapy.core.vdataframe.base import vDataFrame
-
-            from verticapy.machine_learning.vertica.base import vModel
-
             gb_conn = get_global_connection()
 
             json = "{"
@@ -81,6 +77,9 @@ bool
             if add_identifier:
                 json += f'"verticapy_id": "{gb_conn._vpy_session_identifier}", '
             for key in json_dict:
+                object_type = None
+                if hasattr(json_dict[key], "_object_type"):
+                    object_type = json_dict[key]._object_type
                 json += f'"{key}": '
                 if isinstance(json_dict[key], bool):
                     json += "true" if json_dict[key] else "false"
@@ -88,10 +87,10 @@ bool
                     json += str(json_dict[key])
                 elif json_dict[key] is None:
                     json += "null"
-                elif isinstance(json_dict[key], vDataFrame):
+                elif object_type == "vDataFrame":
                     json_dict_str = json_dict[key]._genSQL().replace('"', '\\"')
                     json += f'"{json_dict_str}"'
-                elif isinstance(json_dict[key], vModel):
+                elif object_type == "vModel":
                     json += f'"{json_dict[key]._model_type}"'
                 elif isinstance(json_dict[key], dict):
                     json += dict_to_json_string(json_dict=json_dict[key])

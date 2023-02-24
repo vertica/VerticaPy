@@ -59,9 +59,9 @@ Attributes
 The TableSample attributes are the same as the parameters.
 	"""
 
-    #
-    # Special Methods
-    #
+    @property
+    def _object_type(self) -> Literal["TableSample"]:
+        return "TableSample"
 
     def __init__(
         self,

@@ -189,6 +189,18 @@ vDataColumns : vDataColumn
     vDataFrame["myVC"].
     """
 
+    @property
+    def _object_type(self) -> Literal["vDataFrame"]:
+        return "vDataFrame"
+
+    @staticmethod
+    def _new_vdatacolumn(*argv, **kwds):
+        return vDataColumn(*argv, **kwds)
+
+    @classmethod
+    def _new_vdataframe(cls, *argv, **kwds):
+        return cls(*argv, **kwds)
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -389,12 +401,6 @@ vDataColumns : vDataColumn
                 setattr(self, column_ident[1:-1], new_vDataColumn)
                 new_vDataColumn._init = False
 
-    def _new_vdatacolumn(self, *argv, **kwds):
-        return vDataColumn(*argv, **kwds)
-
-    def _new_vdataframe(self, *argv, **kwds):
-        return vDataFrame(*argv, **kwds)
-
 
 ##
 #   __   ___  ______     ______     __         __  __     __    __     __   __
@@ -448,6 +454,10 @@ Attributes
     parent, vDataFrame   : Parent of the vDataColumn.
     transformations, str : List of the different transformations.
     """
+
+    @property
+    def _object_type(self) -> Literal["vDC"]:
+        return "vDataColumn"
 
     def __init__(
         self, alias: str, transformations: list = [], parent=None, catalog: dict = {},

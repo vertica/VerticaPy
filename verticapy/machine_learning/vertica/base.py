@@ -69,6 +69,10 @@ Base Class for Vertica Models.
 	"""
 
     @property
+    def _object_type(self) -> Literal["vModel"]:
+        return "vModel"
+
+    @property
     @abstractmethod
     def _vertica_fit_sql(self) -> str:
         """Must be overridden in child class"""
