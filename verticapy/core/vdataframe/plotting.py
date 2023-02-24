@@ -18,7 +18,7 @@ import datetime, math
 from typing import Literal, Union
 from collections.abc import Iterable
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -1254,7 +1254,9 @@ class vDFPLOT:
         if len(columns) > 3 and dimensions == None:
             dimensions = (1, 2)
         if isinstance(dimensions, Iterable):
-            model_name = gen_tmp_name(schema=_options["temp_schema"], name="pca_plot")
+            model_name = gen_tmp_name(
+                schema=conf.get_option("temp_schema"), name="pca_plot"
+            )
             model = PCA(model_name)
             model.drop()
             try:
@@ -1659,7 +1661,7 @@ class vDCPLOT:
             ax.set_xlabel(self._alias)
             return ax
         kernel = kernel.lower()
-        schema = _options["temp_schema"]
+        schema = conf.get_option("temp_schema")
         if not (schema):
             schema = "public"
         name = gen_tmp_name(schema=schema, name="kde")

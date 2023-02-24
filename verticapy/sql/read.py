@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import time
 from typing import Union
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
@@ -53,7 +53,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
 
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
-    if _options["count_on"]:
+    if conf.get_option("count_on"):
         count = _executeSQL(
             query=f"""SELECT 
                         /*+LABEL('utilities.readSQL')*/ COUNT(*) 
@@ -63,20 +63,20 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         )
     else:
         count = -1
-    sql_on_init = _options["sql_on"]
-    time_on_init = _options["time_on"]
+    sql_on_init = conf.get_option("sql_on")
+    time_on_init = conf.get_option("time_on")
     try:
-        _options["time_on"] = time_on
-        _options["sql_on"] = False
+        conf.set_option("time_on", time_on)
+        conf.set_option("sql_on", False)
         try:
             result = to_tablesample(f"{query} LIMIT {limit}")
         except:
             result = to_tablesample(query)
     finally:
-        _options["time_on"] = time_on_init
-        _options["sql_on"] = sql_on_init
+        conf.get_option("time_on", time_on_init)
+        conf.get_option("sql_on", sql_on_init)
     result.count = count
-    if _options["percent_bar"]:
+    if conf.get_option("percent_bar"):
         vdf = vDataFrame(query)
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
@@ -124,7 +124,7 @@ def to_tablesample(
     """
     from verticapy.core.tablesample.base import TableSample
 
-    if _options["sql_on"]:
+    if conf.get_option("sql_on"):
         print_query(query, title)
     start_time = time.time()
     cursor = _executeSQL(
@@ -139,7 +139,7 @@ def to_tablesample(
             scale=elem[5],
         )
     elapsed_time = time.time() - start_time
-    if _options["time_on"]:
+    if conf.get_option("time_on"):
         print_time(elapsed_time)
     result = cursor.fetchall()
     columns = [column[0] for column in cursor.description]

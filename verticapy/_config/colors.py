@@ -14,13 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy
 from random import shuffle
 from typing import Union, Optional
 
 import matplotlib.colors as plt
 
-from verticapy._config.config import COLORS_OPTIONS, _options
+import verticapy._config.config as conf
+from verticapy._config.config import COLORS_OPTIONS
 
 
 def get_colors(d: Optional[dict] = {}, idx: Optional[int] = None) -> Union[list, str]:
@@ -32,11 +32,8 @@ def get_colors(d: Optional[dict] = {}, idx: Optional[int] = None) -> Union[list,
                 idx = 0
             return d["color"][idx % len(d["color"])]
     elif idx == None:
-        if not (_options["colors"]) or not (isinstance(_options["colors"], list)):
-            if not (_options["colors"]):
-                colors = COLORS_OPTIONS["default"]
-            else:
-                colors = copy.deepcopy(_options["colors"])
+        if not (conf.get_option("colors")):
+            colors = COLORS_OPTIONS["default"]
             all_colors = [plt.cnames[key] for key in plt.cnames]
             shuffle(all_colors)
             for c in all_colors:
@@ -44,7 +41,7 @@ def get_colors(d: Optional[dict] = {}, idx: Optional[int] = None) -> Union[list,
                     colors += [c]
             return colors
         else:
-            return _options["colors"]
+            return conf.get_option("colors")
     else:
         colors = get_colors()
         return colors[idx % len(colors)]
@@ -53,20 +50,22 @@ def get_colors(d: Optional[dict] = {}, idx: Optional[int] = None) -> Union[list,
 def get_cmap(color: str = "", reverse: bool = False) -> plt.LinearSegmentedColormap:
     if not (color):
         cm1 = plt.LinearSegmentedColormap.from_list(
-            "verticapy", ["#FFFFFF", get_colors()[0]], N=1000
+            "verticapy_cmap", ["#FFFFFF", get_colors()[0]], N=1000
         )
         cm2 = plt.LinearSegmentedColormap.from_list(
-            "verticapy", [get_colors()[1], "#FFFFFF", get_colors()[0]], N=1000,
+            "verticapy_cmap", [get_colors()[1], "#FFFFFF", get_colors()[0]], N=1000,
         )
         return (cm1, cm2)
     else:
         if isinstance(color, list):
-            return plt.LinearSegmentedColormap.from_list("verticapy", color, N=1000)
+            return plt.LinearSegmentedColormap.from_list(
+                "verticapy_cmap", color, N=1000
+            )
         elif reverse:
             return plt.LinearSegmentedColormap.from_list(
-                "verticapy", [color, "#FFFFFF"], N=1000
+                "verticapy_cmap", [color, "#FFFFFF"], N=1000
             )
         else:
             return plt.LinearSegmentedColormap.from_list(
-                "verticapy", ["#FFFFFF", color], N=1000
+                "verticapy_cmap", ["#FFFFFF", color], N=1000
             )

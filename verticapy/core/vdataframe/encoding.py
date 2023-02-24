@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import math, warnings
 from typing import Literal, Union
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -81,7 +81,7 @@ class vDFENCODE:
                 self[column].get_dummies(
                     "", prefix_sep, drop_first, use_numbers_as_suffix
                 )
-            elif cols_hand and _options["print_info"]:
+            elif cols_hand and conf.get_option("print_info"):
                 warning_message = (
                     f"The vDataColumn '{column}' was ignored because of "
                     "its high cardinality.\nIncrease the parameter "
@@ -225,7 +225,7 @@ class vDCENCODE:
         )
 
         if self.isnum() and method == "smart":
-            schema = _options["temp_schema"]
+            schema = conf.get_option("temp_schema")
             if not (schema):
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
@@ -569,6 +569,6 @@ class vDCENCODE:
             f"[Mean Encode]: The vDataColumn {self._alias} was transformed "
             f"using a mean encoding with {response} as Response Column."
         )
-        if _options["print_info"]:
+        if conf.get_option("print_info"):
             print("The mean encoding was successfully done.")
         return self._parent

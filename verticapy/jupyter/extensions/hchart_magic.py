@@ -19,7 +19,7 @@ import time, warnings
 from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, replace_vars_in_query
 from verticapy.errors import ParameterError
@@ -27,7 +27,7 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.jupyter.extensions._utils import get_magic_options
+from verticapy.jupyter.extensions._utils import get_magic_all_options
 
 from verticapy.plotting._highcharts.base import hchartSQL
 
@@ -40,9 +40,9 @@ def hchart_magic(line, cell="", local_ns=None):
 
     # Options
     options = {}
-    all_options_dict = get_magic_options(line)
+    all_all_options_dict = get_magic_all_options(line)
 
-    for option in all_options_dict:
+    for option in all_all_options_dict:
 
         if option.lower() in (
             "-f",
@@ -58,21 +58,21 @@ def hchart_magic(line, cell="", local_ns=None):
             if option.lower() in ("-f", "--file"):
                 if "-f" in options:
                     raise ParameterError("Duplicate option '-f'.")
-                options["-f"] = all_options_dict[option]
+                options["-f"] = all_all_options_dict[option]
             elif option.lower() in ("-o", "--output"):
                 if "-o" in options:
                     raise ParameterError("Duplicate option '-o'.")
-                options["-o"] = all_options_dict[option]
+                options["-o"] = all_all_options_dict[option]
             elif option.lower() in ("-c", "--command"):
                 if "-c" in options:
                     raise ParameterError("Duplicate option '-c'.")
-                options["-c"] = all_options_dict[option]
+                options["-c"] = all_all_options_dict[option]
             elif option.lower() in ("-k", "--kind"):
                 if "-k" in options:
                     raise ParameterError("Duplicate option '-k'.")
-                options["-k"] = all_options_dict[option]
+                options["-k"] = all_all_options_dict[option]
 
-        elif _options["print_info"]:
+        elif conf.get_option("print_info"):
             warning_message = (
                 f"\u26A0 Warning : The option '{option}' doesn't exist - skipping."
             )

@@ -19,7 +19,7 @@ import numpy as np
 
 import pandas as pd
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._display import print_table
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._vertica_version import vertica_version
@@ -97,7 +97,7 @@ The TableSample attributes are the same as the parameters.
         n = len(self.values)
         dtype = self.dtype
         max_columns = (
-            self.max_columns if self.max_columns > 0 else _options["max_columns"]
+            self.max_columns if self.max_columns > 0 else conf.get_option("max_columns")
         )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
@@ -119,7 +119,7 @@ The TableSample attributes are the same as the parameters.
                 break
         formatted_text = ""
         # get interactive table if condition true
-        if _options["interactive"] or interactive:
+        if conf.get_option("interactive") or interactive:
             formatted_text = datatables_repr(
                 data_columns,
                 repeat_first_column=("index" in self.values),
@@ -136,7 +136,7 @@ The TableSample attributes are the same as the parameters.
                 dtype=dtype,
                 percent=percent,
             )
-        if _options["footer_on"]:
+        if conf.get_option("footer_on"):
             formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
             if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
                 rows = self.count
@@ -173,7 +173,7 @@ The TableSample attributes are the same as the parameters.
         n = len(self.values)
         dtype = self.dtype
         max_columns = (
-            self.max_columns if self.max_columns > 0 else _options["max_columns"]
+            self.max_columns if self.max_columns > 0 else conf.get_option("max_columns")
         )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]

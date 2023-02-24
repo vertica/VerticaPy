@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from typing import Literal, Union
 from tqdm.auto import tqdm
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import schema_relation
@@ -222,7 +222,7 @@ model_grid_ : TableSample
     object
         model grid
         """
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -405,7 +405,7 @@ model_grid_ : TableSample
             self.preprocess_ = None
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoML\033[0m\033[0m\n")
-        if _options["tqdm"] and self.parameters["print_info"]:
+        if conf.get_option("tqdm") and self.parameters["print_info"]:
             loop = tqdm(self.parameters["estimator"])
         else:
             loop = self.parameters["estimator"]

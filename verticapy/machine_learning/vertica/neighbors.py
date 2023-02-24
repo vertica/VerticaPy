@@ -21,7 +21,8 @@ from typing import Literal, Union
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-from verticapy._config.config import ISNOTEBOOK, _options
+import verticapy._config.config as conf
+from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
@@ -121,7 +122,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -324,7 +325,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -991,7 +992,7 @@ xlim: list, optional
         """
         if isinstance(X, str):
             X = [X]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -1417,7 +1418,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -1593,7 +1594,7 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)

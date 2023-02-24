@@ -20,7 +20,8 @@ from typing import Literal, Union
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-from verticapy._config.config import ISNOTEBOOK, _options, PARSER_IMPORT
+import verticapy._config.config as conf
+from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident, schema_relation
@@ -324,7 +325,7 @@ papprox_ma: int, optional
         model
         """
         # Initialization
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -772,8 +773,8 @@ papprox_ma: int, optional
             vdf=vdf, y=y, ts=ts, X=X, nlead=0, name="_verticapy_prediction_"
         )
         error_eps = 1.96 * math.sqrt(self.score(method="mse"))
-        print_info = _options["print_info"]
-        _options["print_info"] = False
+        print_info = conf.get_option("print_info")
+        conf.set_option("print_info", False)
         try:
             result = (
                 result.select([ts, y, "_verticapy_prediction_"])
@@ -782,10 +783,8 @@ papprox_ma: int, optional
                 .tail(limit)
                 .values
             )
-        except:
-            _options["print_info"] = print_info
-            raise
-        _options["print_info"] = print_info
+        finally:
+            conf.set_option("print_info", print_info)
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1315,7 +1314,7 @@ solver: str, optional
     object
         self
         """
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -1531,8 +1530,8 @@ solver: str, optional
         )
         y, prediction = X[X_idx], "_verticapy_prediction_{}_".format(X_idx)
         error_eps = 1.96 * math.sqrt(self.score(method="mse").values["mse"][X_idx])
-        print_info = _options["print_info"]
-        _options["print_info"] = False
+        print_info = conf.get_option("print_info")
+        conf.set_option("print_info", False)
         try:
             result = (
                 result_all.select([ts, y, prediction])
@@ -1541,10 +1540,8 @@ solver: str, optional
                 .tail(limit)
                 .values
             )
-        except:
-            _options["print_info"] = print_info
-            raise
-        _options["print_info"] = print_info
+        finally:
+            conf.set_option("print_info", print_info)
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1561,16 +1558,14 @@ solver: str, optional
             ],
         )
         if dynamic:
-            print_info = _options["print_info"]
-            _options["print_info"] = False
+            print_info = conf.get_option("print_info")
+            conf.set_option("print_info", False)
             try:
                 result = (
                     result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
                 )
-            except:
-                _options["print_info"] = print_info
-                raise
-            _options["print_info"] = print_info
+            finally:
+                conf.set_option("print_info", print_info)
             columns = [elem for elem in result]
             if isinstance(result[columns[0]][0], str):
                 result[columns[0]] = [parse(elem) for elem in result[columns[0]]]

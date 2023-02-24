@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from functools import wraps
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._config.connection import SESSION_IDENTIFIER
 from verticapy.connection.connect import current_cursor
 
@@ -55,9 +55,9 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
-    if not (_options["save_query_profile"]) or (
-        isinstance(_options["save_query_profile"], list)
-        and name not in _options["save_query_profile"]
+    if not (get_option["save_query_profile"]) or (
+        isinstance(get_option["save_query_profile"], list)
+        and name not in get_option["save_query_profile"]
     ):
         return False
     try:

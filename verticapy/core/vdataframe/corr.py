@@ -23,7 +23,7 @@ import scipy.stats as scipy_st
 import scipy.special as scipy_special
 
 from verticapy._config.colors import get_cmap
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._format import quote_ident
@@ -358,7 +358,7 @@ class vDFCORR:
                     title = "Covariance Matrix"
                     i0, step = 0, 1
                 n = len(columns)
-                loop = tqdm(range(i0, n)) if _options["tqdm"] else range(i0, n)
+                loop = tqdm(range(i0, n)) if conf.get_option("tqdm") else range(i0, n)
                 try:
                     all_list = []
                     nb_precomputed = 0
@@ -1315,13 +1315,13 @@ class vDFCORR:
             ]
             relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) pacf"
             tmp_view_name = gen_tmp_name(
-                schema=_options["temp_schema"], name="linear_reg_view"
+                schema=conf.get_option("temp_schema"), name="linear_reg_view"
             )
             tmp_lr0_name = gen_tmp_name(
-                schema=_options["temp_schema"], name="linear_reg0"
+                schema=conf.get_option("temp_schema"), name="linear_reg0"
             )
             tmp_lr1_name = gen_tmp_name(
-                schema=_options["temp_schema"], name="linear_reg1"
+                schema=conf.get_option("temp_schema"), name="linear_reg1"
             )
             try:
                 drop(tmp_view_name, method="view")
@@ -1359,7 +1359,7 @@ class vDFCORR:
         else:
             if isinstance(p, (float, int)):
                 p = range(0, p + 1)
-            loop = tqdm(p) if _options["tqdm"] else p
+            loop = tqdm(p) if conf.get_option("tqdm") else p
             pacf = []
             for i in loop:
                 pacf += [self.pacf(ts=ts, column=column, by=by, p=[i], unit=unit)]

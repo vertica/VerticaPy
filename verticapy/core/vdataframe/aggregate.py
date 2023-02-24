@@ -18,7 +18,7 @@ import decimal, multiprocessing, warnings
 from typing import Literal, Union
 from tqdm.auto import tqdm
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -411,7 +411,7 @@ class vDFAGG:
 
         if ncols_block < len(columns) and processes <= 1:
 
-            if _options["tqdm"]:
+            if conf.get_option("tqdm"):
                 loop = tqdm(range(0, len(columns), ncols_block))
             else:
                 loop = range(0, len(columns), ncols_block)
@@ -1088,7 +1088,7 @@ class vDFAGG:
                 " method = 'numerical'."
             )
             if ncols_block < len(columns) and processes <= 1:
-                if _options["tqdm"]:
+                if conf.get_option("tqdm"):
                     loop = tqdm(range(0, len(columns), ncols_block))
                 else:
                     loop = range(0, len(columns), ncols_block)
@@ -1138,7 +1138,7 @@ class vDFAGG:
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
                                 col_to_compute += [column]
                                 break
-                    elif _options["print_info"]:
+                    elif conf.get_option("print_info"):
                         warning_message = (
                             f"The vDataColumn {column} is not numerical, it was ignored."
                             "\nTo get statistical information about all different "

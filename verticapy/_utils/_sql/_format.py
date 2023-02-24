@@ -18,7 +18,7 @@ import re
 
 import pandas as pd
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy.errors import ParsingError
 
@@ -222,7 +222,7 @@ def schema_relation(relation):
     from verticapy.core.vdataframe.base import vDataFrame
 
     if isinstance(relation, vDataFrame):
-        schema, relation = _options["temp_schema"], ""
+        schema, relation = conf.get_option("temp_schema"), ""
     else:
         quote_nb = relation.count('"')
         if quote_nb not in (0, 2, 4):

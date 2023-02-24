@@ -20,7 +20,7 @@ import numpy as np
 
 import pandas as pd
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._config.connection import (
     _external_connections,
     SPECIAL_SYMBOLS,

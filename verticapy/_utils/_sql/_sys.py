@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import time
 from typing import Literal
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._config.connection import SPECIAL_SYMBOLS
 from verticapy._utils._sql._dblink import replace_external_queries_in_query
 from verticapy._utils._sql._display import print_query, print_time
@@ -52,7 +52,7 @@ def _executeSQL(
     query = clean_query(query)
 
     cursor = current_cursor()
-    if _options["sql_on"] and print_time_sql:
+    if conf.get_option("sql_on") and print_time_sql:
         print_query(query, title)
     start_time = time.time()
     if data:
@@ -63,7 +63,7 @@ def _executeSQL(
     else:
         cursor.execute(query)
     elapsed_time = time.time() - start_time
-    if _options["time_on"] and print_time_sql:
+    if conf.get_option("time_on") and print_time_sql:
         print_time(elapsed_time)
     if method == "fetchrow":
         return cursor.fetchone()

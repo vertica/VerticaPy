@@ -56,6 +56,10 @@ class ModelError(Exception):
     ...
 
 
+class OptionError(Exception):
+    ...
+
+
 class ParameterError(Exception):
     ...
 

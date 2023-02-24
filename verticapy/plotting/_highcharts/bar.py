@@ -108,6 +108,8 @@ def bar(
             }
         )
         if is_stacked:
-            chart.set_dict_options({"plotOptions": {"series": {"stacking": "normal"}}})
+            chart.set_dict_options(
+                {"plotOptions": {"series": {"stacking": "normal"}}}
+            )
     chart.set_dict_options(options)
     return chart

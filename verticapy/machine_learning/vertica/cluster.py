@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import os, vertica_python
 from typing import Literal, Union
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
@@ -224,7 +224,7 @@ p: int, optional
             key_columns = [key_columns]
         if isinstance(X, str):
             X = [X]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -292,7 +292,7 @@ p: int, optional
                       {name_main} AS x 
                       CROSS JOIN 
                       {name_main} AS y) distance_table"""
-            if isinstance(_options["random_state"], int):
+            if isinstance(conf.get_option("random_state"), int):
                 order_by = "ORDER BY node_id, nn_id"
             else:
                 order_by = ""
