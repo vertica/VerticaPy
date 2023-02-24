@@ -41,8 +41,6 @@ from verticapy.core.vdataframe._multiprocessing import (
     describe_parallel_block,
 )
 
-from verticapy.sql.read import to_tablesample
-
 
 class vDFAgg:
     @save_verticapy_logs
@@ -225,7 +223,7 @@ class vDFAgg:
                 symbol=self._vars["symbol"],
             )
             return total
-        result = to_tablesample(
+        result = TableSample.read_sql(
             query=f"""
                 SELECT 
                     {columns},
@@ -1879,7 +1877,7 @@ class vDCAgg:
                     alias_sql_repr = to_varchar(self.category(), self._alias)
                     tmp_query += f" WHERE {alias_sql_repr} = '{category}'"
                 query += [lp + tmp_query + rp]
-            values = to_tablesample(
+            values = TableSample.read_sql(
                 query=f"""
                     WITH vdf_table AS 
                         (SELECT 

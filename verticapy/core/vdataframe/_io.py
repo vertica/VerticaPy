@@ -21,6 +21,12 @@ import numpy as np
 
 import pandas as pd
 
+if conf._get_import_success("geopandas"):
+    from geopandas import GeoDataFrame
+    from shapely import wkt
+
+pickle.DEFAULT_PROTOCOL = 4
+
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
@@ -29,13 +35,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 from verticapy.errors import ParameterError, ParsingError
 
-from verticapy.sql.read import to_tablesample
-
-if conf._get_import_success("geopandas"):
-    from geopandas import GeoDataFrame
-    from shapely import wkt
-
-pickle.DEFAULT_PROTOCOL = 4
+from verticapy.core.tablesample.base import TableSample
 
 
 class vDFInOut:
@@ -719,7 +719,7 @@ class vDFInOut:
         partition = ""
         if by:
             partition = f"PARTITION BY {', '.join(by)}"
-        result = to_tablesample(
+        result = TableSample.read_sql(
             query=f"""
                 EXPORT TO PARQUET(directory = '{directory}',
                                   compression = '{compression}',

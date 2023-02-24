@@ -29,8 +29,6 @@ from verticapy.machine_learning._utils import (
     _compute_tn_fn_fp_tp,
 )
 
-from verticapy.sql.read import to_tablesample
-
 
 @save_verticapy_logs
 def accuracy_score(
@@ -330,7 +328,7 @@ TableSample
         relation = input_relation
     else:
         relation = input_relation._genSQL()
-    result = to_tablesample(
+    result = TableSample.read_sql(
         query=f"""
         SELECT 
             CONFUSION_MATRIX(obs, response 
@@ -626,7 +624,7 @@ TableSample
     for idx, l in enumerate(labels):
         query += f", '{l}', {idx}"
     query += f") AS response FROM {relation}) VERTICAPY_SUBTABLE;"
-    result = to_tablesample(query=query, title="Computing Confusion Matrix.")
+    result = TableSample.read_sql(query=query, title="Computing Confusion Matrix.")
     del result.values["comment"]
     result = result.transpose()
     result.values["actual_class"] = labels

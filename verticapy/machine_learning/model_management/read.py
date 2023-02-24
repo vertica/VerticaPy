@@ -21,8 +21,6 @@ from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.sql.read import to_tablesample
-
 
 def does_model_exist(
     name: str, raise_error: bool = False, return_model_type: bool = False
@@ -544,7 +542,7 @@ model
         elif model_type == "one_hot_encoder_fit":
             model = vml.OneHotEncoder(name)
             try:
-                model.param_ = to_tablesample(
+                model.param_ = TableSample.read_sql(
                     query=f"""
                         SELECT 
                             category_name, 

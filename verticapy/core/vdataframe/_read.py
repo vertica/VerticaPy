@@ -25,8 +25,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.core.string_sql.base import StringSQL
-
-from verticapy.sql.read import readSQL, to_tablesample
+from verticapy.core.tablesample.base import TableSample
 
 if conf._get_import_success("jupyter"):
     from IPython.display import HTML, display
@@ -112,33 +111,38 @@ class vDFRead:
             return getattr(self, index)
 
     def __repr__(self):
-        if self._vars["sql_magic_result"] and (
-            self._vars["main_relation"][-10:] == "VSQL_MAGIC"
-        ):
-            return readSQL(
-                self._vars["main_relation"][1:-12],
-                conf.get_option("time_on"),
-                conf.get_option("max_rows"),
-            ).__repr__()
-        max_rows = self._vars["max_rows"]
-        if max_rows <= 0:
-            max_rows = conf.get_option("max_rows")
-        return self.head(limit=max_rows).__repr__()
+        return self._repr_object.__repr__()
 
-    def _repr_html_(self, interactive=False):
-        if self._vars["sql_magic_result"] and (
-            self._vars["main_relation"][-10:] == "VSQL_MAGIC"
-        ):
+    def _repr_html_(self, interactive: bool = False):
+        return self._repr_object._repr_html_(interactive)
+
+    def _repr_object(self, interactive: bool = False):
+        if self._vars["sql_magic_result"]:
             self._vars["sql_magic_result"] = False
-            return readSQL(
-                self._vars["main_relation"][1:-12],
-                conf.get_option("time_on"),
-                conf.get_option("max_rows"),
-            )._repr_html_(interactive)
+            query = extract_subquery(self._genSQL())
+            query = clean_query(query)
+            sql_on_init = conf.get_option("sql_on")
+            limit = conf.get_option("max_rows")
+            conf.set_option("sql_on", False)
+            try:
+                result = TableSample().read_sql(f"{query} LIMIT {limit}")
+            except:
+                result = TableSample().read_sql(query)
+            finally:
+                conf.set_option("sql_on", sql_on_init)
+            if conf.get_option("count_on"):
+                result.count = self.shape()[0]
+            else:
+                result.count = -1
+            if conf.get_option("percent_bar"):
+                percent = self.agg(["percent"]).transpose().values
+                for column in result.values:
+                    result.dtype[column] = self[column].ctype()
+                    result.percent[column] = percent[self._format_colnames(column)][0]
         max_rows = self._vars["max_rows"]
         if max_rows <= 0:
             max_rows = conf.get_option("max_rows")
-        return self.head(limit=max_rows)._repr_html_(interactive)
+        return self.head(limit=max_rows)
 
     def idisplay(self):
         """This method displays the interactive table. It is used when 
@@ -240,7 +244,7 @@ class vDFRead:
             "Reads the final relation using a limit "
             f"of {limit} and an offset of {offset}."
         )
-        result = to_tablesample(
+        result = TableSample.read_sql(
             query=f"""
                 SELECT 
                     {', '.join(all_columns)} 
@@ -528,7 +532,7 @@ class vDCRead:
             offset = max(0, self._parent.shape()[0] - limit)
         title = f"Reads {self._alias}."
         alias_sql_repr = to_varchar(self.category(), self._alias)
-        tail = to_tablesample(
+        tail = TableSample.read_sql(
             query=f"""
                 SELECT 
                     {alias_sql_repr} AS {self._alias} 
@@ -572,7 +576,7 @@ class vDCRead:
             WHERE {self._alias} IS NOT NULL 
             ORDER BY {self._alias} DESC LIMIT {n}"""
         title = f"Reads {self._alias} {n} largest elements."
-        return to_tablesample(
+        return TableSample.read_sql(
             query,
             title=title,
             sql_push_ext=self._parent._vars["sql_push_ext"],
@@ -599,7 +603,7 @@ class vDCRead:
     --------
     vDataFrame[].nlargest : Returns the n largest vDataColumn elements.
         """
-        return to_tablesample(
+        return TableSample.read_sql(
             f"""
             SELECT 
                 * 

@@ -68,16 +68,17 @@ class vDFJoinUnionSort:
     vDataFrame.join    : Joins the vDataFrame with another relation.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(expr1, str):
             expr1 = [expr1]
         if isinstance(expr2, str):
             expr2 = [expr2]
         first_relation = self._genSQL()
-        if isinstance(input_relation, str):
+        object_type = None
+        if hasattr(input_relation, "_object_type"):
+            object_type = input_relation._object_type
+        if isinstance(input_relation, (str, StringSQL)):
             second_relation = input_relation
-        elif isinstance(input_relation, vDataFrame):
+        elif object_type == "vDataFrame":
             second_relation = input_relation._genSQL()
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)

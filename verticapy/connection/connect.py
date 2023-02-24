@@ -49,8 +49,8 @@ Closes the connection to the database.
     """
     gb_conn = get_global_connection()
     connection = gb_conn._get_connection()
-    if connection["conn"] and not (connection["conn"].closed()):
-        connection["conn"].close()
+    if connection and not (connection.closed()):
+        connection.close()
 
 
 def connect(section: str, dsn: str = ""):

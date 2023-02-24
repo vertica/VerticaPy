@@ -48,7 +48,6 @@ from verticapy.machine_learning.vertica.base import (
 )
 
 from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample
 from verticapy.sql.insert import insert_verticapy_schema
 
 
@@ -139,7 +138,7 @@ p: int, optional
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
         X_str = ", ".join([f"{func}({column}) AS {column}" for column in self.X])
-        self.centroids_ = to_tablesample(
+        self.centroids_ = TableSample.read_sql(
             query=f"""
             SELECT 
                 {X_str}, 

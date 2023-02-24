@@ -156,33 +156,9 @@ sql_push_ext: bool, optional
     use SQL Magic directly). This can increase performance but might increase 
     the error rate. For instance, some DBs might not support the same SQL as 
     Vertica.
-_empty: bool, optional
-    If set to True, the vDataFrame will be empty. You can use this to create 
-    a custom vDataFrame and bypass the initialization check.
 
 Attributes
 ----------
-_vars: dict
-    Dictionary containing all vDataFrame attributes.
-        allcols_ind, int      : Integer, used to optimize the SQL 
-                                code generation.
-        columns, list         : List of the vDataColumn names.
-        count, int            : Number of elements of the vDataFrame 
-                                (catalog).
-        exclude_columns, list : vDataColumns to exclude from the final 
-                                relation.
-        history, list         : vDataFrame history (user modifications).
-        isflex, bool          : True if it is a Flex vDataFrame.
-        main_relation, str    : Relation to use to build the vDataFrame 
-                                (first floor).
-        order_by, dict        : Dictionary of all rules to sort the 
-                                vDataFrame.
-        saving, list          : List used to reconstruct the 
-                                vDataFrame.
-        where, list           : List of all rules to filter the 
-                                vDataFrame.
-        max_colums, int       : Maximum number of columns to display.
-        max_rows, int         : Maximum number of rows to display.
 vDataColumns : vDataColumn
     Each vDataColumn of the vDataFrame is accessible by by specifying its name 
     between brackets. For example, to access the vDataColumn "myVC": 
@@ -212,6 +188,7 @@ vDataColumns : vDataColumn
         symbol: str = "$",
         sql_push_ext: bool = True,
         _empty: bool = False,
+        _is_sql_magic: bool = False,
     ) -> None:
         # Main Attributes
         self._vars = {
@@ -224,7 +201,7 @@ vDataColumns : vDataColumn
             "max_rows": -1,
             "order_by": {},
             "saving": [],
-            "sql_magic_result": False,
+            "sql_magic_result": _is_sql_magic,
             "where": [],
         }
         isflex = False

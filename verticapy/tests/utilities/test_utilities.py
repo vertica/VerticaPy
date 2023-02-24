@@ -816,10 +816,6 @@ class TestUtilities:
             pass
         drop(name="public.cities_test")
 
-    def test_readSQL(self):
-        result = readSQL('SELECT 1 AS "verticapy test *+""";')
-        assert result['verticapy test *+"'] == [1]
-
     def test_save_to_query_profile(self):
         model = LinearRegression("model_test",)
         iris = load_iris()
@@ -937,8 +933,8 @@ class TestUtilities:
         result7 = result.to_vdf()["price"].mean()
         assert result7 == 2.0
 
-    def test_to_tablesample(self):
-        result = to_tablesample('SELECT 1 AS "verticapy test *+""";')
+    def test_tablesample_read_sql(self):
+        result = TableSample.read_sql('SELECT 1 AS "verticapy test *+""";')
         assert result['verticapy test *+"'] == [1]
 
     def test_vDataFrame_sql(self):

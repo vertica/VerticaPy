@@ -36,7 +36,6 @@ from verticapy.core.tablesample.base import TableSample
 import verticapy.plotting._matplotlib as plt
 
 from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample
 
 
 class vDFCorr:
@@ -1713,7 +1712,7 @@ class vDCCorr:
                 END AS iv 
             FROM ({query}) x ORDER BY ord"""
         title = f"Computing WOE & IV of {self._alias} (response = {y})."
-        result = to_tablesample(
+        result = TableSample.read_sql(
             query,
             title=title,
             sql_push_ext=self._parent._vars["sql_push_ext"],

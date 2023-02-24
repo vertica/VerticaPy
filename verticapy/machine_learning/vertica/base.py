@@ -49,7 +49,6 @@ from verticapy.machine_learning.model_management.read import does_model_exist
 import verticapy.machine_learning.model_selection as ms
 
 from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -478,7 +477,7 @@ Base Class for Vertica Models.
                 attr_name_str = f", attr_name = '{attr_name}'"
             else:
                 attr_name_str = ""
-            result = to_tablesample(
+            result = TableSample.read_sql(
                 query=f"""
                     SELECT 
                         GET_MODEL_ATTRIBUTE(USING PARAMETERS 
@@ -1736,7 +1735,7 @@ class Tree:
                                                      model_name = '{name}', 
                                                      tree_id = {tree_id}, 
                                                      format = 'tabular')) x ORDER BY node_id;"""
-        result = to_tablesample(query=query, title="Reading Tree.")
+        result = TableSample.read_sql(query=query, title="Reading Tree.")
         return result
 
     def plot_tree(
@@ -1825,7 +1824,7 @@ class Tree:
             fname = "RF_PREDICTOR_IMPORTANCE"
         tree_id = "" if tree_id is None else f", tree_id={tree_id}"
         query = f"SELECT {fname} (USING PARAMETERS model_name = '{name}'{tree_id})"
-        result = to_tablesample(query=query, title="Reading Tree.")
+        result = TableSample.read_sql(query=query, title="Reading Tree.")
         return result
 
 
@@ -3284,7 +3283,7 @@ class Unsupervised(vModel):
                                         attr_name = 'integer_categories')) 
                                         VERTICAPY_SUBTABLE"""
             try:
-                self.param_ = to_tablesample(
+                self.param_ = TableSample.read_sql(
                     query=f"""{query}
                               UNION ALL 
                               SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
@@ -3294,7 +3293,7 @@ class Unsupervised(vModel):
                 )
             except:
                 try:
-                    self.param_ = to_tablesample(
+                    self.param_ = TableSample.read_sql(
                         query=query, title="Getting Model Attributes.",
                     )
                 except:
@@ -3840,7 +3839,7 @@ class Decomposition(Preprocessing):
                 'Score' AS 'index', 
                 {', '.join(p_distances)} 
             FROM ({query}) z"""
-        return to_tablesample(query, title="Getting Model Score.").transpose()
+        return TableSample.read_sql(query, title="Getting Model Score.").transpose()
 
     def transform(
         self,

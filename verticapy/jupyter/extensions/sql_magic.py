@@ -39,7 +39,7 @@ from verticapy._utils._sql._format import (
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import QueryError, ParameterError
 
-from verticapy.jupyter.extensions._utils import get_magic_all_options
+from verticapy.jupyter.extensions._utils import get_magic_options
 
 
 @save_verticapy_logs
@@ -60,9 +60,9 @@ def sql_magic(line, cell="", local_ns=None):
 
         # Options
         options = {}
-        all_all_options_dict = get_magic_all_options(line)
+        options_dict = get_magic_options(line)
 
-        for option in all_all_options_dict:
+        for option in options_dict:
 
             if option.lower() in (
                 "-f",
@@ -78,23 +78,23 @@ def sql_magic(line, cell="", local_ns=None):
                 if option.lower() in ("-f", "--file"):
                     if "-f" in options:
                         raise ParameterError("Duplicate option '-f'.")
-                    options["-f"] = all_all_options_dict[option]
+                    options["-f"] = options_dict[option]
                 elif option.lower() in ("-o", "--output"):
                     if "-o" in options:
                         raise ParameterError("Duplicate option '-o'.")
-                    options["-o"] = all_all_options_dict[option]
+                    options["-o"] = options_dict[option]
                 elif option.lower() in ("-c", "--command"):
                     if "-c" in options:
                         raise ParameterError("Duplicate option '-c'.")
-                    options["-c"] = all_all_options_dict[option]
+                    options["-c"] = options_dict[option]
                 elif option.lower() in ("-nrows",):
                     if "-nrows" in options:
                         raise ParameterError("Duplicate option '-nrows'.")
-                    options["-nrows"] = int(all_all_options_dict[option])
+                    options["-nrows"] = int(options_dict[option])
                 elif option.lower() in ("-ncols",):
                     if "-ncols" in options:
                         raise ParameterError("Duplicate option '-ncols'.")
-                    options["-ncols"] = int(all_all_options_dict[option])
+                    options["-ncols"] = int(options_dict[option])
 
             elif conf.get_option("print_info"):
                 warning_message = (
@@ -255,7 +255,7 @@ def sql_magic(line, cell="", local_ns=None):
                 error = ""
 
                 try:
-                    result = vDataFrame(query)
+                    result = vDataFrame(query, _is_sql_magic=True,)
                     result._vars["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:

@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from verticapy.errors import ParsingError
 
 
-def get_magic_all_options(line: str):
+def get_magic_options(line: str):
 
     # parsing the line
     i, n, splits = 0, len(line), []
@@ -45,14 +45,14 @@ def get_magic_all_options(line: str):
                 splits += [line[k:i]]
 
     # Creating the dictionary
-    n, i, all_all_options_dict = len(splits), 0, {}
+    n, i, options_dict = len(splits), 0, {}
     while i < n:
         if splits[i][0] != "-":
             raise ParsingError(
                 f"Can not parse option '{splits[i][0]}'. "
                 "Options must start with '-'."
             )
-        all_all_options_dict[splits[i]] = splits[i + 1]
+        options_dict[splits[i]] = splits[i + 1]
         i += 2
 
-    return all_all_options_dict
+    return options_dict

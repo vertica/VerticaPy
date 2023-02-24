@@ -30,11 +30,9 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.string_sql.base import StringSQL
 
-from verticapy.datasets import gen_meshgrid
+from verticapy.datasets.generators import gen_meshgrid
 
 from verticapy.plotting._matplotlib.base import updated_dict
-
-from verticapy.sql.read import to_tablesample
 
 
 def cmatrix(
@@ -468,7 +466,7 @@ def pivot_table(
     over = "/" + str(vdf.shape()[0]) if (method == "density") else ""
     if len(columns) == 1:
         cast = to_varchar(vdf[columns[0]].category(), all_columns[-1])
-        return to_tablesample(
+        return TableSample.read_sql(
             query=f"""
                 SELECT 
                     {cast} AS {columns[0]},
