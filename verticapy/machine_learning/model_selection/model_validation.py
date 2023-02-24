@@ -24,7 +24,6 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -631,7 +630,7 @@ TableSample
     decision_boundary.reverse()
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Cumulative Data Fraction")
     max_value = max([0 if elem != elem else elem for elem in lift])
@@ -732,7 +731,7 @@ TableSample
         return auc
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
@@ -835,7 +834,7 @@ TableSample
         return best
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
     color1, color2 = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
     if color1 == color2:

@@ -21,7 +21,7 @@ import numpy as np
 
 import pandas as pd
 
-from verticapy._config.config import GEOPANDAS_IMPORT
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._random import _current_random
@@ -31,7 +31,7 @@ from verticapy.errors import ParameterError, ParsingError
 
 from verticapy.sql.read import to_tablesample
 
-if GEOPANDAS_IMPORT:
+if conf._get_import_success("geopandas"):
     from geopandas import GeoDataFrame
     from shapely import wkt
 
@@ -398,7 +398,7 @@ class vDFIO:
     geopandas.GeoDataFrame
         The geopandas.GeoDataFrame of the current vDataFrame relation.
         """
-        if not (GEOPANDAS_IMPORT):
+        if not (conf._get_import_success("geopandas")):
             raise ImportError(
                 "The geopandas module doesn't seem to be installed in your "
                 "environment.\nTo be able to use this method, you'll have to "

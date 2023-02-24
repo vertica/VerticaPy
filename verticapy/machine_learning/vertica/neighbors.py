@@ -22,7 +22,6 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
@@ -1204,7 +1203,7 @@ xlim: list, optional
                 x, y = [v[0] for v in self.verticapy_x], self.verticapy_y
             if not (ax):
                 fig, ax = plt.subplots()
-                if ISNOTEBOOK:
+                if conf._get_import_success("jupyter"):
                     fig.set_size_inches(7, 5)
                 ax.grid()
                 ax.set_axisbelow(True)
@@ -1248,7 +1247,7 @@ xlim: list, optional
                 idx += n + 1
             if not (ax):
                 fig, ax = plt.subplots()
-                if ISNOTEBOOK:
+                if conf._get_import_success("jupyter"):
                     fig.set_size_inches(8, 6)
             else:
                 fig = plt

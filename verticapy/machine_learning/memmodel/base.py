@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from typing import Literal, Union
 import numpy as np
 
-from verticapy._config.config import GRAPHVIZ_IMPORT
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query
 from verticapy.errors import ParameterError, FunctionError
@@ -58,7 +58,7 @@ from verticapy.machine_learning.memmodel.tree import (
     sql_from_chaid_tree,
 )
 
-if GRAPHVIZ_IMPORT:
+if conf._get_import_success("graphviz"):
     import graphviz
 
 
@@ -548,7 +548,7 @@ attributes: dict
         graphviz.Source
             graphviz object.
         """
-        if not (GRAPHVIZ_IMPORT):
+        if not (conf._get_import_success("graphviz")):
             raise ImportError(
                 "The graphviz module doesn't seem to be installed in your environment.\n"
                 "To be able to use this method, you'll have to install it.\n"

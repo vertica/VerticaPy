@@ -21,7 +21,6 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
@@ -223,7 +222,7 @@ TableSample
         model.drop()
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
     param = {

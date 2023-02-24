@@ -18,7 +18,6 @@ from typing import Union
 from collections.abc import Iterable
 
 import verticapy._config.config as conf
-from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
@@ -29,7 +28,7 @@ from verticapy.core.str_sql.base import str_sql
 
 from verticapy.sql.read import readSQL, to_tablesample
 
-if ISNOTEBOOK:
+if conf._get_import_success("jupyter"):
     from IPython.display import HTML, display
 
 

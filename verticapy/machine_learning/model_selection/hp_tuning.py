@@ -24,7 +24,6 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._config.config import ISNOTEBOOK
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -1373,7 +1372,7 @@ TableSample
             "confidence": pacf.values["confidence"],
         }
     )
-    fig = plt.figure(figsize=(10, 6)) if ISNOTEBOOK else plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(10, 6))
     plt.rcParams["axes.facecolor"] = "#FCFCFC"
     ax1 = fig.add_subplot(211)
     x, y, confidence = (

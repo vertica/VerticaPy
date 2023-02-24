@@ -21,7 +21,6 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident, schema_relation
@@ -42,7 +41,7 @@ from verticapy.machine_learning.vertica.base import Regressor
 from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_verticapy_schema
 
-if PARSER_IMPORT:
+if conf._get_import_success("dateutil"):
     from dateutil.parser import parse
 
 
@@ -842,7 +841,7 @@ papprox_ma: int, optional
         alpha = 0.3
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(10, 6)
             ax.grid()
         colors = get_colors()
@@ -1602,7 +1601,7 @@ solver: str, optional
         alpha = 0.3
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(10, 6)
             ax.grid()
         colors = get_colors()

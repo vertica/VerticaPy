@@ -44,17 +44,16 @@ try:
 except:
     pass
 
-PARSER_IMPORT: bool
+DATEUTIL_IMPORT: bool
 try:
     from dateutil.parser import parse
 
-    PARSER_IMPORT = True
+    DATEUTIL_IMPORT = True
 except:
-    PARSER_IMPORT = False
+    DATEUTIL_IMPORT = False
 
 from verticapy._config.validators import (
     bool_validator,
-    color_validator,
     in_validator,
     optional_bool_validator,
     optional_positive_int_validator,
@@ -62,6 +61,19 @@ from verticapy._config.validators import (
     st_positive_int_validator,
 )
 from verticapy.errors import OptionError
+
+
+def _get_import_success(key: str) -> bool:
+    lookup_table = {
+        "dateutil": DATEUTIL_IMPORT,
+        "geopandas": GEOPANDAS_IMPORT,
+        "graphviz": GRAPHVIZ_IMPORT,
+        "jupyter": ISNOTEBOOK,
+    }
+    if key in lookup_table:
+        return lookup_table[key]
+    else:
+        return False
 
 
 class Option:
@@ -103,67 +115,67 @@ def register_option(op: Option) -> None:
 
 def set_option(key: str, value: Any = None) -> None:
     """
-    Sets VerticaPy options.
+Sets VerticaPy options.
 
-    Parameters
-    ----------
-    key: str
-        Option to use.
-        cache: bool
-            If set to True, the vDataFrame will save in memory the computed
-            aggregations.
-        colors: list
-            List of the colors used to draw the graphics.
-        color_style: str
-            Style used to color the graphics, one of the following:
-            "rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", 
-            "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
-            "summer", "tropical", "india", "default".
-        count_on: bool
-            If set to True, the total number of rows in vDataFrames and TableSamples is  
-            computed and displayed in the footer (if footer_on is True).
-        footer_on: bool
-            If set to True, vDataFrames and TableSamples show a footer that includes information 
-            about the displayed rows and columns.
-        interactive: bool
-            If set to True, verticaPy outputs will be displayed on interactive tables. 
-        max_columns: int
-            Maximum number of columns to display. If the parameter is incorrect, 
-            nothing is changed.
-        max_rows: int
-            Maximum number of rows to display. If the parameter is incorrect, 
-            nothing is changed.
-        mode: str
-            How to display VerticaPy outputs.
-                full: VerticaPy regular display mode.
-                light: Minimalist display mode.
-        overwrite_model: bool
-            If set to True and you try to train a model with an existing name. 
-            It will be automatically overwritten.
-        percent_bar: bool
-            If set to True, it displays the percent of non-missing values.
-        print_info: bool
-            If set to True, information will be printed each time the vDataFrame 
-            is modified.
-        random_state: int
-            Integer used to seed the random number generation in VerticaPy.
-        save_query_profile: bool
-            If set to True, all function calls are stored in the query 
-            profile table. This makes it possible to differentiate the 
-            VerticaPy logs from the Vertica logs.
-            If set to False, this functionality is deactivated.
-        sql_on: bool
-            If set to True, displays all the SQL queries.
-        temp_schema: str
-            Specifies the temporary schema that certain methods/functions use to 
-            create intermediate objects, if needed. 
-        time_on: bool
-            If set to True, displays all the SQL queries elapsed time.
-        tqdm: bool
-            If set to True, a loading bar is displayed when using iterative 
-            functions.
-    value: object, optional
-        New value of option.
+Parameters
+----------
+key: str
+    Option to use.
+    cache: bool
+        If set to True, the vDataFrame will save in memory the computed
+        aggregations.
+    colors: list
+        List of the colors used to draw the graphics.
+    color_style: str
+        Style used to color the graphics, one of the following:
+        "rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", 
+        "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
+        "summer", "tropical", "india", "default".
+    count_on: bool
+        If set to True, the total number of rows in vDataFrames and TableSamples is  
+        computed and displayed in the footer (if footer_on is True).
+    footer_on: bool
+        If set to True, vDataFrames and TableSamples show a footer that includes information 
+        about the displayed rows and columns.
+    interactive: bool
+        If set to True, verticaPy outputs will be displayed on interactive tables. 
+    max_columns: int
+        Maximum number of columns to display. If the parameter is incorrect, 
+        nothing is changed.
+    max_rows: int
+        Maximum number of rows to display. If the parameter is incorrect, 
+        nothing is changed.
+    mode: str
+        How to display VerticaPy outputs.
+            full: VerticaPy regular display mode.
+            light: Minimalist display mode.
+    overwrite_model: bool
+        If set to True and you try to train a model with an existing name. 
+        It will be automatically overwritten.
+    percent_bar: bool
+        If set to True, it displays the percent of non-missing values.
+    print_info: bool
+        If set to True, information will be printed each time the vDataFrame 
+        is modified.
+    random_state: int
+        Integer used to seed the random number generation in VerticaPy.
+    save_query_profile: bool
+        If set to True, all function calls are stored in the query 
+        profile table. This makes it possible to differentiate the 
+        VerticaPy logs from the Vertica logs.
+        If set to False, this functionality is deactivated.
+    sql_on: bool
+        If set to True, displays all the SQL queries.
+    temp_schema: str
+        Specifies the temporary schema that certain methods/functions use to 
+        create intermediate objects, if needed. 
+    time_on: bool
+        If set to True, displays all the SQL queries elapsed time.
+    tqdm: bool
+        If set to True, a loading bar is displayed when using iterative 
+        functions.
+value: object, optional
+    New value of option.
     """
     if key in _all_options:
         op = _all_options[key]

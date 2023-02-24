@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from verticapy._config.colors import get_colors
-from verticapy._config.config import ISNOTEBOOK
+import verticapy._config.config as conf
 
 from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
@@ -59,7 +59,7 @@ def nested_pie(
         vdf_tmp[column].discretize(method="topk", k=max_cardinality[idx])
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
     all_colors_dict, all_categories, all_categories_col = {}, {}, []
     for i in range(0, n):
@@ -171,7 +171,7 @@ def pie(
     if not (rose):
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(8, 6)
         param = {
             "autopct": autopct,
