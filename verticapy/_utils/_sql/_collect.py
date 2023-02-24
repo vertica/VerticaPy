@@ -55,9 +55,9 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
-    if not (get_option["save_query_profile"]) or (
-        isinstance(get_option["save_query_profile"], list)
-        and name not in get_option["save_query_profile"]
+    if not (conf.get_option["save_query_profile"]) or (
+        isinstance(conf.get_option["save_query_profile"], list)
+        and name not in conf.get_option["save_query_profile"]
     ):
         return False
     try:

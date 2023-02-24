@@ -16,22 +16,22 @@ permissions and limitations under the License.
 """
 from typing import Any, Callable, Literal
 
-GEOPANDAS_ON: bool
+GEOPANDAS_IMPORT: bool
 try:
     from geopandas import GeoDataFrame
     from shapely import wkt
 
-    GEOPANDAS_ON = True
+    GEOPANDAS_IMPORT = True
 except:
-    GEOPANDAS_ON = False
+    GEOPANDAS_IMPORT = False
 
-GRAPHVIZ_ON: bool
+GRAPHVIZ_IMPORT: bool
 try:
     import graphviz
 
-    GRAPHVIZ_ON = True
+    GRAPHVIZ_IMPORT = True
 except:
-    GRAPHVIZ_ON = False
+    GRAPHVIZ_IMPORT = False
 
 ISNOTEBOOK: bool = False
 try:
