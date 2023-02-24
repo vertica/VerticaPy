@@ -21,7 +21,8 @@ import numpy as np
 import pandas as pd
 
 import verticapy._config.config as conf
-from verticapy._utils._display import print_query, print_table, print_time
+from verticapy._utils._display import print_table
+from verticapy._utils._sql._display import print_query, print_time
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
