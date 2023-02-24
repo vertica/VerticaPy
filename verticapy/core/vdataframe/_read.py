@@ -111,10 +111,10 @@ class vDFRead:
             return getattr(self, index)
 
     def __repr__(self):
-        return self._repr_object.__repr__()
+        return self._repr_object().__repr__()
 
     def _repr_html_(self, interactive: bool = False):
-        return self._repr_object._repr_html_(interactive)
+        return self._repr_object()._repr_html_(interactive)
 
     def _repr_object(self, interactive: bool = False):
         if self._vars["sql_magic_result"]:

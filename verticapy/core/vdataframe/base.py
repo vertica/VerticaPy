@@ -130,12 +130,13 @@ input_relation: str / TableSample / pandas.DataFrame
     If it is a pandas.DataFrame, a temporary local table is created.
     Otherwise, the vDataFrame is created using the generated SQL code 
     of multiple UNIONs. 
-columns: str / list, optional
-    List of column names. Only used when input_relation is an array-like type.
 usecols: str / list, optional
+    When input_relation is not an array-like type:
     List of columns to use to create the object. As Vertica is a columnar 
     DB including less columns makes the process faster. Do not hesitate 
     to not include useless columns.
+    Otherwise:
+    List of column names.
 schema: str, optional
     The schema of the relation. Specifying a schema allows you to specify a 
     table within a particular schema, or to specify a schema and relation name 
@@ -181,7 +182,6 @@ vDataColumns : vDataColumn
     def __init__(
         self,
         input_relation: Union[str, pd.DataFrame, np.ndarray, list, TableSample, dict],
-        columns: Union[str, list[str]] = [],
         usecols: Union[str, list[str]] = [],
         schema: str = "",
         external: bool = False,
@@ -190,7 +190,6 @@ vDataColumns : vDataColumn
         _empty: bool = False,
         _is_sql_magic: bool = False,
     ) -> None:
-        # Main Attributes
         self._vars = {
             "allcols_ind": -1,
             "count": -1,
@@ -201,44 +200,40 @@ vDataColumns : vDataColumn
             "max_rows": -1,
             "order_by": {},
             "saving": [],
+            "sql_push_ext": external and sql_push_ext,
             "sql_magic_result": _is_sql_magic,
+            "symbol": symbol,
             "where": [],
         }
-        isflex = False
-        # Initialization
-        if isinstance(input_relation, str) and is_sql_select(input_relation):
-            sql = input_relation
-        else:
-            sql = ""
         schema = quote_ident(schema)
         if isinstance(usecols, str):
             usecols = [usecols]
-        if isinstance(columns, str):
-            columns = [columns]
 
         if external:
 
-            if input_relation:
+            if isinstance(input_relation, str) and input_relation:
 
-                if not (isinstance(input_relation, str)):
-                    raise ParameterError(
-                        "Parameter 'input_relation' must be a string "
-                        "when using external tables."
-                    )
-                input_relation = f"{quote_ident(schema)}.{quote_ident(input_relation)}"
+                if schema:
+                    input_relation = f"{quote_ident(schema)}.{quote_ident(input_relation)}"
+                else:
+                    input_relation = quote_ident(input_relation)
                 cols = ", ".join(usecols) if usecols else "*"
                 query = f"SELECT {cols} FROM {input_relation}"
 
             else:
-                
-                query = sql
+
+                raise ParameterError(
+                    "Parameter 'input_relation' must be a nonempty str "
+                    "when using external tables."
+                )
 
             gb_conn = get_global_connection()
 
             if symbol in gb_conn._get_external_connections:
-                sql = symbol * 3 + query + symbol * 3
+                query = symbol * 3 + query + symbol * 3
 
             else:
+
                 raise ConnectionError(
                     "No corresponding Connection Identifier Database is "
                     f"defined (Using the symbol '{symbol}'). Use the "
@@ -246,65 +241,20 @@ vDataColumns : vDataColumn
                     "one with the correct symbol."
                 )
 
-        self._vars = {
-            **self._vars,
-            "sql_push_ext": external and sql_push_ext,
-            "symbol": symbol,
-        }
-
         if isinstance(input_relation, (TableSample, list, np.ndarray, dict)):
 
-            if isinstance(input_relation, (list, np.ndarray)):
-
-                if isinstance(input_relation, list):
-                    input_relation = np.array(input_relation)
-
-                if len(input_relation.shape) != 2:
-                    raise ParameterError(
-                        "vDataFrames can only be created with two-dimensional objects."
-                    )
-
-                d = {}
-                nb_cols = len(input_relation[0])
-                for idx in range(nb_cols):
-                    col_name = columns[idx] if idx < len(columns) else f"col{idx}"
-                    d[col_name] = [l[idx] for l in input_relation]
-                tb = TableSample(d)
-
-            elif isinstance(input_relation, dict):
-
-                tb = TableSample(input_relation)
-
-            else:
-
-                tb = input_relation
-
-            if usecols:
-
-                tb_final = {}
-                for col in usecols:
-                    tb_final[col] = tb[col]
-                tb = TableSample(tb_final)
-
-            self.__init__(
-                tb.to_sql(),
-                external=external,
-                symbol=symbol,
-                sql_push_ext=sql_push_ext,
-            )
+            return self._from_object(input_relation, usecols)
 
         elif isinstance(input_relation, pd.DataFrame):
 
-            argv = input_relation[usecols] if usecols else input_relation
-            vdf = read_pandas(argv)
-            self.__init__(input_relation=vdf._vars["main_relation"])
+            return self._from_pandas(input_relation, usecols)
 
         elif not (_empty):
 
-            if sql:
+            if isinstance(input_relation, str) and is_sql_select(input_relation):
 
                 # Cleaning the Query
-                sql = clean_query(sql)
+                sql = clean_query(input_relation)
                 sql = extract_subquery(sql)
 
                 # Filtering some columns
@@ -315,6 +265,7 @@ vDataColumns : vDataColumn
                 # Getting the main relation information
                 main_relation = f"({sql}) VERTICAPY_SUBTABLE"
                 dtypes = get_data_types(sql)
+                isflex = False
 
             else:
 
@@ -378,6 +329,55 @@ vDataColumns : vDataColumn
                 setattr(self, column_ident, new_vDataColumn)
                 setattr(self, column_ident[1:-1], new_vDataColumn)
                 new_vDataColumn._init = False
+
+    def _from_object(
+        self,
+        object_: Union[np.ndarray, list, TableSample, dict],
+        columns: list[str] = [],
+    ) -> None:
+        if isinstance(object_, (list, np.ndarray)):
+
+            if isinstance(object_, list):
+                object_ = np.array(object_)
+
+            if len(object_.shape) != 2:
+                raise ParameterError(
+                    "vDataFrames can only be created with two-dimensional objects."
+                )
+
+            d = {}
+            nb_cols = len(object_[0])
+            n = len(columns)
+            for idx in range(nb_cols):
+                col_name = columns[idx] if idx < n else f"col{idx}"
+                d[col_name] = [l[idx] for l in object_]
+            tb = TableSample(d)
+
+        elif isinstance(object_, dict):
+
+            tb = TableSample(object_)
+
+        else:
+
+            tb = object_
+
+        if usecols:
+
+            tb_final = {}
+            for col in usecols:
+                tb_final[col] = tb[col]
+            tb = TableSample(tb_final)
+
+        return self.__init__(tb.to_sql())
+
+    def _from_pandas(
+        self,
+        object_: pd.DataFrame,
+        usecols: list[str] = [],
+    ) -> None:
+        argv = object_[usecols] if usecols else object_
+        vdf = read_pandas(argv)
+        return self.__init__(input_relation=vdf._vars["main_relation"])
 
 
 ##
