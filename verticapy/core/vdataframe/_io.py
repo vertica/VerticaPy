@@ -21,10 +21,6 @@ import numpy as np
 
 import pandas as pd
 
-if conf._get_import_success("geopandas"):
-    from geopandas import GeoDataFrame
-    from shapely import wkt
-
 pickle.DEFAULT_PROTOCOL = 4
 
 import verticapy._config.config as conf
@@ -36,6 +32,10 @@ from verticapy.connection import current_cursor
 from verticapy.errors import ParameterError, ParsingError
 
 from verticapy.core.tablesample.base import TableSample
+
+if conf._get_import_success("geopandas"):
+    from geopandas import GeoDataFrame
+    from shapely import wkt
 
 
 class vDFInOut:

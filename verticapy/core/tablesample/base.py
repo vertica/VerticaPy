@@ -78,7 +78,7 @@ The TableSample attributes are the same as the parameters.
         offset: int = 0,
         percent: dict = {},
         max_columns: int = -1,
-    ):
+    ) -> None:
         self.values = values
         self.dtype = dtype
         self.count = count
@@ -88,17 +88,18 @@ The TableSample attributes are the same as the parameters.
         for column in values:
             if column not in dtype:
                 self.dtype[column] = "undefined"
+        return None
 
-    def __iter__(self):
+    def __iter__(self) -> tuple:
         return (elem for elem in self.values)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> list:
         for x in self.values:
             if quote_ident(key).lower() == quote_ident(x).lower():
                 return self.values[x]
         raise KeyError(f"'{key}'")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if len(self.values) == 0:
             return ""
         n = len(self.values)
@@ -152,7 +153,7 @@ The TableSample attributes are the same as the parameters.
                 formatted_text += f"Rows: {rows} | Columns: {n}"
         return formatted_text
 
-    def _repr_html_(self, interactive=False):
+    def _repr_html_(self, interactive: bool = False) -> str:
         if len(self.values) == 0:
             return ""
         n = len(self.values)
@@ -228,7 +229,7 @@ The TableSample attributes are the same as the parameters.
             formatted_text += "</div>"
         return formatted_text
 
-    def append(self, tbs):
+    def append(self, tbs: TableSample) -> TableSample:
         """
         Appends the input TableSample to a target TableSample.
 
