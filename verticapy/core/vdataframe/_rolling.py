@@ -24,7 +24,7 @@ from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import ParameterError
 
 
-class vDFROLL:
+class vDFRolling:
     @save_verticapy_logs
     def rolling(
         self,

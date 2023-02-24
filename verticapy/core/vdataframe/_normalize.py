@@ -22,7 +22,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 
 
-class vDFNORM:
+class vDFNorm:
     @save_verticapy_logs
     def normalize(
         self,
@@ -75,7 +75,7 @@ class vDFNORM:
         return self
 
 
-class vDCNORM:
+class vDCNorm:
     @save_verticapy_logs
     def normalize(
         self,

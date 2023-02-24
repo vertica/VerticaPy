@@ -24,7 +24,7 @@ from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._display import print_query, print_time
 from verticapy._utils._sql._sys import _executeSQL
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.sql.dtypes import vertica_python_dtype, get_data_types
 from verticapy.sql.flex import isvmap
@@ -86,7 +86,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
 
 
 def to_tablesample(
-    query: Union[str, str_sql],
+    query: Union[str, StringSQL],
     title: str = "",
     max_columns: int = -1,
     sql_push_ext: bool = False,

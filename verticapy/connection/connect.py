@@ -16,11 +16,7 @@ permissions and limitations under the License.
 """
 import vertica_python
 
-from verticapy._config.connection import (
-    _connection,
-    SESSION_LABEL,
-    VERTICAPY_AUTO_CONNECTION,
-)
+from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.read import read_dsn
 from verticapy.connection.utils import get_confparser, get_connection_file
 from verticapy.errors import ConnectionError, ParameterError
@@ -30,10 +26,11 @@ def auto_connect():
     """
 Automatically creates a connection using the auto-connection.
     """
+    gb_conn = get_global_connection()
     confparser = get_confparser()
 
-    if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
-        section = confparser.get(VERTICAPY_AUTO_CONNECTION, "name")
+    if confparser.has_section(gb_conn._vpy_auto_connection):
+        section = confparser.get(gb_conn._vpy_auto_connection, "name")
     else:
         raise ConnectionError(
             "No Auto Connection available. You can create one using "
@@ -50,8 +47,10 @@ def close_connection():
     """
 Closes the connection to the database.
     """
-    if _connection["conn"] and not (_connection["conn"].closed()):
-        _connection["conn"].close()
+    gb_conn = get_global_connection()
+    connection = gb_conn._get_connection()
+    if connection["conn"] and not (connection["conn"].closed()):
+        connection["conn"].close()
 
 
 def connect(section: str, dsn: str = ""):
@@ -66,16 +65,14 @@ dsn: str, optional
     Path to the file containing the credentials. If empty, the 
     Connection File will be used.
     """
-    global _connection
-    prev_conn = _connection["conn"]
+    gb_conn = get_global_connection()
+    prev_conn = gb_conn._get_connection()
     if not (dsn):
         dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
     try:
-        _connection["conn"] = vertica_connection(section, dsn)
-        _connection["dsn"] = dsn
-        _connection["section"] = section
+        gb_conn._set_connection(vertica_connection(section, dsn), section, dsn)
     except Exception as e:
         if "The DSN Section" in str(e):
             raise ConnectionError(
@@ -100,15 +97,16 @@ stored credentials. If this also fails, VerticaPy attempts to connect using
 an auto connection. Otherwise, VerticaPy attempts to connect to a 
 VerticaLab Environment.
     """
-    global _connection
+    gb_conn = get_global_connection()
+    conn = gb_conn._get_connection()
+    dsn = gb_conn._get_dsn()
+    section = gb_conn._get_dsn_section()
     # Look if the connection does not exist or is closed
-    if not (_connection["conn"]) or _connection["conn"].closed():
+    if not (conn) or conn.closed():
 
         # Connection using the existing credentials
-        if _connection["section"] and _connection["dsn"]:
-            connect(
-                _connection["section"], _connection["dsn"],
-            )
+        if (section) and (dsn):
+            connect(section, dsn)
 
         else:
 
@@ -121,12 +119,12 @@ VerticaLab Environment.
                 try:
                     # Connection to the VerticaLab environment
                     conn = verticalab_connection()
-                    _connection["conn"] = conn
+                    gb_conn._set_connection(conn)
 
                 except:
                     raise (e)
 
-    return _connection["conn"]
+    return gb_conn._get_connection()
 
 
 def current_cursor():
@@ -148,16 +146,14 @@ Parameters
 conn: object
     Connection object.
     """
-    global _connection
     try:
         conn.cursor().execute("SELECT /*+LABEL('connect.set_connection')*/ 1;")
         res = conn.cursor().fetchone()[0]
         assert res == 1
     except:
         ParameterError("The input connector is not working properly.")
-    _connection["conn"] = conn
-    _connection["dsn"] = None
-    _connection["section"] = None
+    gb_conn = get_global_connection()
+    gb_conn._set_connection(conn)
 
 
 def vertica_connection(section: str, dsn: str = ""):
@@ -189,6 +185,7 @@ Returns
 conn
     Database connection.
     """
+    gb_conn = get_global_connection()
     conn_info = {
         "host": "vertica-demo",
         "port": 5433,
@@ -196,6 +193,6 @@ conn
         "password": "",
         "database": "demo",
         "backup_server_node": ["localhost"],
-        "session_label": SESSION_LABEL,
+        "session_label": gb_conn._vpy_session_label,
     }
     return vertica_python.connect(**conn_info)

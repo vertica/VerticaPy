@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from functools import wraps
 
 import verticapy._config.config as conf
-from verticapy._config.connection import SESSION_IDENTIFIER
+from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.connect import current_cursor
 
 
@@ -71,13 +71,15 @@ bool
 
             from verticapy.machine_learning.vertica.base import vModel
 
+            gb_conn = get_global_connection()
+
             json = "{"
             if name:
                 json += f'"verticapy_fname": "{name}", '
             if path:
                 json += f'"verticapy_fpath": "{path}", '
             if add_identifier:
-                json += f'"verticapy_id": "{SESSION_IDENTIFIER}", '
+                json += f'"verticapy_id": "{gb_conn._vpy_session_identifier}", '
             for key in json_dict:
                 json += f'"{key}": '
                 if isinstance(json_dict[key], bool):

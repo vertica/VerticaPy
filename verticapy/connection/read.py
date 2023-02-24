@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import os
 
-from verticapy._config.connection import SESSION_LABEL, VERTICAPY_AUTO_CONNECTION
+from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.utils import get_confparser
 from verticapy.errors import ParameterError
 
@@ -30,9 +30,11 @@ Returns
 list
     all the available connections.
     """
+    gb_conn = get_global_connection()
+
     confparser = get_confparser()
-    if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
-        confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
+    if confparser.has_section(gb_conn._vpy_auto_connection):
+        confparser.remove_section(gb_conn._vpy_auto_connection)
     all_connections = confparser.sections()
     return all_connections
 
@@ -63,10 +65,12 @@ dict
     if confparser.has_section(section):
 
         options = confparser.items(section)
+
+        gb_conn = get_global_connection()
         conn_info = {
             "port": 5433,
             "user": "dbadmin",
-            "session_label": SESSION_LABEL,
+            "session_label": gb_conn._vpy_session_label,
         }
 
         env = False

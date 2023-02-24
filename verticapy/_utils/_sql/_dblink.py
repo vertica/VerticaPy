@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import re
 
-from verticapy._config.connection import _external_connections
+from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy.connection.connect import current_cursor
@@ -24,16 +24,18 @@ from verticapy.errors import ConnectionError
 
 
 def get_dblink_fun(query: str, symbol: str = "$"):
-    if symbol not in _external_connections:
+    gb_conn = get_global_connection()
+    external_connections = gb_conn._get_external_connections()
+    if symbol not in external_connections:
         raise ConnectionError(
             "External Query detected but no corresponding "
             "Connection Identifier Database is defined (Using "
             f"the symbol '{symbol}'). Use the function connect."
             "set_external_connection to set one with the correct symbol."
         )
-    cid = _external_connections[symbol]["cid"].replace("'", "''")
+    cid = external_connections[symbol]["cid"].replace("'", "''")
     query = query.replace("'", "''")
-    rowset = _external_connections[symbol]["rowset"]
+    rowset = external_connections[symbol]["rowset"]
     query = f"""
         SELECT 
             DBLINK(USING PARAMETERS 
@@ -44,6 +46,8 @@ def get_dblink_fun(query: str, symbol: str = "$"):
 
 
 def replace_external_queries_in_query(query: str):
+    gb_conn = get_global_connection()
+    external_connections = gb_conn._get_external_connections()
     sql_keyword = (
         "select ",
         "create ",
@@ -54,7 +58,7 @@ def replace_external_queries_in_query(query: str):
         "update ",
     )
     nb_external_queries = 0
-    for s in _external_connections:
+    for s in external_connections:
         external_queries = re.findall(f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", query)
         for external_query in external_queries:
             if external_query.strip().lower().startswith(sql_keyword):

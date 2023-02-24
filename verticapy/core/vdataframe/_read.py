@@ -24,7 +24,7 @@ from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.sql.read import readSQL, to_tablesample
 
@@ -32,7 +32,7 @@ if conf._get_import_success("jupyter"):
     from IPython.display import HTML, display
 
 
-class vDFREAD:
+class vDFRead:
     def __iter__(self):
         columns = self.get_columns()
         return (col for col in columns)
@@ -86,11 +86,11 @@ class vDFREAD:
                 symbol=self._vars["symbol"],
             )
 
-        elif isinstance(index, (str, str_sql)):
+        elif isinstance(index, (str, StringSQL)):
             is_sql = False
             if isinstance(index, vDataColumn):
                 index = index._alias
-            elif isinstance(index, str_sql):
+            elif isinstance(index, StringSQL):
                 index = str(index)
                 is_sql = True
             try:
@@ -364,7 +364,7 @@ class vDFREAD:
         return self._new_vdataframe(query)
 
 
-class vDCREAD:
+class vDCRead:
     def __getitem__(self, index):
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(

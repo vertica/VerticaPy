@@ -27,7 +27,7 @@ from verticapy.plotting._highcharts.base import hchart_from_vdf
 import verticapy.plotting._matplotlib as plt
 
 
-class vDFPLOT:
+class vDFPlot:
     @save_verticapy_logs
     def animated(
         self,
@@ -1376,7 +1376,7 @@ class vDFPLOT:
         )
 
 
-class vDCPLOT:
+class vDCPlot:
     def numh(
         self, method: Literal["sturges", "freedman_diaconis", "fd", "auto"] = "auto"
     ):

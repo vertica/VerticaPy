@@ -28,7 +28,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.datasets import gen_meshgrid
 
@@ -156,7 +156,7 @@ def contour_plot(
             }
         )
         y = "verticapy_predict"
-        if isinstance(func, (str, str_sql)):
+        if isinstance(func, (str, StringSQL)):
             vdf_tmp["verticapy_predict"] = func
         else:
             if func._model_type in (

@@ -23,14 +23,14 @@ from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import ParameterError
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 
-class vDFJUS:
+class vDFJoinUnionSort:
     @save_verticapy_logs
     def append(
         self,
-        input_relation: Union[str, str_sql],
+        input_relation: Union[str, StringSQL],
         expr1: Union[str, list] = [],
         expr2: Union[str, list] = [],
         union_all: bool = True,

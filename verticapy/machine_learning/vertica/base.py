@@ -1615,7 +1615,7 @@ class Supervised(vModel):
             "XGBoostRegressor",
         ) and isinstance(conf.get_option("random_state"), int):
             query += f""", 
-                seed={get_option('random_state')}, 
+                seed={conf.get_option('random_state')}, 
                 id_column='{id_column_name}'"""
         query += ")"
         try:
@@ -3188,12 +3188,12 @@ class Unsupervised(vModel):
         if self._model_type == "BisectingKMeans" and isinstance(
             conf.get_option("random_state"), int
         ):
-            query += f", kmeans_seed={get_option('random_state')}"
+            query += f", kmeans_seed={conf.get_option('random_state')}"
             query += f", id_column='{id_column_name}'"
         elif self._model_type == "IsolationForest" and isinstance(
             conf.get_option("random_state"), int
         ):
-            query += f", seed={get_option('random_state')}"
+            query += f", seed={conf.get_option('random_state')}"
             query += f", id_column='{id_column_name}'"
         query += ")"
         try:

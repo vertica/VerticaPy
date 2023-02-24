@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy._utils._sql._format import format_magic
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 
 def coalesce(expr, *argv):
@@ -33,7 +33,7 @@ argv: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     category = to_dtype_category(expr)
@@ -41,7 +41,7 @@ str_sql
     for arg in argv:
         expr += [format_magic(arg)]
     expr = ", ".join([str(elem) for elem in expr])
-    return str_sql(f"COALESCE({expr})", category)
+    return StringSQL(f"COALESCE({expr})", category)
 
 
 def nullifzero(expr):
@@ -55,11 +55,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr, cat = format_magic(expr, True)
-    return str_sql(f"NULLIFZERO({expr})", cat)
+    return StringSQL(f"NULLIFZERO({expr})", cat)
 
 
 def zeroifnull(expr):
@@ -73,8 +73,8 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr, cat = format_magic(expr, True)
-    return str_sql(f"ZEROIFNULL({expr})", cat)
+    return StringSQL(f"ZEROIFNULL({expr})", cat)

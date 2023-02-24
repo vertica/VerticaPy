@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import os
 import verticapy as vp
 from verticapy.connection import *
-from verticapy._config.connection import _connection, SESSION_IDENTIFIER
+from verticapy.connection.global_connection import get_global_connection
 
 
 class TestConnect:
@@ -25,6 +25,7 @@ class TestConnect:
         # test for read_dsn / new_connection / available_connections /
         #          auto_connect / change_auto_connection / delete_connection.
         # read_dsn
+        gb_conn = get_global_connection()
         d = read_dsn(
             "vp_test_config",
             os.path.dirname(vp.__file__) + "/tests/verticaPy_test_tmp.conf",
@@ -39,7 +40,7 @@ class TestConnect:
         change_auto_connection("vp_test_config")
         # auto_connect
         auto_connect()
-        cur = _connection["conn"].cursor()
+        cur = gb_conn._get_connection().cursor()
         cur.execute("SELECT 1;")
         result2 = cur.fetchone()
         assert result2 == [1]
@@ -51,7 +52,7 @@ class TestConnect:
         )
         label = current_cursor().fetchone()[0].split("-")
         assert label[1] == vp.__version__
-        assert label[2] == str(SESSION_IDENTIFIER)
+        assert label[2] == str(gb_conn._vpy_session_identifier)
 
     def test_vertica_connection(self, base):
         cur = vertica_connection(

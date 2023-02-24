@@ -18,7 +18,7 @@ from verticapy._utils._sql._cast import to_dtype_category
 from verticapy._utils._sql._format import format_magic
 from verticapy.errors import ParameterError
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 
 def case_when(*argv):
@@ -35,7 +35,7 @@ argv: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     n = len(argv)
@@ -59,7 +59,7 @@ str_sql
             )
             i += 2
     expr += " END"
-    return str_sql(expr, category)
+    return StringSQL(expr, category)
 
 
 def decode(expr, *argv):
@@ -78,7 +78,7 @@ argv: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     n = len(argv)
@@ -94,4 +94,4 @@ str_sql
         + ", ".join([str(format_magic(elem)) for elem in argv])
         + ")"
     )
-    return str_sql(expr, category)
+    return StringSQL(expr, category)

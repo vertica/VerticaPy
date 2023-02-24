@@ -36,7 +36,7 @@ from verticapy.errors import (
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.core.vdataframe.multiprocessing import (
+from verticapy.core.vdataframe._multiprocessing import (
     aggregate_parallel_block,
     describe_parallel_block,
 )
@@ -44,7 +44,7 @@ from verticapy.core.vdataframe.multiprocessing import (
 from verticapy.sql.read import to_tablesample
 
 
-class vDFAGG:
+class vDFAgg:
     @save_verticapy_logs
     def groupby(
         self,
@@ -1791,7 +1791,7 @@ class vDFAGG:
     variance = var
 
 
-class vDCAGG:
+class vDCAgg:
     @save_verticapy_logs
     def describe(
         self,

@@ -21,10 +21,7 @@ import numpy as np
 import pandas as pd
 
 import verticapy._config.config as conf
-from verticapy._config.connection import (
-    _external_connections,
-    SPECIAL_SYMBOLS,
-)
+from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._check import is_longvar, is_sql_select
@@ -44,27 +41,27 @@ from verticapy.errors import (
     QueryError,
 )
 
-from verticapy.core.vdataframe.aggregate import vDFAGG, vDCAGG
-from verticapy.core.vdataframe.corr import vDFCORR, vDCCORR
-from verticapy.core.vdataframe.encoding import vDFENCODE, vDCENCODE
-from verticapy.core.vdataframe.eval import vDFEVAL, vDCEVAL
-from verticapy.core.vdataframe.fill import vDFFILL, vDCFILL
-from verticapy.core.vdataframe.filter import vDFFILTER, vDCFILTER
-from verticapy.core.vdataframe.io import vDFIO
-from verticapy.core.vdataframe.join_union_sort import vDFJUS
-from verticapy.core.vdataframe.machine_learning import vDFML
-from verticapy.core.vdataframe.math import vDFMATH, vDCMATH
-from verticapy.core.vdataframe.normalize import vDFNORM, vDCNORM
-from verticapy.core.vdataframe.pivot import vDFPIVOT
-from verticapy.core.vdataframe.plotting import vDFPLOT, vDCPLOT
-from verticapy.core.vdataframe.read import vDFREAD, vDCREAD
-from verticapy.core.vdataframe.rolling import vDFROLL
-from verticapy.core.vdataframe.sys import vDFSYS, vDCSYS
-from verticapy.core.vdataframe.text import vDFTEXT, vDCTEXT
-from verticapy.core.vdataframe.typing import vDFTYPING, vDCTYPING
-from verticapy.core.vdataframe.utils import vDFUTILS
+from verticapy.core.vdataframe._aggregate import vDFAgg, vDCAgg
+from verticapy.core.vdataframe._corr import vDFCorr, vDCCorr
+from verticapy.core.vdataframe._encoding import vDFEncode, vDCEncode
+from verticapy.core.vdataframe._eval import vDFEval, vDCEval
+from verticapy.core.vdataframe._fill import vDFFill, vDCFill
+from verticapy.core.vdataframe._filter import vDFFilter, vDCFilter
+from verticapy.core.vdataframe._io import vDFInOut
+from verticapy.core.vdataframe._join_union_sort import vDFJoinUnionSort
+from verticapy.core.vdataframe._machine_learning import vDFMachineLearning
+from verticapy.core.vdataframe._math import vDFMath, vDCMath
+from verticapy.core.vdataframe._normalize import vDFNorm, vDCNorm
+from verticapy.core.vdataframe._pivot import vDFPivot
+from verticapy.core.vdataframe._plotting import vDFPlot, vDCPlot
+from verticapy.core.vdataframe._read import vDFRead, vDCRead
+from verticapy.core.vdataframe._rolling import vDFRolling
+from verticapy.core.vdataframe._sys import vDFSystem, vDCSystem
+from verticapy.core.vdataframe._text import vDFText, vDCText
+from verticapy.core.vdataframe._typing import vDFTyping, vDCTyping
+from verticapy.core.vdataframe._utils import vDFUtils
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
 
 from verticapy.sql.dtypes import get_data_types
@@ -91,25 +88,25 @@ from verticapy.sql.parsers.pandas import read_pandas
 
 
 class vDataFrame(
-    vDFAGG,
-    vDFCORR,
-    vDFENCODE,
-    vDFEVAL,
-    vDFFILL,
-    vDFFILTER,
-    vDFIO,
-    vDFJUS,
-    vDFMATH,
-    vDFML,
-    vDFNORM,
-    vDFPIVOT,
-    vDFPLOT,
-    vDFREAD,
-    vDFROLL,
-    vDFSYS,
-    vDFTEXT,
-    vDFTYPING,
-    vDFUTILS,
+    vDFAgg,
+    vDFCorr,
+    vDFEncode,
+    vDFEval,
+    vDFFill,
+    vDFFilter,
+    vDFInOut,
+    vDFJoinUnionSort,
+    vDFMath,
+    vDFMachineLearning,
+    vDFNorm,
+    vDFPivot,
+    vDFPlot,
+    vDFRead,
+    vDFRolling,
+    vDFSystem,
+    vDFText,
+    vDFTyping,
+    vDFUtils,
 ):
     """
 An object that records all user modifications, allowing users to 
@@ -200,7 +197,7 @@ vDataColumns : vDataColumn
         usecols: Union[str, list[str]] = [],
         schema: str = "",
         external: bool = False,
-        symbol: Literal[tuple(SPECIAL_SYMBOLS)] = "$",
+        symbol: str = "$",
         sql_push_ext: bool = True,
         _empty: bool = False,
     ) -> None:
@@ -246,7 +243,9 @@ vDataColumns : vDataColumn
             else:
                 query = sql
 
-            if symbol in _external_connections:
+            gb_conn = get_global_connection()
+
+            if symbol in gb_conn._get_external_connections:
                 sql = symbol * 3 + query + symbol * 3
 
             else:
@@ -407,20 +406,20 @@ vDataColumns : vDataColumn
 
 
 class vDataColumn(
-    vDCAGG,
-    vDCCORR,
-    vDCENCODE,
-    vDCEVAL,
-    vDCFILL,
-    vDCFILTER,
-    vDCMATH,
-    vDCNORM,
-    vDCPLOT,
-    vDCREAD,
-    vDCSYS,
-    vDCTEXT,
-    vDCTYPING,
-    str_sql,
+    vDCAgg,
+    vDCCorr,
+    vDCEncode,
+    vDCEval,
+    vDCFill,
+    vDCFilter,
+    vDCMath,
+    vDCNorm,
+    vDCPlot,
+    vDCRead,
+    vDCSystem,
+    vDCText,
+    vDCTyping,
+    StringSQL,
 ):
     """
 Python object which that stores all user transformations. If the vDataFrame

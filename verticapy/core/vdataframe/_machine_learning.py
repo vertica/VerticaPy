@@ -29,7 +29,7 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 
 
-class vDFML:
+class vDFMachineLearning:
     @save_verticapy_logs
     def add_duplicates(self, weight: Union[int, str], use_gcd: bool = True):
         """

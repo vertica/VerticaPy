@@ -18,7 +18,7 @@ import time
 from typing import Literal
 
 import verticapy._config.config as conf
-from verticapy._config.connection import SPECIAL_SYMBOLS
+from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._sql._dblink import replace_external_queries_in_query
 from verticapy._utils._sql._display import print_query, print_time
 from verticapy._utils._sql._format import (
@@ -40,12 +40,13 @@ def _executeSQL(
     sql_push_ext: bool = False,
     symbol: str = "$",
 ):
+    special_symbols = get_global_connection()._special_symbols
     # Cleaning the query
-    if sql_push_ext and (symbol in SPECIAL_SYMBOLS):
+    if sql_push_ext and (symbol in special_symbols):
         query = erase_label(query)
         query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
 
-    elif sql_push_ext and (symbol not in SPECIAL_SYMBOLS):
+    elif sql_push_ext and (symbol not in special_symbols):
         raise ParameterError(f"Symbol '{symbol}' is not supported.")
 
     query = replace_external_queries_in_query(query)

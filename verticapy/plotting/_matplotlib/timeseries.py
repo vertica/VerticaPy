@@ -55,7 +55,7 @@ def acf_plot(
         color = get_colors()[0]
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(10, 3)
     if type_bar:
         ax.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
@@ -156,7 +156,7 @@ def multi_ts_plot(
     alpha = 0.3
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
         ax.set_axisbelow(True)
@@ -248,7 +248,7 @@ def range_curve(
 ):
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.grid()
     for i, y in enumerate(Y):

@@ -80,13 +80,13 @@ def extract_precision_scale(ctype: str) -> tuple:
 
 
 def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
-    from verticapy.core.str_sql.base import str_sql
+    from verticapy.core.string_sql.base import StringSQL
     from verticapy.core.vdataframe.base import vDataColumn
 
     if isinstance(x, vDataColumn):
         val = x._alias
     elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
-        x, str_sql
+        x, StringSQL
     ):
         val = x
     elif isinstance(x, type(None)):

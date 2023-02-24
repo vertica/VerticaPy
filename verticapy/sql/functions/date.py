@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy._utils._sql._format import clean_query, format_magic
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 
 def date(expr):
@@ -30,11 +30,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"DATE({expr})", "date")
+    return StringSQL(f"DATE({expr})", "date")
 
 
 def day(expr):
@@ -48,11 +48,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"DAY({expr})", "float")
+    return StringSQL(f"DAY({expr})", "float")
 
 
 def dayofweek(expr):
@@ -66,11 +66,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"DAYOFWEEK({expr})", "float")
+    return StringSQL(f"DAYOFWEEK({expr})", "float")
 
 
 def dayofyear(expr):
@@ -84,11 +84,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"DAYOFYEAR({expr})", "float")
+    return StringSQL(f"DAYOFYEAR({expr})", "float")
 
 
 def extract(expr, field: str):
@@ -107,11 +107,11 @@ field: str
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"DATE_PART('{field}', {expr})", "int")
+    return StringSQL(f"DATE_PART('{field}', {expr})", "int")
 
 
 def getdate():
@@ -120,10 +120,10 @@ Returns the current statement's start date and time as a TIMESTAMP value.
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
-    return str_sql("GETDATE()", "date")
+    return StringSQL("GETDATE()", "date")
 
 
 def getutcdate():
@@ -133,10 +133,10 @@ as a TIMESTAMP value.
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
-    return str_sql("GETUTCDATE()", "date")
+    return StringSQL("GETUTCDATE()", "date")
 
 
 def hour(expr):
@@ -151,11 +151,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"HOUR({expr})", "int")
+    return StringSQL(f"HOUR({expr})", "int")
 
 
 def interval(expr):
@@ -169,11 +169,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"({expr})::interval", "interval")
+    return StringSQL(f"({expr})::interval", "interval")
 
 
 def minute(expr):
@@ -187,11 +187,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"MINUTE({expr})", "int")
+    return StringSQL(f"MINUTE({expr})", "int")
 
 
 def microsecond(expr):
@@ -205,11 +205,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"MICROSECOND({expr})", "int")
+    return StringSQL(f"MICROSECOND({expr})", "int")
 
 
 def month(expr):
@@ -223,11 +223,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"MONTH({expr})", "int")
+    return StringSQL(f"MONTH({expr})", "int")
 
 
 def overlaps(start0, end0, start1, end1):
@@ -252,7 +252,7 @@ end1: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = f"""
@@ -261,7 +261,7 @@ str_sql
          OVERLAPS
         ({format_magic(start1)},
          {format_magic(end1)})"""
-    return str_sql(clean_query(expr), "int")
+    return StringSQL(clean_query(expr), "int")
 
 
 def quarter(expr):
@@ -276,11 +276,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"QUARTER({expr})", "int")
+    return StringSQL(f"QUARTER({expr})", "int")
 
 
 def round_date(expr, precision: str = "DD"):
@@ -310,11 +310,11 @@ precision: str, optional
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"ROUND({expr}, '{precision}')", "date")
+    return StringSQL(f"ROUND({expr}, '{precision}')", "date")
 
 
 def second(expr):
@@ -328,11 +328,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"SECOND({expr})", "int")
+    return StringSQL(f"SECOND({expr})", "int")
 
 
 def timestamp(expr):
@@ -346,11 +346,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"({expr})::timestamp", "date")
+    return StringSQL(f"({expr})::timestamp", "date")
 
 
 def week(expr):
@@ -365,11 +365,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"WEEK({expr})", "int")
+    return StringSQL(f"WEEK({expr})", "int")
 
 
 def year(expr):
@@ -383,8 +383,8 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"YEAR({expr})", "int")
+    return StringSQL(f"YEAR({expr})", "int")

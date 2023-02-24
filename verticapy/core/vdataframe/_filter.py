@@ -25,7 +25,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
 
-class vDFFILTER:
+class vDFFilter:
     @save_verticapy_logs
     def at_time(self, ts: str, time: Union[str, datetime.timedelta]):
         """
@@ -614,7 +614,7 @@ class vDFFILTER:
         return result.sort(order_by)
 
 
-class vDCFILTER:
+class vDCFilter:
     @save_verticapy_logs
     def drop(self, add_history: bool = True):
         """

@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from verticapy._utils._sql._format import format_magic
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 
 def length(expr):
@@ -31,11 +31,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"LENGTH({expr})", "int")
+    return StringSQL(f"LENGTH({expr})", "int")
 
 
 def lower(expr):
@@ -50,11 +50,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"LOWER({expr})", "text")
+    return StringSQL(f"LOWER({expr})", "text")
 
 
 def substr(expr, position: int, extent: int = None):
@@ -73,13 +73,13 @@ extent: int, optional
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
     if extent:
         position = f"{position}, {extent}"
-    return str_sql(f"SUBSTR({expr}, {position})", "text")
+    return StringSQL(f"SUBSTR({expr}, {position})", "text")
 
 
 def upper(expr):
@@ -94,11 +94,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"UPPER({expr})", "text")
+    return StringSQL(f"UPPER({expr})", "text")
 
 
 # Edit Distance & Soundex
@@ -120,12 +120,12 @@ expr2: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
-    return str_sql(f"EDIT_DISTANCE({expr1}, {expr2})", "int")
+    return StringSQL(f"EDIT_DISTANCE({expr1}, {expr2})", "int")
 
 
 levenshtein = edit_distance
@@ -143,11 +143,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"SOUNDEX({expr})", "varchar")
+    return StringSQL(f"SOUNDEX({expr})", "varchar")
 
 
 @check_minimum_version
@@ -168,12 +168,12 @@ expr2: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
-    return str_sql(f"SOUNDEX_MATCHES({expr1}, {expr2})", "int")
+    return StringSQL(f"SOUNDEX_MATCHES({expr1}, {expr2})", "int")
 
 
 # Jaro & Jaro Winkler
@@ -195,12 +195,12 @@ expr2: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
-    return str_sql(f"JARO_DISTANCE({expr1}, {expr2})", "float")
+    return StringSQL(f"JARO_DISTANCE({expr1}, {expr2})", "float")
 
 
 @check_minimum_version
@@ -219,9 +219,9 @@ expr2: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
-    return str_sql(f"JARO_WINKLER_DISTANCE({expr1}, {expr2})", "float")
+    return StringSQL(f"JARO_WINKLER_DISTANCE({expr1}, {expr2})", "float")

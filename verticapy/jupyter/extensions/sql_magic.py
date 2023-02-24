@@ -29,7 +29,7 @@ from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
 
 import verticapy._config.config as conf
-from verticapy._config.connection import SPECIAL_SYMBOLS
+from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._dblink import replace_external_queries_in_query
 from verticapy._utils._sql._format import (
@@ -126,7 +126,8 @@ def sql_magic(line, cell="", local_ns=None):
         queries = replace_external_queries_in_query(queries)
 
         # Looking at very specific external queries symbols
-        for s in SPECIAL_SYMBOLS:
+        gb_conn = get_global_connection()
+        for s in gb_conn._special_symbols:
 
             external_queries = re.findall(
                 f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries

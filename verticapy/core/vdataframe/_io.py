@@ -38,7 +38,7 @@ if conf._get_import_success("geopandas"):
 pickle.DEFAULT_PROTOCOL = 4
 
 
-class vDFIO:
+class vDFInOut:
     def copy(self):
         """
     Returns a deep copy of the vDataFrame.

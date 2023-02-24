@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy._utils._sql._format import format_magic
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 
 def avg(expr):
@@ -30,11 +30,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"AVG({expr})", "float")
+    return StringSQL(f"AVG({expr})", "float")
 
 
 mean = avg
@@ -52,11 +52,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"BOOL_AND({expr})", "int")
+    return StringSQL(f"BOOL_AND({expr})", "int")
 
 
 def bool_or(expr):
@@ -71,11 +71,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"BOOL_OR({expr})", "int")
+    return StringSQL(f"BOOL_OR({expr})", "int")
 
 
 def bool_xor(expr):
@@ -91,11 +91,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"BOOL_XOR({expr})", "int")
+    return StringSQL(f"BOOL_XOR({expr})", "int")
 
 
 def conditional_change_event(expr):
@@ -111,11 +111,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"CONDITIONAL_CHANGE_EVENT({expr})", "int")
+    return StringSQL(f"CONDITIONAL_CHANGE_EVENT({expr})", "int")
 
 
 def conditional_true_event(expr):
@@ -131,11 +131,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"CONDITIONAL_TRUE_EVENT({expr})", "int")
+    return StringSQL(f"CONDITIONAL_TRUE_EVENT({expr})", "int")
 
 
 def count(expr):
@@ -150,11 +150,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"COUNT({expr})", "int")
+    return StringSQL(f"COUNT({expr})", "int")
 
 
 def lag(expr, offset: int = 1):
@@ -171,11 +171,11 @@ offset: int
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"LAG({expr}, {offset})")
+    return StringSQL(f"LAG({expr}, {offset})")
 
 
 def lead(expr, offset: int = 1):
@@ -192,11 +192,11 @@ offset: int
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"LEAD({expr}, {offset})")
+    return StringSQL(f"LEAD({expr}, {offset})")
 
 
 def max(expr):
@@ -210,11 +210,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"MAX({expr})", "float")
+    return StringSQL(f"MAX({expr})", "float")
 
 
 def median(expr):
@@ -228,11 +228,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"APPROXIMATE_MEDIAN({expr})", "float")
+    return StringSQL(f"APPROXIMATE_MEDIAN({expr})", "float")
 
 
 def min(expr):
@@ -246,11 +246,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"MIN({expr})", "float")
+    return StringSQL(f"MIN({expr})", "float")
 
 
 def nth_value(expr, row_number: int):
@@ -267,11 +267,11 @@ row_number: int
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"NTH_VALUE({expr}, {row_number})", "int")
+    return StringSQL(f"NTH_VALUE({expr}, {row_number})", "int")
 
 
 def quantile(expr, number: float):
@@ -288,11 +288,11 @@ number: float
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(
+    return StringSQL(
         f"APPROXIMATE_PERCENTILE({expr} USING PARAMETERS percentile = {number})",
         "float",
     )
@@ -305,10 +305,10 @@ according to the order specified by the window's ORDER BY clause.
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
-    return str_sql("RANK()", "int")
+    return StringSQL("RANK()", "int")
 
 
 def row_number():
@@ -318,10 +318,10 @@ window partition.
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
-    return str_sql("ROW_NUMBER()", "int")
+    return StringSQL("ROW_NUMBER()", "int")
 
 
 def std(expr):
@@ -336,11 +336,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"STDDEV({expr})", "float")
+    return StringSQL(f"STDDEV({expr})", "float")
 
 
 stddev = std
@@ -357,11 +357,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"SUM({expr})", "float")
+    return StringSQL(f"SUM({expr})", "float")
 
 
 def var(expr):
@@ -375,11 +375,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"VARIANCE({expr})", "float")
+    return StringSQL(f"VARIANCE({expr})", "float")
 
 
 variance = var

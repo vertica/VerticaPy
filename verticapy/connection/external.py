@@ -16,12 +16,10 @@ permissions and limitations under the License.
 """
 from typing import Literal
 
-from verticapy._config.connection import _external_connections, SPECIAL_SYMBOLS
+from verticapy.connection.global_connection import get_global_connection
 
 
-def set_external_connection(
-    cid: str, rowset: int = 500, symbol: Literal[tuple(SPECIAL_SYMBOLS)] = "$"
-):
+def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$"):
     """
 Sets a Connection Identifier Database. It connects to an external
 source using DBLINK. For more information, see:
@@ -42,13 +40,5 @@ symbol: str, optional
     with the input cid by writing $$$QUERY$$$, where QUERY represents 
     a custom query.
     """
-    global _external_connections
-    if isinstance(cid, str) and isinstance(rowset, int) and symbol in SPECIAL_SYMBOLS:
-        _external_connections[symbol] = {
-            "cid": cid,
-            "rowset": rowset,
-        }
-    else:
-        raise ParameterError(
-            "Could not set the external connection. Found a wrong type."
-        )
+    gb_conn = get_global_connection()
+    gb_conn._set_external_connections(symbol, cid, rowset)

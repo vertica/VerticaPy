@@ -28,14 +28,14 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import EmptyParameter, ParameterError, QueryError
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.sql.drop import drop
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import compute_vmap_keys, isvmap
 
 
-class vDFFILL:
+class vDFFill:
     @save_verticapy_logs
     def fillna(self, val: dict = {}, method: dict = {}, numeric_only: bool = False):
         """
@@ -172,7 +172,7 @@ class vDFFILL:
     asfreq = interpolate
 
 
-class vDCFILL:
+class vDCFill:
     @save_verticapy_logs
     def clip(
         self,
@@ -339,7 +339,7 @@ class vDCFILL:
             "bfill",
             "backfill",
         ] = "auto",
-        expr: Union[str, str_sql] = "",
+        expr: Union[str, StringSQL] = "",
         by: Union[str, list] = [],
         order_by: Union[str, list] = [],
     ):

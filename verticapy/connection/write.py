@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy._config.connection import VERTICAPY_AUTO_CONNECTION
+from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.connect import connect
 from verticapy.connection.utils import get_confparser, get_connection_file
 
@@ -28,13 +28,15 @@ Parameters
 name: str
 	Name of the new auto connection.
 	"""
+    gb_conn = get_global_connection()
+
     confparser = get_confparser()
 
     if confparser.has_section(name):
 
-        confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
-        confparser.add_section(VERTICAPY_AUTO_CONNECTION)
-        confparser.set(VERTICAPY_AUTO_CONNECTION, "name", name)
+        confparser.remove_section(gb_conn._vpy_auto_connection)
+        confparser.add_section(gb_conn._vpy_auto_connection)
+        confparser.set(gb_conn._vpy_auto_connection, "name", name)
         path = get_connection_file()
         f = open(path, "w+")
         confparser.write(f)
@@ -64,15 +66,17 @@ Returns
 bool
     True if the connection was deleted, False otherwise.
     """
+    gb_conn = get_global_connection()
+
     confparser = get_confparser()
 
     if confparser.has_section(name):
 
         confparser.remove_section(name)
-        if confparser.has_section(VERTICAPY_AUTO_CONNECTION):
-            name_auto = confparser.get(VERTICAPY_AUTO_CONNECTION, "name")
+        if confparser.has_section(gb_conn._vpy_auto_connection):
+            name_auto = confparser.get(gb_conn._vpy_auto_connection, "name")
             if name_auto == name:
-                confparser.remove_section(VERTICAPY_AUTO_CONNECTION)
+                confparser.remove_section(gb_conn._vpy_auto_connection)
         path = get_connection_file()
         f = open(path, "w+")
         confparser.write(f)

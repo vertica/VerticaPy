@@ -27,7 +27,7 @@ from verticapy.errors import ParameterError
 from verticapy.sql.drop import drop
 
 
-class vDFENCODE:
+class vDFEncode:
     @save_verticapy_logs
     def one_hot_encode(
         self,
@@ -94,7 +94,7 @@ class vDFENCODE:
     get_dummies = one_hot_encode
 
 
-class vDCENCODE:
+class vDCEncode:
     @save_verticapy_logs
     def cut(
         self,

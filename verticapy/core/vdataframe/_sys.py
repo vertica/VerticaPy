@@ -30,7 +30,7 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.sql.flex import isvmap
 
 
-class vDFSYS:
+class vDFSystem:
     def _add_to_history(self, message: str):
         """
     VERTICAPY stores the user modification and help the user to look at 
@@ -596,7 +596,7 @@ class vDFSYS:
         return self
 
 
-class vDCSYS:
+class vDCSystem:
     def add_copy(self, name: str):
         """
     Adds a copy vDataColumn to the parent vDataFrame.
