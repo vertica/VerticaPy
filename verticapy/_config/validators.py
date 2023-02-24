@@ -24,20 +24,6 @@ def bool_validator(val: bool) -> Literal[True]:
         raise ValueError("The option must be a boolean.")
 
 
-def color_validator(val: Union[str, list, None]) -> Literal[True]:
-    if (
-        (isinstance(val, str) and val in COLORS_OPTIONS)
-        or isinstance(val, list)
-        or val == None
-    ):
-        return True
-    else:
-        raise ValueError(
-            "The option must be a list of colors, None, or in"
-            f" [{'|'.join(COLORS_OPTIONS)}]"
-        )
-
-
 def in_validator(values: list) -> Literal[True]:
     def in_list(val: str):
         if isinstance(val, str) and val in values:

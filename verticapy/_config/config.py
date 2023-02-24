@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Any, Callable, Literal
+import copy
+from typing import Any, Callable, Literal, Optional
 
 GEOPANDAS_IMPORT: bool
 try:
@@ -62,26 +63,6 @@ from verticapy._config.validators import (
 )
 from verticapy.errors import OptionError
 
-COLORS_OPTIONS: dict[str, list] = {
-    "rgb": ["red", "green", "blue", "orange", "yellow", "gray"],
-    "sunset": ["#36688D", "#F3CD05", "#F49F05", "#F18904", "#BDA589"],
-    "retro": ["#A7414A", "#282726", "#6A8A82", "#A37C27", "#563838"],
-    "shimbg": ["#0444BF", "#0584F2", "#0AAFF1", "#EDF259", "#A79674"],
-    "swamp": ["#6465A5", "#6975A6", "#F3E96B", "#F28A30", "#F05837"],
-    "med": ["#ABA6BF", "#595775", "#583E2E", "#F1E0D6", "#BF9887"],
-    "orchid": ["#192E5B", "#1D65A6", "#72A2C0", "#00743F", "#F2A104"],
-    "magenta": ["#DAA2DA", "#DBB4DA", "#DE8CF0", "#BED905", "#93A806"],
-    "orange": ["#A3586D", "#5C4A72", "#F3B05A", "#F4874B", "#F46A4E"],
-    "vintage": ["#80ADD7", "#0ABDA0", "#EBF2EA", "#D4DCA9", "#BF9D7A"],
-    "vivid": ["#C0334D", "#D6618F", "#F3D4A0", "#F1931B", "#8F715B"],
-    "berries": ["#BB1924", "#EE6C81", "#F092A5", "#777CA8", "#AFBADC"],
-    "refreshing": ["#003D73", "#0878A4", "#1ECFD6", "#EDD170", "#C05640"],
-    "summer": ["#728CA3", "#73C0F4", "#E6EFF3", "#F3E4C6", "#8F4F06"],
-    "tropical": ["#7B8937", "#6B7436", "#F4D9C1", "#D72F01", "#F09E8C"],
-    "india": ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625"],
-    "default": ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"],
-}
-
 
 class Option:
     key: str
@@ -89,15 +70,22 @@ class Option:
     defval: Any
     doc: str = ""
     validator: Callable[[Any], Literal[True]]
+    map_: dict[str, list]
 
     def __init__(
-        self, key: str, defval: Any, doc: str, validator: Callable[[Any], Literal[True]]
+        self,
+        key: str,
+        defval: Any,
+        doc: str,
+        validator: Callable[[Any], Literal[True]],
+        map_: Optional[dict[str, list]] = None,
     ) -> None:
         self.key = key
         self.val = defval
         self.defval = defval
         self.doc = doc
         self.validator = validator
+        self.map_ = copy.deepcopy(map_)
         return None
 
 
@@ -159,13 +147,10 @@ def set_option(key: str, value: Any = None) -> None:
             is modified.
         random_state: int
             Integer used to seed the random number generation in VerticaPy.
-        save_query_profile: str / list / bool
-            If set to "all" or True, all function calls are stored in the query 
-            profile table. This makes it possible to differentiate the VerticaPy 
-            logs from the Vertica logs.
-            You can also provide a list of specific methods to store. For example: 
-            if you specify ["corr", "describe"], only the logs associated with 
-            those two methods are stored. 
+        save_query_profile: bool
+            If set to True, all function calls are stored in the query 
+            profile table. This makes it possible to differentiate the 
+            VerticaPy logs from the Vertica logs.
             If set to False, this functionality is deactivated.
         sql_on: bool
             If set to True, displays all the SQL queries.
@@ -183,7 +168,9 @@ def set_option(key: str, value: Any = None) -> None:
     if key in _all_options:
         op = _all_options[key]
         op.validator(value)
-        if value == None:
+        if isinstance(op.map_, dict) and isinstance(value, str):
+            op.val = op.map_[value]
+        elif value == None:
             op.val = op.defval
         else:
             op.val = value
@@ -192,7 +179,6 @@ def set_option(key: str, value: Any = None) -> None:
 
 
 register_option(Option("cache", True, "", bool_validator))
-register_option(Option("colors", None, "", color_validator))
 register_option(Option("interactive", False, "", bool_validator))
 register_option(Option("count_on", False, "", bool_validator))
 register_option(Option("footer_on", True, "", bool_validator))
