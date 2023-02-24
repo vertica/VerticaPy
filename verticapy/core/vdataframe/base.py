@@ -361,10 +361,10 @@ vDataColumns : vDataColumn
 
             tb = object_
 
-        if usecols:
+        if columns:
 
             tb_final = {}
-            for col in usecols:
+            for col in columns:
                 tb_final[col] = tb[col]
             tb = TableSample(tb_final)
 
