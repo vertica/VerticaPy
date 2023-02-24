@@ -229,7 +229,7 @@ The TableSample attributes are the same as the parameters.
             formatted_text += "</div>"
         return formatted_text
 
-    def append(self, tbs: TableSample) -> TableSample:
+    def append(self, tbs: "TableSample") -> "TableSample":
         """
         Appends the input TableSample to a target TableSample.
 

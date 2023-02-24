@@ -230,6 +230,7 @@ vDataColumns : vDataColumn
                 query = f"SELECT {cols} FROM {input_relation}"
 
             else:
+                
                 query = sql
 
             gb_conn = get_global_connection()
