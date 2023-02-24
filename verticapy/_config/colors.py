@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from random import shuffle
-from typing import Union, Optional
+from typing import Literal, Optional, Union
 
 import matplotlib.colors as plt
 
