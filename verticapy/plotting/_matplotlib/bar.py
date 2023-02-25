@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 from verticapy._config.colors import get_colors
-from verticapy._config.config import ISNOTEBOOK
+import verticapy._config.config as conf
 from verticapy.errors import ParameterError
 
 from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
@@ -41,7 +41,7 @@ def bar(
     )
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(10, min(int(len(x) / 1.8) + 1, 600))
         ax.xaxis.grid()
         ax.set_axisbelow(True)
@@ -112,7 +112,7 @@ def bar2D(
     bar_width = 0.5
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             if density:
                 fig.set_size_inches(10, min(m * 3, 600) / 8 + 1)
             else:
@@ -264,7 +264,7 @@ def hist(
     is_numeric = vdf.isnum()
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(min(int(len(x) / 1.8) + 1, 600), 6)
         ax.set_axisbelow(True)
         ax.yaxis.grid()
@@ -319,7 +319,7 @@ def hist2D(
     bar_width = 0.5
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(min(600, 3 * m) / 2 + 1, 6)
         ax.set_axisbelow(True)
         ax.yaxis.grid()
@@ -405,7 +405,7 @@ def multiple_hist(
     else:
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.yaxis.grid()

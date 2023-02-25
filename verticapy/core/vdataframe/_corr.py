@@ -23,7 +23,7 @@ import scipy.stats as scipy_st
 import scipy.special as scipy_special
 
 from verticapy._config.colors import get_cmap
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._format import quote_ident
@@ -36,11 +36,10 @@ from verticapy.core.tablesample.base import TableSample
 import verticapy.plotting._matplotlib as plt
 
 from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample
 
 
-class vDFCORR:
-    def __aggregate_matrix__(
+class vDFCorr:
+    def _aggregate_matrix(
         self,
         method: str = "pearson",
         columns: list = [],
@@ -102,7 +101,7 @@ class vDFCORR:
                     """
                 query = f"""
                     SELECT 
-                        /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
+                        /*+LABEL('vDataframe._aggregate_matrix')*/ 
                         CORR({columns[0]}{cast_0}, {columns[1]}{cast_1}) 
                     FROM {table}"""
                 title = (
@@ -142,7 +141,7 @@ class vDFCORR:
                     return float("nan")
                 query = f"""
                     SELECT 
-                        /*+LABEL('vDataframe.__aggregate_matrix__')*/
+                        /*+LABEL('vDataframe._aggregate_matrix')*/
                         (AVG(DECODE({column_b}{cast_b}, 1, 
                                     {column_n}{cast_n}, NULL)) 
                        - AVG(DECODE({column_b}{cast_b}, 0, 
@@ -188,7 +187,7 @@ class vDFCORR:
                     GROUP BY 1"""
                 n, k, r = _executeSQL(
                     query=f"""
-                        SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
+                        SELECT /*+LABEL('vDataframe._aggregate_matrix')*/
                             COUNT(*) AS n, 
                             APPROXIMATE_COUNT_DISTINCT({columns[0]}) AS k, 
                             APPROXIMATE_COUNT_DISTINCT({columns[1]}) AS r 
@@ -201,7 +200,7 @@ class vDFCORR:
                     symbol=self._vars["symbol"],
                 )
                 chi2 = f"""
-                    SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
+                    SELECT /*+LABEL('vDataframe._aggregate_matrix')*/
                         SUM((nij - ni * nj / {n}) * (nij - ni * nj / {n}) 
                             / ((ni * nj) / {n})) AS chi2 
                     FROM 
@@ -248,7 +247,7 @@ class vDFCORR:
                 n_0 = f"{n_} * ({n_} - 1)/2"
                 tau_b = f"({n_c} - {n_d}) / sqrt(({n_0} - {n_1}) * ({n_0} - {n_2}))"
                 query = f"""
-                    SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
+                    SELECT /*+LABEL('vDataframe._aggregate_matrix')*/
                         {tau_b} 
                     FROM 
                         (SELECT 
@@ -263,7 +262,7 @@ class vDFCORR:
                 title = f"Computing the kendall correlation between {columns[0]} and {columns[1]}."
             elif method == "cov":
                 query = f"""
-                    SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
+                    SELECT /*+LABEL('vDataframe._aggregate_matrix')*/ 
                         COVAR_POP({columns[0]}{cast_0}, {columns[1]}{cast_1}) 
                     FROM {self._genSQL()}"""
                 title = (
@@ -316,7 +315,7 @@ class vDFCORR:
                     )
                 vertica_version(condition=[9, 2, 1])
                 result = _executeSQL(
-                    query=f"""SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
+                    query=f"""SELECT /*+LABEL('vDataframe._aggregate_matrix')*/ 
                                 CORR_MATRIX({', '.join(columns)}) 
                                 OVER () 
                              FROM {table}""",
@@ -358,7 +357,7 @@ class vDFCORR:
                     title = "Covariance Matrix"
                     i0, step = 0, 1
                 n = len(columns)
-                loop = tqdm(range(i0, n)) if _options["tqdm"] else range(i0, n)
+                loop = tqdm(range(i0, n)) if conf.get_option("tqdm") else range(i0, n)
                 try:
                     all_list = []
                     nb_precomputed = 0
@@ -432,7 +431,7 @@ class vDFCORR:
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
+                                    /*+LABEL('vDataframe._aggregate_matrix')*/ 
                                     {', '.join(all_list)}""",
                             print_time_sql=False,
                             method="fetchrow",
@@ -441,7 +440,7 @@ class vDFCORR:
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataframe.__aggregate_matrix__')*/ 
+                                    /*+LABEL('vDataframe._aggregate_matrix')*/ 
                                     {', '.join(all_list)} 
                                 FROM {table}""",
                             title=title_query,
@@ -455,9 +454,7 @@ class vDFCORR:
                     for i in loop:
                         for j in range(0, i + step):
                             result += [
-                                self.__aggregate_matrix__(
-                                    method, [columns[i], columns[j]]
-                                )
+                                self._aggregate_matrix(method, [columns[i], columns[j]])
                             ]
                 matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
                 matrix[0] = [""] + columns
@@ -530,11 +527,11 @@ class vDFCORR:
                 assert len(cols) != 0, EmptyParameter(
                     "No numerical column found in the vDataFrame."
                 )
-            return self.__aggregate_matrix__(
+            return self._aggregate_matrix(
                 method=method, columns=cols, round_nb=round_nb, show=show, **style_kwds,
             )
 
-    def __aggregate_vector__(
+    def _aggregate_vector(
         self,
         focus: str,
         method: str = "pearson",
@@ -652,7 +649,7 @@ class vDFCORR:
                     result = _executeSQL(
                         query=f"""
                             SELECT 
-                                /*+LABEL('vDataframe.__aggregate_vector__')*/ 
+                                /*+LABEL('vDataframe._aggregate_vector')*/ 
                                 {', '.join(all_list)}""",
                         method="fetchrow",
                         print_time_sql=False,
@@ -661,7 +658,7 @@ class vDFCORR:
                     result = _executeSQL(
                         query=f"""
                             SELECT 
-                                /*+LABEL('vDataframe.__aggregate_vector__')*/ 
+                                /*+LABEL('vDataframe._aggregate_vector')*/ 
                                 {', '.join(all_list)} 
                             FROM {table} 
                             LIMIT 1""",
@@ -683,9 +680,7 @@ class vDFCORR:
                     vector += [1]
                 else:
                     vector += [
-                        self.__aggregate_matrix__(
-                            method=method, columns=[column, focus]
-                        )
+                        self._aggregate_matrix(method=method, columns=[column, focus])
                     ]
         vector = [0 if (elem == None) else elem for elem in vector]
         data = [(cols[i], vector[i]) for i in range(len(vector))]
@@ -801,7 +796,7 @@ class vDFCORR:
         if isinstance(columns, str):
             columns = [columns]
         columns, focus = self._format_colnames(columns, focus)
-        fun = self.__aggregate_matrix__
+        fun = self._aggregate_matrix
         argv = []
         kwds = {
             "method": method,
@@ -813,7 +808,7 @@ class vDFCORR:
         }
         if focus:
             argv += [focus]
-            fun = self.__aggregate_vector__
+            fun = self._aggregate_vector
         return fun(*argv, **kwds)
 
     @save_verticapy_logs
@@ -1060,7 +1055,7 @@ class vDFCORR:
             columns = [columns]
 
         columns, focus = self._format_colnames(columns, focus)
-        fun = self.__aggregate_matrix__
+        fun = self._aggregate_matrix
         argv = []
         kwds = {
             "method": "cov",
@@ -1071,7 +1066,7 @@ class vDFCORR:
         }
         if focus:
             argv += [focus]
-            fun = self.__aggregate_vector__
+            fun = self._aggregate_vector
 
         return fun(*argv, **kwds)
 
@@ -1315,13 +1310,13 @@ class vDFCORR:
             ]
             relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) pacf"
             tmp_view_name = gen_tmp_name(
-                schema=_options["temp_schema"], name="linear_reg_view"
+                schema=conf.get_option("temp_schema"), name="linear_reg_view"
             )
             tmp_lr0_name = gen_tmp_name(
-                schema=_options["temp_schema"], name="linear_reg0"
+                schema=conf.get_option("temp_schema"), name="linear_reg0"
             )
             tmp_lr1_name = gen_tmp_name(
-                schema=_options["temp_schema"], name="linear_reg1"
+                schema=conf.get_option("temp_schema"), name="linear_reg1"
             )
             try:
                 drop(tmp_view_name, method="view")
@@ -1359,7 +1354,7 @@ class vDFCORR:
         else:
             if isinstance(p, (float, int)):
                 p = range(0, p + 1)
-            loop = tqdm(p) if _options["tqdm"] else p
+            loop = tqdm(p) if conf.get_option("tqdm") else p
             pacf = []
             for i in loop:
                 pacf += [self.pacf(ts=ts, column=column, by=by, p=[i], unit=unit)]
@@ -1634,7 +1629,7 @@ class vDFCORR:
         )
 
 
-class vDCCORR:
+class vDCCorr:
     @save_verticapy_logs
     def iv_woe(self, y: str, nbins: int = 10):
         """
@@ -1717,7 +1712,7 @@ class vDCCORR:
                 END AS iv 
             FROM ({query}) x ORDER BY ord"""
         title = f"Computing WOE & IV of {self._alias} (response = {y})."
-        result = to_tablesample(
+        result = TableSample.read_sql(
             query,
             title=title,
             sql_push_ext=self._parent._vars["sql_push_ext"],

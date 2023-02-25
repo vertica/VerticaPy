@@ -24,7 +24,7 @@ import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
 
 from verticapy._config.colors import get_colors
-from verticapy._config.config import ISNOTEBOOK
+import verticapy._config.config as conf
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
@@ -75,7 +75,7 @@ def logit_plot(
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.grid()
@@ -169,7 +169,7 @@ def logit_plot(
             )
         )
         if not (ax):
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
         ax.plot_surface(
@@ -273,7 +273,7 @@ def lof_plot(
         column2 = [0] * len(column1)
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(8, 2)
             ax.set_axisbelow(True)
             ax.grid()
@@ -312,7 +312,7 @@ def lof_plot(
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.grid()
@@ -353,7 +353,7 @@ def lof_plot(
             [float(item[3]) for item in query_result],
         )
         if not (ax):
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
         ax.set_xlabel(columns[0])
@@ -411,7 +411,7 @@ def plot_bubble_ml(
     colors = get_colors()
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
         ax.set_axisbelow(True)
@@ -568,7 +568,7 @@ def plot_importance(
     )
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(12, int(len(importances) / 2) + 1)
         ax.set_axisbelow(True)
         ax.grid()
@@ -610,7 +610,7 @@ def plot_pca_circle(
     circle1 = plt.Circle((0, 0), 1, edgecolor=colors[0], facecolor="none")
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(6, 6)
         ax.set_axisbelow(True)
     n = len(x)
@@ -654,7 +654,7 @@ def plot_stepwise_ml(
     colors = get_colors()
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
         ax.set_axisbelow(True)
@@ -750,7 +750,7 @@ def plot_var(
         colors[0] = style_kwds["color"]
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(6, 6)
         ax.set_axisbelow(True)
         ax.grid()
@@ -826,7 +826,7 @@ def regression_plot(
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.grid()
@@ -881,7 +881,7 @@ def regression_plot(
         X_reg, Y_reg = np.meshgrid(X_reg, Y_reg)
         Z_reg = coefficients[0] + coefficients[1] * X_reg + coefficients[2] * Y_reg
         if not (ax):
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
         ax.plot_surface(
@@ -924,7 +924,7 @@ def regression_tree_plot(
     )
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.set_axisbelow(True)
         ax.grid()
@@ -991,7 +991,7 @@ def svm_classifier_plot(
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.grid()
@@ -1041,7 +1041,7 @@ def svm_classifier_plot(
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(8, 6)
             ax.set_axisbelow(True)
             ax.grid()
@@ -1121,7 +1121,7 @@ def svm_classifier_plot(
         X_svm, Y_svm = np.meshgrid(X_svm, Y_svm)
         Z_svm = coefficients[0] + coefficients[1] * X_svm + coefficients[2] * Y_svm
         if not (ax):
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
         ax.plot_surface(

@@ -18,7 +18,7 @@ import random, itertools
 from typing import Literal, Union
 from tqdm.auto import tqdm
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
@@ -133,7 +133,7 @@ TableSample
     """
     if isinstance(X, str):
         X = [X]
-    if estimator.MODEL_SUBCATEGORY == "REGRESSOR" and metric == "auto":
+    if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -153,7 +153,7 @@ TableSample
             if config not in all_configuration:
                 all_configuration += [config]
     if (
-        _options["tqdm"]
+        conf.get_option("tqdm")
         and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
         and print_info
     ):
@@ -350,7 +350,7 @@ TableSample
     if isinstance(X, str):
         X = [X]
     assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
-    if not (_options["overwrite_model"]):
+    if not (conf.get_option("overwrite_model")):
         does_model_exist(name=estimator.model_name, raise_error=True)
     result, current_step = [], 0
     table = (
@@ -379,7 +379,7 @@ TableSample
             X.reverse()
     if print_info:
         print("\033[1m\033[4mStarting Stepwise\033[0m\033[0m")
-    if _options["tqdm"] and print_info:
+    if conf.get_option("tqdm") and print_info:
         loop = tqdm(range(len(X)))
     else:
         loop = range(len(X))

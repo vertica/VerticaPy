@@ -22,7 +22,7 @@ from matplotlib.lines import Line2D
 
 
 from verticapy._config.colors import get_cmap, get_colors
-from verticapy._config.config import ISNOTEBOOK
+import verticapy._config.config as conf
 from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
@@ -88,7 +88,7 @@ def bubble(
         )
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(10, 6)
             ax.grid()
             ax.set_axisbelow(True)
@@ -140,7 +140,7 @@ def bubble(
         count = vdf.shape()[0]
         if not (ax):
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(12, 7)
             ax.grid()
             ax.set_axisbelow(True)
@@ -339,7 +339,7 @@ def outliers_contour_plot(
     xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
     if len(columns) == 1:
         if isinstance(cmap, str):
@@ -452,7 +452,7 @@ def scatter_matrix(
     elif len(columns) == 1:
         return vdf[columns[0]].hist()
     n = len(columns)
-    if ISNOTEBOOK:
+    if conf._get_import_success("jupyter"):
         figsize = min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
     else:
@@ -545,12 +545,12 @@ def scatter(
     if not (ax):
         if n == 2:
             fig, ax = plt.subplots()
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 fig.set_size_inches(8, 6)
             ax.grid()
             ax.set_axisbelow(True)
         else:
-            if ISNOTEBOOK:
+            if conf._get_import_success("jupyter"):
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
     all_scatter, others = [], []

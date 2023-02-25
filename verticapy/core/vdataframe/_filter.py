@@ -18,14 +18,14 @@ import datetime, random, warnings
 from typing import Literal, Union
 from collections.abc import Iterable
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
 
-class vDFFILTER:
+class vDFFilter:
     @save_verticapy_logs
     def at_time(self, ts: str, time: Union[str, datetime.timedelta]):
         """
@@ -216,7 +216,7 @@ class vDFFILTER:
             )
             self.filter(f'"{name}" = 1')
             self._vars["exclude_columns"] += [f'"{name}"']
-        elif _options["print_info"]:
+        elif conf.get_option("print_info"):
             print("No duplicates detected.")
         return self
 
@@ -245,12 +245,12 @@ class vDFFILTER:
             self.get_columns() if not (columns) else self._format_colnames(columns)
         )
         total = self.shape()[0]
-        print_info = _options["print_info"]
+        print_info = conf.get_option("print_info")
         for column in columns:
-            _options["print_info"] = False
+            conf.set_option("print_info", False)
             self[column].dropna()
-            _options["print_info"] = print_info
-        if _options["print_info"]:
+            conf.set_option("print_info", print_info)
+        if conf.get_option("print_info"):
             total -= self.shape()[0]
             if total == 0:
                 print("Nothing was filtered.")
@@ -297,13 +297,13 @@ class vDFFILTER:
                 self.filter(str(condition), print_info=False)
             count -= self.shape()[0]
             if count > 0:
-                if _options["print_info"]:
+                if conf.get_option("print_info"):
                     print(f"{count} element{conj}filtered")
                 self._add_to_history(
                     f"[Filter]: {count} element{conj}filtered "
                     f"using the filter '{conditions}'"
                 )
-            elif _options["print_info"]:
+            elif conf.get_option("print_info"):
                 print("Nothing was filtered.")
         else:
             max_pos = 0
@@ -327,7 +327,7 @@ class vDFFILTER:
                 count -= new_count
             except:
                 del self._vars["where"][-1]
-                if _options["print_info"]:
+                if conf.get_option("print_info"):
                     warning_message = (
                         f"The expression '{conditions}' is incorrect.\n"
                         "Nothing was filtered."
@@ -338,7 +338,7 @@ class vDFFILTER:
                 self._update_catalog(erase=True)
                 self._vars["count"] = new_count
                 conj = "s were " if count > 1 else " was "
-                if _options["print_info"] and "print_info" not in kwds:
+                if conf.get_option("print_info") and "print_info" not in kwds:
                     print(f"{count} element{conj}filtered.")
                 conditions_clean = clean_query(conditions)
                 self._add_to_history(
@@ -347,7 +347,7 @@ class vDFFILTER:
                 )
             else:
                 del self._vars["where"][-1]
-                if _options["print_info"] and "print_info" not in kwds:
+                if conf.get_option("print_info") and "print_info" not in kwds:
                     print("Nothing was filtered.")
         return self
 
@@ -528,17 +528,17 @@ class vDFFILTER:
         vdf = self.copy()
         assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
         if method == "random":
-            random_state = _options["random_state"]
+            random_state = conf.get_option("random_state")
             random_seed = random.randint(-10e6, 10e6)
             if isinstance(random_state, int):
                 random_seed = random_state
             random_func = f"SEEDED_RANDOM({random_seed})"
             vdf.eval(name, random_func)
             q = vdf[name].quantile(x)
-            print_info_init = _options["print_info"]
-            _options["print_info"] = False
+            print_info_init = conf.get_option("print_info")
+            conf.set_option("print_info", False)
             vdf.filter(f"{name} <= {q}")
-            _options["print_info"] = print_info_init
+            conf.set_option("print_info", print_info_init)
             vdf._vars["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
             assert method != "stratified" or (by), ParameterError(
@@ -553,10 +553,10 @@ class vDFFILTER:
                 f"""MIN({name}) OVER (PARTITION BY CAST({name} * {x} AS Integer) 
                     ORDER BY {name} ROWS BETWEEN UNBOUNDED PRECEDING AND 0 FOLLOWING)""",
             )
-            print_info_init = _options["print_info"]
-            _options["print_info"] = False
+            print_info_init = conf.get_option("print_info")
+            conf.set_option("print_info", False)
             vdf.filter(f"{name} = {name2}")
-            _options["print_info"] = print_info_init
+            conf.set_option("print_info", print_info_init)
             vdf._vars["exclude_columns"] += [name, name2]
         return vdf
 
@@ -614,7 +614,7 @@ class vDFFILTER:
         return result.sort(order_by)
 
 
-class vDCFILTER:
+class vDCFilter:
     @save_verticapy_logs
     def drop(self, add_history: bool = True):
         """

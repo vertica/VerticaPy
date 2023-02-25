@@ -16,13 +16,13 @@ permissions and limitations under the License.
 """
 from verticapy._utils._sql._format import format_magic
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
-E = str_sql("EXP(1)")
-INF = str_sql("'inf'::float")
-NAN = str_sql("'nan'::float")
-PI = str_sql("PI()")
-TAU = str_sql("2 * PI()")
+E = StringSQL("EXP(1)")
+INF = StringSQL("'inf'::float")
+NAN = StringSQL("'nan'::float")
+PI = StringSQL("PI()")
+TAU = StringSQL("2 * PI()")
 
 
 def apply(func: str, *args, **kwargs):
@@ -44,7 +44,7 @@ kwargs: object, optional
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     ST_f = [
@@ -141,7 +141,7 @@ str_sql
     if param_expr:
         param_expr = " USING PARAMETERS " + param_expr
     func = func.upper()
-    return str_sql(f"{func}({expr}{param_expr})")
+    return StringSQL(f"{func}({expr}{param_expr})")
 
 
 # Other Math Functions
@@ -158,11 +158,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"ABS({expr})", "float")
+    return StringSQL(f"ABS({expr})", "float")
 
 
 def acos(expr):
@@ -176,11 +176,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"ACOS({expr})", "float")
+    return StringSQL(f"ACOS({expr})", "float")
 
 
 def asin(expr):
@@ -194,11 +194,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"ASIN({expr})", "float")
+    return StringSQL(f"ASIN({expr})", "float")
 
 
 def atan(expr):
@@ -212,11 +212,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"ATAN({expr})", "float")
+    return StringSQL(f"ATAN({expr})", "float")
 
 
 def atan2(quotient, divisor):
@@ -232,11 +232,11 @@ divisor: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     quotient, divisor = format_magic(quotient), format_magic(divisor)
-    return str_sql(f"ATAN2({quotient}, {divisor})", "float")
+    return StringSQL(f"ATAN2({quotient}, {divisor})", "float")
 
 
 def cbrt(expr):
@@ -250,11 +250,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"CBRT({expr})", "float")
+    return StringSQL(f"CBRT({expr})", "float")
 
 
 def ceil(expr):
@@ -268,11 +268,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"CEIL({expr})", "float")
+    return StringSQL(f"CEIL({expr})", "float")
 
 
 def comb(n: int, k: int):
@@ -288,10 +288,10 @@ k : int
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
-    return str_sql(f"({n})! / (({k})! * ({n} - {k})!)", "float")
+    return StringSQL(f"({n})! / (({k})! * ({n} - {k})!)", "float")
 
 
 def cos(expr):
@@ -305,11 +305,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"COS({expr})", "float")
+    return StringSQL(f"COS({expr})", "float")
 
 
 def cosh(expr):
@@ -323,11 +323,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"COSH({expr})", "float")
+    return StringSQL(f"COSH({expr})", "float")
 
 
 def cot(expr):
@@ -341,11 +341,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"COT({expr})", "float")
+    return StringSQL(f"COT({expr})", "float")
 
 
 def degrees(expr):
@@ -359,11 +359,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"DEGREES({expr})", "float")
+    return StringSQL(f"DEGREES({expr})", "float")
 
 
 def distance(
@@ -388,10 +388,10 @@ radius: float
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
-    return str_sql(f"DISTANCE({lat0}, {lon0}, {lat1}, {lon1}, {radius})", "float")
+    return StringSQL(f"DISTANCE({lat0}, {lon0}, {lat1}, {lon1}, {radius})", "float")
 
 
 def exp(expr):
@@ -405,11 +405,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"EXP({expr})", "float")
+    return StringSQL(f"EXP({expr})", "float")
 
 
 def factorial(expr):
@@ -423,11 +423,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"({expr})!", "int")
+    return StringSQL(f"({expr})!", "int")
 
 
 def floor(expr):
@@ -441,11 +441,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"FLOOR({expr})", "int")
+    return StringSQL(f"FLOOR({expr})", "int")
 
 
 def gamma(expr):
@@ -459,11 +459,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"({expr} - 1)!", "float")
+    return StringSQL(f"({expr} - 1)!", "float")
 
 
 def hash(*argv):
@@ -477,14 +477,14 @@ argv: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = []
     for arg in argv:
         expr += [format_magic(arg)]
     expr = ", ".join([str(elem) for elem in expr])
-    return str_sql(f"HASH({expr})", "float")
+    return StringSQL(f"HASH({expr})", "float")
 
 
 def isfinite(expr):
@@ -498,11 +498,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr, cat = format_magic(expr, True)
-    return str_sql(f"(({expr}) = ({expr})) AND (ABS({expr}) < 'inf'::float)", cat)
+    return StringSQL(f"(({expr}) = ({expr})) AND (ABS({expr}) < 'inf'::float)", cat)
 
 
 def isinf(expr):
@@ -516,11 +516,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"ABS({expr}) = 'inf'::float", "float")
+    return StringSQL(f"ABS({expr}) = 'inf'::float", "float")
 
 
 def isnan(expr):
@@ -534,11 +534,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr, cat = format_magic(expr, True)
-    return str_sql(f"(({expr}) != ({expr}))", cat)
+    return StringSQL(f"(({expr}) != ({expr}))", cat)
 
 
 def lgamma(expr):
@@ -552,11 +552,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"LN(({expr} - 1)!)", "float")
+    return StringSQL(f"LN(({expr} - 1)!)", "float")
 
 
 def ln(expr):
@@ -570,11 +570,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"LN({expr})", "float")
+    return StringSQL(f"LN({expr})", "float")
 
 
 def log(expr, base: int = 10):
@@ -590,11 +590,11 @@ base: int
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"LOG({base}, {expr})", "float")
+    return StringSQL(f"LOG({base}, {expr})", "float")
 
 
 def radians(expr):
@@ -608,11 +608,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"RADIANS({expr})", "float")
+    return StringSQL(f"RADIANS({expr})", "float")
 
 
 def round(expr, places: int = 0):
@@ -628,11 +628,11 @@ places: int
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"ROUND({expr}, {places})", "float")
+    return StringSQL(f"ROUND({expr}, {places})", "float")
 
 
 def sign(expr):
@@ -646,11 +646,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"SIGN({expr})", "int")
+    return StringSQL(f"SIGN({expr})", "int")
 
 
 def sin(expr):
@@ -664,11 +664,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"SIN({expr})", "float")
+    return StringSQL(f"SIN({expr})", "float")
 
 
 def sinh(expr):
@@ -682,11 +682,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"SINH({expr})", "float")
+    return StringSQL(f"SINH({expr})", "float")
 
 
 def sqrt(expr):
@@ -700,11 +700,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"SQRT({expr})", "float")
+    return StringSQL(f"SQRT({expr})", "float")
 
 
 def tan(expr):
@@ -718,11 +718,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"TAN({expr})", "float")
+    return StringSQL(f"TAN({expr})", "float")
 
 
 def tanh(expr):
@@ -736,11 +736,11 @@ expr: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"TANH({expr})", "float")
+    return StringSQL(f"TANH({expr})", "float")
 
 
 def trunc(expr, places: int = 0):
@@ -756,8 +756,8 @@ places: int
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql(f"TRUNC({expr}, {places})", "float")
+    return StringSQL(f"TRUNC({expr}, {places})", "float")

@@ -20,7 +20,7 @@ from itertools import combinations_with_replacement
 import numpy as np
 import scipy.stats as scipy_st
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -29,7 +29,7 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 
 
-class vDFML:
+class vDFMachineLearning:
     @save_verticapy_logs
     def add_duplicates(self, weight: Union[int, str], use_gcd: bool = True):
         """
@@ -861,7 +861,7 @@ class vDFML:
             order_by = [order_by]
         order_by = self._get_sort_syntax(order_by)
         if not random_state:
-            random_state = _options["random_state"]
+            random_state = conf.get_option("random_state")
         random_seed = (
             random_state
             if isinstance(random_state, int)

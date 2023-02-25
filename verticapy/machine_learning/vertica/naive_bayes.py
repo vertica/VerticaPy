@@ -55,11 +55,25 @@ nbtype: str, optional
      - gaussian    : Casts the variables to float.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "NAIVE_BAYES"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_NAIVE_BAYES"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "CLASSIFIER"
-    MODEL_TYPE = "NaiveBayes"
+    @property
+    def _vertica_fit_sql(self) -> Literal["NAIVE_BAYES"]:
+        return "NAIVE_BAYES"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_NAIVE_BAYES"]:
+        return "PREDICT_NAIVE_BAYES"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
+
+    @property
+    def _model_type(self) -> Literal["NaiveBayes"]:
+        return "NaiveBayes"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -135,7 +149,7 @@ class BernoulliNB(NaiveBayes):
 
     def __init__(self, name: str, alpha: float = 1.0):
 
-        super().__init__(name, alpha, "bernoulli")
+        super().__init__(name, alpha, nbtype="bernoulli")
 
 
 class CategoricalNB(NaiveBayes):
@@ -143,7 +157,7 @@ class CategoricalNB(NaiveBayes):
 
     def __init__(self, name: str, alpha: float = 1.0):
 
-        super().__init__(name, alpha, "categorical")
+        super().__init__(name, alpha, nbtype="categorical")
 
 
 class GaussianNB(NaiveBayes):
@@ -159,4 +173,4 @@ class MultinomialNB(NaiveBayes):
 
     def __init__(self, name: str, alpha: float = 1.0):
 
-        super().__init__(name, alpha, "multinomial")
+        super().__init__(name, alpha, nbtype="multinomial")

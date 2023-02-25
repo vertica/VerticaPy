@@ -21,20 +21,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap, get_colors
-from verticapy._config.config import ISNOTEBOOK
+import verticapy._config.config as conf
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
-from verticapy.datasets import gen_meshgrid
+from verticapy.datasets.generators import gen_meshgrid
 
 from verticapy.plotting._matplotlib.base import updated_dict
-
-from verticapy.sql.read import to_tablesample
 
 
 def cmatrix(
@@ -83,7 +81,7 @@ def cmatrix(
             columns_x.reverse()
     if not (ax):
         fig, ax = plt.subplots()
-        if (ISNOTEBOOK and not (inverse)) or is_pivot:
+        if (conf._get_import_success("jupyter") and not (inverse)) or is_pivot:
             fig.set_size_inches(min(m, 500), min(n, 500))
         else:
             fig.set_size_inches(8, 6)
@@ -156,17 +154,17 @@ def contour_plot(
             }
         )
         y = "verticapy_predict"
-        if isinstance(func, (str, str_sql)):
+        if isinstance(func, (str, StringSQL)):
             vdf_tmp["verticapy_predict"] = func
         else:
-            if func.MODEL_TYPE in (
+            if func._model_type in (
                 "XGBoostClassifier",
                 "RandomForestClassifier",
                 "NaiveBayes",
                 "NearestCentroid",
                 "KNeighborsClassifier",
             ):
-                if func.MODEL_TYPE in ("NearestCentroid", "KNeighborsClassifier"):
+                if func._model_type in ("NearestCentroid", "KNeighborsClassifier"):
                     vdf_tmp = func.predict_proba(
                         vdf=vdf_tmp,
                         X=columns,
@@ -183,7 +181,7 @@ def contour_plot(
                         pos_label=pos_label,
                     )
             else:
-                if func.MODEL_TYPE == "KNeighborsRegressor":
+                if func._model_type == "KNeighborsRegressor":
                     vdf_tmp = func.predict(
                         vdf=vdf_tmp,
                         X=columns,
@@ -317,7 +315,7 @@ def hexbin(
                 column3 += [float(item[2]) / 2] * 2
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(9, 7)
         ax.set_facecolor("white")
     else:
@@ -468,7 +466,7 @@ def pivot_table(
     over = "/" + str(vdf.shape()[0]) if (method == "density") else ""
     if len(columns) == 1:
         cast = to_varchar(vdf[columns[0]].category(), all_columns[-1])
-        return to_tablesample(
+        return TableSample.read_sql(
             query=f"""
                 SELECT 
                     {cast} AS {columns[0]},

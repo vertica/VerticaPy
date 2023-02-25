@@ -23,13 +23,13 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import MissingColumn, ParameterError, QueryError
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.functions.conditional import decode
 
 
-class vDFMATH:
+class vDFMath:
     def __abs__(self):
         return self.copy().abs()
 
@@ -224,7 +224,7 @@ class vDFMATH:
             "iqr",
             "sem",
         ) or ("%" in func):
-            if order_by and not (_options["print_info"]):
+            if order_by and not (conf.get_option("print_info")):
                 print(
                     f"\u26A0 '{func}' analytic method doesn't need an "
                     "order by clause, it was ignored"
@@ -552,7 +552,7 @@ class vDFMATH:
         return self.eval(name=name, expr=case_when(*argv))
 
 
-class vDCMATH:
+class vDCMath:
     def __len__(self):
         return int(self.count())
 
@@ -601,7 +601,7 @@ class vDCMATH:
             return self.apply(func=f"{{}} + ({x})")
 
     @save_verticapy_logs
-    def apply(self, func: Union[str, str_sql], copy_name: str = ""):
+    def apply(self, func: Union[str, StringSQL], copy_name: str = ""):
         """
     Applies a function to the vDataColumn.
 
@@ -625,7 +625,7 @@ class vDCMATH:
     vDataFrame.applymap : Applies a function to all the vDataColumns.
     vDataFrame.eval     : Evaluates a customized expression.
         """
-        if isinstance(func, str_sql):
+        if isinstance(func, StringSQL):
             func = str(func)
         func_apply = func.replace("{}", self._alias)
         alias_sql_repr = self._alias.replace('"', "")
@@ -854,7 +854,7 @@ class vDCMATH:
     vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
     vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
-        return self.apply(func=decode(str_sql("{}"), *argv))
+        return self.apply(func=decode(StringSQL("{}"), *argv))
 
     @save_verticapy_logs
     def div(self, x: Union[int, float]):

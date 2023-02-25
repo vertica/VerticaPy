@@ -14,18 +14,25 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, decimal, datetime, math
+import copy, decimal, datetime, math, time
+from typing import Literal, Union
 import numpy as np
 
 import pandas as pd
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._display import print_table
+from verticapy._utils._sql._display import print_query, print_time
 from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import ParameterError, MissingColumn
 
+from verticapy.core.string_sql.base import StringSQL
+
 from verticapy.jupyter._javascript import datatables_repr
+
+from verticapy.sql.dtypes import vertica_python_dtype
 
 
 class TableSample:
@@ -59,9 +66,9 @@ Attributes
 The TableSample attributes are the same as the parameters.
 	"""
 
-    #
-    # Special Methods
-    #
+    @property
+    def _object_type(self) -> Literal["TableSample"]:
+        return "TableSample"
 
     def __init__(
         self,
@@ -71,7 +78,7 @@ The TableSample attributes are the same as the parameters.
         offset: int = 0,
         percent: dict = {},
         max_columns: int = -1,
-    ):
+    ) -> None:
         self.values = values
         self.dtype = dtype
         self.count = count
@@ -81,99 +88,24 @@ The TableSample attributes are the same as the parameters.
         for column in values:
             if column not in dtype:
                 self.dtype[column] = "undefined"
+        return None
 
-    def __iter__(self):
+    def __iter__(self) -> tuple:
         return (elem for elem in self.values)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> list:
         for x in self.values:
             if quote_ident(key).lower() == quote_ident(x).lower():
                 return self.values[x]
         raise KeyError(f"'{key}'")
 
-    def _repr_html_(self, interactive=False):
+    def __repr__(self) -> str:
         if len(self.values) == 0:
             return ""
         n = len(self.values)
         dtype = self.dtype
         max_columns = (
-            self.max_columns if self.max_columns > 0 else _options["max_columns"]
-        )
-        if n < max_columns:
-            data_columns = [[column] + self.values[column] for column in self.values]
-        else:
-            k = int(max_columns / 2)
-            columns = [elem for elem in self.values]
-            values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
-            values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
-            values2 = [
-                [columns[i]] + self.values[columns[i]]
-                for i in range(n - max_columns + k, n)
-            ]
-            data_columns = values0 + values1 + values2
-            dtype["..."] = "undefined"
-        percent = self.percent
-        for elem in self.values:
-            if elem not in percent and (elem != "index"):
-                percent = {}
-                break
-        formatted_text = ""
-        # get interactive table if condition true
-        if _options["interactive"] or interactive:
-            formatted_text = datatables_repr(
-                data_columns,
-                repeat_first_column=("index" in self.values),
-                offset=self.offset,
-                dtype=dtype,
-            )
-        else:
-            formatted_text = print_table(
-                data_columns,
-                is_finished=(self.count <= len(data_columns[0]) + self.offset),
-                offset=self.offset,
-                repeat_first_column=("index" in self.values),
-                return_html=True,
-                dtype=dtype,
-                percent=percent,
-            )
-        if _options["footer_on"]:
-            formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
-            if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
-                rows = self.count
-            else:
-                start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
-                if start > end:
-                    rows = f"0 of {self.count}" if (self.count > 0) else "0"
-                else:
-                    of = f" of {self.count}" if (self.count > 0) else ""
-                    rows = f"{start}-{end}{of}"
-            if len(self.values) == 1:
-                column = list(self.values.keys())[0]
-                if self.offset > self.count:
-                    formatted_text += (
-                        f"<b>Column:</b> {column} | "
-                        f"<b>Type:</b> {self.dtype[column]}"
-                    )
-                else:
-                    formatted_text += (
-                        f"<b>Rows:</b> {rows} | <b>Column:</b> {column} "
-                        f"| <b>Type:</b> {self.dtype[column]}"
-                    )
-            else:
-                if self.offset > self.count:
-                    formatted_text += f"<b>Columns:</b> {n}"
-                else:
-                    formatted_text += f"<b>Rows:</b> {rows} | <b>Columns:</b> {n}"
-            formatted_text += "</div>"
-        return formatted_text
-
-    def __repr__(self):
-        if len(self.values) == 0:
-            return ""
-        n = len(self.values)
-        dtype = self.dtype
-        max_columns = (
-            self.max_columns if self.max_columns > 0 else _options["max_columns"]
+            self.max_columns if self.max_columns > 0 else conf.get_option("max_columns")
         )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
@@ -221,11 +153,83 @@ The TableSample attributes are the same as the parameters.
                 formatted_text += f"Rows: {rows} | Columns: {n}"
         return formatted_text
 
-    #
-    # Methods
-    #
+    def _repr_html_(self, interactive: bool = False) -> str:
+        if len(self.values) == 0:
+            return ""
+        n = len(self.values)
+        dtype = self.dtype
+        max_columns = (
+            self.max_columns if self.max_columns > 0 else conf.get_option("max_columns")
+        )
+        if n < max_columns:
+            data_columns = [[column] + self.values[column] for column in self.values]
+        else:
+            k = int(max_columns / 2)
+            columns = [elem for elem in self.values]
+            values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
+            values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
+            values2 = [
+                [columns[i]] + self.values[columns[i]]
+                for i in range(n - max_columns + k, n)
+            ]
+            data_columns = values0 + values1 + values2
+            dtype["..."] = "undefined"
+        percent = self.percent
+        for elem in self.values:
+            if elem not in percent and (elem != "index"):
+                percent = {}
+                break
+        formatted_text = ""
+        # get interactive table if condition true
+        if conf.get_option("interactive") or interactive:
+            formatted_text = datatables_repr(
+                data_columns,
+                repeat_first_column=("index" in self.values),
+                offset=self.offset,
+                dtype=dtype,
+            )
+        else:
+            formatted_text = print_table(
+                data_columns,
+                is_finished=(self.count <= len(data_columns[0]) + self.offset),
+                offset=self.offset,
+                repeat_first_column=("index" in self.values),
+                return_html=True,
+                dtype=dtype,
+                percent=percent,
+            )
+        if conf.get_option("footer_on"):
+            formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
+            if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
+                rows = self.count
+            else:
+                start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
+                if start > end:
+                    rows = f"0 of {self.count}" if (self.count > 0) else "0"
+                else:
+                    of = f" of {self.count}" if (self.count > 0) else ""
+                    rows = f"{start}-{end}{of}"
+            if len(self.values) == 1:
+                column = list(self.values.keys())[0]
+                if self.offset > self.count:
+                    formatted_text += (
+                        f"<b>Column:</b> {column} | "
+                        f"<b>Type:</b> {self.dtype[column]}"
+                    )
+                else:
+                    formatted_text += (
+                        f"<b>Rows:</b> {rows} | <b>Column:</b> {column} "
+                        f"| <b>Type:</b> {self.dtype[column]}"
+                    )
+            else:
+                if self.offset > self.count:
+                    formatted_text += f"<b>Columns:</b> {n}"
+                else:
+                    formatted_text += f"<b>Rows:</b> {rows} | <b>Columns:</b> {n}"
+            formatted_text += "</div>"
+        return formatted_text
 
-    def append(self, tbs):
+    def append(self, tbs: "TableSample") -> "TableSample":
         """
         Appends the input TableSample to a target TableSample.
 
@@ -333,6 +337,76 @@ The TableSample attributes are the same as the parameters.
             return result, categories_alpha, categories_beta
         else:
             return result
+
+    @classmethod
+    def read_sql(
+        cls,
+        query: Union[str, StringSQL],
+        title: str = "",
+        max_columns: int = -1,
+        sql_push_ext: bool = False,
+        symbol: str = "$",
+    ):
+        """
+    Returns the result of a SQL query as a TableSample object.
+
+    Parameters
+    ----------
+    query: str, optional
+        SQL Query.
+    title: str, optional
+        Query title when the query is displayed.
+    max_columns: int, optional
+        Maximum number of columns to display.
+    sql_push_ext: bool, optional
+        If set to True, the entire query is pushed to the external table. 
+        This can increase performance but might increase the error rate. 
+        For instance, some DBs might not support the same SQL as Vertica.
+    symbol: str, optional
+        One of the following:
+        "$", "€", "£", "%", "@", "&", "§", "%", "?", "!"
+        Symbol used to identify the external connection.
+        See the connect.set_external_connection function for more information.
+
+    Returns
+    -------
+    TableSample
+        Result of the query.
+
+    See Also
+    --------
+    TableSample : Object in memory created for rendering purposes.
+        """
+        if conf.get_option("sql_on"):
+            print_query(query, title)
+        start_time = time.time()
+        cursor = _executeSQL(
+            query, print_time_sql=False, sql_push_ext=sql_push_ext, symbol=symbol
+        )
+        description, dtype = cursor.description, {}
+        for elem in description:
+            dtype[elem[0]] = vertica_python_dtype(
+                type_name=elem.type_name,
+                display_size=elem[2],
+                precision=elem[4],
+                scale=elem[5],
+            )
+        elapsed_time = time.time() - start_time
+        if conf.get_option("time_on"):
+            print_time(elapsed_time)
+        result = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        data_columns = [[item] for item in columns]
+        data = [item for item in result]
+        for row in data:
+            for idx, val in enumerate(row):
+                data_columns[idx] += [val]
+        values = {}
+        for column in data_columns:
+            values[column[0]] = column[1 : len(column)]
+        return cls(
+            values=values, dtype=dtype, max_columns=max_columns,
+        ).decimal_to_float()
 
     def shape(self):
         """

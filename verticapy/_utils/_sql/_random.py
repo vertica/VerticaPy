@@ -16,14 +16,14 @@ permissions and limitations under the License.
 """
 from typing import Optional
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 
 
 def _current_random(rand_int: Optional[int] = None) -> str:
     """
     TODO 
     """
-    random_state = _options["random_state"]
+    random_state = conf.get_option("random_state")
     if isinstance(rand_int, int):
         if isinstance(random_state, int):
             random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"

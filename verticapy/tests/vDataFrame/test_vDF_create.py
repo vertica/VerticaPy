@@ -64,7 +64,7 @@ class TestvDFCreate:
     def test_creating_vDF_using_list(self):
         tvdf = vDataFrame(
             input_relation=[[1, "Badr", "Ouali"], [2, "Arash", "Fard"]],
-            columns=["id", "fname", "lname"],
+            usecols=["id", "fname", "lname"],
         )
 
         assert tvdf.shape() == (2, 3)

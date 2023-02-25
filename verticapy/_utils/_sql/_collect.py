@@ -16,8 +16,8 @@ permissions and limitations under the License.
 """
 from functools import wraps
 
-from verticapy._config.config import _options
-from verticapy._config.connection import SESSION_IDENTIFIER
+import verticapy._config.config as conf
+from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.connect import current_cursor
 
 
@@ -55,10 +55,9 @@ Returns
 bool
     True if the operation succeeded, False otherwise.
     """
-    if not (_options["save_query_profile"]) or (
-        isinstance(_options["save_query_profile"], list)
-        and name not in _options["save_query_profile"]
-    ):
+    value = conf.get_option("save_query_profile")
+
+    if not (value):
         return False
     try:
 
@@ -68,9 +67,7 @@ bool
             json_dict: dict = {},
             add_identifier: bool = False,
         ):
-            from verticapy.core.vdataframe.base import vDataFrame
-
-            from verticapy.machine_learning.vertica.base import vModel
+            gb_conn = get_global_connection()
 
             json = "{"
             if name:
@@ -78,8 +75,11 @@ bool
             if path:
                 json += f'"verticapy_fpath": "{path}", '
             if add_identifier:
-                json += f'"verticapy_id": "{SESSION_IDENTIFIER}", '
+                json += f'"verticapy_id": "{gb_conn._vpy_session_identifier}", '
             for key in json_dict:
+                object_type = None
+                if hasattr(json_dict[key], "_object_type"):
+                    object_type = json_dict[key]._object_type
                 json += f'"{key}": '
                 if isinstance(json_dict[key], bool):
                     json += "true" if json_dict[key] else "false"
@@ -87,11 +87,11 @@ bool
                     json += str(json_dict[key])
                 elif json_dict[key] is None:
                     json += "null"
-                elif isinstance(json_dict[key], vDataFrame):
+                elif object_type == "vDataFrame":
                     json_dict_str = json_dict[key]._genSQL().replace('"', '\\"')
                     json += f'"{json_dict_str}"'
-                elif isinstance(json_dict[key], vModel):
-                    json += f'"{json_dict[key].MODEL_TYPE}"'
+                elif object_type == "vModel":
+                    json += f'"{json_dict[key]._model_type}"'
                 elif isinstance(json_dict[key], dict):
                     json += dict_to_json_string(json_dict=json_dict[key])
                 elif isinstance(json_dict[key], list):
@@ -138,7 +138,9 @@ identifies which function to save to the QUERY PROFILES table.
                         and path == "pipeline"
                         and isinstance(arg, list)
                     ):
-                        json_dict[var_names[idx]] = [item[1].MODEL_TYPE for item in arg]
+                        json_dict[var_names[idx]] = [
+                            item[1]._model_type for item in arg
+                        ]
                     else:
                         json_dict[var_names[idx]] = arg
                 else:

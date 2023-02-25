@@ -20,7 +20,7 @@ from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-from verticapy._config.config import ISNOTEBOOK, _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
@@ -99,9 +99,9 @@ int
         L.sort()
     schema, relation = schema_relation(input_relation)
     if not (schema):
-        schema = _options["temp_schema"]
+        schema = conf.get_option("temp_schema")
     schema = quote_ident(schema)
-    if _options["tqdm"] and (
+    if conf.get_option("tqdm") and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         loop = tqdm(L)
@@ -206,7 +206,7 @@ TableSample
     else:
         L = n_cluster
         L.sort()
-    if _options["tqdm"]:
+    if conf.get_option("tqdm"):
         loop = tqdm(L)
     else:
         loop = L
@@ -222,7 +222,7 @@ TableSample
         model.drop()
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
     param = {

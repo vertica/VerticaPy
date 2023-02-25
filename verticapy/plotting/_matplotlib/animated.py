@@ -22,15 +22,15 @@ from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap, get_colors
-from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
+import verticapy._config.config as conf
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.plotting._matplotlib.base import updated_dict
 
-if ISNOTEBOOK:
+if conf._get_import_success("jupyter"):
     from IPython.display import HTML
 
-if PARSER_IMPORT:
+if conf._get_import_success("dateutil"):
     from dateutil.parser import parse
 
 
@@ -142,7 +142,7 @@ def animated_bar(
             current_ts, ts_idx = elem, idx
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             if pie:
                 fig.set_size_inches(11, min(limit_over, 600))
             else:
@@ -286,7 +286,7 @@ def animated_bar(
         blit=False,
         repeat=repeat,
     )
-    if ISNOTEBOOK and return_html:
+    if conf._get_import_success("jupyter") and return_html:
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
@@ -363,7 +363,7 @@ def animated_bubble_plot(
     count = vdf.shape()[0]
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(12, 8)
         ax.grid()
         ax.set_axisbelow(True)
@@ -555,7 +555,7 @@ def animated_bubble_plot(
         blit=False,
         repeat=repeat,
     )
-    if ISNOTEBOOK and return_html:
+    if conf._get_import_success("jupyter") and return_html:
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
@@ -620,12 +620,12 @@ def animated_ts_plot(
         method="fetchall",
     )
     order_by_values = [column[0] for column in query_result]
-    if isinstance(order_by_values[0], str) and PARSER_IMPORT:
+    if isinstance(order_by_values[0], str) and conf._get_import_success("dateutil"):
         order_by_values = parse_datetime(order_by_values)
     alpha = 0.3
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
         ax.set_axisbelow(True)
@@ -681,7 +681,7 @@ def animated_ts_plot(
         blit=False,
         repeat=repeat,
     )
-    if ISNOTEBOOK and return_html:
+    if conf._get_import_success("jupyter") and return_html:
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)

@@ -22,7 +22,7 @@ from verticapy._utils.math import levenshtein
 from verticapy.errors import MissingColumn, ParameterError
 
 
-class vDFUTILS:
+class vDFUtils:
     def _format_colnames(
         self,
         *argv,

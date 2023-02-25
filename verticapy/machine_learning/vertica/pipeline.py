@@ -14,9 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union
+from typing import Literal, Union
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy.errors import ParameterError, ModelError
 
@@ -37,11 +37,25 @@ steps: list
     in the order in which they are chained, with the last object an estimator.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_PREDICT_FUNCTION_SQL = ""
-    MODEL_CATEGORY = ""
-    MODEL_SUBCATEGORY = ""
-    MODEL_TYPE = "Pipeline"
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_subcategory(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_type(self) -> Literal["Pipeline"]:
+        return "Pipeline"
 
     @save_verticapy_logs
     def __init__(self, steps: list):
@@ -122,7 +136,7 @@ steps: list
             vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)

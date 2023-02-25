@@ -23,7 +23,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-from verticapy._config.config import ISNOTEBOOK, _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -175,7 +175,7 @@ TableSample
         input_relation = vDataFrame(input_relation)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
-    if estimator.MODEL_SUBCATEGORY == "REGRESSOR":
+    if estimator._model_subcategory == "REGRESSOR":
         all_metrics = [
             "explained_variance",
             "max_error",
@@ -188,7 +188,7 @@ TableSample
             "aic",
             "bic",
         ]
-    elif estimator.MODEL_SUBCATEGORY == "CLASSIFIER":
+    elif estimator._model_subcategory == "CLASSIFIER":
         all_metrics = [
             "auc",
             "prc_auc",
@@ -216,7 +216,7 @@ TableSample
     if training_score:
         result_train = {"index": final_metrics}
     total_time = []
-    if _options["tqdm"] and (
+    if conf.get_option("tqdm") and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
         loop = tqdm(range(cv))
@@ -227,7 +227,7 @@ TableSample
             estimator.drop()
         except:
             pass
-        random_state = _options["random_state"]
+        random_state = conf.get_option("random_state")
         random_state = (
             random.randint(-10e6, 10e6) if not (random_state) else random_state + i
         )
@@ -239,7 +239,7 @@ TableSample
             train, X, y, test,
         )
         total_time += [time.time() - start_time]
-        if estimator.MODEL_SUBCATEGORY == "REGRESSOR":
+        if estimator._model_subcategory == "REGRESSOR":
             if metric == "all":
                 result[f"{i + 1}-fold"] = estimator.regression_report().values["value"]
                 if training_score:
@@ -451,7 +451,7 @@ TableSample
     """
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
-    if estimator.MODEL_SUBCATEGORY == "REGRESSOR" and metric == "auto":
+    if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -459,7 +459,7 @@ TableSample
         input_relation = vDataFrame(input_relation)
     lc_result_final = []
     sizes = sorted(set(sizes))
-    if _options["tqdm"]:
+    if conf.get_option("tqdm"):
         loop = tqdm(sizes)
     else:
         loop = sizes
@@ -630,7 +630,7 @@ TableSample
     decision_boundary.reverse()
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Cumulative Data Fraction")
     max_value = max([0 if elem != elem else elem for elem in lift])
@@ -731,7 +731,7 @@ TableSample
         return auc
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
@@ -834,7 +834,7 @@ TableSample
         return best
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
     color1, color2 = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
     if color1 == color2:

@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy._utils._sql._format import format_magic
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 
 def regexp_count(
@@ -37,12 +37,12 @@ position: int, optional
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
-    return str_sql(f"REGEXP_COUNT({expr}, {pattern}, {position})", "int")
+    return StringSQL(f"REGEXP_COUNT({expr}, {pattern}, {position})", "int")
 
 
 def regexp_ilike(expr, pattern):
@@ -58,12 +58,12 @@ pattern: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
-    return str_sql(f"REGEXP_ILIKE({expr}, {pattern})")
+    return StringSQL(f"REGEXP_ILIKE({expr}, {pattern})")
 
 
 def regexp_instr(
@@ -89,12 +89,12 @@ return_position: int, optional
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
-    return str_sql(
+    return StringSQL(
         f"REGEXP_INSTR({expr}, {pattern}, {position}, {occurrence}, {return_position})"
     )
 
@@ -112,12 +112,12 @@ pattern: object
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
-    return str_sql(f"REGEXP_LIKE({expr}, {pattern})")
+    return StringSQL(f"REGEXP_LIKE({expr}, {pattern})")
 
 
 def regexp_replace(expr, target, replacement, position: int = 1, occurrence: int = 1):
@@ -141,13 +141,13 @@ occurrence: int, optional
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
     target = format_magic(target)
     replacement = format_magic(replacement)
-    return str_sql(
+    return StringSQL(
         f"REGEXP_REPLACE({expr}, {target}, {replacement}, {position}, {occurrence})"
     )
 
@@ -170,9 +170,9 @@ occurrence: int, optional
 
 Returns
 -------
-str_sql
+StringSQL
     SQL expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
-    return str_sql(f"REGEXP_SUBSTR({expr}, {pattern}, {position}, {occurrence})")
+    return StringSQL(f"REGEXP_SUBSTR({expr}, {pattern}, {position}, {occurrence})")

@@ -22,8 +22,6 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.sql.read import to_tablesample
-
 
 @save_verticapy_logs
 def create_index(
@@ -83,7 +81,7 @@ TableSample
                 skip_nonindexable_polygons={skip_nonindexable_polygons}) 
             OVER() 
         FROM {vdf._genSQL()}"""
-    return to_tablesample(query)
+    return TableSample.read_sql(query)
 
 
 @save_verticapy_logs
@@ -121,7 +119,7 @@ TableSample
     if list_polygons:
         result = vDataFrame(query)
     else:
-        result = to_tablesample(query)
+        result = TableSample.read_sql(query)
 
     return result
 

@@ -38,7 +38,7 @@ from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
 from verticapy.learn.linear_model import LinearRegression
 from verticapy._config.config import set_option
-from verticapy._config.connection import SESSION_IDENTIFIER
+from verticapy.connection.global_connection import get_global_connection
 
 set_option("print_info", False)
 
@@ -816,10 +816,6 @@ class TestUtilities:
             pass
         drop(name="public.cities_test")
 
-    def test_readSQL(self):
-        result = readSQL('SELECT 1 AS "verticapy test *+""";')
-        assert result['verticapy test *+"'] == [1]
-
     def test_save_to_query_profile(self):
         model = LinearRegression("model_test",)
         iris = load_iris()
@@ -862,10 +858,11 @@ class TestUtilities:
             return_query=True,
             add_identifier=True,
         )
+        gb_conn = get_global_connection()
         assert (
             q2
             == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "verticapy_id": "'
-            + str(SESSION_IDENTIFIER)
+            + str(gb_conn._vpy_session_identifier)
             + '", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
         )
         current_cursor().execute(
@@ -936,8 +933,8 @@ class TestUtilities:
         result7 = result.to_vdf()["price"].mean()
         assert result7 == 2.0
 
-    def test_to_tablesample(self):
-        result = to_tablesample('SELECT 1 AS "verticapy test *+""";')
+    def test_tablesample_read_sql(self):
+        result = TableSample.read_sql('SELECT 1 AS "verticapy test *+""";')
         assert result['verticapy test *+"'] == [1]
 
     def test_vDataFrame_sql(self):

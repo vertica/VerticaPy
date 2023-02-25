@@ -40,12 +40,29 @@ name: str
     Name of the the model. The model will be stored in the database.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = "PCA"
-    VERTICA_transfORM_FUNCTION_SQL = "APPLY_PCA"
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "DECOMPOSITION"
-    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
-    MODEL_TYPE = "MCA"
+    @property
+    def _vertica_fit_sql(self) -> Literal["PCA"]:
+        return "PCA"
+
+    @property
+    def _vertica_transform_sql(self) -> Literal["APPLY_PCA"]:
+        return "APPLY_PCA"
+
+    @property
+    def _vertica_inverse_transform_sql(self) -> Literal["APPLY_INVERSE_PCA"]:
+        return "APPLY_INVERSE_PCA"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["DECOMPOSITION"]:
+        return "DECOMPOSITION"
+
+    @property
+    def _model_type(self) -> Literal["MCA"]:
+        return "MCA"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -234,12 +251,29 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "PCA"
-    VERTICA_transfORM_FUNCTION_SQL = "APPLY_PCA"
-    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "APPLY_INVERSE_PCA"
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "DECOMPOSITION"
-    MODEL_TYPE = "PCA"
+    @property
+    def _vertica_fit_sql(self) -> Literal["PCA"]:
+        return "PCA"
+
+    @property
+    def _vertica_transform_sql(self) -> Literal["APPLY_PCA"]:
+        return "APPLY_PCA"
+
+    @property
+    def _vertica_inverse_transform_sql(self) -> Literal["APPLY_INVERSE_PCA"]:
+        return "APPLY_INVERSE_PCA"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["DECOMPOSITION"]:
+        return "DECOMPOSITION"
+
+    @property
+    def _model_type(self) -> Literal["PCA"]:
+        return "PCA"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -278,12 +312,29 @@ method: str, optional
 		lapack: Lapack definition.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "SVD"
-    VERTICA_transfORM_FUNCTION_SQL = "APPLY_SVD"
-    VERTICA_INVERSE_transfORM_FUNCTION_SQL = "APPLY_INVERSE_SVD"
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "DECOMPOSITION"
-    MODEL_TYPE = "SVD"
+    @property
+    def _vertica_fit_sql(self) -> Literal["SVD"]:
+        return "SVD"
+
+    @property
+    def _vertica_transform_sql(self) -> Literal["APPLY_SVD"]:
+        return "APPLY_SVD"
+
+    @property
+    def _vertica_inverse_transform_sql(self) -> Literal["APPLY_INVERSE_SVD"]:
+        return "APPLY_INVERSE_SVD"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["DECOMPOSITION"]:
+        return "DECOMPOSITION"
+
+    @property
+    def _model_type(self) -> Literal["SVD"]:
+        return "SVD"
 
     @check_minimum_version
     @save_verticapy_logs

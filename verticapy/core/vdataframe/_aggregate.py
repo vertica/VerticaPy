@@ -18,7 +18,7 @@ import decimal, multiprocessing, warnings
 from typing import Literal, Union
 from tqdm.auto import tqdm
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -36,15 +36,13 @@ from verticapy.errors import (
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.core.vdataframe.multiprocessing import (
+from verticapy.core.vdataframe._multiprocessing import (
     aggregate_parallel_block,
     describe_parallel_block,
 )
 
-from verticapy.sql.read import to_tablesample
 
-
-class vDFAGG:
+class vDFAgg:
     @save_verticapy_logs
     def groupby(
         self,
@@ -225,7 +223,7 @@ class vDFAGG:
                 symbol=self._vars["symbol"],
             )
             return total
-        result = to_tablesample(
+        result = TableSample.read_sql(
             query=f"""
                 SELECT 
                     {columns},
@@ -411,7 +409,7 @@ class vDFAGG:
 
         if ncols_block < len(columns) and processes <= 1:
 
-            if _options["tqdm"]:
+            if conf.get_option("tqdm"):
                 loop = tqdm(range(0, len(columns), ncols_block))
             else:
                 loop = range(0, len(columns), ncols_block)
@@ -1088,7 +1086,7 @@ class vDFAGG:
                 " method = 'numerical'."
             )
             if ncols_block < len(columns) and processes <= 1:
-                if _options["tqdm"]:
+                if conf.get_option("tqdm"):
                     loop = tqdm(range(0, len(columns), ncols_block))
                 else:
                     loop = range(0, len(columns), ncols_block)
@@ -1138,7 +1136,7 @@ class vDFAGG:
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
                                 col_to_compute += [column]
                                 break
-                    elif _options["print_info"]:
+                    elif conf.get_option("print_info"):
                         warning_message = (
                             f"The vDataColumn {column} is not numerical, it was ignored."
                             "\nTo get statistical information about all different "
@@ -1791,7 +1789,7 @@ class vDFAGG:
     variance = var
 
 
-class vDCAGG:
+class vDCAgg:
     @save_verticapy_logs
     def describe(
         self,
@@ -1879,7 +1877,7 @@ class vDCAGG:
                     alias_sql_repr = to_varchar(self.category(), self._alias)
                     tmp_query += f" WHERE {alias_sql_repr} = '{category}'"
                 query += [lp + tmp_query + rp]
-            values = to_tablesample(
+            values = TableSample.read_sql(
                 query=f"""
                     WITH vdf_table AS 
                         (SELECT 

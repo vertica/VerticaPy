@@ -20,7 +20,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name
 
 
-class vDFTEXT:
+class vDFText:
     @save_verticapy_logs
     def regexp(
         self,
@@ -107,7 +107,7 @@ class vDFTEXT:
         return self.eval(name=name, expr=expr)
 
 
-class vDCTEXT:
+class vDCText:
     @save_verticapy_logs
     def str_contains(self, pat: str):
         """

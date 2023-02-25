@@ -16,14 +16,14 @@ permissions and limitations under the License.
 """
 import shutil
 
-from verticapy._config.config import ISNOTEBOOK
+import verticapy._config.config as conf
 from verticapy._utils._sql._format import indentSQL
 
 
 def print_query(query: str, title: str = ""):
     screen_columns = shutil.get_terminal_size().columns
     query_print = indentSQL(query)
-    if ISNOTEBOOK:
+    if conf._get_import_success("jupyter"):
         display(HTML(f"<h4>{title}</h4>"))
         query_print = query_print.replace("\n", " <br>").replace("  ", " &emsp; ")
         display(HTML(query_print))
@@ -35,7 +35,7 @@ def print_query(query: str, title: str = ""):
 
 def print_time(elapsed_time: float):
     screen_columns = shutil.get_terminal_size().columns
-    if ISNOTEBOOK:
+    if conf._get_import_success("jupyter"):
         display(HTML(f"<div><b>Execution: </b> {round(elapsed_time, 3)}s</div>"))
     else:
         print(f"Execution: {round(elapsed_time, 3)}s")

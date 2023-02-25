@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import os
 
-from verticapy._config.config import ISNOTEBOOK
+import verticapy._config.config as conf
 from verticapy._utils._logo import verticapy_logo_html, verticapy_logo_str
 
 
@@ -27,7 +27,10 @@ VERTICAPY Interactive Help (FAQ).
     path = os.path.dirname(vp.__file__)
     img1 = verticapy_logo_html(size="10%")
     img2 = verticapy_logo_str()
-    message = img1 if (ISNOTEBOOK) else img2
+    if conf._get_import_success("jupyter"):
+        message = img1
+    else:
+        message = img2
     message += (
         "\n\n&#128226; Welcome to the <b>VerticaPy</b> help module."
         "\n\nThis module can help you connect to Vertica, "
@@ -42,9 +45,12 @@ VERTICAPY Interactive Help (FAQ).
         "- <b>[Enter  6]</b> Write SQL queries in Jupyter\n "
         "- <b>[Enter -1]</b> Exit"
     )
-    if not (ISNOTEBOOK):
+    if not (conf._get_import_success("jupyter")):
         message = message.replace("<b>", "").replace("</b>", "")
-    display(Markdown(message)) if (ISNOTEBOOK) else print(message)
+    if conf._get_import_success("jupyter"):
+        display(Markdown(message))
+    else:
+        print(message)
     try:
         response = int(input())
     except:
@@ -80,11 +86,11 @@ VERTICAPY Interactive Help (FAQ).
     else:
         message = "Invalid choice.\nPlease enter a number between -1 and 6."
     if 0 <= response <= 6:
-        if not (ISNOTEBOOK):
+        if not (conf._get_import_success("jupyter")):
             message = f"Please go to {link}"
         else:
             message = f"Please go to <a href='{link}'>{link}</a>"
-    display(Markdown(message)) if (ISNOTEBOOK) else print(message)
-
-
-vHelp = help_start
+    if conf._get_import_success("jupyter"):
+        display(Markdown(message))
+    else:
+        print(message)

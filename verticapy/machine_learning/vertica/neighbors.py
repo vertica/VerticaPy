@@ -21,7 +21,7 @@ from typing import Literal, Union
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-from verticapy._config.config import ISNOTEBOOK, _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
@@ -48,7 +48,6 @@ from verticapy.machine_learning.vertica.base import (
 )
 
 from verticapy.sql.drop import drop
-from verticapy.sql.read import to_tablesample
 from verticapy.sql.insert import insert_verticapy_schema
 
 
@@ -68,11 +67,25 @@ p: int, optional
 	to compute the model).
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_PREDICT_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "CLASSIFIER"
-    MODEL_TYPE = "NearestCentroid"
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
+
+    @property
+    def _model_type(self) -> Literal["NearestCentroid"]:
+        return "NearestCentroid"
 
     @save_verticapy_logs
     def __init__(self, name: str, p: int = 2):
@@ -107,7 +120,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -125,7 +138,7 @@ p: int, optional
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
         X_str = ", ".join([f"{func}({column}) AS {column}" for column in self.X])
-        self.centroids_ = to_tablesample(
+        self.centroids_ = TableSample.read_sql(
             query=f"""
             SELECT 
                 {X_str}, 
@@ -176,11 +189,11 @@ p: int, optional
 	to compute the model).
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_PREDICT_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "CLASSIFIER"
-    MODEL_TYPE = "KNeighborsClassifier"
+    _vertica_fit_sql = ""
+    _vertica_predict_sql = ""
+    _model_category = "SUPERVISED"
+    _model_subcategory = "CLASSIFIER"
+    _model_type = "KNeighborsClassifier"
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
@@ -310,7 +323,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -600,7 +613,7 @@ p: int, optional
         else:
             key_columns_str = ""
         if not (name):
-            name = gen_name([self.MODEL_TYPE, self.model_name])
+            name = gen_name([self._model_type, self.model_name])
 
         if (
             len(self.classes_) == 2
@@ -688,7 +701,7 @@ p: int, optional
         X = [quote_ident(x) for x in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if not (name):
-            name = gen_name([self.MODEL_TYPE, self.model_name])
+            name = gen_name([self._model_type, self.model_name])
         if "key_columns" in kwargs:
             key_columns_arg = None
         else:
@@ -909,11 +922,25 @@ xlim: list, optional
     List of tuples use to compute the kernel window.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "PREPROCESSING"
-    MODEL_TYPE = "KernelDensity"
+    @property
+    def _vertica_fit_sql(self) -> Literal["RF_REGRESSOR"]:
+        return "RF_REGRESSOR"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_REGRESSOR"]:
+        return "PREDICT_RF_REGRESSOR"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["PREPROCESSING"]:
+        return "PREPROCESSING"
+
+    @property
+    def _model_type(self) -> Literal["KernelDensity"]:
+        return "KernelDensity"
 
     @save_verticapy_logs
     def __init__(
@@ -963,7 +990,7 @@ xlim: list, optional
         """
         if isinstance(X, str):
             X = [X]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -1175,7 +1202,7 @@ xlim: list, optional
                 x, y = [v[0] for v in self.verticapy_x], self.verticapy_y
             if not (ax):
                 fig, ax = plt.subplots()
-                if ISNOTEBOOK:
+                if conf._get_import_success("jupyter"):
                     fig.set_size_inches(7, 5)
                 ax.grid()
                 ax.set_axisbelow(True)
@@ -1219,7 +1246,7 @@ xlim: list, optional
                 idx += n + 1
             if not (ax):
                 fig, ax = plt.subplots()
-                if ISNOTEBOOK:
+                if conf._get_import_success("jupyter"):
                     fig.set_size_inches(8, 6)
             else:
                 fig = plt
@@ -1261,11 +1288,25 @@ p: int, optional
 	the model computation).
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_PREDICT_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "REGRESSOR"
-    MODEL_TYPE = "KNeighborsRegressor"
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["KNeighborsRegressor"]:
+        return "KNeighborsRegressor"
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
@@ -1375,7 +1416,7 @@ p: int, optional
 		"""
         if isinstance(X, str):
             X = [X]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -1448,7 +1489,7 @@ p: int, optional
         else:
             key_columns_arg = key_columns
         if not (name):
-            name = f"{self.MODEL_TYPE}_" + "".join(
+            name = f"{self._model_type}_" + "".join(
                 ch for ch in self.model_name if ch.isalnum()
             )
         if key_columns:
@@ -1494,11 +1535,25 @@ p: int, optional
 	The p of the p-distances (distance metric used during the model computation).
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_PREDICT_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "ANOMALY_DETECTION"
-    MODEL_TYPE = "LocalOutlierFactor"
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["ANOMALY_DETECTION"]:
+        return "ANOMALY_DETECTION"
+
+    @property
+    def _model_type(self) -> Literal["LocalOutlierFactor"]:
+        return "LocalOutlierFactor"
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
@@ -1537,7 +1592,7 @@ p: int, optional
             X = [X]
         if isinstance(key_columns, str):
             key_columns = [key_columns]
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)

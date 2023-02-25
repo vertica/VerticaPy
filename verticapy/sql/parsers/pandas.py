@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import os, csv
 import pandas as pd
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import format_schema_table
@@ -84,7 +84,7 @@ read_csv  : Ingests a  CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
     if not (schema):
-        schema = _options["temp_schema"]
+        schema = conf.get_option("temp_schema")
     assert name or not (insert), ParameterError(
         "Parameter 'name' can not be empty when parameter 'insert' is set to True."
     )

@@ -19,13 +19,13 @@ import warnings
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-from verticapy._config.config import ISNOTEBOOK, PARSER_IMPORT
+import verticapy._config.config as conf
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.plotting._matplotlib.base import updated_dict
 
-if PARSER_IMPORT:
+if conf._get_import_success("dateutil"):
     from dateutil.parser import parse
 
 
@@ -55,7 +55,7 @@ def acf_plot(
         color = get_colors()[0]
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(10, 3)
     if type_bar:
         ax.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
@@ -151,12 +151,12 @@ def multi_ts_plot(
         method="fetchall",
     )
     order_by_values = [item[0] for item in query_result]
-    if isinstance(order_by_values[0], str) and PARSER_IMPORT:
+    if isinstance(order_by_values[0], str) and conf._get_import_success("dateutil"):
         order_by_values = parse_datetime(order_by_values)
     alpha = 0.3
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
         ax.set_axisbelow(True)
@@ -248,7 +248,7 @@ def range_curve(
 ):
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.grid()
     for i, y in enumerate(Y):
@@ -318,7 +318,7 @@ def range_curve_vdf(
         method="fetchall",
     )
     order_by_values = [item[0] for item in query_result]
-    if isinstance(order_by_values[0], str) and PARSER_IMPORT:
+    if isinstance(order_by_values[0], str) and conf._get_import_success("dateutil"):
         order_by_values = parse_datetime(order_by_values)
     column_values = [
         [
@@ -374,7 +374,7 @@ def ts_plot(
     title = "Selecting points to draw the curve"
     if not (ax):
         fig, ax = plt.subplots()
-        if ISNOTEBOOK:
+        if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
         ax.grid(axis="y")
     colors = get_colors()
@@ -390,7 +390,7 @@ def ts_plot(
             query=query.format(""), title=title, method="fetchall",
         )
         order_by_values = [item[0] for item in query_result]
-        if isinstance(order_by_values[0], str) and PARSER_IMPORT:
+        if isinstance(order_by_values[0], str) and conf._get_import_success("dateutil"):
             order_by_values = parse_datetime(order_by_values)
         column_values = [float(item[1]) for item in query_result]
         param = {
@@ -431,7 +431,9 @@ def ts_plot(
                     column,
                 ]
             ]
-            if isinstance(all_data[-1][0][0], str) and PARSER_IMPORT:
+            if isinstance(all_data[-1][0][0], str) and conf._get_import_success(
+                "dateutil"
+            ):
                 all_data[-1][0] = parse_datetime(all_data[-1][0])
         for idx, d in enumerate(all_data):
             param = {"color": colors[idx % len(colors)]}

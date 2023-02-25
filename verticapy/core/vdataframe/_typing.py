@@ -28,7 +28,7 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.sql.flex import isvmap
 
 
-class vDFTYPING:
+class vDFTyping:
     @save_verticapy_logs
     def astype(self, dtype: dict):
         """
@@ -178,7 +178,7 @@ class vDFTYPING:
         return columns
 
 
-class vDCTYPING:
+class vDCTyping:
     @save_verticapy_logs
     def astype(self, dtype: Union[str, type]):
         """

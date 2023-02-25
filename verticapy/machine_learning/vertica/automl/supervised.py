@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from typing import Literal, Union
 from tqdm.auto import tqdm
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import schema_relation
@@ -154,11 +154,11 @@ model_grid_ : TableSample
     Grid containing the different models information.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_PREDICT_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = ""
-    MODEL_TYPE = "AutoML"
+    _vertica_fit_sql = ""
+    _vertica_predict_sql = ""
+    _model_category = "SUPERVISED"
+    _model_subcategory = ""
+    _model_type = "AutoML"
 
     @save_verticapy_logs
     def __init__(
@@ -222,7 +222,7 @@ model_grid_ : TableSample
     object
         model grid
         """
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -363,15 +363,15 @@ model_grid_ : TableSample
         if self.parameters["estimator_type"] == "auto":
             self.parameters["estimator_type"] = self.parameters["estimator"][
                 0
-            ].MODEL_TYPE
+            ]._model_type
         for elem in self.parameters["estimator"]:
             assert (
                 self.parameters["estimator_type"] in ("binary", "multi")
-                and elem.MODEL_SUBCATEGORY == "CLASSIFIER"
+                and elem._model_subcategory == "CLASSIFIER"
                 or self.parameters["estimator_type"] == "regressor"
-                and elem.MODEL_SUBCATEGORY == "REGRESSOR"
+                and elem._model_subcategory == "REGRESSOR"
             ), ParameterError(
-                f"Incorrect list for parameter 'estimator'. Expected type '{self.parameters['estimator_type']}', found type '{elem.MODEL_SUBCATEGORY}'."
+                f"Incorrect list for parameter 'estimator'. Expected type '{self.parameters['estimator_type']}', found type '{elem._model_subcategory}'."
             )
         if (
             self.parameters["estimator_type"] == "regressor"
@@ -405,7 +405,7 @@ model_grid_ : TableSample
             self.preprocess_ = None
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoML\033[0m\033[0m\n")
-        if _options["tqdm"] and self.parameters["print_info"]:
+        if conf.get_option("tqdm") and self.parameters["print_info"]:
             loop = tqdm(self.parameters["estimator"])
         else:
             loop = self.parameters["estimator"]
@@ -507,8 +507,8 @@ model_grid_ : TableSample
         else:
             best_model.fit(input_relation, X, y)
         self.best_model_ = best_model
-        self.VERTICA_FIT_FUNCTION_SQL = best_model.VERTICA_FIT_FUNCTION_SQL
-        self.VERTICA_PREDICT_FUNCTION_SQL = best_model.VERTICA_PREDICT_FUNCTION_SQL
+        self._vertica_fit_sql = best_model._vertica_fit_sql
+        self._vertica_predict_sql = best_model._vertica_predict_sql
         self.model_grid_ = result
         self.parameters["reverse"] = not (reverse)
         if self.preprocess_ != None:

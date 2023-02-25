@@ -24,7 +24,7 @@ from verticapy.errors import EmptyParameter
 from verticapy.sql.flex import compute_vmap_keys
 
 
-class vDFPIVOT:
+class vDFPivot:
     @save_verticapy_logs
     def flat_vmap(
         self,

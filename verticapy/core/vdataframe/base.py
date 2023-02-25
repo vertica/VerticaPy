@@ -20,11 +20,8 @@ import numpy as np
 
 import pandas as pd
 
-from verticapy._config.config import _options
-from verticapy._config.connection import (
-    _external_connections,
-    SPECIAL_SYMBOLS,
-)
+import verticapy._config.config as conf
+from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._check import is_longvar, is_sql_select
@@ -44,27 +41,27 @@ from verticapy.errors import (
     QueryError,
 )
 
-from verticapy.core.vdataframe.aggregate import vDFAGG, vDCAGG
-from verticapy.core.vdataframe.corr import vDFCORR, vDCCORR
-from verticapy.core.vdataframe.encoding import vDFENCODE, vDCENCODE
-from verticapy.core.vdataframe.eval import vDFEVAL, vDCEVAL
-from verticapy.core.vdataframe.fill import vDFFILL, vDCFILL
-from verticapy.core.vdataframe.filter import vDFFILTER, vDCFILTER
-from verticapy.core.vdataframe.io import vDFIO
-from verticapy.core.vdataframe.join_union_sort import vDFJUS
-from verticapy.core.vdataframe.machine_learning import vDFML
-from verticapy.core.vdataframe.math import vDFMATH, vDCMATH
-from verticapy.core.vdataframe.normalize import vDFNORM, vDCNORM
-from verticapy.core.vdataframe.pivot import vDFPIVOT
-from verticapy.core.vdataframe.plotting import vDFPLOT, vDCPLOT
-from verticapy.core.vdataframe.read import vDFREAD, vDCREAD
-from verticapy.core.vdataframe.rolling import vDFROLL
-from verticapy.core.vdataframe.sys import vDFSYS, vDCSYS
-from verticapy.core.vdataframe.text import vDFTEXT, vDCTEXT
-from verticapy.core.vdataframe.typing import vDFTYPING, vDCTYPING
-from verticapy.core.vdataframe.utils import vDFUTILS
+from verticapy.core.vdataframe._aggregate import vDFAgg, vDCAgg
+from verticapy.core.vdataframe._corr import vDFCorr, vDCCorr
+from verticapy.core.vdataframe._encoding import vDFEncode, vDCEncode
+from verticapy.core.vdataframe._eval import vDFEval, vDCEval
+from verticapy.core.vdataframe._fill import vDFFill, vDCFill
+from verticapy.core.vdataframe._filter import vDFFilter, vDCFilter
+from verticapy.core.vdataframe._io import vDFInOut
+from verticapy.core.vdataframe._join_union_sort import vDFJoinUnionSort
+from verticapy.core.vdataframe._machine_learning import vDFMachineLearning
+from verticapy.core.vdataframe._math import vDFMath, vDCMath
+from verticapy.core.vdataframe._normalize import vDFNorm, vDCNorm
+from verticapy.core.vdataframe._pivot import vDFPivot
+from verticapy.core.vdataframe._plotting import vDFPlot, vDCPlot
+from verticapy.core.vdataframe._read import vDFRead, vDCRead
+from verticapy.core.vdataframe._rolling import vDFRolling
+from verticapy.core.vdataframe._sys import vDFSystem, vDCSystem
+from verticapy.core.vdataframe._text import vDFText, vDCText
+from verticapy.core.vdataframe._typing import vDFTyping, vDCTyping
+from verticapy.core.vdataframe._utils import vDFUtils
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
 
 from verticapy.sql.dtypes import get_data_types
@@ -91,25 +88,25 @@ from verticapy.sql.parsers.pandas import read_pandas
 
 
 class vDataFrame(
-    vDFAGG,
-    vDFCORR,
-    vDFENCODE,
-    vDFEVAL,
-    vDFFILL,
-    vDFFILTER,
-    vDFIO,
-    vDFJUS,
-    vDFMATH,
-    vDFML,
-    vDFNORM,
-    vDFPIVOT,
-    vDFPLOT,
-    vDFREAD,
-    vDFROLL,
-    vDFSYS,
-    vDFTEXT,
-    vDFTYPING,
-    vDFUTILS,
+    vDFAgg,
+    vDFCorr,
+    vDFEncode,
+    vDFEval,
+    vDFFill,
+    vDFFilter,
+    vDFInOut,
+    vDFJoinUnionSort,
+    vDFMath,
+    vDFMachineLearning,
+    vDFNorm,
+    vDFPivot,
+    vDFPlot,
+    vDFRead,
+    vDFRolling,
+    vDFSystem,
+    vDFText,
+    vDFTyping,
+    vDFUtils,
 ):
     """
 An object that records all user modifications, allowing users to 
@@ -133,12 +130,13 @@ input_relation: str / TableSample / pandas.DataFrame
     If it is a pandas.DataFrame, a temporary local table is created.
     Otherwise, the vDataFrame is created using the generated SQL code 
     of multiple UNIONs. 
-columns: str / list, optional
-    List of column names. Only used when input_relation is an array-like type.
 usecols: str / list, optional
+    When input_relation is not an array-like type:
     List of columns to use to create the object. As Vertica is a columnar 
     DB including less columns makes the process faster. Do not hesitate 
     to not include useless columns.
+    Otherwise:
+    List of column names.
 schema: str, optional
     The schema of the relation. Specifying a schema allows you to specify a 
     table within a particular schema, or to specify a schema and relation name 
@@ -159,52 +157,39 @@ sql_push_ext: bool, optional
     use SQL Magic directly). This can increase performance but might increase 
     the error rate. For instance, some DBs might not support the same SQL as 
     Vertica.
-_empty: bool, optional
-    If set to True, the vDataFrame will be empty. You can use this to create 
-    a custom vDataFrame and bypass the initialization check.
 
 Attributes
 ----------
-_vars: dict
-    Dictionary containing all vDataFrame attributes.
-        allcols_ind, int      : Integer, used to optimize the SQL 
-                                code generation.
-        columns, list         : List of the vDataColumn names.
-        count, int            : Number of elements of the vDataFrame 
-                                (catalog).
-        exclude_columns, list : vDataColumns to exclude from the final 
-                                relation.
-        history, list         : vDataFrame history (user modifications).
-        isflex, bool          : True if it is a Flex vDataFrame.
-        main_relation, str    : Relation to use to build the vDataFrame 
-                                (first floor).
-        order_by, dict        : Dictionary of all rules to sort the 
-                                vDataFrame.
-        saving, list          : List used to reconstruct the 
-                                vDataFrame.
-        where, list           : List of all rules to filter the 
-                                vDataFrame.
-        max_colums, int       : Maximum number of columns to display.
-        max_rows, int         : Maximum number of rows to display.
 vDataColumns : vDataColumn
     Each vDataColumn of the vDataFrame is accessible by by specifying its name 
     between brackets. For example, to access the vDataColumn "myVC": 
     vDataFrame["myVC"].
     """
 
+    @property
+    def _object_type(self) -> Literal["vDataFrame"]:
+        return "vDataFrame"
+
+    @staticmethod
+    def _new_vdatacolumn(*argv, **kwds):
+        return vDataColumn(*argv, **kwds)
+
+    @classmethod
+    def _new_vdataframe(cls, *argv, **kwds):
+        return cls(*argv, **kwds)
+
     @save_verticapy_logs
     def __init__(
         self,
         input_relation: Union[str, pd.DataFrame, np.ndarray, list, TableSample, dict],
-        columns: Union[str, list] = [],
-        usecols: Union[str, list] = [],
+        usecols: Union[str, list[str]] = [],
         schema: str = "",
         external: bool = False,
-        symbol: Literal[tuple(SPECIAL_SYMBOLS)] = "$",
+        symbol: str = "$",
         sql_push_ext: bool = True,
         _empty: bool = False,
+        _is_sql_magic: bool = False,
     ) -> None:
-        # Main Attributes
         self._vars = {
             "allcols_ind": -1,
             "count": -1,
@@ -215,41 +200,40 @@ vDataColumns : vDataColumn
             "max_rows": -1,
             "order_by": {},
             "saving": [],
-            "sql_magic_result": False,
+            "sql_push_ext": external and sql_push_ext,
+            "sql_magic_result": _is_sql_magic,
+            "symbol": symbol,
             "where": [],
         }
-        isflex = False
-        # Initialization
-        if isinstance(input_relation, str) and is_sql_select(input_relation):
-            sql = input_relation
-        else:
-            sql = ""
         schema = quote_ident(schema)
         if isinstance(usecols, str):
             usecols = [usecols]
-        if isinstance(columns, str):
-            columns = [columns]
 
         if external:
 
-            if input_relation:
+            if isinstance(input_relation, str) and input_relation:
 
-                if not (isinstance(input_relation, str)):
-                    raise ParameterError(
-                        "Parameter 'input_relation' must be a string "
-                        "when using external tables."
-                    )
-                input_relation = f"{quote_ident(schema)}.{quote_ident(input_relation)}"
+                if schema:
+                    input_relation = f"{quote_ident(schema)}.{quote_ident(input_relation)}"
+                else:
+                    input_relation = quote_ident(input_relation)
                 cols = ", ".join(usecols) if usecols else "*"
                 query = f"SELECT {cols} FROM {input_relation}"
 
             else:
-                query = sql
 
-            if symbol in _external_connections:
-                sql = symbol * 3 + query + symbol * 3
+                raise ParameterError(
+                    "Parameter 'input_relation' must be a nonempty str "
+                    "when using external tables."
+                )
+
+            gb_conn = get_global_connection()
+
+            if symbol in gb_conn._get_external_connections:
+                query = symbol * 3 + query + symbol * 3
 
             else:
+
                 raise ConnectionError(
                     "No corresponding Connection Identifier Database is "
                     f"defined (Using the symbol '{symbol}'). Use the "
@@ -257,65 +241,20 @@ vDataColumns : vDataColumn
                     "one with the correct symbol."
                 )
 
-        self._vars = {
-            **self._vars,
-            "sql_push_ext": external and sql_push_ext,
-            "symbol": symbol,
-        }
-
         if isinstance(input_relation, (TableSample, list, np.ndarray, dict)):
 
-            if isinstance(input_relation, (list, np.ndarray)):
-
-                if isinstance(input_relation, list):
-                    input_relation = np.array(input_relation)
-
-                if len(input_relation.shape) != 2:
-                    raise ParameterError(
-                        "vDataFrames can only be created with two-dimensional objects."
-                    )
-
-                d = {}
-                nb_cols = len(input_relation[0])
-                for idx in range(nb_cols):
-                    col_name = columns[idx] if idx < len(columns) else f"col{idx}"
-                    d[col_name] = [l[idx] for l in input_relation]
-                tb = TableSample(d)
-
-            elif isinstance(input_relation, dict):
-
-                tb = TableSample(input_relation)
-
-            else:
-
-                tb = input_relation
-
-            if usecols:
-
-                tb_final = {}
-                for col in usecols:
-                    tb_final[col] = tb[col]
-                tb = TableSample(tb_final)
-
-            self.__init__(
-                tb.to_sql(),
-                external=external,
-                symbol=symbol,
-                sql_push_ext=sql_push_ext,
-            )
+            return self._from_object(input_relation, usecols)
 
         elif isinstance(input_relation, pd.DataFrame):
 
-            argv = input_relation[usecols] if usecols else input_relation
-            vdf = read_pandas(argv)
-            self.__init__(input_relation=vdf._vars["main_relation"])
+            return self._from_pandas(input_relation, usecols)
 
         elif not (_empty):
 
-            if sql:
+            if isinstance(input_relation, str) and is_sql_select(input_relation):
 
                 # Cleaning the Query
-                sql = clean_query(sql)
+                sql = clean_query(input_relation)
                 sql = extract_subquery(sql)
 
                 # Filtering some columns
@@ -326,6 +265,7 @@ vDataColumns : vDataColumn
                 # Getting the main relation information
                 main_relation = f"({sql}) VERTICAPY_SUBTABLE"
                 dtypes = get_data_types(sql)
+                isflex = False
 
             else:
 
@@ -390,11 +330,54 @@ vDataColumns : vDataColumn
                 setattr(self, column_ident[1:-1], new_vDataColumn)
                 new_vDataColumn._init = False
 
-    def _new_vdatacolumn(self, *argv, **kwds):
-        return vDataColumn(*argv, **kwds)
+    def _from_object(
+        self,
+        object_: Union[np.ndarray, list, TableSample, dict],
+        columns: list[str] = [],
+    ) -> None:
+        if isinstance(object_, (list, np.ndarray)):
 
-    def _new_vdataframe(self, *argv, **kwds):
-        return vDataFrame(*argv, **kwds)
+            if isinstance(object_, list):
+                object_ = np.array(object_)
+
+            if len(object_.shape) != 2:
+                raise ParameterError(
+                    "vDataFrames can only be created with two-dimensional objects."
+                )
+
+            d = {}
+            nb_cols = len(object_[0])
+            n = len(columns)
+            for idx in range(nb_cols):
+                col_name = columns[idx] if idx < n else f"col{idx}"
+                d[col_name] = [l[idx] for l in object_]
+            tb = TableSample(d)
+
+        elif isinstance(object_, dict):
+
+            tb = TableSample(object_)
+
+        else:
+
+            tb = object_
+
+        if columns:
+
+            tb_final = {}
+            for col in columns:
+                tb_final[col] = tb[col]
+            tb = TableSample(tb_final)
+
+        return self.__init__(tb.to_sql())
+
+    def _from_pandas(
+        self,
+        object_: pd.DataFrame,
+        usecols: list[str] = [],
+    ) -> None:
+        argv = object_[usecols] if usecols else object_
+        vdf = read_pandas(argv)
+        return self.__init__(input_relation=vdf._vars["main_relation"])
 
 
 ##
@@ -407,20 +390,20 @@ vDataColumns : vDataColumn
 
 
 class vDataColumn(
-    vDCAGG,
-    vDCCORR,
-    vDCENCODE,
-    vDCEVAL,
-    vDCFILL,
-    vDCFILTER,
-    vDCMATH,
-    vDCNORM,
-    vDCPLOT,
-    vDCREAD,
-    vDCSYS,
-    vDCTEXT,
-    vDCTYPING,
-    str_sql,
+    vDCAgg,
+    vDCCorr,
+    vDCEncode,
+    vDCEval,
+    vDCFill,
+    vDCFilter,
+    vDCMath,
+    vDCNorm,
+    vDCPlot,
+    vDCRead,
+    vDCSystem,
+    vDCText,
+    vDCTyping,
+    StringSQL,
 ):
     """
 Python object which that stores all user transformations. If the vDataFrame
@@ -449,6 +432,10 @@ Attributes
     parent, vDataFrame   : Parent of the vDataColumn.
     transformations, str : List of the different transformations.
     """
+
+    @property
+    def _object_type(self) -> Literal["vDC"]:
+        return "vDataColumn"
 
     def __init__(
         self, alias: str, transformations: list = [], parent=None, catalog: dict = {},

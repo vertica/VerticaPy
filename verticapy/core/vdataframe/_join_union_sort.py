@@ -23,14 +23,14 @@ from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import ParameterError
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 
-class vDFJUS:
+class vDFJoinUnionSort:
     @save_verticapy_logs
     def append(
         self,
-        input_relation: Union[str, str_sql],
+        input_relation: Union[str, StringSQL],
         expr1: Union[str, list] = [],
         expr2: Union[str, list] = [],
         union_all: bool = True,
@@ -68,16 +68,17 @@ class vDFJUS:
     vDataFrame.join    : Joins the vDataFrame with another relation.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(expr1, str):
             expr1 = [expr1]
         if isinstance(expr2, str):
             expr2 = [expr2]
         first_relation = self._genSQL()
-        if isinstance(input_relation, str):
+        object_type = None
+        if hasattr(input_relation, "_object_type"):
+            object_type = input_relation._object_type
+        if isinstance(input_relation, (str, StringSQL)):
             second_relation = input_relation
-        elif isinstance(input_relation, vDataFrame):
+        elif object_type == "vDataFrame":
             second_relation = input_relation._genSQL()
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)
@@ -180,8 +181,6 @@ class vDFJUS:
     vDataFrame.groupby : Aggregates the vDataFrame.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
-        from verticapy.core.vdataframe.base import vDataFrame
-
         if isinstance(expr1, str):
             expr1 = [expr1]
         if isinstance(expr2, str):
@@ -203,7 +202,10 @@ class vDFJUS:
         on_list += [(key, on[key], "linterpolate") for key in on_interpolate]
         # Checks
         self._format_colnames([elem[0] for elem in on_list])
-        if isinstance(input_relation, vDataFrame):
+        object_type = None
+        if hasattr(input_relation, "_object_type"):
+            object_type = input_relation._object_type
+        if object_type == "vDataFrame":
             input_relation._format_colnames([elem[1] for elem in on_list])
             relation = input_relation._genSQL()
         else:

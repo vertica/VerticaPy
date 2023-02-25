@@ -28,8 +28,8 @@ import re, time, warnings
 from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
 
-from verticapy._config.config import _options, set_option
-from verticapy._config.connection import SPECIAL_SYMBOLS
+import verticapy._config.config as conf
+from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._dblink import replace_external_queries_in_query
 from verticapy._utils._sql._format import (
@@ -49,9 +49,9 @@ def sql_magic(line, cell="", local_ns=None):
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.
-    sql_on, time_on = _options["sql_on"], _options["time_on"]
-    set_option("sql_on", False)
-    set_option("time_on", False)
+    sql_on, time_on = conf.get_option("sql_on"), conf.get_option("time_on")
+    conf.set_option("sql_on", False)
+    conf.set_option("time_on", False)
 
     try:
 
@@ -60,9 +60,9 @@ def sql_magic(line, cell="", local_ns=None):
 
         # Options
         options = {}
-        all_options_dict = get_magic_options(line)
+        options_dict = get_magic_options(line)
 
-        for option in all_options_dict:
+        for option in options_dict:
 
             if option.lower() in (
                 "-f",
@@ -78,25 +78,25 @@ def sql_magic(line, cell="", local_ns=None):
                 if option.lower() in ("-f", "--file"):
                     if "-f" in options:
                         raise ParameterError("Duplicate option '-f'.")
-                    options["-f"] = all_options_dict[option]
+                    options["-f"] = options_dict[option]
                 elif option.lower() in ("-o", "--output"):
                     if "-o" in options:
                         raise ParameterError("Duplicate option '-o'.")
-                    options["-o"] = all_options_dict[option]
+                    options["-o"] = options_dict[option]
                 elif option.lower() in ("-c", "--command"):
                     if "-c" in options:
                         raise ParameterError("Duplicate option '-c'.")
-                    options["-c"] = all_options_dict[option]
+                    options["-c"] = options_dict[option]
                 elif option.lower() in ("-nrows",):
                     if "-nrows" in options:
                         raise ParameterError("Duplicate option '-nrows'.")
-                    options["-nrows"] = int(all_options_dict[option])
+                    options["-nrows"] = int(options_dict[option])
                 elif option.lower() in ("-ncols",):
                     if "-ncols" in options:
                         raise ParameterError("Duplicate option '-ncols'.")
-                    options["-ncols"] = int(all_options_dict[option])
+                    options["-ncols"] = int(options_dict[option])
 
-            elif _options["print_info"]:
+            elif conf.get_option("print_info"):
                 warning_message = (
                     f"\u26A0 Warning : The option '{option}' doesn't "
                     "exist, it was skipped."
@@ -126,7 +126,8 @@ def sql_magic(line, cell="", local_ns=None):
         queries = replace_external_queries_in_query(queries)
 
         # Looking at very specific external queries symbols
-        for s in SPECIAL_SYMBOLS:
+        gb_conn = get_global_connection()
+        for s in gb_conn._special_symbols:
 
             external_queries = re.findall(
                 f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries
@@ -236,7 +237,7 @@ def sql_magic(line, cell="", local_ns=None):
                 except Exception as e:
                     error = str(e)
 
-                if _options["print_info"] and (
+                if conf.get_option("print_info") and (
                     "Severity: ERROR, Message: User defined transform must return at least one column"
                     in error
                     and "DBLINK" in error
@@ -246,7 +247,7 @@ def sql_magic(line, cell="", local_ns=None):
                 elif error:
                     raise QueryError(error)
 
-                elif _options["print_info"]:
+                elif conf.get_option("print_info"):
                     print(query_type)
 
             else:
@@ -254,7 +255,7 @@ def sql_magic(line, cell="", local_ns=None):
                 error = ""
 
                 try:
-                    result = vDataFrame(query)
+                    result = vDataFrame(query, _is_sql_magic=True,)
                     result._vars["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:
@@ -268,9 +269,9 @@ def sql_magic(line, cell="", local_ns=None):
                         final_result = _executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
                         )
-                        if final_result and _options["print_info"]:
+                        if final_result and conf.get_option("print_info"):
                             print(final_result)
-                        elif _options["print_info"]:
+                        elif conf.get_option("print_info"):
                             print(query_type)
 
                     except Exception as e:
@@ -284,7 +285,7 @@ def sql_magic(line, cell="", local_ns=None):
                     and "DBLINK" in error
                 ):
 
-                    if _options["print_info"]:
+                    if conf.get_option("print_info"):
                         print(query_type)
 
                 elif error:
@@ -303,7 +304,7 @@ def sql_magic(line, cell="", local_ns=None):
 
         elapsed_time = round(time.time() - start_time, 3)
 
-        if _options["print_info"]:
+        if conf.get_option("print_info"):
             display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
 
         return result
@@ -311,8 +312,8 @@ def sql_magic(line, cell="", local_ns=None):
     finally:
 
         # we load the previous configuration before returning the result.
-        set_option("sql_on", sql_on)
-        set_option("time_on", time_on)
+        conf.set_option("sql_on", sql_on)
+        conf.set_option("time_on", time_on)
 
 
 def load_ipython_extension(ipython):

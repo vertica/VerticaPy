@@ -21,7 +21,9 @@ import numpy as np
 
 import pandas as pd
 
-from verticapy._config.config import GEOPANDAS_ON
+pickle.DEFAULT_PROTOCOL = 4
+
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._random import _current_random
@@ -29,16 +31,14 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 from verticapy.errors import ParameterError, ParsingError
 
-from verticapy.sql.read import to_tablesample
+from verticapy.core.tablesample.base import TableSample
 
-if GEOPANDAS_ON:
+if conf._get_import_success("geopandas"):
     from geopandas import GeoDataFrame
     from shapely import wkt
 
-pickle.DEFAULT_PROTOCOL = 4
 
-
-class vDFIO:
+class vDFInOut:
     def copy(self):
         """
     Returns a deep copy of the vDataFrame.
@@ -398,7 +398,7 @@ class vDFIO:
     geopandas.GeoDataFrame
         The geopandas.GeoDataFrame of the current vDataFrame relation.
         """
-        if not (GEOPANDAS_ON):
+        if not (conf._get_import_success("geopandas")):
             raise ImportError(
                 "The geopandas module doesn't seem to be installed in your "
                 "environment.\nTo be able to use this method, you'll have to "
@@ -719,7 +719,7 @@ class vDFIO:
         partition = ""
         if by:
             partition = f"PARTITION BY {', '.join(by)}"
-        result = to_tablesample(
+        result = TableSample.read_sql(
             query=f"""
                 EXPORT TO PARQUET(directory = '{directory}',
                                   compression = '{compression}',

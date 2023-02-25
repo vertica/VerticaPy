@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from typing import Union
 from tqdm.auto import tqdm
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 
 from verticapy.core.vdataframe.base import vDataFrame
@@ -72,11 +72,11 @@ model_: object
     Final model used for the clustering.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = ""
-    VERTICA_PREDICT_FUNCTION_SQL = ""
-    MODEL_CATEGORY = "UNSUPERVISED"
-    MODEL_SUBCATEGORY = "CLUSTERING"
-    MODEL_TYPE = "AutoClustering"
+    _vertica_fit_sql = ""
+    _vertica_predict_sql = ""
+    _model_category = "UNSUPERVISED"
+    _model_subcategory = "CLUSTERING"
+    _model_type = "AutoClustering"
 
     @save_verticapy_logs
     def __init__(
@@ -128,7 +128,7 @@ model_: object
         """
         from verticapy.machine_learning.vertica.automl import AutoDataPrep
 
-        if _options["overwrite_model"]:
+        if conf.get_option("overwrite_model"):
             self.drop()
         else:
             does_model_exist(name=self.model_name, raise_error=True)
@@ -160,7 +160,7 @@ model_: object
             )
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mBuilding the Final Model\033[0m\033[0m\n")
-        if _options["tqdm"] and self.parameters["print_info"]:
+        if conf.get_option("tqdm") and self.parameters["print_info"]:
             loop = tqdm(range(1))
         else:
             loop = range(1)

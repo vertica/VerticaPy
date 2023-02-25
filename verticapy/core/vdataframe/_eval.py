@@ -22,17 +22,17 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import QueryError
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import isvmap
 
 
-class vDFEVAL:
+class vDFEval:
     def __setattr__(self, attr, val):
         from verticapy.core.vdataframe.base import vDataColumn
 
-        if isinstance(val, (str, str_sql, int, float)) and not isinstance(
+        if isinstance(val, (str, StringSQL, int, float)) and not isinstance(
             val, vDataColumn
         ):
             val = str(val)
@@ -52,7 +52,7 @@ class vDFEVAL:
         setattr(self, index, val)
 
     @save_verticapy_logs
-    def eval(self, name: str, expr: Union[str, str_sql]):
+    def eval(self, name: str, expr: Union[str, StringSQL]):
         """
     Evaluates a customized expression.
 
@@ -75,7 +75,7 @@ class vDFEVAL:
     vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
         analytical function on a specific vDataColumn.
         """
-        if isinstance(expr, str_sql):
+        if isinstance(expr, StringSQL):
             expr = str(expr)
         name = quote_ident(name.replace('"', "_"))
         if self.is_colname_in(name):
@@ -133,6 +133,6 @@ class vDFEVAL:
         return self
 
 
-class vDCEVAL:
+class vDCEval:
     def __setattr__(self, attr, val):
         self.__dict__[attr] = val

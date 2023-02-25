@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from verticapy._config.config import set_option
 from verticapy._utils._sql._collect import save_to_query_profile
 from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy._help import help_start, vHelp
+from verticapy._help import help_start
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -36,5 +36,4 @@ from verticapy.sql.parsers.csv import read_csv, pcsv
 from verticapy.sql.parsers.json import read_json, pjson
 from verticapy.sql.parsers.pandas import read_pandas as pandas_to_vertica, read_pandas
 from verticapy.sql.parsers.shp import read_shp
-from verticapy.sql.read import readSQL, to_tablesample
 from verticapy.sql.dtypes import get_data_types

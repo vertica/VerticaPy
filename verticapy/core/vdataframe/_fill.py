@@ -18,7 +18,7 @@ import datetime, math, re, warnings
 from itertools import combinations_with_replacement
 from typing import Literal, Union
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._cast import to_category, to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -28,14 +28,14 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import EmptyParameter, ParameterError, QueryError
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.sql.drop import drop
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import compute_vmap_keys, isvmap
 
 
-class vDFFILL:
+class vDFFill:
     @save_verticapy_logs
     def fillna(self, val: dict = {}, method: dict = {}, numeric_only: bool = False):
         """
@@ -72,8 +72,8 @@ class vDFFILL:
     vDataFrame[].fillna : Fills the vDataColumn missing values. This method is more 
         complete than the vDataFrame.fillna method by allowing more parameters.
         """
-        print_info = _options["print_info"]
-        _options["print_info"] = False
+        print_info = conf.get_option("print_info")
+        conf.set_option("print_info", False)
         try:
             if not (val) and not (method):
                 cols = self.get_columns()
@@ -90,7 +90,7 @@ class vDFFILL:
                     self[self._format_colnames(column)].fillna(method=method[column],)
             return self
         finally:
-            _options["print_info"] = print_info
+            conf.set_option("print_info", print_info)
 
     @save_verticapy_logs
     def interpolate(
@@ -172,7 +172,7 @@ class vDFFILL:
     asfreq = interpolate
 
 
-class vDCFILL:
+class vDCFill:
     @save_verticapy_logs
     def clip(
         self,
@@ -339,7 +339,7 @@ class vDCFILL:
             "bfill",
             "backfill",
         ] = "auto",
-        expr: Union[str, str_sql] = "",
+        expr: Union[str, StringSQL] = "",
         by: Union[str, list] = [],
         order_by: Union[str, list] = [],
     ):
@@ -506,13 +506,13 @@ class vDCFILL:
                 pass
             total = int(total)
             conj = "s were " if total > 1 else " was "
-            if _options["print_info"]:
+            if conf.get_option("print_info"):
                 print(f"{total} element{conj}filled.")
             self._parent._add_to_history(
                 f"[Fillna]: {total} {self._alias} missing value{conj} filled."
             )
         else:
-            if _options["print_info"]:
+            if conf.get_option("print_info"):
                 print("Nothing was filled.")
             self._transf = [t for t in copy_trans]
             for s in sauv:

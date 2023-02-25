@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import copy, re, time, warnings
 from typing import Union
 
-from verticapy._config.config import _options
+import verticapy._config.config as conf
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -30,7 +30,7 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.sql.flex import isvmap
 
 
-class vDFSYS:
+class vDFSystem:
     def _add_to_history(self, message: str):
         """
     VERTICAPY stores the user modification and help the user to look at 
@@ -175,7 +175,7 @@ class vDFSYS:
     computations. This method returns the stored aggregation if it was already 
     computed.
         """
-        if not (_options["cache"]):
+        if not (conf.get_option("cache")):
             return "VERTICAPY_NOT_PRECOMPUTED"
         if column == "VERTICAPY_COUNT":
             if self._vars["count"] < 0:
@@ -596,7 +596,7 @@ class vDFSYS:
         return self
 
 
-class vDCSYS:
+class vDCSystem:
     def add_copy(self, name: str):
         """
     Adds a copy vDataColumn to the parent vDataFrame.

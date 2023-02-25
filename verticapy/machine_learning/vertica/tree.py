@@ -118,11 +118,25 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         and 1000, inclusive.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "CLASSIFIER"
-    MODEL_TYPE = "RandomForestClassifier"
+    @property
+    def _vertica_fit_sql(self) -> Literal["RF_CLASSIFIER"]:
+        return "RF_CLASSIFIER"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_CLASSIFIER"]:
+        return "PREDICT_RF_CLASSIFIER"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
+
+    @property
+    def _model_type(self) -> Literal["RandomForestClassifier"]:
+        return "RandomForestClassifier"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -182,11 +196,25 @@ class DecisionTreeRegressor(Regressor, Tree):
         and 1000, inclusive.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "REGRESSOR"
-    MODEL_TYPE = "RandomForestRegressor"
+    @property
+    def _vertica_fit_sql(self) -> Literal["RF_REGRESSOR"]:
+        return "RF_REGRESSOR"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_REGRESSOR"]:
+        return "PREDICT_RF_REGRESSOR"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["RandomForestRegressor"]:
+        return "RandomForestRegressor"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -224,11 +252,25 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
         Name of the the model. The model will be stored in the DB.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = "RF_CLASSIFIER"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_CLASSIFIER"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "CLASSIFIER"
-    MODEL_TYPE = "RandomForestClassifier"
+    @property
+    def _vertica_fit_sql(self) -> Literal["RF_CLASSIFIER"]:
+        return "RF_CLASSIFIER"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_CLASSIFIER"]:
+        return "PREDICT_RF_CLASSIFIER"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
+
+    @property
+    def _model_type(self) -> Literal["RandomForestClassifier"]:
+        return "RandomForestClassifier"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -257,11 +299,25 @@ class DummyTreeRegressor(Regressor, Tree):
         Name of the the model. The model will be stored in the DB.
     """
 
-    VERTICA_FIT_FUNCTION_SQL = "RF_REGRESSOR"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_RF_REGRESSOR"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "REGRESSOR"
-    MODEL_TYPE = "RandomForestRegressor"
+    @property
+    def _vertica_fit_sql(self) -> Literal["RF_REGRESSOR"]:
+        return "RF_REGRESSOR"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_REGRESSOR"]:
+        return "PREDICT_RF_REGRESSOR"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["RandomForestRegressor"]:
+        return "RandomForestRegressor"
 
     @check_minimum_version
     @save_verticapy_logs

@@ -60,11 +60,25 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "REGRESSOR"
-    MODEL_TYPE = "LinearRegression"
+    @property
+    def _vertica_fit_sql(self) -> Literal["LINEAR_REG"]:
+        return "LINEAR_REG"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_LINEAR_REG"]:
+        return "PREDICT_LINEAR_REG"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["LinearRegression"]:
+        return "LinearRegression"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -125,11 +139,25 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "REGRESSOR"
-    MODEL_TYPE = "LinearRegression"
+    @property
+    def _vertica_fit_sql(self) -> Literal["LINEAR_REG"]:
+        return "LINEAR_REG"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_LINEAR_REG"]:
+        return "PREDICT_LINEAR_REG"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["LinearRegression"]:
+        return "LinearRegression"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -184,11 +212,25 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "REGRESSOR"
-    MODEL_TYPE = "LinearRegression"
+    @property
+    def _vertica_fit_sql(self) -> Literal["LINEAR_REG"]:
+        return "LINEAR_REG"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_LINEAR_REG"]:
+        return "PREDICT_LINEAR_REG"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["LinearRegression"]:
+        return "LinearRegression"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -252,11 +294,25 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "LOGISTIC_REG"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LOGISTIC_REG"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "CLASSIFIER"
-    MODEL_TYPE = "LogisticRegression"
+    @property
+    def _vertica_fit_sql(self) -> Literal["LOGISTIC_REG"]:
+        return "LOGISTIC_REG"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_LOGISTIC_REG"]:
+        return "PREDICT_LOGISTIC_REG"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
+
+    @property
+    def _model_type(self) -> Literal["LogisticRegression"]:
+        return "LogisticRegression"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -328,11 +384,25 @@ fit_intercept: bool, optional
     BFGS optimizer.
 	"""
 
-    VERTICA_FIT_FUNCTION_SQL = "LINEAR_REG"
-    VERTICA_PREDICT_FUNCTION_SQL = "PREDICT_LINEAR_REG"
-    MODEL_CATEGORY = "SUPERVISED"
-    MODEL_SUBCATEGORY = "REGRESSOR"
-    MODEL_TYPE = "LinearRegression"
+    @property
+    def _vertica_fit_sql(self) -> Literal["LINEAR_REG"]:
+        return "LINEAR_REG"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_LINEAR_REG"]:
+        return "PREDICT_LINEAR_REG"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["LinearRegression"]:
+        return "LinearRegression"
 
     @check_minimum_version
     @save_verticapy_logs

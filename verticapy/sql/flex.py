@@ -22,7 +22,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 from verticapy.errors import ParameterError
 
-from verticapy.core.str_sql.base import str_sql
+from verticapy.core.string_sql.base import StringSQL
 
 
 @save_verticapy_logs
@@ -69,7 +69,7 @@ List of tuples
 
 @save_verticapy_logs
 def compute_vmap_keys(
-    expr: Union[str, str_sql], vmap_col: str, limit: int = 100,
+    expr: Union[str, StringSQL], vmap_col: str, limit: int = 100,
 ):
     """
 Computes the most frequent keys in the input VMap.
@@ -139,7 +139,7 @@ bool
 
 
 def isvmap(
-    expr: Union[str, str_sql], column: str,
+    expr: Union[str, StringSQL], column: str,
 ):
     """
 Checks if the input column is a VMap.
