@@ -16,9 +16,10 @@ permissions and limitations under the License.
 """
 import copy
 from typing import Literal
+import numpy as np
 
 import verticapy._config.config as conf
-from verticapy._utils._sql._format import format_magic
+from verticapy._utils._sql._format import clean_query
 from verticapy._typing import ArrayLike
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel, MulticlassClassifier
@@ -153,7 +154,10 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         self, trees: list[BinaryTreeClassifier], classes: ArrayLike = []
     ) -> None:
         self.trees_ = copy.deepcopy(trees)
-        self.classes_ = np.array(classes)
+        if len(classes) == 0:
+            self.classes_ = copy.deepcopy(trees[0].classes_)
+        else:
+            self.classes_ = np.array(classes)
         return None
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
@@ -177,6 +181,48 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
             tree_prob_i_arg[np.arange(len(tree_prob_i)), tree_prob_i.argmax(1)] = 1
             trees_prob_sum += tree_prob_i_arg
         return trees_prob_sum / n
+
+    def predict_proba_sql(self, X: ArrayLike) -> list[str]:
+        """
+        Returns the SQL code needed to deploy the model using its 
+        attributes.
+
+        Parameters
+        ----------
+        X: list / numpy.array
+            The names or values of the input predictors.
+
+        Returns
+        -------
+        str
+            SQL code.
+        """
+        n = len(self.trees_)
+        m = len(self.classes_)
+        trees = []
+        for i in range(n):
+            value = []
+            for v in self.trees_[i].value_:
+                if v is None:
+                    value += [v]
+                else:
+                    val_class_1 = np.zeros_like([v])
+                    val_class_1[np.arange(1), np.array([v]).argmax(1)] = 1
+                    value += [list(val_class_1[0])]
+            tree = BinaryTreeClassifier(
+                children_left=self.trees_[i].children_left_,
+                children_right=self.trees_[i].children_right_,
+                feature=self.trees_[i].feature_,
+                threshold=self.trees_[i].threshold_,
+                value=value,
+                classes=self.trees_[i].classes_,
+            )
+            trees += [tree]
+        trees_pred = [trees[i].predict_proba_sql(X) for i in range(n)]
+        res = []
+        for i in range(m):
+            res += [f"({' + '.join([val[i] for val in trees_pred])}) / {n}"]
+        return clean_query(res)
 
 
 class XGBoostRegressor(Ensemble):
@@ -206,7 +252,7 @@ class XGBoostRegressor(Ensemble):
     ) -> None:
         self.trees_ = copy.deepcopy(trees)
         self.mean_ = mean
-        self.eta_ = learning_rate
+        self.eta_ = eta
         return None
 
     def predict(self, X: ArrayLike) -> np.ndarray:
@@ -277,7 +323,10 @@ class XGBoostClassifier(Ensemble, MulticlassClassifier):
     ) -> None:
         self.trees_ = copy.deepcopy(trees)
         self.logodds_ = np.array(logodds)
-        self.classes_ = np.array(classes)
+        if len(classes) == 0:
+            self.classes_ = copy.deepcopy(trees[0].classes_)
+        else:
+            self.classes_ = np.array(classes)
         self.eta_ = learning_rate
         return None
 
@@ -302,6 +351,33 @@ class XGBoostClassifier(Ensemble, MulticlassClassifier):
         logit = 1 / (1 + np.exp(-trees_prob))
         softmax = logit / np.sum(logit, axis=1)[:, None]
         return softmax
+
+    def predict_proba_sql(self, X: ArrayLike) -> list[str]:
+        """
+        Returns the SQL code needed to deploy the model using its 
+        attributes.
+
+        Parameters
+        ----------
+        X: list / numpy.array
+            The names or values of the input predictors.
+
+        Returns
+        -------
+        str
+            SQL code.
+        """
+        n = len(self.trees_)
+        m = len(self.classes_)
+        proba = []
+        trees_pred = [self.trees_[i].predict_proba_sql(X) for i in range(n)]
+        for i in range(m):
+            proba += [
+                f"""(1 / (1 + EXP(- ({self.logodds_[i]} + {self.eta_} 
+                     * ({' + '.join([prob[i] for prob in trees_pred])})))))"""
+            ]
+        proba_sum = f"({' + '.join(proba)})"
+        return clean_query([f"{p} / {proba_sum}" for p in proba])
 
 
 class IsolationForest(Ensemble):

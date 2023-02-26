@@ -76,7 +76,7 @@ class NaiveBayes(MulticlassClassifier):
                             'male': 0.688787185354691}}
     prior: ArrayLike
         The model's classes probabilities.
-    classes: ArrayLike, optional
+    classes: ArrayLike
         The model's classes.
     """
 
@@ -89,7 +89,7 @@ class NaiveBayes(MulticlassClassifier):
         return ["attributes_", "prior_", "classes_"]
 
     def __init__(
-        self, attributes: list[dict], prior: ArrayLike, classes: ArrayLike = [],
+        self, attributes: list[dict], prior: ArrayLike, classes: ArrayLike,
     ) -> None:
         self.attributes_ = copy.deepcopy(attributes)
         self.prior_ = np.array(prior)
@@ -100,7 +100,7 @@ class NaiveBayes(MulticlassClassifier):
         """
         Predicts for one row.
         """
-        result = []
+        res = []
         for c in self.classes_:
             sub_result = []
             for idx, elem in enumerate(X):
@@ -121,15 +121,14 @@ class NaiveBayes(MulticlassClassifier):
                         )
                     )
                 sub_result += [prob]
-            result += [sub_result]
-        result = np.array(result).prod(axis=1) * self.prior_
+            res += [sub_result]
+        res = np.array(res).prod(axis=1) * self.prior_
         if return_proba:
-            return result / result.sum()
+            return res / res.sum()
         else:
-            result = np.argmax(result)
-            if self.classes_:
-                result = self.classes_[result]
-            return result
+            res = np.argmax(res)
+            res = self.classes_[res]
+            return res
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
@@ -169,27 +168,13 @@ class NaiveBayes(MulticlassClassifier):
         """
         return np.apply_along_axis(self._predict_proba_row, 1, X)
 
-    def predict_proba_sql(self, X: ArrayLike) -> list[str]:
+    def _predict_score_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model probabilities
-        using its attributes.
-
-        Parameters
-        ----------
-        X: ArrayLike
-            The names or values of the input predictors.
-
-        Returns
-        -------
-        list
-            SQL code.
+        Returns the final score for each class. The score
+        divided to the total corresponds to the probability.
         """
-        result = []
-        if not (self.classes_):
-            classes_ = [idx for idx in self.prior_]
-        else:
-            classes_ = self.classes_
-        for idx, c in enumerate(classes_):
+        score = []
+        for idx, c in enumerate(self.classes_):
             sub_result = []
             for idx2, x in enumerate(X):
                 prob = self.attributes_[idx2]
@@ -208,5 +193,24 @@ class NaiveBayes(MulticlassClassifier):
                       * EXP(- POWER({x} - {prob[c]['mu']}, 2) 
                       / {2 * prob[c]['sigma_sq']})"""
                 sub_result += [clean_query(prob)]
-            result += [" * ".join(sub_result) + f" * {self.prior_[idx]}"]
-        return result
+            score += [" * ".join(sub_result) + f" * {self.prior_[idx]}"]
+        return score
+
+    def predict_proba_sql(self, X: ArrayLike) -> list[str]:
+        """
+        Returns the SQL code needed to deploy the model probabilities
+        using its attributes.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The names or values of the input predictors.
+
+        Returns
+        -------
+        list
+            SQL code.
+        """
+        score = self._predict_score_sql(X)
+        score_sum = f"({' + '.join(score)})"
+        return [f"({s}) / {score_sum}" for s in score]

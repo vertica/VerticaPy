@@ -14,10 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from typing import Literal, Union
 import numpy as np
 
 from verticapy._utils._sql._format import format_magic
+from verticapy._typing import ArrayLike
 from verticapy.errors import ParameterError
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
@@ -138,7 +140,18 @@ class OneHotEncoder(InMemoryModel):
     ----------
     categories: ArrayLike
         ArrayLike of the categories of the different features.
-    drop_first: bool
+    column_naming: str, optional
+        Appends categorical levels to column names according 
+        to the specified method:
+        indices              : Uses integer indices to represent 
+                               categorical levels.
+        values/values_relaxed: Both methods use categorical level 
+                               names. If duplicate column names 
+                               occur, the function attempts to 
+                               disambiguate them by appending _n, 
+                               where n is a zero-based integer 
+                               index (_0, _1,…).
+    drop_first: bool, optional
         If set to False, the first dummy of each category 
         will be dropped.
     """
@@ -148,11 +161,17 @@ class OneHotEncoder(InMemoryModel):
         return "OneHotEncoder"
 
     @property
-    def _attributes(self) -> Literal["categories_", "drop_first_"]:
-        return ["categories_", "drop_first_"]
+    def _attributes(self) -> Literal["categories_", "column_naming_", "drop_first_"]:
+        return ["categories_", "column_naming_", "drop_first_"]
 
-    def __init__(self, categories: ArrayLike, drop_first: bool) -> None:
-        self.categories_ = np.array(categories)
+    def __init__(
+        self,
+        categories: ArrayLike,
+        column_naming: Literal["indices", "values", "values_relaxed"] = "indices",
+        drop_first: bool = True,
+    ) -> None:
+        self.categories_ = copy.deepcopy(categories)
+        self.column_naming_ = column_naming
         self.drop_first_ = drop_first
         return None
 
@@ -202,7 +221,7 @@ class OneHotEncoder(InMemoryModel):
         list
             SQL code.
         """
-        if len(X) == len(self.categories_):
+        if len(X) != len(self.categories_):
             raise ValueError(
                 "The length of parameter 'X' must be equal to the "
                 "length of the attribute 'categories'."
@@ -215,9 +234,9 @@ class OneHotEncoder(InMemoryModel):
                     val = format_magic(self.categories_[i][j])
                     sql_tmp_feature = f"(CASE WHEN {X[i]} = {val} THEN 1 ELSE 0 END)"
                     X_i = str(X[i]).replace('"', "")
-                    if column_naming == "indices":
+                    if self.column_naming_ == "indices":
                         sql_tmp_feature += f' AS "{X_i}_{j}"'
-                    elif column_naming in ("values", "values_relaxed"):
+                    elif self.column_naming_ in ("values", "values_relaxed"):
                         if self.categories_[i][j] != None:
                             categories_i_j = self.categories_[i][j]
                         else:

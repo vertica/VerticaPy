@@ -14,8 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from collections.abc import Iterable
-from typing import Union
+from typing import Literal, Union
 import numpy as np
 
 from verticapy._typing import ArrayLike
@@ -103,10 +104,10 @@ class Tree(InMemoryModel):
                 return self._scoring_function(node_id)
         else:
             if self._go_left(X, node_id):
-                children = children_left[node_id]
+                children = self.children_left_[node_id]
             else:
-                children = children_right[node_id]
-            return self._predict_row(X, children)
+                children = self.children_right_[node_id]
+            return self._predict_row(X, children, return_proba)
 
     def _predict_row_proba(self, X: ArrayLike, node_id: int = 0) -> ArrayLike:
         """
@@ -168,8 +169,12 @@ class Tree(InMemoryModel):
             else:
                 op = "<"
                 q = ""
-            y0 = predict_tree(X, self.children_left_[node_id])
-            y1 = predict_tree(X, self.children_right_[node_id])
+            y0 = self._predict_tree_sql(
+                X, self.children_left_[node_id], return_proba, class_id
+            )
+            y1 = self._predict_tree_sql(
+                X, self.children_right_[node_id], return_proba, class_id
+            )
             query = f"""
                 (CASE 
                     WHEN {X[self.feature_[node_id]]} {op} {q}{self.threshold_[node_id]}{q} 
@@ -486,7 +491,6 @@ class BinaryTreeAnomaly(Tree):
     def __init__(
         self,
         children_left: ArrayLike,
-        children_left: ArrayLike,
         children_right: ArrayLike,
         feature: ArrayLike,
         threshold: ArrayLike,
@@ -563,7 +567,6 @@ class BinaryTreeClassifier(Tree):
     def __init__(
         self,
         children_left: ArrayLike,
-        children_left: ArrayLike,
         children_right: ArrayLike,
         feature: ArrayLike,
         threshold: ArrayLike,
@@ -574,7 +577,7 @@ class BinaryTreeClassifier(Tree):
         self.children_right_ = np.array(children_right)
         self.feature_ = np.array(feature)
         self.threshold_ = np.array(threshold)
-        self.value_ = np.array(value)
+        self.value_ = copy.deepcopy(value)
         self.classes_ = np.array(classes)
         return None
 
@@ -620,32 +623,37 @@ class NonBinaryTree(Tree):
         self.classes_ = np.array(classes)
         return None
 
-    def _predict_row(
-        self, X: ArrayLike, return_proba: bool = False
+    def _predict_tree(
+        self, X: ArrayLike, tree: dict, return_proba: bool = False
     ) -> Union[ArrayLike, str, int]:
         """
         Function used recursively to get the Tree prediction.
         """
-        if self.tree_["is_leaf"]:
+        if tree["is_leaf"]:
             if return_proba:
-                return self.tree_["prediction"]
+                return tree["prediction"]
             elif isinstance(self.classes_, Iterable) and len(self.classes_) > 0:
-                return self.classes_[np.argmax(self.tree_["prediction"])]
+                return self.classes_[np.argmax(tree["prediction"])]
             else:
-                return np.argmax(self.tree_["prediction"])
+                return np.argmax(tree["prediction"])
         else:
-            for c in self.tree_["children"]:
+            for c in tree["children"]:
                 if (
-                    self.tree_["split_is_numerical"]
-                    and (float(X[self.tree_["split_predictor_idx"]]) <= float(c))
+                    tree["split_is_numerical"]
+                    and (float(X[tree["split_predictor_idx"]]) <= float(c))
                 ) or (
-                    not (self.tree_["split_is_numerical"])
-                    and (X[self.tree_["split_predictor_idx"]] == c)
+                    not (tree["split_is_numerical"])
+                    and (X[tree["split_predictor_idx"]] == c)
                 ):
-                    return self._predict_row(
-                        X, self.tree_["children"][c], self.classes_
-                    )
+                    return self._predict_tree(X, tree["children"][c], return_proba)
             return None
+
+    def _predict_row(self, X: ArrayLike) -> Union[ArrayLike, str, int]:
+        """
+        Function used recursively to get the Tree prediction 
+        for one row.
+        """
+        return self._predict_tree(X, self.tree_, False)
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
@@ -665,9 +673,10 @@ class NonBinaryTree(Tree):
 
     def _predict_proba_row(self, X: ArrayLike) -> ArrayLike:
         """
-        Function used recursively to get the Tree probabilities.
+        Function used recursively to get the Tree probabilities
+        for one row.
         """
-        return self._predict_row(X, True)
+        return self._predict_tree(X, self.tree_, True)
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
@@ -686,25 +695,27 @@ class NonBinaryTree(Tree):
         return np.apply_along_axis(self._predict_proba_row, 1, np.array(X))
 
     def _predict_tree_sql(
-        self, X: ArrayLike, class_id: int = 0, return_proba: bool = False
+        self, X: ArrayLike, tree: dict, class_id: int = 0, return_proba: bool = False
     ):
         """
         Function used recursively to do the final SQL code generation.
         """
-        if self.tree_["is_leaf"]:
+        if tree["is_leaf"]:
             if return_proba:
-                return self.tree_["prediction"][class_id]
+                return tree["prediction"][class_id]
             elif isinstance(self.classes_, Iterable) and len(self.classes_) > 0:
-                res = self.classes_[np.argmax(self.tree_["prediction"])]
+                res = self.classes_[np.argmax(tree["prediction"])]
                 return format_magic(res)
             else:
-                return np.argmax(self.tree_["prediction"])
+                return np.argmax(tree["prediction"])
         else:
             res = "(CASE "
-            for c in self.tree_["children"]:
-                x = X[self.tree_["split_predictor_idx"]]
-                y = self._predict_tree_sql(X, class_id, return_proba)
-                if self.tree_["split_is_numerical"]:
+            for c in tree["children"]:
+                x = X[tree["split_predictor_idx"]]
+                y = self._predict_tree_sql(
+                    X, tree["children"][c], class_id, return_proba
+                )
+                if tree["split_is_numerical"]:
                     res += f"WHEN {x} <= {float(c)} THEN {y} "
                 else:
                     res += f"WHEN {x} = '{c}' THEN {y} "
@@ -725,7 +736,7 @@ class NonBinaryTree(Tree):
         str
             SQL code.
         """
-        return self._predict_tree_sql(X)
+        return self._predict_tree_sql(X, self.tree_)
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
@@ -742,7 +753,7 @@ class NonBinaryTree(Tree):
             SQL code.
         """
         n = len(self.classes_)
-        return [self._predict_tree_sql(X, i, True) for i in range(n)]
+        return [self._predict_tree_sql(X, self.tree_, i, True) for i in range(n)]
 
     def _to_graphviz_tree(
         self,

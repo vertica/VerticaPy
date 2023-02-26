@@ -202,7 +202,7 @@ class vDFMachineLearning:
         learn.memmodel.
         """
         from verticapy.machine_learning._utils import get_match_index
-        from verticapy.machine_learning.memmodel.base import InMemoryModel
+        from verticapy.machine_learning.memmodel.tree import NonBinaryTree
 
         if "process" not in kwds or kwds["process"]:
             if isinstance(columns, str):
@@ -337,9 +337,7 @@ class vDFMachineLearning:
                     node_id=idx + 1,
                 )
             if "process" not in kwds or kwds["process"]:
-                return InMemoryModel(
-                    "CHAID", attributes={"tree": tree, "classes": classes}
-                )
+                return NonBinaryTree(tree=tree, classes=classes)
             return tree, idx
 
     @save_verticapy_logs

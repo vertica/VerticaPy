@@ -19,6 +19,7 @@ from abc import abstractmethod
 from typing import Literal, Union
 import numpy as np
 
+from verticapy._utils._sql._format import clean_query, format_magic
 from verticapy._typing import ArrayLike
 
 
@@ -70,9 +71,9 @@ class MulticlassClassifier(InMemoryModel):
             Predicted values.
         """
         res = np.argmax(self.predict_proba(X), axis=1)
-        if self.classes_:
-            res = np.array([self.classes_[i] for i in result])
-        return result
+        if len(self.classes_) > 0:
+            res = np.array([self.classes_[i] for i in res])
+        return res
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
@@ -88,12 +89,15 @@ class MulticlassClassifier(InMemoryModel):
         str
             SQL code.
         """
-        trees_pred = self.predict_proba_sql(X)
-        m = len(trees_pred)
-        if not (self.classes_):
-            classes_ = [i for i in range(m)]
+        if hasattr(self, "_predict_score_sql"):
+            trees_pred = self._predict_score_sql(X)
         else:
+            trees_pred = self.predict_proba_sql(X)
+        m = len(trees_pred)
+        if len(self.classes_) > 0:
             classes_ = self.classes_
+        else:
+            classes_ = [i for i in range(m)]
         if m == 2:
             res = f"""
                 (CASE 
@@ -119,4 +123,4 @@ class MulticlassClassifier(InMemoryModel):
                 res += f" WHEN {sql[i]} THEN {class_i}"
             classes_0 = format_magic(classes_[0])
             res += f" ELSE {classes_0} END"
-        return res
+        return clean_query(res)

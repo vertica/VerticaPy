@@ -18,7 +18,7 @@ from typing import Literal, Union
 import numpy as np
 
 from verticapy._typing import ArrayLike
-from verticapy._utils._sql._format import clean_query
+from verticapy._utils._sql._format import clean_query, format_magic
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
 from verticapy.machine_learning.memmodel.tree import Tree
@@ -50,6 +50,7 @@ class Clustering(InMemoryModel):
         self, clusters: ArrayLike, p: int = 2, clusters_names: ArrayLike = []
     ) -> None:
         self.clusters_ = np.array(clusters)
+        self.classes_ = np.array(clusters_names)
         self.p_ = p
         return None
 
@@ -70,7 +71,7 @@ class Clustering(InMemoryModel):
         result = []
         for centroid in self.clusters_:
             result += [
-                np.sum((np.array(centroid) - X) ** self.p, axis=1) ** (1 / self.p)
+                np.sum((np.array(centroid) - X) ** self.p_, axis=1) ** (1 / self.p_)
             ]
         return np.column_stack(result)
 
@@ -89,12 +90,10 @@ class Clustering(InMemoryModel):
             Predicted values.
         """
         distances = self.transform(X)
-        clusters_pred_id = np.argmin(distances, axis=1)
-        if self.clusters_names_:
-            for idx, c in enumerate(self.clusters_names_):
-                clusters_pred_id = np.where(
-                    clusters_pred_id == idx, c, clusters_pred_id
-                )
+        clusters_pred_id = np.argmin(distances, axis=1).astype(object)
+        if len(self.classes_) > 0:
+            for idx, c in enumerate(self.classes_):
+                clusters_pred_id[clusters_pred_id == idx] = c
         return clusters_pred_id
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
@@ -138,11 +137,11 @@ class Clustering(InMemoryModel):
                     "the length of each cluster."
                 )
         clusters_distance = []
-        for c in clusters:
+        for c in self.clusters_:
             list_tmp = []
             for idx, col in enumerate(X):
-                list_tmp += [f"POWER({X[idx]} - {c[idx]}, {self.p})"]
-            clusters_distance += ["POWER(" + " + ".join(list_tmp) + f", 1 / {self.p})"]
+                list_tmp += [f"POWER({X[idx]} - {c[idx]}, {self.p_})"]
+            clusters_distance += ["POWER(" + " + ".join(list_tmp) + f", 1 / {self.p_})"]
         return clusters_distance
 
     def predict_sql(self, X: ArrayLike) -> str:
@@ -172,16 +171,17 @@ class Clustering(InMemoryModel):
         sql.reverse()
         is_null_x = " OR ".join([f"{x} IS NULL" for x in X])
         sql_final = f"CASE WHEN {is_null_x} THEN NULL"
+        n = len(self.classes_)
         for i in range(k - 1):
-            if not (self.clusters_names_):
+            if n == 0:
                 c = k - i - 1
             else:
-                c = f"'{self.clusters_names_[k - i - 1]}'"
+                c = format_magic(self.classes_[k - i - 1])
             sql_final += f" WHEN {sql[i]} THEN {c}"
-        if not (self.clusters_names_):
+        if n == 0:
             c = 0
         else:
-            c = f"'{self.clusters_names_[0]}'"
+            c = format_magic(self.classes_[0])
         sql_final += f" ELSE {c} END"
         return sql_final
 
@@ -232,6 +232,7 @@ class KMeans(Clustering):
 
     def __init__(self, clusters: ArrayLike, p: int = 2) -> None:
         self.clusters_ = np.array(clusters)
+        self.classes_ = np.array([])
         self.p_ = p
         return None
 
@@ -255,12 +256,12 @@ class NearestCentroid(Clustering):
         return "NearestCentroid"
 
     @property
-    def _attributes(self) -> Literal["clusters_", "clusters_names_", "p_"]:
-        return ["clusters_", "clusters_names_", "p_"]
+    def _attributes(self) -> Literal["clusters_", "classes_", "p_"]:
+        return ["clusters_", "classes_", "p_"]
 
     def __init__(self, clusters: ArrayLike, classes: ArrayLike, p: int = 2,) -> None:
         self.clusters_ = np.array(clusters)
-        self.clusters_names_ = np.array(classes)
+        self.classes_ = np.array(classes)
         self.p_ = p
         return None
 
@@ -342,8 +343,8 @@ class BisectingKMeans(Clustering, Tree):
         else:
             right_node = int(self.children_right_[node_id])
             left_node = int(self.children_left_[node_id])
-            if np.sum((X - self.clusters_[left_node]) ** self.p) < np.sum(
-                (X - self.clusters_[right_node]) ** self.p
+            if np.sum((X - self.clusters_[left_node]) ** self.p_) < np.sum(
+                (X - self.clusters_[right_node]) ** self.p_
             ):
                 return self._predict_tree(X, left_node)
             else:
@@ -420,8 +421,8 @@ class BisectingKMeans(Clustering, Tree):
         for c in self.clusters_:
             list_tmp = []
             for idx, col in enumerate(X):
-                list_tmp += [f"POWER({X[idx]} - {c[idx]}, {self.p})"]
-            clusters_distance += [f"POWER({' + '.join(list_tmp)}, 1/{self.p})"]
+                list_tmp += [f"POWER({X[idx]} - {c[idx]}, {self.p_})"]
+            clusters_distance += [f"POWER({' + '.join(list_tmp)}, 1/{self.p_})"]
         is_null_x = " OR ".join([f"{x} IS NULL" for x in X])
         res = self._predict_tree_sql(
             self.children_right_, self.children_left_, 0, clusters_distance
@@ -587,7 +588,7 @@ class KPrototypes(Clustering):
                 if isinstance(centroid_val, str) or centroid_val == None:
                     distance_cat += abs(int(val == centroid_val) - 1)
                 else:
-                    distance_num += (val - centroid_val) ** self.p
+                    distance_num += (val - centroid_val) ** self.p_
             distance_final = distance_num + self.gamma_ * distance_cat
             distance += [distance_final]
         return distance
@@ -639,11 +640,11 @@ class KPrototypes(Clustering):
                     c_i = str(c[idx]).replace("'", "''")
                     clusters_distance_cat += [f"ABS(({X[idx]} = '{c_i}')::int - 1)"]
                 else:
-                    clusters_distance_num += [f"POWER({X[idx]} - {c[idx]}, {self.p})"]
+                    clusters_distance_num += [f"POWER({X[idx]} - {c[idx]}, {self.p_})"]
             final_cluster_distance = ""
             if clusters_distance_num:
                 final_cluster_distance += (
-                    f"POWER({' + '.join(clusters_distance_num)}, 1 / {self.p})"
+                    f"POWER({' + '.join(clusters_distance_num)}, 1 / {self.p_})"
                 )
             if clusters_distance_cat:
                 if clusters_distance_num:

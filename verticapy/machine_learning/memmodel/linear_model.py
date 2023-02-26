@@ -28,7 +28,7 @@ class LinearModel(InMemoryModel):
 
     Parameters
     ----------
-    coefficients: ArrayLike
+    coef: ArrayLike
         ArrayLike of the model's coefficients.
     intercept: float, optional
         The intercept or constant value.
@@ -42,8 +42,8 @@ class LinearModel(InMemoryModel):
     def _attributes(self) -> Literal["coef_", "intercept_"]:
         return ["coef_", "intercept_"]
 
-    def __init__(self, coefficients: ArrayLike, intercept: float = 0.0) -> None:
-        self.coef_ = np.array(coefficients)
+    def __init__(self, coef: ArrayLike, intercept: float = 0.0) -> None:
+        self.coef_ = np.array(coef)
         self.intercept_ = intercept
         return None
 
@@ -144,7 +144,7 @@ class LinearModel(InMemoryModel):
             SQL code.
         """
         probability_1 = self._predict_logit_sql(X)
-        return [f"1 - {probability_1}", probability_1]
+        return [f"1 - ({probability_1})", probability_1]
 
 
 class LinearModelClassifier(LinearModel):
@@ -194,4 +194,4 @@ class LinearModelClassifier(LinearModel):
         str
             SQL code.
         """
-        return f"{self._predict_logit_sql(X)} > 0.5"
+        return f"(({self._predict_logit_sql(X)}) > 0.5)::int"
