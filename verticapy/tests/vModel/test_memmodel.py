@@ -21,7 +21,7 @@ import pytest
 # VerticaPy
 from verticapy import drop
 from verticapy.datasets import load_titanic
-from verticapy.learn.memmodel import memModel
+import verticapy.machine_learning.memmodel as mm
 
 
 @pytest.fixture(scope="module")
@@ -31,9 +31,9 @@ def titanic_vd():
     drop(name="public.titanic")
 
 
-class Test_memModel:
+class Test_InMemoryModel:
     def test_LinearRegression(self):
-        model = memModel(
+        model = InMemoryModel(
             "LinearRegression", {"coefficients": [0.5, 0.6], "intercept": 0.8}
         )
         assert model.predict([[0.4, 0.5]])[0] == pytest.approx(1.3)
@@ -50,7 +50,9 @@ class Test_memModel:
         assert model.model_type_ == "LinearRegression"
 
     def test_LinearSVR(self):
-        model = memModel("LinearSVR", {"coefficients": [0.5, 0.6], "intercept": 0.8})
+        model = InMemoryModel(
+            "LinearSVR", {"coefficients": [0.5, 0.6], "intercept": 0.8}
+        )
         assert model.predict([[0.4, 0.5]])[0] == pytest.approx(1.3)
         assert model.predict_sql([0.4, 0.5]) == "0.8 + 0.5 * 0.4 + 0.6 * 0.5"
         attributes = model.get_attributes()
@@ -65,7 +67,7 @@ class Test_memModel:
         assert model.model_type_ == "LinearSVR"
 
     def test_LogisticRegression(self):
-        model = memModel(
+        model = InMemoryModel(
             "LogisticRegression", {"coefficients": [0.5, 0.6], "intercept": 0.8}
         )
         assert model.predict([[0.4, 0.5]])[0] == pytest.approx(1)
@@ -96,7 +98,9 @@ class Test_memModel:
         assert model.model_type_ == "LogisticRegression"
 
     def test_LinearSVC(self):
-        model = memModel("LinearSVC", {"coefficients": [0.5, 0.6], "intercept": 0.8})
+        model = InMemoryModel(
+            "LinearSVC", {"coefficients": [0.5, 0.6], "intercept": 0.8}
+        )
         assert model.predict([[0.4, 0.5]])[0] == pytest.approx(1)
         assert (
             model.predict_sql([0.4, 0.5])
@@ -125,7 +129,7 @@ class Test_memModel:
         assert model.model_type_ == "LinearSVC"
 
     def test_PCA(self):
-        model = memModel(
+        model = InMemoryModel(
             "PCA",
             {"principal_components": [[0.4, 0.5], [0.3, 0.2]], "mean": [0.1, 0.3]},
         )
@@ -161,7 +165,7 @@ class Test_memModel:
         assert model.model_type_ == "PCA"
 
     def test_SVD(self):
-        model = memModel(
+        model = InMemoryModel(
             "SVD", {"vectors": [[0.4, 0.5], [0.3, 0.2]], "values": [0.1, 0.3]}
         )
         transformation = model.transform([[0.4, 0.5]])
@@ -190,7 +194,7 @@ class Test_memModel:
         assert model.model_type_ == "SVD"
 
     def test_Normalizer(self):
-        model = memModel(
+        model = InMemoryModel(
             "Normalizer", {"values": [(0.4, 0.5), (0.3, 0.2)], "method": "minmax"}
         )
         transformation = model.transform([[0.4, 0.5]])
@@ -240,7 +244,7 @@ class Test_memModel:
         assert model.model_type_ == "Normalizer"
 
     def test_OneHotEncoder(self):
-        model = memModel(
+        model = InMemoryModel(
             "OneHotEncoder",
             {
                 "categories": [["male", "female"], [1, 2, 3]],
@@ -316,7 +320,7 @@ class Test_memModel:
         assert model.model_type_ == "OneHotEncoder"
 
     def test_KMeans(self):
-        model = memModel(
+        model = InMemoryModel(
             "KMeans", {"clusters": [[0.5, 0.6], [1, 2], [100, 200]], "p": 2}
         )
         assert model.predict([[0.2, 0.3]])[0] == 0
@@ -372,7 +376,7 @@ class Test_memModel:
         assert model.model_type_ == "KMeans"
 
     def test_NearestCentroid(self):
-        model = memModel(
+        model = InMemoryModel(
             "NearestCentroid",
             {
                 "clusters": [[0.5, 0.6], [1, 2], [100, 200]],
@@ -436,7 +440,7 @@ class Test_memModel:
         assert model.model_type_ == "NearestCentroid"
 
     def test_BisectingKMeans(self):
-        model = memModel(
+        model = InMemoryModel(
             "BisectingKMeans",
             {
                 "clusters": [[0.5, 0.6], [1, 2], [100, 200], [10, 700], [-100, -200],],
@@ -481,7 +485,7 @@ class Test_memModel:
         assert model.model_type_ == "BisectingKMeans"
 
     def test_BinaryTreeRegressor(self):
-        model = memModel(
+        model = InMemoryModel(
             "BinaryTreeRegressor",
             {
                 "children_left": [1, 3, None, None, None],
@@ -513,7 +517,7 @@ class Test_memModel:
         assert model.model_type_ == "BinaryTreeRegressor"
 
     def test_BinaryTreeClassifier(self):
-        model = memModel(
+        model = InMemoryModel(
             "BinaryTreeClassifier",
             {
                 "children_left": [1, 3, None, None, None],
@@ -570,7 +574,7 @@ class Test_memModel:
 
     def test_CHAID(self, titanic_vd):
         tree = titanic_vd.chaid("survived", ["sex", "fare"]).attributes_["tree"]
-        model = memModel("CHAID", {"tree": tree, "classes": ["a", "b"]})
+        model = InMemoryModel("CHAID", {"tree": tree, "classes": ["a", "b"]})
         prediction = model.predict([["male", 100], ["female", 20], ["female", 50]])
         assert prediction[0] == "a"
         assert prediction[1] == "b"
@@ -604,7 +608,7 @@ class Test_memModel:
         assert model.model_type_ == "CHAID"
 
     def test_RandomForestRegressor(self):
-        model1 = memModel(
+        model1 = InMemoryModel(
             "BinaryTreeRegressor",
             {
                 "children_left": [1, 3, None, None, None],
@@ -614,7 +618,7 @@ class Test_memModel:
                 "value": [None, None, 3, 11, 1993],
             },
         )
-        model2 = memModel(
+        model2 = InMemoryModel(
             "BinaryTreeRegressor",
             {
                 "children_left": [1, 3, None, None, None],
@@ -624,7 +628,7 @@ class Test_memModel:
                 "value": [None, None, -3, -11, -1993],
             },
         )
-        model3 = memModel(
+        model3 = InMemoryModel(
             "BinaryTreeRegressor",
             {
                 "children_left": [1, 3, None, None, None],
@@ -634,7 +638,9 @@ class Test_memModel:
                 "value": [None, None, 0, 3, 6],
             },
         )
-        model = memModel("RandomForestRegressor", {"trees": [model1, model2, model3]})
+        model = InMemoryModel(
+            "RandomForestRegressor", {"trees": [model1, model2, model3]}
+        )
         prediction = model.predict([["male", 100], ["female", 20], ["female", 50]])
         assert prediction[0] == pytest.approx(0.0)
         assert prediction[1] == pytest.approx(1.0)
@@ -657,7 +663,7 @@ class Test_memModel:
         assert model.model_type_ == "RandomForestRegressor"
 
     def test_RandomForestClassifier(self):
-        model1 = memModel(
+        model1 = InMemoryModel(
             "BinaryTreeClassifier",
             {
                 "children_left": [1, 3, None, None, None],
@@ -674,7 +680,7 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model2 = memModel(
+        model2 = InMemoryModel(
             "BinaryTreeClassifier",
             {
                 "children_left": [1, 3, None, None, None],
@@ -691,7 +697,7 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model3 = memModel(
+        model3 = InMemoryModel(
             "BinaryTreeClassifier",
             {
                 "children_left": [1, 3, None, None, None],
@@ -708,7 +714,9 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model = memModel("RandomForestClassifier", {"trees": [model1, model2, model3]})
+        model = InMemoryModel(
+            "RandomForestClassifier", {"trees": [model1, model2, model3]}
+        )
         prediction = model.predict([["male", 100], ["female", 20], ["female", 50]])
         assert prediction[0] == "a"
         assert prediction[1] == "b"
@@ -756,7 +764,7 @@ class Test_memModel:
         assert model.model_type_ == "RandomForestClassifier"
 
     def test_XGBoostRegressor(self):
-        model1 = memModel(
+        model1 = InMemoryModel(
             "BinaryTreeRegressor",
             {
                 "children_left": [1, 3, None, None, None],
@@ -766,7 +774,7 @@ class Test_memModel:
                 "value": [None, None, 3, 11, 1993],
             },
         )
-        model2 = memModel(
+        model2 = InMemoryModel(
             "BinaryTreeRegressor",
             {
                 "children_left": [1, 3, None, None, None],
@@ -776,7 +784,7 @@ class Test_memModel:
                 "value": [None, None, -3, -11, -1993],
             },
         )
-        model3 = memModel(
+        model3 = InMemoryModel(
             "BinaryTreeRegressor",
             {
                 "children_left": [1, 3, None, None, None],
@@ -786,7 +794,7 @@ class Test_memModel:
                 "value": [None, None, 0, 3, 6],
             },
         )
-        model = memModel(
+        model = InMemoryModel(
             "XGBoostRegressor",
             {"trees": [model1, model2, model3], "learning_rate": 0.1, "mean": 1.0},
         )
@@ -819,7 +827,7 @@ class Test_memModel:
         assert model.model_type_ == "XGBoostRegressor"
 
     def test_XGBoostClassifier(self):
-        model1 = memModel(
+        model1 = InMemoryModel(
             "BinaryTreeClassifier",
             {
                 "children_left": [1, 3, None, None, None],
@@ -836,7 +844,7 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model2 = memModel(
+        model2 = InMemoryModel(
             "BinaryTreeClassifier",
             {
                 "children_left": [1, 3, None, None, None],
@@ -853,7 +861,7 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model3 = memModel(
+        model3 = InMemoryModel(
             "BinaryTreeClassifier",
             {
                 "children_left": [1, 3, None, None, None],
@@ -870,7 +878,7 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model = memModel(
+        model = InMemoryModel(
             "XGBoostClassifier",
             {
                 "trees": [model1, model2, model3],
@@ -925,7 +933,7 @@ class Test_memModel:
         assert model.model_type_ == "XGBoostClassifier"
 
     def test_NaiveBayes(self):
-        model = memModel(
+        model = InMemoryModel(
             "NaiveBayes",
             {
                 "attributes": [

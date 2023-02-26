@@ -197,12 +197,12 @@ class vDFMachineLearning:
 
     Returns
     -------
-    memModel
+    InMemoryModel
         An independent model containing the result. For more information, see
         learn.memmodel.
         """
         from verticapy.machine_learning._utils import get_match_index
-        from verticapy.machine_learning.memmodel.base import memModel
+        from verticapy.machine_learning.memmodel.base import InMemoryModel
 
         if "process" not in kwds or kwds["process"]:
             if isinstance(columns, str):
@@ -302,7 +302,9 @@ class vDFMachineLearning:
                 }
             tree["children"] = children
             if "process" not in kwds or kwds["process"]:
-                return memModel("CHAID", attributes={"tree": tree, "classes": classes})
+                return InMemoryModel(
+                    "CHAID", attributes={"tree": tree, "classes": classes}
+                )
             return tree, idx
         else:
             tree["children"] = {}
@@ -335,7 +337,9 @@ class vDFMachineLearning:
                     node_id=idx + 1,
                 )
             if "process" not in kwds or kwds["process"]:
-                return memModel("CHAID", attributes={"tree": tree, "classes": classes})
+                return InMemoryModel(
+                    "CHAID", attributes={"tree": tree, "classes": classes}
+                )
             return tree, idx
 
     @save_verticapy_logs

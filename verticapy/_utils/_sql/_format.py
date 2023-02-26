@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
-from typing import Any
+from typing import Any, Union
 
 import pandas as pd
 
@@ -24,18 +24,21 @@ from verticapy._utils._sql._cast import to_dtype_category
 from verticapy.errors import ParsingError
 
 
-def clean_query(query: str) -> str:
-    query = re.sub(r"--.+(\n|\Z)", "", query)
-    query = query.replace("\t", " ").replace("\n", " ")
-    query = re.sub(" +", " ", query)
+def clean_query(query: Union[str, list]) -> Union[str, list]:
+    if isinstance(query, list):
+        return [clean_query(q) for q in query]
+    else:
+        query = re.sub(r"--.+(\n|\Z)", "", query)
+        query = query.replace("\t", " ").replace("\n", " ")
+        query = re.sub(" +", " ", query)
 
-    while len(query) > 0 and (query[-1] in (";", " ")):
-        query = query[0:-1]
+        while len(query) > 0 and (query[-1] in (";", " ")):
+            query = query[0:-1]
 
-    while len(query) > 0 and (query[0] in (";", " ")):
-        query = query[1:]
+        while len(query) > 0 and (query[0] in (";", " ")):
+            query = query[1:]
 
-    return query.strip()
+        return query.strip().replace("\xa0", " ")
 
 
 def erase_comment(query: str) -> str:

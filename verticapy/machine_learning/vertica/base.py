@@ -866,14 +866,14 @@ Base Class for Vertica Models.
 
     def to_memmodel(self, **kwds):
         """
-    Converts a specified Vertica model to a memModel model.
+    Converts a specified Vertica model to a InMemoryModel model.
 
     Returns
     -------
     object
-        memModel model.
+        InMemoryModel model.
         """
-        from verticapy.machine_learning.memmodel.base import memModel
+        from verticapy.machine_learning.memmodel.base import InMemoryModel
         from verticapy.machine_learning.vertica.tree import get_tree_list_of_arrays
 
         if self._model_type == "AutoML":
@@ -1055,7 +1055,9 @@ Base Class for Vertica Models.
                                 ][0]
                             )
                         )
-                    model = memModel(model_type=tree_type, attributes=tree_attributes)
+                    model = InMemoryModel(
+                        model_type=tree_type, attributes=tree_attributes
+                    )
                     if "return_tree" in kwds and kwds["return_tree"] == i:
                         return model
                     trees += [model]
@@ -1073,9 +1075,9 @@ Base Class for Vertica Models.
                     attributes["logodds"] = self.prior_.copy()
         else:
             raise ModelError(
-                f"Model type '{self._model_type}' can not be converted to memModel."
+                f"Model type '{self._model_type}' can not be converted to InMemoryModel."
             )
-        return memModel(model_type=self._model_type, attributes=attributes)
+        return InMemoryModel(model_type=self._model_type, attributes=attributes)
 
     def to_python(
         self,

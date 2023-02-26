@@ -214,7 +214,9 @@ vDataColumns : vDataColumn
             if isinstance(input_relation, str) and input_relation:
 
                 if schema:
-                    input_relation = f"{quote_ident(schema)}.{quote_ident(input_relation)}"
+                    input_relation = (
+                        f"{quote_ident(schema)}.{quote_ident(input_relation)}"
+                    )
                 else:
                     input_relation = quote_ident(input_relation)
                 cols = ", ".join(usecols) if usecols else "*"
@@ -370,11 +372,7 @@ vDataColumns : vDataColumn
 
         return self.__init__(tb.to_sql())
 
-    def _from_pandas(
-        self,
-        object_: pd.DataFrame,
-        usecols: list[str] = [],
-    ) -> None:
+    def _from_pandas(self, object_: pd.DataFrame, usecols: list[str] = [],) -> None:
         argv = object_[usecols] if usecols else object_
         vdf = read_pandas(argv)
         return self.__init__(input_relation=vdf._vars["main_relation"])

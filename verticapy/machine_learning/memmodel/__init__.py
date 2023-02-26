@@ -14,4 +14,33 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.machine_learning.memmodel.base import matrix_rotation, memModel
+from verticapy.machine_learning.memmodel.cluster import (
+    BisectingKMeans,
+    KMeans,
+    KPrototypes,
+    NearestCentroid,
+)
+from verticapy.machine_learning.memmodel.decomposition import PCA, SVD
+from verticapy.machine_learning.memmodel.ensemble import (
+    IsolationForest,
+    RandomForestClassifier,
+    RandomForestRegressor,
+    XGBoostClassifier,
+    XGBoostRegressor,
+)
+from verticapy.machine_learning.memmodel.linear_model import (
+    LinearModel,
+    LinearModelClassifier,
+)
+from verticapy.machine_learning.memmodel.naive_bayes import NaiveBayes
+from verticapy.machine_learning.memmodel.preprocessing import (
+    StandardScaler,
+    MinMaxScaler,
+    OneHotEncoder,
+)
+from verticapy.machine_learning.memmodel.tree import (
+    BinaryTreeAnomaly,
+    BinaryTreeClassifier,
+    BinaryTreeRegressor,
+    NonBinaryTree,
+)
