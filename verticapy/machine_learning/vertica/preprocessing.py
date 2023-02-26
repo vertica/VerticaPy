@@ -23,6 +23,8 @@ from verticapy._utils._sql._format import quote_ident, schema_relation, clean_qu
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
+
+from verticapy.core.vdataframe.tablesample import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel.preprocessing as mm
@@ -482,3 +484,69 @@ null_column_name: str, optional
             "column_naming": str(column_naming).lower(),
             "null_column_name": null_column_name,
         }
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        query = f"""SELECT 
+                        category_name, 
+                        category_level::varchar, 
+                        category_level_index 
+                    FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                    model_name = '{self.model_name}', 
+                                    attr_name = 'integer_categories')) 
+                                    VERTICAPY_SUBTABLE"""
+        try:
+            self.cat_ = TableSample.read_sql(
+                query=f"""{query}
+                          UNION ALL 
+                          SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                    model_name = '{self.model_name}', 
+                                    attr_name = 'varchar_categories')""",
+                title="Getting Model Attributes.",
+            )
+        except:
+            try:
+                self.cat_ = TableSample.read_sql(
+                    query=query, title="Getting Model Attributes.",
+                )
+            except:
+                self.cat_ = self.get_attr("varchar_categories")
+        self.cat_ = np.array(self.cat_)
+        cat = self._compute_ohe_array(self.cat_[:, 0:2])
+        cat_list_idx = []
+        for i, x1 in enumerate(cat[0]):
+            for j, x2 in enumerate(self.X):
+                if x2.lower()[1:-1] == x1:
+                    cat_list_idx += [j]
+        categories = []
+        for i in cat_list_idx:
+            categories += [cat[1][i]]
+        self.categories_ = categories
+        self.column_naming_ = self.parameters["column_naming"]
+        self.drop_first_ = self.parameters["drop_first"]
+        return None
+
+    @staticmethod
+    def _compute_ohe_array(categories: list):
+        # Allows to split the One Hot Encoder Array by features categories
+        cat, tmp_cat = [], []
+        init_cat, X = categories[0][0], [categories[0][0]]
+        for c in categories:
+            if c[0] != init_cat:
+                init_cat = c[0]
+                X += [c[0]]
+                cat += [tmp_cat]
+                tmp_cat = [c[1]]
+            else:
+                tmp_cat += [c[1]]
+        cat += [tmp_cat]
+        return [X, cat]
+
+    def to_memmodel(self) -> mm.OneHotEncoder:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.OneHotEncoder(self.categories_, self.column_naming_, self.drop_first_)

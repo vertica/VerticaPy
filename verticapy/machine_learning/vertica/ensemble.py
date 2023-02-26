@@ -35,7 +35,6 @@ from verticapy.machine_learning.vertica.base import (
     Regressor,
     Tree,
 )
-from verticapy.machine_learning.vertica.tree import get_tree_list_of_arrays
 
 
 class XGBoost:
@@ -99,7 +98,7 @@ class XGBoost:
 
             def xgboost_tree_dict(model, tree_id: int, c: str = None):
                 tree = model.get_tree(tree_id)
-                attributes = get_tree_list_of_arrays(tree, model.X, model._model_type)
+                attributes = model._compute_trees_arrays(tree, model.X)
                 n_nodes = len(attributes[0])
                 split_conditions = []
                 parents = [0 for i in range(n_nodes)]

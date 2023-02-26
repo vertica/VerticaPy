@@ -154,7 +154,7 @@ model
             if result_tmp == None:
                 result_tmp = "None"
             model_save[val[0]] = result_tmp
-        elif model_save["type"] == "KNeighborsClassifier":
+        if model_save["type"] == "KNeighborsClassifier":
             model = vml.KNeighborsClassifier(
                 name, model_save["n_neighbors"], model_save["p"]
             )

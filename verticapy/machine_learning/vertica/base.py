@@ -848,7 +848,7 @@ Base Class for Vertica Models.
             new_parameters[p] = parameters[p]
         self.__init__(name=self.model_name, **new_parameters)
 
-    def to_memmodel(self, **kwds):
+    def to_memmodel(self):
         """
     Converts a specified Vertica model to a InMemoryModel model.
 
@@ -858,42 +858,9 @@ Base Class for Vertica Models.
         InMemoryModel model.
         """
         from verticapy.machine_learning.memmodel.base import InMemoryModel
-        from verticapy.machine_learning.vertica.tree import get_tree_list_of_arrays
 
         if self._model_type == "AutoML":
             return self.best_model_.to_memmodel()
-        elif self._model_type == "OneHotEncoder":
-
-            def get_one_hot_encode_X_cat(L: list):
-                # Allows to split the One Hot Encoder Array by features categories
-                cat, tmp_cat, init_cat, X = [], [], L[0][0], [L[0][0]]
-                for c in L:
-                    if c[0] != init_cat:
-                        init_cat = c[0]
-                        X += [c[0]]
-                        cat += [tmp_cat]
-                        tmp_cat = [c[1]]
-                    else:
-                        tmp_cat += [c[1]]
-                cat += [tmp_cat]
-                return X, cat
-
-            cat = list(
-                get_one_hot_encode_X_cat([l[0:2] for l in self.param_.to_list()])
-            )
-            cat_list_idx = []
-            for i, x1 in enumerate(cat[0]):
-                for j, x2 in enumerate(self.X):
-                    if x2.lower()[1:-1] == x1:
-                        cat_list_idx += [j]
-            categories = []
-            for i in cat_list_idx:
-                categories += [cat[1][i]]
-            attributes = {
-                "categories": categories,
-                "drop_first": self.parameters["drop_first"],
-                "column_naming": self.parameters["column_naming"],
-            }
         elif self._model_type in (
             "XGBoostClassifier",
             "XGBoostRegressor",
@@ -919,72 +886,60 @@ Base Class for Vertica Models.
             return_prob_rf = self._model_type == "RandomForestClassifier"
             is_iforest = self._model_type == "IsolationForest"
             for i in range(n):
-                if ("return_tree" in kwds and kwds["return_tree"] == i) or (
-                    "return_tree" not in kwds
-                ):
-                    tree = self.get_tree(i)
-                    tree = get_tree_list_of_arrays(
-                        tree, self.X, self._model_type, return_prob_rf
-                    )
-                    tree_attributes = {
-                        "children_left": tree[0],
-                        "children_right": tree[1],
-                        "feature": tree[2],
-                        "threshold": tree[3],
-                        "value": tree[4],
-                    }
-                    for idx in range(len(tree[5])):
-                        if not (tree[5][idx]) and isinstance(
-                            tree_attributes["threshold"][idx], str
-                        ):
-                            tree_attributes["threshold"][idx] = float(
-                                tree_attributes["threshold"][idx]
-                            )
-                    if tree_type == "BinaryTreeClassifier":
-                        tree_attributes["classes"] = self.classes_
-                    elif tree_type == "BinaryTreeRegressor":
-                        tree_attributes["value"] = [
-                            float(val) if isinstance(val, str) else val
-                            for val in tree_attributes["value"]
-                        ]
-                    if self._model_type == "XGBoostClassifier":
-                        tree_attributes["value"] = tree[6]
-                        for idx in range(len(tree[6])):
-                            if tree[6][idx] != None:
-                                all_classes_logodss = []
-                                for c in self.classes_:
-                                    all_classes_logodss += [tree[6][idx][str(c)]]
-                                tree_attributes["value"][idx] = all_classes_logodss
-                    elif self._model_type == "RandomForestClassifier":
-                        for idx in range(len(tree_attributes["value"])):
-                            if tree_attributes["value"][idx] != None:
-                                prob = [0.0 for i in range(len(self.classes_))]
-                                for idx2, c in enumerate(self.classes_):
-                                    if str(c) == str(tree_attributes["value"][idx]):
-                                        prob[idx2] = tree[6][idx]
-                                        break
-                                other_proba = (1 - tree[6][idx]) / (
-                                    len(self.classes_) - 1
-                                )
-                                for idx2, p in enumerate(prob):
-                                    if p == 0.0:
-                                        prob[idx2] = other_proba
-                                tree_attributes["value"][idx] = prob
-                    if tree_type == "BinaryTreeAnomaly":
-                        tree_attributes["psy"] = int(
-                            self.parameters["sample"]
-                            * int(
-                                self.get_attr("accepted_row_count")[
-                                    "accepted_row_count"
-                                ][0]
-                            )
+                tree = self._compute_trees_arrays(
+                    self.get_tree(i), self.X, return_prob_rf
+                )
+                tree_attributes = {
+                    "children_left": tree[0],
+                    "children_right": tree[1],
+                    "feature": tree[2],
+                    "threshold": tree[3],
+                    "value": tree[4],
+                }
+                for idx in range(len(tree[5])):
+                    if not (tree[5][idx]) and isinstance(
+                        tree_attributes["threshold"][idx], str
+                    ):
+                        tree_attributes["threshold"][idx] = float(
+                            tree_attributes["threshold"][idx]
                         )
-                    model = InMemoryModel(
-                        model_type=tree_type, attributes=tree_attributes
+                if tree_type == "BinaryTreeClassifier":
+                    tree_attributes["classes"] = self.classes_
+                elif tree_type == "BinaryTreeRegressor":
+                    tree_attributes["value"] = [
+                        float(val) if isinstance(val, str) else val
+                        for val in tree_attributes["value"]
+                    ]
+                if self._model_type == "XGBoostClassifier":
+                    tree_attributes["value"] = tree[6]
+                    for idx in range(len(tree[6])):
+                        if tree[6][idx] != None:
+                            all_classes_logodss = []
+                            for c in self.classes_:
+                                all_classes_logodss += [tree[6][idx][str(c)]]
+                            tree_attributes["value"][idx] = all_classes_logodss
+                elif self._model_type == "RandomForestClassifier":
+                    for idx in range(len(tree_attributes["value"])):
+                        if tree_attributes["value"][idx] != None:
+                            prob = [0.0 for i in range(len(self.classes_))]
+                            for idx2, c in enumerate(self.classes_):
+                                if str(c) == str(tree_attributes["value"][idx]):
+                                    prob[idx2] = tree[6][idx]
+                                    break
+                            other_proba = (1 - tree[6][idx]) / (len(self.classes_) - 1)
+                            for idx2, p in enumerate(prob):
+                                if p == 0.0:
+                                    prob[idx2] = other_proba
+                            tree_attributes["value"][idx] = prob
+                if tree_type == "BinaryTreeAnomaly":
+                    tree_attributes["psy"] = int(
+                        self.parameters["sample"]
+                        * int(
+                            self.get_attr("accepted_row_count")["accepted_row_count"][0]
+                        )
                     )
-                    if "return_tree" in kwds and kwds["return_tree"] == i:
-                        return model
-                    trees += [model]
+                model = InMemoryModel(model_type=tree_type, attributes=tree_attributes)
+                trees += [model]
             attributes = {"trees": trees}
             if self._model_type in ("XGBoostRegressor", "XGBoostClassifier"):
                 attributes["learning_rate"] = self.parameters["learning_rate"]
@@ -1034,8 +989,6 @@ Base Class for Vertica Models.
     str / func
         Python function
         """
-        from verticapy.machine_learning.vertica.tree import get_tree_list_of_arrays
-
         if not (return_str):
             func = self.to_python(
                 name=name,
@@ -1245,7 +1198,7 @@ Base Class for Vertica Models.
             return func
         elif self._model_type == "OneHotEncoder":
             predictors = self.X
-            details = self.param_.values
+            details = self.cat_.values
             n, m = len(predictors), len(details["category_name"])
             positions = {}
             for i in range(m):
@@ -1295,7 +1248,7 @@ Base Class for Vertica Models.
             func += "\ttree_list = []\n"
             for i in range(n):
                 tree = self.get_tree(i)
-                tree_list = get_tree_list_of_arrays(tree, self.X, self._model_type)
+                tree_list = self._compute_trees_arrays(tree, self.X, self._model_type)
                 func += f"\ttree_list += [{tree_list}]\n"
             if self._model_type == "IsolationForest":
                 func += "\tdef heuristic_length(i):\n"
@@ -1559,6 +1512,71 @@ class Supervised(vModel):
 
 
 class Tree:
+    @staticmethod
+    def _map_idx(x: str, X: list) -> int:
+        """
+        Map the vector to the right index.
+        """
+        for idx, xi in enumerate(X):
+            if quote_ident(x).lower() == quote_ident(xi).lower():
+                return idx
+
+    @staticmethod
+    def _compute_trees_arrays(
+        tree: TableSample, X: list, return_probability: bool = False
+    ):
+        """
+        Takes as input a tree which is represented by a TableSample
+        It returns a list of arrays. Each index of the arrays represents
+        a node value.
+        """
+        tree_list = []
+        for idx in range(len(tree["tree_id"])):
+            tree.values["left_child_id"] = [
+                idx if node_id == tree.values["node_id"][idx] else node_id
+                for node_id in tree.values["left_child_id"]
+            ]
+            tree.values["right_child_id"] = [
+                idx if node_id == tree.values["node_id"][idx] else node_id
+                for node_id in tree.values["right_child_id"]
+            ]
+            tree.values["node_id"][idx] = idx
+            tree.values["split_predictor"][idx] = self._map_idx(
+                tree["split_predictor"][idx], X
+            )
+            if self._model_type == "XGBoostClassifier" and isinstance(
+                tree["log_odds"][idx], str
+            ):
+                val, all_val = tree["log_odds"][idx].split(","), {}
+                for v in val:
+                    all_val[v.split(":")[0]] = float(v.split(":")[1])
+                tree.values["log_odds"][idx] = all_val
+        if self._model_type == "IsolationForest":
+            tree.values["prediction"], n = [], len(tree.values["leaf_path_length"])
+            for idx in range(n):
+                if tree.values["leaf_path_length"][idx] != None:
+                    tree.values["prediction"] += [
+                        [
+                            int(float(tree.values["leaf_path_length"][idx])),
+                            int(float(tree.values["training_row_count"][idx])),
+                        ]
+                    ]
+                else:
+                    tree.values["prediction"] += [None]
+        trees_arrays = [
+            tree["left_child_id"],
+            tree["right_child_id"],
+            tree["split_predictor"],
+            tree["split_value"],
+            tree["prediction"],
+            tree["is_categorical_split"],
+        ]
+        if self._model_type == "XGBoostClassifier":
+            trees_arrays += [tree["log_odds"]]
+        if return_probability:
+            trees_arrays += [tree["probability/variance"]]
+        return trees_arrays
+
     def to_graphviz(
         self,
         tree_id: int = 0,
@@ -1600,7 +1618,8 @@ class Tree:
         str
             Graphviz code.
         """
-        return self.to_memmodel(return_tree=tree_id).to_graphviz(
+        return self.to_memmodel().to_graphviz(
+            tree_id=tree_id,
             feature_names=self.X,
             classes_color=classes_color,
             round_pred=round_pred,
@@ -1681,7 +1700,8 @@ class Tree:
         graphviz.Source
             graphviz object.
         """
-        return self.to_memmodel(return_tree=tree_id).plot_tree(
+        return self.to_memmodel().plot_tree(
+            tree_id=tree_id,
             feature_names=self.X,
             classes_color=classes_color,
             round_pred=round_pred,
@@ -3186,8 +3206,6 @@ class Unsupervised(vModel):
         elif self._model_type == "SVD":
             self.singular_values_ = self.get_attr("right_singular_vectors")
             self.explained_variance_ = self.get_attr("singular_values")
-        elif self._model_type == "Scaler":
-            self.param_ = self.get_attr("details")
         elif self._model_type == "OneHotEncoder":
             query = f"""SELECT 
                             category_name, 
@@ -3198,7 +3216,7 @@ class Unsupervised(vModel):
                                         attr_name = 'integer_categories')) 
                                         VERTICAPY_SUBTABLE"""
             try:
-                self.param_ = TableSample.read_sql(
+                self.cat_ = TableSample.read_sql(
                     query=f"""{query}
                               UNION ALL 
                               SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
@@ -3208,11 +3226,11 @@ class Unsupervised(vModel):
                 )
             except:
                 try:
-                    self.param_ = TableSample.read_sql(
+                    self.cat_ = TableSample.read_sql(
                         query=query, title="Getting Model Attributes.",
                     )
                 except:
-                    self.param_ = self.get_attr("varchar_categories")
+                    self.cat_ = self.get_attr("varchar_categories")
         return self
 
 
@@ -3386,21 +3404,21 @@ class Preprocessing(Unsupervised):
             names = []
             for column in self.X:
                 k = 0
-                for i in range(len(self.param_["category_name"])):
-                    if quote_ident(self.param_["category_name"][i]) == quote_ident(
+                for i in range(len(self.cat_["category_name"])):
+                    if quote_ident(self.cat_["category_name"][i]) == quote_ident(
                         column
                     ):
                         if (k != 0 or not (self.parameters["drop_first"])) and (
                             not (self.parameters["ignore_null"])
-                            or self.param_["category_level"][i] != None
+                            or self.cat_["category_level"][i] != None
                         ):
                             if self.parameters["column_naming"] == "indices":
                                 name = f'"{quote_ident(column)[1:-1]}{self.parameters["separator"]}'
-                                name += f'{self.param_["category_level_index"][i]}"'
+                                name += f'{self.cat_["category_level_index"][i]}"'
                                 names += [name]
                             else:
-                                if self.param_["category_level"][i] != None:
-                                    category_level = self.param_["category_level"][
+                                if self.cat_["category_level"][i] != None:
+                                    category_level = self.cat_["category_level"][
                                         i
                                     ].lower()
                                 else:

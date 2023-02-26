@@ -17,75 +17,15 @@ permissions and limitations under the License.
 from typing import Literal, Union
 
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
-from verticapy.machine_learning.vertica.base import (
-    MulticlassClassifier,
-    Regressor,
-    Tree,
+from verticapy.machine_learning.vertica.ensemble import (
+    RandomForestClassifier,
+    RandomForestRegressor,
 )
 
 
-def get_tree_list_of_arrays(
-    tree, X: list, model_type: str, return_probability: bool = False
-):
-    """
-    Takes as input a tree which is represented by a TableSample
-    It returns a list of arrays. Each index of the arrays represents
-    a node value.
-    """
-
-    def map_idx(x):
-        for idx, elem in enumerate(X):
-            if quote_ident(x).lower() == quote_ident(elem).lower():
-                return idx
-
-    tree_list = []
-    for idx in range(len(tree["tree_id"])):
-        tree.values["left_child_id"] = [
-            idx if elem == tree.values["node_id"][idx] else elem
-            for elem in tree.values["left_child_id"]
-        ]
-        tree.values["right_child_id"] = [
-            idx if elem == tree.values["node_id"][idx] else elem
-            for elem in tree.values["right_child_id"]
-        ]
-        tree.values["node_id"][idx] = idx
-        tree.values["split_predictor"][idx] = map_idx(tree["split_predictor"][idx])
-        if model_type == "XGBoostClassifier" and isinstance(tree["log_odds"][idx], str):
-            val, all_val = tree["log_odds"][idx].split(","), {}
-            for elem in val:
-                all_val[elem.split(":")[0]] = float(elem.split(":")[1])
-            tree.values["log_odds"][idx] = all_val
-    if model_type == "IsolationForest":
-        tree.values["prediction"], n = [], len(tree.values["leaf_path_length"])
-        for idx in range(n):
-            if tree.values["leaf_path_length"][idx] != None:
-                tree.values["prediction"] += [
-                    [
-                        int(float(tree.values["leaf_path_length"][idx])),
-                        int(float(tree.values["training_row_count"][idx])),
-                    ]
-                ]
-            else:
-                tree.values["prediction"] += [None]
-    tree_list = [
-        tree["left_child_id"],
-        tree["right_child_id"],
-        tree["split_predictor"],
-        tree["split_value"],
-        tree["prediction"],
-        tree["is_categorical_split"],
-    ]
-    if model_type == "XGBoostClassifier":
-        tree_list += [tree["log_odds"]]
-    if return_probability:
-        tree_list += [tree["probability/variance"]]
-    return tree_list
-
-
-class DecisionTreeClassifier(MulticlassClassifier, Tree):
+class DecisionTreeClassifier(RandomForestClassifier):
     """
     A DecisionTreeClassifier made of a single tree.
 
@@ -118,26 +58,6 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         and 1000, inclusive.
     """
 
-    @property
-    def _vertica_fit_sql(self) -> Literal["RF_CLASSIFIER"]:
-        return "RF_CLASSIFIER"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_CLASSIFIER"]:
-        return "PREDICT_RF_CLASSIFIER"
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
-        return "CLASSIFIER"
-
-    @property
-    def _model_type(self) -> Literal["RandomForestClassifier"]:
-        return "RandomForestClassifier"
-
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -163,7 +83,7 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         }
 
 
-class DecisionTreeRegressor(Regressor, Tree):
+class DecisionTreeRegressor(RandomForestRegressor):
     """
     A DecisionTreeRegressor made of a single tree.
 
@@ -196,26 +116,6 @@ class DecisionTreeRegressor(Regressor, Tree):
         and 1000, inclusive.
     """
 
-    @property
-    def _vertica_fit_sql(self) -> Literal["RF_REGRESSOR"]:
-        return "RF_REGRESSOR"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_REGRESSOR"]:
-        return "PREDICT_RF_REGRESSOR"
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["REGRESSOR"]:
-        return "REGRESSOR"
-
-    @property
-    def _model_type(self) -> Literal["RandomForestRegressor"]:
-        return "RandomForestRegressor"
-
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -241,7 +141,7 @@ class DecisionTreeRegressor(Regressor, Tree):
         }
 
 
-class DummyTreeClassifier(MulticlassClassifier, Tree):
+class DummyTreeClassifier(RandomForestClassifier):
     """
     A classifier that overfits the training data. These models are typically
     used as a control to compare with your other models.
@@ -251,26 +151,6 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
     name: str
         Name of the the model. The model will be stored in the DB.
     """
-
-    @property
-    def _vertica_fit_sql(self) -> Literal["RF_CLASSIFIER"]:
-        return "RF_CLASSIFIER"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_CLASSIFIER"]:
-        return "PREDICT_RF_CLASSIFIER"
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
-        return "CLASSIFIER"
-
-    @property
-    def _model_type(self) -> Literal["RandomForestClassifier"]:
-        return "RandomForestClassifier"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -288,7 +168,7 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
         }
 
 
-class DummyTreeRegressor(Regressor, Tree):
+class DummyTreeRegressor(RandomForestRegressor):
     """
     A regressor that overfits the training data. These models are typically
     used as a control to compare with your other models.
@@ -298,26 +178,6 @@ class DummyTreeRegressor(Regressor, Tree):
     name: str
         Name of the the model. The model will be stored in the DB.
     """
-
-    @property
-    def _vertica_fit_sql(self) -> Literal["RF_REGRESSOR"]:
-        return "RF_REGRESSOR"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_REGRESSOR"]:
-        return "PREDICT_RF_REGRESSOR"
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["REGRESSOR"]:
-        return "REGRESSOR"
-
-    @property
-    def _model_type(self) -> Literal["RandomForestRegressor"]:
-        return "RandomForestRegressor"
 
     @check_minimum_version
     @save_verticapy_logs

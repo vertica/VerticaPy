@@ -158,11 +158,7 @@ nbtype: str, optional
         Converts the model to an InMemory object which
         can be used to do different types of predictions.
         """
-        return mm.NaiveBayes(
-            self.attributes_,
-            self.prior_,
-            self.classes_,
-        )
+        return mm.NaiveBayes(self.attributes_, self.prior_, self.classes_,)
 
 
 class BernoulliNB(NaiveBayes):

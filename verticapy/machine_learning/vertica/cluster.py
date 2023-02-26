@@ -29,7 +29,12 @@ from verticapy.connection import current_cursor
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.vertica.base import Clustering, MulticlassClassifier, Tree, vModel
+from verticapy.machine_learning.vertica.base import (
+    Clustering,
+    MulticlassClassifier,
+    Tree,
+    vModel,
+)
 import verticapy.machine_learning.memmodel.cluster as mm
 from verticapy.machine_learning.model_management.read import does_model_exist
 
@@ -40,6 +45,7 @@ from verticapy.sql.insert import insert_verticapy_schema
 """
 Algorithms used for clustering.
 """
+
 
 class KMeans(Clustering):
     """
@@ -167,10 +173,8 @@ tol: float, optional
         Converts the model to an InMemory object which
         can be used to do different types of predictions.
         """
-        return mm.KMeans(
-            self.clusters_,
-            self.p_,
-        )
+        return mm.KMeans(self.clusters_, self.p_,)
+
 
 class BisectingKMeans(Clustering, Tree):
     """
@@ -300,6 +304,7 @@ tol: float, optional
         """
         return self.cluster_centers_
 
+
 class KPrototypes(Clustering):
     """
 Creates a KPrototypes object by using the Vertica k-prototypes algorithm on 
@@ -384,10 +389,7 @@ gamma: float, optional
         can be used to do different types of predictions.
         """
         return mm.KPrototypes(
-            self.clusters_,
-            self.p_,
-            self.gamma_,
-            self.is_categorical_
+            self.clusters_, self.p_, self.gamma_, self.is_categorical_
         )
 
 
@@ -669,9 +671,12 @@ p: int, optional
         """
         return vDataFrame(self.model_name)
 
+
 """
 Algorithms used for classification.
 """
+
+
 class NearestCentroid(MulticlassClassifier):
     """
 [Beta Version]
@@ -782,8 +787,4 @@ p: int, optional
         Converts the model to an InMemory object which
         can be used to do different types of predictions.
         """
-        return mm.NearestCentroid(
-            self.clusters_,
-            self.classes_,
-            self.p_,
-        )
+        return mm.NearestCentroid(self.clusters_, self.classes_, self.p_,)

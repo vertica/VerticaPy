@@ -90,18 +90,14 @@ class TestTools:
         model.drop()
         model.fit(titanic_vd, ["age", "fare"])
         result = load_model("load_model_test.model_test")
-        assert (
-            isinstance(result, Scaler) and result.get_params()["method"] == "minmax"
-        )
+        assert isinstance(result, Scaler) and result.get_params()["method"] == "minmax"
         model.drop()
         # Scaler
         model = Scaler("load_model_test.model_test", method="minmax")
         model.drop()
         model.fit(titanic_vd, ["age", "fare"])
         result = load_model("load_model_test.model_test")
-        assert (
-            isinstance(result, Scaler) and result.get_params()["method"] == "minmax"
-        )
+        assert isinstance(result, Scaler) and result.get_params()["method"] == "minmax"
         model.drop()
         # OneHotEncoder
         model = OneHotEncoder("load_model_test.model_test")

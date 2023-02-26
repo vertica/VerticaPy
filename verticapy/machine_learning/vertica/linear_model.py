@@ -31,6 +31,7 @@ from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 Algorithms used for regression.
 """
 
+
 class LinearModel:
     def _compute_attributes(self) -> None:
         """
@@ -279,6 +280,7 @@ fit_intercept: bool, optional
             "fit_intercept": fit_intercept,
         }
 
+
 class Ridge(Regressor, LinearModel):
     """
 Creates a Ridge object using the Vertica Linear Regression algorithm on the 
@@ -354,9 +356,11 @@ fit_intercept: bool, optional
             "fit_intercept": fit_intercept,
         }
 
+
 """
 Algorithms used for classification.
 """
+
 
 class LogisticRegression(BinaryClassifier, LinearModel):
     """
