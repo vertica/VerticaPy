@@ -85,22 +85,22 @@ class TestTools:
         result = load_model("load_model_test.model_test")
         assert isinstance(result, SARIMAX) and result.get_params()["max_iter"] == 100
         model.drop()
-        # Normalizer
-        model = Normalizer("load_model_test.model_test", method="minmax")
+        # Scaler
+        model = Scaler("load_model_test.model_test", method="minmax")
         model.drop()
         model.fit(titanic_vd, ["age", "fare"])
         result = load_model("load_model_test.model_test")
         assert (
-            isinstance(result, Normalizer) and result.get_params()["method"] == "minmax"
+            isinstance(result, Scaler) and result.get_params()["method"] == "minmax"
         )
         model.drop()
-        # Normalizer
-        model = Normalizer("load_model_test.model_test", method="minmax")
+        # Scaler
+        model = Scaler("load_model_test.model_test", method="minmax")
         model.drop()
         model.fit(titanic_vd, ["age", "fare"])
         result = load_model("load_model_test.model_test")
         assert (
-            isinstance(result, Normalizer) and result.get_params()["method"] == "minmax"
+            isinstance(result, Scaler) and result.get_params()["method"] == "minmax"
         )
         model.drop()
         # OneHotEncoder

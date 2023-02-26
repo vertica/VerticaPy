@@ -22,6 +22,8 @@ from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.vdataframe.base import vDataFrame
 
+import verticapy.machine_learning.memmodel.naive_bayes as mm
+
 from verticapy.machine_learning.vertica.base import MulticlassClassifier
 
 
@@ -88,7 +90,15 @@ nbtype: str, optional
         self.model_name = name
         self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
 
-    def get_var_info(self):
+    def _compute_attributes(self):
+        """
+        Computes the model's attributes.
+        """
+        self.attributes_ = self._get_nb_attributes()
+        self.prior_ = np.array(self.get_attr("prior")["probability"])
+        self.classes_ = self._get_classes()
+
+    def _get_nb_attributes(self):
         # Returns a list of dictionary for each of the NB variables.
         # It is used to translate NB to Python
         vdf = vDataFrame(self.input_relation)
@@ -142,6 +152,17 @@ nbtype: str, optional
         for elem in var_info_simplified:
             del elem["rank"]
         return var_info_simplified
+
+    def to_memmodel(self):
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.NaiveBayes(
+            self.attributes_,
+            self.prior_,
+            self.classes_,
+        )
 
 
 class BernoulliNB(NaiveBayes):

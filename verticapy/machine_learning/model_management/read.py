@@ -154,10 +154,6 @@ model
             if result_tmp == None:
                 result_tmp = "None"
             model_save[val[0]] = result_tmp
-        if model_save["type"] == "NearestCentroid":
-            model = vml.NearestCentroid(name, model_save["p"])
-            model.centroids_ = TableSample(model_save["centroids"])
-            model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsClassifier":
             model = vml.KNeighborsClassifier(
                 name, model_save["n_neighbors"], model_save["p"]
@@ -279,7 +275,7 @@ model
             mtype = model_type.lower() + "("
             info = mtype + info.split(mtype)[1]
         elif model_type.lower() == "normalize_fit":
-            model = vml.Normalizer(name)
+            model = vml.Scaler(name)
             model.param_ = model.get_attr("details")
             model.X = ['"' + item + '"' for item in model.param_.values["column_name"]]
             if "avg" in model.param_.values:

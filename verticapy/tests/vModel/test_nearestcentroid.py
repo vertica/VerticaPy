@@ -58,16 +58,6 @@ class TestNearestCentroid:
         model_repr.drop()
         assert model_repr.__repr__() == "<NearestCentroid>"
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
-        assert m_att["attr_name"] == ["centroids", "classes", "p"]
-        m_att = model.get_attr("centroids")
-        assert m_att == model.centroids_
-        m_att = model.get_attr("p")
-        assert m_att == model.parameters["p"]
-        m_att = model.get_attr("classes")
-        assert m_att == model.classes_
-
     def test_contour(self, titanic_vd):
         model_test = NearestCentroid("model_contour",)
         model_test.drop()

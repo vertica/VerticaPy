@@ -556,8 +556,8 @@ class KPrototypes(Clustering):
         return "KPrototypes"
 
     @property
-    def _attributes(self) -> Literal["clusters_", "p_", "gamma_"]:
-        return ["clusters_", "p_", "children_left_", "gamma_"]
+    def _attributes(self) -> Literal["clusters_", "p_", "gamma_", "is_categorical_"]:
+        return ["clusters_", "p_", "gamma_", "is_categorical_"]
 
     def __init__(
         self,
@@ -569,6 +569,7 @@ class KPrototypes(Clustering):
         self.clusters_ = np.array(clusters)
         self.p_ = p
         self.gamma_ = gamma
+        self.is_categorical_ = np.array(is_categorical)
         return None
 
     def _transform_row(self, X: ArrayLike) -> list:
@@ -623,8 +624,10 @@ class KPrototypes(Clustering):
         list
             SQL code.
         """
-        if not (is_categorical):
-            is_categorical = [True for i in range(len(X))]
+        if len(self.is_categorical_) == 0:
+            is_categorical = np.array([True for i in range(len(X))])
+        else:
+            is_categorical = copy.deepcopy(self.is_categorical_)
 
         for c in clusters:
             if not (len(X) == len(c) == len(is_categorical)):

@@ -25,6 +25,7 @@ from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.vdataframe.base import vDataFrame
 
+import verticapy.machine_learning.memmodel.preprocessing as mm
 from verticapy.machine_learning.vertica.base import Preprocessing, vModel
 
 from verticapy.sql.insert import insert_verticapy_schema
@@ -308,9 +309,9 @@ max_text_size: int, optional
         return vDataFrame(self.deploySQL())
 
 
-class Normalizer(Preprocessing):
+class Scaler(Preprocessing):
     """
-Creates a Vertica Normalizer object.
+Creates a Vertica Scaler object.
  
 Parameters
 ----------
@@ -347,8 +348,8 @@ method: str, optional
         return "PREPROCESSING"
 
     @property
-    def _model_type(self) -> Literal["Normalizer"]:
-        return "Normalizer"
+    def _model_type(self) -> Literal["Scaler"]:
+        return "Scaler"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -358,23 +359,46 @@ method: str, optional
         self.model_name = name
         self.parameters = {"method": str(method).lower()}
 
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        values = self.get_attr("details").to_numpy()[:, 1:].astype(float)
+        if self.parameters["method"] == "minmax":
+            self.min_ = values[:, 0]
+            self.max_ = values[:, 1]
+        else:
+            self.mean_ = values[:, 0]
+            self.std_ = values[:, 1]
+        return None
 
-class StandardScaler(Normalizer):
-    """i.e. Normalizer with param method = 'zscore'"""
+    def to_memmodel(self) -> mm.Scaler:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.parameters["method"] == "minmax":
+            return mm.MinMaxScaler(self.min_, self.max_)
+        else:
+            return mm.StandardScaler(self.mean_, self.std_)
+
+
+class StandardScaler(Scaler):
+    """i.e. Scaler with param method = 'zscore'"""
 
     def __init__(self, name: str):
         super().__init__(name, "zscore")
 
 
-class RobustScaler(Normalizer):
-    """i.e. Normalizer with param method = 'robust_zscore'"""
+class RobustScaler(Scaler):
+    """i.e. Scaler with param method = 'robust_zscore'"""
 
     def __init__(self, name: str):
         super().__init__(name, "robust_zscore")
 
 
-class MinMaxScaler(Normalizer):
-    """i.e. Normalizer with param method = 'minmax'"""
+class MinMaxScaler(Scaler):
+    """i.e. Scaler with param method = 'minmax'"""
 
     def __init__(self, name: str):
         super().__init__(name, "minmax")

@@ -136,8 +136,6 @@ Base Class for Vertica Models.
                 rep = f"=======\ndetails\n=======\nNumber of Clusters: {self.n_cluster_}\nNumber of Outliers: {self.n_noise_}"
             elif self._model_type == "LocalOutlierFactor":
                 rep = f"=======\ndetails\n=======\nNumber of Errors: {self.n_errors_}"
-            elif self._model_type == "NearestCentroid":
-                rep = "=======\ndetails\n=======\n" + self.centroids_.__repr__()
             elif self._model_type == "VAR":
                 rep = "=======\ndetails\n======="
                 for idx, elem in enumerate(self.X):
@@ -535,20 +533,6 @@ Base Class for Vertica Models.
                 return result
             else:
                 raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self._model_type == "NearestCentroid":
-            if attr_name == "p":
-                return self.parameters["p"]
-            elif attr_name == "centroids":
-                return self.centroids_
-            elif attr_name == "classes":
-                return self.classes_
-            elif not (attr_name):
-                result = TableSample(
-                    values={"attr_name": ["centroids", "classes", "p"],},
-                )
-                return result
-            else:
-                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self._model_type == "KNeighborsClassifier":
             if attr_name == "p":
                 return self.parameters["p"]
@@ -878,49 +862,6 @@ Base Class for Vertica Models.
 
         if self._model_type == "AutoML":
             return self.best_model_.to_memmodel()
-        elif self._model_type in (
-            "LinearRegression",
-            "LogisticRegression",
-            "LinearSVC",
-            "LinearSVR",
-        ):
-            attributes = {
-                "coefficients": self.coef_["coefficient"][1:],
-                "intercept": self.coef_["coefficient"][0],
-            }
-        elif self._model_type == "BisectingKMeans":
-            attributes = {
-                "clusters": self.cluster_centers_.to_numpy()[:, 1 : len(self.X) + 1],
-                "left_child": self.cluster_centers_["left_child"],
-                "right_child": self.cluster_centers_["right_child"],
-                "cluster_size": self.cluster_centers_["cluster_size"],
-                "cluster_score": [
-                    self.cluster_centers_["withinss"][i]
-                    / self.cluster_centers_["totWithinss"][i]
-                    for i in range(len(self.cluster_centers_["withinss"]))
-                ],
-                "p": 2,
-            }
-        elif self._model_type in ("KMeans", "KPrototypes"):
-            attributes = {"clusters": self.cluster_centers_.to_numpy(), "p": 2}
-            if self._model_type == "KPrototypes":
-                attributes["gamma"] = self.parameters["gamma"]
-                attributes["is_categorical"] = [
-                    ("char" in self.cluster_centers_.dtype[key].lower())
-                    for key in self.cluster_centers_.dtype
-                ]
-        elif self._model_type == "NearestCentroid":
-            attributes = {
-                "clusters": self.centroids_.to_numpy()[:, 0:-1],
-                "p": self.parameters["p"],
-                "classes": self.classes_,
-            }
-        elif self._model_type == "NaiveBayes":
-            attributes = {
-                "attributes": self.get_var_info(),
-                "prior": self.get_attr("prior")["probability"],
-                "classes": self.classes_,
-            }
         elif self._model_type == "OneHotEncoder":
 
             def get_one_hot_encode_X_cat(L: list):
@@ -952,23 +893,6 @@ Base Class for Vertica Models.
                 "categories": categories,
                 "drop_first": self.parameters["drop_first"],
                 "column_naming": self.parameters["column_naming"],
-            }
-        elif self._model_type == "PCA":
-            attributes = {
-                "principal_components": self.get_attr(
-                    "principal_components"
-                ).to_numpy(),
-                "mean": self.get_attr("columns")["mean"],
-            }
-        elif self._model_type == "SVD":
-            attributes = {
-                "vectors": self.get_attr("right_singular_vectors").to_numpy(),
-                "values": self.get_attr("singular_values")["value"],
-            }
-        elif self._model_type == "Normalizer":
-            attributes = {
-                "values": self.get_attr("details").to_numpy()[:, 1:].astype(float),
-                "method": self.parameters["method"],
             }
         elif self._model_type in (
             "XGBoostClassifier",
@@ -1255,7 +1179,7 @@ Base Class for Vertica Models.
             func += "\tresult = np.column_stack(L)\n"
             func += "\treturn result\n"
             return func
-        elif self._model_type == "Normalizer":
+        elif self._model_type == "Scaler":
             details = self.get_attr("details")
             sql = []
             if "min" in details.values:
@@ -1289,7 +1213,7 @@ Base Class for Vertica Models.
             func += "\treturn result\n"
             return func
         elif self._model_type == "NaiveBayes":
-            var_info_simplified = self.get_var_info()
+            var_info_simplified = self._get_nb_attributes()
             prior = self.get_attr("prior").values["probability"]
             func += f"var_info_simplified = {var_info_simplified}\n"
             func += f"\tprior = np.array({prior})\n"
@@ -1478,7 +1402,7 @@ Base Class for Vertica Models.
         if not X:
             X = self.X
         model = self.to_memmodel()
-        if self._model_type in ("PCA", "SVD", "Normalizer", "MCA", "OneHotEncoder"):
+        if self._model_type in ("PCA", "SVD", "Scaler", "MCA", "OneHotEncoder"):
             return model.transform_sql(X)
         else:
             if return_proba:
@@ -1628,34 +1552,7 @@ class Supervised(vModel):
         finally:
             if tmp_view:
                 drop(relation, method="view")
-        if self._model_type in (
-            "LinearSVC",
-            "LinearSVR",
-            "LogisticRegression",
-            "LinearRegression",
-            "SARIMAX",
-        ):
-            self.coef_ = self.get_attr("details")
-        elif self._model_type in (
-            "RandomForestClassifier",
-            "NaiveBayes",
-            "XGBoostClassifier",
-        ):
-            if not (isinstance(input_relation, vDataFrame)):
-                classes = _executeSQL(
-                    query=f"""
-                        SELECT 
-                            /*+LABEL('learn.vModel.fit')*/ 
-                            DISTINCT {self.y} 
-                        FROM {input_relation} 
-                        WHERE {self.y} IS NOT NULL 
-                        ORDER BY 1""",
-                    method="fetchall",
-                    print_time_sql=False,
-                )
-                self.classes_ = [c[0] for c in classes]
-            else:
-                self.classes_ = input_relation[self.y].distinct()
+        self._compute_attributes()
         if self._model_type in ("XGBoostClassifier", "XGBoostRegressor"):
             self.prior_ = self.get_prior()
         return self
@@ -2232,6 +2129,23 @@ class BinaryClassifier(Classifier):
 
 
 class MulticlassClassifier(Classifier):
+    def _get_classes(self):
+        """
+        Returns the model's classes.
+        """
+        classes = _executeSQL(
+            query=f"""
+                SELECT 
+                    /*+LABEL('learn.vModel.fit')*/ 
+                    DISTINCT {self.y} 
+                FROM {self.input_relation} 
+                WHERE {self.y} IS NOT NULL 
+                ORDER BY 1""",
+            method="fetchall",
+            print_time_sql=False,
+        )
+        return np.array([c[0] for c in classes])
+
     def classification_report(
         self,
         cutoff: Union[int, float, list] = [],
@@ -3143,10 +3057,10 @@ class Unsupervised(vModel):
                 {fun}('{self.model_name}', '{relation}', '{', '.join(self.X)}'"""
         if self._model_type in ("BisectingKMeans", "KMeans", "KPrototypes",):
             query += f", {parameters['n_cluster']}"
-        elif self._model_type == "Normalizer":
+        elif self._model_type == "Scaler":
             query += f", {parameters['method']}"
             del parameters["method"]
-        if self._model_type not in ("Normalizer", "MCA"):
+        if self._model_type not in ("Scaler", "MCA"):
             query += " USING PARAMETERS "
         if (
             "init_method" in parameters
@@ -3214,13 +3128,13 @@ class Unsupervised(vModel):
         finally:
             if tmp_view:
                 drop(relation, method="view")
+        self._compute_attributes()
         if self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",):
             if "init_method" in parameters and not (
                 isinstance(parameters["init_method"], str)
             ):
                 drop(name_init, method="table")
             if self._model_type in ("KMeans", "KPrototypes",):
-                self.cluster_centers_ = self.get_attr("centers")
                 result = self.get_attr("metrics").values["metrics"][0]
                 values = {
                     "index": [
@@ -3254,7 +3168,6 @@ class Unsupervised(vModel):
                 self.metrics_ = TableSample(values)
             elif self._model_type == "BisectingKMeans":
                 self.metrics_ = self.get_attr("Metrics")
-                self.cluster_centers_ = self.get_attr("BKTree")
         elif self._model_type in ("PCA", "MCA"):
             self.components_ = self.get_attr("principal_components")
             if self._model_type == "MCA":
@@ -3273,7 +3186,7 @@ class Unsupervised(vModel):
         elif self._model_type == "SVD":
             self.singular_values_ = self.get_attr("right_singular_vectors")
             self.explained_variance_ = self.get_attr("singular_values")
-        elif self._model_type == "Normalizer":
+        elif self._model_type == "Scaler":
             self.param_ = self.get_attr("details")
         elif self._model_type == "OneHotEncoder":
             query = f"""SELECT 

@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import os, vertica_python
 from typing import Literal, Union
+import numpy as np
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -25,14 +26,151 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.connection import current_cursor
 
+from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.vertica.base import Clustering, Tree, vModel
+from verticapy.machine_learning.vertica.base import Clustering, MulticlassClassifier, Tree, vModel
+import verticapy.machine_learning.memmodel.cluster as mm
 from verticapy.machine_learning.model_management.read import does_model_exist
 
 from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_verticapy_schema
 
+
+"""
+Algorithms used for clustering.
+"""
+
+class KMeans(Clustering):
+    """
+Creates a KMeans object using the Vertica k-means algorithm on the data. 
+k-means clustering is a method of vector quantization, originally from signal 
+processing, that aims to partition n observations into k clusters in which 
+each observation belongs to the cluster with the nearest mean (cluster centers 
+or cluster centroid), serving as a prototype of the cluster. This results in 
+a partitioning of the data space into Voronoi cells.
+
+Parameters
+----------
+name: str
+	Name of the the model. The model will be stored in the database.
+n_cluster: int, optional
+	Number of clusters
+init: str / list, optional
+	The method to use to find the initial cluster centers.
+		kmeanspp : Uses the KMeans++ method to initialize the centers.
+		random   : The centers are initialized randomly.
+	It can be also a list with the initial cluster centers to use.
+max_iter: int, optional
+	The maximum number of iterations the algorithm performs.
+tol: float, optional
+	Determines whether the algorithm has converged. The algorithm is considered 
+	converged after no center has moved more than a distance of 'tol' from the 
+	previous iteration.
+	"""
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["KMEANS"]:
+        return "KMEANS"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["APPLY_KMEANS"]:
+        return "APPLY_KMEANS"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLUSTERING"]:
+        return "CLUSTERING"
+
+    @property
+    def _model_type(self) -> Literal["KMeans"]:
+        return "KMeans"
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        n_cluster: int = 8,
+        init: Union[Literal["kmeanspp", "random"], list] = "kmeanspp",
+        max_iter: int = 300,
+        tol: float = 1e-4,
+    ):
+        self.model_name = name
+        self.parameters = {
+            "n_cluster": n_cluster,
+            "init": init,
+            "max_iter": max_iter,
+            "tol": tol,
+        }
+
+    def _compute_attributes(self) -> dict:
+        """
+        Computes the model's attributes.
+        """
+        centers = self.get_attr("centers")
+        self.clusters_ = centers.to_numpy()
+        self.p_ = 2
+
+    def plot_voronoi(
+        self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,
+    ):
+        """
+    Draws the Voronoi Graph of the model.
+
+    Parameters
+    ----------
+    max_nb_points: int, optional
+        Maximum number of points to display.
+    plot_crosses: bool, optional
+        If set to True, the centers are represented by white crosses.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    Figure
+        Matplotlib Figure
+        """
+        if len(self.X) == 2:
+            from verticapy.plotting._matplotlib import voronoi_plot
+
+            clusters = _executeSQL(
+                query=f"""
+                SELECT 
+                    /*+LABEL('learn.cluster.KMeans.plot_voronoi')*/ 
+                    GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                        model_name = '{self.model_name}', 
+                                        attr_name = 'centers')""",
+                print_time_sql=False,
+                method="fetchall",
+            )
+            return voronoi_plot(
+                clusters=clusters,
+                columns=self.X,
+                input_relation=self.input_relation,
+                plot_crosses=plot_crosses,
+                ax=ax,
+                max_nb_points=max_nb_points,
+                **style_kwds,
+            )
+        else:
+            raise Exception("Voronoi Plots are only available in 2D")
+
+    def to_memmodel(self):
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.KMeans(
+            self.clusters_,
+            self.p_,
+        )
 
 class BisectingKMeans(Clustering, Tree):
     """
@@ -128,11 +266,129 @@ tol: float, optional
             "tol": tol,
         }
 
+    def _compute_attributes(self):
+        """
+        Computes the model's attributes.
+        """
+        centers = self.get_attr("BKTree")
+        self.clusters_ = centers.to_numpy()[:, 1 : len(self.X) + 1]
+        self.children_left_ = np.array(centers["left_child"])
+        self.children_right_ = np.array(centers["right_child"])
+        self.cluster_size_ = np.array(centers["cluster_size"])
+        wt, tot = centers["withinss"], centers["totWithinss"]
+        n = len(wt)
+        self.cluster_score_ = np.array([wt[i] / tot[i] for i in range(n)])
+        self.p_ = 2
+
+    def to_memmodel(self):
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.BisectingKMeans(
+            self.clusters_,
+            self.children_left_,
+            self.children_right_,
+            self.cluster_size_,
+            self.cluster_score_,
+            self.p_,
+        )
+
     def get_tree(self):
         """
     Returns a table containing information about the BK-tree.
         """
         return self.cluster_centers_
+
+class KPrototypes(Clustering):
+    """
+Creates a KPrototypes object by using the Vertica k-prototypes algorithm on 
+the data. The algorithm combines the k-means and k-modes algorithms in order
+to handle both numerical and categorical data.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model is stored in the database.
+n_cluster: int, optional
+    Number of clusters.
+init: str / list, optional
+    The method used to find the initial cluster centers.
+        random   : The centers are initialized randomly.
+    You can also provide a list of initial cluster centers.
+max_iter: int, optional
+    The maximum number of iterations the algorithm performs.
+tol: float, optional
+    Determines whether the algorithm has converged. The algorithm is considered 
+    converged when no center moves more than a distance of 'tol' from the 
+    previous iteration.
+gamma: float, optional
+    Weighting factor for categorical columns. It determines the relative 
+    importance of numerical and categorical attributes.
+    """
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["KPROTOTYPES"]:
+        return "KPROTOTYPES"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["APPLY_KPROTOTYPES"]:
+        return "APPLY_KPROTOTYPES"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLUSTERING"]:
+        return "CLUSTERING"
+
+    @property
+    def _model_type(self) -> Literal["KPrototypes"]:
+        return "KPrototypes"
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        n_cluster: int = 8,
+        init: Union[Literal["random"], list] = "random",
+        max_iter: int = 300,
+        tol: float = 1e-4,
+        gamma: float = 1.0,
+    ):
+        self.model_name = name
+        self.parameters = {
+            "n_cluster": n_cluster,
+            "init": init,
+            "max_iter": max_iter,
+            "tol": tol,
+            "gamma": gamma,
+        }
+
+    def _compute_attributes(self):
+        """
+        Computes the model's attributes.
+        """
+        centers = self.get_attr("centers")
+        self.clusters_ = centers.to_numpy()
+        self.p_ = 2
+        self.gamma_ = self.parameters["gamma"]
+        dtypes = centers.dtype
+        self.is_categorical_ = [("char" in dtypes[key].lower()) for key in dtypes]
+
+    def to_memmodel(self):
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.KPrototypes(
+            self.clusters_,
+            self.p_,
+            self.gamma_,
+            self.is_categorical_
+        )
 
 
 class DBSCAN(vModel):
@@ -157,15 +413,15 @@ the cluster propagation (non-scalable phase).
 Parameters
 ----------
 name: str
-	Name of the the model. This is not a built-in model, so this name will be used
+    Name of the the model. This is not a built-in model, so this name will be used
     to build the final table.
 eps: float, optional
-	The radius of a neighborhood with respect to some point.
+    The radius of a neighborhood with respect to some point.
 min_samples: int, optional
-	Minimum number of points required to form a dense region.
+    Minimum number of points required to form a dense region.
 p: int, optional
-	The p of the p-distance (distance metric used during the model computation).
-	"""
+    The p of the p-distance (distance metric used during the model computation).
+    """
 
     @property
     def _vertica_fit_sql(self) -> Literal[""]:
@@ -200,26 +456,26 @@ p: int, optional
         index: str = "",
     ):
         """
-	Trains the model.
+    Trains the model.
 
-	Parameters
-	----------
-	input_relation: str / vDataFrame
-		Training relation.
-	X: str / list, optional
-		List of the predictors. If empty, all the numerical vcolumns will be used.
-	key_columns: str / list, optional
-		Columns not used during the algorithm computation but which will be used
-		to create the final relation.
-	index: str, optional
-		Index used to identify each row separately. It is highly recommanded to
+    Parameters
+    ----------
+    input_relation: str / vDataFrame
+        Training relation.
+    X: str / list, optional
+        List of the predictors. If empty, all the numerical vcolumns will be used.
+    key_columns: str / list, optional
+        Columns not used during the algorithm computation but which will be used
+        to create the final relation.
+    index: str, optional
+        Index used to identify each row separately. It is highly recommanded to
         have one already in the main table to avoid creating temporary tables.
 
-	Returns
-	-------
-	object
- 		self
-		"""
+    Returns
+    -------
+    object
+        self
+        """
         if isinstance(key_columns, str):
             key_columns = [key_columns]
         if isinstance(X, str):
@@ -404,193 +660,130 @@ p: int, optional
 
     def predict(self):
         """
-	Creates a vDataFrame of the model.
-
-	Returns
-	-------
-	vDataFrame
- 		the vDataFrame including the prediction.
-		"""
-        return vDataFrame(self.model_name)
-
-
-class KMeans(Clustering):
-    """
-Creates a KMeans object using the Vertica k-means algorithm on the data. 
-k-means clustering is a method of vector quantization, originally from signal 
-processing, that aims to partition n observations into k clusters in which 
-each observation belongs to the cluster with the nearest mean (cluster centers 
-or cluster centroid), serving as a prototype of the cluster. This results in 
-a partitioning of the data space into Voronoi cells.
-
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the database.
-n_cluster: int, optional
-	Number of clusters
-init: str / list, optional
-	The method to use to find the initial cluster centers.
-		kmeanspp : Uses the KMeans++ method to initialize the centers.
-		random   : The centers are initialized randomly.
-	It can be also a list with the initial cluster centers to use.
-max_iter: int, optional
-	The maximum number of iterations the algorithm performs.
-tol: float, optional
-	Determines whether the algorithm has converged. The algorithm is considered 
-	converged after no center has moved more than a distance of 'tol' from the 
-	previous iteration.
-	"""
-
-    @property
-    def _vertica_fit_sql(self) -> Literal["KMEANS"]:
-        return "KMEANS"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["APPLY_KMEANS"]:
-        return "APPLY_KMEANS"
-
-    @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["CLUSTERING"]:
-        return "CLUSTERING"
-
-    @property
-    def _model_type(self) -> Literal["KMeans"]:
-        return "KMeans"
-
-    @check_minimum_version
-    @save_verticapy_logs
-    def __init__(
-        self,
-        name: str,
-        n_cluster: int = 8,
-        init: Union[Literal["kmeanspp", "random"], list] = "kmeanspp",
-        max_iter: int = 300,
-        tol: float = 1e-4,
-    ):
-        self.model_name = name
-        self.parameters = {
-            "n_cluster": n_cluster,
-            "init": init,
-            "max_iter": max_iter,
-            "tol": tol,
-        }
-
-    def plot_voronoi(
-        self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,
-    ):
-        """
-    Draws the Voronoi Graph of the model.
-
-    Parameters
-    ----------
-    max_nb_points: int, optional
-        Maximum number of points to display.
-    plot_crosses: bool, optional
-        If set to True, the centers are represented by white crosses.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+    Creates a vDataFrame of the model.
 
     Returns
     -------
-    Figure
-        Matplotlib Figure
+    vDataFrame
+        the vDataFrame including the prediction.
         """
-        if len(self.X) == 2:
-            from verticapy.plotting._matplotlib import voronoi_plot
+        return vDataFrame(self.model_name)
 
-            clusters = _executeSQL(
-                query=f"""
-                SELECT 
-                    /*+LABEL('learn.cluster.KMeans.plot_voronoi')*/ 
-                    GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                        model_name = '{self.model_name}', 
-                                        attr_name = 'centers')""",
-                print_time_sql=False,
-                method="fetchall",
-            )
-            return voronoi_plot(
-                clusters=clusters,
-                columns=self.X,
-                input_relation=self.input_relation,
-                plot_crosses=plot_crosses,
-                ax=ax,
-                max_nb_points=max_nb_points,
-                **style_kwds,
-            )
-        else:
-            raise Exception("Voronoi Plots are only available in 2D")
-
-
-class KPrototypes(Clustering):
+"""
+Algorithms used for classification.
+"""
+class NearestCentroid(MulticlassClassifier):
     """
-Creates a KPrototypes object by using the Vertica k-prototypes algorithm on 
-the data. The algorithm combines the k-means and k-modes algorithms in order
-to handle both numerical and categorical data.
+[Beta Version]
+Creates a NearestCentroid object using the k-nearest centroid algorithm. 
+This object uses pure SQL to compute the distances and final score. 
+
+\u26A0 Warning : Because this algorithm uses p-distances, it is highly 
+                 sensitive to unnormalized data.
 
 Parameters
 ----------
-name: str
-    Name of the the model. The model is stored in the database.
-n_cluster: int, optional
-    Number of clusters.
-init: str / list, optional
-    The method used to find the initial cluster centers.
-        random   : The centers are initialized randomly.
-    You can also provide a list of initial cluster centers.
-max_iter: int, optional
-    The maximum number of iterations the algorithm performs.
-tol: float, optional
-    Determines whether the algorithm has converged. The algorithm is considered 
-    converged when no center moves more than a distance of 'tol' from the 
-    previous iteration.
-gamma: float, optional
-    Weighting factor for categorical columns. It determines the relative 
-    importance of numerical and categorical attributes.
+p: int, optional
+    The p corresponding to the one of the p-distances (distance metric used
+    to compute the model).
     """
 
     @property
-    def _vertica_fit_sql(self) -> Literal["KPROTOTYPES"]:
-        return "KPROTOTYPES"
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
 
     @property
-    def _vertica_predict_sql(self) -> Literal["APPLY_KPROTOTYPES"]:
-        return "APPLY_KPROTOTYPES"
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
 
     @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
 
     @property
-    def _model_subcategory(self) -> Literal["CLUSTERING"]:
-        return "CLUSTERING"
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
 
     @property
-    def _model_type(self) -> Literal["KPrototypes"]:
-        return "KPrototypes"
+    def _model_type(self) -> Literal["NearestCentroid"]:
+        return "NearestCentroid"
 
-    @check_minimum_version
     @save_verticapy_logs
-    def __init__(
-        self,
-        name: str,
-        n_cluster: int = 8,
-        init: Union[Literal["random"], list] = "random",
-        max_iter: int = 300,
-        tol: float = 1e-4,
-        gamma: float = 1.0,
-    ):
+    def __init__(self, name: str, p: int = 2):
         self.model_name = name
-        self.parameters = {
-            "n_cluster": n_cluster,
-            "init": init,
-            "max_iter": max_iter,
-            "tol": tol,
-            "gamma": gamma,
-        }
+        self.parameters = {"p": p}
+
+    def _compute_attributes(self):
+        """
+        Computes the model's attributes.
+        """
+        func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
+        X_str = ", ".join([f"{func}({column}) AS {column}" for column in self.X])
+        centroids = TableSample.read_sql(
+            query=f"""
+            SELECT 
+                {X_str}, 
+                {self.y} 
+            FROM {self.input_relation} 
+            WHERE {self.y} IS NOT NULL 
+            GROUP BY {self.y} 
+            ORDER BY {self.y} ASC""",
+            title="Getting Model Centroids.",
+        )
+        self.clusters_ = centroids.to_numpy()[:, 0:-1]
+        self.classes_ = centroids.to_numpy()[:, -1]
+        self.p_ = self.parameters["p"]
+
+    def fit(
+        self,
+        input_relation: Union[str, vDataFrame],
+        X: Union[str, list],
+        y: str,
+        test_relation: Union[str, vDataFrame] = "",
+    ):
+        """
+    Trains the model.
+
+    Parameters
+    ----------
+    input_relation: str/vDataFrame
+        Training relation.
+    X: list
+        List of the predictors.
+    y: str
+        Response column.
+    test_relation: str/vDataFrame, optional
+        Relation used to test the model.
+
+    Returns
+    -------
+    object
+        self
+        """
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation._genSQL()
+        else:
+            self.input_relation = input_relation
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation._genSQL()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
+        self.X = [quote_ident(column) for column in X]
+        self.y = quote_ident(y)
+        self._compute_attributes()
+        return self
+
+    def to_memmodel(self):
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.NearestCentroid(
+            self.clusters_,
+            self.classes_,
+            self.p_,
+        )

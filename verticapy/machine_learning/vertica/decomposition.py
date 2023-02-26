@@ -22,6 +22,7 @@ from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.tablesample.base import TableSample
 
+import verticapy.machine_learning.memmodel.decomposition as mm
 from verticapy.machine_learning.vertica.base import Decomposition
 
 from verticapy.plotting._matplotlib.mlplot import plot_var
@@ -291,6 +292,21 @@ method: str, optional
             "method": str(method).lower(),
         }
 
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.principal_components_ = self.get_attr("principal_components").to_numpy()
+        self.mean_ = np.array(self.get_attr("columns")["mean"])
+        return None
+
+    def to_memmodel(self) -> mm.PCA:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.PCA(self.principal_components_, self.mean_)
+
 
 class SVD(Decomposition):
     """
@@ -346,3 +362,18 @@ method: str, optional
             "n_components": n_components,
             "method": str(method).lower(),
         }
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.vectors_ = self.get_attr("right_singular_vectors").to_numpy()
+        self.values_ = np.array(self.get_attr("singular_values")["value"])
+        return None
+
+    def to_memmodel(self) -> mm.SVD:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.SVD(self.vectors_, self.values_)
