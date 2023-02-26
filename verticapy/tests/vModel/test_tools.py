@@ -36,8 +36,9 @@ from verticapy.learn.neighbors import *
 from verticapy.learn.decomposition import *
 from verticapy.learn.preprocessing import *
 from verticapy.learn.tsa import *
-from verticapy.learn.tools import does_model_exist, load_model, matrix_rotation
+from verticapy.learn.tools import does_model_exist, load_model
 from verticapy.sql.create import create_verticapy_schema
+import verticapy.machine_learning.memmodel.decomposition as mm
 
 set_option("print_info", False)
 set_option("random_state", 0)
@@ -327,12 +328,12 @@ class TestTools:
         current_cursor().execute("DROP SCHEMA load_model_test CASCADE")
 
     def test_matrix_rotation(self):
-        result = matrix_rotation([[0.5, 0.6], [0.1, 0.2]])
+        result = mm.PCA([], []).matrix_rotation([[0.5, 0.6], [0.1, 0.2]])
         assert result[0][0] == pytest.approx(0.01539405)
         assert result[0][1] == pytest.approx(0.78087324)
         assert result[1][0] == pytest.approx(0.05549495)
         assert result[1][1] == pytest.approx(0.21661097)
-        result = matrix_rotation([[0.5, 0.6], [0.1, 0.2]], gamma=0.0)
+        result = mm.PCA([], []).matrix_rotation([[0.5, 0.6], [0.1, 0.2]], gamma=0.0)
         assert result[0][0] == pytest.approx(0.0010429389547800816)
         assert result[0][1] == pytest.approx(0.78102427)
         assert result[1][0] == pytest.approx(-0.05092405)
