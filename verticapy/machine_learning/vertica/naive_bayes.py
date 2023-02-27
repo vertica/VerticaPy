@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Union
+import numpy as np
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
@@ -94,9 +95,9 @@ nbtype: str, optional
         """
         Computes the model's attributes.
         """
+        self.classes_ = self._get_classes()
         self.attributes_ = self._get_nb_attributes()
         self.prior_ = np.array(self.get_attr("prior")["probability"])
-        self.classes_ = self._get_classes()
 
     def _get_nb_attributes(self):
         # Returns a list of dictionary for each of the NB variables.

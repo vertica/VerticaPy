@@ -89,14 +89,7 @@ def model(xgbc_data_vd):
     model_class.test_relation = model_class.input_relation
     model_class.X = ["Gender", '"owned cars"', "cost", "income"]
     model_class.y = "TransPortation"
-    current_cursor().execute(
-        "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-            model_class.y, model_class.input_relation, model_class.y
-        )
-    )
-    classes = current_cursor().fetchall()
-    model_class.classes_ = [item[0] for item in classes]
-    model_class.prior_ = model_class._compute_prior()
+    model_class._compute_attributes()
 
     yield model_class
     model_class.drop()
