@@ -39,6 +39,258 @@ from verticapy.machine_learning.vertica.base import (
 
 
 class XGBoost:
+    def _xgboost_dummy_tree_dict(self, i: int = 0):
+        """
+        Dummy trees are used to store the prior probabilities.
+        The Python XGBoost API do not use those information 
+        and start the training with priors = 0
+        """
+        return {
+            "base_weights": [0.0],
+            "categories": [],
+            "categories_nodes": [],
+            "categories_segments": [],
+            "categories_sizes": [],
+            "default_left": [True],
+            "id": -1,
+            "left_children": [-1],
+            "loss_changes": [0.0],
+            "parents": [random.randint(2, 999999999)],
+            "right_children": [-1],
+            "split_conditions": [self.prior_[i]],
+            "split_indices": [0],
+            "split_type": [0],
+            "sum_hessian": [0.0],
+            "tree_param": {
+                "num_deleted": "0",
+                "num_feature": str(len(self.X)),
+                "num_nodes": "1",
+                "size_leaf_vector": "0",
+            },
+        }
+
+    def _xgboost_tree_dict(self, tree_id: int, c: str = None):
+        tree = self.get_tree(tree_id)
+        attributes = self._compute_trees_arrays(tree, self.X)
+        n_nodes = len(attributes[0])
+        split_conditions = []
+        parents = [0 for i in range(n_nodes)]
+        parents[0] = random.randint(n_nodes + 1, 999999999)
+        for i in range(n_nodes):
+            left_child = attributes[0][i]
+            right_child = attributes[1][i]
+            if left_child != right_child:
+                parents[left_child] = i
+                parents[right_child] = i
+            if attributes[5][i]:
+                split_conditions += [attributes[3][i]]
+            elif attributes[5][i] == None:
+                if self._model_type == "XGBRegressor":
+                    split_conditions += [
+                        float(attributes[4][i])
+                        * self.parameters["learning_rate"]
+                    ]
+                elif (
+                    len(self.classes_) == 2
+                    and self.classes_[1] == 1
+                    and self.classes_[0] == 0
+                ):
+                    split_conditions += [
+                        self.parameters["learning_rate"]
+                        * float(attributes[6][i]["1"])
+                    ]
+                else:
+                    split_conditions += [
+                        self.parameters["learning_rate"]
+                        * float(attributes[6][i][c])
+                    ]
+            else:
+                split_conditions += [float(attributes[3][i])]
+        return {
+            "base_weights": [0.0 for i in range(n_nodes)],
+            "categories": [],
+            "categories_nodes": [],
+            "categories_segments": [],
+            "categories_sizes": [],
+            "default_left": [True for i in range(n_nodes)],
+            "id": tree_id,
+            "left_children": [-1 if x is None else x for x in attributes[0]],
+            "loss_changes": [0.0 for i in range(n_nodes)],
+            "parents": parents,
+            "right_children": [-1 if x is None else x for x in attributes[1]],
+            "split_conditions": split_conditions,
+            "split_indices": [0 if x is None else x for x in attributes[2]],
+            "split_type": [
+                int(x) if isinstance(x, bool) else int(attributes[5][0])
+                for x in attributes[5]
+            ],
+            "sum_hessian": [0.0 for i in range(n_nodes)],
+            "tree_param": {
+                "num_deleted": "0",
+                "num_feature": str(len(self.X)),
+                "num_nodes": str(n_nodes),
+                "size_leaf_vector": "0",
+            },
+        }
+
+    def _xgboost_tree_dict_list(self):
+        n = self.get_attr("tree_count")["tree_count"][0]
+        if self._model_type == "XGBClassifier" and (
+            len(self.classes_) > 2
+            or self.classes_[1] != 1
+            or self.classes_[0] != 0
+        ):
+            trees = []
+            for i in range(n):
+                for c in self.classes_:
+                    trees += [self._xgboost_tree_dict(i, str(c))]
+            v = vertica_version()
+            v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
+            if not (v):
+                for i in range(len(self.classes_)):
+                    trees += [self._xgboost_dummy_tree_dict(i)]
+            tree_info = [i for i in range(len(self.classes_))] * (
+                n + int(not (v))
+            )
+            for idx, tree in enumerate(trees):
+                tree["id"] = idx
+        else:
+            trees = [self._xgboost_tree_dict(i) for i in range(n)]
+            tree_info = [0 for i in range(n)]
+        return {
+            "model": {
+                "trees": trees,
+                "tree_info": tree_info,
+                "gbtree_model_param": {
+                    "num_trees": str(len(trees)),
+                    "size_leaf_vector": "0",
+                },
+            },
+            "name": "gbtree",
+        }
+
+    def _xgboost_learner(self):
+        v = vertica_version()
+        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
+        if v:
+            col_sample_by_tree = self.parameters["col_sample_by_tree"]
+            col_sample_by_node = self.parameters["col_sample_by_node"]
+        else:
+            col_sample_by_tree = "null"
+            col_sample_by_node = "null"
+        condition = [f"{predictor} IS NOT NULL" for predictor in self.X] + [
+            f"{self.y} IS NOT NULL"
+        ]
+        n = self.get_attr("tree_count")["tree_count"][0]
+        if self._model_type == "XGBRegressor" or (
+            len(self.classes_) == 2
+            and self.classes_[1] == 1
+            and self.classes_[0] == 0
+        ):
+            bs, num_class, param, param_val = (
+                self.prior_,
+                "0",
+                "reg_loss_param",
+                {"scale_pos_weight": "1"},
+            )
+            if self._model_type == "XGBRegressor":
+                objective = "reg:squarederror"
+                attributes_dict = {
+                    "scikit_learn": '{"n_estimators": '
+                    + str(n)
+                    + ', "objective": "reg:squarederror", "max_depth": '
+                    + str(self.parameters["max_depth"])
+                    + ', "learning_rate": '
+                    + str(self.parameters["learning_rate"])
+                    + ', "verbosity": null, "booster": null, "tree_method": null,'
+                    + ' "gamma": null, "min_child_weight": null, "max_delta_step":'
+                    + ' null, "subsample": null, "colsample_bytree": '
+                    + str(col_sample_by_tree)
+                    + ', "colsample_bylevel": null, "colsample_bynode": '
+                    + str(col_sample_by_node)
+                    + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
+                    + ' null, "base_score": null, "missing": NaN, "num_parallel_tree"'
+                    + ': null, "kwargs": {}, "random_state": null, "n_jobs": null, '
+                    + '"monotone_constraints": null, "interaction_constraints": null,'
+                    + ' "importance_type": "gain", "gpu_id": null, "validate_parameters"'
+                    + ': null, "_estimator_type": "regressor"}'
+                }
+            else:
+                objective = "binary:logistic"
+                attributes_dict = {
+                    "scikit_learn": '{"use_label_encoder": true, "n_estimators": '
+                    + str(n)
+                    + ', "objective": "binary:logistic", "max_depth": '
+                    + str(self.parameters["max_depth"])
+                    + ', "learning_rate": '
+                    + str(self.parameters["learning_rate"])
+                    + ', "verbosity": null, "booster": null, "tree_method": null,'
+                    + ' "gamma": null, "min_child_weight": null, "max_delta_step":'
+                    + ' null, "subsample": null, "colsample_bytree": '
+                    + str(col_sample_by_tree)
+                    + ', "colsample_bylevel": null, "colsample_bynode": '
+                    + str(col_sample_by_node)
+                    + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
+                    + ' null, "base_score": null, "missing": NaN, "num_parallel_tree"'
+                    + ': null, "kwargs": {}, "random_state": null, "n_jobs": null,'
+                    + ' "monotone_constraints": null, "interaction_constraints": null,'
+                    + ' "importance_type": "gain", "gpu_id": null, "validate_parameters"'
+                    + ': null, "classes_": [0, 1], "n_classes_": 2, "_le": {"classes_": '
+                    + '[0, 1]}, "_estimator_type": "classifier"}'
+                }
+        else:
+            objective, bs, num_class, param, param_val = (
+                "multi:softprob",
+                0.5,
+                str(len(self.classes_)),
+                "softmax_multiclass_param",
+                {"num_class": str(len(self.classes_))},
+            )
+            attributes_dict = {
+                "scikit_learn": '{"use_label_encoder": true, "n_estimators": '
+                + str(n)
+                + ', "objective": "multi:softprob", "max_depth": '
+                + str(self.parameters["max_depth"])
+                + ', "learning_rate": '
+                + str(self.parameters["learning_rate"])
+                + ', "verbosity": null, "booster": null, "tree_method": null, '
+                + '"gamma": null, "min_child_weight": null, "max_delta_step": '
+                + 'null, "subsample": null, "colsample_bytree": '
+                + str(col_sample_by_tree)
+                + ', "colsample_bylevel": null, "colsample_bynode": '
+                + str(col_sample_by_node)
+                + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
+                + ' null, "base_score": null, "missing": NaN, "num_parallel_tree":'
+                + ' null, "kwargs": {}, "random_state": null, "n_jobs": null, '
+                + '"monotone_constraints": null, "interaction_constraints": null, '
+                + '"importance_type": "gain", "gpu_id": null, "validate_parameters":'
+                + ' null, "classes_": '
+                + str(self.classes_)
+                + ', "n_classes_": '
+                + str(len(self.classes_))
+                + ', "_le": {"classes_": '
+                + str(self.classes_)
+                + '}, "_estimator_type": "classifier"}'
+            }
+        attributes_dict["scikit_learn"] = attributes_dict[
+            "scikit_learn"
+        ].replace('"', "++++")
+        gradient_booster = self._xgboost_tree_dict_list()
+        return {
+            "attributes": attributes_dict,
+            "feature_names": [],
+            "feature_types": [],
+            "gradient_booster": gradient_booster,
+            "learner_model_param": {
+                "base_score": np.format_float_scientific(
+                    bs, precision=7
+                ).upper(),
+                "num_class": num_class,
+                "num_feature": str(len(self.X)),
+            },
+            "objective": {"name": objective, param: param_val},
+        }
+
     def to_json(self, path: str = "") -> Optional[str]:
         """
         Creates a Python XGBoost JSON file that can be imported into the Python
@@ -62,276 +314,18 @@ class XGBoost:
             The content of the JSON file if variable 'path' is empty. Otherwise,
             nothing is returned.
         """
-
-        def xgboost_to_json(model):
-            def xgboost_dummy_tree_dict(model, i: int = 0):
-                # Dummy trees are used to store the prior probabilities.
-                # The Python XGBoost API do not use those information and start
-                # the training with priors = 0
-                result = {
-                    "base_weights": [0.0],
-                    "categories": [],
-                    "categories_nodes": [],
-                    "categories_segments": [],
-                    "categories_sizes": [],
-                    "default_left": [True],
-                    "id": -1,
-                    "left_children": [-1],
-                    "loss_changes": [0.0],
-                    "parents": [random.randint(2, 999999999)],
-                    "right_children": [-1],
-                    "split_conditions": [model.prior_[i]],
-                    "split_indices": [0],
-                    "split_type": [0],
-                    "sum_hessian": [0.0],
-                    "tree_param": {
-                        "num_deleted": "0",
-                        "num_feature": str(len(model.X)),
-                        "num_nodes": "1",
-                        "size_leaf_vector": "0",
-                    },
-                }
-                return result
-
-            def xgboost_tree_dict(model, tree_id: int, c: str = None):
-                tree = model.get_tree(tree_id)
-                attributes = model._compute_trees_arrays(tree, model.X)
-                n_nodes = len(attributes[0])
-                split_conditions = []
-                parents = [0 for i in range(n_nodes)]
-                parents[0] = random.randint(n_nodes + 1, 999999999)
-                for i in range(n_nodes):
-                    left_child = attributes[0][i]
-                    right_child = attributes[1][i]
-                    if left_child != right_child:
-                        parents[left_child] = i
-                        parents[right_child] = i
-                    if attributes[5][i]:
-                        split_conditions += [attributes[3][i]]
-                    elif attributes[5][i] == None:
-                        if model._model_type == "XGBoostRegressor":
-                            split_conditions += [
-                                float(attributes[4][i])
-                                * model.parameters["learning_rate"]
-                            ]
-                        elif (
-                            len(model.classes_) == 2
-                            and model.classes_[1] == 1
-                            and model.classes_[0] == 0
-                        ):
-                            split_conditions += [
-                                model.parameters["learning_rate"]
-                                * float(attributes[6][i]["1"])
-                            ]
-                        else:
-                            split_conditions += [
-                                model.parameters["learning_rate"]
-                                * float(attributes[6][i][c])
-                            ]
-                    else:
-                        split_conditions += [float(attributes[3][i])]
-                result = {
-                    "base_weights": [0.0 for i in range(n_nodes)],
-                    "categories": [],
-                    "categories_nodes": [],
-                    "categories_segments": [],
-                    "categories_sizes": [],
-                    "default_left": [True for i in range(n_nodes)],
-                    "id": tree_id,
-                    "left_children": [-1 if x is None else x for x in attributes[0]],
-                    "loss_changes": [0.0 for i in range(n_nodes)],
-                    "parents": parents,
-                    "right_children": [-1 if x is None else x for x in attributes[1]],
-                    "split_conditions": split_conditions,
-                    "split_indices": [0 if x is None else x for x in attributes[2]],
-                    "split_type": [
-                        int(x) if isinstance(x, bool) else int(attributes[5][0])
-                        for x in attributes[5]
-                    ],
-                    "sum_hessian": [0.0 for i in range(n_nodes)],
-                    "tree_param": {
-                        "num_deleted": "0",
-                        "num_feature": str(len(model.X)),
-                        "num_nodes": str(n_nodes),
-                        "size_leaf_vector": "0",
-                    },
-                }
-                return result
-
-            def xgboost_tree_dict_list(model):
-                n = model.get_attr("tree_count")["tree_count"][0]
-                if model._model_type == "XGBoostClassifier" and (
-                    len(model.classes_) > 2
-                    or model.classes_[1] != 1
-                    or model.classes_[0] != 0
-                ):
-                    trees = []
-                    for i in range(n):
-                        for c in model.classes_:
-                            trees += [xgboost_tree_dict(model, i, str(c))]
-                    v = vertica_version()
-                    v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-                    if not (v):
-                        for i in range(len(model.classes_)):
-                            trees += [xgboost_dummy_tree_dict(model, i)]
-                    tree_info = [i for i in range(len(model.classes_))] * (
-                        n + int(not (v))
-                    )
-                    for idx, tree in enumerate(trees):
-                        tree["id"] = idx
-                else:
-                    trees = [xgboost_tree_dict(model, i) for i in range(n)]
-                    tree_info = [0 for i in range(n)]
-                return {
-                    "model": {
-                        "trees": trees,
-                        "tree_info": tree_info,
-                        "gbtree_model_param": {
-                            "num_trees": str(len(trees)),
-                            "size_leaf_vector": "0",
-                        },
-                    },
-                    "name": "gbtree",
-                }
-
-            def xgboost_learner(model):
-                v = vertica_version()
-                v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-                if v:
-                    col_sample_by_tree = model.parameters["col_sample_by_tree"]
-                    col_sample_by_node = model.parameters["col_sample_by_node"]
-                else:
-                    col_sample_by_tree = "null"
-                    col_sample_by_node = "null"
-                condition = [f"{predictor} IS NOT NULL" for predictor in model.X] + [
-                    f"{model.y} IS NOT NULL"
-                ]
-                n = model.get_attr("tree_count")["tree_count"][0]
-                if model._model_type == "XGBoostRegressor" or (
-                    len(model.classes_) == 2
-                    and model.classes_[1] == 1
-                    and model.classes_[0] == 0
-                ):
-                    bs, num_class, param, param_val = (
-                        model.prior_,
-                        "0",
-                        "reg_loss_param",
-                        {"scale_pos_weight": "1"},
-                    )
-                    if model._model_type == "XGBoostRegressor":
-                        objective = "reg:squarederror"
-                        attributes_dict = {
-                            "scikit_learn": '{"n_estimators": '
-                            + str(n)
-                            + ', "objective": "reg:squarederror", "max_depth": '
-                            + str(model.parameters["max_depth"])
-                            + ', "learning_rate": '
-                            + str(model.parameters["learning_rate"])
-                            + ', "verbosity": null, "booster": null, "tree_method": null,'
-                            + ' "gamma": null, "min_child_weight": null, "max_delta_step":'
-                            + ' null, "subsample": null, "colsample_bytree": '
-                            + str(col_sample_by_tree)
-                            + ', "colsample_bylevel": null, "colsample_bynode": '
-                            + str(col_sample_by_node)
-                            + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
-                            + ' null, "base_score": null, "missing": NaN, "num_parallel_tree"'
-                            + ': null, "kwargs": {}, "random_state": null, "n_jobs": null, '
-                            + '"monotone_constraints": null, "interaction_constraints": null,'
-                            + ' "importance_type": "gain", "gpu_id": null, "validate_parameters"'
-                            + ': null, "_estimator_type": "regressor"}'
-                        }
-                    else:
-                        objective = "binary:logistic"
-                        attributes_dict = {
-                            "scikit_learn": '{"use_label_encoder": true, "n_estimators": '
-                            + str(n)
-                            + ', "objective": "binary:logistic", "max_depth": '
-                            + str(model.parameters["max_depth"])
-                            + ', "learning_rate": '
-                            + str(model.parameters["learning_rate"])
-                            + ', "verbosity": null, "booster": null, "tree_method": null,'
-                            + ' "gamma": null, "min_child_weight": null, "max_delta_step":'
-                            + ' null, "subsample": null, "colsample_bytree": '
-                            + str(col_sample_by_tree)
-                            + ', "colsample_bylevel": null, "colsample_bynode": '
-                            + str(col_sample_by_node)
-                            + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
-                            + ' null, "base_score": null, "missing": NaN, "num_parallel_tree"'
-                            + ': null, "kwargs": {}, "random_state": null, "n_jobs": null,'
-                            + ' "monotone_constraints": null, "interaction_constraints": null,'
-                            + ' "importance_type": "gain", "gpu_id": null, "validate_parameters"'
-                            + ': null, "classes_": [0, 1], "n_classes_": 2, "_le": {"classes_": '
-                            + '[0, 1]}, "_estimator_type": "classifier"}'
-                        }
-                else:
-                    objective, bs, num_class, param, param_val = (
-                        "multi:softprob",
-                        0.5,
-                        str(len(model.classes_)),
-                        "softmax_multiclass_param",
-                        {"num_class": str(len(model.classes_))},
-                    )
-                    attributes_dict = {
-                        "scikit_learn": '{"use_label_encoder": true, "n_estimators": '
-                        + str(n)
-                        + ', "objective": "multi:softprob", "max_depth": '
-                        + str(model.parameters["max_depth"])
-                        + ', "learning_rate": '
-                        + str(model.parameters["learning_rate"])
-                        + ', "verbosity": null, "booster": null, "tree_method": null, '
-                        + '"gamma": null, "min_child_weight": null, "max_delta_step": '
-                        + 'null, "subsample": null, "colsample_bytree": '
-                        + str(col_sample_by_tree)
-                        + ', "colsample_bylevel": null, "colsample_bynode": '
-                        + str(col_sample_by_node)
-                        + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
-                        + ' null, "base_score": null, "missing": NaN, "num_parallel_tree":'
-                        + ' null, "kwargs": {}, "random_state": null, "n_jobs": null, '
-                        + '"monotone_constraints": null, "interaction_constraints": null, '
-                        + '"importance_type": "gain", "gpu_id": null, "validate_parameters":'
-                        + ' null, "classes_": '
-                        + str(model.classes_)
-                        + ', "n_classes_": '
-                        + str(len(model.classes_))
-                        + ', "_le": {"classes_": '
-                        + str(model.classes_)
-                        + '}, "_estimator_type": "classifier"}'
-                    }
-                attributes_dict["scikit_learn"] = attributes_dict[
-                    "scikit_learn"
-                ].replace('"', "++++")
-                gradient_booster = xgboost_tree_dict_list(model)
-                return {
-                    "attributes": attributes_dict,
-                    "feature_names": [],
-                    "feature_types": [],
-                    "gradient_booster": gradient_booster,
-                    "learner_model_param": {
-                        "base_score": np.format_float_scientific(
-                            bs, precision=7
-                        ).upper(),
-                        "num_class": num_class,
-                        "num_feature": str(len(model.X)),
-                    },
-                    "objective": {"name": objective, param: param_val},
-                }
-
-            res = {"learner": xgboost_learner(model), "version": [1, 4, 2]}
-            res = str(res)
-            res = (
-                res.replace("'", '"')
-                .replace("True", "true")
-                .replace("False", "false")
-                .replace("++++", '\\"')
-            )
-            return res
-
-        result = xgboost_to_json(self)
+        res = {"learner": self._xgboost_learner(), "version": [1, 4, 2]}
+        res = (
+            str(res).replace("'", '"')
+            .replace("True", "true")
+            .replace("False", "false")
+            .replace("++++", '\\"')
+        )
         if path:
             f = open(path, "w+")
-            f.write(result)
+            f.write(res)
         else:
-            return result
+            return res
 
     def _compute_prior(self):
         """
@@ -351,7 +345,7 @@ class XGBoost:
                 {{}}
             FROM {self.input_relation} 
             WHERE {' AND '.join(condition)}{{}}"""
-        if self._model_type == "XGBoostRegressor" or (
+        if self._model_type == "XGBRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
             prior_ = _executeSQL(
@@ -895,9 +889,9 @@ nbins: int, optional
             return mm.RandomForestRegressor(self.trees_)
 
 
-class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost):
+class XGBClassifier(MulticlassClassifier, Tree, XGBoost):
     """
-Creates an XGBoostClassifier object using the Vertica XGB_CLASSIFIER 
+Creates an XGBClassifier object using the Vertica XGB_CLASSIFIER 
 algorithm.
 
 Parameters
@@ -958,8 +952,8 @@ col_sample_by_node: float, optional
         return "CLASSIFIER"
 
     @property
-    def _model_type(self) -> Literal["XGBoostClassifier"]:
-        return "XGBoostClassifier"
+    def _model_type(self) -> Literal["XGBClassifier"]:
+        return "XGBClassifier"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -1038,7 +1032,7 @@ col_sample_by_node: float, optional
         self.trees_ = trees
         return None
 
-    def to_memmodel(self) -> Union[mm.XGBoostClassifier, mm.BinaryTreeClassifier]:
+    def to_memmodel(self) -> Union[mm.XGBClassifier, mm.BinaryTreeClassifier]:
         """
         Converts the model to an InMemory object which
         can be used to do different types of predictions.
@@ -1046,14 +1040,14 @@ col_sample_by_node: float, optional
         if self.n_estimators_ == 1:
             return self.trees_[0]
         else:
-            return mm.XGBoostClassifier(
+            return mm.XGBClassifier(
                 self.trees_, self.logodds_, self.classes_, self.eta_
             )
 
 
-class XGBoostRegressor(Regressor, Tree, XGBoost):
+class XGBRegressor(Regressor, Tree, XGBoost):
     """
-Creates an XGBoostRegressor object using the Vertica XGB_REGRESSOR 
+Creates an XGBRegressor object using the Vertica XGB_REGRESSOR 
 algorithm.
 
 Parameters
@@ -1114,8 +1108,8 @@ col_sample_by_node: float, optional
         return "REGRESSOR"
 
     @property
-    def _model_type(self) -> Literal["XGBoostRegressor"]:
-        return "XGBoostRegressor"
+    def _model_type(self) -> Literal["XGBRegressor"]:
+        return "XGBRegressor"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -1181,7 +1175,7 @@ col_sample_by_node: float, optional
         self.trees_ = trees
         return None
 
-    def to_memmodel(self) -> Union[mm.XGBoostRegressor, mm.BinaryTreeRegressor]:
+    def to_memmodel(self) -> Union[mm.XGBRegressor, mm.BinaryTreeRegressor]:
         """
         Converts the model to an InMemory object which
         can be used to do different types of predictions.
@@ -1189,4 +1183,4 @@ col_sample_by_node: float, optional
         if self.n_estimators_ == 1:
             return self.trees_[0]
         else:
-            return mm.XGBoostRegressor(self.trees_, self.mean_, self.eta_)
+            return mm.XGBRegressor(self.trees_, self.mean_, self.eta_)

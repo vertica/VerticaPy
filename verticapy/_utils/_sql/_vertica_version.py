@@ -67,8 +67,8 @@ MINIMUM_VERTICA_VERSION = {
     "StandardScaler": [8, 1, 0],
     "SVD": [9, 1, 0],
     "VAR": [8, 0, 0],
-    "XGBoostClassifier": [10, 1, 0],
-    "XGBoostRegressor": [10, 1, 0],
+    "XGBClassifier": [10, 1, 0],
+    "XGBRegressor": [10, 1, 0],
 }
 
 

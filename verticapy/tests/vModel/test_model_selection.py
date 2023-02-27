@@ -180,10 +180,10 @@ class TestModelSelection:
             == 3
         )
         assert (
-            len(gen_params_grid(XGBoostClassifier("model_test"), lmax=3, nbins=3)) == 3
+            len(gen_params_grid(XGBClassifier("model_test"), lmax=3, nbins=3)) == 3
         )
         assert (
-            len(gen_params_grid(XGBoostRegressor("model_test"), lmax=3, nbins=3)) == 3
+            len(gen_params_grid(XGBRegressor("model_test"), lmax=3, nbins=3)) == 3
         )
         assert (
             len(gen_params_grid(DecisionTreeRegressor("model_test"), lmax=3, nbins=3))

@@ -225,7 +225,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         return clean_query(res)
 
 
-class XGBoostRegressor(Ensemble):
+class XGBRegressor(Ensemble):
     """
     InMemoryModel Implementation of the XGBoost Regressor Algorithm.
 
@@ -240,8 +240,8 @@ class XGBoostRegressor(Ensemble):
     """
 
     @property
-    def _object_type(self) -> Literal["XGBoostRegressor"]:
-        return "XGBoostRegressor"
+    def _object_type(self) -> Literal["XGBRegressor"]:
+        return "XGBRegressor"
 
     @property
     def _attributes(self) -> Literal["trees_", "mean_", "eta_"]:
@@ -290,7 +290,7 @@ class XGBoostRegressor(Ensemble):
         return f"({' + '.join(trees_pred)}) * {self.eta_} + {self.mean_}"
 
 
-class XGBoostClassifier(Ensemble, MulticlassClassifier):
+class XGBClassifier(Ensemble, MulticlassClassifier):
     """
     InMemoryModel Implementation of the XGBoost Classifier Algorithm.
 
@@ -307,8 +307,8 @@ class XGBoostClassifier(Ensemble, MulticlassClassifier):
     """
 
     @property
-    def _object_type(self) -> Literal["XGBoostClassifier"]:
-        return "XGBoostClassifier"
+    def _object_type(self) -> Literal["XGBClassifier"]:
+        return "XGBClassifier"
 
     @property
     def _attributes(self) -> Literal["trees_", "logodds_", "classes_", "eta_"]:

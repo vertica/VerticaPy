@@ -234,23 +234,23 @@ class TestTools:
             and result.get_params()["n_estimators"] == 33
         )
         model.drop()
-        # XGBoostClassifier
-        model = XGBoostClassifier("load_model_test.model_test", max_ntree=12)
+        # XGBClassifier
+        model = XGBClassifier("load_model_test.model_test", max_ntree=12)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert (
-            isinstance(result, XGBoostClassifier)
+            isinstance(result, XGBClassifier)
             and result.get_params()["max_ntree"] == 12
         )
         model.drop()
-        # XGBoostRegressor
-        model = XGBoostRegressor("load_model_test.model_test", max_ntree=12)
+        # XGBRegressor
+        model = XGBRegressor("load_model_test.model_test", max_ntree=12)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert (
-            isinstance(result, XGBoostRegressor)
+            isinstance(result, XGBRegressor)
             and result.get_params()["max_ntree"] == 12
         )
         model.drop()

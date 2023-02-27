@@ -26,8 +26,8 @@ from verticapy.machine_learning.memmodel.ensemble import (
     IsolationForest,
     RandomForestClassifier,
     RandomForestRegressor,
-    XGBoostClassifier,
-    XGBoostRegressor,
+    XGBClassifier,
+    XGBRegressor,
 )
 from verticapy.machine_learning.memmodel.linear_model import (
     LinearModel,

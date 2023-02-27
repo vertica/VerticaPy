@@ -29,8 +29,8 @@ from verticapy.machine_learning.vertica.ensemble import (
     IsolationForest,
     RandomForestClassifier,
     RandomForestRegressor,
-    XGBoostClassifier,
-    XGBoostRegressor,
+    XGBClassifier,
+    XGBRegressor,
 )
 from verticapy.machine_learning.vertica.linear_model import (
     ElasticNet,

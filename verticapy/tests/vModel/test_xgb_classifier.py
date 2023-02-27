@@ -33,7 +33,7 @@ from verticapy.utilities import drop
 from verticapy._config.config import set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_cl
-from verticapy.learn.ensemble import XGBoostClassifier
+from verticapy.learn.ensemble import XGBClassifier
 from verticapy._utils._sql._format import clean_query
 
 set_option("print_info", False)
@@ -76,7 +76,7 @@ def model(xgbc_data_vd):
     )
 
     # I could use load_model but it is buggy
-    model_class = XGBoostClassifier(
+    model_class = XGBClassifier(
         "xgbc_model_test",
         max_ntree=3,
         min_split_loss=0.1,
@@ -147,7 +147,7 @@ class TestXGBC:
         assert conf_mat2["Train"] == [0, 0, 3]
 
     def test_contour(self, titanic_vd):
-        model_test = XGBoostClassifier("model_contour",)
+        model_test = XGBClassifier("model_contour",)
         model_test.drop()
         model_test.fit(
             titanic_vd, ["age", "fare"], "survived",
@@ -167,7 +167,7 @@ class TestXGBC:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS xgbc_model_test_drop")
-        model_test = XGBoostClassifier("xgbc_model_test_drop",)
+        model_test = XGBClassifier("xgbc_model_test_drop",)
         model_test.fit(
             "public.xgbc_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -216,7 +216,7 @@ class TestXGBC:
         plt.close("all")
 
     def test_to_python(self, model, titanic_vd):
-        model_test = XGBoostClassifier("rfc_python_test")
+        model_test = XGBClassifier("rfc_python_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "embarked")
         current_cursor().execute(
@@ -237,7 +237,7 @@ class TestXGBC:
         )
 
     def test_to_sql(self, model, titanic_vd):
-        model_test = XGBoostClassifier("xgb_sql_test")
+        model_test = XGBClassifier("xgb_sql_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "survived")
         current_cursor().execute(
@@ -511,7 +511,7 @@ class TestXGBC:
 
     def test_model_from_vDF(self, xgbc_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS xgbc_from_vDF")
-        model_test = XGBoostClassifier("xgbc_from_vDF",)
+        model_test = XGBClassifier("xgbc_from_vDF",)
         model_test.fit(
             xgbc_data_vd,
             ["Gender", '"owned cars"', "cost", "income"],
@@ -556,7 +556,7 @@ class TestXGBC:
         path = "verticapy_test_xgbr.json"
         X = ["pclass", "age", "fare"]
         y = "survived"
-        model = XGBoostClassifier(
+        model = XGBClassifier(
             "verticapy_xgb_binaryclassifier_test", max_ntree=10, max_depth=5
         )
         model.drop()
@@ -586,7 +586,7 @@ class TestXGBC:
         path = "verticapy_test_xgbr.json"
         X = ["survived", "age", "fare"]
         y = "pclass"
-        model = XGBoostClassifier(
+        model = XGBClassifier(
             "verticapy_xgb_multiclass_classifier_test", max_ntree=10, max_depth=5
         )
         model.drop()

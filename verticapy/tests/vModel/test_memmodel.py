@@ -673,7 +673,7 @@ class Test_InMemoryModel:
         assert attributes["value"][3][0] == 0.1
         assert model._object_type == "RandomForestClassifier"
 
-    def test_XGBoostRegressor(self):
+    def test_XGBRegressor(self):
         model1 = mm.BinaryTreeRegressor(
             **{
                 "children_left": [1, 3, None, None, None],
@@ -701,7 +701,7 @@ class Test_InMemoryModel:
                 "value": [None, None, 0, 3, 6],
             },
         )
-        model = mm.XGBoostRegressor(
+        model = mm.XGBRegressor(
             **{"trees": [model1, model2, model3], "eta": 0.1, "mean": 1.0},
         )
         prediction = model.predict([["male", 100], ["female", 20], ["female", 50]])
@@ -730,9 +730,9 @@ class Test_InMemoryModel:
         attributes = model.get_attributes()
         assert attributes["eta"] == 0.2
         assert attributes["mean"] == 2.0
-        assert model._object_type == "XGBoostRegressor"
+        assert model._object_type == "XGBRegressor"
 
-    def test_XGBoostClassifier(self):
+    def test_XGBClassifier(self):
         model1 = mm.BinaryTreeClassifier(
             **{
                 "children_left": [1, 3, None, None, None],
@@ -781,7 +781,7 @@ class Test_InMemoryModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model = mm.XGBoostClassifier(
+        model = mm.XGBClassifier(
             **{
                 "trees": [model1, model2, model3],
                 "learning_rate": 0.1,
@@ -832,7 +832,7 @@ class Test_InMemoryModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2][0] == 0.8
         assert attributes["value"][3][0] == 0.1
-        assert model._object_type == "XGBoostClassifier"
+        assert model._object_type == "XGBClassifier"
 
     def test_NaiveBayes(self):
         model = mm.NaiveBayes(

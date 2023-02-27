@@ -368,7 +368,7 @@ model
                 float(parameters_dict["col_sample_by_tree"]),
             )
         elif model_type == "xgb_classifier":
-            model = vml.XGBoostClassifier(
+            model = vml.XGBClassifier(
                 name,
                 int(parameters_dict["max_ntree"]),
                 int(parameters_dict["max_depth"]),
@@ -381,7 +381,7 @@ model
                 float(parameters_dict["sampling_size"]),
             )
         elif model_type == "xgb_regressor":
-            model = vml.XGBoostRegressor(
+            model = vml.XGBRegressor(
                 name,
                 int(parameters_dict["max_ntree"]),
                 int(parameters_dict["max_depth"]),

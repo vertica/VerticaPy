@@ -35,8 +35,8 @@ from verticapy.machine_learning.vertica.base import vModel
 from verticapy.machine_learning.vertica.ensemble import (
     RandomForestRegressor,
     RandomForestClassifier,
-    XGBoostClassifier,
-    XGBoostRegressor,
+    XGBClassifier,
+    XGBRegressor,
 )
 from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
 from verticapy.machine_learning.vertica.linear_model import (
@@ -46,6 +46,7 @@ from verticapy.machine_learning.vertica.linear_model import (
     Lasso,
     Ridge,
 )
+import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.model_selection import (
     gen_params_grid,
     grid_search_cv,
@@ -258,7 +259,7 @@ model_grid_ : TableSample
                 if estimator_method in ("native", "all"):
                     if v[0] > 10 or (v[0] == 10 and v[1] >= 1):
                         self.parameters["estimator"] += [
-                            XGBoostClassifier(self.model_name)
+                            XGBClassifier(self.model_name)
                         ]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
@@ -283,7 +284,7 @@ model_grid_ : TableSample
                 if estimator_method in ("native", "all"):
                     if v[0] > 10 or (v[0] == 10 and v[1] >= 1):
                         self.parameters["estimator"] += [
-                            XGBoostRegressor(self.model_name)
+                            XGBRegressor(self.model_name)
                         ]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
@@ -300,7 +301,7 @@ model_grid_ : TableSample
                 if estimator_method in ("native", "all"):
                     if v[0] >= 10 and v[1] >= 1:
                         self.parameters["estimator"] += [
-                            XGBoostClassifier(self.model_name)
+                            XGBClassifier(self.model_name)
                         ]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
@@ -320,8 +321,8 @@ model_grid_ : TableSample
             (
                 RandomForestRegressor,
                 RandomForestClassifier,
-                XGBoostRegressor,
-                XGBoostClassifier,
+                XGBRegressor,
+                XGBClassifier,
                 NaiveBayes,
                 LinearRegression,
                 ElasticNet,
@@ -343,8 +344,8 @@ model_grid_ : TableSample
                     (
                         RandomForestRegressor,
                         RandomForestClassifier,
-                        XGBoostRegressor,
-                        XGBoostClassifier,
+                        XGBRegressor,
+                        XGBClassifier,
                         NaiveBayes,
                         LinearRegression,
                         ElasticNet,

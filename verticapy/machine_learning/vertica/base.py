@@ -221,7 +221,7 @@ Base Class for Vertica Models.
         """
         if self._model_type in (
             "RandomForestClassifier",
-            "XGBoostClassifier",
+            "XGBClassifier",
             "NaiveBayes",
             "NearestCentroid",
             "KNeighborsClassifier",
@@ -230,7 +230,7 @@ Base Class for Vertica Models.
                 pos_label = sorted(self.classes_)[-1]
             if self._model_type in (
                 "RandomForestClassifier",
-                "XGBoostClassifier",
+                "XGBClassifier",
                 "NaiveBayes",
                 "NearestCentroid",
             ):
@@ -360,15 +360,15 @@ Base Class for Vertica Models.
             "RandomForestClassifier",
             "RandomForestRegressor",
             "KernelDensity",
-            "XGBoostClassifier",
-            "XGBoostRegressor",
+            "XGBClassifier",
+            "XGBRegressor",
         ):
             name = (
                 self.tree_name
                 if self._model_type == "KernelDensity"
                 else self.model_name
             )
-            if self._model_type in ("XGBoostClassifier", "XGBoostRegressor",):
+            if self._model_type in ("XGBClassifier", "XGBRegressor",):
                 vertica_version(condition=[12, 0, 3])
                 fname = "XGB_PREDICTOR_IMPORTANCE"
                 var = "avg_gain"
@@ -810,7 +810,7 @@ Base Class for Vertica Models.
             return lof_plot(
                 self.model_name, self.X, "lof_score", 100, ax=ax, **style_kwds
             )
-        elif self._model_type in ("RandomForestRegressor", "XGBoostRegressor"):
+        elif self._model_type in ("RandomForestRegressor", "XGBRegressor"):
             return regression_tree_plot(
                 self.X + [self.deploySQL()],
                 self.y,
@@ -1118,8 +1118,8 @@ Base Class for Vertica Models.
         elif self._model_type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
-            "XGBoostRegressor",
-            "XGBoostClassifier",
+            "XGBRegressor",
+            "XGBClassifier",
             "IsolationForest",
         ):
             result = []
@@ -1132,7 +1132,7 @@ Base Class for Vertica Models.
             else:
                 n = self.get_attr("tree_count")["tree_count"][0]
             func += f"n = {n}\n"
-            if self._model_type in ("XGBoostClassifier", "RandomForestClassifier"):
+            if self._model_type in ("XGBClassifier", "RandomForestClassifier"):
                 classes_str = [str(c) for c in self.classes_]
                 func += f"\tclasses = np.array({classes_str})\n"
             func += "\ttree_list = []\n"
@@ -1151,7 +1151,7 @@ Base Class for Vertica Models.
                 func += "\t\t\treturn 0\n"
             func += "\tdef predict_tree(tree, node_id, X):\n"
             func += "\t\tif tree[0][node_id] == tree[1][node_id]:\n"
-            if self._model_type in ("RandomForestRegressor", "XGBoostRegressor",):
+            if self._model_type in ("RandomForestRegressor", "XGBRegressor",):
                 func += "\t\t\treturn float(tree[4][node_id])\n"
             elif self._model_type == "IsolationForest":
                 psy = int(
@@ -1174,12 +1174,12 @@ Base Class for Vertica Models.
             func += "\t\t\t\treturn predict_tree(tree, right_node, X)\n"
             func += "\tdef predict_tree_final(X):\n"
             func += "\t\tresult = [predict_tree(tree, 0, X) for tree in tree_list]\n"
-            if self._model_type in ("XGBoostClassifier", "RandomForestClassifier"):
+            if self._model_type in ("XGBClassifier", "RandomForestClassifier"):
                 func += "\t\tall_classes_score = {}\n"
                 func += "\t\tfor elem in classes:\n"
                 func += "\t\t\tall_classes_score[elem] = 0\n"
-            if self._model_type in ("XGBoostRegressor", "XGBoostClassifier"):
-                if self._model_type == "XGBoostRegressor":
+            if self._model_type in ("XGBRegressor", "XGBClassifier"):
+                if self._model_type == "XGBRegressor":
                     avg = self.prior_
                     func += f"\t\treturn {avg} + {self.parameters['learning_rate']} "
                     func += "* np.sum(result)\n"
@@ -1209,7 +1209,7 @@ Base Class for Vertica Models.
                 func += "\t\tresult = []\n"
                 func += "\t\tfor elem in all_classes_score:\n"
                 func += "\t\t\tresult += [all_classes_score[elem]]\n"
-            if self._model_type in ("XGBoostClassifier", "RandomForestClassifier"):
+            if self._model_type in ("XGBClassifier", "RandomForestClassifier"):
                 if return_proba:
                     func += "\t\treturn np.array(result) / np.sum(result)\n"
                 else:
@@ -1317,8 +1317,8 @@ class Supervised(vModel):
         if self._model_type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
-            "XGBoostClassifier",
-            "XGBoostRegressor",
+            "XGBClassifier",
+            "XGBRegressor",
         ) and isinstance(conf.get_option("random_state"), int):
             id_column = f""", 
                 ROW_NUMBER() OVER 
@@ -1383,8 +1383,8 @@ class Supervised(vModel):
         if self._model_type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
-            "XGBoostClassifier",
-            "XGBoostRegressor",
+            "XGBClassifier",
+            "XGBRegressor",
         ) and isinstance(conf.get_option("random_state"), int):
             query += f""", 
                 seed={conf.get_option('random_state')}, 
@@ -1396,7 +1396,7 @@ class Supervised(vModel):
             if tmp_view:
                 drop(relation, method="view")
         self._compute_attributes()
-        if self._model_type in ("XGBoostClassifier", "XGBoostRegressor"):
+        if self._model_type in ("XGBClassifier", "XGBRegressor"):
             self.prior_ = self._compute_prior()
         return self
 
@@ -1434,7 +1434,7 @@ class Tree:
             tree.values["split_predictor"][idx] = self._map_idx(
                 tree["split_predictor"][idx], X
             )
-            if self._model_type == "XGBoostClassifier" and isinstance(
+            if self._model_type == "XGBClassifier" and isinstance(
                 tree["log_odds"][idx], str
             ):
                 val, all_val = tree["log_odds"][idx].split(","), {}
@@ -1461,7 +1461,7 @@ class Tree:
             tree["prediction"],
             tree["is_categorical_split"],
         ]
-        if self._model_type == "XGBoostClassifier":
+        if self._model_type == "XGBClassifier":
             trees_arrays += [tree["log_odds"]]
         if return_probability:
             trees_arrays += [tree["probability/variance"]]
@@ -1625,7 +1625,7 @@ class Tree:
         name = (
             self.tree_name if self._model_type == "KernelDensity" else self.model_name
         )
-        if self._model_type in ("XGBoostClassifier", "XGBoostRegressor",):
+        if self._model_type in ("XGBClassifier", "XGBRegressor",):
             vertica_version(condition=[12, 0, 3])
             fname = "XGB_PREDICTOR_IMPORTANCE"
         else:
