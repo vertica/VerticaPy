@@ -122,8 +122,8 @@ tol: float, optional
         self.metrics_ = self._compute_metrics()
 
     def _compute_metrics(self):
-        metrics = self.get_attr("metrics").values["metrics"][0]
-        values = {
+        metrics_str = self.get_attr("metrics").values["metrics"][0]
+        metrics = {
             "index": [
                 "Between-Cluster Sum of Squares",
                 "Total Sum of Squares",
@@ -132,25 +132,21 @@ tol: float, optional
                 "converged",
             ]
         }
-        values["value"] = [
+        metrics["value"] = [
             float(
-                metrics.split("Between-Cluster Sum of Squares: ")[1].split("\n")[
-                    0
-                ]
+                metrics_str.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
             ),
-            float(metrics.split("Total Sum of Squares: ")[1].split("\n")[0]),
+            float(metrics_str.split("Total Sum of Squares: ")[1].split("\n")[0]),
             float(
-                metrics.split("Total Within-Cluster Sum of Squares: ")[1].split(
+                metrics_str.split("Total Within-Cluster Sum of Squares: ")[1].split(
                     "\n"
                 )[0]
             ),
             float(
-                metrics.split("Between-Cluster Sum of Squares: ")[1].split("\n")[
-                    0
-                ]
+                metrics_str.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
             )
-            / float(metrics.split("Total Sum of Squares: ")[1].split("\n")[0]),
-            metrics.split("Converged: ")[1].split("\n")[0] == "True",
+            / float(metrics_str.split("Total Sum of Squares: ")[1].split("\n")[0]),
+            metrics_str.split("Converged: ")[1].split("\n")[0] == "True",
         ]
         return metrics
 
@@ -748,6 +744,8 @@ p: int, optional
         )
         self.clusters_ = centroids.to_numpy()[:, 0:-1]
         self.classes_ = centroids.to_numpy()[:, -1]
+        if isinstance(self.classes_[0], float):
+            self.classes_ = self.classes_.astype(int)
         self.p_ = self.parameters["p"]
 
     def fit(

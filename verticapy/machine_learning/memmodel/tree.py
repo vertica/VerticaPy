@@ -431,7 +431,7 @@ class BinaryTreeRegressor(Tree):
         self.children_right_ = np.array(children_right)
         self.feature_ = np.array(feature)
         self.threshold_ = np.array(threshold)
-        self.value_ = np.array(value)
+        self.value_ = np.array(value, dtype=object)
         return None
 
     def _scoring_function(self, node_id: int = 0) -> float:
@@ -501,7 +501,7 @@ class BinaryTreeAnomaly(Tree):
         self.children_right_ = np.array(children_right)
         self.feature_ = np.array(feature)
         self.threshold_ = np.array(threshold)
-        self.value_ = np.array(value)
+        self.value_ = np.array(value, dtype=object)
         self.psy = psy
         return None
 

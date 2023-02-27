@@ -377,7 +377,7 @@ Base Class for Vertica Models.
         ):
             relation = self.input_relation
             vertica_version(condition=[8, 1, 1])
-            coefficients = self.get_attr("coefficients")
+            coefficients = self.get_attr("details")
             query = f"""
                 SELECT /*+LABEL('learn.vModel.features_importance')*/
                     predictor, 
@@ -685,7 +685,7 @@ Base Class for Vertica Models.
             "LinearSVC",
             "LinearSVR",
         ):
-            coefficients = self.get_attr("coefficients").values["coefficient"]
+            coefficients = self.get_attr("details").values["coefficient"]
             if self._model_type == "LogisticRegression":
                 return logit_plot(
                     self.X,
@@ -1668,7 +1668,10 @@ class MulticlassClassifier(Classifier):
             method="fetchall",
             print_time_sql=False,
         )
-        return np.array([c[0] for c in classes])
+        classes = np.array([c[0] for c in classes])
+        if isinstance(classes[0], float):
+            classes = classes.astype(int)
+        return classes
 
     def classification_report(
         self,

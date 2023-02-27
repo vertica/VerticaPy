@@ -499,8 +499,8 @@ null_column_name: str, optional
                 )
             except:
                 self.cat_ = self.get_attr("varchar_categories")
-        self.cat_ = np.array(self.cat_)
-        cat = self._compute_ohe_array(self.cat_[:, 0:2])
+        self.cat_ = self.cat_.to_list()
+        cat = self._compute_ohe_list([c[0:2] for c in self.cat_])
         cat_list_idx = []
         for i, x1 in enumerate(cat[0]):
             for j, x2 in enumerate(self.X):
@@ -515,7 +515,7 @@ null_column_name: str, optional
         return None
 
     @staticmethod
-    def _compute_ohe_array(categories: list):
+    def _compute_ohe_list(categories: list):
         # Allows to split the One Hot Encoder Array by features categories
         cat, tmp_cat = [], []
         init_cat, X = categories[0][0], [categories[0][0]]

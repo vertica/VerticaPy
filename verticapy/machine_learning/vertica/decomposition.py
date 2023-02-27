@@ -322,6 +322,7 @@ name: str
         ax.set_title(f"Cos2 of variables to Dim {dimensions[0]}-{dimensions[1]}")
         return ax
 
+
 class SVD(Decomposition):
     """
 Creates an SVD (Singular Value Decomposition) object using the Vertica SVD
