@@ -35,6 +35,7 @@ from verticapy.machine_learning.memmodel.linear_model import (
 )
 from verticapy.machine_learning.memmodel.naive_bayes import NaiveBayes
 from verticapy.machine_learning.memmodel.preprocessing import (
+    Scaler,
     StandardScaler,
     MinMaxScaler,
     OneHotEncoder,

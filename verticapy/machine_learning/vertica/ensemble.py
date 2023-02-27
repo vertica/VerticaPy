@@ -37,6 +37,10 @@ from verticapy.machine_learning.vertica.base import (
     Tree,
 )
 
+"""
+General Classes.
+"""
+
 
 class XGBoost:
     def _compute_prior(self):
@@ -372,6 +376,575 @@ class XGBoost:
             return res
 
 
+"""
+Algorithms used for regression.
+"""
+
+
+class RandomForestRegressor(Regressor, Tree):
+    """
+Creates a RandomForestRegressor object using the Vertica RF_REGRESSOR 
+function. It is one of the ensemble learning methods for regression that 
+operates by constructing a multitude of decision trees at training-time 
+and outputting a class with the mode.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model will be stored in the DB.
+n_estimators: int, optional
+    The number of trees in the forest, an integer between 1 and 1000, inclusive.
+max_features: int / str, optional
+    The number of randomly chosen features from which to pick the best feature 
+    to split on a given tree node. It can be an integer or one of the two following
+    methods.
+        auto : square root of the total number of predictors.
+        max  : number of predictors.
+max_leaf_nodes: int / float, optional
+    The maximum number of leaf nodes a tree in the forest can have, an integer 
+    between 1 and 1e9, inclusive.
+sample: float, optional
+    The portion of the input data set that is randomly picked for training each tree, 
+    a float between 0.0 and 1.0, inclusive. 
+max_depth: int, optional
+    The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
+min_samples_leaf: int, optional
+    The minimum number of samples each branch must have after splitting a node, an 
+    integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
+    is discarded. 
+min_info_gain: int / float, optional
+    The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
+    A split with information gain less than this threshold is discarded.
+nbins: int, optional 
+    The number of bins to use for continuous features, an integer between 2 and 1000, 
+    inclusive.
+    """
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["RF_REGRESSOR"]:
+        return "RF_REGRESSOR"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_REGRESSOR"]:
+        return "PREDICT_RF_REGRESSOR"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["RandomForestRegressor"]:
+        return "RandomForestRegressor"
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        n_estimators: int = 10,
+        max_features: Union[Literal["auto", "max"], int] = "auto",
+        max_leaf_nodes: Union[int, float] = 1e9,
+        sample: float = 0.632,
+        max_depth: int = 5,
+        min_samples_leaf: int = 1,
+        min_info_gain: Union[int, float] = 0.0,
+        nbins: int = 32,
+    ):
+        self.model_name = name
+        self.parameters = {
+            "n_estimators": n_estimators,
+            "max_features": max_features,
+            "max_leaf_nodes": max_leaf_nodes,
+            "sample": sample,
+            "max_depth": max_depth,
+            "min_samples_leaf": min_samples_leaf,
+            "min_info_gain": min_info_gain,
+            "nbins": nbins,
+        }
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.n_estimators_ = self.parameters["n_estimators"]
+        trees = []
+        for i in range(self.n_estimators_):
+            tree = self._compute_trees_arrays(self.get_tree(i), self.X)
+            tree_d = {
+                "children_left": tree[0],
+                "children_right": tree[1],
+                "feature": tree[2],
+                "threshold": tree[3],
+                "value": tree[4],
+            }
+            for j in range(len(tree[5])):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
+                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
+            tree_d["value"] = [
+                float(val) if isinstance(val, str) else val for val in tree_d["value"]
+            ]
+            model = mm.BinaryTreeRegressor(**tree_attributes)
+            trees += [model]
+        self.trees_ = trees
+        return None
+
+    def to_memmodel(self) -> Union[mm.RandomForestRegressor, mm.BinaryTreeRegressor]:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.n_estimators_ == 1:
+            return self.trees_[0]
+        else:
+            return mm.RandomForestRegressor(self.trees_)
+
+
+class XGBRegressor(Regressor, Tree, XGBoost):
+    """
+Creates an XGBRegressor object using the Vertica XGB_REGRESSOR 
+algorithm.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model will be stored in the DB.
+max_ntree: int, optional
+    Maximum number of trees that will be created.
+max_depth: int, optional
+    Maximum depth of each tree, an integer between 1 and 20, inclusive.
+nbins: int, optional
+    Number of bins to use for finding splits in each column, more 
+    splits leads to longer runtime but more fine-grained and possibly 
+    better splits, an integer between 2 and 1000, inclusive.
+split_proposal_method: str, optional
+    approximate splitting strategy. Can be 'global' or 'local'
+    (not yet supported)
+tol: float, optional
+    approximation error of quantile summary structures used in the 
+    approximate split finding method.
+learning_rate: float, optional
+    weight applied to each tree's prediction, reduces each tree's 
+    impact allowing for later trees to contribute, keeping earlier 
+    trees from 'hogging' all the improvements.
+min_split_loss: float, optional
+    Each split must improve the objective function value of the model 
+    by at least this much in order to not be pruned. Value of 0 is the 
+    same as turning off this parameter (trees will still be pruned based 
+    on positive/negative objective function values).
+weight_reg: float, optional
+    Regularization term that is applied to the weights of the leaves in 
+    the regression tree. The higher this value is, the more sparse/smooth 
+    the weights will be, which often helps prevent overfitting.
+sample: float, optional
+    Fraction of rows to use in training per iteration.
+col_sample_by_tree: float, optional
+    Float in the range (0,1] that specifies the fraction of columns (features), 
+    chosen at random, to use when building each tree.
+col_sample_by_node: float, optional
+    Float in the range (0,1] that specifies the fraction of columns (features), 
+    chosen at random, to use when evaluating each split.
+    """
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["XGB_REGRESSOR"]:
+        return "XGB_REGRESSOR"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_XGB_REGRESSOR"]:
+        return "PREDICT_XGB_REGRESSOR"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["XGBRegressor"]:
+        return "XGBRegressor"
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        max_ntree: int = 10,
+        max_depth: int = 5,
+        nbins: int = 32,
+        split_proposal_method: Literal["local", "global"] = "global",
+        tol: float = 0.001,
+        learning_rate: float = 0.1,
+        min_split_loss: float = 0.0,
+        weight_reg: float = 0.0,
+        sample: float = 1.0,
+        col_sample_by_tree: float = 1.0,
+        col_sample_by_node: float = 1.0,
+    ):
+        self.model_name = name
+        params = {
+            "max_ntree": max_ntree,
+            "max_depth": max_depth,
+            "nbins": nbins,
+            "split_proposal_method": str(split_proposal_method).lower(),
+            "tol": tol,
+            "learning_rate": learning_rate,
+            "min_split_loss": min_split_loss,
+            "weight_reg": weight_reg,
+            "sample": sample,
+        }
+        v = vertica_version()
+        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
+        if v:
+            params["col_sample_by_tree"] = col_sample_by_tree
+            params["col_sample_by_node"] = col_sample_by_node
+        self.parameters = params
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.eta_ = self.parameters["learning_rate"]
+        self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
+        self.mean_ = self._compute_prior()
+        trees = []
+        for i in range(self.n_estimators_):
+            tree = self._compute_trees_arrays(self.get_tree(i), self.X)
+            tree_d = {
+                "children_left": tree[0],
+                "children_right": tree[1],
+                "feature": tree[2],
+                "threshold": tree[3],
+                "value": tree[4],
+            }
+            for j in range(len(tree[5])):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
+                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
+            tree_d["value"] = [
+                float(val) if isinstance(val, str) else val for val in tree_d["value"]
+            ]
+            model = mm.BinaryTreeRegressor(**tree_d)
+            trees += [model]
+        self.trees_ = trees
+        return None
+
+    def to_memmodel(self) -> Union[mm.XGBRegressor, mm.BinaryTreeRegressor]:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.n_estimators_ == 1:
+            return self.trees_[0]
+        else:
+            return mm.XGBRegressor(self.trees_, self.mean_, self.eta_)
+
+
+"""
+Algorithms used for classification.
+"""
+
+
+class RandomForestClassifier(MulticlassClassifier, Tree):
+    """
+Creates a RandomForestClassifier object using the Vertica RF_CLASSIFIER 
+function. It is one of the ensemble learning methods for classification 
+that operates by constructing a multitude of decision trees at 
+training-time and outputting a class with the mode.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model will be stored in the DB.
+n_estimators: int, optional
+    The number of trees in the forest, an integer between 1 and 1000, inclusive.
+max_features: int / str, optional
+    The number of randomly chosen features from which to pick the best feature 
+    to split on a given tree node. It can be an integer or one of the two following
+    methods.
+        auto : square root of the total number of predictors.
+        max  : number of predictors.
+max_leaf_nodes: int / float, optional
+    The maximum number of leaf nodes a tree in the forest can have, an integer 
+    between 1 and 1e9, inclusive.
+sample: float, optional
+    The portion of the input data set that is randomly picked for training each tree, 
+    a float between 0.0 and 1.0, inclusive. 
+max_depth: int, optional
+    The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
+min_samples_leaf: int, optional
+    The minimum number of samples each branch must have after splitting a node, an 
+    integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
+    is discarded. 
+min_info_gain: int / float, optional
+    The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
+    A split with information gain less than this threshold is discarded.
+nbins: int, optional 
+    The number of bins to use for continuous features, an integer between 2 and 1000, 
+    inclusive.
+    """
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["RF_CLASSIFIER"]:
+        return "RF_CLASSIFIER"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_CLASSIFIER"]:
+        return "PREDICT_RF_CLASSIFIER"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
+
+    @property
+    def _model_type(self) -> Literal["RandomForestClassifier"]:
+        return "RandomForestClassifier"
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        n_estimators: int = 10,
+        max_features: Union[Literal["auto", "max"], int] = "auto",
+        max_leaf_nodes: Union[int, float] = 1e9,
+        sample: float = 0.632,
+        max_depth: int = 5,
+        min_samples_leaf: int = 1,
+        min_info_gain: Union[int, float] = 0.0,
+        nbins: int = 32,
+    ):
+        self.model_name = name
+        self.parameters = {
+            "n_estimators": n_estimators,
+            "max_features": max_features,
+            "max_leaf_nodes": max_leaf_nodes,
+            "sample": sample,
+            "max_depth": max_depth,
+            "min_samples_leaf": min_samples_leaf,
+            "min_info_gain": min_info_gain,
+            "nbins": nbins,
+        }
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.n_estimators_ = self.parameters["n_estimators"]
+        self.classes_ = self._get_classes()
+
+        trees = []
+        for i in range(self.n_estimators_):
+            tree = self._compute_trees_arrays(self.get_tree(i), self.X, True)
+            tree_d = {
+                "children_left": tree[0],
+                "children_right": tree[1],
+                "feature": tree[2],
+                "threshold": tree[3],
+                "value": tree[4],
+                "classes": self.classes_,
+            }
+            n_classes = len(self.classes_)
+            for j in range(len(tree[5])):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
+                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
+            for j in range(len(tree_d["value"])):
+                if tree_d["value"][j] != None:
+                    prob = [0.0 for i in range(n_classes)]
+                    for k, c in enumerate(self.classes_):
+                        if str(c) == str(tree_d["value"][j]):
+                            prob[k] = tree[6][j]
+                            break
+                    other_proba = (1 - tree[6][j]) / (n_classes - 1)
+                    for k, p in enumerate(prob):
+                        if p == 0.0:
+                            prob[k] = other_proba
+                    tree_d["value"][j] = prob
+            model = mm.BinaryTreeClassifier(**tree_d)
+            trees += [model]
+        self.trees_ = trees
+        return None
+
+    def to_memmodel(self) -> Union[mm.RandomForestClassifier, mm.BinaryTreeClassifier]:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.n_estimators_ == 1:
+            return self.trees_[0]
+        else:
+            return mm.RandomForestClassifier(self.trees_, self.classes_)
+
+
+class XGBClassifier(MulticlassClassifier, Tree, XGBoost):
+    """
+Creates an XGBClassifier object using the Vertica XGB_CLASSIFIER 
+algorithm.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model will be stored in the DB.
+max_ntree: int, optional
+    Maximum number of trees that will be created.
+max_depth: int, optional
+    Maximum depth of each tree, an integer between 1 and 20, inclusive.
+nbins: int, optional
+    Number of bins to use for finding splits in each column, more 
+    splits leads to longer runtime but more fine-grained and possibly 
+    better splits, an integer between 2 and 1000, inclusive.
+split_proposal_method: str, optional
+    approximate splitting strategy. Can be 'global' or 'local'
+    (not yet supported)
+tol: float, optional
+    approximation error of quantile summary structures used in the 
+    approximate split finding method.
+learning_rate: float, optional
+    weight applied to each tree's prediction, reduces each tree's 
+    impact allowing for later trees to contribute, keeping earlier 
+    trees from 'hogging' all the improvements.
+min_split_loss: float, optional
+    Each split must improve the objective function value of the model 
+    by at least this much in order to not be pruned. Value of 0 is the 
+    same as turning off this parameter (trees will still be pruned based 
+    on positive/negative objective function values).
+weight_reg: float, optional
+    Regularization term that is applied to the weights of the leaves in 
+    the regression tree. The higher this value is, the more sparse/smooth 
+    the weights will be, which often helps prevent overfitting.
+sample: float, optional
+    Fraction of rows to use in training per iteration.
+col_sample_by_tree: float, optional
+    Float in the range (0,1] that specifies the fraction of columns (features), 
+    chosen at random, to use when building each tree.
+col_sample_by_node: float, optional
+    Float in the range (0,1] that specifies the fraction of columns (features), 
+    chosen at random, to use when evaluating each split.
+    """
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["XGB_CLASSIFIER"]:
+        return "XGB_CLASSIFIER"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_XGB_CLASSIFIER"]:
+        return "PREDICT_XGB_CLASSIFIER"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
+
+    @property
+    def _model_type(self) -> Literal["XGBClassifier"]:
+        return "XGBClassifier"
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        max_ntree: int = 10,
+        max_depth: int = 5,
+        nbins: int = 32,
+        split_proposal_method: Literal["local", "global"] = "global",
+        tol: float = 0.001,
+        learning_rate: float = 0.1,
+        min_split_loss: float = 0.0,
+        weight_reg: float = 0.0,
+        sample: float = 1.0,
+        col_sample_by_tree: float = 1.0,
+        col_sample_by_node: float = 1.0,
+    ):
+        self.model_name = name
+        params = {
+            "max_ntree": max_ntree,
+            "max_depth": max_depth,
+            "nbins": nbins,
+            "split_proposal_method": str(split_proposal_method).lower(),
+            "tol": tol,
+            "learning_rate": learning_rate,
+            "min_split_loss": min_split_loss,
+            "weight_reg": weight_reg,
+            "sample": sample,
+        }
+        v = vertica_version()
+        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
+        if v:
+            params["col_sample_by_tree"] = col_sample_by_tree
+            params["col_sample_by_node"] = col_sample_by_node
+        self.parameters = params
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.eta_ = self.parameters["learning_rate"]
+        self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
+        self.classes_ = self._get_classes()
+        prior = self._compute_prior()
+        if not (isinstance(prior, list)):
+            self.logodds_ = [
+                np.log((1 - prior) / prior),
+                np.log(prior / (1 - prior)),
+            ]
+        else:
+            self.logodds_ = prior
+        trees = []
+        tree_type = "BinaryTreeClassifier"
+        for i in range(self.n_estimators_):
+            tree = self._compute_trees_arrays(self.get_tree(i), self.X, return_prob_rf)
+            tree_d = {
+                "children_left": tree[0],
+                "children_right": tree[1],
+                "feature": tree[2],
+                "threshold": tree[3],
+                "value": tree[6],
+                "classes": self.classes_,
+            }
+            for j in range(len(tree[5])):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
+                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
+            for j in range(len(tree[6])):
+                if tree[6][j] != None:
+                    all_classes_logodss = []
+                    for c in self.classes_:
+                        all_classes_logodss += [tree[6][j][str(c)]]
+                    tree_d["value"][j] = all_classes_logodss
+            model = mm.BinaryTreeClassifier(**tree_d)
+            trees += [model]
+        self.trees_ = trees
+        return None
+
+    def to_memmodel(self) -> Union[mm.XGBClassifier, mm.BinaryTreeClassifier]:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.n_estimators_ == 1:
+            return self.trees_[0]
+        else:
+            return mm.XGBClassifier(
+                self.trees_, self.logodds_, self.classes_, self.eta_
+            )
+
+
+"""
+Algorithms used for anomaly detection.
+"""
+
+
 class IsolationForest(Clustering, Tree):
     """
 Creates an IsolationForest object using the Vertica IFOREST algorithm.
@@ -629,557 +1202,3 @@ col_sample_by_tree: float, optional
         return vdf_return.eval(
             name, self.deploySQL(cutoff=cutoff, contamination=contamination, X=X)
         )
-
-
-class RandomForestClassifier(MulticlassClassifier, Tree):
-    """
-Creates a RandomForestClassifier object using the Vertica RF_CLASSIFIER 
-function. It is one of the ensemble learning methods for classification 
-that operates by constructing a multitude of decision trees at 
-training-time and outputting a class with the mode.
-
-Parameters
-----------
-name: str
-    Name of the the model. The model will be stored in the DB.
-n_estimators: int, optional
-    The number of trees in the forest, an integer between 1 and 1000, inclusive.
-max_features: int / str, optional
-    The number of randomly chosen features from which to pick the best feature 
-    to split on a given tree node. It can be an integer or one of the two following
-    methods.
-        auto : square root of the total number of predictors.
-        max  : number of predictors.
-max_leaf_nodes: int / float, optional
-    The maximum number of leaf nodes a tree in the forest can have, an integer 
-    between 1 and 1e9, inclusive.
-sample: float, optional
-    The portion of the input data set that is randomly picked for training each tree, 
-    a float between 0.0 and 1.0, inclusive. 
-max_depth: int, optional
-    The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
-min_samples_leaf: int, optional
-    The minimum number of samples each branch must have after splitting a node, an 
-    integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
-    is discarded. 
-min_info_gain: int / float, optional
-    The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
-    A split with information gain less than this threshold is discarded.
-nbins: int, optional 
-    The number of bins to use for continuous features, an integer between 2 and 1000, 
-    inclusive.
-    """
-
-    @property
-    def _vertica_fit_sql(self) -> Literal["RF_CLASSIFIER"]:
-        return "RF_CLASSIFIER"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_CLASSIFIER"]:
-        return "PREDICT_RF_CLASSIFIER"
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
-        return "CLASSIFIER"
-
-    @property
-    def _model_type(self) -> Literal["RandomForestClassifier"]:
-        return "RandomForestClassifier"
-
-    @check_minimum_version
-    @save_verticapy_logs
-    def __init__(
-        self,
-        name: str,
-        n_estimators: int = 10,
-        max_features: Union[Literal["auto", "max"], int] = "auto",
-        max_leaf_nodes: Union[int, float] = 1e9,
-        sample: float = 0.632,
-        max_depth: int = 5,
-        min_samples_leaf: int = 1,
-        min_info_gain: Union[int, float] = 0.0,
-        nbins: int = 32,
-    ):
-        self.model_name = name
-        self.parameters = {
-            "n_estimators": n_estimators,
-            "max_features": max_features,
-            "max_leaf_nodes": max_leaf_nodes,
-            "sample": sample,
-            "max_depth": max_depth,
-            "min_samples_leaf": min_samples_leaf,
-            "min_info_gain": min_info_gain,
-            "nbins": nbins,
-        }
-
-    def _compute_attributes(self) -> None:
-        """
-        Computes the model's attributes.
-        """
-        self.n_estimators_ = self.parameters["n_estimators"]
-        self.classes_ = self._get_classes()
-
-        trees = []
-        for i in range(self.n_estimators_):
-            tree = self._compute_trees_arrays(self.get_tree(i), self.X, True)
-            tree_d = {
-                "children_left": tree[0],
-                "children_right": tree[1],
-                "feature": tree[2],
-                "threshold": tree[3],
-                "value": tree[4],
-                "classes": self.classes_,
-            }
-            n_classes = len(self.classes_)
-            for j in range(len(tree[5])):
-                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
-                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
-            for j in range(len(tree_d["value"])):
-                if tree_d["value"][j] != None:
-                    prob = [0.0 for i in range(n_classes)]
-                    for k, c in enumerate(self.classes_):
-                        if str(c) == str(tree_d["value"][j]):
-                            prob[k] = tree[6][j]
-                            break
-                    other_proba = (1 - tree[6][j]) / (n_classes - 1)
-                    for k, p in enumerate(prob):
-                        if p == 0.0:
-                            prob[k] = other_proba
-                    tree_d["value"][j] = prob
-            model = mm.BinaryTreeClassifier(**tree_d)
-            trees += [model]
-        self.trees_ = trees
-        return None
-
-    def to_memmodel(self) -> Union[mm.RandomForestClassifier, mm.BinaryTreeClassifier]:
-        """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
-        """
-        if self.n_estimators_ == 1:
-            return self.trees_[0]
-        else:
-            return mm.RandomForestClassifier(self.trees_, self.classes_)
-
-
-class RandomForestRegressor(Regressor, Tree):
-    """
-Creates a RandomForestRegressor object using the Vertica RF_REGRESSOR 
-function. It is one of the ensemble learning methods for regression that 
-operates by constructing a multitude of decision trees at training-time 
-and outputting a class with the mode.
-
-Parameters
-----------
-name: str
-    Name of the the model. The model will be stored in the DB.
-n_estimators: int, optional
-    The number of trees in the forest, an integer between 1 and 1000, inclusive.
-max_features: int / str, optional
-    The number of randomly chosen features from which to pick the best feature 
-    to split on a given tree node. It can be an integer or one of the two following
-    methods.
-        auto : square root of the total number of predictors.
-        max  : number of predictors.
-max_leaf_nodes: int / float, optional
-    The maximum number of leaf nodes a tree in the forest can have, an integer 
-    between 1 and 1e9, inclusive.
-sample: float, optional
-    The portion of the input data set that is randomly picked for training each tree, 
-    a float between 0.0 and 1.0, inclusive. 
-max_depth: int, optional
-    The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
-min_samples_leaf: int, optional
-    The minimum number of samples each branch must have after splitting a node, an 
-    integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
-    is discarded. 
-min_info_gain: int / float, optional
-    The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
-    A split with information gain less than this threshold is discarded.
-nbins: int, optional 
-    The number of bins to use for continuous features, an integer between 2 and 1000, 
-    inclusive.
-    """
-
-    @property
-    def _vertica_fit_sql(self) -> Literal["RF_REGRESSOR"]:
-        return "RF_REGRESSOR"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_RF_REGRESSOR"]:
-        return "PREDICT_RF_REGRESSOR"
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["REGRESSOR"]:
-        return "REGRESSOR"
-
-    @property
-    def _model_type(self) -> Literal["RandomForestRegressor"]:
-        return "RandomForestRegressor"
-
-    @check_minimum_version
-    @save_verticapy_logs
-    def __init__(
-        self,
-        name: str,
-        n_estimators: int = 10,
-        max_features: Union[Literal["auto", "max"], int] = "auto",
-        max_leaf_nodes: Union[int, float] = 1e9,
-        sample: float = 0.632,
-        max_depth: int = 5,
-        min_samples_leaf: int = 1,
-        min_info_gain: Union[int, float] = 0.0,
-        nbins: int = 32,
-    ):
-        self.model_name = name
-        self.parameters = {
-            "n_estimators": n_estimators,
-            "max_features": max_features,
-            "max_leaf_nodes": max_leaf_nodes,
-            "sample": sample,
-            "max_depth": max_depth,
-            "min_samples_leaf": min_samples_leaf,
-            "min_info_gain": min_info_gain,
-            "nbins": nbins,
-        }
-
-    def _compute_attributes(self) -> None:
-        """
-        Computes the model's attributes.
-        """
-        self.n_estimators_ = self.parameters["n_estimators"]
-        trees = []
-        for i in range(self.n_estimators_):
-            tree = self._compute_trees_arrays(self.get_tree(i), self.X)
-            tree_d = {
-                "children_left": tree[0],
-                "children_right": tree[1],
-                "feature": tree[2],
-                "threshold": tree[3],
-                "value": tree[4],
-            }
-            for j in range(len(tree[5])):
-                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
-                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
-            tree_d["value"] = [
-                float(val) if isinstance(val, str) else val for val in tree_d["value"]
-            ]
-            model = mm.BinaryTreeRegressor(**tree_attributes)
-            trees += [model]
-        self.trees_ = trees
-        return None
-
-    def to_memmodel(self) -> Union[mm.RandomForestRegressor, mm.BinaryTreeRegressor]:
-        """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
-        """
-        if self.n_estimators_ == 1:
-            return self.trees_[0]
-        else:
-            return mm.RandomForestRegressor(self.trees_)
-
-
-class XGBClassifier(MulticlassClassifier, Tree, XGBoost):
-    """
-Creates an XGBClassifier object using the Vertica XGB_CLASSIFIER 
-algorithm.
-
-Parameters
-----------
-name: str
-    Name of the the model. The model will be stored in the DB.
-max_ntree: int, optional
-    Maximum number of trees that will be created.
-max_depth: int, optional
-    Maximum depth of each tree, an integer between 1 and 20, inclusive.
-nbins: int, optional
-    Number of bins to use for finding splits in each column, more 
-    splits leads to longer runtime but more fine-grained and possibly 
-    better splits, an integer between 2 and 1000, inclusive.
-split_proposal_method: str, optional
-    approximate splitting strategy. Can be 'global' or 'local'
-    (not yet supported)
-tol: float, optional
-    approximation error of quantile summary structures used in the 
-    approximate split finding method.
-learning_rate: float, optional
-    weight applied to each tree's prediction, reduces each tree's 
-    impact allowing for later trees to contribute, keeping earlier 
-    trees from 'hogging' all the improvements.
-min_split_loss: float, optional
-    Each split must improve the objective function value of the model 
-    by at least this much in order to not be pruned. Value of 0 is the 
-    same as turning off this parameter (trees will still be pruned based 
-    on positive/negative objective function values).
-weight_reg: float, optional
-    Regularization term that is applied to the weights of the leaves in 
-    the regression tree. The higher this value is, the more sparse/smooth 
-    the weights will be, which often helps prevent overfitting.
-sample: float, optional
-    Fraction of rows to use in training per iteration.
-col_sample_by_tree: float, optional
-    Float in the range (0,1] that specifies the fraction of columns (features), 
-    chosen at random, to use when building each tree.
-col_sample_by_node: float, optional
-    Float in the range (0,1] that specifies the fraction of columns (features), 
-    chosen at random, to use when evaluating each split.
-    """
-
-    @property
-    def _vertica_fit_sql(self) -> Literal["XGB_CLASSIFIER"]:
-        return "XGB_CLASSIFIER"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_XGB_CLASSIFIER"]:
-        return "PREDICT_XGB_CLASSIFIER"
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
-        return "CLASSIFIER"
-
-    @property
-    def _model_type(self) -> Literal["XGBClassifier"]:
-        return "XGBClassifier"
-
-    @check_minimum_version
-    @save_verticapy_logs
-    def __init__(
-        self,
-        name: str,
-        max_ntree: int = 10,
-        max_depth: int = 5,
-        nbins: int = 32,
-        split_proposal_method: Literal["local", "global"] = "global",
-        tol: float = 0.001,
-        learning_rate: float = 0.1,
-        min_split_loss: float = 0.0,
-        weight_reg: float = 0.0,
-        sample: float = 1.0,
-        col_sample_by_tree: float = 1.0,
-        col_sample_by_node: float = 1.0,
-    ):
-        self.model_name = name
-        params = {
-            "max_ntree": max_ntree,
-            "max_depth": max_depth,
-            "nbins": nbins,
-            "split_proposal_method": str(split_proposal_method).lower(),
-            "tol": tol,
-            "learning_rate": learning_rate,
-            "min_split_loss": min_split_loss,
-            "weight_reg": weight_reg,
-            "sample": sample,
-        }
-        v = vertica_version()
-        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-        if v:
-            params["col_sample_by_tree"] = col_sample_by_tree
-            params["col_sample_by_node"] = col_sample_by_node
-        self.parameters = params
-
-    def _compute_attributes(self) -> None:
-        """
-        Computes the model's attributes.
-        """
-        self.eta_ = self.parameters["learning_rate"]
-        self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
-        self.classes_ = self._get_classes()
-        prior = self._compute_prior()
-        if not (isinstance(prior, list)):
-            self.logodds_ = [
-                np.log((1 - prior) / prior),
-                np.log(prior / (1 - prior)),
-            ]
-        else:
-            self.logodds_ = prior
-        trees = []
-        tree_type = "BinaryTreeClassifier"
-        for i in range(self.n_estimators_):
-            tree = self._compute_trees_arrays(self.get_tree(i), self.X, return_prob_rf)
-            tree_d = {
-                "children_left": tree[0],
-                "children_right": tree[1],
-                "feature": tree[2],
-                "threshold": tree[3],
-                "value": tree[6],
-                "classes": self.classes_,
-            }
-            for j in range(len(tree[5])):
-                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
-                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
-            for j in range(len(tree[6])):
-                if tree[6][j] != None:
-                    all_classes_logodss = []
-                    for c in self.classes_:
-                        all_classes_logodss += [tree[6][j][str(c)]]
-                    tree_d["value"][j] = all_classes_logodss
-            model = mm.BinaryTreeClassifier(**tree_d)
-            trees += [model]
-        self.trees_ = trees
-        return None
-
-    def to_memmodel(self) -> Union[mm.XGBClassifier, mm.BinaryTreeClassifier]:
-        """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
-        """
-        if self.n_estimators_ == 1:
-            return self.trees_[0]
-        else:
-            return mm.XGBClassifier(
-                self.trees_, self.logodds_, self.classes_, self.eta_
-            )
-
-
-class XGBRegressor(Regressor, Tree, XGBoost):
-    """
-Creates an XGBRegressor object using the Vertica XGB_REGRESSOR 
-algorithm.
-
-Parameters
-----------
-name: str
-    Name of the the model. The model will be stored in the DB.
-max_ntree: int, optional
-    Maximum number of trees that will be created.
-max_depth: int, optional
-    Maximum depth of each tree, an integer between 1 and 20, inclusive.
-nbins: int, optional
-    Number of bins to use for finding splits in each column, more 
-    splits leads to longer runtime but more fine-grained and possibly 
-    better splits, an integer between 2 and 1000, inclusive.
-split_proposal_method: str, optional
-    approximate splitting strategy. Can be 'global' or 'local'
-    (not yet supported)
-tol: float, optional
-    approximation error of quantile summary structures used in the 
-    approximate split finding method.
-learning_rate: float, optional
-    weight applied to each tree's prediction, reduces each tree's 
-    impact allowing for later trees to contribute, keeping earlier 
-    trees from 'hogging' all the improvements.
-min_split_loss: float, optional
-    Each split must improve the objective function value of the model 
-    by at least this much in order to not be pruned. Value of 0 is the 
-    same as turning off this parameter (trees will still be pruned based 
-    on positive/negative objective function values).
-weight_reg: float, optional
-    Regularization term that is applied to the weights of the leaves in 
-    the regression tree. The higher this value is, the more sparse/smooth 
-    the weights will be, which often helps prevent overfitting.
-sample: float, optional
-    Fraction of rows to use in training per iteration.
-col_sample_by_tree: float, optional
-    Float in the range (0,1] that specifies the fraction of columns (features), 
-    chosen at random, to use when building each tree.
-col_sample_by_node: float, optional
-    Float in the range (0,1] that specifies the fraction of columns (features), 
-    chosen at random, to use when evaluating each split.
-    """
-
-    @property
-    def _vertica_fit_sql(self) -> Literal["XGB_REGRESSOR"]:
-        return "XGB_REGRESSOR"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_XGB_REGRESSOR"]:
-        return "PREDICT_XGB_REGRESSOR"
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["REGRESSOR"]:
-        return "REGRESSOR"
-
-    @property
-    def _model_type(self) -> Literal["XGBRegressor"]:
-        return "XGBRegressor"
-
-    @check_minimum_version
-    @save_verticapy_logs
-    def __init__(
-        self,
-        name: str,
-        max_ntree: int = 10,
-        max_depth: int = 5,
-        nbins: int = 32,
-        split_proposal_method: Literal["local", "global"] = "global",
-        tol: float = 0.001,
-        learning_rate: float = 0.1,
-        min_split_loss: float = 0.0,
-        weight_reg: float = 0.0,
-        sample: float = 1.0,
-        col_sample_by_tree: float = 1.0,
-        col_sample_by_node: float = 1.0,
-    ):
-        self.model_name = name
-        params = {
-            "max_ntree": max_ntree,
-            "max_depth": max_depth,
-            "nbins": nbins,
-            "split_proposal_method": str(split_proposal_method).lower(),
-            "tol": tol,
-            "learning_rate": learning_rate,
-            "min_split_loss": min_split_loss,
-            "weight_reg": weight_reg,
-            "sample": sample,
-        }
-        v = vertica_version()
-        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-        if v:
-            params["col_sample_by_tree"] = col_sample_by_tree
-            params["col_sample_by_node"] = col_sample_by_node
-        self.parameters = params
-
-    def _compute_attributes(self) -> None:
-        """
-        Computes the model's attributes.
-        """
-        self.eta_ = self.parameters["learning_rate"]
-        self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
-        self.mean_ = self._compute_prior()
-        trees = []
-        for i in range(self.n_estimators_):
-            tree = self._compute_trees_arrays(self.get_tree(i), self.X)
-            tree_d = {
-                "children_left": tree[0],
-                "children_right": tree[1],
-                "feature": tree[2],
-                "threshold": tree[3],
-                "value": tree[4],
-            }
-            for j in range(len(tree[5])):
-                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
-                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
-            tree_d["value"] = [
-                float(val) if isinstance(val, str) else val for val in tree_d["value"]
-            ]
-            model = mm.BinaryTreeRegressor(**tree_d)
-            trees += [model]
-        self.trees_ = trees
-        return None
-
-    def to_memmodel(self) -> Union[mm.XGBRegressor, mm.BinaryTreeRegressor]:
-        """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
-        """
-        if self.n_estimators_ == 1:
-            return self.trees_[0]
-        else:
-            return mm.XGBRegressor(self.trees_, self.mean_, self.eta_)
