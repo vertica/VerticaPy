@@ -699,10 +699,10 @@ vDataFrame
         model.drop()
         model.fit(vdf_poly, X, column)
         coefficients = [str(model.intercept_)] + [
-            f"{model.coef_[i]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})"
-            if i != 0
+            f"{model.coef_[i-1]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})"
+            if i != 1
             else f"{model.coef_[0]} * ROW_NUMBER() OVER({by}ORDER BY {ts})"
-            for i in range(0, polynomial_order)
+            for i in range(1, polynomial_order + 1)
         ]
         vdf_tmp[trend_name] = " + ".join(coefficients)
         model.drop()

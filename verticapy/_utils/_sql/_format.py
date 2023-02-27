@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import re
 from typing import Any, Union
+import numpy as np
 
 import pandas as pd
 
@@ -89,13 +90,13 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
         object_type = x._object_type
     if object_type == "vDataColumn":
         val = x._alias
-    elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or (
+    elif (isinstance(x, (int, float, np.int_)) and not (cast_float_int_to_str)) or (
         object_type == "StringSQL"
     ):
         val = x
     elif isinstance(x, type(None)):
         val = "NULL"
-    elif isinstance(x, (int, float)) or not (cast_float_int_to_str):
+    elif isinstance(x, (int, float, np.int_)) or not (cast_float_int_to_str):
         x_str = str(x).replace("'", "''")
         val = f"'{x_str}'"
     else:

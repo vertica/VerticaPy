@@ -1139,6 +1139,7 @@ class Tree:
             node_style=node_style,
             arrow_style=arrow_style,
             leaf_style=leaf_style,
+            prefix_pred=prefix_pred,
         )
 
     @check_minimum_version
@@ -1633,6 +1634,11 @@ class MulticlassClassifier(Classifier):
             return res.astype(int)
         except ValueError:
             return res
+
+    def _is_binary_classifier(self):
+        if len(self.classes_) == 2 and self.classes_[0] == 0 and self.classes_[1] == 1:
+            return True
+        return False
 
     def _get_classes(self):
         """

@@ -783,7 +783,7 @@ nbins: int, optional
         """
         self.n_estimators_ = self.parameters["n_estimators"]
         try:
-            self.classes_ = self._get_classes()
+            self.classes_ = self._array_to_int(self._get_classes())
         except MissingRelation:
             self.classes_ = np.array([])
 
@@ -948,19 +948,22 @@ col_sample_by_node: float, optional
         self.eta_ = self.parameters["learning_rate"]
         self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
         try:
-            self.classes_ = np.array(
-                self.get_attr("initial_prediction")["response_label"]
+            self.classes_ = self._array_to_int(
+                np.array(self.get_attr("initial_prediction")["response_label"])
             )
-            if (
-                len(self.classes_) == 2
-                and self.classes_[0] == 0
-                and self.classes_[1] == 1
-            ):
+            # Handling NULL Values.
+            null_ = False
+            if self.classes_[0] == "":
+                self.classes_ = self.classes_[1:]
+                null_ = True
+            if self._is_binary_classifier():
                 prior = self._compute_prior()
             else:
                 prior = np.array(self.get_attr("initial_prediction")["value"])
+                if null_:
+                    prior = prior[1:]
         except:
-            self.classes_ = self._get_classes()
+            self.classes_ = self._array_to_int(self._get_classes())
             prior = self._compute_prior()
         if isinstance(prior, (int, float)):
             self.logodds_ = [

@@ -220,15 +220,27 @@ class Tree(InMemoryModel):
         n = max([len(val) if val != None else 0 for val in self.value_])
         return [self._predict_tree_sql(X, 0, True, i) for i in range(n)]
 
+    @property
+    def _get_output_kind(self) -> Literal["pred", "prob", "logodds", "contamination"]:
+        output_kind = "pred"
+        if self._object_type == "BinaryTreeAnomaly":
+            output_kind = "contamination"
+        elif self._object_type == "BinaryTreeClassifier":
+            output_kind = "prob"
+            for val in self.values_:
+                if isinstance(val, list) and not (0.99 < sum(val) <= 1.0):
+                    output_kind = "logodds"
+                    break
+        return output_kind
+
     def to_graphviz(
         self,
         feature_names: ArrayLike = [],
         classes_color: ArrayLike = [],
-        prefix_pred: str = "prob",
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
-        node_style: dict = {},
+        node_style: dict = {"shape": "box", "style": "filled"},
         arrow_style: dict = {},
         leaf_style: dict = {},
     ):
@@ -350,7 +362,9 @@ class Tree(InMemoryModel):
                         else:
                             val = round(self.value_[i][j], round_pred)
                         label += f'<tr><td port="port{j}" border="1" align="left">'
-                        label += f" {prefix_pred}({classes_[j]}): {val} </td></tr>"
+                        label += (
+                            f" {self._get_output_kind}({classes_[j]}): {val} </td></tr>"
+                        )
                     label += "</table>>"
                 res += f"\n{i} [label={label}{self._flat_dict(leaf_style)}]"
         return res + "\n}"

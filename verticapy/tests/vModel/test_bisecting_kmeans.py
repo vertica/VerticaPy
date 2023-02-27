@@ -189,8 +189,7 @@ class TestBisectingKMeans:
 
     def test_to_graphviz(self, model):
         gvz_tree_0 = model.to_graphviz(
-            classes_color=["red", "blue", "green"],
-            round_pred=4,
+            round_score=4,
             percent=True,
             vertical=False,
             node_style={"shape": "box", "style": "filled"},

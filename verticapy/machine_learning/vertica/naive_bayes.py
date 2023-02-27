@@ -95,7 +95,7 @@ nbtype: str, optional
         """
         Computes the model's attributes.
         """
-        self.classes_ = np.array(self.get_attr("prior")["class"])
+        self.classes_ = self._array_to_int(np.array(self.get_attr("prior")["class"]))
         self.prior_ = np.array(self.get_attr("prior")["probability"])
         self.attributes_ = self._get_nb_attributes()
 

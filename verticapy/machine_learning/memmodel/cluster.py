@@ -443,7 +443,7 @@ class BisectingKMeans(Clustering, Tree):
         round_score: int = 2,
         percent: bool = False,
         vertical: bool = True,
-        node_style: dict = {},
+        node_style: dict = {"shape": "none"},
         arrow_style: dict = {},
         leaf_style: dict = {},
     ) -> str:
