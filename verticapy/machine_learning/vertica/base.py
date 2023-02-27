@@ -1139,7 +1139,6 @@ class Tree:
             node_style=node_style,
             arrow_style=arrow_style,
             leaf_style=leaf_style,
-            prefix_pred=prefix_pred,
         )
 
     @check_minimum_version

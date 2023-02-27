@@ -320,11 +320,11 @@ class XGBoost:
                 + '"monotone_constraints": null, "interaction_constraints": null, '
                 + '"importance_type": "gain", "gpu_id": null, "validate_parameters":'
                 + ' null, "classes_": '
-                + str(self.classes_)
+                + str(list(self.classes_))
                 + ', "n_classes_": '
                 + str(len(self.classes_))
                 + ', "_le": {"classes_": '
-                + str(self.classes_)
+                + str(list(self.classes_))
                 + '}, "_estimator_type": "classifier"}'
             }
         attributes_dict["scikit_learn"] = attributes_dict["scikit_learn"].replace(
@@ -370,7 +370,7 @@ class XGBoost:
             The content of the JSON file if variable 'path' 
             is empty. Otherwise, nothing is returned.
         """
-        res = {"learner": self._to_json_learner(), "version": [1, 4, 2]}
+        res = {"learner": self._to_json_learner(), "version": [1, 6, 2]}
         res = (
             str(res)
             .replace("'", '"')
