@@ -739,7 +739,7 @@ vDataFrame
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_seasonality, X, seasonal_name)
-        coefficients = model.coef_["coefficient"]
+        coefficients = model.get_attr("details")
         vdf_tmp[
             seasonal_name
         ] = f"{coefficients[0]} + {coefficients[1]} * COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period}) + {coefficients[2]} * SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"

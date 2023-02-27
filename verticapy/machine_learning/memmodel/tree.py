@@ -26,6 +26,9 @@ from verticapy._utils.math import heuristic_length
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
 
+if conf._get_import_success("graphviz"):
+    import graphviz
+
 
 class Tree(InMemoryModel):
     @staticmethod
@@ -286,8 +289,8 @@ class Tree(InMemoryModel):
                     q, not_q = "<=", ">"
                 res += f'\n{i} [label="{name}"{self._flat_dict(node_style)}]'
                 res += f'\n{i} -> {self.children_left_[i]} [label="{q} {self.threshold_[i]}"'
-                res += f"{flat_dict(arrow_style)}]\n{i} -> {self.children_right_[i]} "
-                res += f'[label="{not_q} {self.threshold_[i]}"{flat_dict(arrow_style)}]'
+                res += f"{self._flat_dict(arrow_style)}]\n{i} -> {self.children_right_[i]} "
+                res += f'[label="{not_q} {self.threshold_[i]}"{self._flat_dict(arrow_style)}]'
             else:
                 color = ""
                 if isinstance(self.value_[i], float):

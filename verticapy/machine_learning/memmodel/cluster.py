@@ -632,7 +632,7 @@ class KPrototypes(Clustering):
         else:
             is_categorical = copy.deepcopy(self.is_categorical_)
 
-        for c in clusters:
+        for c in self.clusters_:
             if not (len(X) == len(c) == len(is_categorical)):
                 raise ValueError(
                     "The length of parameter 'X' must be the same as "

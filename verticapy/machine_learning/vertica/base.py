@@ -1123,7 +1123,11 @@ class Tree:
         str
             Graphviz code.
         """
-        return self.trees_[tree_id].to_graphviz(
+        if self._model_type == "BisectingKMeans":
+            tree = self.to_memmodel()
+        else:
+            tree = self.trees_[tree_id]
+        return tree.to_graphviz(
             feature_names=self.X,
             classes_color=classes_color,
             round_pred=round_pred,

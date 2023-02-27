@@ -72,35 +72,35 @@ class TestTools:
         # Scaler
         model = Scaler("load_model_test.model_test", method="minmax")
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"])
+        model.fit("public.titanic", ["age", "fare"])
         result = load_model("load_model_test.model_test")
         assert isinstance(result, Scaler) and result.get_params()["method"] == "minmax"
         model.drop()
         # OneHotEncoder
         model = OneHotEncoder("load_model_test.model_test")
         model.drop()
-        model.fit(titanic_vd, ["sex", "embarked"])
+        model.fit("public.titanic", ["sex", "embarked"])
         result = load_model("load_model_test.model_test")
         assert isinstance(result, OneHotEncoder)
         model.drop()
         # PCA
         model = PCA("load_model_test.model_test")
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"])
+        model.fit("public.titanic", ["age", "fare"])
         result = load_model("load_model_test.model_test")
         assert isinstance(result, PCA)
         model.drop()
         # SVD
         model = SVD("load_model_test.model_test")
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"])
+        model.fit("public.titanic", ["age", "fare"])
         result = load_model("load_model_test.model_test")
         assert isinstance(result, SVD)
         model.drop()
         # LinearRegression
         model = LinearRegression("load_model_test.model_test", tol=1e-88)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert result.get_params()["tol"] == 1e-88
         assert isinstance(result, LinearRegression)
@@ -108,7 +108,7 @@ class TestTools:
         # ElasticNet
         model = ElasticNet("load_model_test.model_test", tol=1e-88)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert result.get_params()["tol"] == 1e-88
         assert isinstance(result, ElasticNet)
@@ -116,7 +116,7 @@ class TestTools:
         # Lasso
         model = Lasso("load_model_test.model_test", tol=1e-88)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert result.get_params()["tol"] == 1e-88
         assert isinstance(result, Lasso)
@@ -124,7 +124,7 @@ class TestTools:
         # Ridge
         model = Ridge("load_model_test.model_test", tol=1e-88)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert result.get_params()["tol"] == 1e-88
         assert isinstance(result, Ridge)
@@ -134,7 +134,7 @@ class TestTools:
             "load_model_test.model_test", tol=1e-88, penalty="enet", solver="cgd"
         )
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert result.get_params()["tol"] == 1e-88
         assert result.get_params()["penalty"] == "enet"
@@ -146,21 +146,21 @@ class TestTools:
         # DummyTreeClassifier
         model = DummyTreeClassifier("load_model_test.model_test")
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert isinstance(result, RandomForestClassifier)
         model.drop()
         # DummyTreeRegressor
         model = DummyTreeRegressor("load_model_test.model_test")
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert isinstance(result, RandomForestRegressor)
         model.drop()
         # DecisionTreeClassifier
         model = DecisionTreeClassifier("load_model_test.model_test", max_depth=3)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert (
             isinstance(result, RandomForestClassifier)
@@ -170,7 +170,7 @@ class TestTools:
         # DecisionTreeRegressor
         model = DecisionTreeRegressor("load_model_test.model_test", max_depth=3)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert (
             isinstance(result, RandomForestRegressor)
@@ -180,7 +180,7 @@ class TestTools:
         # RandomForestClassifier
         model = RandomForestClassifier("load_model_test.model_test", n_estimators=33)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert (
             isinstance(result, RandomForestClassifier)
@@ -190,7 +190,7 @@ class TestTools:
         # RandomForestRegressor
         model = RandomForestRegressor("load_model_test.model_test", n_estimators=33)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert (
             isinstance(result, RandomForestRegressor)
@@ -200,7 +200,7 @@ class TestTools:
         # XGBClassifier
         model = XGBClassifier("load_model_test.model_test", max_ntree=12)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert (
             isinstance(result, XGBClassifier) and result.get_params()["max_ntree"] == 12
@@ -209,7 +209,7 @@ class TestTools:
         # XGBRegressor
         model = XGBRegressor("load_model_test.model_test", max_ntree=12)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert (
             isinstance(result, XGBRegressor) and result.get_params()["max_ntree"] == 12
@@ -218,35 +218,35 @@ class TestTools:
         # NaiveBayes
         model = NaiveBayes("load_model_test.model_test", alpha=0.5)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert isinstance(result, NaiveBayes) and result.get_params()["alpha"] == 0.5
         model.drop()
         # LinearSVC
         model = LinearSVC("load_model_test.model_test", tol=1e-4)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert isinstance(result, LinearSVC) and result.get_params()["tol"] == 1e-4
         model.drop()
         # LinearSVR
         model = LinearSVR("load_model_test.model_test", tol=1e-4)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
+        model.fit("public.titanic", ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert isinstance(result, LinearSVR) and result.get_params()["tol"] == 1e-4
         model.drop()
         # KMeans
         model = KMeans("load_model_test.model_test", tol=1e-4)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"])
+        model.fit("public.titanic", ["age", "fare"])
         result = load_model("load_model_test.model_test")
         assert isinstance(result, KMeans) and result.get_params()["tol"] == 1e-4
         model.drop()
         # BisectingKMeans
         model = BisectingKMeans("load_model_test.model_test", tol=1e-4)
         model.drop()
-        model.fit(titanic_vd, ["age", "fare"])
+        model.fit("public.titanic", ["age", "fare"])
         result = load_model("load_model_test.model_test")
         assert (
             isinstance(result, BisectingKMeans) and result.get_params()["tol"] == 1e-4
