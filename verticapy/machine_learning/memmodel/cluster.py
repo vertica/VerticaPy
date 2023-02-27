@@ -642,7 +642,7 @@ class KPrototypes(Clustering):
         for c in self.clusters_:
             clusters_distance_num, clusters_distance_cat = [], []
             for idx, col in enumerate(X):
-                if self.is_categorical[idx]:
+                if is_categorical[idx]:
                     c_i = str(c[idx]).replace("'", "''")
                     clusters_distance_cat += [f"ABS(({X[idx]} = '{c_i}')::int - 1)"]
                 else:

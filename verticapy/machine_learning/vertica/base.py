@@ -1099,35 +1099,38 @@ class Tree:
         Parameters
         ----------
         tree_id: int, optional
-            Unique tree identifier, an integer in the range [0, n_estimators - 1].
-        classes_color: list, optional
+            Unique tree identifier, an integer in the range 
+            [0, n_estimators - 1].
+        classes_color: ArrayLike, optional
             Colors that represent the different classes.
         round_pred: int, optional
-            The number of decimals to round the prediction to. 0 rounds to an integer.
+            The number of decimals to round the prediction to. 
+            0 rounds to an integer.
         percent: bool, optional
-            If set to True, the probabilities are returned as percents.
+            If set to True, the probabilities are returned as 
+            percents.
         vertical: bool, optional
-            If set to True, the function generates a vertical tree.
+            If set to True, the function generates a vertical 
+            tree.
         node_style: dict, optional
-            Dictionary of options to customize each node of the tree. For a list of options, see
-            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+            Dictionary of options to customize each node of 
+            the tree. For a list of options, see the Graphviz 
+            API: https://graphviz.org/doc/info/attrs.html
         arrow_style: dict, optional
-            Dictionary of options to customize each arrow of the tree. For a list of options, see
-            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+            Dictionary of options to customize each arrow of 
+            the tree. For a list of options, see the Graphviz 
+            API: https://graphviz.org/doc/info/attrs.html
         leaf_style: dict, optional
-            Dictionary of options to customize each leaf of the tree. For a list of options, see
-            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+            Dictionary of options to customize each leaf of 
+            the tree. For a list of options, see the Graphviz 
+            API: https://graphviz.org/doc/info/attrs.html
 
         Returns
         -------
         str
             Graphviz code.
         """
-        if self._model_type == "BisectingKMeans":
-            tree = self.to_memmodel()
-        else:
-            tree = self.trees_[tree_id]
-        return tree.to_graphviz(
+        return self.trees_[tree_id].to_graphviz(
             feature_names=self.X,
             classes_color=classes_color,
             round_pred=round_pred,
@@ -1166,42 +1169,23 @@ class Tree:
 
     def plot_tree(
         self,
-        pic_path: str = "",
         tree_id: int = 0,
-        classes_color: list = [],
-        round_pred: int = 2,
-        percent: bool = False,
-        vertical: bool = True,
-        node_style: dict = {},
-        arrow_style: dict = {},
-        leaf_style: dict = {},
+        pic_path: str = "",
+        *argv, 
+        **kwds,
     ):
         """
         Draws the input tree. Requires the graphviz module.
 
         Parameters
         ----------
-        pic_path: str, optional
-            Absolute path to which the function saves the image of the tree.
         tree_id: int, optional
-            Unique tree identifier, an integer in the range [0, n_estimators - 1].
-        classes_color: list, optional
-            Colors that represent the different classes.
-        round_pred: int, optional
-            The number of decimals to round the prediction to. 0 rounds to an integer.
-        percent: bool, optional
-            If set to True, the probabilities are returned as percents.
-        vertical: bool, optional
-            If set to True, the function generates a vertical tree.
-        node_style: dict, optional
-            Dictionary of options to customize each node of the tree. For a list of options, see
-            the Graphviz API: https://graphviz.org/doc/info/attrs.html
-        arrow_style: dict, optional
-            Dictionary of options to customize each arrow of the tree. For a list of options, see
-            the Graphviz API: https://graphviz.org/doc/info/attrs.html
-        leaf_style: dict, optional
-            Dictionary of options to customize each leaf of the tree. For a list of options, see
-            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+            Unique tree identifier, an integer in the range 
+            [0, n_estimators - 1].
+        pic_path: str, optional
+            Absolute path to save the image of the tree.
+        *argv, **kwds: Any, optional
+            Arguments to pass to the 'to_graphviz' method.
 
         Returns
         -------
@@ -1209,15 +1193,9 @@ class Tree:
             graphviz object.
         """
         return self.trees_[tree_id].plot_tree(
-            feature_names=self.X,
-            classes_color=classes_color,
-            round_pred=round_pred,
-            percent=percent,
-            vertical=vertical,
-            node_style=node_style,
-            arrow_style=arrow_style,
-            leaf_style=leaf_style,
             pic_path=pic_path,
+            *argv, 
+            **kwds,
         )
 
     def get_score(
@@ -1656,6 +1634,14 @@ class BinaryClassifier(Classifier):
 
 
 class MulticlassClassifier(Classifier):
+    @staticmethod
+    def _array_to_int(object_: np.ndarray):
+        res = copy.deepcopy(object_)
+        try:
+            return res.astype(int)
+        except ValueError:
+            return res
+
     def _get_classes(self):
         """
         Returns the model's classes.
@@ -1672,9 +1658,7 @@ class MulticlassClassifier(Classifier):
             print_time_sql=False,
         )
         classes = np.array([c[0] for c in classes])
-        if isinstance(classes[0], float):
-            classes = classes.astype(int)
-        return classes
+        return self._array_to_int(classes)
 
     def classification_report(
         self,

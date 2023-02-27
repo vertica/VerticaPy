@@ -18,6 +18,8 @@ import random
 from typing import Literal, Optional, Union
 import numpy as np
 
+from vertica_python.errors import MissingRelation
+
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name
 from verticapy._utils._sql._format import clean_query, quote_ident
@@ -106,7 +108,7 @@ class XGBoost:
             "loss_changes": [0.0],
             "parents": [random.randint(2, 999999999)],
             "right_children": [-1],
-            "split_conditions": [self.prior_[i]],
+            "split_conditions": [self.logodds_[i]],
             "split_indices": [0],
             "split_type": [0],
             "sum_hessian": [0.0],
@@ -236,8 +238,12 @@ class XGBoost:
         if self._model_type == "XGBRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
+            if self._model_type == "XGBRegressor":
+                prior = self.mean_
+            else:
+                prior = self.logodds_[1]
             bs, num_class, param, param_val = (
-                self.prior_,
+                prior,
                 "0",
                 "reg_loss_param",
                 {"scale_pos_weight": "1"},
@@ -632,8 +638,11 @@ col_sample_by_node: float, optional
         Computes the model's attributes.
         """
         self.eta_ = self.parameters["learning_rate"]
-        self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
-        self.mean_ = self._compute_prior()
+        self.n_estimators_ = self.get_attr("initial_prediction")["tree_count"][0]
+        try:
+            self.mean_ = float(self.get_attr("initial_prediction")["initial_prediction"][0])
+        except:
+            self.mean_ = self._compute_prior()
         trees = []
         for i in range(self.n_estimators_):
             tree = self._compute_trees_arrays(self.get_tree(i), self.X)
@@ -653,7 +662,6 @@ col_sample_by_node: float, optional
             model = mm.BinaryTreeRegressor(**tree_d)
             trees += [model]
         self.trees_ = trees
-        self.prior_ = self._compute_prior()
         return None
 
     def to_memmodel(self) -> Union[mm.XGBRegressor, mm.BinaryTreeRegressor]:
@@ -772,7 +780,10 @@ nbins: int, optional
         Computes the model's attributes.
         """
         self.n_estimators_ = self.parameters["n_estimators"]
-        self.classes_ = self._get_classes()
+        try:
+            self.classes_ = self._get_classes()
+        except MissingRelation:
+            self.classes_ = np.array([])
 
         trees = []
         for i in range(self.n_estimators_):
@@ -934,10 +945,13 @@ col_sample_by_node: float, optional
         """
         self.eta_ = self.parameters["learning_rate"]
         self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
-        self.classes_ = self._get_classes()
-        prior = self._compute_prior()
-        self.prior_ = prior
-        if not (isinstance(prior, list)):
+        try:
+            self.classes_ = np.array(self.get_attr("initial_prediction")["response_label"])
+            prior = np.array(self.get_attr("initial_prediction")["value"])
+        except:
+            self.classes_ = self._get_classes()
+            prior = self._compute_prior()
+        if (isinstance(prior, (int, float))):
             self.logodds_ = [
                 np.log((1 - prior) / prior),
                 np.log(prior / (1 - prior)),

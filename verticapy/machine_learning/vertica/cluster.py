@@ -304,6 +304,81 @@ tol: float, optional
         self.p_ = 2
         self.metrics_ = self.get_attr("Metrics")
 
+    def to_graphviz(
+        self,
+        round_score: int = 2,
+        percent: bool = False,
+        vertical: bool = True,
+        node_style: dict = {},
+        arrow_style: dict = {},
+        leaf_style: dict = {},
+    ):
+        """
+        Returns the code for a Graphviz tree.
+
+        Parameters
+        ----------
+        round_score: int, optional
+            The number of decimals to round the node's score to. 
+            0 rounds to an integer.
+        percent: bool, optional
+            If set to True, the scores are returned as a percent.
+        vertical: bool, optional
+            If set to True, the function generates a vertical tree.
+        node_style: dict, optional
+            Dictionary of options to customize each node of the tree. 
+            For a list of options, see the Graphviz API: 
+            https://graphviz.org/doc/info/attrs.html
+        arrow_style: dict, optional
+            Dictionary of options to customize each arrow of the tree. 
+            For a list of options, see the Graphviz API: 
+            https://graphviz.org/doc/info/attrs.html
+        leaf_style: dict, optional
+            Dictionary of options to customize each leaf of the tree. 
+            For a list of options, see the Graphviz API: 
+            https://graphviz.org/doc/info/attrs.html
+
+        Returns
+        -------
+        str
+            Graphviz code.
+        """
+        return self.to_memmodel().to_graphviz(
+            round_score = round_score,
+            percent = percent,
+            vertical = vertical,
+            node_style = node_style,
+            arrow_style = arrow_style,
+            leaf_style = leaf_style,
+        )
+
+    def plot_tree(
+        self,
+        pic_path: str = "",
+        *argv, 
+        **kwds,
+    ):
+        """
+        Draws the input tree. Requires the graphviz module.
+
+        Parameters
+        ----------
+        pic_path: str, optional
+            Absolute path to save the image of the tree.
+        *argv, **kwds: Any, optional
+            Arguments to pass to the 'to_graphviz' method.
+
+        Returns
+        -------
+        graphviz.Source
+            graphviz object.
+        """
+        return self.to_memmodel().plot_tree(
+            pic_path=pic_path,
+            *argv, 
+            **kwds,
+        )
+
     def to_memmodel(self):
         """
         Converts the model to an InMemory object which
@@ -743,9 +818,7 @@ p: int, optional
             title="Getting Model Centroids.",
         )
         self.clusters_ = centroids.to_numpy()[:, 0:-1]
-        self.classes_ = centroids.to_numpy()[:, -1]
-        if isinstance(self.classes_[0], float):
-            self.classes_ = self.classes_.astype(int)
+        self.classes_ = self._array_to_int(centroids.to_numpy()[:, -1])
         self.p_ = self.parameters["p"]
 
     def fit(

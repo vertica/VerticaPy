@@ -302,7 +302,7 @@ class Tree(InMemoryModel):
                         color = classes_color[0]
                     else:
                         color = "#eeeeee"
-                    anomaly_score = value[i][0] + heuristic_length(value[i][1])
+                    anomaly_score = self.value_[i][0] + heuristic_length(self.value_[i][1])
                     anomaly_score = -(anomaly_score) / heuristic_length(self.psy)
                     anomaly_score = float(2 ** anomaly_score)
                     if anomaly_score < 0.5:

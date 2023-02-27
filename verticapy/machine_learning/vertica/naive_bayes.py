@@ -95,9 +95,9 @@ nbtype: str, optional
         """
         Computes the model's attributes.
         """
-        self.classes_ = self._get_classes()
-        self.attributes_ = self._get_nb_attributes()
+        self.classes_ = np.array(self.get_attr("prior")["class"])
         self.prior_ = np.array(self.get_attr("prior")["probability"])
+        self.attributes_ = self._get_nb_attributes()
 
     def _get_nb_attributes(self):
         # Returns a list of dictionary for each of the NB variables.
