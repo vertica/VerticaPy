@@ -35,8 +35,8 @@ from verticapy.machine_learning.vertica.base import vModel
 from verticapy.machine_learning.vertica.ensemble import (
     RandomForestRegressor,
     RandomForestClassifier,
-    XGBoostClassifier,
-    XGBoostRegressor,
+    XGBClassifier,
+    XGBRegressor,
 )
 from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
 from verticapy.machine_learning.vertica.linear_model import (
@@ -46,6 +46,7 @@ from verticapy.machine_learning.vertica.linear_model import (
     Lasso,
     Ridge,
 )
+import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.model_selection import (
     gen_params_grid,
     grid_search_cv,
@@ -257,9 +258,7 @@ model_grid_ : TableSample
                 ]
                 if estimator_method in ("native", "all"):
                     if v[0] > 10 or (v[0] == 10 and v[1] >= 1):
-                        self.parameters["estimator"] += [
-                            XGBoostClassifier(self.model_name)
-                        ]
+                        self.parameters["estimator"] += [XGBClassifier(self.model_name)]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
                             LinearSVC(self.model_name),
@@ -282,9 +281,7 @@ model_grid_ : TableSample
                 ]
                 if estimator_method in ("native", "all"):
                     if v[0] > 10 or (v[0] == 10 and v[1] >= 1):
-                        self.parameters["estimator"] += [
-                            XGBoostRegressor(self.model_name)
-                        ]
+                        self.parameters["estimator"] += [XGBRegressor(self.model_name)]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
                             LinearSVR(self.model_name),
@@ -299,9 +296,7 @@ model_grid_ : TableSample
                 self.parameters["estimator"] = [NaiveBayes(self.model_name)]
                 if estimator_method in ("native", "all"):
                     if v[0] >= 10 and v[1] >= 1:
-                        self.parameters["estimator"] += [
-                            XGBoostClassifier(self.model_name)
-                        ]
+                        self.parameters["estimator"] += [XGBClassifier(self.model_name)]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
                             RandomForestClassifier(self.model_name)
@@ -320,8 +315,8 @@ model_grid_ : TableSample
             (
                 RandomForestRegressor,
                 RandomForestClassifier,
-                XGBoostRegressor,
-                XGBoostClassifier,
+                XGBRegressor,
+                XGBClassifier,
                 NaiveBayes,
                 LinearRegression,
                 ElasticNet,
@@ -343,8 +338,8 @@ model_grid_ : TableSample
                     (
                         RandomForestRegressor,
                         RandomForestClassifier,
-                        XGBoostRegressor,
-                        XGBoostClassifier,
+                        XGBRegressor,
+                        XGBClassifier,
                         NaiveBayes,
                         LinearRegression,
                         ElasticNet,
@@ -562,3 +557,10 @@ model_grid_ : TableSample
                 ax=ax,
                 **style_kwds,
             )
+
+    def to_memmodel(self) -> mm.InMemoryModel:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return self.best_model_.to_memmodel()

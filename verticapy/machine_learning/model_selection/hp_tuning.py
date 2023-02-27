@@ -581,7 +581,7 @@ TableSample
                 },
                 "max_iter": {"type": int, "range": [10, 1000], "nbins": nbins},
             }
-    elif isinstance(estimator, (vml.XGBoostClassifier, vml.XGBoostRegressor)):
+    elif isinstance(estimator, (vml.XGBClassifier, vml.XGBRegressor)):
         if optimized_grid == 0:
             params_grid = {
                 "nbins": list(range(2, 100, math.ceil(100 / nbins))),
@@ -669,7 +669,7 @@ TableSample
                     "nbins": nbins,
                 },
             }
-    elif isinstance(estimator, vml.Normalizer):
+    elif isinstance(estimator, vml.Scaler):
         params_grid = {"method": ["minmax", "robust_zscore", "zscore"]}
         if optimized_grid == -666:
             return {

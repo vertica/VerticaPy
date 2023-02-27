@@ -23,7 +23,7 @@ from verticapy import drop, set_option, TableSample
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import LinearRegression, LogisticRegression
-from verticapy.learn.preprocessing import Normalizer, MinMaxScaler
+from verticapy.learn.preprocessing import Scaler, MinMaxScaler
 from verticapy.learn.pipeline import Pipeline
 
 set_option("print_info", False)
@@ -40,7 +40,7 @@ def winequality_vd():
 def model(winequality_vd):
     model_class = Pipeline(
         [
-            ("NormalizerWine", Normalizer("std_model_test",)),
+            ("ScalerWine", Scaler("std_model_test",)),
             ("LinearRegressionWine", LinearRegression("linreg_model_test",)),
         ]
     )
@@ -54,13 +54,13 @@ def model(winequality_vd):
 
 class TestPipeline:
     def test_index(self, model):
-        assert model[0]._model_type == "Normalizer"
-        assert model[0:][0][0] == "NormalizerWine"
+        assert model[0]._model_type == "Scaler"
+        assert model[0:][0][0] == "ScalerWine"
 
     def test_drop(self, winequality_vd):
         model_class = Pipeline(
             [
-                ("NormalizerWine", Normalizer("std_model_test_drop",),),
+                ("ScalerWine", Scaler("std_model_test_drop",),),
                 ("LinearRegressionWine", LinearRegression("linreg_model_test_drop",),),
             ]
         )
@@ -84,23 +84,13 @@ class TestPipeline:
                 "solver": "newton",
                 "tol": 1e-06,
             },
-            "NormalizerWine": {"method": "zscore"},
+            "ScalerWine": {"method": "zscore"},
         }
 
     def test_set_params(self, model):
-        model.set_params({"NormalizerWine": {"method": "robust_zscore"}})
-        assert model.get_params()["NormalizerWine"] == {"method": "robust_zscore"}
-        model.set_params({"NormalizerWine": {"method": "zscore"}})
-
-    def test_to_python(self, model):
-        predict_function = model.to_python()
-        test_record = TableSample(
-            {"citric_acid": [3.0], "residual_sugar": [11.0], "alcohol": [93.0]}
-        ).to_vdf()
-        prediction = model.predict(
-            test_record, ["citric_acid", "residual_sugar", "alcohol"]
-        )[0][-1]
-        assert prediction == pytest.approx(predict_function([[3.0, 11.0, 93.0]])[0])
+        model.set_params({"ScalerWine": {"method": "robust_zscore"}})
+        assert model.get_params()["ScalerWine"] == {"method": "robust_zscore"}
+        model.set_params({"ScalerWine": {"method": "zscore"}})
 
     def test_get_predicts(self, winequality_vd, model):
         winequality_copy = winequality_vd.copy()
@@ -142,7 +132,7 @@ class TestPipeline:
 
         model_class = Pipeline(
             [
-                ("NormalizerWine", Normalizer("logstd_model_test"),),
+                ("ScalerWine", Scaler("logstd_model_test"),),
                 ("LogisticRegressionWine", LogisticRegression("logreg_model_test"),),
             ]
         )
@@ -191,8 +181,8 @@ class TestPipeline:
     def test_transform(self, winequality_vd, model):
         model_class = Pipeline(
             [
-                ("NormalizerWine", Normalizer("logstd_model_test"),),
-                ("NormalizerWine", MinMaxScaler("logmm_model_test"),),
+                ("ScalerWine", Scaler("logstd_model_test"),),
+                ("ScalerWine", MinMaxScaler("logmm_model_test"),),
             ]
         )
         model_class.drop()
@@ -208,8 +198,8 @@ class TestPipeline:
     def test_inverse_transform(self, winequality_vd, model):
         model_class = Pipeline(
             [
-                ("NormalizerWine", Normalizer("logstd_model_test"),),
-                ("NormalizerWine", MinMaxScaler("logmm_model_test"),),
+                ("ScalerWine", Scaler("logstd_model_test"),),
+                ("ScalerWine", MinMaxScaler("logmm_model_test"),),
             ]
         )
         model_class.drop()
@@ -227,7 +217,7 @@ class TestPipeline:
     def test_model_from_vDF(self, winequality_vd):
         model_test = Pipeline(
             [
-                ("NormalizerWine", Normalizer("std_model_test_vdf",),),
+                ("ScalerWine", Scaler("std_model_test_vdf",),),
                 ("LinearRegressionWine", LinearRegression("linreg_model_test_vdf",),),
             ]
         )

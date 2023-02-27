@@ -1171,6 +1171,8 @@ def voronoi_plot(
         [max_x + 999, min_y - 999],
         [max_x + 999, max_y + 999],
     ]
+    if hasattr(clusters, "tolist"):
+        clusters = clusters.tolist()
     v = scipy_st.Voronoi(clusters + dummies_point)
     param = {"show_vertices": False}
     scipy_st.voronoi_plot_2d(v, ax=ax, **updated_dict(param, style_kwds))

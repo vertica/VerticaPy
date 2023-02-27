@@ -18,7 +18,7 @@ from verticapy.machine_learning.vertica.preprocessing import (
     Balance,
     CountVectorizer,
     MinMaxScaler,
-    Normalizer,
+    Scaler,
     OneHotEncoder,
     RobustScaler,
     StandardScaler,

@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Union
+import numpy as np
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -23,11 +24,12 @@ from verticapy._utils._sql._format import quote_ident, schema_relation, clean_qu
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
+
+from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
+import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Preprocessing, vModel
-
-from verticapy.sql.insert import insert_verticapy_schema
 
 
 @check_minimum_version
@@ -108,6 +110,10 @@ max_text_size: int, optional
 	The maximum size of the column which is the concatenation of all the text 
 	columns during the fitting.
 	"""
+
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
 
     @property
     def _vertica_fit_sql(self) -> Literal[""]:
@@ -277,23 +283,6 @@ max_text_size: int, optional
         self.compute_stop_words()
         self.compute_vocabulary()
         self.countvectorizer_table = tmp_name
-        model_save = {
-            "type": "CountVectorizer",
-            "input_relation": self.input_relation,
-            "X": self.X,
-            "countvectorizer_table": tmp_name,
-            "lowercase": self.parameters["lowercase"],
-            "max_df": self.parameters["max_df"],
-            "min_df": self.parameters["min_df"],
-            "max_features": self.parameters["max_features"],
-            "ignore_special": self.parameters["ignore_special"],
-            "max_text_size": self.parameters["max_text_size"],
-        }
-        insert_verticapy_schema(
-            model_name=self.model_name,
-            model_type="CountVectorizer",
-            model_save=model_save,
-        )
         return self
 
     def transform(self):
@@ -308,9 +297,9 @@ max_text_size: int, optional
         return vDataFrame(self.deploySQL())
 
 
-class Normalizer(Preprocessing):
+class Scaler(Preprocessing):
     """
-Creates a Vertica Normalizer object.
+Creates a Vertica Scaler object.
  
 Parameters
 ----------
@@ -347,8 +336,8 @@ method: str, optional
         return "PREPROCESSING"
 
     @property
-    def _model_type(self) -> Literal["Normalizer"]:
-        return "Normalizer"
+    def _model_type(self) -> Literal["Scaler"]:
+        return "Scaler"
 
     @check_minimum_version
     @save_verticapy_logs
@@ -358,23 +347,46 @@ method: str, optional
         self.model_name = name
         self.parameters = {"method": str(method).lower()}
 
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        values = self.get_attr("details").to_numpy()[:, 1:].astype(float)
+        if self.parameters["method"] == "minmax":
+            self.min_ = values[:, 0]
+            self.max_ = values[:, 1]
+        else:
+            self.mean_ = values[:, 0]
+            self.std_ = values[:, 1]
+        return None
 
-class StandardScaler(Normalizer):
-    """i.e. Normalizer with param method = 'zscore'"""
+    def to_memmodel(self) -> mm.Scaler:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.parameters["method"] == "minmax":
+            return mm.MinMaxScaler(self.min_, self.max_)
+        else:
+            return mm.StandardScaler(self.mean_, self.std_)
+
+
+class StandardScaler(Scaler):
+    """i.e. Scaler with param method = 'zscore'"""
 
     def __init__(self, name: str):
         super().__init__(name, "zscore")
 
 
-class RobustScaler(Normalizer):
-    """i.e. Normalizer with param method = 'robust_zscore'"""
+class RobustScaler(Scaler):
+    """i.e. Scaler with param method = 'robust_zscore'"""
 
     def __init__(self, name: str):
         super().__init__(name, "robust_zscore")
 
 
-class MinMaxScaler(Normalizer):
-    """i.e. Normalizer with param method = 'minmax'"""
+class MinMaxScaler(Scaler):
+    """i.e. Scaler with param method = 'minmax'"""
 
     def __init__(self, name: str):
         super().__init__(name, "minmax")
@@ -458,3 +470,69 @@ null_column_name: str, optional
             "column_naming": str(column_naming).lower(),
             "null_column_name": null_column_name,
         }
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        query = f"""SELECT 
+                        category_name, 
+                        category_level::varchar, 
+                        category_level_index 
+                    FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                    model_name = '{self.model_name}', 
+                                    attr_name = 'integer_categories')) 
+                                    VERTICAPY_SUBTABLE"""
+        try:
+            self.cat_ = TableSample.read_sql(
+                query=f"""{query}
+                          UNION ALL 
+                          SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                    model_name = '{self.model_name}', 
+                                    attr_name = 'varchar_categories')""",
+                title="Getting Model Attributes.",
+            )
+        except:
+            try:
+                self.cat_ = TableSample.read_sql(
+                    query=query, title="Getting Model Attributes.",
+                )
+            except:
+                self.cat_ = self.get_attr("varchar_categories")
+        self.cat_ = self.cat_.to_list()
+        cat = self._compute_ohe_list([c[0:2] for c in self.cat_])
+        cat_list_idx = []
+        for i, x1 in enumerate(cat[0]):
+            for j, x2 in enumerate(self.X):
+                if x2.lower()[1:-1] == x1:
+                    cat_list_idx += [j]
+        categories = []
+        for i in cat_list_idx:
+            categories += [cat[1][i]]
+        self.categories_ = categories
+        self.column_naming_ = self.parameters["column_naming"]
+        self.drop_first_ = self.parameters["drop_first"]
+        return None
+
+    @staticmethod
+    def _compute_ohe_list(categories: list):
+        # Allows to split the One Hot Encoder Array by features categories
+        cat, tmp_cat = [], []
+        init_cat, X = categories[0][0], [categories[0][0]]
+        for c in categories:
+            if c[0] != init_cat:
+                init_cat = c[0]
+                X += [c[0]]
+                cat += [tmp_cat]
+                tmp_cat = [c[1]]
+            else:
+                tmp_cat += [c[1]]
+        cat += [tmp_cat]
+        return [X, cat]
+
+    def to_memmodel(self) -> mm.OneHotEncoder:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.OneHotEncoder(self.categories_, self.column_naming_, self.drop_first_)

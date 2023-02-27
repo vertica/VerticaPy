@@ -19,6 +19,7 @@ from verticapy.machine_learning.vertica.cluster import (
     DBSCAN,
     KMeans,
     KPrototypes,
+    NearestCentroid,
 )
 from verticapy.machine_learning.vertica.decomposition import MCA, PCA, SVD
 from verticapy.machine_learning.vertica.automl.clustering import AutoClustering
@@ -28,8 +29,8 @@ from verticapy.machine_learning.vertica.ensemble import (
     IsolationForest,
     RandomForestClassifier,
     RandomForestRegressor,
-    XGBoostClassifier,
-    XGBoostRegressor,
+    XGBClassifier,
+    XGBRegressor,
 )
 from verticapy.machine_learning.vertica.linear_model import (
     ElasticNet,
@@ -46,7 +47,6 @@ from verticapy.machine_learning.vertica.naive_bayes import (
     NaiveBayes,
 )
 from verticapy.machine_learning.vertica.neighbors import (
-    NearestCentroid,
     KNeighborsClassifier,
     KernelDensity,
     KNeighborsRegressor,
@@ -57,7 +57,7 @@ from verticapy.machine_learning.vertica.preprocessing import (
     Balance,
     CountVectorizer,
     MinMaxScaler,
-    Normalizer,
+    Scaler,
     OneHotEncoder,
     RobustScaler,
     StandardScaler,
@@ -69,4 +69,3 @@ from verticapy.machine_learning.vertica.tree import (
     DummyTreeClassifier,
     DummyTreeRegressor,
 )
-from verticapy.machine_learning.vertica.tsa import SARIMAX, VAR

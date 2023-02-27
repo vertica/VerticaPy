@@ -21,7 +21,7 @@ import pytest
 # VerticaPy
 from verticapy import drop
 from verticapy.datasets import load_titanic
-from verticapy.learn.memmodel import memModel
+import verticapy.machine_learning.memmodel as mm
 
 
 @pytest.fixture(scope="module")
@@ -31,43 +31,24 @@ def titanic_vd():
     drop(name="public.titanic")
 
 
-class Test_memModel:
-    def test_LinearRegression(self):
-        model = memModel(
-            "LinearRegression", {"coefficients": [0.5, 0.6], "intercept": 0.8}
-        )
+class Test_InMemoryModel:
+    def test_LinearModel(self):
+        model = mm.LinearModel(**{"coef": [0.5, 0.6], "intercept": 0.8})
         assert model.predict([[0.4, 0.5]])[0] == pytest.approx(1.3)
         assert model.predict_sql([0.4, 0.5]) == "0.8 + 0.5 * 0.4 + 0.6 * 0.5"
         attributes = model.get_attributes()
-        assert attributes["coefficients"][0] == 0.5
-        assert attributes["coefficients"][1] == 0.6
+        assert attributes["coef"][0] == 0.5
+        assert attributes["coef"][1] == 0.6
         assert attributes["intercept"] == 0.8
-        model.set_attributes({"coefficients": [0.4, 0.5]})
+        model.set_attributes(**{"coef": [0.4, 0.5]})
         attributes = model.get_attributes()
-        assert attributes["coefficients"][0] == 0.4
-        assert attributes["coefficients"][1] == 0.5
+        assert attributes["coef"][0] == 0.4
+        assert attributes["coef"][1] == 0.5
         assert attributes["intercept"] == 0.8
-        assert model.model_type_ == "LinearRegression"
+        assert model._object_type == "LinearModel"
 
-    def test_LinearSVR(self):
-        model = memModel("LinearSVR", {"coefficients": [0.5, 0.6], "intercept": 0.8})
-        assert model.predict([[0.4, 0.5]])[0] == pytest.approx(1.3)
-        assert model.predict_sql([0.4, 0.5]) == "0.8 + 0.5 * 0.4 + 0.6 * 0.5"
-        attributes = model.get_attributes()
-        assert attributes["coefficients"][0] == 0.5
-        assert attributes["coefficients"][1] == 0.6
-        assert attributes["intercept"] == 0.8
-        model.set_attributes({"coefficients": [0.4, 0.5]})
-        attributes = model.get_attributes()
-        assert attributes["coefficients"][0] == 0.4
-        assert attributes["coefficients"][1] == 0.5
-        assert attributes["intercept"] == 0.8
-        assert model.model_type_ == "LinearSVR"
-
-    def test_LogisticRegression(self):
-        model = memModel(
-            "LogisticRegression", {"coefficients": [0.5, 0.6], "intercept": 0.8}
-        )
+    def test_LinearModelClassifier(self):
+        model = mm.LinearModelClassifier(**{"coef": [0.5, 0.6], "intercept": 0.8})
         assert model.predict([[0.4, 0.5]])[0] == pytest.approx(1)
         assert (
             model.predict_sql([0.4, 0.5])
@@ -85,49 +66,19 @@ class Test_memModel:
             predict_proba_val_sql[1] == "1 / (1 + EXP(- (0.8 + 0.5 * 0.4 + 0.6 * 0.5)))"
         )
         attributes = model.get_attributes()
-        assert attributes["coefficients"][0] == 0.5
-        assert attributes["coefficients"][1] == 0.6
+        assert attributes["coef"][0] == 0.5
+        assert attributes["coef"][1] == 0.6
         assert attributes["intercept"] == 0.8
-        model.set_attributes({"coefficients": [0.4, 0.5]})
+        model.set_attributes(**{"coef": [0.4, 0.5]})
         attributes = model.get_attributes()
-        assert attributes["coefficients"][0] == 0.4
-        assert attributes["coefficients"][1] == 0.5
+        assert attributes["coef"][0] == 0.4
+        assert attributes["coef"][1] == 0.5
         assert attributes["intercept"] == 0.8
-        assert model.model_type_ == "LogisticRegression"
-
-    def test_LinearSVC(self):
-        model = memModel("LinearSVC", {"coefficients": [0.5, 0.6], "intercept": 0.8})
-        assert model.predict([[0.4, 0.5]])[0] == pytest.approx(1)
-        assert (
-            model.predict_sql([0.4, 0.5])
-            == "((1 / (1 + EXP(- (0.8 + 0.5 * 0.4 + 0.6 * 0.5)))) > 0.5)::int"
-        )
-        predict_proba_val = model.predict_proba([[0.4, 0.5]])
-        assert predict_proba_val[0][0] == pytest.approx(0.21416502)
-        assert predict_proba_val[0][1] == pytest.approx(0.78583498)
-        predict_proba_val_sql = model.predict_proba_sql([0.4, 0.5])
-        assert (
-            predict_proba_val_sql[0]
-            == "1 - (1 / (1 + EXP(- (0.8 + 0.5 * 0.4 + 0.6 * 0.5))))"
-        )
-        assert (
-            predict_proba_val_sql[1] == "1 / (1 + EXP(- (0.8 + 0.5 * 0.4 + 0.6 * 0.5)))"
-        )
-        attributes = model.get_attributes()
-        assert attributes["coefficients"][0] == 0.5
-        assert attributes["coefficients"][1] == 0.6
-        assert attributes["intercept"] == 0.8
-        model.set_attributes({"coefficients": [0.4, 0.5]})
-        attributes = model.get_attributes()
-        assert attributes["coefficients"][0] == 0.4
-        assert attributes["coefficients"][1] == 0.5
-        assert attributes["intercept"] == 0.8
-        assert model.model_type_ == "LinearSVC"
+        assert model._object_type == "LinearModelClassifier"
 
     def test_PCA(self):
-        model = memModel(
-            "PCA",
-            {"principal_components": [[0.4, 0.5], [0.3, 0.2]], "mean": [0.1, 0.3]},
+        model = mm.PCA(
+            **{"principal_components": [[0.4, 0.5], [0.3, 0.2]], "mean": [0.1, 0.3]},
         )
         transformation = model.transform([[0.4, 0.5]])
         assert transformation[0][0] == pytest.approx(0.18)
@@ -143,14 +94,14 @@ class Test_memModel:
         assert attributes["mean"][0] == 0.1
         assert attributes["mean"][1] == 0.3
         model.set_attributes(
-            {"principal_components": [[0.1, 0.2], [0.7, 0.8]], "mean": [0.9, 0.8]}
+            **{"principal_components": [[0.1, 0.2], [0.7, 0.8]], "mean": [0.9, 0.8]}
         )
         attributes = model.get_attributes()
         assert attributes["principal_components"][0][0] == 0.1
         assert attributes["principal_components"][0][1] == 0.2
         assert attributes["principal_components"][1][0] == 0.7
         assert attributes["principal_components"][1][1] == 0.8
-        model = model.rotate()
+        model.rotate()
         attributes = model.get_attributes()
         assert attributes["principal_components"][0][0] == pytest.approx(0.05887149)
         assert attributes["principal_components"][0][1] == pytest.approx(0.21571775)
@@ -158,12 +109,10 @@ class Test_memModel:
         assert attributes["principal_components"][1][1] == pytest.approx(1.06294744)
         assert attributes["mean"][0] == 0.9
         assert attributes["mean"][1] == 0.8
-        assert model.model_type_ == "PCA"
+        assert model._object_type == "PCA"
 
     def test_SVD(self):
-        model = memModel(
-            "SVD", {"vectors": [[0.4, 0.5], [0.3, 0.2]], "values": [0.1, 0.3]}
-        )
+        model = mm.SVD(**{"vectors": [[0.4, 0.5], [0.3, 0.2]], "values": [0.1, 0.3]})
         transformation = model.transform([[0.4, 0.5]])
         assert transformation[0][0] == pytest.approx(3.1)
         assert transformation[0][1] == pytest.approx(1.0)
@@ -178,7 +127,7 @@ class Test_memModel:
         assert attributes["values"][0] == 0.1
         assert attributes["values"][1] == 0.3
         model.set_attributes(
-            {"vectors": [[0.1, 0.2], [0.7, 0.8]], "values": [0.9, 0.8]}
+            **{"vectors": [[0.1, 0.2], [0.7, 0.8]], "values": [0.9, 0.8]}
         )
         attributes = model.get_attributes()
         assert attributes["vectors"][0][0] == 0.1
@@ -187,12 +136,10 @@ class Test_memModel:
         assert attributes["vectors"][1][1] == 0.8
         assert attributes["values"][0] == 0.9
         assert attributes["values"][1] == 0.8
-        assert model.model_type_ == "SVD"
+        assert model._object_type == "SVD"
 
-    def test_Normalizer(self):
-        model = memModel(
-            "Normalizer", {"values": [(0.4, 0.5), (0.3, 0.2)], "method": "minmax"}
-        )
+    def test_MinMaxScaler(self):
+        model = mm.MinMaxScaler(**{"min_": [0.4, 0.3], "max_": [0.5, 0.2],})
         transformation = model.transform([[0.4, 0.5]])
         assert transformation[0][0] == pytest.approx(0.0)
         assert transformation[0][1] == pytest.approx(-2.0)
@@ -200,12 +147,14 @@ class Test_memModel:
         assert transformation_sql[0] == "(0.4 - 0.4) / 0.09999999999999998"
         assert transformation_sql[1] == "(0.5 - 0.3) / -0.09999999999999998"
         attributes = model.get_attributes()
-        assert attributes["values"][0][0] == 0.4
-        assert attributes["values"][0][1] == 0.5
-        assert attributes["values"][1][0] == 0.3
-        assert attributes["values"][1][1] == 0.2
-        assert attributes["method"] == "minmax"
-        model.set_attributes({"method": "zscore"})
+        assert model.sub_[0] == 0.4
+        assert model.sub_[1] == 0.3
+        assert model.den_[0] == pytest.approx(0.1)
+        assert model.den_[1] == pytest.approx(-0.1)
+        assert model._object_type == "MinMaxScaler"
+
+    def test_StandardScaler(self):
+        model = mm.StandardScaler(**{"mean": [0.4, 0.3], "std": [0.5, 0.2],})
         transformation = model.transform([[0.4, 0.5]])
         assert transformation[0][0] == pytest.approx(0.0)
         assert transformation[0][1] == pytest.approx(1.0)
@@ -213,36 +162,17 @@ class Test_memModel:
         assert transformation_sql[0] == "(0.4 - 0.4) / 0.5"
         assert transformation_sql[1] == "(0.5 - 0.3) / 0.2"
         attributes = model.get_attributes()
-        assert attributes["values"][0][0] == 0.4
-        assert attributes["values"][0][1] == 0.5
-        assert attributes["values"][1][0] == 0.3
-        assert attributes["values"][1][1] == 0.2
-        assert attributes["method"] == "zscore"
-        model.set_attributes({"method": "robust_zscore"})
-        transformation = model.transform([[0.4, 0.5]])
-        assert transformation[0][0] == pytest.approx(0.0)
-        assert transformation[0][1] == pytest.approx(1.0)
-        transformation_sql = model.transform_sql([0.4, 0.5])
-        assert transformation_sql[0] == "(0.4 - 0.4) / 0.5"
-        assert transformation_sql[1] == "(0.5 - 0.3) / 0.2"
+        model = mm.StandardScaler(**{"mean": [0.5, 0.6], "std": [0.4, 0.3],})
         attributes = model.get_attributes()
-        assert attributes["values"][0][0] == 0.4
-        assert attributes["values"][0][1] == 0.5
-        assert attributes["values"][1][0] == 0.3
-        assert attributes["values"][1][1] == 0.2
-        assert attributes["method"] == "robust_zscore"
-        model.set_attributes({"values": [(0.5, 0.6), (0.4, 0.3)]})
-        attributes = model.get_attributes()
-        assert attributes["values"][0][0] == 0.5
-        assert attributes["values"][0][1] == 0.6
-        assert attributes["values"][1][0] == 0.4
-        assert attributes["values"][1][1] == 0.3
-        assert model.model_type_ == "Normalizer"
+        assert model.sub_[0] == 0.5
+        assert model.sub_[1] == 0.6
+        assert model.den_[0] == 0.4
+        assert model.den_[1] == 0.3
+        assert model._object_type == "StandardScaler"
 
     def test_OneHotEncoder(self):
-        model = memModel(
-            "OneHotEncoder",
-            {
+        model = mm.OneHotEncoder(
+            **{
                 "categories": [["male", "female"], [1, 2, 3]],
                 "drop_first": False,
                 "column_naming": None,
@@ -270,7 +200,7 @@ class Test_memModel:
         assert transformation_sql[1][0] == "(CASE WHEN 1 = 1 THEN 1 ELSE 0 END)"
         assert transformation_sql[1][1] == "(CASE WHEN 1 = 2 THEN 1 ELSE 0 END)"
         assert transformation_sql[1][2] == "(CASE WHEN 1 = 3 THEN 1 ELSE 0 END)"
-        model.set_attributes({"drop_first": True})
+        model.set_attributes(**{"drop_first": True})
         transformation = model.transform([["male", 1], ["female", 3]])
         assert transformation[0][0] == pytest.approx(0)
         assert transformation[0][1] == pytest.approx(0)
@@ -285,7 +215,7 @@ class Test_memModel:
         )
         assert transformation_sql[1][0] == "(CASE WHEN 1 = 2 THEN 1 ELSE 0 END)"
         assert transformation_sql[1][1] == "(CASE WHEN 1 = 3 THEN 1 ELSE 0 END)"
-        model.set_attributes({"column_naming": "indices"})
+        model.set_attributes(**{"column_naming": "indices"})
         transformation_sql = model.transform_sql(["sex", "pclass"])
         assert (
             transformation_sql[0][0]
@@ -299,7 +229,7 @@ class Test_memModel:
             transformation_sql[1][1]
             == '(CASE WHEN pclass = 3 THEN 1 ELSE 0 END) AS "pclass_2"'
         )
-        model.set_attributes({"column_naming": "values"})
+        model.set_attributes(**{"column_naming": "values"})
         transformation_sql = model.transform_sql(["sex", "pclass"])
         assert (
             transformation_sql[0][0]
@@ -313,12 +243,10 @@ class Test_memModel:
             transformation_sql[1][1]
             == '(CASE WHEN pclass = 3 THEN 1 ELSE 0 END) AS "pclass_3"'
         )
-        assert model.model_type_ == "OneHotEncoder"
+        assert model._object_type == "OneHotEncoder"
 
     def test_KMeans(self):
-        model = memModel(
-            "KMeans", {"clusters": [[0.5, 0.6], [1, 2], [100, 200]], "p": 2}
-        )
+        model = mm.KMeans(**{"clusters": [[0.5, 0.6], [1, 2], [100, 200]], "p": 2})
         assert model.predict([[0.2, 0.3]])[0] == 0
         assert model.predict([[2, 2]])[0] == 1
         assert model.predict([[100, 201]])[0] == 2
@@ -364,17 +292,16 @@ class Test_memModel:
         assert attributes["clusters"][0][0] == 0.5
         assert attributes["clusters"][0][1] == 0.6
         assert attributes["p"] == 2
-        model.set_attributes({"clusters": [[0.1, 0.2]], "p": 3})
+        model.set_attributes(**{"clusters": [[0.1, 0.2]], "p": 3})
         attributes = model.get_attributes()
         assert attributes["clusters"][0][0] == 0.1
         assert attributes["clusters"][0][1] == 0.2
         assert attributes["p"] == 3
-        assert model.model_type_ == "KMeans"
+        assert model._object_type == "KMeans"
 
     def test_NearestCentroid(self):
-        model = memModel(
-            "NearestCentroid",
-            {
+        model = mm.NearestCentroid(
+            **{
                 "clusters": [[0.5, 0.6], [1, 2], [100, 200]],
                 "p": 2,
                 "classes": ["a", "b", "c"],
@@ -428,21 +355,20 @@ class Test_memModel:
         assert attributes["classes"][1] == "b"
         assert attributes["classes"][2] == "c"
         assert attributes["p"] == 2
-        model.set_attributes({"clusters": [[0.1, 0.2]], "p": 3})
+        model.set_attributes(**{"clusters": [[0.1, 0.2]], "p": 3})
         attributes = model.get_attributes()
         assert attributes["clusters"][0][0] == 0.1
         assert attributes["clusters"][0][1] == 0.2
         assert attributes["p"] == 3
-        assert model.model_type_ == "NearestCentroid"
+        assert model._object_type == "NearestCentroid"
 
     def test_BisectingKMeans(self):
-        model = memModel(
-            "BisectingKMeans",
-            {
+        model = mm.BisectingKMeans(
+            **{
                 "clusters": [[0.5, 0.6], [1, 2], [100, 200], [10, 700], [-100, -200],],
                 "p": 2,
-                "left_child": [1, 3, None, None, None],
-                "right_child": [2, 4, None, None, None],
+                "children_left": [1, 3, None, None, None],
+                "children_right": [2, 4, None, None, None],
             },
         )
         assert model.predict([[0.2, 0.3]])[0] == 4
@@ -473,17 +399,16 @@ class Test_memModel:
         assert attributes["clusters"][0][0] == 0.5
         assert attributes["clusters"][0][1] == 0.6
         assert attributes["p"] == 2
-        model.set_attributes({"clusters": [[0.1, 0.2]], "p": 3})
+        model.set_attributes(**{"clusters": [[0.1, 0.2]], "p": 3})
         attributes = model.get_attributes()
         assert attributes["clusters"][0][0] == 0.1
         assert attributes["clusters"][0][1] == 0.2
         assert attributes["p"] == 3
-        assert model.model_type_ == "BisectingKMeans"
+        assert model._object_type == "BisectingKMeans"
 
     def test_BinaryTreeRegressor(self):
-        model = memModel(
-            "BinaryTreeRegressor",
-            {
+        model = mm.BinaryTreeRegressor(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -510,12 +435,11 @@ class Test_memModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2] == 3
         assert attributes["value"][3] == 11
-        assert model.model_type_ == "BinaryTreeRegressor"
+        assert model._object_type == "BinaryTreeRegressor"
 
     def test_BinaryTreeClassifier(self):
-        model = memModel(
-            "BinaryTreeClassifier",
-            {
+        model = mm.BinaryTreeClassifier(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -561,16 +485,16 @@ class Test_memModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2][0] == 0.8
         assert attributes["value"][3][0] == 0.1
-        model.set_attributes({"classes": [0, 1, 2]})
+        model.set_attributes(**{"classes": [0, 1, 2]})
         attributes = model.get_attributes()
         assert attributes["classes"][0] == 0
         assert attributes["classes"][1] == 1
         assert attributes["classes"][2] == 2
-        assert model.model_type_ == "BinaryTreeClassifier"
+        assert model._object_type == "BinaryTreeClassifier"
 
-    def test_CHAID(self, titanic_vd):
-        tree = titanic_vd.chaid("survived", ["sex", "fare"]).attributes_["tree"]
-        model = memModel("CHAID", {"tree": tree, "classes": ["a", "b"]})
+    def test_NonBinaryTree(self, titanic_vd):
+        tree = titanic_vd.chaid("survived", ["sex", "fare"]).tree_
+        model = mm.NonBinaryTree(**{"tree": tree, "classes": ["a", "b"]})
         prediction = model.predict([["male", 100], ["female", 20], ["female", 50]])
         assert prediction[0] == "a"
         assert prediction[1] == "b"
@@ -597,16 +521,15 @@ class Test_memModel:
         assert attributes["tree"]["children"]["female"]["chi2"] == pytest.approx(
             10.472532457814179
         )
-        model.set_attributes({"classes": [0, 1]})
+        model.set_attributes(**{"classes": [0, 1]})
         attributes = model.get_attributes()
         assert attributes["classes"][0] == 0
         assert attributes["classes"][1] == 1
-        assert model.model_type_ == "CHAID"
+        assert model._object_type == "NonBinaryTree"
 
     def test_RandomForestRegressor(self):
-        model1 = memModel(
-            "BinaryTreeRegressor",
-            {
+        model1 = mm.BinaryTreeRegressor(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -614,9 +537,8 @@ class Test_memModel:
                 "value": [None, None, 3, 11, 1993],
             },
         )
-        model2 = memModel(
-            "BinaryTreeRegressor",
-            {
+        model2 = mm.BinaryTreeRegressor(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -624,9 +546,8 @@ class Test_memModel:
                 "value": [None, None, -3, -11, -1993],
             },
         )
-        model3 = memModel(
-            "BinaryTreeRegressor",
-            {
+        model3 = mm.BinaryTreeRegressor(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -634,7 +555,7 @@ class Test_memModel:
                 "value": [None, None, 0, 3, 6],
             },
         )
-        model = memModel("RandomForestRegressor", {"trees": [model1, model2, model3]})
+        model = mm.RandomForestRegressor(**{"trees": [model1, model2, model3]})
         prediction = model.predict([["male", 100], ["female", 20], ["female", 50]])
         assert prediction[0] == pytest.approx(0.0)
         assert prediction[1] == pytest.approx(1.0)
@@ -654,12 +575,11 @@ class Test_memModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2] == 3
         assert attributes["value"][3] == 11
-        assert model.model_type_ == "RandomForestRegressor"
+        assert model._object_type == "RandomForestRegressor"
 
     def test_RandomForestClassifier(self):
-        model1 = memModel(
-            "BinaryTreeClassifier",
-            {
+        model1 = mm.BinaryTreeClassifier(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -674,9 +594,8 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model2 = memModel(
-            "BinaryTreeClassifier",
-            {
+        model2 = mm.BinaryTreeClassifier(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -691,9 +610,8 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model3 = memModel(
-            "BinaryTreeClassifier",
-            {
+        model3 = mm.BinaryTreeClassifier(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -708,7 +626,7 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model = memModel("RandomForestClassifier", {"trees": [model1, model2, model3]})
+        model = mm.RandomForestClassifier(**{"trees": [model1, model2, model3]})
         prediction = model.predict([["male", 100], ["female", 20], ["female", 50]])
         assert prediction[0] == "a"
         assert prediction[1] == "b"
@@ -753,12 +671,11 @@ class Test_memModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2][0] == 0.8
         assert attributes["value"][3][0] == 0.1
-        assert model.model_type_ == "RandomForestClassifier"
+        assert model._object_type == "RandomForestClassifier"
 
-    def test_XGBoostRegressor(self):
-        model1 = memModel(
-            "BinaryTreeRegressor",
-            {
+    def test_XGBRegressor(self):
+        model1 = mm.BinaryTreeRegressor(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -766,9 +683,8 @@ class Test_memModel:
                 "value": [None, None, 3, 11, 1993],
             },
         )
-        model2 = memModel(
-            "BinaryTreeRegressor",
-            {
+        model2 = mm.BinaryTreeRegressor(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -776,9 +692,8 @@ class Test_memModel:
                 "value": [None, None, -3, -11, -1993],
             },
         )
-        model3 = memModel(
-            "BinaryTreeRegressor",
-            {
+        model3 = mm.BinaryTreeRegressor(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -786,9 +701,8 @@ class Test_memModel:
                 "value": [None, None, 0, 3, 6],
             },
         )
-        model = memModel(
-            "XGBoostRegressor",
-            {"trees": [model1, model2, model3], "learning_rate": 0.1, "mean": 1.0},
+        model = mm.XGBRegressor(
+            **{"trees": [model1, model2, model3], "eta": 0.1, "mean": 1.0},
         )
         prediction = model.predict([["male", 100], ["female", 20], ["female", 50]])
         assert prediction[0] == pytest.approx(1.0)
@@ -810,18 +724,17 @@ class Test_memModel:
         assert attributes["value"][2] == 3
         assert attributes["value"][3] == 11
         attributes = model.get_attributes()
-        assert attributes["learning_rate"] == 0.1
+        assert attributes["eta"] == 0.1
         assert attributes["mean"] == 1.0
-        model.set_attributes({"learning_rate": 0.2, "mean": 2.0})
+        model.set_attributes(**{"eta": 0.2, "mean": 2.0})
         attributes = model.get_attributes()
-        assert attributes["learning_rate"] == 0.2
+        assert attributes["eta"] == 0.2
         assert attributes["mean"] == 2.0
-        assert model.model_type_ == "XGBoostRegressor"
+        assert model._object_type == "XGBRegressor"
 
-    def test_XGBoostClassifier(self):
-        model1 = memModel(
-            "BinaryTreeClassifier",
-            {
+    def test_XGBClassifier(self):
+        model1 = mm.BinaryTreeClassifier(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -836,9 +749,8 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model2 = memModel(
-            "BinaryTreeClassifier",
-            {
+        model2 = mm.BinaryTreeClassifier(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -853,9 +765,8 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model3 = memModel(
-            "BinaryTreeClassifier",
-            {
+        model3 = mm.BinaryTreeClassifier(
+            **{
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
                 "feature": [0, 1, None, None, None],
@@ -870,9 +781,8 @@ class Test_memModel:
                 "classes": ["a", "b", "c"],
             },
         )
-        model = memModel(
-            "XGBoostClassifier",
-            {
+        model = mm.XGBClassifier(
+            **{
                 "trees": [model1, model2, model3],
                 "learning_rate": 0.1,
                 "logodds": [0.1, 0.12, 0.15],
@@ -922,12 +832,11 @@ class Test_memModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2][0] == 0.8
         assert attributes["value"][3][0] == 0.1
-        assert model.model_type_ == "XGBoostClassifier"
+        assert model._object_type == "XGBClassifier"
 
     def test_NaiveBayes(self):
-        model = memModel(
-            "NaiveBayes",
-            {
+        model = mm.NaiveBayes(
+            **{
                 "attributes": [
                     {
                         "type": "gaussian",
@@ -1012,4 +921,4 @@ class Test_memModel:
         assert attributes["attributes"][1]["type"] == "multinomial"
         assert attributes["attributes"][2]["type"] == "bernoulli"
         assert attributes["attributes"][3]["type"] == "categorical"
-        assert model.model_type_ == "NaiveBayes"
+        assert model._object_type == "NaiveBayes"

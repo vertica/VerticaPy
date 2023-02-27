@@ -158,7 +158,7 @@ def contour_plot(
             vdf_tmp["verticapy_predict"] = func
         else:
             if func._model_type in (
-                "XGBoostClassifier",
+                "XGBClassifier",
                 "RandomForestClassifier",
                 "NaiveBayes",
                 "NearestCentroid",

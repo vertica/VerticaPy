@@ -21,7 +21,7 @@ from verticapy._help import help_start
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.sql.create import create_schema, create_table, create_verticapy_schema
+from verticapy.sql.create import create_schema, create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.flex import (
     compute_flextable_keys,
@@ -29,7 +29,7 @@ from verticapy.sql.flex import (
     isflextable,
     isvmap,
 )
-from verticapy.sql.insert import insert_into, insert_verticapy_schema
+from verticapy.sql.insert import insert_into
 from verticapy.sql.parsers.all import read_file
 from verticapy.sql.parsers.avro import read_avro
 from verticapy.sql.parsers.csv import read_csv, pcsv

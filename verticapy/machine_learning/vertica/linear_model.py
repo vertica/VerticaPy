@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Union
+import numpy as np
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import (
@@ -23,10 +24,52 @@ from verticapy._utils._sql._vertica_version import (
 )
 from verticapy.errors import ParameterError
 
+import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 
+"""
+Algorithms used for regression.
+"""
 
-class ElasticNet(Regressor):
+
+class LinearModel:
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        details = self.get_attr("details")
+        self.coef_ = np.array(details["coefficient"][1:])
+        self.intercept_ = details["coefficient"][0]
+        return None
+
+    def to_memmodel(self) -> mm.LinearModel:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.LinearModel(self.coef_, self.intercept_)
+
+
+class LinearModelClassifier(LinearModel):
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        details = self.get_attr("details")
+        self.coef_ = np.array(details["coefficient"][1:])
+        self.intercept_ = details["coefficient"][0]
+        self.classes_ = np.array([0, 1])
+        return None
+
+    def to_memmodel(self) -> mm.LinearModelClassifier:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.LinearModelClassifier(self.coef_, self.intercept_)
+
+
+class ElasticNet(Regressor, LinearModel):
     """
 Creates a ElasticNet object using the Vertica Linear Regression algorithm 
 on the data. The Elastic Net is a regularized regression method that 
@@ -109,7 +152,7 @@ fit_intercept: bool, optional
         }
 
 
-class Lasso(Regressor):
+class Lasso(Regressor, LinearModel):
     """
 Creates a Lasso object using the Vertica Linear Regression algorithm on the 
 data. The Lasso is a regularized regression method which uses an L1 penalty.
@@ -186,7 +229,7 @@ fit_intercept: bool, optional
         }
 
 
-class LinearRegression(Regressor):
+class LinearRegression(Regressor, LinearModel):
     """
 Creates a LinearRegression object using the Vertica Linear Regression 
 algorithm on the data.
@@ -257,105 +300,7 @@ fit_intercept: bool, optional
         }
 
 
-class LogisticRegression(BinaryClassifier):
-    """
-Creates a LogisticRegression object using the Vertica Logistic Regression
-algorithm on the data.
-
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-penalty: str, optional
-	Determines the method of regularization.
-		None : No Regularization
-		l1   : L1 Regularization
-		l2   : L2 Regularization
-		enet : Combination between L1 and L2
-tol: float, optional
-	Determines whether the algorithm has reached the specified accuracy result.
-C: int / float, optional
-	The regularization parameter value. The value must be zero or non-negative.
-max_iter: int, optional
-	Determines the maximum number of iterations the algorithm performs before 
-	achieving the specified accuracy result.
-solver: str, optional
-	The optimizer method to use to train the model. 
-		newton : Newton Method
-		bfgs   : Broyden Fletcher Goldfarb Shanno
-		cgd    : Coordinate Gradient Descent
-l1_ratio: float, optional
-	ENet mixture parameter that defines how much L1 versus L2 regularization 
-	to provide.
-fit_intercept: bool, optional
-    Boolean, specifies whether the model includes an intercept. 
-    By setting to false, no intercept will be used in training the model. 
-    Note that setting fit_intercept to false does not work well with the 
-    BFGS optimizer.
-	"""
-
-    @property
-    def _vertica_fit_sql(self) -> Literal["LOGISTIC_REG"]:
-        return "LOGISTIC_REG"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_LOGISTIC_REG"]:
-        return "PREDICT_LOGISTIC_REG"
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
-        return "CLASSIFIER"
-
-    @property
-    def _model_type(self) -> Literal["LogisticRegression"]:
-        return "LogisticRegression"
-
-    @check_minimum_version
-    @save_verticapy_logs
-    def __init__(
-        self,
-        name: str,
-        penalty: Literal["none", "l1", "l2", "enet", None] = "none",
-        tol: float = 1e-6,
-        C: Union[int, float] = 1.0,
-        max_iter: int = 100,
-        solver: Literal["newton", "bfgs", "cgd"] = "newton",
-        l1_ratio: float = 0.5,
-        fit_intercept: bool = True,
-    ):
-        penalty = str(penalty).lower()
-        solver = str(solver).lower()
-        self.model_name = name
-        if vertica_version()[0] < 12 and not (fit_intercept):
-            raise ParameterError(
-                "The parameter fit_intercept is only available for Vertica "
-                "versions greater or equal to 12."
-            )
-        self.parameters = {
-            "penalty": penalty,
-            "tol": tol,
-            "C": C,
-            "max_iter": max_iter,
-            "solver": solver,
-            "l1_ratio": l1_ratio,
-            "fit_intercept": fit_intercept,
-        }
-        if str(penalty).lower() == "none":
-            del self.parameters["l1_ratio"]
-            del self.parameters["C"]
-            if "solver" == "cgd":
-                raise ValueError(
-                    "solver can not be set to 'cgd' when there is no regularization."
-                )
-        elif str(penalty).lower() in ("l1", "l2"):
-            del self.parameters["l1_ratio"]
-
-
-class Ridge(Regressor):
+class Ridge(Regressor, LinearModel):
     """
 Creates a Ridge object using the Vertica Linear Regression algorithm on the 
 data. The Ridge is a regularized regression method which uses an L2 penalty. 
@@ -429,3 +374,106 @@ fit_intercept: bool, optional
             "solver": str(solver).lower(),
             "fit_intercept": fit_intercept,
         }
+
+
+"""
+Algorithms used for classification.
+"""
+
+
+class LogisticRegression(BinaryClassifier, LinearModelClassifier):
+    """
+Creates a LogisticRegression object using the Vertica Logistic Regression
+algorithm on the data.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model will be stored in the DB.
+penalty: str, optional
+    Determines the method of regularization.
+        None : No Regularization
+        l1   : L1 Regularization
+        l2   : L2 Regularization
+        enet : Combination between L1 and L2
+tol: float, optional
+    Determines whether the algorithm has reached the specified accuracy result.
+C: int / float, optional
+    The regularization parameter value. The value must be zero or non-negative.
+max_iter: int, optional
+    Determines the maximum number of iterations the algorithm performs before 
+    achieving the specified accuracy result.
+solver: str, optional
+    The optimizer method to use to train the model. 
+        newton : Newton Method
+        bfgs   : Broyden Fletcher Goldfarb Shanno
+        cgd    : Coordinate Gradient Descent
+l1_ratio: float, optional
+    ENet mixture parameter that defines how much L1 versus L2 regularization 
+    to provide.
+fit_intercept: bool, optional
+    Boolean, specifies whether the model includes an intercept. 
+    By setting to false, no intercept will be used in training the model. 
+    Note that setting fit_intercept to false does not work well with the 
+    BFGS optimizer.
+    """
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["LOGISTIC_REG"]:
+        return "LOGISTIC_REG"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_LOGISTIC_REG"]:
+        return "PREDICT_LOGISTIC_REG"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
+
+    @property
+    def _model_type(self) -> Literal["LogisticRegression"]:
+        return "LogisticRegression"
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        penalty: Literal["none", "l1", "l2", "enet", None] = "none",
+        tol: float = 1e-6,
+        C: Union[int, float] = 1.0,
+        max_iter: int = 100,
+        solver: Literal["newton", "bfgs", "cgd"] = "newton",
+        l1_ratio: float = 0.5,
+        fit_intercept: bool = True,
+    ):
+        penalty = str(penalty).lower()
+        solver = str(solver).lower()
+        self.model_name = name
+        if vertica_version()[0] < 12 and not (fit_intercept):
+            raise ParameterError(
+                "The parameter fit_intercept is only available for Vertica "
+                "versions greater or equal to 12."
+            )
+        self.parameters = {
+            "penalty": penalty,
+            "tol": tol,
+            "C": C,
+            "max_iter": max_iter,
+            "solver": solver,
+            "l1_ratio": l1_ratio,
+            "fit_intercept": fit_intercept,
+        }
+        if str(penalty).lower() == "none":
+            del self.parameters["l1_ratio"]
+            del self.parameters["C"]
+            if "solver" == "cgd":
+                raise ValueError(
+                    "solver can not be set to 'cgd' when there is no regularization."
+                )
+        elif str(penalty).lower() in ("l1", "l2"):
+            del self.parameters["l1_ratio"]

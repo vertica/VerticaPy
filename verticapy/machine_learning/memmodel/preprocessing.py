@@ -14,174 +14,234 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from typing import Literal, Union
 import numpy as np
 
+from verticapy._utils._sql._format import format_magic
+from verticapy._typing import ArrayLike
 from verticapy.errors import ParameterError
 
+from verticapy.machine_learning.memmodel.base import InMemoryModel
 
-def transform_from_normalizer(
-    X: Union[list, np.ndarray],
-    values: Union[list, np.ndarray],
-    method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
-) -> np.ndarray:
+
+class Scaler(InMemoryModel):
     """
-    Transforms the data with a normalizer model using the input attributes.
+    InMemoryModel Implementation of Scalers.
 
     Parameters
     ----------
-    X: list / numpy.array
-        The data to transform.
-    values: list / numpy.array
-        List of tuples. These tuples depend on the specified method:
-            'zscore': (mean, std)
-            'robust_zscore': (median, mad)
-            'minmax': (min, max)
-    method: str, optional
-        The model's category, one of the following: 'zscore', 'robust_zscore', or 'minmax'.
-
-    Returns
-    -------
-    numpy.array
-        Transformed data
+    sub: ArrayLike
+        Model's features first aggregation.
+    den: ArrayLike
+        Model's features second aggregation.
     """
-    a, b = (
-        np.array([elem[0] for elem in values]),
-        np.array([elem[1] for elem in values]),
-    )
-    if method == "minmax":
-        b = b - a
-    return (np.array(X) - a) / b
+
+    @property
+    def _object_type(self) -> Literal["Scaler"]:
+        return "Scaler"
+
+    @property
+    def _attributes(self) -> Literal["sub_", "den_"]:
+        return ["sub_", "den_"]
+
+    def __init__(self, sub: ArrayLike, den: ArrayLike) -> None:
+        self.sub_ = np.array(sub)
+        self.den_ = np.array(den)
+        return None
+
+    def transform(self, X: ArrayLike) -> np.ndarray:
+        """
+        Transforms and applies the Scaler model to the input matrix.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The data on which to make the transformation.
+
+        Returns
+        -------
+        numpy.array
+            Transformed values.
+        """
+        return (np.array(X) - self.sub_) / self.den_
+
+    def transform_sql(self, X: ArrayLike) -> list[str]:
+        """
+        Transforms and returns the SQL needed to deploy the Scaler.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The names or values of the input predictors.
+
+        Returns
+        -------
+        list
+            SQL code.
+        """
+        if not (len(X) == len(self.den_) == len(self.sub_)):
+            raise ValueError(
+                "The length of parameter 'X' must be equal to the length "
+                "of the vector 'sub' and 'den'."
+            )
+        return [f"({X[i]} - {self.sub_[i]}) / {self.den_[i]}" for i in range(len(X))]
 
 
-def sql_from_normalizer(
-    X: Union[list, np.ndarray],
-    values: Union[list, np.ndarray],
-    method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
-) -> list:
+class StandardScaler(Scaler):
     """
-    Returns the SQL code needed to deploy a normalizer model using its attributes.
+    InMemoryModel Implementation of Standard Scaler.
 
     Parameters
     ----------
-    X: list / numpy.array
-        Names or values of the input predictors.
-    values: list / numpy.array
-        List of tuples, including the model's attributes. These required tuple  
-        depends on the specified method:
-            'zscore': (mean, std)
-            'robust_zscore': (median, mad)
-            'minmax': (min, max)
-    method: str, optional
-        The model's category, one of the following: 'zscore', 'robust_zscore', or 'minmax'.
-
-    Returns
-    -------
-    list
-        SQL code
+    mean: ArrayLike
+        Model's features averages.
+    std: ArrayLike
+        Model's features standard deviations.
     """
-    assert len(X) == len(values), ParameterError(
-        "The length of parameter 'X' must be equal to the length of the list 'values'."
-    )
-    sql = []
-    for i in range(len(X)):
-        den = values[i][1] - values[i][0] if method == "minmax" else values[i][1]
-        sql += [f"({X[i]} - {values[i][0]}) / {den}"]
-    return sql
+
+    @property
+    def _object_type(self) -> Literal["StandardScaler"]:
+        return "StandardScaler"
+
+    def __init__(self, mean: ArrayLike, std: ArrayLike) -> None:
+        self.sub_ = np.array(mean)
+        self.den_ = np.array(std)
+        return None
 
 
-def transform_from_one_hot_encoder(
-    X: Union[list, np.ndarray],
-    categories: Union[list, np.ndarray],
-    drop_first: bool = False,
-) -> np.ndarray:
+class MinMaxScaler(Scaler):
     """
-    Transforms the data with a one-hot encoder model using the input attributes.
+    InMemoryModel Implementation of MinMax Scaler.
 
     Parameters
     ----------
-    X: list / numpy.array
-        Data to transform.
-    categories: list / numpy.array
-        List of the categories of the different input columns.
-    drop_first: bool, optional
-        If set to False, the first dummy of each category will be dropped.
-
-    Returns
-    -------
-    list
-        SQL code
+    min_: ArrayLike
+        Model's features minimums.
+    max_: ArrayLike
+        Model's features maximums.
     """
 
-    def ooe_row(X):
-        result = []
-        for idx, elem in enumerate(X):
-            for idx2, item in enumerate(categories[idx]):
-                if idx2 != 0 or not (drop_first):
-                    if str(elem) == str(item):
-                        result += [1]
-                    else:
-                        result += [0]
-        return result
+    @property
+    def _object_type(self) -> Literal["MinMaxScaler"]:
+        return "MinMaxScaler"
 
-    return np.apply_along_axis(ooe_row, 1, X)
+    def __init__(self, min_: ArrayLike, max_: ArrayLike) -> None:
+        self.sub_ = np.array(min_)
+        self.den_ = np.array(max_) - np.array(min_)
+        return None
 
 
-def sql_from_one_hot_encoder(
-    X: Union[list, np.ndarray],
-    categories: Union[list, np.ndarray],
-    drop_first: bool = False,
-    column_naming: Literal["indices", "values", "values_relaxed", None] = None,
-) -> list:
+class OneHotEncoder(InMemoryModel):
     """
-    Returns the SQL code needed to deploy a one-hot encoder model using its 
-    attributes.
+    InMemoryModel Implementation of OneHotEncoder.
 
     Parameters
     ----------
-    X: list / numpy.array
-        The names or values of the input predictors.
-    categories: list / numpy.array
-        List of the categories of the different input columns.
-    drop_first: bool, optional
-        If set to False, the first dummy of each category will be dropped.
+    categories: ArrayLike
+        ArrayLike of the categories of the different features.
     column_naming: str, optional
-        Appends categorical levels to column names according to the specified method:
-            indices    : Uses integer indices to represent categorical 
-                                     levels.
-            values/values_relaxed  : Both methods use categorical-level names. If 
-                                     duplicate column names occur, the function 
-                                     attempts to disambiguate them by appending _n, 
-                                     where n is a zero-based integer index (_0, _1,…).
-
-    Returns
-    -------
-    list
-        SQL code
+        Appends categorical levels to column names according 
+        to the specified method:
+        indices              : Uses integer indices to represent 
+                               categorical levels.
+        values/values_relaxed: Both methods use categorical level 
+                               names. If duplicate column names 
+                               occur, the function attempts to 
+                               disambiguate them by appending _n, 
+                               where n is a zero-based integer 
+                               index (_0, _1,…).
+    drop_first: bool, optional
+        If set to False, the first dummy of each category 
+        will be dropped.
     """
-    assert len(X) == len(categories), ParameterError(
-        "The length of parameter 'X' must be equal to the length of the list 'values'."
-    )
-    sql = []
-    for i in range(len(X)):
-        sql_tmp = []
-        for j in range(len(categories[i])):
-            if not (drop_first) or j > 0:
-                val = categories[i][j]
-                if isinstance(val, str):
-                    val = f"'{val}'"
-                elif val == None:
-                    val = "NULL"
-                sql_tmp_feature = f"(CASE WHEN {X[i]} = {val} THEN 1 ELSE 0 END)"
-                X_i = str(X[i]).replace('"', "")
-                if column_naming == "indices":
-                    sql_tmp_feature += f' AS "{X_i}_{j}"'
-                elif column_naming in ("values", "values_relaxed"):
-                    if categories[i][j] != None:
-                        categories_i_j = categories[i][j]
+
+    @property
+    def _object_type(self) -> Literal["OneHotEncoder"]:
+        return "OneHotEncoder"
+
+    @property
+    def _attributes(self) -> Literal["categories_", "column_naming_", "drop_first_"]:
+        return ["categories_", "column_naming_", "drop_first_"]
+
+    def __init__(
+        self,
+        categories: ArrayLike,
+        column_naming: Literal["indices", "values", "values_relaxed"] = "indices",
+        drop_first: bool = True,
+    ) -> None:
+        self.categories_ = copy.deepcopy(categories)
+        self.column_naming_ = column_naming
+        self.drop_first_ = drop_first
+        return None
+
+    def _transform_row(self, X: ArrayLike) -> list:
+        """
+        Transforms and applies the OneHotEncoder model to the 
+        input row.
+        """
+        X_trans = []
+        for i, x in enumerate(X):
+            for j, c in enumerate(self.categories_[i]):
+                if j != 0 or not (self.drop_first_):
+                    if str(x) == str(c):
+                        X_trans += [1]
                     else:
-                        categories_i_j = "NULL"
-                    sql_tmp_feature += f' AS "{X_i}_{categories_i_j}"'
-                sql_tmp += [sql_tmp_feature]
-        sql += [sql_tmp]
-    return sql
+                        X_trans += [0]
+        return X_trans
+
+    def transform(self, X: ArrayLike) -> np.ndarray:
+        """
+        Transforms and applies the OneHotEncoder model to the 
+        input matrix.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The data on which to make the transformation.
+
+        Returns
+        -------
+        numpy.array
+            Transformed values.
+        """
+        return np.apply_along_axis(self._transform_row, 1, X)
+
+    def transform_sql(self, X: ArrayLike) -> list[str]:
+        """
+        Transforms and returns the SQL needed to deploy the Scaler.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The names or values of the input predictors.
+
+        Returns
+        -------
+        list
+            SQL code.
+        """
+        if len(X) != len(self.categories_):
+            raise ValueError(
+                "The length of parameter 'X' must be equal to the "
+                "length of the attribute 'categories'."
+            )
+        sql = []
+        for i in range(len(X)):
+            sql_tmp = []
+            for j in range(len(self.categories_[i])):
+                if not (self.drop_first_) or j > 0:
+                    val = format_magic(self.categories_[i][j])
+                    sql_tmp_feature = f"(CASE WHEN {X[i]} = {val} THEN 1 ELSE 0 END)"
+                    X_i = str(X[i]).replace('"', "")
+                    if self.column_naming_ == "indices":
+                        sql_tmp_feature += f' AS "{X_i}_{j}"'
+                    elif self.column_naming_ in ("values", "values_relaxed"):
+                        if self.categories_[i][j] != None:
+                            categories_i_j = self.categories_[i][j]
+                        else:
+                            categories_i_j = "NULL"
+                        sql_tmp_feature += f' AS "{X_i}_{categories_i_j}"'
+                    sql_tmp += [sql_tmp_feature]
+            sql += [sql_tmp]
+        return sql

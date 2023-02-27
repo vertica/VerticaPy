@@ -128,7 +128,7 @@ class TestvDFCorrelation:
 
     def test_vDF_chaid(self, titanic_vd):
         result = titanic_vd.chaid("survived", ["age", "fare", "sex"])
-        tree = result.attributes_["tree"]
+        tree = result.tree_
         assert tree["chi2"] == pytest.approx(345.12775126385327)
         assert tree["children"]["female"]["chi2"] == pytest.approx(10.472532457814179)
         assert tree["children"]["female"]["children"][127.6]["chi2"] == pytest.approx(

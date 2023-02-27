@@ -15,7 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Union
+import numpy as np
 
-# Scalars
+ArrayLike = Union[list, np.ndarray]
 
 PythonScalar = Union[bool, float, str]

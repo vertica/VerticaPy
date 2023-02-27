@@ -38,6 +38,10 @@ steps: list
 	"""
 
     @property
+    def _is_native(self) -> Literal[False]:
+        return False
+
+    @property
     def _vertica_fit_sql(self) -> Literal[""]:
         return ""
 
@@ -354,63 +358,3 @@ steps: list
             for step in self.steps:
                 if param.lower() == step[0].lower():
                     step[1].set_params(parameters[param])
-
-    def to_python(
-        self,
-        name: str = "predict",
-        return_proba: bool = False,
-        return_distance_clusters: bool = False,
-        return_str: bool = False,
-    ):
-        """
-    Returns the Python code needed to deploy the pipeline without using 
-    built-in Vertica functions.
-
-    Parameters
-    ----------
-    name: str, optional
-        Function Name.
-    return_proba: bool, optional
-        If set to True and the model is a classifier, the function 
-        returns the model probabilities.
-    return_distance_clusters: bool, optional
-        If set to True and the model type is KPrototypes / KMeans 
-        or NearestCentroids, the function returns the model clusters 
-        distances.
-    return_str: bool, optional
-        If set to True, the function str will be returned.
-
-
-    Returns
-    -------
-    str / func
-        Python function
-        """
-        if not (return_str):
-            func = self.to_python(
-                name=name,
-                return_proba=return_proba,
-                return_distance_clusters=return_distance_clusters,
-                return_str=True,
-            )
-            _locals = locals()
-            exec(func, globals(), _locals)
-            return _locals[name]
-        str_representation = f"def {name}(X):\n"
-        final_function = "X"
-        for idx, step in enumerate(self.steps):
-            str_representation += "\t"
-            str_representation += (
-                step[1]
-                .to_python(
-                    name=step[0],
-                    return_proba=return_proba,
-                    return_distance_clusters=return_distance_clusters,
-                    return_str=True,
-                )
-                .replace("\n", "\n\t")
-            )
-            str_representation += "\n"
-            final_function = f"{step[0]}({final_function})"
-        str_representation += f"\treturn {final_function}"
-        return str_representation

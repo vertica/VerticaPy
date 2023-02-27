@@ -63,6 +63,7 @@ def model(tr_data_vd):
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
     model_class.y = '"TransPortation"'
+    model_class._compute_attributes()
 
     yield model_class
     model_class.drop()
@@ -186,7 +187,7 @@ class TestDecisionTreeRegressor:
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model.to_python(return_str=False)([["Male", 0, "Cheap", "Low"]])[0]
+            model.to_python()([["Male", 0, "Cheap", "Low"]])[0]
         )
 
     def test_to_sql(self, model):

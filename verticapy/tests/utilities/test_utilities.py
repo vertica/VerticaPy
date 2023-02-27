@@ -191,21 +191,6 @@ class TestUtilities:
         )
         result = current_cursor().fetchone()[0]
         assert result == "test"
-        drop("verticapy", method="schema")
-
-    def test_create_verticapy_schema(self):
-        drop("verticapy", method="schema")
-        create_verticapy_schema()
-        current_cursor().execute(
-            """SELECT 
-                    table_name 
-               FROM columns 
-               WHERE table_schema = 'verticapy' 
-               GROUP BY 1 ORDER BY 1;"""
-        )
-        result = [elem[0] for elem in current_cursor().fetchall()]
-        assert result == ["attr", "models"]
-        drop("verticapy", method="schema")
 
     def test_drop(self, world_vd):
         current_cursor().execute("DROP TABLE IF EXISTS public.drop_data")
@@ -279,19 +264,6 @@ class TestUtilities:
         )
         result = current_cursor().fetchall()
         assert result == []
-        # verticapy model
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy", method="schema")
-        create_verticapy_schema()
-        model = KNeighborsClassifier("verticapy_model_test")
-        model.fit("public.drop_data", ["gender", "cost"], "transportation")
-        drop("verticapy_model_test")
-        current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name = 'verticapy_model_test' GROUP BY 1;"
-        )
-        result = current_cursor().fetchall()
-        assert result == []
-        drop("verticapy", method="schema")
         # geo index
         world_copy = world_vd.copy()
         world_copy["id"] = "ROW_NUMBER() OVER (ORDER BY pop_est)"

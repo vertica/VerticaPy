@@ -180,10 +180,10 @@ class TestKMeans:
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model.to_python(return_str=False)([[5.006, 3.418, 1.464, 0.244]])[0]
+            model.to_python()([[5.006, 3.418, 1.464, 0.244]])[0]
         )
         assert 0.0 == pytest.approx(
-            model.to_python(return_str=False, return_distance_clusters=True)(
+            model.to_python(return_distance_clusters=True)(
                 [[5.006, 3.418, 1.464, 0.244]]
             )[0][0]
         )

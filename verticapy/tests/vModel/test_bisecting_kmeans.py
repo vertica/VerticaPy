@@ -58,9 +58,8 @@ def model(bsk_data_vd):
     )
 
     model_class = BisectingKMeans("bsk_model_test", n_cluster=3, max_iter=10)
-    model_class.metrics_ = model_class.get_attr("Metrics")
-    model_class.cluster_centers_ = model_class.get_attr("BKTree")
     model_class.X = ["col1", "col2", "col3", "col4"]
+    model_class._compute_attributes()
 
     yield model_class
     model_class.drop()
@@ -190,9 +189,7 @@ class TestBisectingKMeans:
 
     def test_to_graphviz(self, model):
         gvz_tree_0 = model.to_graphviz(
-            tree_id=0,
-            classes_color=["red", "blue", "green"],
-            round_pred=4,
+            round_score=4,
             percent=True,
             vertical=False,
             node_style={"shape": "box", "style": "filled"},
@@ -214,7 +211,7 @@ class TestBisectingKMeans:
         )
         prediction = current_cursor().fetchone()
         assert prediction == pytest.approx(
-            model.to_python(return_str=False)([[5.006, 3.418, 1.464, 0.244]])
+            model.to_python()([[5.006, 3.418, 1.464, 0.244]])
         )
 
     def test_to_sql(self, model):

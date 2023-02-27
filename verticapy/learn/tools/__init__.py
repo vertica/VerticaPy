@@ -18,4 +18,3 @@ from verticapy.machine_learning.model_management.read import (
     does_model_exist,
     load_model,
 )
-from verticapy.machine_learning.memmodel.base import matrix_rotation

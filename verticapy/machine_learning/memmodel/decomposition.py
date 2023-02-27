@@ -14,189 +14,213 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union
+from typing import Literal, Union
 import numpy as np
 from numpy.linalg import svd
 
-from verticapy.errors import ParameterError
+from verticapy._typing import ArrayLike
 
-# This piece of code was taken from
-# https://en.wikipedia.org/wiki/Talk:Varimax_rotation
-def matrix_rotation(
-    Phi: Union[list, np.ndarray],
-    gamma: Union[int, float] = 1.0,
-    q: int = 20,
-    tol: float = 1e-6,
-):
+from verticapy.machine_learning.memmodel.base import InMemoryModel
+
+
+class PCA(InMemoryModel):
     """
-Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
-PCA matrix.
-
-Parameters
-----------
-Phi: list / numpy.array
-    input matrix.
-gamma: float, optional
-    Oblimin rotation factor, determines the type of rotation.
-    It must be between 0.0 and 1.0.
-        gamma = 0.0 results in a Quartimax rotation.
-        gamma = 1.0 results in a Varimax rotation.
-q: int, optional
-    Maximum number of iterations.
-tol: float, optional
-    The algorithm stops when the Frobenius norm of gradient is less than tol.
-
-Returns
--------
-model
-    The model.
-    """
-    Phi = np.array(Phi)
-    p, k = Phi.shape
-    R = np.eye(k)
-    d = 0
-    for i in range(q):
-        d_old = d
-        Lambda = np.dot(Phi, R)
-        u, s, vh = svd(
-            np.dot(
-                Phi.T,
-                np.asarray(Lambda) ** 3
-                - (gamma / p)
-                * np.dot(Lambda, np.diag(np.diag(np.dot(Lambda.T, Lambda)))),
-            )
-        )
-        R = np.dot(u, vh)
-        d = np.sum(s)
-        if d_old != 0 and d / d_old < 1 + tol:
-            break
-    return np.dot(Phi, R)
-
-
-def transform_from_pca(
-    X: Union[list, np.ndarray],
-    principal_components: Union[list, np.ndarray],
-    mean: Union[list, np.ndarray],
-) -> np.ndarray:
-    """
-    Transforms the data with a PCA model using the input attributes.
+    InMemoryModel Implementation of PCA Algorithm.
 
     Parameters
     ----------
-    X: list / numpy.array
-        Data to transform.
-    principal_components: list / numpy.array
+    principal_components: ArrayLike
         Matrix of the principal components.
-    mean: list / numpy.array
+    mean: ArrayLike
         List of the averages of each input feature.
-
-    Returns
-    -------
-    numpy.array
-        Transformed data
     """
-    pca_values = np.array(principal_components)
-    result = X - np.array(mean)
-    L, n = [], len(principal_components[0])
-    for i in range(n):
-        L += [np.sum(result * pca_values[:, i], axis=1)]
-    return np.column_stack(L)
 
+    @property
+    def _object_type(self) -> Literal["PCA"]:
+        return "PCA"
 
-def sql_from_pca(
-    X: Union[list, np.ndarray],
-    principal_components: Union[list, np.ndarray],
-    mean: Union[list, np.ndarray],
-) -> list:
-    """
-    Returns the SQL code needed to deploy a PCA model using its attributes.
+    @property
+    def _attributes(self) -> Literal["principal_components_", "mean_"]:
+        return ["principal_components_", "mean_"]
 
-    Parameters
-    ----------
-    X: list / numpy.array
-        Names or values of the input predictors.
-    principal_components: list / numpy.array
-        Matrix of the principal components.
-    mean: list / numpy.array
-        List of the averages of each input feature.
+    def __init__(self, principal_components: ArrayLike, mean: ArrayLike) -> None:
+        self.principal_components_ = np.array(principal_components)
+        self.mean_ = np.array(mean)
+        return None
 
-    Returns
-    -------
-    list
-        SQL code
-    """
-    assert len(X) == len(mean), ParameterError(
-        "The length of parameter 'X' must be equal to the length of the vector 'mean'."
-    )
-    sql = []
-    for i in range(len(X)):
-        sql_tmp = []
-        for j in range(len(X)):
-            sql_tmp += [
-                f"({X[j]} - {mean[j]}) * {[pc[i] for pc in principal_components][j]}"
+    def transform(self, X: ArrayLike) -> np.ndarray:
+        """
+        Transforms and applies the PCA model to the input matrix.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The data on which to make the transformation.
+
+        Returns
+        -------
+        numpy.array
+            Transformed values.
+        """
+        X_trans = []
+        n = self.principal_components_.shape[1]
+        for i in range(n):
+            X_trans += [
+                np.sum((X - self.mean_) * self.principal_components_[:, i], axis=1)
             ]
-        sql += [" + ".join(sql_tmp)]
-    return sql
+        return np.column_stack(X_trans)
+
+    def transform_sql(self, X: ArrayLike) -> list[str]:
+        """
+        Transforms and returns the SQL needed to deploy the PCA.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The names or values of the input predictors.
+
+        Returns
+        -------
+        list
+            SQL code.
+        """
+        if len(X) != len(self.mean_):
+            raise ValueError(
+                "The length of parameter 'X' must be equal to the length "
+                "of the vector 'mean'."
+            )
+        sql = []
+        for i in range(len(X)):
+            sql_tmp = []
+            for j in range(len(X)):
+                sql_tmp += [
+                    f"({X[j]} - {self.mean_[j]}) * {self.principal_components_[:, i][j]}"
+                ]
+            sql += [" + ".join(sql_tmp)]
+        return sql
+
+    @staticmethod
+    def matrix_rotation(
+        Phi: ArrayLike, gamma: float = 1.0, q: int = 20, tol: float = 1e-6
+    ) -> None:
+        """
+        Performs a Oblimin (Varimax, Quartimax) rotation on the input
+        Matrix.
+        """
+        # This piece of code was taken from
+        # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
+        Phi = np.array(Phi)
+        p, k = Phi.shape
+        R = np.eye(k)
+        d = 0
+        for i in range(q):
+            d_old = d
+            Lambda = np.dot(Phi, R)
+            u, s, vh = svd(
+                np.dot(
+                    Phi.T,
+                    np.asarray(Lambda) ** 3
+                    - (gamma / p)
+                    * np.dot(Lambda, np.diag(np.diag(np.dot(Lambda.T, Lambda)))),
+                )
+            )
+            R = np.dot(u, vh)
+            d = np.sum(s)
+            if d_old != 0 and d / d_old < 1 + tol:
+                break
+        return np.dot(Phi, R)
+
+    def rotate(self, gamma: float = 1.0, q: int = 20, tol: float = 1e-6) -> None:
+        """
+        Performs a Oblimin (Varimax, Quartimax) rotation on the PCA 
+        matrix.
+
+        Parameters
+        ----------
+        gamma: float, optional
+            Oblimin rotation factor, determines the type of rotation.
+            It must be between 0.0 and 1.0.
+                gamma = 0.0 results in a Quartimax rotation.
+                gamma = 1.0 results in a Varimax rotation.
+        q: int, optional
+            Maximum number of iterations.
+        tol: float, optional
+            The algorithm stops when the Frobenius norm of gradient 
+            is less than tol.
+        """
+        res = self.matrix_rotation(self.principal_components_, gamma, q, tol)
+        self.principal_components_ = res
+        return None
 
 
-def transform_from_svd(
-    X: Union[list, np.ndarray],
-    vectors: Union[list, np.ndarray],
-    values: Union[list, np.ndarray],
-) -> np.ndarray:
+class SVD(InMemoryModel):
     """
-    Transforms the data with an SVD model using the input attributes.
+    InMemoryModel Implementation of SVD Algorithm.
 
     Parameters
     ----------
-    X: list / numpy.array
-        Data to transform.
-    vectors: list / numpy.array
+    vectors: ArrayLike
         Matrix of the right singular vectors.
-    values: list / numpy.array
+    values: ArrayLike
         List of the singular values for each input feature.
-
-    Returns
-    -------
-    numpy.array
-        Transformed data
     """
-    svd_vectors = np.array(vectors)
-    L, n = [], len(svd_vectors[0])
-    for i in range(n):
-        L += [np.sum(X * svd_vectors[:, i] / values[i], axis=1)]
-    return np.column_stack(L)
 
+    @property
+    def _object_type(self) -> Literal["SVD"]:
+        return "SVD"
 
-def sql_from_svd(
-    X: Union[list, np.ndarray],
-    vectors: Union[list, np.ndarray],
-    values: Union[list, np.ndarray],
-) -> list:
-    """
-    Returns the SQL code needed to deploy a SVD model using its attributes.
+    @property
+    def _attributes(self) -> Literal["vectors_", "values_"]:
+        return ["vectors_", "values_"]
 
-    Parameters
-    ----------
-    X: list / numpy.array
-        input predictors name or values.
-    vectors: list / numpy.array
-        List of the model's right singular vectors.
-    values: list / numpy.array
-        List of the singular values for each input feature.
+    def __init__(self, vectors: ArrayLike, values: ArrayLike) -> None:
+        self.vectors_ = np.array(vectors)
+        self.values_ = np.array(values)
+        return None
 
-    Returns
-    -------
-    list
-        SQL code
-    """
-    assert len(X) == len(values), ParameterError(
-        "The length of parameter 'X' must be equal to the length of the vector 'values'."
-    )
-    sql = []
-    for i in range(len(X)):
-        sql_tmp = []
-        for j in range(len(X)):
-            sql_tmp += [f"{X[j]} * {[pc[i] for pc in vectors][j]} / {values[i]}"]
-        sql += [" + ".join(sql_tmp)]
-    return sql
+    def transform(self, X: ArrayLike) -> np.ndarray:
+        """
+        Transforms and applies the SVD model to the input matrix.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The data on which to make the transformation.
+
+        Returns
+        -------
+        numpy.array
+            Transformed values.
+        """
+        X_trans = []
+        n = self.vectors_.shape[1]
+        for i in range(n):
+            X_trans += [np.sum(X * self.vectors_[:, i] / self.values_[i], axis=1)]
+        return np.column_stack(X_trans)
+
+    def transform_sql(self, X: ArrayLike) -> list[str]:
+        """
+        Transforms and returns the SQL needed to deploy the PCA.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The names or values of the input predictors.
+
+        Returns
+        -------
+        list
+            SQL code.
+        """
+        if len(X) != len(self.values_):
+            raise ValueError(
+                "The length of parameter 'X' must be equal to the length "
+                "of the vector 'values'."
+            )
+        sql = []
+        for i in range(len(X)):
+            sql_tmp = []
+            for j in range(len(X)):
+                sql_tmp += [f"{X[j]} * {self.vectors_[:, i][j]} / {self.values_[i]}"]
+            sql += [" + ".join(sql_tmp)]
+        return sql

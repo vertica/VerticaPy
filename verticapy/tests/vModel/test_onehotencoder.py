@@ -164,7 +164,7 @@ class TestOneHotEncoder:
             )
         )
         prediction = [int(elem) for elem in current_cursor().fetchone()]
-        prediction2 = model.to_python(return_str=False)([[1, "female", "S"]])[0]
+        prediction2 = model.to_python()([[1, "female", "S"]])[0]
         assert len(prediction) == len(prediction2)
         assert prediction[0] == prediction2[0]
         assert prediction[1] == prediction2[1]

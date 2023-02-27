@@ -228,7 +228,7 @@ TableSample
     if with_trend:
         predictors += ["ts"]
     model.fit(relation_name, predictors, "delta")
-    coef = model.coef_
+    coef = model.get_attr("details")
     drop(name, method="model")
     drop(relation_name, method="view")
     if regresults:
@@ -698,11 +698,10 @@ vDataFrame
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_poly, X, column)
-        coefficients = model.coef_["coefficient"]
-        coefficients = [str(coefficients[0])] + [
-            f"{coefficients[i]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})"
+        coefficients = [str(model.intercept_)] + [
+            f"{model.coef_[i-1]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})"
             if i != 1
-            else f"{coefficients[1]} * ROW_NUMBER() OVER({by}ORDER BY {ts})"
+            else f"{model.coef_[0]} * ROW_NUMBER() OVER({by}ORDER BY {ts})"
             for i in range(1, polynomial_order + 1)
         ]
         vdf_tmp[trend_name] = " + ".join(coefficients)
@@ -740,10 +739,9 @@ vDataFrame
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_seasonality, X, seasonal_name)
-        coefficients = model.coef_["coefficient"]
         vdf_tmp[
             seasonal_name
-        ] = f"{coefficients[0]} + {coefficients[1]} * COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period}) + {coefficients[2]} * SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
+        ] = f"{model.intercept_} + {model.coef_[0]} * COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period}) + {model.coef_[1]} * SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
         model.drop()
     if mult:
         vdf_tmp[

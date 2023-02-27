@@ -69,19 +69,22 @@ class TestDelphi:
         model.fit(titanic_vd)
         assert model.final_relation_.shape() == (1234, 56)
         model.drop()
-        model2 = AutoDataPrep("AutoML_test_dp", num_method="same_freq")
+        model2 = AutoDataPrep("AutoML_test_dp_2", num_method="same_freq")
         model2.drop()
         model2.fit(titanic_vd)
         assert model2.final_relation_.shape() == (1234, 101)
         model2.drop()
         model3 = AutoDataPrep(
-            "AutoML_test_dp", num_method="same_width", na_method="drop", apply_pca=True,
+            "AutoML_test_dp_3",
+            num_method="same_width",
+            na_method="drop",
+            apply_pca=True,
         )
         model3.drop()
         model3.fit(titanic_vd)
         assert model3.final_relation_.shape() == (112, 122)
         model3.drop()
-        model4 = AutoDataPrep("AutoML_test_dp",)
+        model4 = AutoDataPrep("AutoML_test_dp_4",)
         model4.drop()
         model4.fit(amazon_vd)
         assert model4.final_relation_.shape() == (6318, 3)

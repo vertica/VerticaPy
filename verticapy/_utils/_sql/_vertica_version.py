@@ -51,7 +51,6 @@ MINIMUM_VERTICA_VERSION = {
     "multilabel_confusion_matrix": [8, 0, 0],
     "MultinomialNB": [8, 0, 0],
     "NaiveBayes": [8, 0, 0],
-    "Normalizer": [8, 1, 0],
     "OneHotEncoder": [9, 0, 0],
     "PCA": [9, 1, 0],
     "prc_curve": [9, 1, 0],
@@ -61,14 +60,13 @@ MINIMUM_VERTICA_VERSION = {
     "Ridge": [8, 0, 0],
     "RobustScaler": [8, 1, 0],
     "roc_curve": [8, 0, 0],
-    "SARIMAX": [8, 0, 0],
+    "Scaler": [8, 1, 0],
     "soundex": [10, 1, 0],
     "soundex_matches": [10, 1, 0],
     "StandardScaler": [8, 1, 0],
     "SVD": [9, 1, 0],
-    "VAR": [8, 0, 0],
-    "XGBoostClassifier": [10, 1, 0],
-    "XGBoostRegressor": [10, 1, 0],
+    "XGBClassifier": [10, 1, 0],
+    "XGBRegressor": [10, 1, 0],
 }
 
 

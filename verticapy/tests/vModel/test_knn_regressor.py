@@ -22,7 +22,6 @@ import pytest
 from verticapy import (
     drop,
     set_option,
-    create_verticapy_schema,
 )
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
@@ -40,7 +39,6 @@ def titanic_vd():
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    create_verticapy_schema()
     model_class = KNeighborsRegressor("knn_model_test",)
     model_class.drop()
     model_class.fit("public.titanic", ["age", "fare"], "survived")
@@ -78,24 +76,6 @@ class TestKNeighborsRegressor:
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
-
-    def test_drop(self):
-        model_test = KNeighborsRegressor("model_test_drop",)
-        model_test.drop()
-        model_test.fit("public.titanic", ["age"], "survived")
-        current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
-        )
-        assert current_cursor().fetchone()[0] in (
-            "model_test_drop",
-            '"model_test_drop"',
-        )
-
-        model_test.drop()
-        current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
-        )
-        assert current_cursor().fetchone() is None
 
     def test_get_params(self, model):
         assert model.get_params() == {"n_neighbors": 5, "p": 2}

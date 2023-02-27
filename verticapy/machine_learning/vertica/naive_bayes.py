@@ -15,12 +15,15 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Union
+import numpy as np
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.vdataframe.base import vDataFrame
+
+import verticapy.machine_learning.memmodel as mm
 
 from verticapy.machine_learning.vertica.base import MulticlassClassifier
 
@@ -88,7 +91,15 @@ nbtype: str, optional
         self.model_name = name
         self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
 
-    def get_var_info(self):
+    def _compute_attributes(self):
+        """
+        Computes the model's attributes.
+        """
+        self.classes_ = self._array_to_int(np.array(self.get_attr("prior")["class"]))
+        self.prior_ = np.array(self.get_attr("prior")["probability"])
+        self.attributes_ = self._get_nb_attributes()
+
+    def _get_nb_attributes(self):
         # Returns a list of dictionary for each of the NB variables.
         # It is used to translate NB to Python
         vdf = vDataFrame(self.input_relation)
@@ -142,6 +153,13 @@ nbtype: str, optional
         for elem in var_info_simplified:
             del elem["rank"]
         return var_info_simplified
+
+    def to_memmodel(self):
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.NaiveBayes(self.attributes_, self.prior_, self.classes_,)
 
 
 class BernoulliNB(NaiveBayes):
