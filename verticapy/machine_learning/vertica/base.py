@@ -1189,7 +1189,9 @@ class Tree:
         graphviz.Source
             graphviz object.
         """
-        return self.trees_[tree_id].plot_tree(pic_path=pic_path, *argv, **kwds,)
+        return self.trees_[tree_id].plot_tree(
+            pic_path=pic_path, feature_names=self.X, *argv, **kwds,
+        )
 
     def get_score(
         self, tree_id: int = None,
