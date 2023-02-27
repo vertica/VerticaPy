@@ -18,7 +18,7 @@ import random
 from typing import Literal, Optional, Union
 import numpy as np
 
-from vertica_python.errors import MissingRelation
+from vertica_python.errors import MissingRelation, QueryError
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name
@@ -238,12 +238,8 @@ class XGBoost:
         if self._model_type == "XGBRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
-            if self._model_type == "XGBRegressor":
-                prior = self.mean_
-            else:
-                prior = self.logodds_[1]
             bs, num_class, param, param_val = (
-                prior,
+                self.mean_,
                 "0",
                 "reg_loss_param",
                 {"scale_pos_weight": "1"},
@@ -962,10 +958,14 @@ col_sample_by_node: float, optional
                 prior = np.array(self.get_attr("initial_prediction")["value"])
                 if null_:
                     prior = prior[1:]
-        except:
-            self.classes_ = self._array_to_int(self._get_classes())
+        except QueryError:
+            try:
+                self.classes_ = self._array_to_int(self._get_classes())
+            except MissingRelation:
+                self.classes_ = np.array([])
             prior = self._compute_prior()
         if isinstance(prior, (int, float)):
+            self.mean_ = prior
             self.logodds_ = [
                 np.log((1 - prior) / prior),
                 np.log(prior / (1 - prior)),

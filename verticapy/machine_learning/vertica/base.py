@@ -1089,7 +1089,7 @@ class Tree:
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
-        node_style: dict = {},
+        node_style: dict = {"shape": "box", "style": "filled"},
         arrow_style: dict = {},
         leaf_style: dict = {},
     ):
