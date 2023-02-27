@@ -1168,11 +1168,7 @@ class Tree:
         return result
 
     def plot_tree(
-        self,
-        tree_id: int = 0,
-        pic_path: str = "",
-        *argv, 
-        **kwds,
+        self, tree_id: int = 0, pic_path: str = "", *argv, **kwds,
     ):
         """
         Draws the input tree. Requires the graphviz module.
@@ -1192,11 +1188,7 @@ class Tree:
         graphviz.Source
             graphviz object.
         """
-        return self.trees_[tree_id].plot_tree(
-            pic_path=pic_path,
-            *argv, 
-            **kwds,
-        )
+        return self.trees_[tree_id].plot_tree(pic_path=pic_path, *argv, **kwds,)
 
     def get_score(
         self, tree_id: int = None,

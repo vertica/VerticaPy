@@ -87,7 +87,7 @@ class XGBoost:
                 logodds = np.log(avg / (1 - avg))
                 prior_ += [logodds]
         else:
-            prior_ = [0.0 for p in self.classes_]
+            prior_ = np.array([0.0 for p in self.classes_])
         return prior_
 
     def _to_json_dummy_tree_dict(self, i: int = 0) -> dict:
@@ -638,9 +638,11 @@ col_sample_by_node: float, optional
         Computes the model's attributes.
         """
         self.eta_ = self.parameters["learning_rate"]
-        self.n_estimators_ = self.get_attr("initial_prediction")["tree_count"][0]
+        self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
         try:
-            self.mean_ = float(self.get_attr("initial_prediction")["initial_prediction"][0])
+            self.mean_ = float(
+                self.get_attr("initial_prediction")["initial_prediction"][0]
+            )
         except:
             self.mean_ = self._compute_prior()
         trees = []
@@ -946,12 +948,21 @@ col_sample_by_node: float, optional
         self.eta_ = self.parameters["learning_rate"]
         self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
         try:
-            self.classes_ = np.array(self.get_attr("initial_prediction")["response_label"])
-            prior = np.array(self.get_attr("initial_prediction")["value"])
+            self.classes_ = np.array(
+                self.get_attr("initial_prediction")["response_label"]
+            )
+            if (
+                len(self.classes_) == 2
+                and self.classes_[0] == 0
+                and self.classes_[1] == 1
+            ):
+                prior = self._compute_prior()
+            else:
+                prior = np.array(self.get_attr("initial_prediction")["value"])
         except:
             self.classes_ = self._get_classes()
             prior = self._compute_prior()
-        if (isinstance(prior, (int, float))):
+        if isinstance(prior, (int, float)):
             self.logodds_ = [
                 np.log((1 - prior) / prior),
                 np.log(prior / (1 - prior)),

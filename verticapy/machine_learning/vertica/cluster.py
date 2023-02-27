@@ -344,19 +344,16 @@ tol: float, optional
             Graphviz code.
         """
         return self.to_memmodel().to_graphviz(
-            round_score = round_score,
-            percent = percent,
-            vertical = vertical,
-            node_style = node_style,
-            arrow_style = arrow_style,
-            leaf_style = leaf_style,
+            round_score=round_score,
+            percent=percent,
+            vertical=vertical,
+            node_style=node_style,
+            arrow_style=arrow_style,
+            leaf_style=leaf_style,
         )
 
     def plot_tree(
-        self,
-        pic_path: str = "",
-        *argv, 
-        **kwds,
+        self, pic_path: str = "", *argv, **kwds,
     ):
         """
         Draws the input tree. Requires the graphviz module.
@@ -373,11 +370,7 @@ tol: float, optional
         graphviz.Source
             graphviz object.
         """
-        return self.to_memmodel().plot_tree(
-            pic_path=pic_path,
-            *argv, 
-            **kwds,
-        )
+        return self.to_memmodel().plot_tree(pic_path=pic_path, *argv, **kwds,)
 
     def to_memmodel(self):
         """
