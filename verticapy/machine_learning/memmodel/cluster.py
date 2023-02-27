@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from typing import Literal, Union
 import numpy as np
 
@@ -91,7 +92,7 @@ class Clustering(InMemoryModel):
         """
         distances = self.transform(X)
         clusters_pred_id = np.argmin(distances, axis=1).astype(object)
-        if len(self.classes_) > 0:
+        if hasattr(self, "classes_") and len(self.classes_) > 0:
             for idx, c in enumerate(self.classes_):
                 clusters_pred_id[clusters_pred_id == idx] = c
         return clusters_pred_id
@@ -159,6 +160,10 @@ class Clustering(InMemoryModel):
         str
             SQL code.
         """
+        if hasattr(self, "classes_"):
+            n = len(self.classes_)
+        else:
+            n = 0
         clusters_distance = self.transform_sql(X)
         sql = []
         k = len(clusters_distance)
@@ -171,7 +176,6 @@ class Clustering(InMemoryModel):
         sql.reverse()
         is_null_x = " OR ".join([f"{x} IS NULL" for x in X])
         sql_final = f"CASE WHEN {is_null_x} THEN NULL"
-        n = len(self.classes_)
         for i in range(k - 1):
             if n == 0:
                 c = k - i - 1
@@ -232,7 +236,6 @@ class KMeans(Clustering):
 
     def __init__(self, clusters: ArrayLike, p: int = 2) -> None:
         self.clusters_ = np.array(clusters)
-        self.classes_ = np.array([])
         self.p_ = p
         return None
 

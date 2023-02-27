@@ -75,10 +75,8 @@ class TestStats:
         model = LinearRegression("lin_cochrane_orcutt_model_test")
         model.fit(airline_copy, ["passengers_bias"], "passengers")
         result = st.cochrane_orcutt(model, airline_copy, ts="date", prais_winsten=True,)
-        assert result.coef_["coefficient"][0] == pytest.approx(25.8582027191416, 1e-2)
-        assert result.coef_["coefficient"][1] == pytest.approx(
-            0.00123563974547625, 1e-2
-        )
+        assert result.intercept_ == pytest.approx(25.8582027191416, 1e-2)
+        assert result.coef_[0] == pytest.approx(0.00123563974547625, 1e-2)
         model.drop()
 
     def test_durbin_watson(self, amazon_vd):

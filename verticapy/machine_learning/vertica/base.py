@@ -725,10 +725,11 @@ Base Class for Vertica Models.
         ):
             if self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",):
                 if self._model_type == "KPrototypes":
+                    centers = self.get_attr("centers")
                     if any(
                         [
-                            ("char" in self.cluster_centers_.dtype[key].lower())
-                            for key in self.cluster_centers_.dtype
+                            ("char" in centers.dtype[key].lower())
+                            for key in centers.dtype
                         ]
                     ):
                         raise TypeError(
@@ -1122,8 +1123,7 @@ class Tree:
         str
             Graphviz code.
         """
-        return self.to_memmodel().to_graphviz(
-            tree_id=tree_id,
+        return self.trees_[tree_id].to_graphviz(
             feature_names=self.X,
             classes_color=classes_color,
             round_pred=round_pred,
@@ -1204,8 +1204,7 @@ class Tree:
         graphviz.Source
             graphviz object.
         """
-        return self.to_memmodel().plot_tree(
-            tree_id=tree_id,
+        return self.trees_[tree_id].plot_tree(
             feature_names=self.X,
             classes_color=classes_color,
             round_pred=round_pred,
@@ -1257,7 +1256,7 @@ class Classifier(Supervised):
 
 class BinaryClassifier(Classifier):
 
-    classes_ = [0, 1]
+    classes_ = np.array([0, 1])
 
     def classification_report(
         self, cutoff: Union[int, float] = 0.5, nbins: int = 10000,

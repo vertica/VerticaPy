@@ -228,7 +228,7 @@ TableSample
     if with_trend:
         predictors += ["ts"]
     model.fit(relation_name, predictors, "delta")
-    coef = model.coef_
+    coef = model.get_attr("details")
     drop(name, method="model")
     drop(relation_name, method="view")
     if regresults:
@@ -698,12 +698,11 @@ vDataFrame
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_poly, X, column)
-        coefficients = model.coef_["coefficient"]
-        coefficients = [str(coefficients[0])] + [
-            f"{coefficients[i]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})"
-            if i != 1
-            else f"{coefficients[1]} * ROW_NUMBER() OVER({by}ORDER BY {ts})"
-            for i in range(1, polynomial_order + 1)
+        coefficients = [str(model.intercept_)] + [
+            f"{model.coef_[i]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})"
+            if i != 0
+            else f"{model.coef_[0]} * ROW_NUMBER() OVER({by}ORDER BY {ts})"
+            for i in range(0, polynomial_order)
         ]
         vdf_tmp[trend_name] = " + ".join(coefficients)
         model.drop()

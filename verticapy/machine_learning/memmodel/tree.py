@@ -19,6 +19,7 @@ from collections.abc import Iterable
 from typing import Literal, Union
 import numpy as np
 
+import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
 from verticapy._utils._sql._format import clean_query, format_magic
 from verticapy._utils.math import heuristic_length

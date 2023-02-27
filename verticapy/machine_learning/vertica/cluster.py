@@ -148,7 +148,7 @@ tol: float, optional
             / float(metrics_str.split("Total Sum of Squares: ")[1].split("\n")[0]),
             metrics_str.split("Converged: ")[1].split("\n")[0] == "True",
         ]
-        return metrics
+        return TableSample(metrics)
 
     def plot_voronoi(
         self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,

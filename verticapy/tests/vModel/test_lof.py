@@ -79,6 +79,7 @@ class TestLocalOutlierFactor:
         model_test.fit("public.titanic", ["age"])
         result = model_test.plot(color=["r", "b"])
         assert len(result.get_default_bbox_extra_artists()) == 9
+        model_test = LocalOutlierFactor("model_test_plot_lof_2")
         model_test.drop()
         model_test.fit("public.titanic", ["age", "fare", "pclass"])
         result = model_test.plot(color=["r", "b"])
