@@ -240,8 +240,7 @@ class TestTools:
         model.fit(titanic_vd, ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert (
-            isinstance(result, XGBClassifier)
-            and result.get_params()["max_ntree"] == 12
+            isinstance(result, XGBClassifier) and result.get_params()["max_ntree"] == 12
         )
         model.drop()
         # XGBRegressor
@@ -250,8 +249,7 @@ class TestTools:
         model.fit(titanic_vd, ["age", "fare"], "survived")
         result = load_model("load_model_test.model_test")
         assert (
-            isinstance(result, XGBRegressor)
-            and result.get_params()["max_ntree"] == 12
+            isinstance(result, XGBRegressor) and result.get_params()["max_ntree"] == 12
         )
         model.drop()
         # NaiveBayes

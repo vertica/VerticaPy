@@ -258,9 +258,7 @@ model_grid_ : TableSample
                 ]
                 if estimator_method in ("native", "all"):
                     if v[0] > 10 or (v[0] == 10 and v[1] >= 1):
-                        self.parameters["estimator"] += [
-                            XGBClassifier(self.model_name)
-                        ]
+                        self.parameters["estimator"] += [XGBClassifier(self.model_name)]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
                             LinearSVC(self.model_name),
@@ -283,9 +281,7 @@ model_grid_ : TableSample
                 ]
                 if estimator_method in ("native", "all"):
                     if v[0] > 10 or (v[0] == 10 and v[1] >= 1):
-                        self.parameters["estimator"] += [
-                            XGBRegressor(self.model_name)
-                        ]
+                        self.parameters["estimator"] += [XGBRegressor(self.model_name)]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
                             LinearSVR(self.model_name),
@@ -300,9 +296,7 @@ model_grid_ : TableSample
                 self.parameters["estimator"] = [NaiveBayes(self.model_name)]
                 if estimator_method in ("native", "all"):
                     if v[0] >= 10 and v[1] >= 1:
-                        self.parameters["estimator"] += [
-                            XGBClassifier(self.model_name)
-                        ]
+                        self.parameters["estimator"] += [XGBClassifier(self.model_name)]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
                             RandomForestClassifier(self.model_name)

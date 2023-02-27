@@ -487,9 +487,7 @@ class TestXGBR:
         path = "verticapy_test_xgbr.json"
         X = ["pclass", "age", "survived"]
         y = "fare"
-        model = XGBRegressor(
-            "verticapy_xgb_regressor_test", max_ntree=10, max_depth=5
-        )
+        model = XGBRegressor("verticapy_xgb_regressor_test", max_ntree=10, max_depth=5)
         model.drop()
         model.fit(titanic, X, y)
         X_test = titanic[X].to_numpy()

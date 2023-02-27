@@ -39,7 +39,52 @@ from verticapy.machine_learning.vertica.base import (
 
 
 class XGBoost:
-    def _xgboost_dummy_tree_dict(self, i: int = 0):
+    def _compute_prior(self):
+        """
+        Returns the XGB Priors.
+            
+        Returns
+        -------
+        list
+            XGB Priors.
+        """
+        condition = [f"{x} IS NOT NULL" for x in self.X] + [f"{self.y} IS NOT NULL"]
+        v = vertica_version()
+        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
+        query = f"""
+            SELECT 
+                /*+LABEL('learn.ensemble.XGBoost._compute_prior')*/ 
+                {{}}
+            FROM {self.input_relation} 
+            WHERE {' AND '.join(condition)}{{}}"""
+        if self._model_type == "XGBRegressor" or (
+            len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
+        ):
+            prior_ = _executeSQL(
+                query=query.format(f"AVG({self.y})", ""),
+                method="fetchfirstelem",
+                print_time_sql=False,
+            )
+        elif not (v):
+            prior_ = []
+            for c in self.classes_:
+                avg = _executeSQL(
+                    query=query.format("COUNT(*)", f" AND {self.y} = '{c}'"),
+                    method="fetchfirstelem",
+                    print_time_sql=False,
+                )
+                avg /= _executeSQL(
+                    query=query.format("COUNT(*)", ""),
+                    method="fetchfirstelem",
+                    print_time_sql=False,
+                )
+                logodds = np.log(avg / (1 - avg))
+                prior_ += [logodds]
+        else:
+            prior_ = [0.0 for p in self.classes_]
+        return prior_
+
+    def _to_json_dummy_tree_dict(self, i: int = 0):
         """
         Dummy trees are used to store the prior probabilities.
         The Python XGBoost API do not use those information 
@@ -69,7 +114,10 @@ class XGBoost:
             },
         }
 
-    def _xgboost_tree_dict(self, tree_id: int, c: str = None):
+    def _to_json_tree_dict(self, tree_id: int, c: str = None):
+        """
+        Method used to converts the model to JSON.
+        """
         tree = self.get_tree(tree_id)
         attributes = self._compute_trees_arrays(tree, self.X)
         n_nodes = len(attributes[0])
@@ -87,8 +135,7 @@ class XGBoost:
             elif attributes[5][i] == None:
                 if self._model_type == "XGBRegressor":
                     split_conditions += [
-                        float(attributes[4][i])
-                        * self.parameters["learning_rate"]
+                        float(attributes[4][i]) * self.parameters["learning_rate"]
                     ]
                 elif (
                     len(self.classes_) == 2
@@ -96,13 +143,11 @@ class XGBoost:
                     and self.classes_[0] == 0
                 ):
                     split_conditions += [
-                        self.parameters["learning_rate"]
-                        * float(attributes[6][i]["1"])
+                        self.parameters["learning_rate"] * float(attributes[6][i]["1"])
                     ]
                 else:
                     split_conditions += [
-                        self.parameters["learning_rate"]
-                        * float(attributes[6][i][c])
+                        self.parameters["learning_rate"] * float(attributes[6][i][c])
                     ]
             else:
                 split_conditions += [float(attributes[3][i])]
@@ -133,29 +178,28 @@ class XGBoost:
             },
         }
 
-    def _xgboost_tree_dict_list(self):
+    def _to_json_tree_dict_list(self):
+        """
+        Method used to converts the model to JSON.
+        """
         n = self.get_attr("tree_count")["tree_count"][0]
         if self._model_type == "XGBClassifier" and (
-            len(self.classes_) > 2
-            or self.classes_[1] != 1
-            or self.classes_[0] != 0
+            len(self.classes_) > 2 or self.classes_[1] != 1 or self.classes_[0] != 0
         ):
             trees = []
             for i in range(n):
                 for c in self.classes_:
-                    trees += [self._xgboost_tree_dict(i, str(c))]
+                    trees += [self._to_json_tree_dict(i, str(c))]
             v = vertica_version()
             v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
             if not (v):
                 for i in range(len(self.classes_)):
-                    trees += [self._xgboost_dummy_tree_dict(i)]
-            tree_info = [i for i in range(len(self.classes_))] * (
-                n + int(not (v))
-            )
+                    trees += [self._to_json_dummy_tree_dict(i)]
+            tree_info = [i for i in range(len(self.classes_))] * (n + int(not (v)))
             for idx, tree in enumerate(trees):
                 tree["id"] = idx
         else:
-            trees = [self._xgboost_tree_dict(i) for i in range(n)]
+            trees = [self._to_json_tree_dict(i) for i in range(n)]
             tree_info = [0 for i in range(n)]
         return {
             "model": {
@@ -169,7 +213,10 @@ class XGBoost:
             "name": "gbtree",
         }
 
-    def _xgboost_learner(self):
+    def _to_json_learner(self):
+        """
+        Method used to converts the model to JSON.
+        """
         v = vertica_version()
         v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
         if v:
@@ -183,9 +230,7 @@ class XGBoost:
         ]
         n = self.get_attr("tree_count")["tree_count"][0]
         if self._model_type == "XGBRegressor" or (
-            len(self.classes_) == 2
-            and self.classes_[1] == 1
-            and self.classes_[0] == 0
+            len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
             bs, num_class, param, param_val = (
                 self.prior_,
@@ -272,19 +317,17 @@ class XGBoost:
                 + str(self.classes_)
                 + '}, "_estimator_type": "classifier"}'
             }
-        attributes_dict["scikit_learn"] = attributes_dict[
-            "scikit_learn"
-        ].replace('"', "++++")
-        gradient_booster = self._xgboost_tree_dict_list()
+        attributes_dict["scikit_learn"] = attributes_dict["scikit_learn"].replace(
+            '"', "++++"
+        )
+        gradient_booster = self._to_json_tree_dict_list()
         return {
             "attributes": attributes_dict,
             "feature_names": [],
             "feature_types": [],
             "gradient_booster": gradient_booster,
             "learner_model_param": {
-                "base_score": np.format_float_scientific(
-                    bs, precision=7
-                ).upper(),
+                "base_score": np.format_float_scientific(bs, precision=7).upper(),
                 "num_class": num_class,
                 "num_feature": str(len(self.X)),
             },
@@ -314,9 +357,10 @@ class XGBoost:
             The content of the JSON file if variable 'path' is empty. Otherwise,
             nothing is returned.
         """
-        res = {"learner": self._xgboost_learner(), "version": [1, 4, 2]}
+        res = {"learner": self._to_json_learner(), "version": [1, 4, 2]}
         res = (
-            str(res).replace("'", '"')
+            str(res)
+            .replace("'", '"')
             .replace("True", "true")
             .replace("False", "false")
             .replace("++++", '\\"')
@@ -326,51 +370,6 @@ class XGBoost:
             f.write(res)
         else:
             return res
-
-    def _compute_prior(self):
-        """
-        Returns the XGB Priors.
-            
-        Returns
-        -------
-        list
-            XGB Priors.
-        """
-        condition = [f"{x} IS NOT NULL" for x in self.X] + [f"{self.y} IS NOT NULL"]
-        v = vertica_version()
-        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-        query = f"""
-            SELECT 
-                /*+LABEL('learn.ensemble.XGBoost._compute_prior')*/ 
-                {{}}
-            FROM {self.input_relation} 
-            WHERE {' AND '.join(condition)}{{}}"""
-        if self._model_type == "XGBRegressor" or (
-            len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
-        ):
-            prior_ = _executeSQL(
-                query=query.format(f"AVG({self.y})", ""),
-                method="fetchfirstelem",
-                print_time_sql=False,
-            )
-        elif not (v):
-            prior_ = []
-            for c in self.classes_:
-                avg = _executeSQL(
-                    query=query.format("COUNT(*)", f" AND {self.y} = '{c}'"),
-                    method="fetchfirstelem",
-                    print_time_sql=False,
-                )
-                avg /= _executeSQL(
-                    query=query.format("COUNT(*)", ""),
-                    method="fetchfirstelem",
-                    print_time_sql=False,
-                )
-                logodds = np.log(avg / (1 - avg))
-                prior_ += [logodds]
-        else:
-            prior_ = [0.0 for p in self.classes_]
-        return prior_
 
 
 class IsolationForest(Clustering, Tree):
