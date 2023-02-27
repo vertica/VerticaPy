@@ -119,6 +119,40 @@ tol: float, optional
         centers = self.get_attr("centers")
         self.clusters_ = centers.to_numpy()
         self.p_ = 2
+        self.metrics_ = self._compute_metrics()
+
+    def _compute_metrics(self):
+        metrics = self.get_attr("metrics").values["metrics"][0]
+        values = {
+            "index": [
+                "Between-Cluster Sum of Squares",
+                "Total Sum of Squares",
+                "Total Within-Cluster Sum of Squares",
+                "Between-Cluster SS / Total SS",
+                "converged",
+            ]
+        }
+        values["value"] = [
+            float(
+                metrics.split("Between-Cluster Sum of Squares: ")[1].split("\n")[
+                    0
+                ]
+            ),
+            float(metrics.split("Total Sum of Squares: ")[1].split("\n")[0]),
+            float(
+                metrics.split("Total Within-Cluster Sum of Squares: ")[1].split(
+                    "\n"
+                )[0]
+            ),
+            float(
+                metrics.split("Between-Cluster Sum of Squares: ")[1].split("\n")[
+                    0
+                ]
+            )
+            / float(metrics.split("Total Sum of Squares: ")[1].split("\n")[0]),
+            metrics.split("Converged: ")[1].split("\n")[0] == "True",
+        ]
+        return metrics
 
     def plot_voronoi(
         self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,
@@ -145,18 +179,8 @@ tol: float, optional
         if len(self.X) == 2:
             from verticapy.plotting._matplotlib import voronoi_plot
 
-            clusters = _executeSQL(
-                query=f"""
-                SELECT 
-                    /*+LABEL('learn.cluster.KMeans.plot_voronoi')*/ 
-                    GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                        model_name = '{self.model_name}', 
-                                        attr_name = 'centers')""",
-                print_time_sql=False,
-                method="fetchall",
-            )
             return voronoi_plot(
-                clusters=clusters,
+                clusters=self.clusters_,
                 columns=self.X,
                 input_relation=self.input_relation,
                 plot_crosses=plot_crosses,
@@ -282,6 +306,7 @@ tol: float, optional
         n = len(wt)
         self.cluster_score_ = np.array([wt[i] / tot[i] for i in range(n)])
         self.p_ = 2
+        self.metrics_ = self.get_attr("Metrics")
 
     def to_memmodel(self):
         """
@@ -304,7 +329,7 @@ tol: float, optional
         return self.get_attr("BKTree")
 
 
-class KPrototypes(Clustering):
+class KPrototypes(KMeans):
     """
 Creates a KPrototypes object by using the Vertica k-prototypes algorithm on 
 the data. The algorithm combines the k-means and k-modes algorithms in order
@@ -340,14 +365,6 @@ gamma: float, optional
         return "APPLY_KPROTOTYPES"
 
     @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["CLUSTERING"]:
-        return "CLUSTERING"
-
-    @property
     def _model_type(self) -> Literal["KPrototypes"]:
         return "KPrototypes"
 
@@ -381,6 +398,7 @@ gamma: float, optional
         self.gamma_ = self.parameters["gamma"]
         dtypes = centers.dtype
         self.is_categorical_ = [("char" in dtypes[key].lower()) for key in dtypes]
+        self.metrics_ = self._compute_metrics()
 
     def to_memmodel(self):
         """

@@ -377,6 +377,7 @@ Base Class for Vertica Models.
         ):
             relation = self.input_relation
             vertica_version(condition=[8, 1, 1])
+            coefficients = self.get_attr("coefficients")
             query = f"""
                 SELECT /*+LABEL('learn.vModel.features_importance')*/
                     predictor, 
@@ -393,7 +394,7 @@ Base Class for Vertica Models.
                             FROM (SELECT 
                                     SUMMARIZE_NUMCOL({', '.join(self.X)}) OVER() 
                                   FROM {relation}) VERTICAPY_SUBTABLE) stat 
-                                  NATURAL JOIN ({self.coef_.to_sql()}) coeff) importance_t 
+                                  NATURAL JOIN ({coefficients.to_sql()}) coeff) importance_t 
                                   ORDER BY 2 DESC;"""
             print_legend = True
         else:
@@ -576,7 +577,7 @@ Base Class for Vertica Models.
                 del parameters[p]
         return parameters
 
-    def get_vertica_param_dict(self):
+    def _get_vertica_param_dict(self):
         """
     Returns the Vertica parameters dict to use when fitting the
     model. As some model's parameters names are not the same in
@@ -684,7 +685,7 @@ Base Class for Vertica Models.
             "LinearSVC",
             "LinearSVR",
         ):
-            coefficients = self.coef_.values["coefficient"]
+            coefficients = self.get_attr("coefficients").values["coefficient"]
             if self._model_type == "LogisticRegression":
                 return logit_plot(
                     self.X,
@@ -973,7 +974,7 @@ class Supervised(vModel):
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        parameters = self.get_vertica_param_dict()
+        parameters = self._get_vertica_param_dict()
         if (
             "regularization" in parameters
             and parameters["regularization"].lower() == "'enet'"
@@ -2518,7 +2519,7 @@ class Unsupervised(vModel):
             if not (X):
                 X = vDataFrame(input_relation).numcol()
         self.X = [quote_ident(column) for column in X]
-        parameters = self.get_vertica_param_dict()
+        parameters = self._get_vertica_param_dict()
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
         fun = self._vertica_fit_sql if self._model_type != "MCA" else "PCA"
@@ -2599,64 +2600,12 @@ class Unsupervised(vModel):
         finally:
             if tmp_view:
                 drop(relation, method="view")
-        self._compute_attributes()
         if self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",):
             if "init_method" in parameters and not (
                 isinstance(parameters["init_method"], str)
             ):
                 drop(name_init, method="table")
-            if self._model_type in ("KMeans", "KPrototypes",):
-                result = self.get_attr("metrics").values["metrics"][0]
-                values = {
-                    "index": [
-                        "Between-Cluster Sum of Squares",
-                        "Total Sum of Squares",
-                        "Total Within-Cluster Sum of Squares",
-                        "Between-Cluster SS / Total SS",
-                        "converged",
-                    ]
-                }
-                values["value"] = [
-                    float(
-                        result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[
-                            0
-                        ]
-                    ),
-                    float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-                    float(
-                        result.split("Total Within-Cluster Sum of Squares: ")[1].split(
-                            "\n"
-                        )[0]
-                    ),
-                    float(
-                        result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[
-                            0
-                        ]
-                    )
-                    / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-                    result.split("Converged: ")[1].split("\n")[0] == "True",
-                ]
-                self.metrics_ = TableSample(values)
-            elif self._model_type == "BisectingKMeans":
-                self.metrics_ = self.get_attr("Metrics")
-        elif self._model_type in ("PCA", "MCA"):
-            self.components_ = self.get_attr("principal_components")
-            if self._model_type == "MCA":
-                self.cos2_ = self.components_.to_list()
-                for i in range(len(self.cos2_)):
-                    self.cos2_[i] = [elem ** 2 for elem in self.cos2_[i]]
-                    total = sum(self.cos2_[i])
-                    self.cos2_[i] = [elem / total for elem in self.cos2_[i]]
-                values = {"index": self.X}
-                for idx, elem in enumerate(self.components_.values):
-                    if elem != "index":
-                        values[elem] = [item[idx - 1] for item in self.cos2_]
-                self.cos2_ = TableSample(values)
-            self.explained_variance_ = self.get_attr("singular_values")
-            self.mean_ = self.get_attr("columns")
-        elif self._model_type == "SVD":
-            self.singular_values_ = self.get_attr("right_singular_vectors")
-            self.explained_variance_ = self.get_attr("singular_values")
+        self._compute_attributes()
         return self
 
 
@@ -2978,9 +2927,9 @@ class Decomposition(Preprocessing):
             X = [quote_ident(elem) for elem in X]
         fun = self._vertica_transform_sql
         sql = f"""{self._vertica_transform_sql}({', '.join(X)} 
-                                                        USING PARAMETERS
-                                                        model_name = '{self.model_name}',
-                                                        match_by_pos = 'true'"""
+                                            USING PARAMETERS
+                                            model_name = '{self.model_name}',
+                                            match_by_pos = 'true'"""
         if key_columns:
             key_columns = ", ".join([quote_ident(col) for col in key_columns])
             sql += f", key_columns = '{key_columns}'"
@@ -3017,7 +2966,7 @@ class Decomposition(Preprocessing):
             ax=ax,
             **style_kwds,
         )
-        explained_variance = self.explained_variance_["explained_variance"]
+        explained_variance = self.get_attr("singular_values")["explained_variance"]
         if not (explained_variance[dimensions[0] - 1]):
             dimensions_1 = ""
         else:
@@ -3045,12 +2994,12 @@ class Decomposition(Preprocessing):
         Matplotlib axes object
         """
         if self._model_type == "SVD":
-            x = self.singular_values_[f"vector{dimensions[0]}"]
-            y = self.singular_values_[f"vector{dimensions[1]}"]
+            x = self.get_attr("right_singular_vectors")[f"vector{dimensions[0]}"]
+            y = self.get_attr("right_singular_vectors")[f"vector{dimensions[1]}"]
         else:
-            x = self.components_[f"PC{dimensions[0]}"]
-            y = self.components_[f"PC{dimensions[1]}"]
-        explained_variance = self.explained_variance_["explained_variance"]
+            x = self.get_attr("principal_components")[f"PC{dimensions[0]}"]
+            y = self.get_attr("principal_components")[f"PC{dimensions[1]}"]
+        explained_variance = self.get_attr("singular_values")["explained_variance"]
         return plot_pca_circle(
             x,
             y,
@@ -3080,7 +3029,7 @@ class Decomposition(Preprocessing):
     ax
         Matplotlib axes object
         """
-        explained_variance = self.explained_variance_["explained_variance"]
+        explained_variance = self.get_attr("singular_values")["explained_variance"]
         explained_variance, n = (
             [100 * elem for elem in explained_variance],
             len(explained_variance),

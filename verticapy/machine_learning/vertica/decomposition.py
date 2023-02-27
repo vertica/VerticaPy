@@ -29,7 +29,96 @@ from verticapy.machine_learning.vertica.base import Decomposition
 from verticapy.plotting._matplotlib.mlplot import plot_var
 
 
-class MCA(Decomposition):
+class PCA(Decomposition):
+    """
+Creates a PCA (Principal Component Analysis) object using the Vertica PCA
+algorithm on the data.
+ 
+Parameters
+----------
+name: str
+	Name of the the model. The model will be stored in the DB.
+n_components: int, optional
+	The number of components to keep in the model. If this value is not 
+    provided, all components are kept. The maximum number of components 
+    is the number of non-zero singular values returned by the internal 
+    call to SVD. This number is less than or equal to SVD (number of 
+    columns, number of rows). 
+scale: bool, optional
+	A Boolean value that specifies whether to standardize the columns 
+    during the preparation step.
+method: str, optional
+	The method to use to calculate PCA.
+		lapack: Lapack definition.
+	"""
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["PCA"]:
+        return "PCA"
+
+    @property
+    def _vertica_transform_sql(self) -> Literal["APPLY_PCA"]:
+        return "APPLY_PCA"
+
+    @property
+    def _vertica_inverse_transform_sql(self) -> Literal["APPLY_INVERSE_PCA"]:
+        return "APPLY_INVERSE_PCA"
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["DECOMPOSITION"]:
+        return "DECOMPOSITION"
+
+    @property
+    def _model_type(self) -> Literal["PCA"]:
+        return "PCA"
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        n_components: int = 0,
+        scale: bool = False,
+        method: Literal["lapack"] = "lapack",
+    ):
+        self.model_name = name
+        self.parameters = {
+            "n_components": n_components,
+            "scale": scale,
+            "method": str(method).lower(),
+        }
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.principal_components_ = self.get_attr("principal_components").to_numpy()
+        self.mean_ = np.array(self.get_attr("columns")["mean"])
+        cos2 = self.get_attr("principal_components").to_list()
+        for i in range(len(cos2)):
+            cos2[i] = [v ** 2 for v in cos2[i]]
+            total = sum(cos2[i])
+            cos2[i] = [v / total for v in cos2[i]]
+        values = {"index": self.X}
+        for idx, v in enumerate(self.get_attr("principal_components").values):
+            if v != "index":
+                values[v] = [c[idx - 1] for c in cos2]
+        self.cos2_ = TableSample(values)
+        return None
+
+    def to_memmodel(self) -> mm.PCA:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.PCA(self.principal_components_, self.mean_)
+
+
+class MCA(PCA):
     """
 Creates a MCA (multiple correspondence analysis) object using the Vertica 
 PCA algorithm on the data. It uses the property that the MCA is a PCA 
@@ -105,8 +194,8 @@ name: str
     ax
         Matplotlib axes object
         """
-        x = self.components_[f"PC{dimensions[0]}"]
-        y = self.components_[f"PC{dimensions[1]}"]
+        x = self.get_attr("principal_components")[f"PC{dimensions[0]}"]
+        y = self.get_attr("principal_components")[f"PC{dimensions[1]}"]
         n = len(self.cos2_[f"PC{dimensions[0]}"])
         if method in ("cos2", "contrib"):
             if method == "cos2":
@@ -134,7 +223,7 @@ name: str
                 style_kwds["cmap"] = get_cmap(
                     color=[get_colors()[0], get_colors()[1], get_colors()[2],]
                 )
-        explained_variance = self.explained_variance_["explained_variance"]
+        explained_variance = self.get_attr("singular_values")["explained_variance"]
         return plot_var(
             x,
             y,
@@ -167,7 +256,7 @@ name: str
     ax
         Matplotlib axes object
         """
-        contrib = self.components_[f"PC{dimension}"]
+        contrib = self.get_attr("principal_components")[f"PC{dimension}"]
         contrib = [elem ** 2 for elem in contrib]
         total = sum(contrib)
         contrib = [100 * elem / total for elem in contrib]
@@ -232,86 +321,6 @@ name: str
         ax.set_xlabel("")
         ax.set_title(f"Cos2 of variables to Dim {dimensions[0]}-{dimensions[1]}")
         return ax
-
-
-class PCA(Decomposition):
-    """
-Creates a PCA (Principal Component Analysis) object using the Vertica PCA
-algorithm on the data.
- 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-n_components: int, optional
-	The number of components to keep in the model. If this value is not 
-    provided, all components are kept. The maximum number of components 
-    is the number of non-zero singular values returned by the internal 
-    call to SVD. This number is less than or equal to SVD (number of 
-    columns, number of rows). 
-scale: bool, optional
-	A Boolean value that specifies whether to standardize the columns 
-    during the preparation step.
-method: str, optional
-	The method to use to calculate PCA.
-		lapack: Lapack definition.
-	"""
-
-    @property
-    def _vertica_fit_sql(self) -> Literal["PCA"]:
-        return "PCA"
-
-    @property
-    def _vertica_transform_sql(self) -> Literal["APPLY_PCA"]:
-        return "APPLY_PCA"
-
-    @property
-    def _vertica_inverse_transform_sql(self) -> Literal["APPLY_INVERSE_PCA"]:
-        return "APPLY_INVERSE_PCA"
-
-    @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["DECOMPOSITION"]:
-        return "DECOMPOSITION"
-
-    @property
-    def _model_type(self) -> Literal["PCA"]:
-        return "PCA"
-
-    @check_minimum_version
-    @save_verticapy_logs
-    def __init__(
-        self,
-        name: str,
-        n_components: int = 0,
-        scale: bool = False,
-        method: Literal["lapack"] = "lapack",
-    ):
-        self.model_name = name
-        self.parameters = {
-            "n_components": n_components,
-            "scale": scale,
-            "method": str(method).lower(),
-        }
-
-    def _compute_attributes(self) -> None:
-        """
-        Computes the model's attributes.
-        """
-        self.principal_components_ = self.get_attr("principal_components").to_numpy()
-        self.mean_ = np.array(self.get_attr("columns")["mean"])
-        return None
-
-    def to_memmodel(self) -> mm.PCA:
-        """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
-        """
-        return mm.PCA(self.principal_components_, self.mean_)
-
 
 class SVD(Decomposition):
     """

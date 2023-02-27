@@ -500,7 +500,7 @@ nbins: int, optional
             tree_d["value"] = [
                 float(val) if isinstance(val, str) else val for val in tree_d["value"]
             ]
-            model = mm.BinaryTreeRegressor(**tree_attributes)
+            model = mm.BinaryTreeRegressor(**tree_d)
             trees += [model]
         self.trees_ = trees
         return None
@@ -653,6 +653,7 @@ col_sample_by_node: float, optional
             model = mm.BinaryTreeRegressor(**tree_d)
             trees += [model]
         self.trees_ = trees
+        self.prior_ = self._compute_prior()
         return None
 
     def to_memmodel(self) -> Union[mm.XGBRegressor, mm.BinaryTreeRegressor]:
@@ -935,6 +936,7 @@ col_sample_by_node: float, optional
         self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
         self.classes_ = self._get_classes()
         prior = self._compute_prior()
+        self.prior_ = prior
         if not (isinstance(prior, list)):
             self.logodds_ = [
                 np.log((1 - prior) / prior),

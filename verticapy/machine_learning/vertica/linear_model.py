@@ -51,6 +51,16 @@ class LinearModel:
 
 
 class LinearModelClassifier(LinearModel):
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        details = self.get_attr("details")
+        self.coef_ = np.array(details["coefficient"][1:])
+        self.intercept_ = details["coefficient"][0]
+        self.classes_ = np.array([0, 1])
+        return None
+
     def to_memmodel(self) -> mm.LinearModelClassifier:
         """
         Converts the model to an InMemory object which

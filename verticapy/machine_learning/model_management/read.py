@@ -99,7 +99,7 @@ model
     model_type = does_model_exist(name=name, raise_error=False, return_model_type=True)
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
-    if not (does_exist):
+    if not (model_type):
         raise NameError(f"The model '{name}' doesn't exist.")
     if model_type.lower() in ("kmeans", "kprototypes",):
         info = _executeSQL(
@@ -306,46 +306,23 @@ model
             class_weights,
             int(parameters_dict["max_iterations"]),
         )
-    elif model_type in ("kmeans", "kprototypes"):
-        if model_type == "kmeans":
-            model = vml.KMeans(
-                name,
-                int(info.split(",")[-1]),
-                parameters_dict["init_method"],
-                int(parameters_dict["max_iterations"]),
-                float(parameters_dict["epsilon"]),
-            )
-        else:
-            model = vml.KPrototypes(
-                name,
-                int(info.split(",")[-1]),
-                parameters_dict["init_method"],
-                int(parameters_dict["max_iterations"]),
-                float(parameters_dict["epsilon"]),
-                float(parameters_dict["gamma"]),
-            )
-        model.cluster_centers_ = model.get_attr("centers")
-        result = model.get_attr("metrics").values["metrics"][0]
-        values = {
-            "index": [
-                "Between-Cluster Sum of Squares",
-                "Total Sum of Squares",
-                "Total Within-Cluster Sum of Squares",
-                "Between-Cluster SS / Total SS",
-                "converged",
-            ]
-        }
-        values["value"] = [
-            float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]),
-            float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-            float(
-                result.split("Total Within-Cluster Sum of Squares: ")[1].split("\n")[0]
-            ),
-            float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0])
-            / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-            result.split("Converged: ")[1].split("\n")[0] == "True",
-        ]
-        model.metrics_ = TableSample(values)
+    elif model_type == "kmeans":
+        model = vml.KMeans(
+            name,
+            int(info.split(",")[-1]),
+            parameters_dict["init_method"],
+            int(parameters_dict["max_iterations"]),
+            float(parameters_dict["epsilon"]),
+        )
+    elif model_type == "kprototypes":
+        model = vml.KPrototypes(
+            name,
+            int(info.split(",")[-1]),
+            parameters_dict["init_method"],
+            int(parameters_dict["max_iterations"]),
+            float(parameters_dict["epsilon"]),
+            float(parameters_dict["gamma"]),
+        )
     elif model_type == "bisecting_kmeans":
         model = vml.BisectingKMeans(
             name,
@@ -358,44 +335,12 @@ model
             int(parameters_dict["kmeans_max_iterations"]),
             float(parameters_dict["kmeans_epsilon"]),
         )
-        model.metrics_ = model.get_attr("Metrics")
-        model.cluster_centers_ = model.get_attr("BKTree")
     elif model_type == "pca":
         model = vml.PCA(name, 0, bool(parameters_dict["scale"]))
-        model.components_ = model.get_attr("principal_components")
-        model.explained_variance_ = model.get_attr("singular_values")
-        model.mean_ = model.get_attr("columns")
     elif model_type == "svd":
         model = vml.SVD(name)
-        model.singular_values_ = model.get_attr("right_singular_vectors")
-        model.explained_variance_ = model.get_attr("singular_values")
     elif model_type == "one_hot_encoder_fit":
         model = vml.OneHotEncoder(name)
-        try:
-            model.param_ = TableSample.read_sql(
-                query=f"""
-                    SELECT 
-                        category_name, 
-                        category_level::varchar, 
-                        category_level_index 
-                    FROM 
-                        (SELECT 
-                            GET_MODEL_ATTRIBUTE(
-                                USING PARAMETERS
-                                model_name = '{model.model_name}',
-                                attr_name = 'integer_categories')) VERTICAPY_SUBTABLE 
-                        UNION ALL 
-                         SELECT 
-                            GET_MODEL_ATTRIBUTE(
-                                USING PARAMETERS 
-                                model_name = '{model.model_name}',
-                                attr_name = 'varchar_categories')""",
-            )
-        except:
-            try:
-                model.param_ = model.get_attr("integer_categories")
-            except:
-                model.param_ = model.get_attr("varchar_categories")
     if not (input_relation):
         model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
     else:
@@ -420,26 +365,6 @@ model
         end -= 1
     model.X = info.split(",")[start:end]
     model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-    if model_type in ("naive_bayes", "rf_classifier", "xgb_classifier"):
-        try:
-            classes = _executeSQL(
-                query=f"""
-                    SELECT 
-                        /*+LABEL('learn.tools.load_model')*/ 
-                        DISTINCT {model.y} 
-                        FROM {model.input_relation} 
-                        WHERE {model.y} IS NOT NULL 
-                        ORDER BY 1""",
-                method="fetchall",
-                print_time_sql=False,
-            )
-            model.classes_ = [item[0] for item in classes]
-        except:
-            model.classes_ = [0, 1]
-    elif model_type in ("svm_classifier", "logistic_reg"):
-        model.classes_ = [0, 1]
-    if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
-        model.coef_ = model.get_attr("details")
     if model_type in ("xgb_classifier", "xgb_regressor"):
         v = vertica_version()
         v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
@@ -450,4 +375,5 @@ model
                     "col_sample_by_node": float(parameters_dict["col_sample_by_node"]),
                 }
             )
+    model._compute_attributes()
     return model

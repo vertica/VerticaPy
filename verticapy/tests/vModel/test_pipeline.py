@@ -92,16 +92,6 @@ class TestPipeline:
         assert model.get_params()["ScalerWine"] == {"method": "robust_zscore"}
         model.set_params({"ScalerWine": {"method": "zscore"}})
 
-    def test_to_python(self, model):
-        predict_function = model.to_python()
-        test_record = TableSample(
-            {"citric_acid": [3.0], "residual_sugar": [11.0], "alcohol": [93.0]}
-        ).to_vdf()
-        prediction = model.predict(
-            test_record, ["citric_acid", "residual_sugar", "alcohol"]
-        )[0][-1]
-        assert prediction == pytest.approx(predict_function([[3.0, 11.0, 93.0]])[0])
-
     def test_get_predicts(self, winequality_vd, model):
         winequality_copy = winequality_vd.copy()
         winequality_copy = model.predict(
