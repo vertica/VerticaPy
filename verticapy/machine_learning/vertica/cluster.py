@@ -301,7 +301,7 @@ tol: float, optional
         """
     Returns a table containing information about the BK-tree.
         """
-        return self.cluster_centers_
+        return self.get_attr("BKTree")
 
 
 class KPrototypes(Clustering):

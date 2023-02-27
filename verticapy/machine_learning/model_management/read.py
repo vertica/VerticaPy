@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Union
+
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
@@ -24,7 +26,7 @@ from verticapy.core.tablesample.base import TableSample
 
 def does_model_exist(
     name: str, raise_error: bool = False, return_model_type: bool = False
-):
+) -> Union[bool, str]:
     """
 Checks if the model already exists.
 
@@ -60,9 +62,9 @@ int
     )
     if result:
         model_type = result[0]
-        result = 1
+        result = True
     else:
-        result = 0
+        result = False
     if raise_error and result:
         raise NameError(f"The model '{name}' already exists !")
     if return_model_type:

@@ -300,7 +300,7 @@ Base Class for Vertica Models.
         """
 	Drops the model from the Vertica database.
 		"""
-        drop(self.model_name, method="model", model_type=self._model_type)
+        drop(self.model_name, method="model")
 
     def features_importance(
         self, ax=None, tree_id: int = None, show: bool = True, **style_kwds
@@ -828,7 +828,7 @@ Base Class for Vertica Models.
     str / func
         Python function
         """
-        model = model.to_memmodel()
+        model = self.to_memmodel()
         if return_proba:
             return model.predict_proba
         elif hasattr(model, "predict") and not (return_distance_clusters):
@@ -1020,9 +1020,8 @@ class Supervised(vModel):
 
 
 class Tree:
-    @staticmethod
     def _compute_trees_arrays(
-        tree: TableSample, X: list, return_probability: bool = False
+        self, tree: TableSample, X: list, return_probability: bool = False
     ):
         """
         Takes as input a tree which is represented by a TableSample
