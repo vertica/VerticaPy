@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import random
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
 
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -29,6 +29,7 @@ from verticapy._utils._sql._vertica_version import (
 
 from verticapy.core.vdataframe.base import vDataFrame
 
+import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import (
     Clustering,
     MulticlassClassifier,
@@ -38,11 +39,7 @@ from verticapy.machine_learning.vertica.base import (
 
 
 class XGBoost:
-    # Class:
-    # - to export Vertica XGBoost to the Python XGBoost JSON format.
-    # - to get the XGB priors
-
-    def to_json(self, path: str = ""):
+    def to_json(self, path: str = "") -> Optional[str]:
         """
         Creates a Python XGBoost JSON file that can be imported into the Python
         XGBoost API.
@@ -336,7 +333,7 @@ class XGBoost:
         else:
             return result
 
-    def get_prior(self):
+    def _compute_prior(self):
         """
         Returns the XGB Priors.
             
@@ -350,7 +347,7 @@ class XGBoost:
         v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
         query = f"""
             SELECT 
-                /*+LABEL('learn.ensemble.XGBoost.get_prior')*/ 
+                /*+LABEL('learn.ensemble.XGBoost._compute_prior')*/ 
                 {{}}
             FROM {self.input_relation} 
             WHERE {' AND '.join(condition)}{{}}"""
@@ -445,6 +442,44 @@ col_sample_by_tree: float, optional
             "sample": sample,
             "col_sample_by_tree": col_sample_by_tree,
         }
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.n_estimators_ = self.parameters["n_estimators"]
+        self.psy_ = int(
+            self.parameters["sample"]
+            * int(self.get_attr("accepted_row_count")["accepted_row_count"][0])
+        )
+        trees = []
+        for i in range(self.n_estimators_):
+            tree = self._compute_trees_arrays(self.get_tree(i), self.X,)
+            tree_d = {
+                "children_left": tree[0],
+                "children_right": tree[1],
+                "feature": tree[2],
+                "threshold": tree[3],
+                "value": tree[4],
+                "psy": self.psy_,
+            }
+            for idx in range(len(tree[5])):
+                if not (tree[5][idx]) and isinstance(tree_d["threshold"][idx], str):
+                    tree_d["threshold"][idx] = float(tree_d["threshold"][idx])
+            model = mm.BinaryTreeAnomaly(**tree_d)
+            trees += [model]
+        self.trees_ = trees
+        return None
+
+    def to_memmodel(self) -> Union[mm.IsolationForest, mm.BinaryTreeAnomaly]:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.n_estimators_ == 1:
+            return self.trees_[0]
+        else:
+            return mm.IsolationForest(self.trees_)
 
     def decision_function(
         self,
@@ -688,6 +723,55 @@ nbins: int, optional
             "nbins": nbins,
         }
 
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.n_estimators_ = self.parameters["n_estimators"]
+        self.classes_ = self._get_classes()
+
+        trees = []
+        for i in range(self.n_estimators_):
+            tree = self._compute_trees_arrays(self.get_tree(i), self.X, True)
+            tree_d = {
+                "children_left": tree[0],
+                "children_right": tree[1],
+                "feature": tree[2],
+                "threshold": tree[3],
+                "value": tree[4],
+                "classes": self.classes_,
+            }
+            n_classes = len(self.classes_)
+            for j in range(len(tree[5])):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
+                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
+            for j in range(len(tree_d["value"])):
+                if tree_d["value"][j] != None:
+                    prob = [0.0 for i in range(n_classes)]
+                    for k, c in enumerate(self.classes_):
+                        if str(c) == str(tree_d["value"][j]):
+                            prob[k] = tree[6][j]
+                            break
+                    other_proba = (1 - tree[6][j]) / (n_classes - 1)
+                    for k, p in enumerate(prob):
+                        if p == 0.0:
+                            prob[k] = other_proba
+                    tree_d["value"][j] = prob
+            model = mm.BinaryTreeClassifier(**tree_d)
+            trees += [model]
+        self.trees_ = trees
+        return None
+
+    def to_memmodel(self) -> Union[mm.RandomForestClassifier, mm.BinaryTreeClassifier]:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.n_estimators_ == 1:
+            return self.trees_[0]
+        else:
+            return mm.RandomForestClassifier(self.trees_, self.classes_)
+
 
 class RandomForestRegressor(Regressor, Tree):
     """
@@ -773,6 +857,42 @@ nbins: int, optional
             "min_info_gain": min_info_gain,
             "nbins": nbins,
         }
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.n_estimators_ = self.parameters["n_estimators"]
+        trees = []
+        for i in range(self.n_estimators_):
+            tree = self._compute_trees_arrays(self.get_tree(i), self.X)
+            tree_d = {
+                "children_left": tree[0],
+                "children_right": tree[1],
+                "feature": tree[2],
+                "threshold": tree[3],
+                "value": tree[4],
+            }
+            for j in range(len(tree[5])):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
+                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
+            tree_d["value"] = [
+                float(val) if isinstance(val, str) else val for val in tree_d["value"]
+            ]
+            model = mm.BinaryTreeRegressor(**tree_attributes)
+            trees += [model]
+        self.trees_ = trees
+        return None
+
+    def to_memmodel(self) -> Union[mm.RandomForestRegressor, mm.BinaryTreeRegressor]:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.n_estimators_ == 1:
+            return self.trees_[0]
+        else:
+            return mm.RandomForestRegressor(self.trees_)
 
 
 class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost):
@@ -877,6 +997,59 @@ col_sample_by_node: float, optional
             params["col_sample_by_node"] = col_sample_by_node
         self.parameters = params
 
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.eta_ = self.parameters["learning_rate"]
+        self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
+        self.classes_ = self._get_classes()
+        prior = self._compute_prior()
+        if not (isinstance(prior, list)):
+            self.logodds_ = [
+                np.log((1 - prior) / prior),
+                np.log(prior / (1 - prior)),
+            ]
+        else:
+            self.logodds_ = prior
+        trees = []
+        tree_type = "BinaryTreeClassifier"
+        for i in range(self.n_estimators_):
+            tree = self._compute_trees_arrays(self.get_tree(i), self.X, return_prob_rf)
+            tree_d = {
+                "children_left": tree[0],
+                "children_right": tree[1],
+                "feature": tree[2],
+                "threshold": tree[3],
+                "value": tree[6],
+                "classes": self.classes_,
+            }
+            for j in range(len(tree[5])):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
+                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
+            for j in range(len(tree[6])):
+                if tree[6][j] != None:
+                    all_classes_logodss = []
+                    for c in self.classes_:
+                        all_classes_logodss += [tree[6][j][str(c)]]
+                    tree_d["value"][j] = all_classes_logodss
+            model = mm.BinaryTreeClassifier(**tree_d)
+            trees += [model]
+        self.trees_ = trees
+        return None
+
+    def to_memmodel(self) -> Union[mm.XGBoostClassifier, mm.BinaryTreeClassifier]:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.n_estimators_ == 1:
+            return self.trees_[0]
+        else:
+            return mm.XGBoostClassifier(
+                self.trees_, self.logodds_, self.classes_, self.eta_
+            )
+
 
 class XGBoostRegressor(Regressor, Tree, XGBoost):
     """
@@ -979,3 +1152,41 @@ col_sample_by_node: float, optional
             params["col_sample_by_tree"] = col_sample_by_tree
             params["col_sample_by_node"] = col_sample_by_node
         self.parameters = params
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        self.eta_ = self.parameters["learning_rate"]
+        self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
+        self.mean_ = self._compute_prior()
+        trees = []
+        for i in range(self.n_estimators_):
+            tree = self._compute_trees_arrays(self.get_tree(i), self.X)
+            tree_d = {
+                "children_left": tree[0],
+                "children_right": tree[1],
+                "feature": tree[2],
+                "threshold": tree[3],
+                "value": tree[4],
+            }
+            for j in range(len(tree[5])):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
+                    tree_d["threshold"][j] = float(tree_d["threshold"][j])
+            tree_d["value"] = [
+                float(val) if isinstance(val, str) else val for val in tree_d["value"]
+            ]
+            model = mm.BinaryTreeRegressor(**tree_d)
+            trees += [model]
+        self.trees_ = trees
+        return None
+
+    def to_memmodel(self) -> Union[mm.XGBoostRegressor, mm.BinaryTreeRegressor]:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.n_estimators_ == 1:
+            return self.trees_[0]
+        else:
+            return mm.XGBoostRegressor(self.trees_, self.mean_, self.eta_)

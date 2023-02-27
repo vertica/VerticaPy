@@ -15,9 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy.machine_learning.vertica.neighbors import (
-    NearestCentroid,
     KNeighborsClassifier,
     KernelDensity,
     KNeighborsRegressor,
     LocalOutlierFactor,
 )
+from verticapy.machine_learning.vertica.cluster import NearestCentroid

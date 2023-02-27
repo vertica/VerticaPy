@@ -35,7 +35,7 @@ from verticapy.machine_learning.vertica.base import (
     Tree,
     vModel,
 )
-import verticapy.machine_learning.memmodel.cluster as mm
+import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.model_management.read import does_model_exist
 
 from verticapy.sql.drop import drop

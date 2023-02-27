@@ -20,9 +20,13 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.machine_learning.vertica.base import BinaryClassifier, Regressor
+from verticapy.machine_learning.vertica.linear_model import (
+    LinearModel,
+    LinearModelClassifier,
+)
 
 
-class LinearSVC(BinaryClassifier):
+class LinearSVC(BinaryClassifier, LinearModelClassifier):
     """
 Creates a LinearSVC object using the Vertica Support Vector Machine (SVM) 
 algorithm on the data. Given a set of training examples, each marked as 
@@ -106,7 +110,7 @@ max_iter: int, optional
         }
 
 
-class LinearSVR(Regressor):
+class LinearSVR(Regressor, LinearModel):
     """
 Creates a LinearSVR object using the Vertica SVM (Support Vector Machine) 
 algorithm. This algorithm finds the hyperplane used to approximate 

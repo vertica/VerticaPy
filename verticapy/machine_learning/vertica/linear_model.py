@@ -24,7 +24,7 @@ from verticapy._utils._sql._vertica_version import (
 )
 from verticapy.errors import ParameterError
 
-import verticapy.machine_learning.memmodel.linear_model as mm
+import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 
 """
@@ -48,6 +48,15 @@ class LinearModel:
         can be used to do different types of predictions.
         """
         return mm.LinearModel(self.coef_, self.intercept_)
+
+
+class LinearModelClassifier(LinearModel):
+    def to_memmodel(self) -> mm.LinearModelClassifier:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.LinearModelClassifier(self.coef_, self.intercept_)
 
 
 class ElasticNet(Regressor, LinearModel):
@@ -362,7 +371,7 @@ Algorithms used for classification.
 """
 
 
-class LogisticRegression(BinaryClassifier, LinearModel):
+class LogisticRegression(BinaryClassifier, LinearModelClassifier):
     """
 Creates a LogisticRegression object using the Vertica Logistic Regression
 algorithm on the data.
@@ -458,10 +467,3 @@ fit_intercept: bool, optional
                 )
         elif str(penalty).lower() in ("l1", "l2"):
             del self.parameters["l1_ratio"]
-
-    def to_memmodel(self) -> mm.LinearModelClassifier:
-        """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
-        """
-        return mm.LinearModelClassifier(self.coef_, self.intercept_)

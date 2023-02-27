@@ -96,7 +96,7 @@ def model(xgbc_data_vd):
     )
     classes = current_cursor().fetchall()
     model_class.classes_ = [item[0] for item in classes]
-    model_class.prior_ = model_class.get_prior()
+    model_class.prior_ = model_class._compute_prior()
 
     yield model_class
     model_class.drop()

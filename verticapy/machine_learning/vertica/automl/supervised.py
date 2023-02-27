@@ -562,3 +562,10 @@ model_grid_ : TableSample
                 ax=ax,
                 **style_kwds,
             )
+
+    def to_memmodel(self) -> mm.InMemoryModel:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return self.best_model_.to_memmodel()

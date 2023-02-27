@@ -19,6 +19,7 @@ from verticapy.machine_learning.vertica.cluster import (
     DBSCAN,
     KMeans,
     KPrototypes,
+    NearestCentroid,
 )
 from verticapy.machine_learning.vertica.decomposition import MCA, PCA, SVD
 from verticapy.machine_learning.vertica.automl.clustering import AutoClustering
@@ -46,7 +47,6 @@ from verticapy.machine_learning.vertica.naive_bayes import (
     NaiveBayes,
 )
 from verticapy.machine_learning.vertica.neighbors import (
-    NearestCentroid,
     KNeighborsClassifier,
     KernelDensity,
     KNeighborsRegressor,

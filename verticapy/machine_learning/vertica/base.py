@@ -848,116 +848,6 @@ Base Class for Vertica Models.
             new_parameters[p] = parameters[p]
         self.__init__(name=self.model_name, **new_parameters)
 
-    def to_memmodel(self):
-        """
-    Converts a specified Vertica model to a InMemoryModel model.
-
-    Returns
-    -------
-    object
-        InMemoryModel model.
-        """
-        from verticapy.machine_learning.memmodel.base import InMemoryModel
-
-        if self._model_type == "AutoML":
-            return self.best_model_.to_memmodel()
-        elif self._model_type in (
-            "XGBoostClassifier",
-            "XGBoostRegressor",
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "IsolationForest",
-        ):
-            if self._model_type in (
-                "RandomForestClassifier",
-                "RandomForestRegressor",
-                "IsolationForest",
-            ):
-                n = self.parameters["n_estimators"]
-            else:
-                n = self.get_attr("tree_count")["tree_count"][0]
-            trees = []
-            if self._model_type in ("XGBoostRegressor", "RandomForestRegressor"):
-                tree_type = "BinaryTreeRegressor"
-            elif self._model_type in ("XGBoostClassifier", "RandomForestClassifier"):
-                tree_type = "BinaryTreeClassifier"
-            else:
-                tree_type = "BinaryTreeAnomaly"
-            return_prob_rf = self._model_type == "RandomForestClassifier"
-            is_iforest = self._model_type == "IsolationForest"
-            for i in range(n):
-                tree = self._compute_trees_arrays(
-                    self.get_tree(i), self.X, return_prob_rf
-                )
-                tree_attributes = {
-                    "children_left": tree[0],
-                    "children_right": tree[1],
-                    "feature": tree[2],
-                    "threshold": tree[3],
-                    "value": tree[4],
-                }
-                for idx in range(len(tree[5])):
-                    if not (tree[5][idx]) and isinstance(
-                        tree_attributes["threshold"][idx], str
-                    ):
-                        tree_attributes["threshold"][idx] = float(
-                            tree_attributes["threshold"][idx]
-                        )
-                if tree_type == "BinaryTreeClassifier":
-                    tree_attributes["classes"] = self.classes_
-                elif tree_type == "BinaryTreeRegressor":
-                    tree_attributes["value"] = [
-                        float(val) if isinstance(val, str) else val
-                        for val in tree_attributes["value"]
-                    ]
-                if self._model_type == "XGBoostClassifier":
-                    tree_attributes["value"] = tree[6]
-                    for idx in range(len(tree[6])):
-                        if tree[6][idx] != None:
-                            all_classes_logodss = []
-                            for c in self.classes_:
-                                all_classes_logodss += [tree[6][idx][str(c)]]
-                            tree_attributes["value"][idx] = all_classes_logodss
-                elif self._model_type == "RandomForestClassifier":
-                    for idx in range(len(tree_attributes["value"])):
-                        if tree_attributes["value"][idx] != None:
-                            prob = [0.0 for i in range(len(self.classes_))]
-                            for idx2, c in enumerate(self.classes_):
-                                if str(c) == str(tree_attributes["value"][idx]):
-                                    prob[idx2] = tree[6][idx]
-                                    break
-                            other_proba = (1 - tree[6][idx]) / (len(self.classes_) - 1)
-                            for idx2, p in enumerate(prob):
-                                if p == 0.0:
-                                    prob[idx2] = other_proba
-                            tree_attributes["value"][idx] = prob
-                if tree_type == "BinaryTreeAnomaly":
-                    tree_attributes["psy"] = int(
-                        self.parameters["sample"]
-                        * int(
-                            self.get_attr("accepted_row_count")["accepted_row_count"][0]
-                        )
-                    )
-                model = InMemoryModel(model_type=tree_type, attributes=tree_attributes)
-                trees += [model]
-            attributes = {"trees": trees}
-            if self._model_type in ("XGBoostRegressor", "XGBoostClassifier"):
-                attributes["learning_rate"] = self.parameters["learning_rate"]
-                if self._model_type == "XGBoostRegressor":
-                    attributes["mean"] = self.prior_
-                elif not (isinstance(self.prior_, list)):
-                    attributes["logodds"] = [
-                        np.log((1 - self.prior_) / self.prior_),
-                        np.log(self.prior_ / (1 - self.prior_)),
-                    ]
-                else:
-                    attributes["logodds"] = self.prior_.copy()
-        else:
-            raise ModelError(
-                f"Model type '{self._model_type}' can not be converted to InMemoryModel."
-            )
-        return InMemoryModel(model_type=self._model_type, attributes=attributes)
-
     def to_python(
         self,
         name: str = "predict",
@@ -1507,7 +1397,7 @@ class Supervised(vModel):
                 drop(relation, method="view")
         self._compute_attributes()
         if self._model_type in ("XGBoostClassifier", "XGBoostRegressor"):
-            self.prior_ = self.get_prior()
+            self.prior_ = self._compute_prior()
         return self
 
 

@@ -22,7 +22,7 @@ from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.tablesample.base import TableSample
 
-import verticapy.machine_learning.memmodel.decomposition as mm
+import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Decomposition
 
 from verticapy.plotting._matplotlib.mlplot import plot_var

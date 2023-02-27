@@ -22,7 +22,7 @@ from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.vdataframe.base import vDataFrame
 
-import verticapy.machine_learning.memmodel.naive_bayes as mm
+import verticapy.machine_learning.memmodel as mm
 
 from verticapy.machine_learning.vertica.base import MulticlassClassifier
 
