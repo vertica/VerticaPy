@@ -227,7 +227,7 @@ class Tree(InMemoryModel):
             output_kind = "contamination"
         elif self._object_type == "BinaryTreeClassifier":
             output_kind = "prob"
-            for val in self.values_:
+            for val in self.value_:
                 if isinstance(val, list) and not (0.99 < sum(val) <= 1.0):
                     output_kind = "logodds"
                     break
