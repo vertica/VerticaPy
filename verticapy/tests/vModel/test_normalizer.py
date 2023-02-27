@@ -127,9 +127,7 @@ class TestScaler:
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(
-            model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0]
-        )
+        assert prediction == pytest.approx(model.to_python()([[3.0, 11.0, 93.0]])[0][0])
         # Minmax
         model2 = Scaler("norm_model_test2", method="minmax")
         model2.drop()
@@ -141,7 +139,7 @@ class TestScaler:
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model2.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0]
+            model2.to_python()([[3.0, 11.0, 93.0]])[0][0]
         )
         model2.drop()
         # Robust Zscore
@@ -155,7 +153,7 @@ class TestScaler:
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model3.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0]
+            model3.to_python()([[3.0, 11.0, 93.0]])[0][0]
         )
         model3.drop()
 

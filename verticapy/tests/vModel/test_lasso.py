@@ -184,9 +184,7 @@ class TestLasso:
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(
-            model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0]
-        )
+        assert prediction == pytest.approx(model.to_python()([[3.0, 11.0, 93.0]])[0])
 
     def test_to_sql(self, model):
         current_cursor().execute(

@@ -201,18 +201,12 @@ class TestRFC:
             "SELECT PREDICT_RF_CLASSIFIER(30.0, 45.0, 'male' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
         )
         prediction = current_cursor().fetchone()[0]
-        assert (
-            prediction
-            == model_test.to_python(return_str=False)([[30.0, 45.0, "male"]])[0]
-        )
+        assert prediction == model_test.to_python()([[30.0, 45.0, "male"]])[0]
         current_cursor().execute(
             "SELECT PREDICT_RF_CLASSIFIER(30.0, 145.0, 'female' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
         )
         prediction = current_cursor().fetchone()[0]
-        assert (
-            prediction
-            == model_test.to_python(return_str=False)([[30.0, 145.0, "female"]])[0]
-        )
+        assert prediction == model_test.to_python()([[30.0, 145.0, "female"]])[0]
 
     def test_to_sql(self, model, titanic_vd):
         model_test = RandomForestClassifier("rfc_sql_test")

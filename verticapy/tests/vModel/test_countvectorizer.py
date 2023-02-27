@@ -22,7 +22,6 @@ import pytest
 from verticapy import (
     drop,
     set_option,
-    create_verticapy_schema,
 )
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
@@ -41,7 +40,6 @@ def titanic_vd():
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    create_verticapy_schema()
     model_class = CountVectorizer("model_test_countvectorizer",)
     model_class.drop()
     model_class.fit("public.titanic", ["name"])
@@ -102,23 +100,6 @@ class TestCountVectorizer:
         result_sql = model.deploySQL()
 
         assert result_sql == clean_query(expected_sql)
-
-    def test_drop(self, titanic_vd):
-        model_test = CountVectorizer("model_test_drop")
-        model_test.drop()
-        model_test.fit(titanic_vd, ["name"])
-        current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
-        )
-        assert current_cursor().fetchone()[0] in (
-            "model_test_drop",
-            '"model_test_drop"',
-        )
-        model_test.drop()
-        current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
-        )
-        assert current_cursor().fetchone() is None
 
     def test_get_attr(self, model):
         assert sorted(model.vocabulary_)[0:3] == ["a", "aaron", "abbing"]

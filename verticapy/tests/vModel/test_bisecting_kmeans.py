@@ -214,7 +214,7 @@ class TestBisectingKMeans:
         )
         prediction = current_cursor().fetchone()
         assert prediction == pytest.approx(
-            model.to_python(return_str=False)([[5.006, 3.418, 1.464, 0.244]])
+            model.to_python()([[5.006, 3.418, 1.464, 0.244]])
         )
 
     def test_to_sql(self, model):

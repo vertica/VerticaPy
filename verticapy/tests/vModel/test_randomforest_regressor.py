@@ -217,7 +217,7 @@ class TestRFR:
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model.to_python(return_str=False)([["Male", 0, "Cheap", "Low"]])[0]
+            model.to_python()([["Male", 0, "Cheap", "Low"]])[0]
         )
 
     def test_to_sql(self, model):

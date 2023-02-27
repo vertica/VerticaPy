@@ -47,7 +47,6 @@ from verticapy.machine_learning.vertica.base import (
 )
 
 from verticapy.sql.drop import drop
-from verticapy.sql.insert import insert_verticapy_schema
 
 
 class KNeighborsClassifier(vModel):
@@ -71,11 +70,29 @@ p: int, optional
 	to compute the model).
 	"""
 
-    _vertica_fit_sql = ""
-    _vertica_predict_sql = ""
-    _model_category = "SUPERVISED"
-    _model_subcategory = "CLASSIFIER"
-    _model_type = "KNeighborsClassifier"
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
+
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLASSIFIER"]:
+        return "CLASSIFIER"
+
+    @property
+    def _model_type(self) -> Literal["KNeighborsClassifier"]:
+        return "KNeighborsClassifier"
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
@@ -233,21 +250,6 @@ p: int, optional
             print_time_sql=False,
         )
         self.classes_ = [c[0] for c in classes]
-        model_save = {
-            "type": "KNeighborsClassifier",
-            "input_relation": self.input_relation,
-            "test_relation": self.test_relation,
-            "X": self.X,
-            "y": self.y,
-            "p": self.parameters["p"],
-            "n_neighbors": self.parameters["n_neighbors"],
-            "classes": self.classes_,
-        }
-        insert_verticapy_schema(
-            model_name=self.model_name,
-            model_type="KNeighborsClassifier",
-            model_save=model_save,
-        )
         return self
 
     def classification_report(
@@ -805,6 +807,10 @@ xlim: list, optional
     """
 
     @property
+    def _is_native(self) -> Literal[False]:
+        return False
+
+    @property
     def _vertica_fit_sql(self) -> Literal["RF_REGRESSOR"]:
         return "RF_REGRESSOR"
 
@@ -1029,26 +1035,6 @@ xlim: list, optional
                 nbins=1000,
             )
             model.fit(self.map, self.X, "KDE")
-            model_save = {
-                "type": "KernelDensity",
-                "input_relation": self.input_relation,
-                "X": self.X,
-                "map": self.map,
-                "tree_name": self.tree_name,
-                "bandwidth": self.parameters["bandwidth"],
-                "kernel": self.parameters["kernel"],
-                "p": self.parameters["p"],
-                "max_leaf_nodes": self.parameters["max_leaf_nodes"],
-                "max_depth": self.parameters["max_depth"],
-                "min_samples_leaf": self.parameters["min_samples_leaf"],
-                "nbins": self.parameters["nbins"],
-                "xlim": self.parameters["xlim"],
-            }
-            insert_verticapy_schema(
-                model_name=self.model_name,
-                model_type="KernelDensity",
-                model_save=model_save,
-            )
         else:
             self.X, self.input_relation = X, input_relation
             self.verticapy_x = x
@@ -1169,6 +1155,10 @@ p: int, optional
 	The p corresponding to the one of the p-distances (distance metric used during 
 	the model computation).
 	"""
+
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
 
     @property
     def _vertica_fit_sql(self) -> Literal[""]:
@@ -1314,20 +1304,6 @@ p: int, optional
             self.test_relation = self.input_relation
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
-        model_save = {
-            "type": "KNeighborsRegressor",
-            "input_relation": self.input_relation,
-            "test_relation": self.test_relation,
-            "X": self.X,
-            "y": self.y,
-            "p": self.parameters["p"],
-            "n_neighbors": self.parameters["n_neighbors"],
-        }
-        insert_verticapy_schema(
-            model_name=self.model_name,
-            model_type="KNeighborsRegressor",
-            model_save=model_save,
-        )
         return self
 
     def predict(
@@ -1416,6 +1392,10 @@ n_neighbors: int, optional
 p: int, optional
 	The p of the p-distances (distance metric used during the model computation).
 	"""
+
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
 
     @property
     def _vertica_fit_sql(self) -> Literal[""]:
@@ -1623,20 +1603,6 @@ p: int, optional
             drop(f"v_temp_schema.{tmp_distance_table_name}", method="table")
             drop(f"v_temp_schema.{tmp_lrd_table_name}", method="table")
             drop(f"v_temp_schema.{tmp_lof_table_name}", method="table")
-        model_save = {
-            "type": "LocalOutlierFactor",
-            "input_relation": self.input_relation,
-            "key_columns": self.key_columns,
-            "X": self.X,
-            "p": self.parameters["p"],
-            "n_neighbors": self.parameters["n_neighbors"],
-            "n_errors": self.n_errors_,
-        }
-        insert_verticapy_schema(
-            model_name=self.model_name,
-            model_type="LocalOutlierFactor",
-            model_save=model_save,
-        )
         return self
 
     def predict(self):

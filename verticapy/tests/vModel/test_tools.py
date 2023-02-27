@@ -37,7 +37,6 @@ from verticapy.learn.decomposition import *
 from verticapy.learn.preprocessing import *
 from verticapy.learn.tsa import *
 from verticapy.learn.tools import does_model_exist, load_model
-from verticapy.sql.create import create_verticapy_schema
 import verticapy.machine_learning.memmodel.decomposition as mm
 
 set_option("print_info", False)
@@ -69,29 +68,7 @@ class TestTools:
         current_cursor().execute("DROP SCHEMA load_model_test CASCADE")
 
     def test_load_model(self, titanic_vd):
-        create_verticapy_schema()
         current_cursor().execute("CREATE SCHEMA IF NOT EXISTS load_model_test")
-        # VAR
-        model = VAR("load_model_test.model_test", max_iter=100)
-        model.drop()
-        model.fit(titanic_vd, ["fare"], "age")
-        result = load_model("load_model_test.model_test")
-        assert isinstance(result, VAR) and result.get_params()["max_iter"] == 100
-        model.drop()
-        # SARIMAX
-        model = SARIMAX("load_model_test.model_test", max_iter=100)
-        model.drop()
-        model.fit(titanic_vd, "fare", "age")
-        result = load_model("load_model_test.model_test")
-        assert isinstance(result, SARIMAX) and result.get_params()["max_iter"] == 100
-        model.drop()
-        # Scaler
-        model = Scaler("load_model_test.model_test", method="minmax")
-        model.drop()
-        model.fit(titanic_vd, ["age", "fare"])
-        result = load_model("load_model_test.model_test")
-        assert isinstance(result, Scaler) and result.get_params()["method"] == "minmax"
-        model.drop()
         # Scaler
         model = Scaler("load_model_test.model_test", method="minmax")
         model.drop()
@@ -105,20 +82,6 @@ class TestTools:
         model.fit(titanic_vd, ["sex", "embarked"])
         result = load_model("load_model_test.model_test")
         assert isinstance(result, OneHotEncoder)
-        model.drop()
-        # LOF
-        model = LocalOutlierFactor("load_model_test.model_test", p=3)
-        model.drop()
-        model.fit(titanic_vd, ["age", "fare"])
-        result = load_model("load_model_test.model_test")
-        assert isinstance(result, LocalOutlierFactor) and result.get_params()["p"] == 3
-        model.drop()
-        # DBSCAN
-        model = DBSCAN("load_model_test.model_test", p=3)
-        model.drop()
-        model.fit(titanic_vd, ["age", "fare"])
-        result = load_model("load_model_test.model_test")
-        assert isinstance(result, DBSCAN) and result.get_params()["p"] == 3
         model.drop()
         # PCA
         model = PCA("load_model_test.model_test")
@@ -289,36 +252,6 @@ class TestTools:
             isinstance(result, BisectingKMeans) and result.get_params()["tol"] == 1e-4
         )
         model.drop()
-        # KNeighborsClassifier
-        model = KNeighborsClassifier("load_model_test.model_test", p=4)
-        model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
-        result = load_model("load_model_test.model_test")
-        assert (
-            isinstance(result, KNeighborsClassifier) and result.get_params()["p"] == 4
-        )
-        model.drop()
-        # KNeighborsRegressor
-        model = KNeighborsRegressor("load_model_test.model_test", p=4)
-        model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
-        result = load_model("load_model_test.model_test")
-        assert isinstance(result, KNeighborsRegressor) and result.get_params()["p"] == 4
-        model.drop()
-        # NearestCentroid
-        model = NearestCentroid("load_model_test.model_test", p=4)
-        model.drop()
-        model.fit(titanic_vd, ["age", "fare"], "survived")
-        result = load_model("load_model_test.model_test")
-        assert isinstance(result, NearestCentroid) and result.get_params()["p"] == 4
-        model.drop()
-        # KernelDensity - BUG
-        # model = KernelDensity("model_test", p=2)
-        # model.drop()
-        # model.fit(titanic_vd, ["age"])
-        # result = load_model("model_test")
-        # assert isinstance(result, KernelDensity) and result.get_params()["p"] == 2
-        # model.drop()
         current_cursor().execute("DROP SCHEMA load_model_test CASCADE")
 
     def test_matrix_rotation(self):

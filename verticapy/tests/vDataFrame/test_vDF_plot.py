@@ -29,7 +29,7 @@ from vertica_highcharts.highstock.highstock import Highstock
 
 # VerticaPy
 import verticapy
-from verticapy import drop, create_verticapy_schema, set_option
+from verticapy import drop, set_option
 from verticapy.datasets import (
     load_titanic,
     load_amazon,
@@ -363,7 +363,6 @@ class TestvDFPlot:
     )
     def test_vDF_density(self, iris_vd):
         # testing vDataFrame[].density
-        create_verticapy_schema()
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
             result = iris_vd["PetalLengthCm"].density(
                 kernel=kernel, nbins=20, color="b"

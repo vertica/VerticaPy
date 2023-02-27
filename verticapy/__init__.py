@@ -88,7 +88,7 @@ from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe import vDataFrame
 
-from verticapy.sql.create import create_schema, create_table, create_verticapy_schema
+from verticapy.sql.create import create_schema, create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.insert import insert_into

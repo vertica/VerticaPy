@@ -25,7 +25,6 @@ import matplotlib.pyplot as plt
 from verticapy import (
     drop,
     set_option,
-    create_verticapy_schema,
 )
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
@@ -43,7 +42,6 @@ def titanic_vd():
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    create_verticapy_schema()
     model_class = LocalOutlierFactor("lof_model_test",)
     model_class.drop()
     model_class.fit("public.titanic", ["age", "fare"])
@@ -57,24 +55,6 @@ class TestLocalOutlierFactor:
         model_repr = LocalOutlierFactor("model_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<LocalOutlierFactor>"
-
-    def test_drop(self):
-        model_test = LocalOutlierFactor("model_test_drop",)
-        model_test.drop()
-        model_test.fit("public.titanic", ["age", "fare"])
-        current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
-        )
-        assert current_cursor().fetchone()[0] in (
-            "model_test_drop",
-            '"model_test_drop"',
-        )
-
-        model_test.drop()
-        current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
-        )
-        assert current_cursor().fetchone() is None
 
     def test_get_params(self, model):
         assert model.get_params() == {"n_neighbors": 20, "p": 2}

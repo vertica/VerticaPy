@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal
+import numpy as np
 
 from verticapy._config.colors import get_cmap, get_colors
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -40,6 +41,10 @@ Parameters
 name: str
     Name of the the model. The model will be stored in the database.
     """
+
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
 
     @property
     def _vertica_fit_sql(self) -> Literal["PCA"]:

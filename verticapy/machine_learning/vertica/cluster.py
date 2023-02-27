@@ -39,7 +39,6 @@ import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.model_management.read import does_model_exist
 
 from verticapy.sql.drop import drop
-from verticapy.sql.insert import insert_verticapy_schema
 
 
 """
@@ -426,6 +425,10 @@ p: int, optional
     """
 
     @property
+    def _is_native(self) -> Literal[False]:
+        return False
+
+    @property
     def _vertica_fit_sql(self) -> Literal[""]:
         return ""
 
@@ -644,20 +647,6 @@ p: int, optional
         finally:
             drop(f"v_temp_schema.{name_main}", method="table")
             drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")
-        model_save = {
-            "type": "DBSCAN",
-            "input_relation": self.input_relation,
-            "key_columns": self.key_columns,
-            "X": self.X,
-            "p": self.parameters["p"],
-            "eps": self.parameters["eps"],
-            "min_samples": self.parameters["min_samples"],
-            "n_cluster": self.n_cluster_,
-            "n_noise": self.n_noise_,
-        }
-        insert_verticapy_schema(
-            model_name=self.model_name, model_type="DBSCAN", model_save=model_save,
-        )
         return self
 
     def predict(self):
@@ -692,6 +681,10 @@ p: int, optional
     The p corresponding to the one of the p-distances (distance metric used
     to compute the model).
     """
+
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
 
     @property
     def _vertica_fit_sql(self) -> Literal[""]:

@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Union
+import numpy as np
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -29,8 +30,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Preprocessing, vModel
-
-from verticapy.sql.insert import insert_verticapy_schema
 
 
 @check_minimum_version
@@ -111,6 +110,10 @@ max_text_size: int, optional
 	The maximum size of the column which is the concatenation of all the text 
 	columns during the fitting.
 	"""
+
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
 
     @property
     def _vertica_fit_sql(self) -> Literal[""]:
@@ -280,23 +283,6 @@ max_text_size: int, optional
         self.compute_stop_words()
         self.compute_vocabulary()
         self.countvectorizer_table = tmp_name
-        model_save = {
-            "type": "CountVectorizer",
-            "input_relation": self.input_relation,
-            "X": self.X,
-            "countvectorizer_table": tmp_name,
-            "lowercase": self.parameters["lowercase"],
-            "max_df": self.parameters["max_df"],
-            "min_df": self.parameters["min_df"],
-            "max_features": self.parameters["max_features"],
-            "ignore_special": self.parameters["ignore_special"],
-            "max_text_size": self.parameters["max_text_size"],
-        }
-        insert_verticapy_schema(
-            model_name=self.model_name,
-            model_type="CountVectorizer",
-            model_save=model_save,
-        )
         return self
 
     def transform(self):

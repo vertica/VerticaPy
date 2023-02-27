@@ -28,7 +28,6 @@ def drop(
     name: str = "",
     method: Literal["table", "view", "model", "geo", "text", "auto", "schema"] = "auto",
     raise_error: bool = False,
-    **kwds,
 ):
     """
 Drops the input relation. This can be a model, view, table, text index,
@@ -39,7 +38,7 @@ Parameters
 name: str, optional
     Relation name. If empty, it will drop all VerticaPy temporary 
     elements.
-method / relation_type: str, optional
+method: str, optional
     Method used to drop.
         auto   : identifies the table/view/index/model to drop. 
                  It will never drop an entire schema unless the 
@@ -58,8 +57,6 @@ Returns
 bool
     True if the relation was dropped, False otherwise.
     """
-    if "relation_type" in kwds and method == "auto":
-        method = kwds["relation_type"]
     schema, relation = schema_relation(name)
     schema, relation = schema[1:-1], relation[1:-1]
     if not (name):
@@ -76,165 +73,67 @@ bool
             print_time_sql=False,
             method="fetchrow",
         )
-        if not (result):
-            result = _executeSQL(
+        if result:
+            return drop(name=name, method="table", raise_error=raise_error)
+        result = _executeSQL(
+            query=f"""
+            SELECT 
+                /*+LABEL('utilities.drop')*/ * 
+            FROM view_columns 
+            WHERE table_schema = '{schema}' 
+                AND table_name = '{relation}'""",
+            print_time_sql=False,
+            method="fetchrow",
+        )
+        if result:
+            return drop(name=name, method="view", raise_error=raise_error)
+        result = _executeSQL(
+            query=f"""
+            SELECT 
+                /*+LABEL('utilities.drop')*/ * 
+            FROM models 
+            WHERE schema_name = '{schema}' 
+                AND model_name = '{relation}'""",
+            print_time_sql=False,
+            method="fetchrow",
+        )
+        if result:
+            return drop(name=name, method="model", raise_error=raise_error)
+        result = _executeSQL(
+            query=f"""
+            SELECT 
+                /*+LABEL('utilities.drop')*/ * 
+            FROM 
+                (SELECT STV_Describe_Index () OVER ()) x  
+            WHERE name IN ('{schema}.{relation}',
+                           '{relation}',
+                           '\"{schema}\".\"{relation}\"',
+                           '\"{relation}\"',
+                           '{schema}.\"{relation}\"',
+                           '\"{schema}\".{relation}')""",
+            print_time_sql=False,
+            method="fetchrow",
+        )
+        if result:
+            return drop(name=name, method="geo", raise_error=raise_error)
+        try:
+            _executeSQL(
                 query=f"""
-                SELECT 
-                    /*+LABEL('utilities.drop')*/ * 
-                FROM view_columns 
-                WHERE table_schema = '{schema}' 
-                    AND table_name = '{relation}'""",
-                print_time_sql=False,
-                method="fetchrow",
-            )
-        elif not (end_conditions):
-            method = "table"
-            end_conditions = True
-        if not (result):
-            try:
-                result = _executeSQL(
-                    query=f"""
                     SELECT 
-                        /*+LABEL('utilities.drop')*/ model_type 
-                    FROM verticapy.models 
-                    WHERE LOWER(model_name) = '{quote_ident(name).lower()}'""",
-                    print_time_sql=False,
-                    method="fetchrow",
-                )
-            except:
-                result = []
-        elif not (end_conditions):
-            method = "view"
-            end_conditions = True
-        if not (result):
-            result = _executeSQL(
-                query=f"""
-                SELECT 
-                    /*+LABEL('utilities.drop')*/ * 
-                FROM models 
-                WHERE schema_name = '{schema}' 
-                    AND model_name = '{relation}'""",
+                        /*+LABEL(\'utilities.drop\')*/ * 
+                    FROM "{schema}"."{relation}" LIMIT 0;""",
                 print_time_sql=False,
-                method="fetchrow",
             )
-        elif not (end_conditions):
-            method = "model"
-            end_conditions = True
-        if not (result):
-            result = _executeSQL(
-                query=f"""
-                SELECT 
-                    /*+LABEL('utilities.drop')*/ * 
-                FROM 
-                    (SELECT STV_Describe_Index () OVER ()) x  
-                WHERE name IN ('{schema}.{relation}',
-                               '{relation}',
-                               '\"{schema}\".\"{relation}\"',
-                               '\"{relation}\"',
-                               '{schema}.\"{relation}\"',
-                               '\"{schema}\".{relation}')""",
-                print_time_sql=False,
-                method="fetchrow",
-            )
-        elif not (end_conditions):
-            method = "model"
-            end_conditions = True
-        if not (result):
-            try:
-                _executeSQL(
-                    query=f"""
-                        SELECT 
-                            /*+LABEL(\'utilities.drop\')*/ * 
-                        FROM "{schema}"."{relation}" LIMIT 0;""",
-                    print_time_sql=False,
-                )
-                method = "text"
-            except:
-                fail = True
-        elif not (end_conditions):
-            method = "geo"
-            end_conditions = True
+            return drop(name=name, method="text", raise_error=raise_error)
+        except:
+            fail = True
         if fail:
             if raise_error:
-                raise MissingRelation(
-                    f"No relation / index / view / model named '{name}' was detected."
-                )
+                raise MissingRelation(f"No relation named '{name}' was detected.")
             return False
     query = ""
     if method == "model":
-        model_type = kwds["model_type"] if "model_type" in kwds else None
-        try:
-            result = _executeSQL(
-                query=f"""
-                    SELECT 
-                        /*+LABEL('utilities.drop')*/ model_type 
-                    FROM verticapy.models 
-                    WHERE LOWER(model_name) = '{quote_ident(name).lower()}'""",
-                print_time_sql=False,
-                method="fetchfirstelem",
-            )
-            is_in_verticapy_schema = True
-            if not (model_type):
-                model_type = result
-        except:
-            is_in_verticapy_schema = False
-        if (
-            model_type
-            in (
-                "DBSCAN",
-                "LocalOutlierFactor",
-                "CountVectorizer",
-                "KernelDensity",
-                "AutoDataPrep",
-                "KNeighborsRegressor",
-                "KNeighborsClassifier",
-                "NearestCentroid",
-            )
-            or is_in_verticapy_schema
-        ):
-            if model_type in ("DBSCAN", "LocalOutlierFactor"):
-                drop(name, method="table")
-            elif model_type == "CountVectorizer":
-                drop(name, method="text")
-                if is_in_verticapy_schema:
-                    res = _executeSQL(
-                        query=f"""
-                            SELECT 
-                                /*+LABEL('utilities.drop')*/ value 
-                            FROM verticapy.attr 
-                            WHERE LOWER(model_name) = '{quote_ident(name).lower()}' 
-                                AND attr_name = 'countvectorizer_table'""",
-                        print_time_sql=False,
-                        method="fetchrow",
-                    )
-                    if res and res[0]:
-                        drop(res[0], method="table")
-            elif model_type == "KernelDensity":
-                table_name = name.replace('"', "") + "_KernelDensity_Map"
-                drop(table_name, method="table")
-                model_name = name.replace('"', "") + "_KernelDensity_Tree"
-                drop(model_name, method="model")
-            elif model_type == "AutoDataPrep":
-                drop(name, method="table")
-            if is_in_verticapy_schema:
-                _executeSQL(
-                    query=f"""
-                        DELETE /*+LABEL('utilities.drop')*/ 
-                        FROM verticapy.models 
-                        WHERE LOWER(model_name) = '{quote_ident(name).lower()}';""",
-                    title="Deleting vModel.",
-                )
-                _executeSQL("COMMIT;", title="Commit.")
-                _executeSQL(
-                    query=f"""
-                        DELETE /*+LABEL('utilities.drop')*/ 
-                        FROM verticapy.attr 
-                        WHERE LOWER(model_name) = '{quote_ident(name).lower()}';""",
-                    title="Deleting vModel attributes.",
-                )
-                _executeSQL("COMMIT;", title="Commit.")
-        else:
-            query = f"DROP MODEL {name};"
+        query = f"DROP MODEL {name};"
     elif method == "table":
         query = f"DROP TABLE {name};"
     elif method == "view":
