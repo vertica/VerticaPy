@@ -339,6 +339,12 @@ method: str, optional
     def _model_type(self) -> Literal["Scaler"]:
         return "Scaler"
 
+    @property
+    def _attributes(
+        self,
+    ) -> Literal["min_", "max_", "median_", "mad_", "mean_", "std_"]:
+        return Literal["min_", "max_", "median_", "mad_", "mean_", "std_"]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -351,10 +357,13 @@ method: str, optional
         """
         Computes the model's attributes.
         """
-        values = self.get_attr("details").to_numpy()[:, 1:].astype(float)
+        values = self.get_vertica_attributes("details").to_numpy()[:, 1:].astype(float)
         if self.parameters["method"] == "minmax":
             self.min_ = values[:, 0]
             self.max_ = values[:, 1]
+        elif method == "robust_zscore":
+            self.median_ = values[:, 0]
+            self.mad_ = values[:, 1]
         else:
             self.mean_ = values[:, 0]
             self.std_ = values[:, 1]
@@ -367,12 +376,18 @@ method: str, optional
         """
         if self.parameters["method"] == "minmax":
             return mm.MinMaxScaler(self.min_, self.max_)
+        elif method == "robust_zscore":
+            return mm.StandardScaler(self.median_, self.mad_)
         else:
             return mm.StandardScaler(self.mean_, self.std_)
 
 
 class StandardScaler(Scaler):
     """i.e. Scaler with param method = 'zscore'"""
+
+    @property
+    def _attributes(self) -> Literal["mean_", "std_"]:
+        return Literal["mean_", "std_"]
 
     def __init__(self, name: str):
         super().__init__(name, "zscore")
@@ -381,12 +396,20 @@ class StandardScaler(Scaler):
 class RobustScaler(Scaler):
     """i.e. Scaler with param method = 'robust_zscore'"""
 
+    @property
+    def _attributes(self) -> Literal["median_", "mad_"]:
+        return Literal["median_", "mad_"]
+
     def __init__(self, name: str):
         super().__init__(name, "robust_zscore")
 
 
 class MinMaxScaler(Scaler):
     """i.e. Scaler with param method = 'minmax'"""
+
+    @property
+    def _attributes(self) -> Literal["min_", "max_"]:
+        return Literal["min_", "max_"]
 
     def __init__(self, name: str):
         super().__init__(name, "minmax")
@@ -471,6 +494,10 @@ null_column_name: str, optional
             "null_column_name": null_column_name,
         }
 
+    @property
+    def _attributes(self) -> Literal["categories_", "column_naming_", "drop_first_"]:
+        return Literal["categories_", "column_naming_", "drop_first_"]
+
     def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
@@ -498,7 +525,7 @@ null_column_name: str, optional
                     query=query, title="Getting Model Attributes.",
                 )
             except:
-                self.cat_ = self.get_attr("varchar_categories")
+                self.cat_ = self.get_vertica_attributes("varchar_categories")
         self.cat_ = self.cat_.to_list()
         cat = self._compute_ohe_list([c[0:2] for c in self.cat_])
         cat_list_idx = []

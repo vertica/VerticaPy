@@ -14,18 +14,25 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from typing import Literal, Union
 import numpy as np
 
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
 from verticapy.errors import ParameterError
 
+from verticapy.core.tablesample.base import TableSample
+
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
+
+from verticapy.plotting._matplotlib.mlplot import plot_importance
 
 """
 Algorithms used for regression.
@@ -33,14 +40,87 @@ Algorithms used for regression.
 
 
 class LinearModel:
+    @property
+    def _attributes(self) -> Literal["coef_", "intercept_", "features_importance_"]:
+        return Literal["coef_", "intercept_", "features_importance_"]
+
     def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
         """
-        details = self.get_attr("details")
+        details = self.get_vertica_attributes("details")
         self.coef_ = np.array(details["coefficient"][1:])
         self.intercept_ = details["coefficient"][0]
         return None
+
+    def _compute_features_importance(self) -> None:
+        """
+        Computes the features importance.
+        """
+        vertica_version(condition=[8, 1, 1])
+        query = f"""
+        SELECT /*+LABEL('learn.vModel.features_importance')*/
+            predictor, 
+            sign * ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance
+        FROM (SELECT 
+                stat.predictor AS predictor, 
+                ABS(coefficient * (max - min))::float AS importance, 
+                SIGN(coefficient)::int AS sign 
+              FROM (SELECT 
+                        LOWER("column") AS predictor, 
+                        min, 
+                        max 
+                    FROM (SELECT 
+                            SUMMARIZE_NUMCOL({', '.join(self.X)}) OVER() 
+                          FROM {self.input_relation}) VERTICAPY_SUBTABLE) stat 
+                          NATURAL JOIN (SELECT GET_MODEL_ATTRIBUTE(
+                                                USING PARAMETERS 
+                                                model_name='{self.model_name}',
+                                                attr_name='details') ) coeff) importance_t 
+                          ORDER BY 2 DESC;"""
+        importance = _executeSQL(
+            query=query, title="Computing Features Importance.", method="fetchall"
+        )
+        self.features_importance_ = self._format_vector(importance)
+
+    def _get_features_importance(self) -> np.ndarray:
+        if not (hasattr(self, "features_importance_")):
+            self._compute_features_importance()
+        return copy.deepcopy(self.features_importance_)
+
+    def features_importance(
+        self, show: bool = True, ax=None, **style_kwds
+    ) -> TableSample:
+        """
+        Computes the model's features importance.
+
+        Parameters
+        ----------
+        show: bool
+            If set to True, draw the features importance.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        TableSample
+            An object containing the result. For more information, see
+            utilities.TableSample.
+        """
+        fi = self._get_features_importance()
+        if show:
+            plot_importance(
+                self.X, fi, print_legend=True, ax=ax, **style_kwds,
+            )
+        importances = {
+            "index": self.X,
+            "importance": list(abs(fi)),
+            "sign": list(np.sign(fi)),
+        }
+        return TableSample(values=importances)
 
     def to_memmodel(self) -> mm.LinearModel:
         """
@@ -51,11 +131,15 @@ class LinearModel:
 
 
 class LinearModelClassifier(LinearModel):
+    @property
+    def _attributes(self) -> Literal["coef_", "intercept_", "features_importance_"]:
+        return Literal["coef_", "intercept_", "classes_", "features_importance_"]
+
     def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
         """
-        details = self.get_attr("details")
+        details = self.get_vertica_attributes("details")
         self.coef_ = np.array(details["coefficient"][1:])
         self.intercept_ = details["coefficient"][0]
         self.classes_ = np.array([0, 1])

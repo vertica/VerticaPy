@@ -189,8 +189,8 @@ class TestXGBR:
             pytest.approx(0.0),
         ]
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "tree_count",
@@ -210,7 +210,7 @@ class TestXGBR:
         ]
         assert m_att["#_of_rows"] == [1, 1, 1, 1, 4, 1]
 
-        m_att_details = model.get_attr(attr_name="details")
+        m_att_details = model.get_vertica_attributes(attr_name="details")
 
         assert m_att_details["predictor"] == [
             "gender",
@@ -225,12 +225,18 @@ class TestXGBR:
             "char or varchar",
         ]
 
-        assert model.get_attr("tree_count")["tree_count"][0] == 3
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
+        assert model.get_vertica_attributes("tree_count")["tree_count"][0] == 3
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 10
+        )
         assert (
             "xgb_regressor('public.xgbr_model_test', 'public.xgbr_data', '\"transportation\"', '*' USING PARAMETERS"
-            in model.get_attr("call_string")["call_string"][0]
+            in model.get_vertica_attributes("call_string")["call_string"][0]
         )
 
     def test_get_params(self, model):

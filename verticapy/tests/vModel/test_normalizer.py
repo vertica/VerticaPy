@@ -91,8 +91,8 @@ class TestScaler:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "details",
@@ -102,7 +102,7 @@ class TestScaler:
         ]
         assert m_att["#_of_rows"] == [3]
 
-        m_att_details = model.get_attr(attr_name="details")
+        m_att_details = model.get_vertica_attributes(attr_name="details")
 
         assert m_att_details["column_name"] == [
             "citric_acid",

@@ -66,8 +66,8 @@ class TestLocalOutlierFactor:
             1.17226637499694, abs=1e-6
         )
 
-    def test_get_attr(self, model):
-        result = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        result = model.get_vertica_attributes()
         assert result["value"] == [0]
 
     def test_get_plot(self, model):

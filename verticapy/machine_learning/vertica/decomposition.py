@@ -76,6 +76,10 @@ method: str, optional
     def _model_type(self) -> Literal["PCA"]:
         return "PCA"
 
+    @property
+    def _attributes(self) -> Literal["principal_components_", "mean_", "cos2_"]:
+        return Literal["principal_components_", "mean_", "cos2_"]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -96,15 +100,19 @@ method: str, optional
         """
         Computes the model's attributes.
         """
-        self.principal_components_ = self.get_attr("principal_components").to_numpy()
-        self.mean_ = np.array(self.get_attr("columns")["mean"])
-        cos2 = self.get_attr("principal_components").to_list()
+        self.principal_components_ = self.get_vertica_attributes(
+            "principal_components"
+        ).to_numpy()
+        self.mean_ = np.array(self.get_vertica_attributes("columns")["mean"])
+        cos2 = self.get_vertica_attributes("principal_components").to_list()
         for i in range(len(cos2)):
             cos2[i] = [v ** 2 for v in cos2[i]]
             total = sum(cos2[i])
             cos2[i] = [v / total for v in cos2[i]]
         values = {"index": self.X}
-        for idx, v in enumerate(self.get_attr("principal_components").values):
+        for idx, v in enumerate(
+            self.get_vertica_attributes("principal_components").values
+        ):
             if v != "index":
                 values[v] = [c[idx - 1] for c in cos2]
         self.cos2_ = TableSample(values)
@@ -194,8 +202,8 @@ name: str
     ax
         Matplotlib axes object
         """
-        x = self.get_attr("principal_components")[f"PC{dimensions[0]}"]
-        y = self.get_attr("principal_components")[f"PC{dimensions[1]}"]
+        x = self.get_vertica_attributes("principal_components")[f"PC{dimensions[0]}"]
+        y = self.get_vertica_attributes("principal_components")[f"PC{dimensions[1]}"]
         n = len(self.cos2_[f"PC{dimensions[0]}"])
         if method in ("cos2", "contrib"):
             if method == "cos2":
@@ -223,7 +231,9 @@ name: str
                 style_kwds["cmap"] = get_cmap(
                     color=[get_colors()[0], get_colors()[1], get_colors()[2],]
                 )
-        explained_variance = self.get_attr("singular_values")["explained_variance"]
+        explained_variance = self.get_vertica_attributes("singular_values")[
+            "explained_variance"
+        ]
         return plot_var(
             x,
             y,
@@ -256,7 +266,7 @@ name: str
     ax
         Matplotlib axes object
         """
-        contrib = self.get_attr("principal_components")[f"PC{dimension}"]
+        contrib = self.get_vertica_attributes("principal_components")[f"PC{dimension}"]
         contrib = [elem ** 2 for elem in contrib]
         total = sum(contrib)
         contrib = [100 * elem / total for elem in contrib]
@@ -367,6 +377,10 @@ method: str, optional
     def _model_type(self) -> Literal["SVD"]:
         return "SVD"
 
+    @property
+    def _attributes(self) -> Literal["vectors_", "values_"]:
+        return Literal["vectors_", "values_"]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -382,8 +396,8 @@ method: str, optional
         """
         Computes the model's attributes.
         """
-        self.vectors_ = self.get_attr("right_singular_vectors").to_numpy()
-        self.values_ = np.array(self.get_attr("singular_values")["value"])
+        self.vectors_ = self.get_vertica_attributes("right_singular_vectors").to_numpy()
+        self.values_ = np.array(self.get_vertica_attributes("singular_values")["value"])
         return None
 
     def to_memmodel(self) -> mm.SVD:

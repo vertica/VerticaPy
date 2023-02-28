@@ -56,14 +56,14 @@ class TestKNeighborsClassifier:
         model_repr.drop()
         assert model_repr.__repr__() == "<KNeighborsClassifier>"
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
         assert m_att["attr_name"] == ["n_neighbors", "p", "classes"]
-        m_att = model.get_attr("n_neighbors")
+        m_att = model.get_vertica_attributes("n_neighbors")
         assert m_att == model.parameters["n_neighbors"]
-        m_att = model.get_attr("p")
+        m_att = model.get_vertica_attributes("p")
         assert m_att == model.parameters["p"]
-        m_att = model.get_attr("classes")
+        m_att = model.get_vertica_attributes("classes")
         assert m_att == model.classes_
 
     def test_contour(self, titanic_vd):

@@ -228,7 +228,7 @@ TableSample
     if with_trend:
         predictors += ["ts"]
     model.fit(relation_name, predictors, "delta")
-    coef = model.get_attr("details")
+    coef = model.get_vertica_attributes("details")
     drop(name, method="model")
     drop(relation_name, method="view")
     if regresults:

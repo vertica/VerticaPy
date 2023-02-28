@@ -72,8 +72,8 @@ class TestOneHotEncoder:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "call_string",
@@ -87,7 +87,7 @@ class TestOneHotEncoder:
         ]
         assert m_att["#_of_rows"] == [1, 3, 6]
 
-        m_att_details = model.get_attr(attr_name="integer_categories")
+        m_att_details = model.get_vertica_attributes(attr_name="integer_categories")
 
         assert m_att_details["category_name"] == [
             "pclass",

@@ -94,8 +94,8 @@ class TestBisectingKMeans:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "num_of_clusters",
@@ -117,12 +117,26 @@ class TestBisectingKMeans:
         ]
         assert m_att["#_of_rows"] == [1, 1, 1, 1, 5, 7, 1]
 
-        assert model.get_attr("num_of_clusters")["num_of_clusters"][0] == 3
-        assert model.get_attr("dimensions_of_dataset")["dimensions_of_dataset"][0] == 4
-        assert model.get_attr("num_of_clusters_found")["num_of_clusters_found"][0] == 3
-        assert model.get_attr("height_of_BKTree")["height_of_BKTree"][0] == 3
+        assert (
+            model.get_vertica_attributes("num_of_clusters")["num_of_clusters"][0] == 3
+        )
+        assert (
+            model.get_vertica_attributes("dimensions_of_dataset")[
+                "dimensions_of_dataset"
+            ][0]
+            == 4
+        )
+        assert (
+            model.get_vertica_attributes("num_of_clusters_found")[
+                "num_of_clusters_found"
+            ][0]
+            == 3
+        )
+        assert (
+            model.get_vertica_attributes("height_of_BKTree")["height_of_BKTree"][0] == 3
+        )
 
-        m_att_bktree = model.get_attr(attr_name="BKTree")
+        m_att_bktree = model.get_vertica_attributes(attr_name="BKTree")
         assert m_att_bktree["bisection_level"] == [0, 1, 1, 2, 2]
 
     def test_get_params(self, model):
@@ -165,7 +179,9 @@ class TestBisectingKMeans:
 
         assert (
             "kmeans_center_init_method='kmeanspp'"
-            in model_test_kmeanspp.get_attr("call_string")["call_string"][0]
+            in model_test_kmeanspp.get_vertica_attributes("call_string")["call_string"][
+                0
+            ]
         )
         model_test_kmeanspp.drop()
 
@@ -174,7 +190,7 @@ class TestBisectingKMeans:
         model_test_pseudo.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
         assert (
             "kmeans_center_init_method='pseudo'"
-            in model_test_pseudo.get_attr("call_string")["call_string"][0]
+            in model_test_pseudo.get_vertica_attributes("call_string")["call_string"][0]
         )
         model_test_pseudo.drop()
 

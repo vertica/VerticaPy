@@ -116,7 +116,7 @@ model
         info = mtype + info.split(mtype)[1]
     elif model_type.lower() == "normalize_fit":
         model = vml.Scaler(name)
-        model.param_ = model.get_attr("details")
+        model.param_ = model.get_vertica_attributes("details")
         model.X = ['"' + item + '"' for item in model.param_.values["column_name"]]
         if "avg" in model.param_.values:
             model.parameters["method"] = "zscore"

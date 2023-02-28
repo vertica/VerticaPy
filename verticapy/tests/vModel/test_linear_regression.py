@@ -96,8 +96,8 @@ class TestLinearRegression:
         assert fim["sign"] == [1, 1, 1]
         plt.close("all")
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "details",
@@ -117,7 +117,7 @@ class TestLinearRegression:
         ]
         assert m_att["#_of_rows"] == [4, 1, 1, 1, 1, 1]
 
-        m_att_details = model.get_attr(attr_name="details")
+        m_att_details = model.get_vertica_attributes(attr_name="details")
 
         assert m_att_details["predictor"] == [
             "Intercept",
@@ -133,23 +133,31 @@ class TestLinearRegression:
         assert m_att_details["t_value"][3] == pytest.approx(41.8089205202906, abs=1e-6)
         assert m_att_details["p_value"][3] == pytest.approx(0)
 
-        m_att_regularization = model.get_attr("regularization")
+        m_att_regularization = model.get_vertica_attributes("regularization")
 
         assert m_att_regularization["type"][0] == "none"
         assert m_att_regularization["lambda"][0] == 1
 
-        assert model.get_attr("iteration_count")["iteration_count"][0] == 1
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 6497
+        assert (
+            model.get_vertica_attributes("iteration_count")["iteration_count"][0] == 1
+        )
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 6497
+        )
 
         if get_version()[0] < 12:
             assert (
-                model.get_attr("call_string")["call_string"][0]
+                model.get_vertica_attributes("call_string")["call_string"][0]
                 == "linear_reg('public.linreg_model_test', 'public.winequality', '\"quality\"', '\"citric_acid\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5)"
             )
         else:
             assert (
-                model.get_attr("call_string")["call_string"][0]
+                model.get_vertica_attributes("call_string")["call_string"][0]
                 == "linear_reg('public.linreg_model_test', 'public.winequality', '\"quality\"', '\"citric_acid\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5, fit_intercept=true)"
             )
 

@@ -222,8 +222,8 @@ class TestLogisticRegression:
         )
         assert score == pytest.approx(1.0)
 
-    def test_get_attr(self, model):
-        attr = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        attr = model.get_vertica_attributes()
         assert attr["attr_name"] == [
             "details",
             "regularization",
@@ -242,7 +242,7 @@ class TestLogisticRegression:
         ]
         assert attr["#_of_rows"] == [3, 1, 1, 1, 1, 1]
 
-        details = model.get_attr("details")
+        details = model.get_vertica_attributes("details")
         assert details["predictor"] == ["Intercept", "age", "fare"]
         assert details["coefficient"][0] == pytest.approx(-0.477190254617772)
         assert details["coefficient"][1] == pytest.approx(-0.0152670631243078)
@@ -257,22 +257,30 @@ class TestLogisticRegression:
         assert details["p_value"][1] == pytest.approx(0.00174410802172094)
         assert details["p_value"][2] == pytest.approx(2.99885239324552e-13)
 
-        reg = model.get_attr("regularization")
+        reg = model.get_vertica_attributes("regularization")
         assert reg["type"][0] == "none"
         assert reg["lambda"][0] == 1.0
 
-        assert model.get_attr("iteration_count")["iteration_count"][0] == 4
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 238
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 996
+        assert (
+            model.get_vertica_attributes("iteration_count")["iteration_count"][0] == 4
+        )
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 238
+        )
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 996
+        )
 
         if get_version()[0] < 12:
             assert (
-                model.get_attr("call_string")["call_string"][0]
+                model.get_vertica_attributes("call_string")["call_string"][0]
                 == "logistic_reg('public.logreg_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5)"
             )
         else:
             assert (
-                model.get_attr("call_string")["call_string"][0]
+                model.get_vertica_attributes("call_string")["call_string"][0]
                 == "logistic_reg('public.logreg_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5, fit_intercept=true)"
             )
 

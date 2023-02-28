@@ -54,8 +54,8 @@ class TestCountVectorizer:
         model_repr.drop()
         assert model_repr.__repr__() == "<CountVectorizer>"
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
         assert m_att["attr_name"] == [
             "lowercase",
             "max_df",
@@ -66,21 +66,21 @@ class TestCountVectorizer:
             "vocabulary",
             "stop_words",
         ]
-        m_att = model.get_attr("lowercase")
+        m_att = model.get_vertica_attributes("lowercase")
         assert m_att == model.parameters["lowercase"]
-        m_att = model.get_attr("max_df")
+        m_att = model.get_vertica_attributes("max_df")
         assert m_att == model.parameters["max_df"]
-        m_att = model.get_attr("min_df")
+        m_att = model.get_vertica_attributes("min_df")
         assert m_att == model.parameters["min_df"]
-        m_att = model.get_attr("max_features")
+        m_att = model.get_vertica_attributes("max_features")
         assert m_att == model.parameters["max_features"]
-        m_att = model.get_attr("ignore_special")
+        m_att = model.get_vertica_attributes("ignore_special")
         assert m_att == model.parameters["ignore_special"]
-        m_att = model.get_attr("max_text_size")
+        m_att = model.get_vertica_attributes("max_text_size")
         assert m_att == model.parameters["max_text_size"]
-        m_att = model.get_attr("vocabulary")
+        m_att = model.get_vertica_attributes("vocabulary")
         assert m_att == model.parameters["vocabulary"]
-        m_att = model.get_attr("stop_words")
+        m_att = model.get_vertica_attributes("stop_words")
         assert m_att == model.parameters["stop_words"]
 
     def test_deploySQL(self, model):
@@ -101,7 +101,7 @@ class TestCountVectorizer:
 
         assert result_sql == clean_query(expected_sql)
 
-    def test_get_attr(self, model):
+    def test_get_vertica_attributes(self, model):
         assert sorted(model.vocabulary_)[0:3] == ["a", "aaron", "abbing"]
         assert model.stop_words_ == []
 

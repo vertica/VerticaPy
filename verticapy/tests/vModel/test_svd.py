@@ -94,8 +94,8 @@ class TestSVD:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "columns",
@@ -113,7 +113,7 @@ class TestSVD:
         ]
         assert m_att["#_of_rows"] == [3, 3, 3, 3, 1]
 
-        m_att_details = model.get_attr(attr_name="singular_values")
+        m_att_details = model.get_vertica_attributes(attr_name="singular_values")
 
         assert m_att_details["value"][0] == pytest.approx(968.964362586858, abs=1e-6)
         assert m_att_details["value"][1] == pytest.approx(354.585184720344, abs=1e-6)

@@ -92,8 +92,8 @@ class TestKPrototypes:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == ["centers", "metrics"]
         assert m_att["attr_fields"] == [
@@ -102,7 +102,7 @@ class TestKPrototypes:
         ]
         assert m_att["#_of_rows"] == [3, 1]
 
-        m_att_centers = model.get_attr(attr_name="centers")
+        m_att_centers = model.get_vertica_attributes(attr_name="centers")
 
         assert m_att_centers["sepallengthcm"] == [
             pytest.approx(5.006),

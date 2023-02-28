@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import math
+import copy, math
 from typing import Union
 import numpy as np
 import scipy.spatial as scipy_st
@@ -552,17 +552,22 @@ def plot_bubble_ml(
 
 
 def plot_importance(
-    coeff_importances: dict,
-    coeff_sign: dict = {},
+    coeff_importances: Union[dict, np.ndarray],
+    coeff_sign: Union[dict, np.ndarray] = {},
     print_legend: bool = True,
     ax=None,
     **style_kwds,
 ):
-    coefficients, importances, signs = [], [], []
-    for coeff in coeff_importances:
-        coefficients += [coeff]
-        importances += [coeff_importances[coeff]]
-        signs += [coeff_sign[coeff]] if (coeff in coeff_sign) else [1]
+    if isinstance(coeff_importances, dict):
+        coefficients, importances, signs = [], [], []
+        for coeff in coeff_importances:
+            coefficients += [coeff]
+            importances += [coeff_importances[coeff]]
+            signs += [coeff_sign[coeff]] if (coeff in coeff_sign) else [1]
+    else:
+        coefficients = copy.deepcopy(coeff_importances)
+        importances = abs(coeff_sign)
+        signs = np.sign(coeff_sign)
     importances, coefficients, signs = zip(
         *sorted(zip(importances, coefficients, signs))
     )

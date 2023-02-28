@@ -81,8 +81,8 @@ class TestMCA:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "columns",
@@ -100,7 +100,7 @@ class TestMCA:
         ]
         assert m_att["#_of_rows"] == [52, 52, 52, 3, 1]
 
-        m_att_details = model.get_attr(attr_name="principal_components")
+        m_att_details = model.get_vertica_attributes(attr_name="principal_components")
 
         assert m_att_details["PC1"][0] == pytest.approx(-8.40681285066429e-18, abs=1)
         assert m_att_details["PC1"][1] == pytest.approx(6.69930488797486e-17, abs=1)
