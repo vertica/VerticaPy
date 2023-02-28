@@ -28,6 +28,7 @@ from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
+from verticapy._typing import ArrayLike
 from verticapy.errors import (
     ConversionError,
     FunctionError,
