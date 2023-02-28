@@ -41,6 +41,7 @@ from verticapy.machine_learning.model_selection.model_validation import (
 )
 from verticapy.machine_learning.model_management.read import does_model_exist
 from verticapy.machine_learning.vertica.base import (
+    MulticlassClassifier,
     Regressor,
     Tree,
     vModel,
@@ -49,7 +50,7 @@ from verticapy.machine_learning.vertica.base import (
 from verticapy.sql.drop import drop
 
 
-class KNeighborsClassifier(vModel):
+class KNeighborsClassifier(MulticlassClassifier):
     """
 [Beta Version]
 Creates a KNeighborsClassifier object using the k-nearest neighbors algorithm. 
@@ -94,10 +95,22 @@ p: int, optional
     def _model_type(self) -> Literal["KNeighborsClassifier"]:
         return "KNeighborsClassifier"
 
+    @property
+    def _attributes(self) -> Literal["classes_", "n_neighbors_", "p_"]:
+        return ["classes_", "n_neighbors_", "p_"]
+
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+
+    def _compute_attributes(self):
+        """
+        Computes the model's attributes.
+        """
+        self.classes_ = self._get_classes()
+        self.p_ = self.parameters["p"]
+        self.n_neighbors_ = self.parameters["n_neighbors"]
 
     def deploySQL(
         self,
@@ -238,18 +251,7 @@ p: int, optional
             self.test_relation = self.input_relation
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
-        classes = _executeSQL(
-            query=f"""
-                SELECT 
-                    /*+LABEL('learn.neighbors.KNeighborsClassifier.fit')*/ 
-                    DISTINCT {self.y} 
-                FROM {self.input_relation} 
-                WHERE {self.y} IS NOT NULL 
-                ORDER BY {self.y} ASC""",
-            method="fetchall",
-            print_time_sql=False,
-        )
-        self.classes_ = [c[0] for c in classes]
+        self._compute_attributes()
         return self
 
     def classification_report(
@@ -811,6 +813,10 @@ xlim: list, optional
         return False
 
     @property
+    def _is_using_native(self) -> Literal[True]:
+        return True
+
+    @property
     def _vertica_fit_sql(self) -> Literal["RF_REGRESSOR"]:
         return "RF_REGRESSOR"
 
@@ -1180,10 +1186,18 @@ p: int, optional
     def _model_type(self) -> Literal["KNeighborsRegressor"]:
         return "KNeighborsRegressor"
 
+    @property
+    def _attributes(self) -> Literal["n_neighbors_", "p_"]:
+        return ["n_neighbors_", "p_"]
+
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+
+    def _compute_attributes(self):
+        self.p_ = self.parameters["p"]
+        self.n_neighbors_ = self.parameters["n_neighbors"]
 
     def deploySQL(
         self,
@@ -1304,6 +1318,7 @@ p: int, optional
             self.test_relation = self.input_relation
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
+        self._compute_attributes()
         return self
 
     def predict(
@@ -1417,10 +1432,18 @@ p: int, optional
     def _model_type(self) -> Literal["LocalOutlierFactor"]:
         return "LocalOutlierFactor"
 
+    @property
+    def _attributes(self) -> Literal["n_neighbors_", "p_", "n_errors_"]:
+        return ["n_neighbors_", "p_", "n_errors_"]
+
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+
+    def _compute_attributes(self):
+        self.p_ = self.parameters["p"]
+        self.n_neighbors_ = self.parameters["n_neighbors"]
 
     def fit(
         self,
@@ -1598,6 +1621,7 @@ p: int, optional
                 method="fetchfirstelem",
                 print_time_sql=False,
             )
+            self._compute_attributes()
         finally:
             drop(f"v_temp_schema.{tmp_main_table_name}", method="table")
             drop(f"v_temp_schema.{tmp_distance_table_name}", method="table")

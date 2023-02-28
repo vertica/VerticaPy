@@ -53,12 +53,12 @@ class TestKNeighborsRegressor:
         model_repr.drop()
         assert model_repr.__repr__() == "<KNeighborsRegressor>"
 
-    def test_get_vertica_attributes(self, model):
-        m_att = model.get_vertica_attributes()
-        assert m_att["attr_name"] == ["n_neighbors", "p"]
-        m_att = model.get_vertica_attributes("n_neighbors")
+    def test_get_attributes(self, model):
+        m_att = model.get_attributes()
+        assert m_att == ["n_neighbors_", "p_"]
+        m_att = model.get_attributes("n_neighbors")
         assert m_att == model.parameters["n_neighbors"]
-        m_att = model.get_vertica_attributes("p")
+        m_att = model.get_attributes("p")
         assert m_att == model.parameters["p"]
 
     def test_contour(self, titanic_vd):

@@ -65,9 +65,9 @@ class TestDBSCAN:
 
         assert titanic_copy["dbscan_cluster"].min() == pytest.approx(-1, abs=1e-6)
 
-    def test_get_vertica_attributes(self, model):
-        result = model.get_vertica_attributes()
-        assert result["attr_name"] == ["n_cluster", "n_noise"]
+    def test_get_attributes(self, model):
+        result = model.get_attributes()
+        assert result == ["n_cluster_", "n_noise_", "p_"]
 
     def test_get_plot(self, model):
         result = model.plot()

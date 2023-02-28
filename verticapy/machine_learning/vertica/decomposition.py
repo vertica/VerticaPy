@@ -144,6 +144,10 @@ name: str
         return False
 
     @property
+    def _is_using_native(self) -> Literal[True]:
+        return True
+
+    @property
     def _vertica_fit_sql(self) -> Literal["PCA"]:
         return "PCA"
 

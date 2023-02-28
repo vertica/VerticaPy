@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
-from typing import Literal, Optional, Union, get_type_hints
+from typing import Any, Literal, Optional, Union, get_type_hints
 from abc import abstractmethod
 from collections.abc import Iterable
 import numpy as np
@@ -28,7 +28,13 @@ from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
-from verticapy.errors import ConversionError, FunctionError, ParameterError, ModelError
+from verticapy.errors import (
+    ConversionError,
+    FunctionError,
+    ParameterError,
+    ModelError,
+    VersionError,
+)
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -72,6 +78,10 @@ Base Class for Vertica Models.
         return True
 
     @property
+    def _is_using_native(self) -> Literal[False]:
+        return False
+
+    @property
     def _object_type(self) -> Literal["vModel"]:
         return "vModel"
 
@@ -99,7 +109,8 @@ Base Class for Vertica Models.
         """Must be overridden in child class"""
         raise NotImplementedError
 
-    def _format_vector(self, vector: list[tuple]) -> np.ndarray:
+    @staticmethod
+    def _format_vector(X: ArrayLike, vector: list[tuple]) -> np.ndarray:
         """
         Format the 2D vector to match with the input columns'
         names.
@@ -115,69 +126,27 @@ Base Class for Vertica Models.
         """
 	Returns the model Representation.
 		"""
-        try:
-            rep = ""
-            if self._model_type not in (
-                "DBSCAN",
-                "NearestCentroid",
-                "LocalOutlierFactor",
-                "KNeighborsRegressor",
-                "KNeighborsClassifier",
-                "CountVectorizer",
-                "AutoML",
-            ):
-                try:
-                    vertica_version(condition=[9, 0, 0])
-                    func = f"GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{self.model_name}')"
-                except:
-                    func = f"SUMMARIZE_MODEL('{self.model_name}')"
-                res = _executeSQL(
-                    f"SELECT /*+LABEL('learn.vModel.__repr__')*/ {func}",
-                    title="Summarizing the model.",
-                    method="fetchfirstelem",
-                )
-                return res
-            elif self._model_type == "AutoML":
-                rep = self.best_model_.__repr__()
-            elif self._model_type == "AutoDataPrep":
-                rep = self.final_relation_.__repr__()
-            elif self._model_type == "DBSCAN":
-                rep = f"=======\ndetails\n=======\nNumber of Clusters: {self.n_cluster_}\nNumber of Outliers: {self.n_noise_}"
-            elif self._model_type == "LocalOutlierFactor":
-                rep = f"=======\ndetails\n=======\nNumber of Errors: {self.n_errors_}"
-            elif self._model_type == "CountVectorizer":
-                rep = "=======\ndetails\n======="
-                if self.vocabulary_:
-                    voc = [str(elem) for elem in self.vocabulary_]
-                    if len(voc) > 100:
-                        voc = voc[0:100] + [f"... ({len(self.vocabulary_) - 100} more)"]
-                    rep += "\n\n# Vocabulary\n\n" + ", ".join(voc)
-                if self.stop_words_:
-                    rep += "\n\n# Stop Words\n\n" + ", ".join(
-                        [str(elem) for elem in self.stop_words_]
-                    )
-                rep += "\n\n===============\nAdditional Info\n==============="
-                rep += f"\nInput Relation : {self.input_relation}"
-                rep += f"\nX : {', '.join(self.X)}"
-            if self._model_type in (
-                "DBSCAN",
-                "NearestCentroid",
-                "LocalOutlierFactor",
-                "KNeighborsRegressor",
-                "KNeighborsClassifier",
-            ):
-                rep += "\n\n===============\nAdditional Info\n==============="
-                rep += f"\nInput Relation : {self.input_relation}"
-                rep += f"\nX : {', '.join(self.X)}"
-            if self._model_type in (
-                "NearestCentroid",
-                "KNeighborsRegressor",
-                "KNeighborsClassifier",
-            ):
-                rep += f"\ny : {self.y}"
-            return rep
-        except:
-            return f"<{self._model_type}>"
+        return f"<{self._model_type}>"
+
+    def summarize(self):
+        if self._is_native:
+            try:
+                vertica_version(condition=[9, 0, 0])
+                func = f"""
+                    GET_MODEL_SUMMARY(USING PARAMETERS 
+                    model_name = '{self.model_name}')"""
+            except VersionError:
+                func = f"SUMMARIZE_MODEL('{self.model_name}')"
+            return _executeSQL(
+                f"SELECT /*+LABEL('learn.vModel.__repr__')*/ {func}",
+                title="Summarizing the model.",
+                method="fetchfirstelem",
+            )
+        else:
+            raise AttributeError(
+                "Method 'summarize' is not available for non-native "
+                "models.\nUse 'get_attributes' method instead."
+            )
 
     def contour(
         self,
@@ -304,9 +273,38 @@ Base Class for Vertica Models.
 		"""
         drop(self.model_name, method="model")
 
+    def get_attributes(self, attr_name: str = "") -> Any:
+        """
+    Returns the model attributes.
+
+    Parameters
+    ----------
+    attr_name: str, optional
+        Attribute Name.
+
+    Returns
+    -------
+    Any
+        model attribute.
+        """
+        if not (attr_name):
+            return self._attributes
+        elif attr_name in self._attributes:
+            if hasattr(self, attr_name):
+                return copy.deepcopy(getattr(self, attr_name))
+            else:
+                return AttributeError("The attribute is not yet computed.")
+        elif attr_name + "_" in self._attributes:
+            return self.get_attributes(attr_name + "_")
+        else:
+            raise AttributeError(
+                "Method 'get_vertica_attributes' is not available for "
+                "non-native models.\nUse 'get_attributes' method instead."
+            )
+
     def get_vertica_attributes(self, attr_name: str = ""):
         """
-	Returns the model attributes.
+	Returns the model vertica attributes. Those are stored in Vertica.
 
 	Parameters
 	----------
@@ -318,23 +316,24 @@ Base Class for Vertica Models.
 	TableSample
 		model attributes.
 		"""
-        if self._is_native:
+        if self._is_native or self._is_using_native:
             vertica_version(condition=[8, 1, 1])
             if attr_name:
                 attr_name_str = f", attr_name = '{attr_name}'"
             else:
                 attr_name_str = ""
-            result = TableSample.read_sql(
+            return TableSample.read_sql(
                 query=f"""
                     SELECT 
-                        GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                            model_name = '{self.model_name}'{attr_name_str})""",
+                        GET_MODEL_ATTRIBUTE(
+                            USING PARAMETERS 
+                            model_name = '{self.model_name}'{attr_name_str})""",
                 title="Getting Model Attributes.",
             )
-            return result
         else:
-            raise FunctionError(
-                "Method 'get_vertica_attributes' is not available for non-native models."
+            raise AttributeError(
+                "Method 'get_vertica_attributes' is not available for "
+                "non-native models.\nUse 'get_attributes' method instead."
             )
 
     def get_params(self):
@@ -449,7 +448,8 @@ Base Class for Vertica Models.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Any optional parameter to pass to the 
+        Matplotlib functions.
 
     Returns
     -------
@@ -820,7 +820,7 @@ class Tree:
         importance = _executeSQL(
             query=query, title="Computing Features Importance.", method="fetchall"
         )
-        importance = self._format_vector(importance)
+        importance = self._format_vector(self.X, importance)
         if isinstance(tree_id, int) and (0 <= tree_id < self.n_estimators_):
             if hasattr(self, "features_importance_trees_"):
                 self.features_importance_trees_[tree_id] = importance
@@ -1070,7 +1070,7 @@ class Tree:
         """
         tree_id = "" if tree_id == None else f", tree_id={tree_id}"
         query = f"""
-            SELECT {self._model_importance} 
+            SELECT {self._model_importance_function} 
             (USING PARAMETERS model_name = '{self.model_name}'{tree_id})"""
         return TableSample.read_sql(query=query, title="Reading Tree.")
 

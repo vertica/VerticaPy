@@ -139,6 +139,10 @@ max_text_size: int, optional
     def _model_type(self) -> Literal["CountVectorizer"]:
         return "CountVectorizer"
 
+    @property
+    def _attributes(self) -> Literal["stop_words_", "vocabulary_", "n_errors_"]:
+        return ["stop_words_", "vocabulary_", "n_errors_"]
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -160,7 +164,11 @@ max_text_size: int, optional
             "max_text_size": max_text_size,
         }
 
-    def compute_stop_words(self):
+    def _compute_attributes(self):
+        self.stop_words_ = self._compute_stop_words()
+        self.vocabulary_ = self._compute_vocabulary()
+
+    def _compute_stop_words(self):
         """
     Computes the CountVectorizer Stop Words. It will affect the result to the
     stop_words_ attribute.
@@ -173,15 +181,15 @@ max_text_size: int, optional
         if self.parameters["max_features"] > 0:
             query += f" OR (rnk > {self.parameters['max_features']})"
         res = _executeSQL(query=query, print_time_sql=False, method="fetchall")
-        self.stop_words_ = [item[0] for item in res]
+        return np.array([w[0] for w in res])
 
-    def compute_vocabulary(self):
+    def _compute_vocabulary(self):
         """
     Computes the CountVectorizer Vocabulary. It will affect the result to the
     vocabulary_ attribute.
         """
         res = _executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
-        self.vocabulary_ = [item[0] for item in res]
+        return np.array([w[0] for w in res])
 
     def deploySQL(self, return_main_table: bool = False):
         """
@@ -248,10 +256,6 @@ max_text_size: int, optional
         schema, relation = schema_relation(self.model_name)
         schema = quote_ident(schema)
         tmp_name = gen_tmp_name(schema=schema, name="countvectorizer")
-        try:
-            self.drop()
-        except:
-            pass
         _executeSQL(
             query=f"""
                 CREATE TABLE {tmp_name}
@@ -280,9 +284,7 @@ max_text_size: int, optional
                 ON {tmp_name}(id, text) stemmer NONE;""",
             title="Computing the CountVectorizer [Step 2].",
         )
-        self.compute_stop_words()
-        self.compute_vocabulary()
-        self.countvectorizer_table = tmp_name
+        self._compute_attributes()
         return self
 
     def transform(self):
@@ -361,7 +363,7 @@ method: str, optional
         if self.parameters["method"] == "minmax":
             self.min_ = values[:, 0]
             self.max_ = values[:, 1]
-        elif method == "robust_zscore":
+        elif self.parameters["method"] == "robust_zscore":
             self.median_ = values[:, 0]
             self.mad_ = values[:, 1]
         else:
@@ -376,7 +378,7 @@ method: str, optional
         """
         if self.parameters["method"] == "minmax":
             return mm.MinMaxScaler(self.min_, self.max_)
-        elif method == "robust_zscore":
+        elif self.parameters["method"] == "robust_zscore":
             return mm.StandardScaler(self.median_, self.mad_)
         else:
             return mm.StandardScaler(self.mean_, self.std_)
@@ -472,6 +474,10 @@ null_column_name: str, optional
     def _model_type(self) -> Literal["OneHotEncoder"]:
         return "OneHotEncoder"
 
+    @property
+    def _attributes(self) -> Literal["categories_", "column_naming_", "drop_first_"]:
+        return Literal["categories_", "column_naming_", "drop_first_"]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -493,10 +499,6 @@ null_column_name: str, optional
             "column_naming": str(column_naming).lower(),
             "null_column_name": null_column_name,
         }
-
-    @property
-    def _attributes(self) -> Literal["categories_", "column_naming_", "drop_first_"]:
-        return Literal["categories_", "column_naming_", "drop_first_"]
 
     def _compute_attributes(self) -> None:
         """

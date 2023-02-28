@@ -567,6 +567,10 @@ p: int, optional
         self.model_name = name
         self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
 
+    @property
+    def _attributes(self) -> Literal["n_cluster_", "n_noise_", "p_"]:
+        return ["n_cluster_", "n_noise_", "p_"]
+
     def fit(
         self,
         input_relation: Union[str, vDataFrame],
@@ -758,6 +762,7 @@ p: int, optional
                 method="fetchfirstelem",
                 print_time_sql=False,
             )
+            self.p_ = self.parameters["p"]
         finally:
             drop(f"v_temp_schema.{name_main}", method="table")
             drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")

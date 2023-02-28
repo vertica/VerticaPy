@@ -81,7 +81,7 @@ class LinearModel:
         importance = _executeSQL(
             query=query, title="Computing Features Importance.", method="fetchall"
         )
-        self.features_importance_ = self._format_vector(importance)
+        self.features_importance_ = self._format_vector(self.X, importance)
 
     def _get_features_importance(self) -> np.ndarray:
         if not (hasattr(self, "features_importance_")):
