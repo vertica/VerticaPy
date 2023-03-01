@@ -102,7 +102,12 @@ class Clustering(Unsupervised):
             Matplotlib axes object.
         """
         vdf = vDataFrame(self.input_relation)
-        kwds = {"columns": self.X, "max_nb_points": max_nb_points, "ax": ax, **style_kwds}
+        kwds = {
+            "columns": self.X,
+            "max_nb_points": max_nb_points,
+            "ax": ax,
+            **style_kwds,
+        }
         if self._model_subcategory == "ANOMALY_DETECTION":
             fun = vdf.bubble
             name = "anomaly_score"

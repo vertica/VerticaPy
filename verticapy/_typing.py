@@ -18,7 +18,7 @@ from typing import Union, TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-	from verticapy.core.vdataframe.base import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame
 
 ArrayLike = Union[list, np.ndarray]
 PythonScalar = Union[None, bool, float, str]

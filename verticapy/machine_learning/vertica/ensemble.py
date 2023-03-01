@@ -1201,11 +1201,7 @@ col_sample_by_tree: float, optional
             return mm.IsolationForest(self.trees_)
 
     def decision_function(
-        self,
-        vdf: SQLRelation,
-        X: list = [],
-        name: str = "",
-        inplace: bool = True,
+        self, vdf: SQLRelation, X: list = [], name: str = "", inplace: bool = True,
     ) -> vDataFrame:
         """
     Returns the anomaly score using the input 

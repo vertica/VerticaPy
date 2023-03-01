@@ -24,10 +24,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 
 def _compute_tn_fn_fp_tp(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 A helper function that computes the confusion matrix for the specified 

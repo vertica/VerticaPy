@@ -164,9 +164,7 @@ TableSample
 
 
 @save_verticapy_logs
-def explained_variance(
-    y_true: str, y_score: str, input_relation: SQLRelation
-):
+def explained_variance(y_true: str, y_score: str, input_relation: SQLRelation):
     """
 Computes the Explained Variance.
 
@@ -226,9 +224,7 @@ float
 
 
 @save_verticapy_logs
-def mean_absolute_error(
-    y_true: str, y_score: str, input_relation: SQLRelation
-):
+def mean_absolute_error(y_true: str, y_score: str, input_relation: SQLRelation):
     """
 Computes the Mean Absolute Error.
 
@@ -259,10 +255,7 @@ float
 
 @save_verticapy_logs
 def mean_squared_error(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    root: bool = False,
+    y_true: str, y_score: str, input_relation: SQLRelation, root: bool = False,
 ):
     """
 Computes the Mean Squared Error.
@@ -294,9 +287,7 @@ float
 
 
 @save_verticapy_logs
-def mean_squared_log_error(
-    y_true: str, y_score: str, input_relation: SQLRelation
-):
+def mean_squared_log_error(y_true: str, y_score: str, input_relation: SQLRelation):
     """
 Computes the Mean Squared Log Error.
 
@@ -326,9 +317,7 @@ float
 
 
 @save_verticapy_logs
-def median_absolute_error(
-    y_true: str, y_score: str, input_relation: SQLRelation
-):
+def median_absolute_error(y_true: str, y_score: str, input_relation: SQLRelation):
     """
 Computes the Median Absolute Error.
 
@@ -359,10 +348,7 @@ float
 
 @save_verticapy_logs
 def quantile_error(
-    q: Union[int, float],
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
+    q: Union[int, float], y_true: str, y_score: str, input_relation: SQLRelation,
 ):
     """
 Computes the input Quantile of the Error.

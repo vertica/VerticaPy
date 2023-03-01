@@ -168,11 +168,7 @@ final_relation_: vDataFrame
         }
 
     def fit(
-        self,
-        input_relation: SQLRelation,
-        X: list = [],
-        ts: str = "",
-        by: list = [],
+        self, input_relation: SQLRelation, X: list = [], ts: str = "", by: list = [],
     ):
         """
     Trains the model.

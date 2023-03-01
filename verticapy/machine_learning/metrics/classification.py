@@ -361,10 +361,7 @@ TableSample
 
 @save_verticapy_logs
 def critical_success_index(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Critical Success Index.
@@ -395,10 +392,7 @@ float
 
 @save_verticapy_logs
 def f1_score(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the F1 Score.
@@ -435,10 +429,7 @@ float
 
 @save_verticapy_logs
 def informedness(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Informedness.
@@ -470,10 +461,7 @@ float
 
 @save_verticapy_logs
 def log_loss(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Log Loss.
@@ -510,10 +498,7 @@ float
 
 @save_verticapy_logs
 def markedness(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Markedness.
@@ -545,10 +530,7 @@ float
 
 @save_verticapy_logs
 def matthews_corrcoef(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Matthews Correlation Coefficient.
@@ -640,10 +622,7 @@ TableSample
 
 @save_verticapy_logs
 def negative_predictive_score(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Negative Predictive Score.
@@ -717,10 +696,7 @@ float
 
 @save_verticapy_logs
 def precision_score(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Precision Score.
@@ -751,10 +727,7 @@ float
 
 @save_verticapy_logs
 def recall_score(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Recall Score.
@@ -785,10 +758,7 @@ float
 
 @save_verticapy_logs
 def specificity_score(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Specificity Score.

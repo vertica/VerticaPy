@@ -20,7 +20,7 @@ from abc import abstractmethod
 from collections.abc import Iterable
 import numpy as np
 
-from matplotlib.axes._subplots import AxesSubplot
+from matplotlib.axes import Axes
 
 import verticapy._config.config as conf
 from verticapy._utils._gen import gen_name, gen_tmp_name
@@ -54,6 +54,9 @@ from verticapy.machine_learning.model_management.read import does_model_exist
 import verticapy.machine_learning.model_selection as ms
 
 from verticapy.sql.drop import drop
+
+if conf._get_import_success("graphviz"):
+    from graphviz import Source
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -457,9 +460,7 @@ class VerticaModel:
 
     # Plotting Methods.
 
-    def contour(
-        self, nbins: int = 100, ax=None, **style_kwds,
-    ) -> AxesSubplot:
+    def contour(self, nbins: int = 100, ax=None, **style_kwds,) -> Axes:
         """
         Draws the model's contour plot.
 
@@ -631,58 +632,15 @@ class Supervised(VerticaModel):
 
 
 class Tree:
-    def _compute_features_importance(self, tree_id: Optional[int] = None) -> None:
-        """
-        Computes the features importance.
-        """
-        vertica_version(condition=[9, 1, 1])
-        tree_id_str = "" if tree_id is None else f", tree_id={tree_id}"
-        query = f"""
-        SELECT /*+LABEL('learn.VerticaModel.features_importance')*/
-            predictor_name AS predictor, 
-            SIGN({self._model_importance_feature})::int * 
-            ROUND(100 * ABS({self._model_importance_feature}) / 
-            SUM(ABS({self._model_importance_feature}))
-            OVER (), 2)::float AS importance
-        FROM 
-            (SELECT {self._model_importance_function} ( 
-                    USING PARAMETERS model_name = '{self.model_name}'{tree_id_str})) 
-                    VERTICAPY_SUBTABLE 
-        ORDER BY 2 DESC;"""
-        importance = _executeSQL(
-            query=query, title="Computing Features Importance.", method="fetchall"
-        )
-        importance = self._format_vector(self.X, importance)
-        if isinstance(tree_id, int) and (0 <= tree_id < self.n_estimators_):
-            if hasattr(self, "features_importance_trees_"):
-                self.features_importance_trees_[tree_id] = importance
-            else:
-                self.features_importance_trees_ = {tree_id: importance}
-        elif tree_id == None:
-            self.features_importance_ = importance
-        return None
-
-    def _get_features_importance(self, tree_id: Optional[int] = None) -> np.ndarray:
-        if tree_id == None and hasattr(self, "features_importance_"):
-            return copy.deepcopy(self.features_importance_)
-        elif (
-            isinstance(tree_id, int)
-            and (0 <= tree_id < self.n_estimators_)
-            and hasattr(self, "features_importance_trees_")
-            and (tree_id in self.features_importance_trees_)
-        ):
-            return copy.deepcopy(self.features_importance_trees_[tree_id])
-        else:
-            self._compute_features_importance(tree_id=tree_id)
-            return self._get_features_importance(tree_id=tree_id)
+    # System Methods.
 
     def _compute_trees_arrays(
         self, tree: TableSample, X: list, return_probability: bool = False
-    ):
+    ) -> list[list]:
         """
-        Takes as input a tree which is represented by a TableSample
-        It returns a list of arrays. Each index of the arrays represents
-        a node value.
+        Takes as input a tree which is represented by a 
+        TableSample. It returns a list of arrays. 
+        Each index of the arrays represents a node value.
         """
         tree_list = []
         for i in range(len(tree["tree_id"])):
@@ -736,36 +694,55 @@ class Tree:
             trees_arrays += [tree["probability/variance"]]
         return trees_arrays
 
-    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
-        """
-    Draws the model.
+    # Features Importance Methods.
 
-    Parameters
-    ----------
-    max_nb_points: int
-        Maximum number of points to display.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the 
-        Matplotlib functions.
-
-    Returns
-    -------
-    ax
-        Matplotlib axes object
+    def _compute_features_importance(self, tree_id: Optional[int] = None) -> None:
         """
-        if self._model_subcategory == "REGRESSOR":
-            return regression_tree_plot(
-                self.X + [self.deploySQL()],
-                self.y,
-                self.input_relation,
-                max_nb_points,
-                ax=ax,
-                **style_kwds,
-            )
+        Computes the model's features importance.
+        """
+        vertica_version(condition=[9, 1, 1])
+        tree_id_str = "" if tree_id is None else f", tree_id={tree_id}"
+        query = f"""
+        SELECT /*+LABEL('learn.VerticaModel.features_importance')*/
+            predictor_name AS predictor, 
+            SIGN({self._model_importance_feature})::int * 
+            ROUND(100 * ABS({self._model_importance_feature}) / 
+            SUM(ABS({self._model_importance_feature}))
+            OVER (), 2)::float AS importance
+        FROM 
+            (SELECT {self._model_importance_function} ( 
+                    USING PARAMETERS model_name = '{self.model_name}'{tree_id_str})) 
+                    VERTICAPY_SUBTABLE 
+        ORDER BY 2 DESC;"""
+        importance = _executeSQL(
+            query=query, title="Computing Features Importance.", method="fetchall"
+        )
+        importance = self._format_vector(self.X, importance)
+        if isinstance(tree_id, int) and (0 <= tree_id < self.n_estimators_):
+            if hasattr(self, "features_importance_trees_"):
+                self.features_importance_trees_[tree_id] = importance
+            else:
+                self.features_importance_trees_ = {tree_id: importance}
+        elif tree_id == None:
+            self.features_importance_ = importance
+        return None
+
+    def _get_features_importance(self, tree_id: Optional[int] = None) -> np.ndarray:
+        """
+        Returns model's features importances.
+        """
+        if tree_id == None and hasattr(self, "features_importance_"):
+            return copy.deepcopy(self.features_importance_)
+        elif (
+            isinstance(tree_id, int)
+            and (0 <= tree_id < self.n_estimators_)
+            and hasattr(self, "features_importance_trees_")
+            and (tree_id in self.features_importance_trees_)
+        ):
+            return copy.deepcopy(self.features_importance_trees_[tree_id])
         else:
-            raise NotImplementedError
+            self._compute_features_importance(tree_id=tree_id)
+            return self._get_features_importance(tree_id=tree_id)
 
     def features_importance(
         self, tree_id: Optional[int] = None, show: bool = True, ax=None, **style_kwds
@@ -803,6 +780,92 @@ class Tree:
         }
         return TableSample(values=importances).sort(column="importance", desc=True)
 
+    def get_score(self, tree_id: int = None,) -> TableSample:
+        """
+        Returns the feature importance metrics for the input tree.
+
+        Parameters
+        ----------
+        tree_id: int, optional
+            Unique tree identifier, an integer in the range 
+            [0, n_estimators - 1]. If tree_id is undefined, 
+            all the trees in the model are used to compute 
+            the metrics.
+
+        Returns
+        -------
+        TableSample
+            An object containing the result. For more information, 
+            see utilities.TableSample.
+        """
+        tree_id = "" if tree_id == None else f", tree_id={tree_id}"
+        query = f"""
+            SELECT {self._model_importance_function} 
+            (USING PARAMETERS model_name = '{self.model_name}'{tree_id})"""
+        return TableSample.read_sql(query=query, title="Reading Tree.")
+
+    # Plotting Methods.
+
+    def plot(
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+    ) -> Axes:
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Axes, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        Axes
+            Matplotlib axes object.
+        """
+        if self._model_subcategory == "REGRESSOR":
+            return regression_tree_plot(
+                self.X + [self.deploySQL()],
+                self.y,
+                self.input_relation,
+                max_nb_points,
+                ax=ax,
+                **style_kwds,
+            )
+        else:
+            raise NotImplementedError
+
+    # Trees Representation Methods.
+
+    @check_minimum_version
+    def get_tree(self, tree_id: int = 0) -> TableSample:
+        """
+        Returns a table with all the input tree information.
+
+        Parameters
+        ----------
+        tree_id: int, optional
+            Unique tree identifier, an integer in the range 
+            [0, n_estimators - 1].
+
+        Returns
+        -------
+        TableSample
+            An object containing the result. For more information,
+            see utilities.TableSample.
+        """
+        query = f"""
+            SELECT * FROM (SELECT READ_TREE (
+                             USING PARAMETERS 
+                             model_name = '{self.model_name}', 
+                             tree_id = {tree_id}, 
+                             format = 'tabular')) x ORDER BY node_id;"""
+        return TableSample.read_sql(query=query, title="Reading Tree.")
+
     def to_graphviz(
         self,
         tree_id: int = 0,
@@ -813,7 +876,7 @@ class Tree:
         node_style: dict = {"shape": "box", "style": "filled"},
         arrow_style: dict = {},
         leaf_style: dict = {},
-    ):
+    ) -> str:
         """
         Returns the code for a Graphviz tree.
 
@@ -862,33 +925,9 @@ class Tree:
             leaf_style=leaf_style,
         )
 
-    @check_minimum_version
-    def get_tree(self, tree_id: int = 0):
-        """
-	Returns a table with all the input tree information.
-
-	Parameters
-	----------
-	tree_id: int, optional
-        Unique tree identifier, an integer in the range [0, n_estimators - 1].
-
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
-		"""
-        query = f"""
-            SELECT * FROM (SELECT READ_TREE (
-                             USING PARAMETERS 
-                             model_name = '{self.model_name}', 
-                             tree_id = {tree_id}, 
-                             format = 'tabular')) x ORDER BY node_id;"""
-        return TableSample.read_sql(query=query, title="Reading Tree.")
-
     def plot_tree(
         self, tree_id: int = 0, pic_path: str = "", *argv, **kwds,
-    ):
+    ) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
 
@@ -910,32 +949,6 @@ class Tree:
         return self.trees_[tree_id].plot_tree(
             pic_path=pic_path, feature_names=self.X, *argv, **kwds,
         )
-
-    def get_score(
-        self, tree_id: int = None,
-    ):
-        """
-        Returns the feature importance metrics for the input tree.
-
-        Parameters
-        ----------
-        tree_id: int, optional
-            Unique tree identifier, an integer in the range 
-            [0, n_estimators - 1]. If tree_id is undefined, 
-            all the trees in the model are used to compute 
-            the metrics.
-
-        Returns
-        -------
-        TableSample
-            An object containing the result. For more information, 
-            see utilities.TableSample.
-        """
-        tree_id = "" if tree_id == None else f", tree_id={tree_id}"
-        query = f"""
-            SELECT {self._model_importance_function} 
-            (USING PARAMETERS model_name = '{self.model_name}'{tree_id})"""
-        return TableSample.read_sql(query=query, title="Reading Tree.")
 
 
 class Classifier(Supervised):
