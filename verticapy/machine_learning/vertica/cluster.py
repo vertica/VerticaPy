@@ -30,7 +30,6 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.base import (
-    Clustering,
     MulticlassClassifier,
     Tree,
     vModel,
