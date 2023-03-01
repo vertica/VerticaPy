@@ -50,10 +50,7 @@ def model(winequality_vd):
 
 class TestLinearSVR:
     def test_repr(self, model):
-        assert "predictor   |coefficient" in model.__repr__()
-        model_repr = LinearSVR("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<LinearSVR>"
+        assert model.__repr__() == "<LinearSVR>"
 
     def test_contour(self, winequality_vd):
         model_test = LinearSVR("model_contour",)

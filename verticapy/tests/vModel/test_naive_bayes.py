@@ -66,10 +66,7 @@ def model(iris_vd):
 
 class TestNB:
     def test_repr(self, model):
-        assert "predictor  |  type" in model.__repr__()
-        model_repr = NaiveBayes("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<NaiveBayes>"
+        assert model.__repr__() == "<NaiveBayes>"
 
     def test_NB_subclasses(self, winequality_vd):
         model_test = BernoulliNB("model_test")

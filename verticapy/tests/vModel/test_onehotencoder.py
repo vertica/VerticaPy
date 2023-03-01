@@ -45,10 +45,7 @@ def model(titanic_vd):
 
 class TestOneHotEncoder:
     def test_repr(self, model):
-        assert "one_hot_encoder_fit" in model.__repr__()
-        model_repr = OneHotEncoder("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<OneHotEncoder>"
+        assert model.__repr__() == "<OneHotEncoder>"
 
     def test_deploySQL(self, model):
         expected_sql = "APPLY_ONE_HOT_ENCODER(\"pclass\", \"sex\", \"embarked\" USING PARAMETERS model_name = 'ohe_model_test', match_by_pos = 'true', drop_first = 'false', ignore_null = 'true', separator = '_', column_naming = 'indices')"

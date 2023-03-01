@@ -56,10 +56,7 @@ def model(winequality_vd):
 
 class TestLasso:
     def test_repr(self, model):
-        assert "|coefficient|std_err |t_value |p_value" in model.__repr__()
-        model_repr = Lasso("lin_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<LinearRegression>"
+        assert model.__repr__() == "<LinearRegression>"
 
     def test_contour(self, winequality_vd):
         model_test = Lasso("model_contour",)

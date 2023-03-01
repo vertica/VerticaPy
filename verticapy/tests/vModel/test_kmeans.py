@@ -63,10 +63,7 @@ def model(iris_vd):
 
 class TestKMeans:
     def test_repr(self, model):
-        assert "kmeans" in model.__repr__()
-        model_repr = KMeans("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<KMeans>"
+        assert model.__repr__() == "<KMeans>"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_KMEANS("SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm" USING PARAMETERS model_name = \'kmeans_model_test\', match_by_pos = \'true\')'

@@ -51,10 +51,7 @@ def model(titanic_vd):
 
 class TestKernelDensity:
     def test_repr(self, model):
-        assert "Additional Info" in model.__repr__()
-        model_repr = KernelDensity("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<KernelDensity>"
+        assert model.__repr__() == "<KernelDensity>"
 
     def test_get_params(self, model):
         assert model.get_params() == {

@@ -45,10 +45,7 @@ def model(winequality_vd):
 
 class TestPCA:
     def test_repr(self, model):
-        assert "index|     name     |  mean  |   sd" in model.__repr__()
-        model_repr = PCA("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<PCA>"
+        assert model.__repr__() == "<PCA>"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_PCA("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'pca_model_test\', match_by_pos = \'true\', cutoff = 1)'

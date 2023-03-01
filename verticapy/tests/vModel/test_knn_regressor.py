@@ -48,10 +48,7 @@ def model(titanic_vd):
 
 class TestKNeighborsRegressor:
     def test_repr(self, model):
-        assert "Additional Info" in model.__repr__()
-        model_repr = KNeighborsRegressor("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<KNeighborsRegressor>"
+        assert model.__repr__() == "<KNeighborsRegressor>"
 
     def test_get_attributes(self, model):
         m_att = model.get_attributes()

@@ -70,12 +70,7 @@ def model(dtc_data_vd):
 
 class TestDummyTreeClassifier:
     def test_repr(self, model):
-        assert (
-            "SELECT rf_classifier('public.decision_tc_model_test'," in model.__repr__()
-        )
-        model_repr = DummyTreeClassifier("RF_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<RandomForestClassifier>"
+        assert model.__repr__() == "<RandomForestClassifier>"
 
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()

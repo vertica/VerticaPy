@@ -51,10 +51,7 @@ def model(titanic_vd):
 
 class TestKNeighborsClassifier:
     def test_repr(self, model):
-        assert "Additional Info" in model.__repr__()
-        model_repr = KNeighborsClassifier("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<KNeighborsClassifier>"
+        assert model.__repr__() == "<KNeighborsClassifier>"
 
     def test_get_attributes(self, model):
         m_att = model.get_attributes()

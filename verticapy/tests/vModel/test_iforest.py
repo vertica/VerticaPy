@@ -73,10 +73,7 @@ def titanic_vd():
 )
 class TestIsolationForest:
     def test_repr(self, model):
-        assert "SELECT iforest('public.iforest_model_test'," in model.__repr__()
-        model_repr = IsolationForest("iF_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<IsolationForest>"
+        assert model.__repr__() == "<IsolationForest>"
 
     def test_contour(self, titanic_vd):
         model_test = IsolationForest("model_contour_iF",)

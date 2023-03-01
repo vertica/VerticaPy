@@ -55,10 +55,7 @@ def model(titanic_vd):
 
 class TestLinearSVC:
     def test_repr(self, model):
-        assert "predictor|coefficient" in model.__repr__()
-        model_repr = LinearSVC("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<LinearSVC>"
+        assert model.__repr__() == "<LinearSVC>"
 
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()

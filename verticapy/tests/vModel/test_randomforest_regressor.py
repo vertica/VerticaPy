@@ -87,10 +87,7 @@ def model(rfr_data_vd):
 
 class TestRFR:
     def test_repr(self, model):
-        assert "rf_regressor" in model.__repr__()
-        model_repr = RandomForestRegressor("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<RandomForestRegressor>"
+        assert model.__repr__() == "<RandomForestRegressor>"
 
     def test_contour(self, titanic_vd):
         model_test = RandomForestRegressor("model_contour",)

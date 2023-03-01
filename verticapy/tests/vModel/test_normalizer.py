@@ -50,10 +50,7 @@ def model(winequality_vd):
 
 class TestScaler:
     def test_repr(self, model):
-        assert "column_name  |  avg   |std_dev" in model.__repr__()
-        model_repr = Scaler("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<Scaler>"
+        assert model.__repr__() == "<Scaler>"
 
     def test_Scaler_subclasses(self):
         result = StandardScaler("model_test")

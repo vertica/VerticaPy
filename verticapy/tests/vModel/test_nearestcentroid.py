@@ -51,10 +51,7 @@ def model(titanic_vd):
 
 class TestNearestCentroid:
     def test_repr(self, model):
-        assert "Additional Info" in model.__repr__()
-        model_repr = NearestCentroid("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<NearestCentroid>"
+        assert model.__repr__() == "<NearestCentroid>"
 
     def test_contour(self, titanic_vd):
         model_test = NearestCentroid("model_contour",)

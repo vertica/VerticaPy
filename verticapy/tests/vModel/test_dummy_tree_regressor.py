@@ -70,10 +70,7 @@ def titanic_vd():
 
 class TestDummyTreeRegressor:
     def test_repr(self, model):
-        assert "SELECT rf_regressor('public.tr_model_test'," in model.__repr__()
-        model_repr = DummyTreeRegressor("RF_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<RandomForestRegressor>"
+        assert model.__repr__() == "<RandomForestRegressor>"
 
     def test_contour(self, titanic_vd):
         model_test = DummyTreeRegressor("model_contour",)

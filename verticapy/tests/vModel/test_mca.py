@@ -45,13 +45,7 @@ def model(market_vd):
 
 class TestMCA:
     def test_repr(self, model):
-        assert (
-            "index|                name                 |  mean  |   sd   "
-            in model.__repr__()
-        )
-        model_repr = MCA("mca_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<MCA>"
+        assert model.__repr__() == "<MCA>"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_PCA("Form_Boiled", "Form_Canned",'

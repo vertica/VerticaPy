@@ -65,10 +65,7 @@ version = get_version()
 )
 class TestKPrototypes:
     def test_repr(self, model):
-        assert "kprototypes" in model.__repr__()
-        model_repr = KPrototypes("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<KPrototypes>"
+        assert model.__repr__() == "<KPrototypes>"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_KPROTOTYPES("SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm", "Species" USING PARAMETERS model_name = \'kprototypes_model_test\', match_by_pos = \'true\')'

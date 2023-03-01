@@ -49,10 +49,7 @@ def model(titanic_vd):
 
 class TestCountVectorizer:
     def test_repr(self, model):
-        assert "Vocabulary" in model.__repr__()
-        model_repr = CountVectorizer("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<CountVectorizer>"
+        assert model.__repr__() == "<CountVectorizer>"
 
     def test_get_vertica_attributes(self, model):
         m_att = model.get_vertica_attributes()
@@ -101,9 +98,9 @@ class TestCountVectorizer:
 
         assert result_sql == clean_query(expected_sql)
 
-    def test_get_vertica_attributes(self, model):
+    def test_get_attributes(self, model):
         assert sorted(model.vocabulary_)[0:3] == ["a", "aaron", "abbing"]
-        assert model.stop_words_ == []
+        assert len(model.stop_words_) == 0
 
     def test_get_params(self, model):
         assert model.get_params() == {

@@ -52,10 +52,7 @@ def model(titanic_vd):
 
 class TestDBSCAN:
     def test_repr(self, model):
-        assert "Additional Info" in model.__repr__()
-        model_repr = DBSCAN("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<DBSCAN>"
+        assert model.__repr__() == "<DBSCAN>"
 
     def test_get_params(self, model):
         assert model.get_params() == {"eps": 0.5, "min_samples": 5, "p": 2}

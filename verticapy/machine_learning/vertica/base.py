@@ -117,7 +117,7 @@ Base Class for Vertica Models.
         names.
         """
         res = []
-        for x in self.X:
+        for x in X:
             for y in vector:
                 if quote_ident(y[0]).lower() == x.lower():
                     res += [y[1]]
