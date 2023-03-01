@@ -15,10 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
-from typing import Any, Literal, Optional, Union, get_type_hints
+from typing import Any, Callable, Literal, Optional, Union, get_type_hints
 from abc import abstractmethod
 from collections.abc import Iterable
 import numpy as np
+
+from matplotlib.axes._subplots import AxesSubplot
 
 import verticapy._config.config as conf
 from verticapy._utils._gen import gen_name, gen_tmp_name
@@ -28,7 +30,7 @@ from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
-from verticapy._typing import ArrayLike, PythonScalar
+from verticapy._typing import ArrayLike, PythonScalar, SQLRelation
 from verticapy.errors import (
     ConversionError,
     FunctionError,
@@ -125,19 +127,22 @@ class VerticaModel:
 
     # System Methods.
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Returns the model Representation.
         """
         return f"<{self._model_type}>"
 
-    def drop(self):
+    def drop(self) -> bool:
         """
         Drops the model from the Vertica database.
         """
-        drop(self.model_name, method="model")
+        return drop(self.model_name, method="model")
 
-    def summarize(self):
+    def summarize(self) -> str:
+        """
+        Summarizes the model.
+        """
         if self._is_native:
             try:
                 vertica_version(condition=[9, 0, 0])
@@ -160,17 +165,17 @@ class VerticaModel:
 
     def get_attributes(self, attr_name: str = "") -> Any:
         """
-    Returns the model attributes.
+        Returns the model attributes.
 
-    Parameters
-    ----------
-    attr_name: str, optional
-        Attribute Name.
+        Parameters
+        ----------
+        attr_name: str, optional
+            Attribute Name.
 
-    Returns
-    -------
-    Any
-        model attribute.
+        Returns
+        -------
+        Any
+            model attribute.
         """
         if not (attr_name):
             return self._attributes
@@ -189,17 +194,18 @@ class VerticaModel:
 
     def get_vertica_attributes(self, attr_name: str = ""):
         """
-    Returns the model vertica attributes. Those are stored in Vertica.
+        Returns the model vertica attributes. Those are stored
+        in Vertica.
 
-    Parameters
-    ----------
-    attr_name: str, optional
-        Attribute Name.
+        Parameters
+        ----------
+        attr_name: str, optional
+            Attribute Name.
 
-    Returns
-    -------
-    TableSample
-        model attributes.
+        Returns
+        -------
+        TableSample
+            model attributes.
         """
         if self._is_native or self._is_using_native:
             vertica_version(condition=[8, 1, 1])
@@ -223,16 +229,16 @@ class VerticaModel:
 
     # Parameters Methods.
 
-    def _get_vertica_param_dict(self):
+    def _get_vertica_param_dict(self) -> dict:
         """
-    Returns the Vertica parameters dict to use when fitting the
-    model. As some model's parameters names are not the same in
-    Vertica. It is important to map them.
+        Returns the Vertica parameters dict to use when fitting 
+        the model. As some model's parameters names are not the 
+        same in Vertica. It is important to map them.
 
-    Returns
-    -------
-    dict
-        vertica parameters
+        Returns
+        -------
+        dict
+            Vertica parameters.
         """
 
         def map_to_vertica_param_name(param: str):
@@ -307,14 +313,14 @@ class VerticaModel:
 
         return parameters
 
-    def get_params(self):
+    def get_params(self) -> dict:
         """
-    Returns the parameters of the model.
+        Returns the parameters of the model.
 
-    Returns
-    -------
-    dict
-        model parameters
+        Returns
+        -------
+        dict
+            model parameters.
         """
         all_init_params = list(get_type_hints(self.__init__).keys())
         parameters = copy.deepcopy(self.parameters)
@@ -324,14 +330,14 @@ class VerticaModel:
                 del parameters[p]
         return parameters
 
-    def set_params(self, parameters: dict = {}):
+    def set_params(self, parameters: dict = {}) -> None:
         """
-    Sets the parameters of the model.
+        Sets the parameters of the model.
 
-    Parameters
-    ----------
-    parameters: dict, optional
-        New parameters.
+        Parameters
+        ----------
+        parameters: dict, optional
+            New parameters.
         """
         all_init_params = list(get_type_hints(self.__init__).keys())
         new_parameters = copy.deepcopy(self.parameters)
@@ -346,11 +352,11 @@ class VerticaModel:
                 )
                 warnings.warn(warning_message, Warning)
             new_parameters[p] = parameters[p]
-        self.__init__(name=self.model_name, **new_parameters)
+        return self.__init__(name=self.model_name, **new_parameters)
 
     # I/O Methods.
 
-    def deploySQL(self, X: Union[str, list] = []):
+    def deploySQL(self, X: Union[str, list] = []) -> str:
         """
         Returns the SQL code needed to deploy the model. 
 
@@ -382,26 +388,26 @@ class VerticaModel:
 
     def to_python(
         self, return_proba: bool = False, return_distance_clusters: bool = False,
-    ):
+    ) -> Callable:
         """
-    Returns the Python function needed to do in-memory scoring 
-    without using built-in Vertica functions.
+        Returns the Python function needed to do in-memory 
+        scoring without using built-in Vertica functions.
 
-    Parameters
-    ----------
-    return_proba: bool, optional
-        If set to True and the model is a classifier, the function
-        returns the model probabilities.
-    return_distance_clusters: bool, optional
-        If set to True and the model is cluster-based, 
-        the function returns the model clusters distances. If the model
-        is KPrototypes, the function returns the dissimilarity function.
+        Parameters
+        ----------
+        return_proba: bool, optional
+            If set to True and the model is a classifier,
+            the function returns the model probabilities.
+        return_distance_clusters: bool, optional
+            If set to True and the model is cluster-based, 
+            the function returns the model clusters distances. 
+            If the model is KPrototypes, the function returns 
+            the dissimilarity function.
 
-
-    Returns
-    -------
-    str / func
-        Python function
+        Returns
+        -------
+        Callable
+            Python function.
         """
         model = self.to_memmodel()
         if return_proba:
@@ -416,27 +422,28 @@ class VerticaModel:
         X: list = [],
         return_proba: bool = False,
         return_distance_clusters: bool = False,
-    ):
+    ) -> Union[str, list]:
         """
-    Returns the SQL code needed to deploy the model without using built-in 
-    Vertica functions.
+        Returns the SQL code needed to deploy the model 
+        without using built-in Vertica functions.
 
-    Parameters
-    ----------
-    X: list, optional
-        input predictors name.
-    return_proba: bool, optional
-        If set to True and the model is a classifier, the function will return 
-        the class probabilities.
-    return_distance_clusters: bool, optional
-        If set to True and the model is cluster-based, 
-        the function returns the model clusters distances. If the model
-        is KPrototypes, the function returns the dissimilarity function.
+        Parameters
+        ----------
+        X: list, optional
+            input predictors name.
+        return_proba: bool, optional
+            If set to True and the model is a classifier,
+            the function will return the class probabilities.
+        return_distance_clusters: bool, optional
+            If set to True and the model is cluster-based, 
+            the function returns the model clusters distances. 
+            If the model is KPrototypes, the function returns 
+            the dissimilarity function.
 
-    Returns
-    -------
-    str / list
-        SQL code
+        Returns
+        -------
+        str / list
+            SQL code.
         """
         if not X:
             X = self.X
@@ -452,7 +459,7 @@ class VerticaModel:
 
     def contour(
         self, nbins: int = 100, ax=None, **style_kwds,
-    ):
+    ) -> AxesSubplot:
         """
         Draws the model's contour plot.
 
@@ -490,29 +497,24 @@ class Supervised(VerticaModel):
 
     def fit(
         self,
-        input_relation: Union[str, vDataFrame],
+        input_relation: SQLRelation,
         X: Union[str, list],
         y: str,
-        test_relation: Union[str, vDataFrame] = "",
-    ):
+        test_relation: SQLRelation = "",
+    ) -> None:
         """
-	Trains the model.
+    	Trains the model.
 
-	Parameters
-	----------
-	input_relation: str / vDataFrame
-		Training relation.
-	X: str / list
-		List of the predictors.
-	y: str
-		Response column.
-	test_relation: str / vDataFrame, optional
-		Relation used to test the model.
-
-	Returns
-	-------
-	object
-		model
+    	Parameters
+    	----------
+    	input_relation: SQLRelation
+    		Training relation.
+    	X: str / list
+    		List of the predictors.
+    	y: str
+    		Response column.
+    	test_relation: SQLRelation, optional
+    		Relation used to test the model.
 		"""
         if isinstance(X, str):
             X = [X]
@@ -625,7 +627,7 @@ class Supervised(VerticaModel):
                 if tmp_view:
                     drop(relation, method="view")
         self._compute_attributes()
-        return self
+        return None
 
 
 class Tree:
@@ -1097,7 +1099,7 @@ class BinaryClassifier(Classifier):
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         cutoff: Union[int, float] = 0.5,
@@ -1108,7 +1110,7 @@ class BinaryClassifier(Classifier):
 
 	Parameters
 	----------
-	vdf: str / vDataFrame
+	vdf: SQLRelation
 		Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
@@ -1149,7 +1151,7 @@ class BinaryClassifier(Classifier):
 
     def predict_proba(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         pos_label: Union[str, int, float] = None,
@@ -1160,7 +1162,7 @@ class BinaryClassifier(Classifier):
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, 
         "(SELECT 1) x" is correct whereas, "(SELECT 1)" and "SELECT 1" are 
@@ -1717,7 +1719,7 @@ class MulticlassClassifier(Classifier):
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         cutoff: Union[int, float] = 0.5,
@@ -1728,7 +1730,7 @@ class MulticlassClassifier(Classifier):
 
 	Parameters
 	----------
-	vdf: str / vDataFrame
+	vdf: SQLRelation
 		Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
@@ -1784,7 +1786,7 @@ class MulticlassClassifier(Classifier):
 
     def predict_proba(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         pos_label: Union[int, str, float] = None,
@@ -1795,7 +1797,7 @@ class MulticlassClassifier(Classifier):
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
@@ -1983,7 +1985,7 @@ class MulticlassClassifier(Classifier):
 class Regressor(Supervised):
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         inplace: bool = True,
@@ -1993,7 +1995,7 @@ class Regressor(Supervised):
 
 	Parameters
 	----------
-	vdf: str / vDataFrame
+	vdf: SQLRelation
 		Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
         is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -2166,13 +2168,13 @@ class Regressor(Supervised):
 
 
 class Unsupervised(VerticaModel):
-    def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
+    def fit(self, input_relation: SQLRelation, X: Union[str, list] = []):
         """
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str / vDataFrame
+	input_relation: SQLRelation
 		Training relation.
 	X: str / list, optional
 		List of the predictors. If empty, all the numerical columns will be used.
@@ -2527,13 +2529,13 @@ class Preprocessing(Unsupervised):
         else:
             return X
 
-    def inverse_transform(self, vdf: Union[str, vDataFrame], X: Union[str, list] = []):
+    def inverse_transform(self, vdf: SQLRelation, X: Union[str, list] = []):
         """
     Applies the Inverse Model on a vDataFrame.
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -2567,13 +2569,13 @@ class Preprocessing(Unsupervised):
         main_relation = f"(SELECT {inverse_sql} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
 
-    def transform(self, vdf: Union[str, vDataFrame] = None, X: Union[str, list] = []):
+    def transform(self, vdf: SQLRelation = None, X: Union[str, list] = []):
         """
     Applies the model on a vDataFrame.
 
     Parameters
     ----------
-    vdf: str / vDataFrame, optional
+    vdf: SQLRelation, optional
         Input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -2886,7 +2888,7 @@ class Decomposition(Preprocessing):
 
     def transform(
         self,
-        vdf: Union[str, vDataFrame] = None,
+        vdf: SQLRelation = None,
         X: Union[str, list] = [],
         n_components: int = 0,
         cutoff: Union[int, float] = 1,
@@ -2896,7 +2898,7 @@ class Decomposition(Preprocessing):
 
     Parameters
     ----------
-    vdf: str / vDataFrame, optional
+    vdf: SQLRelation, optional
         Input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.

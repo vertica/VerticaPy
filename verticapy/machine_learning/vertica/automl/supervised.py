@@ -22,7 +22,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import schema_relation
 from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy._typing import PythonScalar
+from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -246,7 +246,7 @@ model_grid_ : TableSample
         """
         return self.best_model_.deploySQL(X)
 
-    def fit(self, input_relation: Union[str, vDataFrame], X: list = [], y: str = ""):
+    def fit(self, input_relation: SQLRelation, X: list = [], y: str = ""):
         """
         Trains the model.
 
@@ -542,8 +542,6 @@ model_grid_ : TableSample
         else:
             best_model.fit(input_relation, X, y)
         self.best_model_ = best_model
-        self._vertica_fit_sql = best_model._vertica_fit_sql
-        self._vertica_predict_sql = best_model._vertica_predict_sql
         self.model_grid_ = result
         self.parameters["reverse"] = not (reverse)
         if self.preprocess_ != None:

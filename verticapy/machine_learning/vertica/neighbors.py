@@ -26,7 +26,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import ArrayLike, PythonScalar
+from verticapy._typing import ArrayLike, PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -434,7 +434,7 @@ p: int, optional
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         cutoff: Union[int, float] = 0.5,
@@ -446,7 +446,7 @@ p: int, optional
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example,  
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
@@ -525,7 +525,7 @@ p: int, optional
 
     def predict_proba(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         pos_label: Union[int, str, float] = None,
@@ -537,7 +537,7 @@ p: int, optional
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
         is correct, whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -944,7 +944,7 @@ xlim: list, optional
                 y += [K]
         return [x, y]
 
-    def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
+    def fit(self, input_relation: SQLRelation, X: Union[str, list] = []):
         """
     Trains the model.
 
@@ -1286,7 +1286,7 @@ p: int, optional
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         inplace: bool = True,
@@ -1297,7 +1297,7 @@ p: int, optional
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
         is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -1415,7 +1415,7 @@ p: int, optional
 
     def fit(
         self,
-        input_relation: Union[str, vDataFrame],
+        input_relation: SQLRelation,
         X: Union[str, list] = [],
         key_columns: Union[str, list] = [],
         index: str = "",
@@ -1425,7 +1425,7 @@ p: int, optional
 
 	Parameters
 	----------
-	input_relation: str / vDataFrame
+	input_relation: SQLRelation
 		Training relation.
 	X: str / list, optional
 		List of the predictors.

@@ -76,7 +76,7 @@ Computes the most frequent keys in the input VMap.
 
 Parameters
 ----------
-expr: str / vDataFrame
+expr: SQLRelation
     Input expression. You can also specify a vDataFrame or a customized 
     relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
     is allowed, whereas "(SELECT 1)" and "SELECT 1" are not.
@@ -146,7 +146,7 @@ Checks if the input column is a VMap.
 
 Parameters
 ----------
-expr: str / vDataFrame
+expr: SQLRelation
     Any relation or expression. If you enter an expression,
     you must enclose it in parentheses and provide an alias.
 column: str

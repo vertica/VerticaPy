@@ -21,6 +21,7 @@ import verticapy._config.config as conf
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.vdataframe.base import vDataFrame
@@ -168,7 +169,7 @@ final_relation_: vDataFrame
 
     def fit(
         self,
-        input_relation: Union[str, vDataFrame],
+        input_relation: SQLRelation,
         X: list = [],
         ts: str = "",
         by: list = [],

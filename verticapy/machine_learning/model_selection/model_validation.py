@@ -27,7 +27,7 @@ import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
-from verticapy._typing import PythonScalar
+from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -42,7 +42,7 @@ from verticapy.plotting._matplotlib.timeseries import range_curve
 def _compute_function_metrics(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
     nbins: int = 30,
     fun_sql_name: str = "",
@@ -99,7 +99,7 @@ def _compute_function_metrics(
 @save_verticapy_logs
 def cross_validate(
     estimator,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: Union[str, list],
     y: str,
     metric: Union[str, list] = "all",
@@ -117,7 +117,7 @@ Parameters
 ----------
 estimator: object
 	Vertica estimator with a fit method.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use to train the model.
 X: str / list
 	List of the predictor columns.
@@ -369,7 +369,7 @@ TableSample
 @save_verticapy_logs
 def learning_curve(
     estimator,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: Union[str, list],
     y: str,
     sizes: list = [0.1, 0.33, 0.55, 0.78, 1.0],
@@ -584,7 +584,7 @@ TableSample
 def lift_chart(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: Union[str, int, float] = 1,
     nbins: int = 30,
     ax=None,
@@ -599,7 +599,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction Probability.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -679,7 +679,7 @@ TableSample
 def prc_curve(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: Union[str, int, float] = 1,
     nbins: int = 30,
     auc_prc: bool = False,
@@ -768,7 +768,7 @@ TableSample
 def roc_curve(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
     nbins: int = 30,
     auc_roc: bool = False,

@@ -24,6 +24,7 @@ import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
+from verticapy._typing import SQLRelation
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -33,7 +34,7 @@ from verticapy.plotting._matplotlib.base import updated_dict
 
 @save_verticapy_logs
 def best_k(
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: Union[str, list] = [],
     n_cluster: Union[tuple, list] = (1, 100),
     init: Literal["kmeanspp", "random", None] = None,
@@ -130,7 +131,7 @@ int
 
 @save_verticapy_logs
 def elbow(
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: Union[str, list] = [],
     n_cluster: Union[tuple, list] = (1, 15),
     init: Literal["kmeanspp", "random", None] = None,
@@ -146,7 +147,7 @@ Draws an elbow curve.
 
 Parameters
 ----------
-input_relation: str / vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: str / list, optional
     List of the predictor columns. If empty all the numerical vcolumns will

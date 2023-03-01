@@ -19,6 +19,7 @@ from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._typing import SQLRelation
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -128,7 +129,7 @@ model_: object
             "preprocess_dict": preprocess_dict,
         }
 
-    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
+    def fit(self, input_relation: SQLRelation, X: list = []):
         """
     Trains the model.
 

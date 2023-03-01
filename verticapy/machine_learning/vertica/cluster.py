@@ -25,6 +25,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy._typing import SQLRelation
 from verticapy.connection import current_cursor
 
 from verticapy.core.tablesample.base import TableSample
@@ -116,7 +117,7 @@ class Clustering(Unsupervised):
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         inplace: bool = True,
@@ -126,7 +127,7 @@ class Clustering(Unsupervised):
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
         is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -740,7 +741,7 @@ p: int, optional
 
     def fit(
         self,
-        input_relation: Union[str, vDataFrame],
+        input_relation: SQLRelation,
         X: Union[str, list] = [],
         key_columns: Union[str, list] = [],
         index: str = "",
@@ -750,7 +751,7 @@ p: int, optional
 
     Parameters
     ----------
-    input_relation: str / vDataFrame
+    input_relation: SQLRelation
         Training relation.
     X: str / list, optional
         List of the predictors. If empty, all the numerical vcolumns will be used.

@@ -21,7 +21,7 @@ from tqdm.auto import tqdm
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import PythonScalar
+from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -43,7 +43,7 @@ from verticapy.sql.drop import drop
 @save_verticapy_logs
 def randomized_features_search_cv(
     estimator,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: Union[str, list],
     y: str,
     metric: str = "auto",
@@ -286,7 +286,7 @@ TableSample
 @save_verticapy_logs
 def stepwise(
     estimator,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: Union[str, list],
     y: str,
     criterion: Literal["aic", "bic"] = "bic",

@@ -20,7 +20,7 @@ from typing import Union
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
-from verticapy._typing import PythonScalar
+from verticapy._typing import PythonScalar, SQLRelation
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -35,7 +35,7 @@ from verticapy.machine_learning._utils import (
 def accuracy_score(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: Union[str, int, float] = None,
 ):
     """
@@ -47,7 +47,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -89,7 +89,7 @@ float
 def auc(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
     nbins: int = 10000,
 ):
@@ -132,7 +132,7 @@ float
 def classification_report(
     y_true: str = "",
     y_score: list = [],
-    input_relation: Union[str, vDataFrame] = "",
+    input_relation: SQLRelation = "",
     labels: list = [],
     cutoff: Union[int, float, list] = [],
     estimator=None,
@@ -149,7 +149,7 @@ y_true: str, optional
 	Response column.
 y_score: list, optional
 	List containing the probability and the prediction.
-input_relation: str / vDataFrame, optional
+input_relation: SQLRelation, optional
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -298,7 +298,7 @@ TableSample
 def confusion_matrix(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: Union[str, int, float] = 1,
 ):
     """
@@ -310,7 +310,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -363,7 +363,7 @@ TableSample
 def critical_success_index(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
 ):
     """
@@ -397,7 +397,7 @@ float
 def f1_score(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
 ):
     """
@@ -437,7 +437,7 @@ float
 def informedness(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
 ):
     """
@@ -472,7 +472,7 @@ float
 def log_loss(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
 ):
     """
@@ -512,7 +512,7 @@ float
 def markedness(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
 ):
     """
@@ -547,7 +547,7 @@ float
 def matthews_corrcoef(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
 ):
     """
@@ -585,7 +585,7 @@ float
 @check_minimum_version
 @save_verticapy_logs
 def multilabel_confusion_matrix(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], labels: list,
+    y_true: str, y_score: str, input_relation: SQLRelation, labels: list,
 ):
     """
 Computes the Multi Label Confusion Matrix.
@@ -596,7 +596,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -642,7 +642,7 @@ TableSample
 def negative_predictive_score(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
 ):
     """
@@ -676,7 +676,7 @@ float
 def prc_auc(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
     nbins: int = 10000,
 ):
@@ -719,7 +719,7 @@ float
 def precision_score(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
 ):
     """
@@ -753,7 +753,7 @@ float
 def recall_score(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
 ):
     """
@@ -787,7 +787,7 @@ float
 def specificity_score(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
 ):
     """

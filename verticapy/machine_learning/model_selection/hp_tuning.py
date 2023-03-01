@@ -27,7 +27,7 @@ import verticapy._config.config as conf
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import PythonScalar
+from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -48,7 +48,7 @@ from verticapy.sql.drop import drop
 @save_verticapy_logs
 def bayesian_search_cv(
     estimator,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: list,
     y: str,
     metric: str = "auto",
@@ -293,7 +293,7 @@ TableSample
 
 @save_verticapy_logs
 def enet_search_cv(
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: list,
     y: str,
     metric: str = "auto",
@@ -1061,7 +1061,7 @@ TableSample
 def grid_search_cv(
     estimator,
     param_grid: Union[dict, list],
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: Union[str, list],
     y: str,
     metric: str = "auto",
@@ -1420,7 +1420,7 @@ TableSample
 @save_verticapy_logs
 def randomized_search_cv(
     estimator,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: list,
     y: str,
     metric: str = "auto",
@@ -1518,7 +1518,7 @@ def validation_curve(
     estimator,
     param_name: str,
     param_range: list,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: list,
     y: str,
     metric: str = "auto",

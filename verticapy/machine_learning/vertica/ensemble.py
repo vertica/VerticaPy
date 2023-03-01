@@ -28,6 +28,7 @@ from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
+from verticapy._typing import SQLRelation
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -1201,7 +1202,7 @@ col_sample_by_tree: float, optional
 
     def decision_function(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: list = [],
         name: str = "",
         inplace: bool = True,
@@ -1212,7 +1213,7 @@ col_sample_by_tree: float, optional
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use for the prediction. You can 
         specify a customized relation if it is 
         enclosed with an alias. For example, 
@@ -1312,7 +1313,7 @@ col_sample_by_tree: float, optional
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         cutoff: Union[int, float] = 0.7,
@@ -1324,7 +1325,7 @@ col_sample_by_tree: float, optional
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use for the prediction. You can 
         specify a customized relation if it is 
         enclosed with an alias. For example, 

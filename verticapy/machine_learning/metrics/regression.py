@@ -21,6 +21,7 @@ from scipy.stats import f
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import SQLRelation
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -30,7 +31,7 @@ from verticapy.machine_learning._utils import _compute_metric_query
 
 @save_verticapy_logs
 def aic_bic(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
 ):
     """
 Computes the AIC (Akaike’s Information Criterion) & BIC (Bayesian Information 
@@ -42,7 +43,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -75,7 +76,7 @@ tuple of floats
 
 
 def aic_score(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
 ):
     return aic_bic(y_true=y_true, y_score=y_score, input_relation=input_relation, k=k)[
         0
@@ -83,7 +84,7 @@ def aic_score(
 
 
 def bic_score(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
 ):
     return aic_bic(y_true=y_true, y_score=y_score, input_relation=input_relation, k=k)[
         1
@@ -92,7 +93,7 @@ def bic_score(
 
 @save_verticapy_logs
 def anova_table(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
 ):
     """
 Computes the Anova Table.
@@ -103,7 +104,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -164,7 +165,7 @@ TableSample
 
 @save_verticapy_logs
 def explained_variance(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
+    y_true: str, y_score: str, input_relation: SQLRelation
 ):
     """
 Computes the Explained Variance.
@@ -175,7 +176,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -195,7 +196,7 @@ float
 
 
 @save_verticapy_logs
-def max_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
+def max_error(y_true: str, y_score: str, input_relation: SQLRelation):
     """
 Computes the Max Error.
 
@@ -205,7 +206,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -226,7 +227,7 @@ float
 
 @save_verticapy_logs
 def mean_absolute_error(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
+    y_true: str, y_score: str, input_relation: SQLRelation
 ):
     """
 Computes the Mean Absolute Error.
@@ -237,7 +238,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -260,7 +261,7 @@ float
 def mean_squared_error(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     root: bool = False,
 ):
     """
@@ -272,7 +273,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -294,7 +295,7 @@ float
 
 @save_verticapy_logs
 def mean_squared_log_error(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
+    y_true: str, y_score: str, input_relation: SQLRelation
 ):
     """
 Computes the Mean Squared Log Error.
@@ -305,7 +306,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -326,7 +327,7 @@ float
 
 @save_verticapy_logs
 def median_absolute_error(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame]
+    y_true: str, y_score: str, input_relation: SQLRelation
 ):
     """
 Computes the Median Absolute Error.
@@ -337,7 +338,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -361,7 +362,7 @@ def quantile_error(
     q: Union[int, float],
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
 ):
     """
 Computes the input Quantile of the Error.
@@ -374,7 +375,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -395,7 +396,7 @@ float
 def r2_score(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     k: int = 0,
     adj: bool = True,
 ):
@@ -408,7 +409,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -445,7 +446,7 @@ float
 
 @save_verticapy_logs
 def regression_report(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], k: int = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
 ):
     """
 Computes a regression report using multiple metrics (r2, mse, max error...). 
@@ -456,7 +457,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x

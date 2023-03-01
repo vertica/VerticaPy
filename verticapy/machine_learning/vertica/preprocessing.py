@@ -23,6 +23,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation, clean_query
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy._typing import SQLRelation
 
 
 from verticapy.core.tablesample.base import TableSample
@@ -222,13 +223,13 @@ max_text_size: int, optional
 
         return clean_query(query.format("*", ""))
 
-    def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
+    def fit(self, input_relation: SQLRelation, X: Union[str, list] = []):
         """
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str / vDataFrame
+	input_relation: SQLRelation
 		Training relation.
 	X: str / list
 		List of the predictors. If empty, all the columns will be used.
