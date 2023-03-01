@@ -279,7 +279,7 @@ Performs a Cochrane-Orcutt estimation.
 
 Parameters
 ----------
-model: vModel
+model: VerticaModel
     Linear regression object.
 vdf: vDataFrame / str
     Input relation.

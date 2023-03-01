@@ -432,11 +432,7 @@ class BinaryTreeRegressor(Tree):
         return "BinaryTreeRegressor"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "children_left_", "children_right_", "feature_", "threshold_", "value_"
-    ]:
+    def _attributes(self) -> list[str]:
         return ["children_left_", "children_right_", "feature_", "threshold_", "value_"]
 
     def __init__(
@@ -494,11 +490,7 @@ class BinaryTreeAnomaly(Tree):
         return "BinaryTreeAnomaly"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "children_left_", "children_right_", "feature_", "threshold_", "value_", "psy_"
-    ]:
+    def _attributes(self) -> list[str]:
         return [
             "children_left_",
             "children_right_",
@@ -565,16 +557,7 @@ class BinaryTreeClassifier(Tree):
         return "BinaryTreeClassifier"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "children_left_",
-        "children_right_",
-        "feature_",
-        "threshold_",
-        "value_",
-        "classes_",
-    ]:
+    def _attributes(self) -> list[str]:
         return [
             "children_left_",
             "children_right_",
@@ -635,7 +618,7 @@ class NonBinaryTree(Tree):
         return "NonBinaryTree"
 
     @property
-    def _attributes(self) -> Literal["tree_", "classes_"]:
+    def _attributes(self) -> list[str]:
         return ["tree_", "classes_"]
 
     def __init__(self, tree: dict, classes: ArrayLike = []) -> None:

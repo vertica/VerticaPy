@@ -14,9 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union
+from typing import Union, TYPE_CHECKING
 import numpy as np
 
-ArrayLike = Union[list, np.ndarray]
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
-PythonScalar = Union[bool, float, str]
+ArrayLike = Union[list, np.ndarray]
+PythonScalar = Union[None, bool, float, str]
+SQLRelation = Union[str, "vDataFrame"]

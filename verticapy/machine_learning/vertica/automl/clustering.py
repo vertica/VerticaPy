@@ -14,20 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union
+from typing import Literal, Union
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._typing import SQLRelation
 
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.vertica.base import vModel
+from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 from verticapy.machine_learning.model_selection import best_k
 
 
-class AutoClustering(vModel):
+class AutoClustering(VerticaModel):
     """
 Automatically creates k different groups with which to generalize the data.
 
@@ -72,11 +73,29 @@ model_: object
     Final model used for the clustering.
     """
 
-    _vertica_fit_sql = ""
-    _vertica_predict_sql = ""
-    _model_category = "UNSUPERVISED"
-    _model_subcategory = "CLUSTERING"
-    _model_type = "AutoClustering"
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
+
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLUSTERING"]:
+        return "CLUSTERING"
+
+    @property
+    def _model_type(self) -> Literal["AutoClustering"]:
+        return "AutoClustering"
 
     @save_verticapy_logs
     def __init__(
@@ -110,7 +129,7 @@ model_: object
             "preprocess_dict": preprocess_dict,
         }
 
-    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
+    def fit(self, input_relation: SQLRelation, X: list = []):
         """
     Trains the model.
 

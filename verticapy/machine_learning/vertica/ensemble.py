@@ -28,16 +28,17 @@ from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
+from verticapy._typing import SQLRelation
 
 from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import (
-    Clustering,
     MulticlassClassifier,
     Regressor,
     Tree,
 )
+from verticapy.machine_learning.vertica.cluster import Clustering
 
 """
 General Classes.
@@ -473,12 +474,8 @@ nbins: int, optional
         return "RandomForestRegressor"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "n_estimators_", "trees_", "features_importance_", "features_importance_trees_"
-    ]:
-        return Literal[
+    def _attributes(self) -> list[str]:
+        return [
             "n_estimators_",
             "trees_",
             "features_importance_",
@@ -624,17 +621,8 @@ col_sample_by_node: float, optional
         return "XGBRegressor"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "n_estimators_",
-        "eta_",
-        "mean_",
-        "trees_",
-        "features_importance_",
-        "features_importance_trees_",
-    ]:
-        return Literal[
+    def _attributes(self) -> list[str]:
+        return [
             "n_estimators_",
             "eta_",
             "mean_",
@@ -800,16 +788,8 @@ nbins: int, optional
         return "RandomForestClassifier"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "n_estimators_",
-        "classes_",
-        "trees_",
-        "features_importance_",
-        "features_importance_trees_",
-    ]:
-        return Literal[
+    def _attributes(self) -> list[str]:
+        return [
             "n_estimators_",
             "classes_",
             "trees_",
@@ -972,18 +952,8 @@ col_sample_by_node: float, optional
         return "XGBClassifier"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "n_estimators_",
-        "classes_",
-        "eta_",
-        "logodds_",
-        "trees_",
-        "features_importance_",
-        "features_importance_trees_",
-    ]:
-        return Literal[
+    def _attributes(self) -> list[str]:
+        return [
             "n_estimators_",
             "classes_",
             "eta_",
@@ -1164,8 +1134,8 @@ col_sample_by_tree: float, optional
         return "IsolationForest"
 
     @property
-    def _attributes(self) -> Literal["n_estimators_", "psy_", "trees_"]:
-        return Literal["n_estimators_", "psy_", "trees_"]
+    def _attributes(self) -> list[str]:
+        return ["n_estimators_", "psy_", "trees_"]
 
     @check_minimum_version
     @save_verticapy_logs
@@ -1231,11 +1201,7 @@ col_sample_by_tree: float, optional
             return mm.IsolationForest(self.trees_)
 
     def decision_function(
-        self,
-        vdf: Union[str, vDataFrame],
-        X: list = [],
-        name: str = "",
-        inplace: bool = True,
+        self, vdf: SQLRelation, X: list = [], name: str = "", inplace: bool = True,
     ) -> vDataFrame:
         """
     Returns the anomaly score using the input 
@@ -1243,7 +1209,7 @@ col_sample_by_tree: float, optional
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use for the prediction. You can 
         specify a customized relation if it is 
         enclosed with an alias. For example, 
@@ -1343,7 +1309,7 @@ col_sample_by_tree: float, optional
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         cutoff: Union[int, float] = 0.7,
@@ -1355,7 +1321,7 @@ col_sample_by_tree: float, optional
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use for the prediction. You can 
         specify a customized relation if it is 
         enclosed with an alias. For example, 

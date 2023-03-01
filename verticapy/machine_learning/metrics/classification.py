@@ -20,6 +20,7 @@ from typing import Union
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy._typing import PythonScalar, SQLRelation
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -34,7 +35,7 @@ from verticapy.machine_learning._utils import (
 def accuracy_score(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: Union[str, int, float] = None,
 ):
     """
@@ -46,7 +47,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -88,8 +89,8 @@ float
 def auc(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    input_relation: SQLRelation,
+    pos_label: PythonScalar = 1,
     nbins: int = 10000,
 ):
     """
@@ -105,7 +106,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the ROC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
@@ -131,7 +132,7 @@ float
 def classification_report(
     y_true: str = "",
     y_score: list = [],
-    input_relation: Union[str, vDataFrame] = "",
+    input_relation: SQLRelation = "",
     labels: list = [],
     cutoff: Union[int, float, list] = [],
     estimator=None,
@@ -148,7 +149,7 @@ y_true: str, optional
 	Response column.
 y_score: list, optional
 	List containing the probability and the prediction.
-input_relation: str / vDataFrame, optional
+input_relation: SQLRelation, optional
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -297,7 +298,7 @@ TableSample
 def confusion_matrix(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     pos_label: Union[str, int, float] = 1,
 ):
     """
@@ -309,7 +310,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -360,10 +361,7 @@ TableSample
 
 @save_verticapy_logs
 def critical_success_index(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Critical Success Index.
@@ -378,7 +376,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the CSI, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
@@ -394,10 +392,7 @@ float
 
 @save_verticapy_logs
 def f1_score(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the F1 Score.
@@ -412,7 +407,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the F1 Score, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
@@ -434,10 +429,7 @@ float
 
 @save_verticapy_logs
 def informedness(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Informedness.
@@ -452,7 +444,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the informedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
@@ -469,10 +461,7 @@ float
 
 @save_verticapy_logs
 def log_loss(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Log Loss.
@@ -487,7 +476,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the log loss, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
@@ -509,10 +498,7 @@ float
 
 @save_verticapy_logs
 def markedness(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Markedness.
@@ -527,7 +513,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the markedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
@@ -544,10 +530,7 @@ float
 
 @save_verticapy_logs
 def matthews_corrcoef(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Matthews Correlation Coefficient.
@@ -562,7 +545,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the Matthews Correlation Coefficient, one of the response column 
 	class must be the positive one. The parameter 'pos_label' represents this 
 	class.
@@ -584,7 +567,7 @@ float
 @check_minimum_version
 @save_verticapy_logs
 def multilabel_confusion_matrix(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], labels: list,
+    y_true: str, y_score: str, input_relation: SQLRelation, labels: list,
 ):
     """
 Computes the Multi Label Confusion Matrix.
@@ -595,7 +578,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -639,10 +622,7 @@ TableSample
 
 @save_verticapy_logs
 def negative_predictive_score(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Negative Predictive Score.
@@ -657,7 +637,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the Negative Predictive Score, one of the response column class 
 	must be the positive one. The parameter 'pos_label' represents this class.
 
@@ -675,8 +655,8 @@ float
 def prc_auc(
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    input_relation: SQLRelation,
+    pos_label: PythonScalar = 1,
     nbins: int = 10000,
 ):
     """
@@ -692,7 +672,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the PRC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
@@ -716,10 +696,7 @@ float
 
 @save_verticapy_logs
 def precision_score(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Precision Score.
@@ -734,7 +711,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the Precision Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
 
@@ -750,10 +727,7 @@ float
 
 @save_verticapy_logs
 def recall_score(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Recall Score.
@@ -768,7 +742,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the Recall Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
 
@@ -784,10 +758,7 @@ float
 
 @save_verticapy_logs
 def specificity_score(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 Computes the Specificity Score.
@@ -802,7 +773,7 @@ input_relation: str/vDataFrame
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	To compute the Specificity Score, one of the response column classes must 
 	be the positive one. The parameter 'pos_label' represents this class.
 

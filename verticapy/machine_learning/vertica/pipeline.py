@@ -18,6 +18,7 @@ from typing import Literal, Union
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._typing import SQLRelation
 from verticapy.errors import ParameterError, ModelError
 
 from verticapy.core.vdataframe.base import vDataFrame
@@ -114,10 +115,10 @@ steps: list
 
     def fit(
         self,
-        input_relation: Union[str, vDataFrame],
+        input_relation: SQLRelation,
         X: list,
         y: str = "",
-        test_relation: Union[str, vDataFrame] = "",
+        test_relation: SQLRelation = "",
     ):
         """
     Trains the model.
@@ -182,7 +183,7 @@ steps: list
         return params
 
     def predict(
-        self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator",
+        self, vdf: SQLRelation = None, X: list = [], name: str = "estimator",
     ):
         """
     Applies the model on a vDataFrame.
@@ -269,7 +270,7 @@ steps: list
                 method = "accuracy"
         return self.steps[-1][1].score(method)
 
-    def transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
+    def transform(self, vdf: SQLRelation = None, X: list = []):
         """
     Applies the model on a vDataFrame.
 
@@ -307,7 +308,7 @@ steps: list
             X_all += X_new
         return current_vdf
 
-    def inverse_transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
+    def inverse_transform(self, vdf: SQLRelation = None, X: list = []):
         """
     Applies the inverse model transformation on a vDataFrame.
 

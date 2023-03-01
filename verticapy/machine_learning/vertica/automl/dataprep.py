@@ -21,15 +21,16 @@ import verticapy._config.config as conf
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.vertica.base import vModel
+from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.decomposition import PCA
 
 
-class AutoDataPrep(vModel):
+class AutoDataPrep(VerticaModel):
     """
 Automatically find relations between the different features to preprocess
 the data according to each column type.
@@ -103,12 +104,29 @@ final_relation_: vDataFrame
     Relation created after fitting the model.
     """
 
-    _vertica_fit_sql = ""
-    _vertica_transform_sql = ""
-    _vertica_inverse_transform_sql = ""
-    _model_category = "UNSUPERVISED"
-    _model_subcategory = "PREPROCESSING"
-    _model_type = "AutoDataPrep"
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
+
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["PREPROCESSING"]:
+        return "PREPROCESSING"
+
+    @property
+    def _model_type(self) -> Literal["AutoDataPrep"]:
+        return "AutoDataPrep"
 
     @save_verticapy_logs
     def __init__(
@@ -128,7 +146,7 @@ final_relation_: vDataFrame
         identify_ts: bool = True,
         save: bool = True,
     ):
-        self._model_type, self.model_name = "AutoDataPrep", name
+        self.model_name = name
         if not (self.model_name):
             self.model_name = gen_tmp_name(
                 schema=conf.get_option("temp_schema"), name="autodataprep"
@@ -150,11 +168,7 @@ final_relation_: vDataFrame
         }
 
     def fit(
-        self,
-        input_relation: Union[str, vDataFrame],
-        X: list = [],
-        ts: str = "",
-        by: list = [],
+        self, input_relation: SQLRelation, X: list = [], ts: str = "", by: list = [],
     ):
         """
     Trains the model.

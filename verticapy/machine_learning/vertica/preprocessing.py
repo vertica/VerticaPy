@@ -23,13 +23,14 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation, clean_query
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy._typing import SQLRelation
 
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
-from verticapy.machine_learning.vertica.base import Preprocessing, vModel
+from verticapy.machine_learning.vertica.base import Preprocessing, VerticaModel
 
 
 @check_minimum_version
@@ -85,7 +86,7 @@ vDataFrame
     return vDataFrame(name)
 
 
-class CountVectorizer(vModel):
+class CountVectorizer(VerticaModel):
     """
 Creates a Text Index which will count the occurences of each word in the 
 data.
@@ -140,7 +141,7 @@ max_text_size: int, optional
         return "CountVectorizer"
 
     @property
-    def _attributes(self) -> Literal["stop_words_", "vocabulary_", "n_errors_"]:
+    def _attributes(self) -> list[str]:
         return ["stop_words_", "vocabulary_", "n_errors_"]
 
     @save_verticapy_logs
@@ -222,13 +223,13 @@ max_text_size: int, optional
 
         return clean_query(query.format("*", ""))
 
-    def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
+    def fit(self, input_relation: SQLRelation, X: Union[str, list] = []):
         """
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str / vDataFrame
+	input_relation: SQLRelation
 		Training relation.
 	X: str / list
 		List of the predictors. If empty, all the columns will be used.
@@ -342,10 +343,13 @@ method: str, optional
         return "Scaler"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal["min_", "max_", "median_", "mad_", "mean_", "std_"]:
-        return Literal["min_", "max_", "median_", "mad_", "mean_", "std_"]
+    def _attributes(self) -> list[str]:
+        if self.parameters["method"] == "minmax":
+            return ["min_", "max_"]
+        elif self.parameters["method"] == "robust_zscore":
+            return ["median_", "mad_"]
+        else:
+            return ["mean_", "std_"]
 
     @check_minimum_version
     @save_verticapy_logs
@@ -388,8 +392,8 @@ class StandardScaler(Scaler):
     """i.e. Scaler with param method = 'zscore'"""
 
     @property
-    def _attributes(self) -> Literal["mean_", "std_"]:
-        return Literal["mean_", "std_"]
+    def _attributes(self) -> list[str]:
+        return ["mean_", "std_"]
 
     def __init__(self, name: str):
         super().__init__(name, "zscore")
@@ -399,8 +403,8 @@ class RobustScaler(Scaler):
     """i.e. Scaler with param method = 'robust_zscore'"""
 
     @property
-    def _attributes(self) -> Literal["median_", "mad_"]:
-        return Literal["median_", "mad_"]
+    def _attributes(self) -> list[str]:
+        return ["median_", "mad_"]
 
     def __init__(self, name: str):
         super().__init__(name, "robust_zscore")
@@ -410,8 +414,8 @@ class MinMaxScaler(Scaler):
     """i.e. Scaler with param method = 'minmax'"""
 
     @property
-    def _attributes(self) -> Literal["min_", "max_"]:
-        return Literal["min_", "max_"]
+    def _attributes(self) -> list[str]:
+        return ["min_", "max_"]
 
     def __init__(self, name: str):
         super().__init__(name, "minmax")
@@ -475,8 +479,8 @@ null_column_name: str, optional
         return "OneHotEncoder"
 
     @property
-    def _attributes(self) -> Literal["categories_", "column_naming_", "drop_first_"]:
-        return Literal["categories_", "column_naming_", "drop_first_"]
+    def _attributes(self) -> list[str]:
+        return ["categories_", "column_naming_", "drop_first_"]
 
     @check_minimum_version
     @save_verticapy_logs

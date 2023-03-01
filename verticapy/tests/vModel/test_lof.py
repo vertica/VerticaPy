@@ -65,7 +65,7 @@ class TestLocalOutlierFactor:
 
     def test_get_attributes(self, model):
         result = model.get_attributes()
-        assert result == ["n_neighbors_", "p_", "n_errors_"]
+        assert result == ["n_neighbors_", "p_", "n_errors_", "cnt_"]
 
     def test_get_plot(self, model):
         result = model.plot(color=["r", "b"])

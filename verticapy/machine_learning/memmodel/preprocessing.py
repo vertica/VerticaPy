@@ -42,7 +42,7 @@ class Scaler(InMemoryModel):
         return "Scaler"
 
     @property
-    def _attributes(self) -> Literal["sub_", "den_"]:
+    def _attributes(self) -> list[str]:
         return ["sub_", "den_"]
 
     def __init__(self, sub: ArrayLike, den: ArrayLike) -> None:
@@ -161,7 +161,7 @@ class OneHotEncoder(InMemoryModel):
         return "OneHotEncoder"
 
     @property
-    def _attributes(self) -> Literal["categories_", "column_naming_", "drop_first_"]:
+    def _attributes(self) -> list[str]:
         return ["categories_", "column_naming_", "drop_first_"]
 
     def __init__(

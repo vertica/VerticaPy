@@ -21,6 +21,7 @@ from tqdm.auto import tqdm
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -42,12 +43,12 @@ from verticapy.sql.drop import drop
 @save_verticapy_logs
 def randomized_features_search_cv(
     estimator,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: Union[str, list],
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: Union[int, float, str] = None,
+    pos_label: PythonScalar = None,
     cutoff: Union[int, float] = -1,
     training_score: bool = True,
     comb_limit: int = 100,
@@ -107,7 +108,7 @@ metric: str, optional
         var    : Explained variance
 cv: int, optional
     Number of folds.
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
     The main class to be considered as positive 
     (classification only).
 cutoff: float, optional
@@ -285,7 +286,7 @@ TableSample
 @save_verticapy_logs
 def stepwise(
     estimator,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: Union[str, list],
     y: str,
     criterion: Literal["aic", "bic"] = "bic",

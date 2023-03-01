@@ -77,8 +77,8 @@ method: str, optional
         return "PCA"
 
     @property
-    def _attributes(self) -> Literal["principal_components_", "mean_", "cos2_"]:
-        return Literal["principal_components_", "mean_", "cos2_"]
+    def _attributes(self) -> list[str]:
+        return ["principal_components_", "mean_", "cos2_"]
 
     @check_minimum_version
     @save_verticapy_logs
@@ -382,8 +382,8 @@ method: str, optional
         return "SVD"
 
     @property
-    def _attributes(self) -> Literal["vectors_", "values_"]:
-        return Literal["vectors_", "values_"]
+    def _attributes(self) -> list[str]:
+        return ["vectors_", "values_"]
 
     @check_minimum_version
     @save_verticapy_logs

@@ -26,13 +26,14 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import ArrayLike
+from verticapy._typing import ArrayLike, PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import updated_dict
+from verticapy.plotting._matplotlib.mlplot import lof_plot
 
 import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.model_selection.model_validation import (
@@ -45,7 +46,7 @@ from verticapy.machine_learning.vertica.base import (
     MulticlassClassifier,
     Regressor,
     Tree,
-    vModel,
+    VerticaModel,
 )
 from verticapy.machine_learning.vertica.tree import DecisionTreeRegressor
 
@@ -98,7 +99,7 @@ p: int, optional
         return "KNeighborsClassifier"
 
     @property
-    def _attributes(self) -> Literal["classes_", "n_neighbors_", "p_"]:
+    def _attributes(self) -> list[str]:
         return ["classes_", "n_neighbors_", "p_"]
 
     @save_verticapy_logs
@@ -113,6 +114,43 @@ p: int, optional
         self.classes_ = self._get_classes()
         self.p_ = self.parameters["p"]
         self.n_neighbors_ = self.parameters["n_neighbors"]
+
+    def contour(
+        self, pos_label: PythonScalar = None, nbins: int = 100, ax=None, **style_kwds,
+    ):
+        """
+        Draws the model's contour plot.
+
+        Parameters
+        ----------
+        pos_label: PythonScalar, optional
+            Label to consider as positive. All the other 
+            classes will be merged and considered as negative 
+            for multiclass classification.
+        nbins: int, optional
+             Number of bins used to discretize the two predictors.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        if not (pos_label):
+            pos_label = sorted(self.classes_)[-1]
+        return vDataFrame(self.input_relation).contour(
+            self.X,
+            self,
+            pos_label=pos_label,
+            cbar_title=self.y,
+            nbins=nbins,
+            ax=ax,
+            **style_kwds,
+        )
 
     def deploySQL(
         self,
@@ -242,9 +280,7 @@ p: int, optional
 
     report = classification_report
 
-    def cutoff_curve(
-        self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
-    ):
+    def cutoff_curve(self, pos_label: PythonScalar = None, ax=None, **style_kwds):
         """
     Draws the ROC curve of a classification model.
 
@@ -281,7 +317,7 @@ p: int, optional
         )
 
     def confusion_matrix(
-        self, pos_label: Union[int, float, str] = None, cutoff: Union[int, float] = -1,
+        self, pos_label: PythonScalar = None, cutoff: Union[int, float] = -1,
     ):
         """
     Computes the model confusion matrix.
@@ -334,9 +370,7 @@ p: int, optional
                 self.y, "predict_neighbors", input_relation, self.classes_
             )
 
-    def lift_chart(
-        self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
-    ):
+    def lift_chart(self, pos_label: PythonScalar = None, ax=None, **style_kwds):
         """
     Draws the model Lift Chart.
 
@@ -367,9 +401,7 @@ p: int, optional
             self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
 
-    def prc_curve(
-        self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
-    ):
+    def prc_curve(self, pos_label: PythonScalar = None, ax=None, **style_kwds):
         """
     Draws the model PRC curve.
 
@@ -402,7 +434,7 @@ p: int, optional
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         cutoff: Union[int, float] = 0.5,
@@ -414,7 +446,7 @@ p: int, optional
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example,  
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
@@ -493,7 +525,7 @@ p: int, optional
 
     def predict_proba(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         pos_label: Union[int, str, float] = None,
@@ -505,7 +537,7 @@ p: int, optional
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
         is correct, whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -584,9 +616,7 @@ p: int, optional
         else:
             return vDataFrame(sql)
 
-    def roc_curve(
-        self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
-    ):
+    def roc_curve(self, pos_label: PythonScalar = None, ax=None, **style_kwds):
         """
     Draws the model ROC curve.
 
@@ -632,7 +662,7 @@ p: int, optional
 
     Parameters
     ----------
-    pos_label: int/float/str, optional
+    pos_label: PythonScalar, optional
         Label to consider as positive. All the other classes will be merged and
         considered as negative for multiclass classification.
     cutoff: float, optional
@@ -914,7 +944,7 @@ xlim: list, optional
                 y += [K]
         return [x, y]
 
-    def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
+    def fit(self, input_relation: SQLRelation, X: Union[str, list] = []):
         """
     Trains the model.
 
@@ -1142,7 +1172,7 @@ p: int, optional
         return "KNeighborsRegressor"
 
     @property
-    def _attributes(self) -> Literal["n_neighbors_", "p_"]:
+    def _attributes(self) -> list[str]:
         return ["n_neighbors_", "p_"]
 
     @save_verticapy_logs
@@ -1153,6 +1183,31 @@ p: int, optional
     def _compute_attributes(self):
         self.p_ = self.parameters["p"]
         self.n_neighbors_ = self.parameters["n_neighbors"]
+
+    def contour(
+        self, nbins: int = 100, ax=None, **style_kwds,
+    ):
+        """
+        Draws the model's contour plot.
+
+        Parameters
+        ----------
+        nbins: int, optional
+            Number of bins used to discretize the two predictors.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        return vDataFrame(self.input_relation).contour(
+            self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
+        )
 
     def deploySQL(
         self,
@@ -1231,7 +1286,7 @@ p: int, optional
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         inplace: bool = True,
@@ -1242,7 +1297,7 @@ p: int, optional
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
         is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -1291,7 +1346,7 @@ p: int, optional
             return vDataFrame(sql)
 
 
-class LocalOutlierFactor(vModel):
+class LocalOutlierFactor(VerticaModel):
     """
 [Beta Version]
 Creates a LocalOutlierFactor object by using the Local Outlier Factor algorithm 
@@ -1341,8 +1396,8 @@ p: int, optional
         return "LocalOutlierFactor"
 
     @property
-    def _attributes(self) -> Literal["n_neighbors_", "p_", "n_errors_"]:
-        return ["n_neighbors_", "p_", "n_errors_"]
+    def _attributes(self) -> list[str]:
+        return ["n_neighbors_", "p_", "n_errors_", "cnt_"]
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
@@ -1352,10 +1407,15 @@ p: int, optional
     def _compute_attributes(self):
         self.p_ = self.parameters["p"]
         self.n_neighbors_ = self.parameters["n_neighbors"]
+        self.cnt_ = _executeSQL(
+            query=f"SELECT /*+LABEL('learn.VerticaModel.plot')*/ COUNT(*) FROM {self.model_name}",
+            method="fetchfirstelem",
+            print_time_sql=False,
+        )
 
     def fit(
         self,
-        input_relation: Union[str, vDataFrame],
+        input_relation: SQLRelation,
         X: Union[str, list] = [],
         key_columns: Union[str, list] = [],
         index: str = "",
@@ -1365,7 +1425,7 @@ p: int, optional
 
 	Parameters
 	----------
-	input_relation: str / vDataFrame
+	input_relation: SQLRelation
 		Training relation.
 	X: str / list, optional
 		List of the predictors.
@@ -1536,6 +1596,30 @@ p: int, optional
             drop(f"v_temp_schema.{tmp_lrd_table_name}", method="table")
             drop(f"v_temp_schema.{tmp_lof_table_name}", method="table")
         return self
+
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        sample = 100 * min(float(max_nb_points / self.cnt_), 1)
+        return lof_plot(
+            self.model_name, self.X, "lof_score", sample, ax=ax, **style_kwds
+        )
 
     def predict(self):
         """

@@ -15,10 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
-from typing import Any, Literal, Optional, Union, get_type_hints
+from typing import Any, Callable, Literal, Optional, Union, get_type_hints
 from abc import abstractmethod
 from collections.abc import Iterable
 import numpy as np
+
+from matplotlib.axes import Axes
 
 import verticapy._config.config as conf
 from verticapy._utils._gen import gen_name, gen_tmp_name
@@ -28,7 +30,7 @@ from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
-from verticapy._typing import ArrayLike
+from verticapy._typing import ArrayLike, PythonScalar, SQLRelation
 from verticapy.errors import (
     ConversionError,
     FunctionError,
@@ -43,11 +45,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.plotting._matplotlib.mlplot import (
     plot_importance,
     regression_tree_plot,
-    lof_plot,
     plot_pca_circle,
-    logit_plot,
-    svm_classifier_plot,
-    regression_plot,
 )
 
 from verticapy.machine_learning._utils import get_match_index
@@ -56,6 +54,9 @@ from verticapy.machine_learning.model_management.read import does_model_exist
 import verticapy.machine_learning.model_selection as ms
 
 from verticapy.sql.drop import drop
+
+if conf._get_import_success("graphviz"):
+    from graphviz import Source
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -69,10 +70,12 @@ from verticapy.sql.drop import drop
 ##
 
 
-class vModel:
+class VerticaModel:
     """
-Base Class for Vertica Models.
+    Base Class for Vertica Models.
 	"""
+
+    # Properties.
 
     @property
     def _is_native(self) -> Literal[True]:
@@ -83,8 +86,8 @@ Base Class for Vertica Models.
         return False
 
     @property
-    def _object_type(self) -> Literal["vModel"]:
-        return "vModel"
+    def _object_type(self) -> Literal["VerticaModel"]:
+        return "VerticaModel"
 
     @property
     @abstractmethod
@@ -110,6 +113,8 @@ Base Class for Vertica Models.
         """Must be overridden in child class"""
         raise NotImplementedError
 
+    # Formatting Methods.
+
     @staticmethod
     def _format_vector(X: ArrayLike, vector: list[tuple]) -> np.ndarray:
         """
@@ -123,13 +128,24 @@ Base Class for Vertica Models.
                     res += [y[1]]
         return np.array(res)
 
-    def __repr__(self):
+    # System Methods.
+
+    def __repr__(self) -> str:
         """
-	Returns the model Representation.
-		"""
+        Returns the model Representation.
+        """
         return f"<{self._model_type}>"
 
-    def summarize(self):
+    def drop(self) -> bool:
+        """
+        Drops the model from the Vertica database.
+        """
+        return drop(self.model_name, method="model")
+
+    def summarize(self) -> str:
+        """
+        Summarizes the model.
+        """
         if self._is_native:
             try:
                 vertica_version(condition=[9, 0, 0])
@@ -139,7 +155,7 @@ Base Class for Vertica Models.
             except VersionError:
                 func = f"SUMMARIZE_MODEL('{self.model_name}')"
             return _executeSQL(
-                f"SELECT /*+LABEL('learn.vModel.__repr__')*/ {func}",
+                f"SELECT /*+LABEL('learn.VerticaModel.__repr__')*/ {func}",
                 title="Summarizing the model.",
                 method="fetchfirstelem",
             )
@@ -148,144 +164,21 @@ Base Class for Vertica Models.
                 "Method 'summarize' is not available for non-native models."
             )
 
-    def contour(
-        self,
-        nbins: int = 100,
-        pos_label: Union[int, float, str] = None,
-        ax=None,
-        **style_kwds,
-    ):
-        """
-    Draws the model's contour plot. Only available for regressors, binary 
-    classifiers, and for models of exactly two predictors.
-
-    Parameters
-    ----------
-    nbins: int, optional
-        Number of bins used to discretize the two input numerical vcolumns.
-    pos_label: int/float/str, optional
-        Label to consider as positive. All the other classes will be merged and
-        considered as negative for multiclass classification.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    ax
-        Matplotlib axes object
-        """
-        if self._model_type in (
-            "RandomForestClassifier",
-            "XGBClassifier",
-            "NaiveBayes",
-            "NearestCentroid",
-            "KNeighborsClassifier",
-        ):
-            if not (pos_label):
-                pos_label = sorted(self.classes_)[-1]
-            if self._model_type in (
-                "RandomForestClassifier",
-                "XGBClassifier",
-                "NaiveBayes",
-                "NearestCentroid",
-            ):
-                return vDataFrame(self.input_relation).contour(
-                    self.X,
-                    self.deploySQL(X=self.X, pos_label=pos_label),
-                    cbar_title=self.y,
-                    nbins=nbins,
-                    ax=ax,
-                    **style_kwds,
-                )
-            else:
-                return vDataFrame(self.input_relation).contour(
-                    self.X,
-                    self,
-                    pos_label=pos_label,
-                    cbar_title=self.y,
-                    nbins=nbins,
-                    ax=ax,
-                    **style_kwds,
-                )
-        elif self._model_type == "KNeighborsRegressor":
-            return vDataFrame(self.input_relation).contour(
-                self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
-            )
-        elif self._model_type in (
-            "KMeans",
-            "BisectingKMeans",
-            "KPrototypes",
-            "IsolationForest",
-        ):
-            cbar_title = "cluster"
-            if self._model_type == "IsolationForest":
-                cbar_title = "anomaly_score"
-            return vDataFrame(self.input_relation).contour(
-                self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds,
-            )
-        else:
-            return vDataFrame(self.input_relation).contour(
-                self.X,
-                self.deploySQL(X=self.X),
-                cbar_title=self.y,
-                nbins=nbins,
-                ax=ax,
-                **style_kwds,
-            )
-
-    def deploySQL(self, X: Union[str, list] = []):
-        """
-	Returns the SQL code needed to deploy the model. 
-
-	Parameters
-	----------
-	X: str / list, optional
-		List of the columns used to deploy the model. If empty, the model
-		predictors will be used.
-
-	Returns
-	-------
-	str
-		the SQL code needed to deploy the model.
-		"""
-        if isinstance(X, str):
-            X = [X]
-        if self._model_type == "AutoML":
-            return self.best_model_.deploySQL(X)
-        if self._model_type not in ("DBSCAN", "LocalOutlierFactor"):
-            X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
-            sql = f"""
-                {self._vertica_predict_sql}({', '.join(X)} 
-                                                    USING PARAMETERS 
-                                                    model_name = '{self.model_name}',
-                                                    match_by_pos = 'true')"""
-            return clean_query(sql)
-        else:
-            raise FunctionError(
-                f"Method 'deploySQL' for '{self._model_type}' doesn't exist."
-            )
-
-    def drop(self):
-        """
-	Drops the model from the Vertica database.
-		"""
-        drop(self.model_name, method="model")
+    # Attributes Methods.
 
     def get_attributes(self, attr_name: str = "") -> Any:
         """
-    Returns the model attributes.
+        Returns the model attributes.
 
-    Parameters
-    ----------
-    attr_name: str, optional
-        Attribute Name.
+        Parameters
+        ----------
+        attr_name: str, optional
+            Attribute Name.
 
-    Returns
-    -------
-    Any
-        model attribute.
+        Returns
+        -------
+        Any
+            model attribute.
         """
         if not (attr_name):
             return self._attributes
@@ -304,18 +197,19 @@ Base Class for Vertica Models.
 
     def get_vertica_attributes(self, attr_name: str = ""):
         """
-	Returns the model vertica attributes. Those are stored in Vertica.
+        Returns the model vertica attributes. Those are stored
+        in Vertica.
 
-	Parameters
-	----------
-	attr_name: str, optional
-		Attribute Name.
+        Parameters
+        ----------
+        attr_name: str, optional
+            Attribute Name.
 
-	Returns
-	-------
-	TableSample
-		model attributes.
-		"""
+        Returns
+        -------
+        TableSample
+            model attributes.
+        """
         if self._is_native or self._is_using_native:
             vertica_version(condition=[8, 1, 1])
             if attr_name:
@@ -336,33 +230,18 @@ Base Class for Vertica Models.
                 "non-native models.\nUse 'get_attributes' method instead."
             )
 
-    def get_params(self):
+    # Parameters Methods.
+
+    def _get_vertica_param_dict(self) -> dict:
         """
-	Returns the parameters of the model.
+        Returns the Vertica parameters dict to use when fitting 
+        the model. As some model's parameters names are not the 
+        same in Vertica. It is important to map them.
 
-	Returns
-	-------
-	dict
-		model parameters
-		"""
-        all_init_params = list(get_type_hints(self.__init__).keys())
-        parameters = copy.deepcopy(self.parameters)
-        parameters_keys = list(parameters.keys())
-        for p in parameters_keys:
-            if p not in all_init_params:
-                del parameters[p]
-        return parameters
-
-    def _get_vertica_param_dict(self):
-        """
-    Returns the Vertica parameters dict to use when fitting the
-    model. As some model's parameters names are not the same in
-    Vertica. It is important to map them.
-
-    Returns
-    -------
-    dict
-        vertica parameters
+        Returns
+        -------
+        dict
+            Vertica parameters.
         """
 
         def map_to_vertica_param_name(param: str):
@@ -437,138 +316,32 @@ Base Class for Vertica Models.
 
         return parameters
 
-    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+    def get_params(self) -> dict:
         """
-	Draws the model.
+        Returns the parameters of the model.
 
-	Parameters
-	----------
-	max_nb_points: int
-		Maximum number of points to display.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the 
-        Matplotlib functions.
-
-    Returns
-    -------
-    ax
-        Matplotlib axes object
-		"""
-        if self._model_type in (
-            "LinearRegression",
-            "LogisticRegression",
-            "LinearSVC",
-            "LinearSVR",
-        ):
-            coefficients = self.get_vertica_attributes("details").values["coefficient"]
-            if self._model_type == "LogisticRegression":
-                return logit_plot(
-                    self.X,
-                    self.y,
-                    self.input_relation,
-                    coefficients,
-                    max_nb_points,
-                    ax=ax,
-                    **style_kwds,
-                )
-            elif self._model_type == "LinearSVC":
-                return svm_classifier_plot(
-                    self.X,
-                    self.y,
-                    self.input_relation,
-                    coefficients,
-                    max_nb_points,
-                    ax=ax,
-                    **style_kwds,
-                )
-            else:
-                return regression_plot(
-                    self.X,
-                    self.y,
-                    self.input_relation,
-                    coefficients,
-                    max_nb_points,
-                    ax=ax,
-                    **style_kwds,
-                )
-        elif self._model_type in (
-            "KMeans",
-            "BisectingKMeans",
-            "KPrototypes",
-            "DBSCAN",
-            "IsolationForest",
-        ):
-            if self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",):
-                if self._model_type == "KPrototypes":
-                    centers = self.get_vertica_attributes("centers")
-                    if any(
-                        [
-                            ("char" in centers.dtype[key].lower())
-                            for key in centers.dtype
-                        ]
-                    ):
-                        raise TypeError(
-                            "KPrototypes' plots with categorical inputs is not yet supported."
-                        )
-                vdf = vDataFrame(self.input_relation)
-                catcol = f"{self._model_type.lower()}_cluster"
-                self.predict(vdf, name=catcol)
-            elif self._model_type == "DBSCAN":
-                vdf = vDataFrame(self.model_name)
-                catcol = "dbscan_cluster"
-            elif self._model_type == "IsolationForest":
-                vdf = vDataFrame(self.input_relation)
-                self.predict(vdf, name="anomaly_score")
-                return vdf.bubble(
-                    columns=self.X,
-                    cmap_col="anomaly_score",
-                    max_nb_points=max_nb_points,
-                    ax=ax,
-                    **style_kwds,
-                )
-            return vdf.scatter(
-                columns=self.X,
-                catcol=catcol,
-                max_cardinality=100,
-                max_nb_points=max_nb_points,
-                ax=ax,
-                **style_kwds,
-            )
-        elif self._model_type == "LocalOutlierFactor":
-            cnt = _executeSQL(
-                query=f"SELECT /*+LABEL('learn.vModel.plot')*/ COUNT(*) FROM {self.model_name}",
-                method="fetchfirstelem",
-                print_time_sql=False,
-            )
-            TableSample = 100 * min(float(max_nb_points / cnt), 1)
-            return lof_plot(
-                self.model_name, self.X, "lof_score", 100, ax=ax, **style_kwds
-            )
-        elif self._model_type in ("RandomForestRegressor", "XGBRegressor"):
-            return regression_tree_plot(
-                self.X + [self.deploySQL()],
-                self.y,
-                self.input_relation,
-                max_nb_points,
-                ax=ax,
-                **style_kwds,
-            )
-        else:
-            raise FunctionError(
-                f"Method 'plot' for '{self._model_type}' doesn't exist."
-            )
-
-    def set_params(self, parameters: dict = {}):
+        Returns
+        -------
+        dict
+            model parameters.
         """
-	Sets the parameters of the model.
+        all_init_params = list(get_type_hints(self.__init__).keys())
+        parameters = copy.deepcopy(self.parameters)
+        parameters_keys = list(parameters.keys())
+        for p in parameters_keys:
+            if p not in all_init_params:
+                del parameters[p]
+        return parameters
 
-	Parameters
-	----------
-	parameters: dict, optional
-		New parameters.
-		"""
+    def set_params(self, parameters: dict = {}) -> None:
+        """
+        Sets the parameters of the model.
+
+        Parameters
+        ----------
+        parameters: dict, optional
+            New parameters.
+        """
         all_init_params = list(get_type_hints(self.__init__).keys())
         new_parameters = copy.deepcopy(self.parameters)
         new_parameters_keys = list(new_parameters.keys())
@@ -582,30 +355,62 @@ Base Class for Vertica Models.
                 )
                 warnings.warn(warning_message, Warning)
             new_parameters[p] = parameters[p]
-        self.__init__(name=self.model_name, **new_parameters)
+        return self.__init__(name=self.model_name, **new_parameters)
+
+    # I/O Methods.
+
+    def deploySQL(self, X: Union[str, list] = []) -> str:
+        """
+        Returns the SQL code needed to deploy the model. 
+
+        Parameters
+        ----------
+        X: str / list, optional
+            List of the columns used to deploy the model. 
+            If empty, the model predictors will be used.
+
+        Returns
+        -------
+        str
+            the SQL code needed to deploy the model.
+        """
+        if self._vertica_predict_sql:
+            if isinstance(X, str):
+                X = [X]
+            X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
+            sql = f"""
+                {self._vertica_predict_sql}({', '.join(X)} 
+                                                    USING PARAMETERS 
+                                                    model_name = '{self.model_name}',
+                                                    match_by_pos = 'true')"""
+            return clean_query(sql)
+        else:
+            raise AttributeError(
+                f"Method 'deploySQL' does not exist for {self._model_type} models."
+            )
 
     def to_python(
         self, return_proba: bool = False, return_distance_clusters: bool = False,
-    ):
+    ) -> Callable:
         """
-    Returns the Python function needed to do in-memory scoring 
-    without using built-in Vertica functions.
+        Returns the Python function needed to do in-memory 
+        scoring without using built-in Vertica functions.
 
-    Parameters
-    ----------
-    return_proba: bool, optional
-        If set to True and the model is a classifier, the function
-        returns the model probabilities.
-    return_distance_clusters: bool, optional
-        If set to True and the model is cluster-based, 
-        the function returns the model clusters distances. If the model
-        is KPrototypes, the function returns the dissimilarity function.
+        Parameters
+        ----------
+        return_proba: bool, optional
+            If set to True and the model is a classifier,
+            the function returns the model probabilities.
+        return_distance_clusters: bool, optional
+            If set to True and the model is cluster-based, 
+            the function returns the model clusters distances. 
+            If the model is KPrototypes, the function returns 
+            the dissimilarity function.
 
-
-    Returns
-    -------
-    str / func
-        Python function
+        Returns
+        -------
+        Callable
+            Python function.
         """
         model = self.to_memmodel()
         if return_proba:
@@ -620,27 +425,28 @@ Base Class for Vertica Models.
         X: list = [],
         return_proba: bool = False,
         return_distance_clusters: bool = False,
-    ):
+    ) -> Union[str, list]:
         """
-    Returns the SQL code needed to deploy the model without using built-in 
-    Vertica functions.
+        Returns the SQL code needed to deploy the model 
+        without using built-in Vertica functions.
 
-    Parameters
-    ----------
-    X: list, optional
-        input predictors name.
-    return_proba: bool, optional
-        If set to True and the model is a classifier, the function will return 
-        the class probabilities.
-    return_distance_clusters: bool, optional
-        If set to True and the model is cluster-based, 
-        the function returns the model clusters distances. If the model
-        is KPrototypes, the function returns the dissimilarity function.
+        Parameters
+        ----------
+        X: list, optional
+            input predictors name.
+        return_proba: bool, optional
+            If set to True and the model is a classifier,
+            the function will return the class probabilities.
+        return_distance_clusters: bool, optional
+            If set to True and the model is cluster-based, 
+            the function returns the model clusters distances. 
+            If the model is KPrototypes, the function returns 
+            the dissimilarity function.
 
-    Returns
-    -------
-    str / list
-        SQL code
+        Returns
+        -------
+        str / list
+            SQL code.
         """
         if not X:
             X = self.X
@@ -652,8 +458,38 @@ Base Class for Vertica Models.
         else:
             return model.transform_sql(X)
 
+    # Plotting Methods.
 
-class Supervised(vModel):
+    def contour(self, nbins: int = 100, ax=None, **style_kwds,) -> Axes:
+        """
+        Draws the model's contour plot.
+
+        Parameters
+        ----------
+        nbins: int, optional
+             Number of bins used to discretize the two predictors.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        return vDataFrame(self.input_relation).contour(
+            self.X,
+            self.deploySQL(X=self.X),
+            cbar_title=self.y,
+            nbins=nbins,
+            ax=ax,
+            **style_kwds,
+        )
+
+
+class Supervised(VerticaModel):
     @property
     @abstractmethod
     def _vertica_predict_sql(self) -> str:
@@ -662,29 +498,24 @@ class Supervised(vModel):
 
     def fit(
         self,
-        input_relation: Union[str, vDataFrame],
+        input_relation: SQLRelation,
         X: Union[str, list],
         y: str,
-        test_relation: Union[str, vDataFrame] = "",
-    ):
+        test_relation: SQLRelation = "",
+    ) -> None:
         """
-	Trains the model.
+    	Trains the model.
 
-	Parameters
-	----------
-	input_relation: str / vDataFrame
-		Training relation.
-	X: str / list
-		List of the predictors.
-	y: str
-		Response column.
-	test_relation: str / vDataFrame, optional
-		Relation used to test the model.
-
-	Returns
-	-------
-	object
-		model
+    	Parameters
+    	----------
+    	input_relation: SQLRelation
+    		Training relation.
+    	X: str / list
+    		List of the predictors.
+    	y: str
+    		Response column.
+    	test_relation: SQLRelation, optional
+    		Relation used to test the model.
 		"""
         if isinstance(X, str):
             X = [X]
@@ -739,7 +570,7 @@ class Supervised(vModel):
                     query=f"""
                         CREATE VIEW {relation} AS 
                             SELECT 
-                                /*+LABEL('learn.vModel.fit')*/ 
+                                /*+LABEL('learn.VerticaModel.fit')*/ 
                                 *{id_column} 
                             FROM {self.input_relation}""",
                     title="Creating a temporary view to fit the model.",
@@ -771,7 +602,7 @@ class Supervised(vModel):
             fun = self._vertica_fit_sql
             query = f"""
                 SELECT 
-                    /*+LABEL('learn.vModel.fit')*/ 
+                    /*+LABEL('learn.VerticaModel.fit')*/ 
                     {self._vertica_fit_sql}
                     ('{self.model_name}', 
                      '{relation}',
@@ -797,62 +628,19 @@ class Supervised(vModel):
                 if tmp_view:
                     drop(relation, method="view")
         self._compute_attributes()
-        return self
+        return None
 
 
 class Tree:
-    def _compute_features_importance(self, tree_id: Optional[int] = None) -> None:
-        """
-        Computes the features importance.
-        """
-        vertica_version(condition=[9, 1, 1])
-        tree_id_str = "" if tree_id is None else f", tree_id={tree_id}"
-        query = f"""
-        SELECT /*+LABEL('learn.vModel.features_importance')*/
-            predictor_name AS predictor, 
-            SIGN({self._model_importance_feature})::int * 
-            ROUND(100 * ABS({self._model_importance_feature}) / 
-            SUM(ABS({self._model_importance_feature}))
-            OVER (), 2)::float AS importance
-        FROM 
-            (SELECT {self._model_importance_function} ( 
-                    USING PARAMETERS model_name = '{self.model_name}'{tree_id_str})) 
-                    VERTICAPY_SUBTABLE 
-        ORDER BY 2 DESC;"""
-        importance = _executeSQL(
-            query=query, title="Computing Features Importance.", method="fetchall"
-        )
-        importance = self._format_vector(self.X, importance)
-        if isinstance(tree_id, int) and (0 <= tree_id < self.n_estimators_):
-            if hasattr(self, "features_importance_trees_"):
-                self.features_importance_trees_[tree_id] = importance
-            else:
-                self.features_importance_trees_ = {tree_id: importance}
-        elif tree_id == None:
-            self.features_importance_ = importance
-        return None
-
-    def _get_features_importance(self, tree_id: Optional[int] = None) -> np.ndarray:
-        if tree_id == None and hasattr(self, "features_importance_"):
-            return copy.deepcopy(self.features_importance_)
-        elif (
-            isinstance(tree_id, int)
-            and (0 <= tree_id < self.n_estimators_)
-            and hasattr(self, "features_importance_trees_")
-            and (tree_id in self.features_importance_trees_)
-        ):
-            return copy.deepcopy(self.features_importance_trees_[tree_id])
-        else:
-            self._compute_features_importance(tree_id=tree_id)
-            return self._get_features_importance(tree_id=tree_id)
+    # System Methods.
 
     def _compute_trees_arrays(
         self, tree: TableSample, X: list, return_probability: bool = False
-    ):
+    ) -> list[list]:
         """
-        Takes as input a tree which is represented by a TableSample
-        It returns a list of arrays. Each index of the arrays represents
-        a node value.
+        Takes as input a tree which is represented by a 
+        TableSample. It returns a list of arrays. 
+        Each index of the arrays represents a node value.
         """
         tree_list = []
         for i in range(len(tree["tree_id"])):
@@ -906,6 +694,56 @@ class Tree:
             trees_arrays += [tree["probability/variance"]]
         return trees_arrays
 
+    # Features Importance Methods.
+
+    def _compute_features_importance(self, tree_id: Optional[int] = None) -> None:
+        """
+        Computes the model's features importance.
+        """
+        vertica_version(condition=[9, 1, 1])
+        tree_id_str = "" if tree_id is None else f", tree_id={tree_id}"
+        query = f"""
+        SELECT /*+LABEL('learn.VerticaModel.features_importance')*/
+            predictor_name AS predictor, 
+            SIGN({self._model_importance_feature})::int * 
+            ROUND(100 * ABS({self._model_importance_feature}) / 
+            SUM(ABS({self._model_importance_feature}))
+            OVER (), 2)::float AS importance
+        FROM 
+            (SELECT {self._model_importance_function} ( 
+                    USING PARAMETERS model_name = '{self.model_name}'{tree_id_str})) 
+                    VERTICAPY_SUBTABLE 
+        ORDER BY 2 DESC;"""
+        importance = _executeSQL(
+            query=query, title="Computing Features Importance.", method="fetchall"
+        )
+        importance = self._format_vector(self.X, importance)
+        if isinstance(tree_id, int) and (0 <= tree_id < self.n_estimators_):
+            if hasattr(self, "features_importance_trees_"):
+                self.features_importance_trees_[tree_id] = importance
+            else:
+                self.features_importance_trees_ = {tree_id: importance}
+        elif tree_id == None:
+            self.features_importance_ = importance
+        return None
+
+    def _get_features_importance(self, tree_id: Optional[int] = None) -> np.ndarray:
+        """
+        Returns model's features importances.
+        """
+        if tree_id == None and hasattr(self, "features_importance_"):
+            return copy.deepcopy(self.features_importance_)
+        elif (
+            isinstance(tree_id, int)
+            and (0 <= tree_id < self.n_estimators_)
+            and hasattr(self, "features_importance_trees_")
+            and (tree_id in self.features_importance_trees_)
+        ):
+            return copy.deepcopy(self.features_importance_trees_[tree_id])
+        else:
+            self._compute_features_importance(tree_id=tree_id)
+            return self._get_features_importance(tree_id=tree_id)
+
     def features_importance(
         self, tree_id: Optional[int] = None, show: bool = True, ax=None, **style_kwds
     ) -> TableSample:
@@ -927,8 +765,7 @@ class Tree:
         Returns
         -------
         TableSample
-            An object containing the result. For more information,
-            see utilities.TableSample.
+            features importance.
         """
         fi = self._get_features_importance(tree_id=tree_id)
         if show:
@@ -942,6 +779,90 @@ class Tree:
         }
         return TableSample(values=importances).sort(column="importance", desc=True)
 
+    def get_score(self, tree_id: int = None,) -> TableSample:
+        """
+        Returns the feature importance metrics for the input tree.
+
+        Parameters
+        ----------
+        tree_id: int, optional
+            Unique tree identifier, an integer in the range 
+            [0, n_estimators - 1]. If tree_id is undefined, 
+            all the trees in the model are used to compute 
+            the metrics.
+
+        Returns
+        -------
+        TableSample
+            model's score.
+        """
+        tree_id = "" if tree_id == None else f", tree_id={tree_id}"
+        query = f"""
+            SELECT {self._model_importance_function} 
+            (USING PARAMETERS model_name = '{self.model_name}'{tree_id})"""
+        return TableSample.read_sql(query=query, title="Reading Tree.")
+
+    # Plotting Methods.
+
+    def plot(
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+    ) -> Axes:
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Axes, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        Axes
+            Matplotlib axes object.
+        """
+        if self._model_subcategory == "REGRESSOR":
+            return regression_tree_plot(
+                self.X + [self.deploySQL()],
+                self.y,
+                self.input_relation,
+                max_nb_points,
+                ax=ax,
+                **style_kwds,
+            )
+        else:
+            raise NotImplementedError
+
+    # Trees Representation Methods.
+
+    @check_minimum_version
+    def get_tree(self, tree_id: int = 0) -> TableSample:
+        """
+        Returns a table with all the input tree information.
+
+        Parameters
+        ----------
+        tree_id: int, optional
+            Unique tree identifier, an integer in the range 
+            [0, n_estimators - 1].
+
+        Returns
+        -------
+        TableSample
+            tree.
+        """
+        query = f"""
+            SELECT * FROM (SELECT READ_TREE (
+                             USING PARAMETERS 
+                             model_name = '{self.model_name}', 
+                             tree_id = {tree_id}, 
+                             format = 'tabular')) x ORDER BY node_id;"""
+        return TableSample.read_sql(query=query, title="Reading Tree.")
+
     def to_graphviz(
         self,
         tree_id: int = 0,
@@ -952,7 +873,7 @@ class Tree:
         node_style: dict = {"shape": "box", "style": "filled"},
         arrow_style: dict = {},
         leaf_style: dict = {},
-    ):
+    ) -> str:
         """
         Returns the code for a Graphviz tree.
 
@@ -1001,33 +922,9 @@ class Tree:
             leaf_style=leaf_style,
         )
 
-    @check_minimum_version
-    def get_tree(self, tree_id: int = 0):
-        """
-	Returns a table with all the input tree information.
-
-	Parameters
-	----------
-	tree_id: int, optional
-        Unique tree identifier, an integer in the range [0, n_estimators - 1].
-
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
-		"""
-        query = f"""
-            SELECT * FROM (SELECT READ_TREE (
-                             USING PARAMETERS 
-                             model_name = '{self.model_name}', 
-                             tree_id = {tree_id}, 
-                             format = 'tabular')) x ORDER BY node_id;"""
-        return TableSample.read_sql(query=query, title="Reading Tree.")
-
     def plot_tree(
         self, tree_id: int = 0, pic_path: str = "", *argv, **kwds,
-    ):
+    ) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
 
@@ -1050,32 +947,6 @@ class Tree:
             pic_path=pic_path, feature_names=self.X, *argv, **kwds,
         )
 
-    def get_score(
-        self, tree_id: int = None,
-    ):
-        """
-        Returns the feature importance metrics for the input tree.
-
-        Parameters
-        ----------
-        tree_id: int, optional
-            Unique tree identifier, an integer in the range 
-            [0, n_estimators - 1]. If tree_id is undefined, 
-            all the trees in the model are used to compute 
-            the metrics.
-
-        Returns
-        -------
-        TableSample
-            An object containing the result. For more information, 
-            see utilities.TableSample.
-        """
-        tree_id = "" if tree_id == None else f", tree_id={tree_id}"
-        query = f"""
-            SELECT {self._model_importance_function} 
-            (USING PARAMETERS model_name = '{self.model_name}'{tree_id})"""
-        return TableSample.read_sql(query=query, title="Reading Tree.")
-
 
 class Classifier(Supervised):
     pass
@@ -1083,79 +954,32 @@ class Classifier(Supervised):
 
 class BinaryClassifier(Classifier):
 
-    classes_ = np.array([0, 1])
+    # Attributes Methods.
 
-    def classification_report(
-        self, cutoff: Union[int, float] = 0.5, nbins: int = 10000,
-    ):
+    @property
+    def classes_(self) -> np.ndarray:
+        return np.array([0, 1])
+
+    # I/O Methods.
+
+    def deploySQL(self, cutoff: Union[int, float] = -1, X: Union[str, list] = []) -> str:
         """
-	Computes a classification report using multiple metrics to evaluate the model
-	(AUC, accuracy, PRC AUC, F1...). 
+    	Returns the SQL code needed to deploy the model. 
 
-	Parameters
-	----------
-	cutoff: int / float, optional
-		Probability cutoff.
-    nbins: int, optional
-        [Used to compute ROC AUC, PRC AUC and the best cutoff]
-        An integer value that determines the number of decision boundaries. 
-        Decision boundaries are set at equally spaced intervals between 0 and 1, 
-        inclusive. Greater values for nbins give more precise estimations of the 
-        metrics, but can potentially decrease performance. The maximum value 
-        is 999,999. If negative, the maximum value is used.
+    	Parameters
+    	----------
+    	cutoff: int / float, optional
+    		Probability cutoff. If this number is not between 
+            0 and 1, the method will return the probability 
+            to be of class 1.
+    	X: str / list, optional
+    		List of the columns used to deploy the model. If 
+            empty, the model predictors will be used.
 
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
-		"""
-        if cutoff > 1 or cutoff < 0:
-            cutoff = self.score(method="best_cutoff")
-        return mt.classification_report(
-            self.y,
-            [self.deploySQL(), self.deploySQL(cutoff)],
-            self.test_relation,
-            cutoff=cutoff,
-            nbins=nbins,
-        )
-
-    report = classification_report
-
-    def confusion_matrix(self, cutoff: Union[int, float] = 0.5):
-        """
-	Computes the model confusion matrix.
-
-	Parameters
-	----------
-	cutoff: int / float, optional
-		Probability cutoff.
-
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
-		"""
-        return mt.confusion_matrix(self.y, self.deploySQL(cutoff), self.test_relation,)
-
-    def deploySQL(self, cutoff: Union[int, float] = -1, X: Union[str, list] = []):
-        """
-	Returns the SQL code needed to deploy the model. 
-
-	Parameters
-	----------
-	cutoff: int / float, optional
-		Probability cutoff. If this number is not between 0 and 1, the method 
-		will return the probability to be of class 1.
-	X: str / list, optional
-		List of the columns used to deploy the model. If empty, the model
-		predictors will be used.
-
-	Returns
-	-------
-	str
-		the SQL code needed to deploy the model.
+    	Returns
+    	-------
+    	str
+    		the SQL code needed to deploy the model.
 		"""
         if not (X):
             X = self.X
@@ -1180,95 +1004,174 @@ class BinaryClassifier(Classifier):
                 END)"""
         return clean_query(sql)
 
-    def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds):
+    # Model Evaluation Methods.
+
+    def classification_report(
+        self, cutoff: Union[int, float] = 0.5, nbins: int = 10000,
+    ) -> TableSample:
         """
-	Draws the model Lift Chart.
+        Computes a classification report using multiple metrics 
+        to evaluate the model (AUC, accuracy, PRC AUC, F1...). 
 
-    Parameters
-    ----------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    nbins: int, optional
-        The number of bins.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        cutoff: int / float, optional
+            Probability cutoff.
+        nbins: int, optional
+            [Used to compute ROC AUC, PRC AUC and the best cutoff]
+            An integer value that determines the number of decision 
+            boundaries. Decision boundaries are set at equally spaced 
+            intervals between 0 and 1, inclusive. Greater values for
+            nbins give more precise estimations of the metrics, but 
+            can potentially decrease performance. The maximum value 
+            is 999,999. If negative, the maximum value is used.
 
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
-		"""
-        return ms.lift_chart(
+        Returns
+        -------
+        TableSample
+            report.
+        """
+        if cutoff > 1 or cutoff < 0:
+            cutoff = self.score(method="best_cutoff")
+        return mt.classification_report(
             self.y,
-            self.deploySQL(),
+            [self.deploySQL(), self.deploySQL(cutoff)],
             self.test_relation,
-            ax=ax,
+            cutoff=cutoff,
             nbins=nbins,
-            **style_kwds,
         )
 
-    def prc_curve(self, ax=None, nbins: int = 30, **style_kwds):
+    report = classification_report
+
+    def confusion_matrix(self, cutoff: Union[int, float] = 0.5) -> TableSample:
         """
-	Draws the model PRC curve.
+        Computes the model confusion matrix.
 
-    Parameters
-    ----------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    nbins: int, optional
-        The number of bins.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        cutoff: int / float, optional
+            Probability cutoff.
 
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
-		"""
-        return ms.prc_curve(
-            self.y,
-            self.deploySQL(),
-            self.test_relation,
-            ax=ax,
-            nbins=nbins,
-            **style_kwds,
-        )
+        Returns
+        -------
+        TableSample
+            confusion matrix.
+        """
+        return mt.confusion_matrix(self.y, self.deploySQL(cutoff), self.test_relation,)
+
+    def score(
+        self,
+        method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
+        cutoff: Union[int, float] = 0.5,
+        nbins: int = 10000,
+    ) -> float:
+        """
+        Computes the model score.
+
+        Parameters
+        ----------
+        method: str, optional
+            The method to use to compute the score.
+                accuracy    : Accuracy
+                aic         : Akaike’s Information Criterion
+                auc         : Area Under the Curve (ROC)
+                best_cutoff : Cutoff which optimised the ROC 
+                              Curve prediction.
+                bic         : Bayesian Information Criterion
+                bm          : Informedness = tpr + tnr - 1
+                csi         : Critical Success Index 
+                              = tp / (tp + fn + fp)
+                f1          : F1 Score 
+                logloss     : Log Loss
+                mcc         : Matthews Correlation Coefficient 
+                mk          : Markedness = ppv + npv - 1
+                npv         : Negative Predictive Value 
+                              = tn / (tn + fn)
+                prc_auc     : Area Under the Curve (PRC)
+                precision   : Precision = tp / (tp + fp)
+                recall      : Recall = tp / (tp + fn)
+                specificity : Specificity = tn / (tn + fp)
+        cutoff: int / float, optional
+            Cutoff for which the tested category will be
+            accepted as a prediction.
+        nbins: int, optional
+            [Only when method is set to auc|prc_auc|best_cutoff] 
+            An integer value that determines the number of decision
+            boundaries. Decision boundaries are set at equally spaced 
+            intervals between 0 and 1, inclusive. Greater values for 
+            nbins give more precise estimations of the AUC, but can 
+            potentially decrease performance. The maximum value is 
+            999,999. If negative, the maximum value is used.
+
+        Returns
+        -------
+        float
+            score
+        """
+        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
+        if method in (
+            "log_loss",
+            "logloss",
+            "aic",
+            "bic",
+            "prc_auc",
+            "auc",
+            "best_cutoff",
+            "best_threshold",
+        ):
+            args2 = self.deploySQL()
+        else:
+            args2 = self.deploySQL(cutoff)
+        args = [self.y, args2, self.test_relation]
+        kwds = {}
+        if method in ("accuracy", "acc"):
+            kwds["pos_label"] = 1
+        elif method in ("aic", "bic"):
+            args += [len(self.X)]
+        elif method in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
+            kwds["nbins"] = nbins
+            if method in ("best_cutoff", "best_threshold"):
+                kwds["best_threshold"] = True
+        return fun(*args, **kwds)
+
+    # Prediction / Transformation Methods.
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         cutoff: Union[int, float] = 0.5,
         inplace: bool = True,
     ):
         """
-	Predicts using the input relation.
+        Predicts using the input relation.
 
-	Parameters
-	----------
-	vdf: str / vDataFrame
-		Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example, 
-        "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
-        incorrect.
-	X: str / list, optional
-		List of the columns used to deploy the models. If empty, the model
-		predictors will be used.
-	name: str, optional
-		Name of the added vcolumn. If empty, a name will be generated.
-	cutoff: float, optional
-		Probability cutoff.
-	inplace: bool, optional
-		If set to True, the prediction will be added to the vDataFrame.
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object to use to run the prediction. You can also
+            specify a customized relation, but you must enclose 
+            it with an alias. For example, "(SELECT 1) x" is 
+            correct, whereas "(SELECT 1)" and "SELECT 1" are 
+            incorrect.
+        X: str / list, optional
+            List of the columns used to deploy the models. If 
+            empty, the model predictors will be used.
+        name: str, optional
+            Name of the added vcolumn. If empty, a name will be 
+            generated.
+        cutoff: float, optional
+            Probability cutoff.
+        inplace: bool, optional
+            If set to True, the prediction will be added to the 
+            vDataFrame.
 
-	Returns
-	-------
-	vDataFrame
-		the input object.
-		"""
+        Returns
+        -------
+        vDataFrame
+            the input object.
+        """
         # Inititalization
         if isinstance(X, str):
             X = [X]
@@ -1290,36 +1193,40 @@ class BinaryClassifier(Classifier):
 
     def predict_proba(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         pos_label: Union[str, int, float] = None,
         inplace: bool = True,
     ):
         """
-    Returns the model's probabilities using the input relation.
+        Returns the model's probabilities using the input relation.
 
-    Parameters
-    ----------
-    vdf: str / vDataFrame
-        Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example, 
-        "(SELECT 1) x" is correct whereas, "(SELECT 1)" and "SELECT 1" are 
-        incorrect.
-    X: str / list, optional
-        List of the columns used to deploy the models. If empty, the model
-        predictors will be used.
-    name: str, optional
-        Name of the added vcolumn. If empty, a name will be generated.
-    pos_label: int / float / str, optional
-        Class label. For binary classification, this can be either 1 or 0.
-    inplace: bool, optional
-        If set to True, the prediction will be added to the vDataFrame.
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object to use to run the prediction. You can also 
+            specify a customized relation, but you must enclose 
+            it with an alias. For example, "(SELECT 1) x" is 
+            correct whereas, "(SELECT 1)" and "SELECT 1" are 
+            incorrect.
+        X: str / list, optional
+            List of the columns used to deploy the models. If 
+            empty, the model predictors will be used.
+        name: str, optional
+            Name of the added vcolumn. If empty, a name will be 
+            generated.
+        pos_label: int / float / str, optional
+            Class label. For binary classification, this can be 
+            either 1 or 0.
+        inplace: bool, optional
+            If set to True, the prediction will be added to the 
+            vDataFrame.
 
-    Returns
-    -------
-    vDataFrame
-        the input object.
+        Returns
+        -------
+        vDataFrame
+            the input object.
         """
         # Inititalization
         if isinstance(X, str):
@@ -1350,24 +1257,26 @@ class BinaryClassifier(Classifier):
 
         return vdf_return
 
-    def cutoff_curve(self, ax=None, nbins: int = 30, **style_kwds):
+    # Plotting Methods.
+
+    def cutoff_curve(self, ax=None, nbins: int = 30, **style_kwds) -> TableSample:
         """
-    Draws the model Cutoff curve.
+        Draws the model Cutoff curve.
 
-    Parameters
-    ----------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    nbins: int, optional
-        The number of bins.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        nbins: int, optional
+            The number of bins.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
+        Returns
+        -------
+        TableSample
+            cutoff curve data points.
         """
         return ms.roc_curve(
             self.y,
@@ -1379,26 +1288,26 @@ class BinaryClassifier(Classifier):
             **style_kwds,
         )
 
-    def roc_curve(self, ax=None, nbins: int = 30, **style_kwds):
+    def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds) -> TableSample:
         """
-	Draws the model ROC curve.
+    	Draws the model Lift Chart.
 
-    Parameters
-    ----------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    nbins: int, optional
-        The number of bins.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        nbins: int, optional
+            The number of bins.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
 
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
+    	Returns
+    	-------
+    	TableSample
+    		lift chart data points.
 		"""
-        return ms.roc_curve(
+        return ms.lift_chart(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -1407,75 +1316,61 @@ class BinaryClassifier(Classifier):
             **style_kwds,
         )
 
-    def score(
-        self,
-        method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
-        cutoff: Union[int, float] = 0.5,
-        nbins: int = 10000,
-    ):
+    def prc_curve(self, ax=None, nbins: int = 30, **style_kwds) -> TableSample:
         """
-	Computes the model score.
+    	Draws the model PRC curve.
 
-	Parameters
-	----------
-	method: str, optional
-		The method to use to compute the score.
-			accuracy	: Accuracy
-            aic         : Akaike’s Information Criterion
-			auc		    : Area Under the Curve (ROC)
-			best_cutoff : Cutoff which optimised the ROC Curve prediction.
-            bic         : Bayesian Information Criterion
-			bm		    : Informedness = tpr + tnr - 1
-			csi		    : Critical Success Index = tp / (tp + fn + fp)
-			f1		    : F1 Score 
-			logloss	    : Log Loss
-			mcc		    : Matthews Correlation Coefficient 
-			mk		    : Markedness = ppv + npv - 1
-			npv		    : Negative Predictive Value = tn / (tn + fn)
-			prc_auc	    : Area Under the Curve (PRC)
-			precision   : Precision = tp / (tp + fp)
-			recall	    : Recall = tp / (tp + fn)
-			specificity : Specificity = tn / (tn + fp)
-	cutoff: int / float, optional
-		Cutoff for which the tested category will be accepted as a prediction.
-    nbins: int, optional
-        [Only when method is set to auc|prc_auc|best_cutoff] 
-        An integer value that determines the number of decision boundaries. 
-        Decision boundaries are set at equally spaced intervals between 0 and 1, 
-        inclusive. Greater values for nbins give more precise estimations of the AUC, 
-        but can potentially decrease performance. The maximum value is 999,999. 
-        If negative, the maximum value is used.
+        Parameters
+        ----------
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        nbins: int, optional
+            The number of bins.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
 
-	Returns
-	-------
-	float
-		score
+    	Returns
+    	-------
+    	TableSample
+    		PRC curve data points.
 		"""
-        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
-        if method in (
-            "log_loss",
-            "logloss",
-            "aic",
-            "bic",
-            "prc_auc",
-            "auc",
-            "best_cutoff",
-            "best_threshold",
-        ):
-            args2 = self.deploySQL()
-        else:
-            args2 = self.deploySQL(cutoff)
-        args = [self.y, args2, self.test_relation]
-        kwds = {}
-        if method in ("accuracy", "acc"):
-            kwds["pos_label"] = 1
-        elif method in ("aic", "bic"):
-            args += [len(self.X)]
-        elif method in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
-            kwds["nbins"] = nbins
-            if method in ("best_cutoff", "best_threshold"):
-                kwds["best_threshold"] = True
-        return fun(*args, **kwds)
+        return ms.prc_curve(
+            self.y,
+            self.deploySQL(),
+            self.test_relation,
+            ax=ax,
+            nbins=nbins,
+            **style_kwds,
+        )
+
+    def roc_curve(self, ax=None, nbins: int = 30, **style_kwds) -> TableSample:
+        """
+        Draws the model ROC curve.
+
+        Parameters
+        ----------
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        nbins: int, optional
+            The number of bins.
+        **style_kwds
+            Any optional parameter to pass to the
+            Matplotlib functions.
+
+        Returns
+        -------
+        TableSample
+            ROC curve data points.
+        """
+        return ms.roc_curve(
+            self.y,
+            self.deploySQL(),
+            self.test_relation,
+            ax=ax,
+            nbins=nbins,
+            **style_kwds,
+        )
 
 
 class MulticlassClassifier(Classifier):
@@ -1499,7 +1394,7 @@ class MulticlassClassifier(Classifier):
         classes = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('learn.vModel.fit')*/ 
+                    /*+LABEL('learn.VerticaModel.fit')*/ 
                     DISTINCT {self.y} 
                 FROM {self.input_relation} 
                 WHERE {self.y} IS NOT NULL 
@@ -1509,6 +1404,42 @@ class MulticlassClassifier(Classifier):
         )
         classes = np.array([c[0] for c in classes])
         return self._array_to_int(classes)
+
+    def contour(
+        self, pos_label: PythonScalar = None, nbins: int = 100, ax=None, **style_kwds,
+    ):
+        """
+        Draws the model's contour plot.
+
+        Parameters
+        ----------
+        pos_label: PythonScalar, optional
+            Label to consider as positive. All the other 
+            classes will be merged and considered as negative 
+            for multiclass classification.
+        nbins: int, optional
+             Number of bins used to discretize the two predictors.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        if not (pos_label):
+            pos_label = sorted(self.classes_)[-1]
+        return vDataFrame(self.input_relation).contour(
+            self.X,
+            self.deploySQL(X=self.X, pos_label=pos_label),
+            cbar_title=self.y,
+            nbins=nbins,
+            ax=ax,
+            **style_kwds,
+        )
 
     def classification_report(
         self,
@@ -1555,7 +1486,7 @@ class MulticlassClassifier(Classifier):
     report = classification_report
 
     def confusion_matrix(
-        self, pos_label: Union[int, float, str] = None, cutoff: Union[int, float] = -1,
+        self, pos_label: PythonScalar = None, cutoff: Union[int, float] = -1,
     ):
         """
 	Computes the model confusion matrix.
@@ -1590,18 +1521,14 @@ class MulticlassClassifier(Classifier):
             )
 
     def cutoff_curve(
-        self,
-        pos_label: Union[int, float, str] = None,
-        ax=None,
-        nbins: int = 30,
-        **style_kwds,
+        self, pos_label: PythonScalar = None, ax=None, nbins: int = 30, **style_kwds,
     ):
         """
     Draws the model Cutoff curve.
 
     Parameters
     ----------
-    pos_label: int/float/str, optional
+    pos_label: PythonScalar, optional
         To draw the ROC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -1643,7 +1570,7 @@ class MulticlassClassifier(Classifier):
 
     def deploySQL(
         self,
-        pos_label: Union[int, float, str] = None,
+        pos_label: PythonScalar = None,
         cutoff: Union[int, float] = -1,
         allSQL: bool = False,
         X: Union[str, list] = [],
@@ -1731,18 +1658,14 @@ class MulticlassClassifier(Classifier):
         return sql
 
     def lift_chart(
-        self,
-        pos_label: Union[int, float, str] = None,
-        ax=None,
-        nbins: int = 1000,
-        **style_kwds,
+        self, pos_label: PythonScalar = None, ax=None, nbins: int = 1000, **style_kwds,
     ):
         """
 	Draws the model Lift Chart.
 
 	Parameters
 	----------
-	pos_label: int/float/str, optional
+	pos_label: PythonScalar, optional
 		To draw a lift chart, one of the response column classes must be the
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -1782,18 +1705,14 @@ class MulticlassClassifier(Classifier):
         )
 
     def prc_curve(
-        self,
-        pos_label: Union[int, float, str] = None,
-        ax=None,
-        nbins: int = 30,
-        **style_kwds,
+        self, pos_label: PythonScalar = None, ax=None, nbins: int = 30, **style_kwds,
     ):
         """
 	Draws the model PRC curve.
 
 	Parameters
 	----------
-	pos_label: int/float/str, optional
+	pos_label: PythonScalar, optional
 		To draw the PRC curve, one of the response column classes must be the 
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -1834,7 +1753,7 @@ class MulticlassClassifier(Classifier):
 
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         cutoff: Union[int, float] = 0.5,
@@ -1845,7 +1764,7 @@ class MulticlassClassifier(Classifier):
 
 	Parameters
 	----------
-	vdf: str / vDataFrame
+	vdf: SQLRelation
 		Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
@@ -1901,7 +1820,7 @@ class MulticlassClassifier(Classifier):
 
     def predict_proba(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         pos_label: Union[int, str, float] = None,
@@ -1912,7 +1831,7 @@ class MulticlassClassifier(Classifier):
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
@@ -1966,18 +1885,14 @@ class MulticlassClassifier(Classifier):
         return vdf_return
 
     def roc_curve(
-        self,
-        pos_label: Union[int, float, str] = None,
-        ax=None,
-        nbins: int = 30,
-        **style_kwds,
+        self, pos_label: PythonScalar = None, ax=None, nbins: int = 30, **style_kwds,
     ):
         """
 	Draws the model ROC curve.
 
 	Parameters
 	----------
-	pos_label: int/float/str, optional
+	pos_label: PythonScalar, optional
 		To draw the ROC curve, one of the response column classes must be the
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -2019,7 +1934,7 @@ class MulticlassClassifier(Classifier):
     def score(
         self,
         method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
-        pos_label: Union[int, float, str] = None,
+        pos_label: PythonScalar = None,
         cutoff: Union[int, float] = 0.5,
         nbins: int = 10000,
     ):
@@ -2104,7 +2019,7 @@ class MulticlassClassifier(Classifier):
 class Regressor(Supervised):
     def predict(
         self,
-        vdf: Union[str, vDataFrame],
+        vdf: SQLRelation,
         X: Union[str, list] = [],
         name: str = "",
         inplace: bool = True,
@@ -2114,7 +2029,7 @@ class Regressor(Supervised):
 
 	Parameters
 	----------
-	vdf: str / vDataFrame
+	vdf: SQLRelation
 		Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
         is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -2286,14 +2201,14 @@ class Regressor(Supervised):
         return fun(*arg)
 
 
-class Unsupervised(vModel):
-    def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
+class Unsupervised(VerticaModel):
+    def fit(self, input_relation: SQLRelation, X: Union[str, list] = []):
         """
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str / vDataFrame
+	input_relation: SQLRelation
 		Training relation.
 	X: str / list, optional
 		List of the predictors. If empty, all the numerical columns will be used.
@@ -2344,7 +2259,7 @@ class Unsupervised(vModel):
                 query=f"""
                     CREATE VIEW {relation} AS 
                         SELECT 
-                            /*+LABEL('learn.vModel.fit')*/ *
+                            /*+LABEL('learn.VerticaModel.fit')*/ *
                             {id_column} 
                         FROM {self.input_relation}""",
                 title="Creating a temporary view to fit the model.",
@@ -2365,7 +2280,7 @@ class Unsupervised(vModel):
         fun = self._vertica_fit_sql if self._model_type != "MCA" else "PCA"
         query = f"""
             SELECT 
-                /*+LABEL('learn.vModel.fit')*/ 
+                /*+LABEL('learn.VerticaModel.fit')*/ 
                 {fun}('{self.model_name}', '{relation}', '{', '.join(self.X)}'"""
         if self._model_type in ("BisectingKMeans", "KMeans", "KPrototypes",):
             query += f", {parameters['n_cluster']}"
@@ -2405,7 +2320,9 @@ class Unsupervised(vModel):
                         line += [str(val) + " AS " + X[j]]
                     line = ",".join(line)
                     if i == 0:
-                        query0 += ["SELECT /*+LABEL('learn.vModel.fit')*/ " + line]
+                        query0 += [
+                            "SELECT /*+LABEL('learn.VerticaModel.fit')*/ " + line
+                        ]
                     else:
                         query0 += ["SELECT " + line]
                 query0 = " UNION ".join(query0)
@@ -2646,13 +2563,13 @@ class Preprocessing(Unsupervised):
         else:
             return X
 
-    def inverse_transform(self, vdf: Union[str, vDataFrame], X: Union[str, list] = []):
+    def inverse_transform(self, vdf: SQLRelation, X: Union[str, list] = []):
         """
     Applies the Inverse Model on a vDataFrame.
 
     Parameters
     ----------
-    vdf: str / vDataFrame
+    vdf: SQLRelation
         input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -2686,13 +2603,13 @@ class Preprocessing(Unsupervised):
         main_relation = f"(SELECT {inverse_sql} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
 
-    def transform(self, vdf: Union[str, vDataFrame] = None, X: Union[str, list] = []):
+    def transform(self, vdf: SQLRelation = None, X: Union[str, list] = []):
         """
     Applies the model on a vDataFrame.
 
     Parameters
     ----------
-    vdf: str / vDataFrame, optional
+    vdf: SQLRelation, optional
         Input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -3005,7 +2922,7 @@ class Decomposition(Preprocessing):
 
     def transform(
         self,
-        vdf: Union[str, vDataFrame] = None,
+        vdf: SQLRelation = None,
         X: Union[str, list] = [],
         n_components: int = 0,
         cutoff: Union[int, float] = 1,
@@ -3015,7 +2932,7 @@ class Decomposition(Preprocessing):
 
     Parameters
     ----------
-    vdf: str / vDataFrame, optional
+    vdf: SQLRelation, optional
         Input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
@@ -3050,56 +2967,3 @@ class Decomposition(Preprocessing):
         )
         main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
-
-
-class Clustering(Unsupervised):
-    @property
-    @abstractmethod
-    def _vertica_predict_sql(self) -> str:
-        """Must be overridden in child class"""
-        raise NotImplementedError
-
-    def predict(
-        self,
-        vdf: Union[str, vDataFrame],
-        X: Union[str, list] = [],
-        name: str = "",
-        inplace: bool = True,
-    ):
-        """
-	Predicts using the input relation.
-
-	Parameters
-	----------
-	vdf: str / vDataFrame
-		Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
-        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-	X: str / list, optional
-		List of the columns used to deploy the models. If empty, the model
-		predictors will be used.
-	name: str, optional
-		Name of the added vcolumn. If empty, a name will be generated.
-	inplace: bool, optional
-		If set to True, the prediction will be added to the vDataFrame.
-
-	Returns
-	-------
-	vDataFrame
-		the input object.
-		"""
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(vdf, str):
-            vdf = vDataFrame(vdf)
-        X = [quote_ident(elem) for elem in X]
-        if not (name):
-            name = (
-                self._model_type
-                + "_"
-                + "".join(ch for ch in self.model_name if ch.isalnum())
-            )
-        if inplace:
-            return vdf.eval(name, self.deploySQL(X=X))
-        else:
-            return vdf.copy().eval(name, self.deploySQL(X=X))

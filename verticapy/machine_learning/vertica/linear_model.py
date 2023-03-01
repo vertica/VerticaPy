@@ -29,20 +29,22 @@ from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.plotting._matplotlib.mlplot import logit_plot, regression_plot
+
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 
 from verticapy.plotting._matplotlib.mlplot import plot_importance
 
 """
-Algorithms used for regression.
+General Classes.
 """
 
 
 class LinearModel:
     @property
-    def _attributes(self) -> Literal["coef_", "intercept_", "features_importance_"]:
-        return Literal["coef_", "intercept_", "features_importance_"]
+    def _attributes(self) -> list[str]:
+        return ["coef_", "intercept_", "features_importance_"]
 
     def _compute_attributes(self) -> None:
         """
@@ -59,7 +61,7 @@ class LinearModel:
         """
         vertica_version(condition=[8, 1, 1])
         query = f"""
-        SELECT /*+LABEL('learn.vModel.features_importance')*/
+        SELECT /*+LABEL('learn.VerticaModel.features_importance')*/
             predictor, 
             sign * ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance
         FROM (SELECT 
@@ -122,6 +124,35 @@ class LinearModel:
         }
         return TableSample(values=importances).sort(column="importance", desc=True)
 
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        return regression_plot(
+            self.X,
+            self.y,
+            self.input_relation,
+            np.concatenate(([self.intercept_], self.coef_)),
+            max_nb_points,
+            ax=ax,
+            **style_kwds,
+        )
+
     def to_memmodel(self) -> mm.LinearModel:
         """
         Converts the model to an InMemory object which
@@ -132,8 +163,8 @@ class LinearModel:
 
 class LinearModelClassifier(LinearModel):
     @property
-    def _attributes(self) -> Literal["coef_", "intercept_", "features_importance_"]:
-        return Literal["coef_", "intercept_", "classes_", "features_importance_"]
+    def _attributes(self) -> list[str]:
+        return ["coef_", "intercept_", "classes_", "features_importance_"]
 
     def _compute_attributes(self) -> None:
         """
@@ -142,8 +173,36 @@ class LinearModelClassifier(LinearModel):
         details = self.get_vertica_attributes("details")
         self.coef_ = np.array(details["coefficient"][1:])
         self.intercept_ = details["coefficient"][0]
-        self.classes_ = np.array([0, 1])
         return None
+
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        return logit_plot(
+            self.X,
+            self.y,
+            self.input_relation,
+            np.concatenate(([self.intercept_], self.coef_)),
+            max_nb_points,
+            ax=ax,
+            **style_kwds,
+        )
 
     def to_memmodel(self) -> mm.LinearModelClassifier:
         """

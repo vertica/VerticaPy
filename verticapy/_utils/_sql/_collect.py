@@ -90,7 +90,7 @@ bool
                 elif object_type == "vDataFrame":
                     json_dict_str = json_dict[key]._genSQL().replace('"', '\\"')
                     json += f'"{json_dict_str}"'
-                elif object_type == "vModel":
+                elif object_type == "VerticaModel":
                     json += f'"{json_dict[key]._model_type}"'
                 elif isinstance(json_dict[key], dict):
                     json += dict_to_json_string(json_dict=json_dict[key])

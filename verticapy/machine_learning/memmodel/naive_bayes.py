@@ -85,7 +85,7 @@ class NaiveBayes(MulticlassClassifier):
         return "NaiveBayes"
 
     @property
-    def _attributes(self) -> Literal["attributes_", "prior_", "classes_"]:
+    def _attributes(self) -> list[str]:
         return ["attributes_", "prior_", "classes_"]
 
     def __init__(

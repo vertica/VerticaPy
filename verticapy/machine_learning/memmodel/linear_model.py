@@ -39,7 +39,7 @@ class LinearModel(InMemoryModel):
         return "LinearModel"
 
     @property
-    def _attributes(self) -> Literal["coef_", "intercept_"]:
+    def _attributes(self) -> list[str]:
         return ["coef_", "intercept_"]
 
     def __init__(self, coef: ArrayLike, intercept: float = 0.0) -> None:

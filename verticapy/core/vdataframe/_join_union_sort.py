@@ -41,7 +41,7 @@ class vDFJoinUnionSort:
 
     Parameters
     ----------
-    input_relation: str / vDataFrame
+    input_relation: SQLRelation
         Relation to use to do the merging.
     expr1: str / list, optional
         List of pure-SQL expressions from the current vDataFrame to use during merging.

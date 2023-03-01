@@ -27,6 +27,7 @@ import verticapy._config.config as conf
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -47,12 +48,12 @@ from verticapy.sql.drop import drop
 @save_verticapy_logs
 def bayesian_search_cv(
     estimator,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: list,
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: Union[int, float, str] = None,
+    pos_label: PythonScalar = None,
     cutoff: float = -1,
     param_grid: Union[dict, list] = {},
     random_nbins: int = 16,
@@ -108,7 +109,7 @@ metric: str, optional
         var    : Explained variance
 cv: int, optional
     Number of folds.
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
     The main class to be considered as positive (classification only).
 cutoff: float, optional
     The model cutoff (classification only).
@@ -292,7 +293,7 @@ TableSample
 
 @save_verticapy_logs
 def enet_search_cv(
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: list,
     y: str,
     metric: str = "auto",
@@ -1060,12 +1061,12 @@ TableSample
 def grid_search_cv(
     estimator,
     param_grid: Union[dict, list],
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: Union[str, list],
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: Union[int, float, str] = None,
+    pos_label: PythonScalar = None,
     cutoff: Union[int, float] = -1,
     training_score: bool = True,
     skip_error: bool = True,
@@ -1117,7 +1118,7 @@ metric: str, optional
         var    : Explained variance
 cv: int, optional
     Number of folds.
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
     The main class to be considered as positive (classification only).
 cutoff: float, optional
     The model cutoff (classification only).
@@ -1419,12 +1420,12 @@ TableSample
 @save_verticapy_logs
 def randomized_search_cv(
     estimator,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: list,
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: Union[int, float, str] = None,
+    pos_label: PythonScalar = None,
     cutoff: float = -1,
     nbins: int = 1000,
     lmax: int = 4,
@@ -1473,7 +1474,7 @@ metric: str, optional
         var    : Explained variance
 cv: int, optional
     Number of folds.
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
     The main class to be considered as positive (classification only).
 cutoff: float, optional
     The model cutoff (classification only).
@@ -1517,12 +1518,12 @@ def validation_curve(
     estimator,
     param_name: str,
     param_range: list,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     X: list,
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: Union[int, float, str] = None,
+    pos_label: PythonScalar = None,
     cutoff: float = -1,
     std_coeff: float = 1,
     ax=None,
@@ -1574,7 +1575,7 @@ metric: str, optional
         var    : Explained variance
 cv: int, optional
     Number of folds.
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
     The main class to be considered as positive (classification only).
 cutoff: float, optional
     The model cutoff (classification only).

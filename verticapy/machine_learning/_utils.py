@@ -18,15 +18,13 @@ from typing import Union
 
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import PythonScalar, SQLRelation
 
 from verticapy.core.vdataframe.base import vDataFrame
 
 
 def _compute_tn_fn_fp_tp(
-    y_true: str,
-    y_score: str,
-    input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ):
     """
 A helper function that computes the confusion matrix for the specified 
@@ -39,7 +37,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str / vDataFrame
+input_relation: SQLRelation
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -69,7 +67,7 @@ def _compute_metric_query(
     metric: str,
     y_true: str,
     y_score: str,
-    input_relation: Union[str, vDataFrame],
+    input_relation: SQLRelation,
     title: str = "",
     fetchfirstelem: bool = True,
 ):
