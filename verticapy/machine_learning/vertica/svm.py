@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Union
+import numpy as np
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -134,7 +135,7 @@ max_iter: int, optional
             self.X,
             self.y,
             self.input_relation,
-            np.concatenate([self.intercept_], self.coef_),
+            np.concatenate(([self.intercept_], self.coef_)),
             max_nb_points,
             ax=ax,
             **style_kwds,

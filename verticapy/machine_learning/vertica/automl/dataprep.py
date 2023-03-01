@@ -145,7 +145,7 @@ final_relation_: vDataFrame
         identify_ts: bool = True,
         save: bool = True,
     ):
-        self._model_type, self.model_name = "AutoDataPrep", name
+        self.model_name = name
         if not (self.model_name):
             self.model_name = gen_tmp_name(
                 schema=conf.get_option("temp_schema"), name="autodataprep"
