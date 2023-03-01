@@ -35,14 +35,14 @@ from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 from verticapy.plotting._matplotlib.mlplot import plot_importance
 
 """
-Algorithms used for regression.
+General Classes.
 """
 
 
 class LinearModel:
     @property
-    def _attributes(self) -> Literal["coef_", "intercept_", "features_importance_"]:
-        return Literal["coef_", "intercept_", "features_importance_"]
+    def _attributes(self) -> list[str]:
+        return ["coef_", "intercept_", "features_importance_"]
 
     def _compute_attributes(self) -> None:
         """
@@ -132,8 +132,8 @@ class LinearModel:
 
 class LinearModelClassifier(LinearModel):
     @property
-    def _attributes(self) -> Literal["coef_", "intercept_", "features_importance_"]:
-        return Literal["coef_", "intercept_", "classes_", "features_importance_"]
+    def _attributes(self) -> list[str]:
+        return ["coef_", "intercept_", "classes_", "features_importance_"]
 
     def _compute_attributes(self) -> None:
         """

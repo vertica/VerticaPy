@@ -140,7 +140,7 @@ max_text_size: int, optional
         return "CountVectorizer"
 
     @property
-    def _attributes(self) -> Literal["stop_words_", "vocabulary_", "n_errors_"]:
+    def _attributes(self) -> list[str]:
         return ["stop_words_", "vocabulary_", "n_errors_"]
 
     @save_verticapy_logs
@@ -342,10 +342,13 @@ method: str, optional
         return "Scaler"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal["min_", "max_", "median_", "mad_", "mean_", "std_"]:
-        return Literal["min_", "max_", "median_", "mad_", "mean_", "std_"]
+    def _attributes(self) -> list[str]:
+        if self.parameters["method"] == "minmax":
+            return ["min_", "max_"]
+        elif self.parameters["method"] == "robust_zscore":
+            return ["median_", "mad_"]
+        else:
+            return ["mean_", "std_"]
 
     @check_minimum_version
     @save_verticapy_logs
@@ -388,8 +391,8 @@ class StandardScaler(Scaler):
     """i.e. Scaler with param method = 'zscore'"""
 
     @property
-    def _attributes(self) -> Literal["mean_", "std_"]:
-        return Literal["mean_", "std_"]
+    def _attributes(self) -> list[str]:
+        return ["mean_", "std_"]
 
     def __init__(self, name: str):
         super().__init__(name, "zscore")
@@ -399,8 +402,8 @@ class RobustScaler(Scaler):
     """i.e. Scaler with param method = 'robust_zscore'"""
 
     @property
-    def _attributes(self) -> Literal["median_", "mad_"]:
-        return Literal["median_", "mad_"]
+    def _attributes(self) -> list[str]:
+        return ["median_", "mad_"]
 
     def __init__(self, name: str):
         super().__init__(name, "robust_zscore")
@@ -410,8 +413,8 @@ class MinMaxScaler(Scaler):
     """i.e. Scaler with param method = 'minmax'"""
 
     @property
-    def _attributes(self) -> Literal["min_", "max_"]:
-        return Literal["min_", "max_"]
+    def _attributes(self) -> list[str]:
+        return ["min_", "max_"]
 
     def __init__(self, name: str):
         super().__init__(name, "minmax")
@@ -475,8 +478,8 @@ null_column_name: str, optional
         return "OneHotEncoder"
 
     @property
-    def _attributes(self) -> Literal["categories_", "column_naming_", "drop_first_"]:
-        return Literal["categories_", "column_naming_", "drop_first_"]
+    def _attributes(self) -> list[str]:
+        return ["categories_", "column_naming_", "drop_first_"]
 
     @check_minimum_version
     @save_verticapy_logs

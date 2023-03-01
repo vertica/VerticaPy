@@ -116,7 +116,7 @@ int
         else:
             model = KMeans(model_name, i, init, max_iter, tol)
         model.fit(input_relation, X)
-        score = model.metrics_.values["value"][3]
+        score = model.elbow_score_
         if score > elbow_score_stop:
             return i
         score_prev = score
@@ -197,7 +197,7 @@ TableSample
         L = n_cluster
         L.sort()
     schema, relation = schema_relation(input_relation)
-    all_within_cluster_SS, model_name = (
+    elbow_score, model_name = (
         [],
         gen_tmp_name(schema=schema, name="kmeans"),
     )
@@ -218,7 +218,7 @@ TableSample
         else:
             model = KMeans(model_name, i, init, max_iter, tol)
         model.fit(input_relation, X)
-        all_within_cluster_SS += [float(model.metrics_.values["value"][3])]
+        elbow_score += [float(model.elbow_score_)]
         model.drop()
     if not (ax):
         fig, ax = plt.subplots()
@@ -232,9 +232,9 @@ TableSample
         "markersize": 7,
         "markeredgecolor": "black",
     }
-    ax.plot(L, all_within_cluster_SS, **updated_dict(param, style_kwds))
+    ax.plot(L, elbow_score, **updated_dict(param, style_kwds))
     ax.set_title("Elbow Curve")
     ax.set_xlabel("Number of Clusters")
-    ax.set_ylabel("Between-Cluster SS / Total SS")
-    values = {"index": L, "Within-Cluster SS": all_within_cluster_SS}
+    ax.set_ylabel("Elbow Score (Between-Cluster SS / Total SS)")
+    values = {"index": L, "Elbow Score": elbow_score}
     return TableSample(values=values)

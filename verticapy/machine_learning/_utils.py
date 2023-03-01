@@ -18,6 +18,7 @@ from typing import Union
 
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import PythonScalar
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -26,7 +27,7 @@ def _compute_tn_fn_fp_tp(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    pos_label: PythonScalar = 1,
 ):
     """
 A helper function that computes the confusion matrix for the specified 

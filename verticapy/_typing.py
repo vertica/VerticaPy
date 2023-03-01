@@ -19,4 +19,4 @@ import numpy as np
 
 ArrayLike = Union[list, np.ndarray]
 
-PythonScalar = Union[bool, float, str]
+PythonScalar = Union[None, bool, float, str]

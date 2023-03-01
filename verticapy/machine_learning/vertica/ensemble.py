@@ -33,11 +33,11 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import (
-    Clustering,
     MulticlassClassifier,
     Regressor,
     Tree,
 )
+from verticapy.machine_learning.vertica.cluster import Clustering
 
 """
 General Classes.
@@ -473,12 +473,8 @@ nbins: int, optional
         return "RandomForestRegressor"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "n_estimators_", "trees_", "features_importance_", "features_importance_trees_"
-    ]:
-        return Literal[
+    def _attributes(self) -> list[str]:
+        return [
             "n_estimators_",
             "trees_",
             "features_importance_",
@@ -624,17 +620,8 @@ col_sample_by_node: float, optional
         return "XGBRegressor"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "n_estimators_",
-        "eta_",
-        "mean_",
-        "trees_",
-        "features_importance_",
-        "features_importance_trees_",
-    ]:
-        return Literal[
+    def _attributes(self) -> list[str]:
+        return [
             "n_estimators_",
             "eta_",
             "mean_",
@@ -800,16 +787,8 @@ nbins: int, optional
         return "RandomForestClassifier"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "n_estimators_",
-        "classes_",
-        "trees_",
-        "features_importance_",
-        "features_importance_trees_",
-    ]:
-        return Literal[
+    def _attributes(self) -> list[str]:
+        return [
             "n_estimators_",
             "classes_",
             "trees_",
@@ -972,18 +951,8 @@ col_sample_by_node: float, optional
         return "XGBClassifier"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "n_estimators_",
-        "classes_",
-        "eta_",
-        "logodds_",
-        "trees_",
-        "features_importance_",
-        "features_importance_trees_",
-    ]:
-        return Literal[
+    def _attributes(self) -> list[str]:
+        return [
             "n_estimators_",
             "classes_",
             "eta_",
@@ -1164,8 +1133,8 @@ col_sample_by_tree: float, optional
         return "IsolationForest"
 
     @property
-    def _attributes(self) -> Literal["n_estimators_", "psy_", "trees_"]:
-        return Literal["n_estimators_", "psy_", "trees_"]
+    def _attributes(self) -> list[str]:
+        return ["n_estimators_", "psy_", "trees_"]
 
     @check_minimum_version
     @save_verticapy_logs

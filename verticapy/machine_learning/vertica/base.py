@@ -28,7 +28,7 @@ from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
-from verticapy._typing import ArrayLike
+from verticapy._typing import ArrayLike, PythonScalar
 from verticapy.errors import (
     ConversionError,
     FunctionError,
@@ -149,91 +149,34 @@ Base Class for Vertica Models.
             )
 
     def contour(
-        self,
-        nbins: int = 100,
-        pos_label: Union[int, float, str] = None,
-        ax=None,
-        **style_kwds,
+        self, nbins: int = 100, ax=None, **style_kwds,
     ):
         """
-    Draws the model's contour plot. Only available for regressors, binary 
-    classifiers, and for models of exactly two predictors.
+        Draws the model's contour plot.
 
-    Parameters
-    ----------
-    nbins: int, optional
-        Number of bins used to discretize the two input numerical vcolumns.
-    pos_label: int/float/str, optional
-        Label to consider as positive. All the other classes will be merged and
-        considered as negative for multiclass classification.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        nbins: int, optional
+             Number of bins used to discretize the two predictors.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
 
-    Returns
-    -------
-    ax
-        Matplotlib axes object
+        Returns
+        -------
+        ax
+            Matplotlib axes object
         """
-        if self._model_type in (
-            "RandomForestClassifier",
-            "XGBClassifier",
-            "NaiveBayes",
-            "NearestCentroid",
-            "KNeighborsClassifier",
-        ):
-            if not (pos_label):
-                pos_label = sorted(self.classes_)[-1]
-            if self._model_type in (
-                "RandomForestClassifier",
-                "XGBClassifier",
-                "NaiveBayes",
-                "NearestCentroid",
-            ):
-                return vDataFrame(self.input_relation).contour(
-                    self.X,
-                    self.deploySQL(X=self.X, pos_label=pos_label),
-                    cbar_title=self.y,
-                    nbins=nbins,
-                    ax=ax,
-                    **style_kwds,
-                )
-            else:
-                return vDataFrame(self.input_relation).contour(
-                    self.X,
-                    self,
-                    pos_label=pos_label,
-                    cbar_title=self.y,
-                    nbins=nbins,
-                    ax=ax,
-                    **style_kwds,
-                )
-        elif self._model_type == "KNeighborsRegressor":
-            return vDataFrame(self.input_relation).contour(
-                self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
-            )
-        elif self._model_type in (
-            "KMeans",
-            "BisectingKMeans",
-            "KPrototypes",
-            "IsolationForest",
-        ):
-            cbar_title = "cluster"
-            if self._model_type == "IsolationForest":
-                cbar_title = "anomaly_score"
-            return vDataFrame(self.input_relation).contour(
-                self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds,
-            )
-        else:
-            return vDataFrame(self.input_relation).contour(
-                self.X,
-                self.deploySQL(X=self.X),
-                cbar_title=self.y,
-                nbins=nbins,
-                ax=ax,
-                **style_kwds,
-            )
+        return vDataFrame(self.input_relation).contour(
+            self.X,
+            self.deploySQL(X=self.X),
+            cbar_title=self.y,
+            nbins=nbins,
+            ax=ax,
+            **style_kwds,
+        )
 
     def deploySQL(self, X: Union[str, list] = []):
         """
@@ -1510,6 +1453,42 @@ class MulticlassClassifier(Classifier):
         classes = np.array([c[0] for c in classes])
         return self._array_to_int(classes)
 
+    def contour(
+        self, pos_label: PythonScalar = None, nbins: int = 100, ax=None, **style_kwds,
+    ):
+        """
+        Draws the model's contour plot.
+
+        Parameters
+        ----------
+        pos_label: PythonScalar, optional
+            Label to consider as positive. All the other 
+            classes will be merged and considered as negative 
+            for multiclass classification.
+        nbins: int, optional
+             Number of bins used to discretize the two predictors.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        if not (pos_label):
+            pos_label = sorted(self.classes_)[-1]
+        return vDataFrame(self.input_relation).contour(
+            self.X,
+            self.deploySQL(X=self.X, pos_label=pos_label),
+            cbar_title=self.y,
+            nbins=nbins,
+            ax=ax,
+            **style_kwds,
+        )
+
     def classification_report(
         self,
         cutoff: Union[int, float, list] = [],
@@ -1555,7 +1534,7 @@ class MulticlassClassifier(Classifier):
     report = classification_report
 
     def confusion_matrix(
-        self, pos_label: Union[int, float, str] = None, cutoff: Union[int, float] = -1,
+        self, pos_label: PythonScalar = None, cutoff: Union[int, float] = -1,
     ):
         """
 	Computes the model confusion matrix.
@@ -1590,18 +1569,14 @@ class MulticlassClassifier(Classifier):
             )
 
     def cutoff_curve(
-        self,
-        pos_label: Union[int, float, str] = None,
-        ax=None,
-        nbins: int = 30,
-        **style_kwds,
+        self, pos_label: PythonScalar = None, ax=None, nbins: int = 30, **style_kwds,
     ):
         """
     Draws the model Cutoff curve.
 
     Parameters
     ----------
-    pos_label: int/float/str, optional
+    pos_label: PythonScalar, optional
         To draw the ROC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -1643,7 +1618,7 @@ class MulticlassClassifier(Classifier):
 
     def deploySQL(
         self,
-        pos_label: Union[int, float, str] = None,
+        pos_label: PythonScalar = None,
         cutoff: Union[int, float] = -1,
         allSQL: bool = False,
         X: Union[str, list] = [],
@@ -1731,18 +1706,14 @@ class MulticlassClassifier(Classifier):
         return sql
 
     def lift_chart(
-        self,
-        pos_label: Union[int, float, str] = None,
-        ax=None,
-        nbins: int = 1000,
-        **style_kwds,
+        self, pos_label: PythonScalar = None, ax=None, nbins: int = 1000, **style_kwds,
     ):
         """
 	Draws the model Lift Chart.
 
 	Parameters
 	----------
-	pos_label: int/float/str, optional
+	pos_label: PythonScalar, optional
 		To draw a lift chart, one of the response column classes must be the
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -1782,18 +1753,14 @@ class MulticlassClassifier(Classifier):
         )
 
     def prc_curve(
-        self,
-        pos_label: Union[int, float, str] = None,
-        ax=None,
-        nbins: int = 30,
-        **style_kwds,
+        self, pos_label: PythonScalar = None, ax=None, nbins: int = 30, **style_kwds,
     ):
         """
 	Draws the model PRC curve.
 
 	Parameters
 	----------
-	pos_label: int/float/str, optional
+	pos_label: PythonScalar, optional
 		To draw the PRC curve, one of the response column classes must be the 
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -1966,18 +1933,14 @@ class MulticlassClassifier(Classifier):
         return vdf_return
 
     def roc_curve(
-        self,
-        pos_label: Union[int, float, str] = None,
-        ax=None,
-        nbins: int = 30,
-        **style_kwds,
+        self, pos_label: PythonScalar = None, ax=None, nbins: int = 30, **style_kwds,
     ):
         """
 	Draws the model ROC curve.
 
 	Parameters
 	----------
-	pos_label: int/float/str, optional
+	pos_label: PythonScalar, optional
 		To draw the ROC curve, one of the response column classes must be the
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -2019,7 +1982,7 @@ class MulticlassClassifier(Classifier):
     def score(
         self,
         method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
-        pos_label: Union[int, float, str] = None,
+        pos_label: PythonScalar = None,
         cutoff: Union[int, float] = 0.5,
         nbins: int = 10000,
     ):
@@ -3050,56 +3013,3 @@ class Decomposition(Preprocessing):
         )
         main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
-
-
-class Clustering(Unsupervised):
-    @property
-    @abstractmethod
-    def _vertica_predict_sql(self) -> str:
-        """Must be overridden in child class"""
-        raise NotImplementedError
-
-    def predict(
-        self,
-        vdf: Union[str, vDataFrame],
-        X: Union[str, list] = [],
-        name: str = "",
-        inplace: bool = True,
-    ):
-        """
-	Predicts using the input relation.
-
-	Parameters
-	----------
-	vdf: str / vDataFrame
-		Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
-        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-	X: str / list, optional
-		List of the columns used to deploy the models. If empty, the model
-		predictors will be used.
-	name: str, optional
-		Name of the added vcolumn. If empty, a name will be generated.
-	inplace: bool, optional
-		If set to True, the prediction will be added to the vDataFrame.
-
-	Returns
-	-------
-	vDataFrame
-		the input object.
-		"""
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(vdf, str):
-            vdf = vDataFrame(vdf)
-        X = [quote_ident(elem) for elem in X]
-        if not (name):
-            name = (
-                self._model_type
-                + "_"
-                + "".join(ch for ch in self.model_name if ch.isalnum())
-            )
-        if inplace:
-            return vdf.eval(name, self.deploySQL(X=X))
-        else:
-            return vdf.copy().eval(name, self.deploySQL(X=X))

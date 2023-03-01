@@ -79,8 +79,8 @@ nbtype: str, optional
         return "NaiveBayes"
 
     @property
-    def _attributes(self) -> Literal["attributes_", "prior_", "classes_"]:
-        return Literal["attributes_", "prior_", "classes_"]
+    def _attributes(self) -> list[str]:
+        return ["attributes_", "prior_", "classes_"]
 
     @check_minimum_version
     @save_verticapy_logs

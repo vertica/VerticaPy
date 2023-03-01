@@ -44,7 +44,7 @@ class Clustering(InMemoryModel):
         return "Clustering"
 
     @property
-    def _attributes(self) -> Literal["clusters_", "p_"]:
+    def _attributes(self) -> list[str]:
         return ["clusters_", "p_"]
 
     def __init__(
@@ -259,7 +259,7 @@ class NearestCentroid(Clustering):
         return "NearestCentroid"
 
     @property
-    def _attributes(self) -> Literal["clusters_", "classes_", "p_"]:
+    def _attributes(self) -> list[str]:
         return ["clusters_", "classes_", "p_"]
 
     def __init__(self, clusters: ArrayLike, classes: ArrayLike, p: int = 2,) -> None:
@@ -559,7 +559,7 @@ class KPrototypes(Clustering):
         return "KPrototypes"
 
     @property
-    def _attributes(self) -> Literal["clusters_", "p_", "gamma_", "is_categorical_"]:
+    def _attributes(self) -> list[str]:
         return ["clusters_", "p_", "gamma_", "is_categorical_"]
 
     def __init__(

@@ -89,7 +89,7 @@ class RandomForestRegressor(Ensemble):
         return "RandomForestRegressor"
 
     @property
-    def _attributes(self) -> Literal["trees_"]:
+    def _attributes(self) -> list[str]:
         return ["trees_"]
 
     def __init__(self, trees: list[BinaryTreeRegressor]) -> None:
@@ -147,7 +147,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         return "RandomForestClassifier"
 
     @property
-    def _attributes(self) -> Literal["trees_", "classes_"]:
+    def _attributes(self) -> list[str]:
         return ["trees_", "classes_"]
 
     def __init__(
@@ -244,7 +244,7 @@ class XGBRegressor(Ensemble):
         return "XGBRegressor"
 
     @property
-    def _attributes(self) -> Literal["trees_", "mean_", "eta_"]:
+    def _attributes(self) -> list[str]:
         return ["trees_", "mean_", "eta_"]
 
     def __init__(
@@ -311,7 +311,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         return "XGBClassifier"
 
     @property
-    def _attributes(self) -> Literal["trees_", "logodds_", "classes_", "eta_"]:
+    def _attributes(self) -> list[str]:
         return ["trees_", "logodds_", "classes_", "eta_"]
 
     def __init__(
@@ -395,7 +395,7 @@ class IsolationForest(Ensemble):
         return "IsolationForest"
 
     @property
-    def _attributes(self) -> Literal["trees_"]:
+    def _attributes(self) -> list[str]:
         return ["trees_"]
 
     def __init__(self, trees: list[BinaryTreeAnomaly]) -> None:

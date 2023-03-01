@@ -27,6 +27,7 @@ import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy._typing import PythonScalar
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -42,7 +43,7 @@ def _compute_function_metrics(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    pos_label: PythonScalar = 1,
     nbins: int = 30,
     fun_sql_name: str = "",
 ):
@@ -154,7 +155,7 @@ metric: str/list, optional
         var    : Explained variance
 cv: int, optional
 	Number of folds.
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
 	The main class to be considered as positive (classification only).
 cutoff: int / float, optional
 	The model cutoff (classification only).
@@ -375,7 +376,7 @@ def learning_curve(
     method: Literal["efficiency", "performance", "scalability"] = "efficiency",
     metric: str = "auto",
     cv: int = 3,
-    pos_label: Union[int, float, str] = None,
+    pos_label: PythonScalar = None,
     cutoff: Union[int, float] = -1,
     std_coeff: Union[int, float] = 1,
     ax=None,
@@ -431,7 +432,7 @@ metric: str, optional
         var    : Explained variance
 cv: int, optional
     Number of folds.
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
     The main class to be considered as positive (classification only).
 cutoff: int / float, optional
     The model cutoff (classification only).
@@ -698,7 +699,7 @@ input_relation: str/vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
     To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
@@ -768,7 +769,7 @@ def roc_curve(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: Union[int, float, str] = 1,
+    pos_label: PythonScalar = 1,
     nbins: int = 30,
     auc_roc: bool = False,
     best_threshold: bool = False,
@@ -789,7 +790,7 @@ input_relation: str/vDataFrame
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
     To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional

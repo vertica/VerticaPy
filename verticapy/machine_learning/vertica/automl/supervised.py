@@ -22,6 +22,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import schema_relation
 from verticapy._utils._sql._vertica_version import vertica_version
+from verticapy._typing import PythonScalar
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -110,7 +111,7 @@ metric: str, optional
         var    : Explained variance
 cv: int, optional
     Number of folds.
-pos_label: int/float/str, optional
+pos_label: PythonScalar, optional
     The main class to be considered as positive (classification only).
 cutoff: float, optional
     The model cutoff (classification only).
@@ -173,7 +174,7 @@ model_grid_ : TableSample
         estimator_type: Literal["auto", "regressor", "binary", "multi"] = "auto",
         metric: str = "auto",
         cv: int = 3,
-        pos_label: Union[int, float, str] = None,
+        pos_label: PythonScalar = None,
         cutoff: float = -1,
         nbins: int = 100,
         lmax: int = 5,

@@ -32,7 +32,7 @@ class InMemoryModel:
 
     @property
     @abstractmethod
-    def _attributes(self) -> list:
+    def _attributes(self) -> list[str]:
         """Must be overridden in child class"""
         raise NotImplementedError
 

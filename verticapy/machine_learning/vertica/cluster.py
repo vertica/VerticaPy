@@ -40,6 +40,91 @@ from verticapy.machine_learning.model_management.read import does_model_exist
 
 from verticapy.sql.drop import drop
 
+"""
+General Classes.
+"""
+
+
+class Clustering(Unsupervised):
+    @property
+    @abstractmethod
+    def _vertica_predict_sql(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
+    def contour(
+        self, nbins: int = 100, ax=None, **style_kwds,
+    ):
+        """
+        Draws the model's contour plot.
+
+        Parameters
+        ----------
+        nbins: int, optional
+            Number of bins used to discretize the two predictors.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        cbar_title = "cluster"
+        if self._model_type == "IsolationForest":
+            cbar_title = "anomaly_score"
+        return vDataFrame(self.input_relation).contour(
+            self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds,
+        )
+
+    def predict(
+        self,
+        vdf: Union[str, vDataFrame],
+        X: Union[str, list] = [],
+        name: str = "",
+        inplace: bool = True,
+    ) -> vDataFrame:
+        """
+    Predicts using the input relation.
+
+    Parameters
+    ----------
+    vdf: str / vDataFrame
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
+        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+    X: str / list, optional
+        List of the columns used to deploy the models. If empty, the model
+        predictors will be used.
+    name: str, optional
+        Name of the added vcolumn. If empty, a name will be generated.
+    inplace: bool, optional
+        If set to True, the prediction will be added to the vDataFrame.
+
+    Returns
+    -------
+    vDataFrame
+        the input object.
+        """
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(vdf, str):
+            vdf = vDataFrame(vdf)
+        X = [quote_ident(elem) for elem in X]
+        if not (name):
+            name = (
+                self._model_type
+                + "_"
+                + "".join(ch for ch in self.model_name if ch.isalnum())
+            )
+        if inplace:
+            return vdf.eval(name, self.deploySQL(X=X))
+        else:
+            return vdf.copy().eval(name, self.deploySQL(X=X))
+
 
 """
 Algorithms used for clustering.
@@ -95,8 +180,16 @@ tol: float, optional
         return "KMeans"
 
     @property
-    def _attributes(self) -> Literal["clusters_", "p_", "metrics_"]:
-        return ["clusters_", "p_", "metrics_"]
+    def _attributes(self) -> list[str]:
+        return [
+            "clusters_",
+            "p_",
+            "between_cluster_ss_",
+            "total_ss_",
+            "total_within_cluster_ss_",
+            "elbow_score_",
+            "converged_",
+        ]
 
     @check_minimum_version
     @save_verticapy_logs
@@ -107,7 +200,7 @@ tol: float, optional
         init: Union[Literal["kmeanspp", "random"], list] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
-    ):
+    ) -> None:
         self.model_name = name
         self.parameters = {
             "n_cluster": n_cluster,
@@ -115,6 +208,7 @@ tol: float, optional
             "max_iter": max_iter,
             "tol": tol,
         }
+        return None
 
     def _compute_attributes(self) -> dict:
         """
@@ -123,36 +217,38 @@ tol: float, optional
         centers = self.get_vertica_attributes("centers")
         self.clusters_ = centers.to_numpy()
         self.p_ = 2
-        self.metrics_ = self._compute_metrics()
+        self._compute_metrics()
 
-    def _compute_metrics(self):
+    def _compute_metrics(self) -> None:
         metrics_str = self.get_vertica_attributes("metrics").values["metrics"][0]
-        metrics = {
-            "index": [
-                "Between-Cluster Sum of Squares",
-                "Total Sum of Squares",
-                "Total Within-Cluster Sum of Squares",
-                "Between-Cluster SS / Total SS",
-                "converged",
+        metrics = np.array(
+            [
+                float(
+                    metrics_str.split("Between-Cluster Sum of Squares: ")[1].split(
+                        "\n"
+                    )[0]
+                ),
+                float(metrics_str.split("Total Sum of Squares: ")[1].split("\n")[0]),
+                float(
+                    metrics_str.split("Total Within-Cluster Sum of Squares: ")[1].split(
+                        "\n"
+                    )[0]
+                ),
+                float(
+                    metrics_str.split("Between-Cluster Sum of Squares: ")[1].split(
+                        "\n"
+                    )[0]
+                )
+                / float(metrics_str.split("Total Sum of Squares: ")[1].split("\n")[0]),
+                metrics_str.split("Converged: ")[1].split("\n")[0] == "True",
             ]
-        }
-        metrics["value"] = [
-            float(
-                metrics_str.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
-            ),
-            float(metrics_str.split("Total Sum of Squares: ")[1].split("\n")[0]),
-            float(
-                metrics_str.split("Total Within-Cluster Sum of Squares: ")[1].split(
-                    "\n"
-                )[0]
-            ),
-            float(
-                metrics_str.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
-            )
-            / float(metrics_str.split("Total Sum of Squares: ")[1].split("\n")[0]),
-            metrics_str.split("Converged: ")[1].split("\n")[0] == "True",
-        ]
-        return TableSample(metrics)
+        )
+        self.between_cluster_ss_ = metrics[0]
+        self.total_ss_ = metrics[1]
+        self.total_within_cluster_ss_ = metrics[2]
+        self.elbow_score_ = metrics[3]
+        self.converged_ = metrics[4]
+        return None
 
     def plot_voronoi(
         self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,
@@ -199,7 +295,7 @@ tol: float, optional
         return mm.KMeans(self.clusters_, self.p_,)
 
 
-class BisectingKMeans(Clustering, Tree):
+class BisectingKMeans(KMeans, Tree):
     """
 Creates a BisectingKMeans object using the Vertica bisecting k-means 
 algorithm on the data. k-means clustering is a method of vector quantization, 
@@ -268,25 +364,19 @@ tol: float, optional
         return "BisectingKMeans"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal[
-        "clusters_",
-        "children_left_",
-        "children_right_",
-        "cluster_size_",
-        "cluster_score_",
-        "p_",
-        "metrics_",
-    ]:
-        return Literal[
+    def _attributes(self) -> list[str]:
+        return [
             "clusters_",
             "children_left_",
             "children_right_",
             "cluster_size_",
             "cluster_score_",
             "p_",
-            "metrics_",
+            "between_cluster_ss_",
+            "total_ss_",
+            "total_within_cluster_ss_",
+            "elbow_score_",
+            "cluster_i_ss_",
         ]
 
     @check_minimum_version
@@ -328,7 +418,12 @@ tol: float, optional
         n = len(wt)
         self.cluster_score_ = np.array([wt[i] / tot[i] for i in range(n)])
         self.p_ = 2
-        self.metrics_ = self.get_vertica_attributes("Metrics")
+        metrics = self.get_vertica_attributes("Metrics")["Value"]
+        self.total_ss_ = metrics[0]
+        self.total_within_cluster_ss_ = metrics[1]
+        self.between_cluster_ss_ = metrics[2]
+        self.elbow_score_ = metrics[3]
+        self.cluster_i_ss_ = np.array(metrics[4:])
 
     def to_graphviz(
         self,
@@ -459,10 +554,18 @@ gamma: float, optional
         return "KPrototypes"
 
     @property
-    def _attributes(
-        self,
-    ) -> Literal["clusters_", "p_", "gamma_", "is_categorical_", "metrics_"]:
-        return Literal["clusters_", "p_", "gamma_", "is_categorical_", "metrics_"]
+    def _attributes(self) -> list[str]:
+        return [
+            "clusters_",
+            "p_",
+            "gamma_",
+            "is_categorical_",
+            "between_cluster_ss_",
+            "total_ss_",
+            "total_within_cluster_ss_",
+            "elbow_score_",
+            "converged_",
+        ]
 
     @check_minimum_version
     @save_verticapy_logs
@@ -493,8 +596,10 @@ gamma: float, optional
         self.p_ = 2
         self.gamma_ = self.parameters["gamma"]
         dtypes = centers.dtype
-        self.is_categorical_ = [("char" in dtypes[key].lower()) for key in dtypes]
-        self.metrics_ = self._compute_metrics()
+        self.is_categorical_ = np.array(
+            [("char" in dtypes[key].lower()) for key in dtypes]
+        )
+        self._compute_metrics()
 
     def to_memmodel(self):
         """
@@ -568,7 +673,7 @@ p: int, optional
         self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
 
     @property
-    def _attributes(self) -> Literal["n_cluster_", "n_noise_", "p_"]:
+    def _attributes(self) -> list[str]:
         return ["n_cluster_", "n_noise_", "p_"]
 
     def fit(
@@ -826,8 +931,8 @@ p: int, optional
         return "NearestCentroid"
 
     @property
-    def _attributes(self) -> Literal["clusters_", "classes_", "p_"]:
-        return Literal["clusters_", "classes_", "p_"]
+    def _attributes(self) -> list[str]:
+        return ["clusters_", "classes_", "p_"]
 
     @save_verticapy_logs
     def __init__(self, name: str, p: int = 2):

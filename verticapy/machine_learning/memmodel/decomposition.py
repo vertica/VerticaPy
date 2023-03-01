@@ -40,7 +40,7 @@ class PCA(InMemoryModel):
         return "PCA"
 
     @property
-    def _attributes(self) -> Literal["principal_components_", "mean_"]:
+    def _attributes(self) -> list[str]:
         return ["principal_components_", "mean_"]
 
     def __init__(self, principal_components: ArrayLike, mean: ArrayLike) -> None:
@@ -170,7 +170,7 @@ class SVD(InMemoryModel):
         return "SVD"
 
     @property
-    def _attributes(self) -> Literal["vectors_", "values_"]:
+    def _attributes(self) -> list[str]:
         return ["vectors_", "values_"]
 
     def __init__(self, vectors: ArrayLike, values: ArrayLike) -> None:
