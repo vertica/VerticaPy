@@ -55,10 +55,7 @@ def model(titanic_vd):
 
 class TestLinearSVC:
     def test_repr(self, model):
-        assert "predictor|coefficient" in model.__repr__()
-        model_repr = LinearSVC("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<LinearSVC>"
+        assert model.__repr__() == "<LinearSVC>"
 
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
@@ -223,8 +220,8 @@ class TestLinearSVC:
         prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
-    def test_get_attr(self, model):
-        attr = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        attr = model.get_vertica_attributes()
         assert attr["attr_name"] == [
             "details",
             "accepted_row_count",
@@ -241,17 +238,25 @@ class TestLinearSVC:
         ]
         assert attr["#_of_rows"] == [3, 1, 1, 1, 1]
 
-        details = model.get_attr("details")
+        details = model.get_vertica_attributes("details")
         assert details["predictor"] == ["Intercept", "age", "fare"]
         assert details["coefficient"][0] == pytest.approx(-0.226679636751873)
         assert details["coefficient"][1] == pytest.approx(-0.00661256493751514)
         assert details["coefficient"][2] == pytest.approx(0.00587052591948468)
 
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 996
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 238
-        assert model.get_attr("iteration_count")["iteration_count"][0] == 6
         assert (
-            model.get_attr("call_string")["call_string"][0]
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 996
+        )
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 238
+        )
+        assert (
+            model.get_vertica_attributes("iteration_count")["iteration_count"][0] == 6
+        )
+        assert (
+            model.get_vertica_attributes("call_string")["call_string"][0]
             == "SELECT svm_classifier('public.lsvc_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS class_weights='1,1', C=1, max_iterations=100, intercept_mode='regularized', intercept_scaling=1, epsilon=0.0001);"
         )
 

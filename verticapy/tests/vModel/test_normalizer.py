@@ -50,10 +50,7 @@ def model(winequality_vd):
 
 class TestScaler:
     def test_repr(self, model):
-        assert "column_name  |  avg   |std_dev" in model.__repr__()
-        model_repr = Scaler("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<Scaler>"
+        assert model.__repr__() == "<Scaler>"
 
     def test_Scaler_subclasses(self):
         result = StandardScaler("model_test")
@@ -91,8 +88,8 @@ class TestScaler:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "details",
@@ -102,7 +99,7 @@ class TestScaler:
         ]
         assert m_att["#_of_rows"] == [3]
 
-        m_att_details = model.get_attr(attr_name="details")
+        m_att_details = model.get_vertica_attributes(attr_name="details")
 
         assert m_att_details["column_name"] == [
             "citric_acid",

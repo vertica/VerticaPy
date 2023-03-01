@@ -51,10 +51,7 @@ def model(titanic_vd):
 
 class TestKernelDensity:
     def test_repr(self, model):
-        assert "Additional Info" in model.__repr__()
-        model_repr = KernelDensity("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<KernelDensity>"
+        assert model.__repr__() == "<KernelDensity>"
 
     def test_get_params(self, model):
         assert model.get_params() == {
@@ -75,8 +72,8 @@ class TestKernelDensity:
             1.82115211838814e-06, abs=1e-6
         )
 
-    def test_get_attr(self, model):
-        result = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        result = model.get_vertica_attributes()
         assert result["attr_name"][0] == "tree_count"
 
     def test_get_plot(self, model):

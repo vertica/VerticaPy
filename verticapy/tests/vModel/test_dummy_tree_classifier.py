@@ -70,12 +70,7 @@ def model(dtc_data_vd):
 
 class TestDummyTreeClassifier:
     def test_repr(self, model):
-        assert (
-            "SELECT rf_classifier('public.decision_tc_model_test'," in model.__repr__()
-        )
-        model_repr = DummyTreeClassifier("RF_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<RandomForestClassifier>"
+        assert model.__repr__() == "<RandomForestClassifier>"
 
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
@@ -253,8 +248,8 @@ class TestDummyTreeClassifier:
         )
         assert score == pytest.approx(1.0)
 
-    def test_get_attr(self, model):
-        attr = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        attr = model.get_vertica_attributes()
         assert attr["attr_name"] == [
             "tree_count",
             "rejected_row_count",
@@ -271,7 +266,7 @@ class TestDummyTreeClassifier:
         ]
         assert attr["#_of_rows"] == [1, 1, 1, 1, 4]
 
-        details = model.get_attr("details")
+        details = model.get_vertica_attributes("details")
         assert details["predictor"] == ["gender", "owned cars", "cost", "income"]
         assert details["type"] == [
             "char or varchar",
@@ -280,11 +275,17 @@ class TestDummyTreeClassifier:
             "char or varchar",
         ]
 
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_attr("tree_count")["tree_count"][0] == 1
         assert (
-            model.get_attr("call_string")["call_string"][0]
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 10
+        )
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert model.get_vertica_attributes("tree_count")["tree_count"][0] == 1
+        assert (
+            model.get_vertica_attributes("call_string")["call_string"][0]
             == "SELECT rf_classifier('public.decision_tc_model_test', 'public.dtc_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=1, mtry=4, sampling_size=1, max_depth=100, max_breadth=1000000000, min_leaf_size=1, min_info_gain=0, nbins=1000);"
         )
 

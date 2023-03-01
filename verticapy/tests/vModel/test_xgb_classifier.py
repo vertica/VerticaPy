@@ -296,8 +296,8 @@ class TestXGBC:
         )
         assert score == pytest.approx(1.0)
 
-    def test_get_attr(self, model):
-        attr = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        attr = model.get_vertica_attributes()
         assert attr["attr_name"] == [
             "tree_count",
             "rejected_row_count",
@@ -316,7 +316,7 @@ class TestXGBC:
         ]
         assert attr["#_of_rows"] == [1, 1, 1, 1, 4, 3]
 
-        details = model.get_attr("details")
+        details = model.get_vertica_attributes("details")
         assert details["predictor"] == ["gender", "owned cars", "cost", "income"]
         assert details["type"] == [
             "char or varchar",
@@ -325,12 +325,18 @@ class TestXGBC:
             "char or varchar",
         ]
 
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_attr("tree_count")["tree_count"][0] == 3
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 10
+        )
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert model.get_vertica_attributes("tree_count")["tree_count"][0] == 3
         assert (
             "xgb_classifier('public.xgbc_model_test', 'public.xgbc_data', '\"transportation\"', '*' USING PARAMETERS"
-            in model.get_attr("call_string")["call_string"][0]
+            in model.get_vertica_attributes("call_string")["call_string"][0]
         )
 
     def test_get_params(self, model):

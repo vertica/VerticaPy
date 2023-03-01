@@ -44,7 +44,25 @@ General Classes.
 """
 
 
-class XGBoost:
+class RandomForest(Tree):
+    @property
+    def _model_importance_function(self) -> Literal["RF_PREDICTOR_IMPORTANCE"]:
+        return "RF_PREDICTOR_IMPORTANCE"
+
+    @property
+    def _model_importance_feature(self) -> Literal["IMPORTANCE_VALUE"]:
+        return "IMPORTANCE_VALUE"
+
+
+class XGBoost(Tree):
+    @property
+    def _model_importance_function(self) -> Literal["XGB_PREDICTOR_IMPORTANCE"]:
+        return "XGB_PREDICTOR_IMPORTANCE"
+
+    @property
+    def _model_importance_feature(self) -> Literal["AVG_GAIN"]:
+        return "AVG_GAIN"
+
     def _compute_prior(self) -> Union[float, list[float]]:
         """
         Returns the XGB Priors.
@@ -188,7 +206,7 @@ class XGBoost:
         """
         Method used to converts the model to JSON.
         """
-        n = self.get_attr("tree_count")["tree_count"][0]
+        n = self.get_vertica_attributes("tree_count")["tree_count"][0]
         if self._model_type == "XGBClassifier" and (
             len(self.classes_) > 2 or self.classes_[1] != 1 or self.classes_[0] != 0
         ):
@@ -234,7 +252,7 @@ class XGBoost:
         condition = [f"{predictor} IS NOT NULL" for predictor in self.X] + [
             f"{self.y} IS NOT NULL"
         ]
-        n = self.get_attr("tree_count")["tree_count"][0]
+        n = self.get_vertica_attributes("tree_count")["tree_count"][0]
         if self._model_type == "XGBRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
@@ -386,7 +404,7 @@ Algorithms used for regression.
 """
 
 
-class RandomForestRegressor(Regressor, Tree):
+class RandomForestRegressor(RandomForest, Regressor):
     """
 Creates a RandomForestRegressor object using the 
 Vertica RF_REGRESSOR function. It is one of the 
@@ -454,6 +472,19 @@ nbins: int, optional
     def _model_type(self) -> Literal["RandomForestRegressor"]:
         return "RandomForestRegressor"
 
+    @property
+    def _attributes(
+        self,
+    ) -> Literal[
+        "n_estimators_", "trees_", "features_importance_", "features_importance_trees_"
+    ]:
+        return Literal[
+            "n_estimators_",
+            "trees_",
+            "features_importance_",
+            "features_importance_trees_",
+        ]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -518,7 +549,7 @@ nbins: int, optional
             return mm.RandomForestRegressor(self.trees_)
 
 
-class XGBRegressor(Regressor, Tree, XGBoost):
+class XGBRegressor(XGBoost, Regressor):
     """
 Creates an XGBRegressor object using the Vertica 
 XGB_REGRESSOR algorithm.
@@ -592,6 +623,26 @@ col_sample_by_node: float, optional
     def _model_type(self) -> Literal["XGBRegressor"]:
         return "XGBRegressor"
 
+    @property
+    def _attributes(
+        self,
+    ) -> Literal[
+        "n_estimators_",
+        "eta_",
+        "mean_",
+        "trees_",
+        "features_importance_",
+        "features_importance_trees_",
+    ]:
+        return Literal[
+            "n_estimators_",
+            "eta_",
+            "mean_",
+            "trees_",
+            "features_importance_",
+            "features_importance_trees_",
+        ]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -634,10 +685,12 @@ col_sample_by_node: float, optional
         Computes the model's attributes.
         """
         self.eta_ = self.parameters["learning_rate"]
-        self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
+        self.n_estimators_ = self.get_vertica_attributes("tree_count")["tree_count"][0]
         try:
             self.mean_ = float(
-                self.get_attr("initial_prediction")["initial_prediction"][0]
+                self.get_vertica_attributes("initial_prediction")["initial_prediction"][
+                    0
+                ]
             )
         except:
             self.mean_ = self._compute_prior()
@@ -678,7 +731,7 @@ Algorithms used for classification.
 """
 
 
-class RandomForestClassifier(MulticlassClassifier, Tree):
+class RandomForestClassifier(RandomForest, MulticlassClassifier):
     """
 Creates a RandomForestClassifier object using the 
 Vertica RF_CLASSIFIER function. It is one of the 
@@ -745,6 +798,24 @@ nbins: int, optional
     @property
     def _model_type(self) -> Literal["RandomForestClassifier"]:
         return "RandomForestClassifier"
+
+    @property
+    def _attributes(
+        self,
+    ) -> Literal[
+        "n_estimators_",
+        "classes_",
+        "trees_",
+        "features_importance_",
+        "features_importance_trees_",
+    ]:
+        return Literal[
+            "n_estimators_",
+            "classes_",
+            "trees_",
+            "features_importance_",
+            "features_importance_trees_",
+        ]
 
     @check_minimum_version
     @save_verticapy_logs
@@ -826,7 +897,7 @@ nbins: int, optional
             return mm.RandomForestClassifier(self.trees_, self.classes_)
 
 
-class XGBClassifier(MulticlassClassifier, Tree, XGBoost):
+class XGBClassifier(XGBoost, MulticlassClassifier):
     """
 Creates an XGBClassifier object using the Vertica 
 XGB_CLASSIFIER algorithm.
@@ -900,6 +971,28 @@ col_sample_by_node: float, optional
     def _model_type(self) -> Literal["XGBClassifier"]:
         return "XGBClassifier"
 
+    @property
+    def _attributes(
+        self,
+    ) -> Literal[
+        "n_estimators_",
+        "classes_",
+        "eta_",
+        "logodds_",
+        "trees_",
+        "features_importance_",
+        "features_importance_trees_",
+    ]:
+        return Literal[
+            "n_estimators_",
+            "classes_",
+            "eta_",
+            "logodds_",
+            "trees_",
+            "features_importance_",
+            "features_importance_trees_",
+        ]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -942,10 +1035,12 @@ col_sample_by_node: float, optional
         Computes the model's attributes.
         """
         self.eta_ = self.parameters["learning_rate"]
-        self.n_estimators_ = self.get_attr("tree_count")["tree_count"][0]
+        self.n_estimators_ = self.get_vertica_attributes("tree_count")["tree_count"][0]
         try:
             self.classes_ = self._array_to_int(
-                np.array(self.get_attr("initial_prediction")["response_label"])
+                np.array(
+                    self.get_vertica_attributes("initial_prediction")["response_label"]
+                )
             )
             # Handling NULL Values.
             null_ = False
@@ -955,7 +1050,9 @@ col_sample_by_node: float, optional
             if self._is_binary_classifier():
                 prior = self._compute_prior()
             else:
-                prior = np.array(self.get_attr("initial_prediction")["value"])
+                prior = np.array(
+                    self.get_vertica_attributes("initial_prediction")["value"]
+                )
                 if null_:
                     prior = prior[1:]
         except QueryError:
@@ -1066,6 +1163,10 @@ col_sample_by_tree: float, optional
     def _model_type(self) -> Literal["IsolationForest"]:
         return "IsolationForest"
 
+    @property
+    def _attributes(self) -> Literal["n_estimators_", "psy_", "trees_"]:
+        return Literal["n_estimators_", "psy_", "trees_"]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -1094,7 +1195,11 @@ col_sample_by_tree: float, optional
         self.n_estimators_ = self.parameters["n_estimators"]
         self.psy_ = int(
             self.parameters["sample"]
-            * int(self.get_attr("accepted_row_count")["accepted_row_count"][0])
+            * int(
+                self.get_vertica_attributes("accepted_row_count")["accepted_row_count"][
+                    0
+                ]
+            )
         )
         trees = []
         for i in range(self.n_estimators_):

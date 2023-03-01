@@ -63,10 +63,7 @@ def model(iris_vd):
 
 class TestKMeans:
     def test_repr(self, model):
-        assert "kmeans" in model.__repr__()
-        model_repr = KMeans("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<KMeans>"
+        assert model.__repr__() == "<KMeans>"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_KMEANS("SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm" USING PARAMETERS model_name = \'kmeans_model_test\', match_by_pos = \'true\')'
@@ -90,8 +87,8 @@ class TestKMeans:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == ["centers", "metrics"]
         assert m_att["attr_fields"] == [
@@ -100,7 +97,7 @@ class TestKMeans:
         ]
         assert m_att["#_of_rows"] == [3, 1]
 
-        m_att_centers = model.get_attr(attr_name="centers")
+        m_att_centers = model.get_vertica_attributes(attr_name="centers")
 
         assert m_att_centers["sepallengthcm"] == [
             pytest.approx(5.006),

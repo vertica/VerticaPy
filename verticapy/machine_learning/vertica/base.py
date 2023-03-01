@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
-from typing import Literal, Union, get_type_hints
+from typing import Any, Literal, Optional, Union, get_type_hints
 from abc import abstractmethod
 from collections.abc import Iterable
 import numpy as np
@@ -28,7 +28,14 @@ from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
-from verticapy.errors import ConversionError, FunctionError, ParameterError, ModelError
+from verticapy._typing import ArrayLike
+from verticapy.errors import (
+    ConversionError,
+    FunctionError,
+    ParameterError,
+    ModelError,
+    VersionError,
+)
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -72,6 +79,10 @@ Base Class for Vertica Models.
         return True
 
     @property
+    def _is_using_native(self) -> Literal[False]:
+        return False
+
+    @property
     def _object_type(self) -> Literal["vModel"]:
         return "vModel"
 
@@ -99,78 +110,43 @@ Base Class for Vertica Models.
         """Must be overridden in child class"""
         raise NotImplementedError
 
+    @staticmethod
+    def _format_vector(X: ArrayLike, vector: list[tuple]) -> np.ndarray:
+        """
+        Format the 2D vector to match with the input columns'
+        names.
+        """
+        res = []
+        for x in X:
+            for y in vector:
+                if quote_ident(y[0]).lower() == x.lower():
+                    res += [y[1]]
+        return np.array(res)
+
     def __repr__(self):
         """
 	Returns the model Representation.
 		"""
-        try:
-            rep = ""
-            if self._model_type not in (
-                "DBSCAN",
-                "NearestCentroid",
-                "LocalOutlierFactor",
-                "KNeighborsRegressor",
-                "KNeighborsClassifier",
-                "CountVectorizer",
-                "AutoML",
-            ):
-                name = (
-                    self.tree_name
-                    if self._model_type == "KernelDensity"
-                    else self.model_name
-                )
-                try:
-                    vertica_version(condition=[9, 0, 0])
-                    func = f"GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{name}')"
-                except:
-                    func = f"SUMMARIZE_MODEL('{name}')"
-                res = _executeSQL(
-                    f"SELECT /*+LABEL('learn.vModel.__repr__')*/ {func}",
-                    title="Summarizing the model.",
-                    method="fetchfirstelem",
-                )
-                return res
-            elif self._model_type == "AutoML":
-                rep = self.best_model_.__repr__()
-            elif self._model_type == "AutoDataPrep":
-                rep = self.final_relation_.__repr__()
-            elif self._model_type == "DBSCAN":
-                rep = f"=======\ndetails\n=======\nNumber of Clusters: {self.n_cluster_}\nNumber of Outliers: {self.n_noise_}"
-            elif self._model_type == "LocalOutlierFactor":
-                rep = f"=======\ndetails\n=======\nNumber of Errors: {self.n_errors_}"
-            elif self._model_type == "CountVectorizer":
-                rep = "=======\ndetails\n======="
-                if self.vocabulary_:
-                    voc = [str(elem) for elem in self.vocabulary_]
-                    if len(voc) > 100:
-                        voc = voc[0:100] + [f"... ({len(self.vocabulary_) - 100} more)"]
-                    rep += "\n\n# Vocabulary\n\n" + ", ".join(voc)
-                if self.stop_words_:
-                    rep += "\n\n# Stop Words\n\n" + ", ".join(
-                        [str(elem) for elem in self.stop_words_]
-                    )
-                rep += "\n\n===============\nAdditional Info\n==============="
-                rep += f"\nInput Relation : {self.input_relation}"
-                rep += f"\nX : {', '.join(self.X)}"
-            if self._model_type in (
-                "DBSCAN",
-                "NearestCentroid",
-                "LocalOutlierFactor",
-                "KNeighborsRegressor",
-                "KNeighborsClassifier",
-            ):
-                rep += "\n\n===============\nAdditional Info\n==============="
-                rep += f"\nInput Relation : {self.input_relation}"
-                rep += f"\nX : {', '.join(self.X)}"
-            if self._model_type in (
-                "NearestCentroid",
-                "KNeighborsRegressor",
-                "KNeighborsClassifier",
-            ):
-                rep += f"\ny : {self.y}"
-            return rep
-        except:
-            return f"<{self._model_type}>"
+        return f"<{self._model_type}>"
+
+    def summarize(self):
+        if self._is_native:
+            try:
+                vertica_version(condition=[9, 0, 0])
+                func = f"""
+                    GET_MODEL_SUMMARY(USING PARAMETERS 
+                    model_name = '{self.model_name}')"""
+            except VersionError:
+                func = f"SUMMARIZE_MODEL('{self.model_name}')"
+            return _executeSQL(
+                f"SELECT /*+LABEL('learn.vModel.__repr__')*/ {func}",
+                title="Summarizing the model.",
+                method="fetchfirstelem",
+            )
+        else:
+            raise AttributeError(
+                "Method 'summarize' is not available for non-native models."
+            )
 
     def contour(
         self,
@@ -279,16 +255,11 @@ Base Class for Vertica Models.
         if self._model_type == "AutoML":
             return self.best_model_.deploySQL(X)
         if self._model_type not in ("DBSCAN", "LocalOutlierFactor"):
-            name = (
-                self.tree_name
-                if self._model_type == "KernelDensity"
-                else self.model_name
-            )
             X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
             sql = f"""
                 {self._vertica_predict_sql}({', '.join(X)} 
                                                     USING PARAMETERS 
-                                                    model_name = '{name}',
+                                                    model_name = '{self.model_name}',
                                                     match_by_pos = 'true')"""
             return clean_query(sql)
         else:
@@ -302,128 +273,38 @@ Base Class for Vertica Models.
 		"""
         drop(self.model_name, method="model")
 
-    def features_importance(
-        self, ax=None, tree_id: int = None, show: bool = True, **style_kwds
-    ):
+    def get_attributes(self, attr_name: str = "") -> Any:
         """
-		Computes the model's features importance.
+    Returns the model attributes.
 
-        Parameters
-        ----------
-        ax: Matplotlib axes object, optional
-            The axes to plot on.
-        tree_id: int
-            Tree ID in case of Tree Based models.
-        show: bool
-            If set to True, draw the features importance.
-        **style_kwds
-            Any optional parameter to pass to the Matplotlib functions.
+    Parameters
+    ----------
+    attr_name: str, optional
+        Attribute Name.
 
-		Returns
-		-------
-		TableSample
-			An object containing the result. For more information, see
-			utilities.TableSample.
-		"""
-        if self._model_type == "AutoML":
-            if self.stepwise_:
-                coeff_importances = {}
-                for idx in range(len(self.stepwise_["importance"])):
-                    if self.stepwise_["variable"][idx] != None:
-                        coeff_importances[
-                            self.stepwise_["variable"][idx]
-                        ] = self.stepwise_["importance"][idx]
-                return plot_importance(
-                    coeff_importances, print_legend=False, ax=ax, **style_kwds
-                )
-            return self.best_model_.features_importance(ax, tree_id, show, **style_kwds)
-        if self._model_type in (
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "KernelDensity",
-            "XGBClassifier",
-            "XGBRegressor",
-        ):
-            name = (
-                self.tree_name
-                if self._model_type == "KernelDensity"
-                else self.model_name
-            )
-            if self._model_type in ("XGBClassifier", "XGBRegressor",):
-                vertica_version(condition=[12, 0, 3])
-                fname = "XGB_PREDICTOR_IMPORTANCE"
-                var = "avg_gain"
+    Returns
+    -------
+    Any
+        model attribute.
+        """
+        if not (attr_name):
+            return self._attributes
+        elif attr_name in self._attributes:
+            if hasattr(self, attr_name):
+                return copy.deepcopy(getattr(self, attr_name))
             else:
-                vertica_version(condition=[9, 1, 1])
-                fname = "RF_PREDICTOR_IMPORTANCE"
-                var = "importance_value"
-            tree_id = "" if tree_id is None else f", tree_id={tree_id}"
-            query = f"""SELECT /*+LABEL('learn.vModel.features_importance')*/
-                            predictor_name AS predictor, 
-                            ROUND(100 * ABS({var}) / SUM(ABS({var}))
-                                OVER (), 2)::float AS importance, 
-                            SIGN({var})::int AS sign 
-                        FROM 
-                            (SELECT {fname} ( 
-                                    USING PARAMETERS model_name = '{name}'{tree_id})) 
-                                    VERTICAPY_SUBTABLE 
-                        ORDER BY 2 DESC;"""
-            print_legend = False
-        elif self._model_type in (
-            "LinearRegression",
-            "LogisticRegression",
-            "LinearSVC",
-            "LinearSVR",
-        ):
-            relation = self.input_relation
-            vertica_version(condition=[8, 1, 1])
-            coefficients = self.get_attr("details")
-            query = f"""
-                SELECT /*+LABEL('learn.vModel.features_importance')*/
-                    predictor, 
-                    ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, 
-                    sign 
-                FROM (SELECT 
-                        stat.predictor AS predictor, 
-                        ABS(coefficient * (max - min))::float AS importance, 
-                        SIGN(coefficient)::int AS sign 
-                      FROM (SELECT 
-                                LOWER("column") AS predictor, 
-                                min, 
-                                max 
-                            FROM (SELECT 
-                                    SUMMARIZE_NUMCOL({', '.join(self.X)}) OVER() 
-                                  FROM {relation}) VERTICAPY_SUBTABLE) stat 
-                                  NATURAL JOIN ({coefficients.to_sql()}) coeff) importance_t 
-                                  ORDER BY 2 DESC;"""
-            print_legend = True
+                return AttributeError("The attribute is not yet computed.")
+        elif attr_name + "_" in self._attributes:
+            return self.get_attributes(attr_name + "_")
         else:
-            raise FunctionError(
-                f"Method 'features_importance' for '{self._model_type}' doesn't exist."
+            raise AttributeError(
+                "Method 'get_vertica_attributes' is not available for "
+                "non-native models.\nUse 'get_attributes' method instead."
             )
-        result = _executeSQL(
-            query, title="Computing Features Importance.", method="fetchall"
-        )
-        coeff_importances, coeff_sign = {}, {}
-        for elem in result:
-            coeff_importances[elem[0]] = elem[1]
-            coeff_sign[elem[0]] = elem[2]
-        if show:
-            plot_importance(
-                coeff_importances,
-                coeff_sign,
-                print_legend=print_legend,
-                ax=ax,
-                **style_kwds,
-            )
-        importances = {"index": ["importance", "sign"]}
-        for elem in coeff_importances:
-            importances[elem] = [coeff_importances[elem], coeff_sign[elem]]
-        return TableSample(values=importances).transpose()
 
-    def get_attr(self, attr_name: str = ""):
+    def get_vertica_attributes(self, attr_name: str = ""):
         """
-	Returns the model attribute.
+	Returns the model vertica attributes. Those are stored in Vertica.
 
 	Parameters
 	----------
@@ -433,131 +314,26 @@ Base Class for Vertica Models.
 	Returns
 	-------
 	TableSample
-		model attribute
+		model attributes.
 		"""
-        if self._model_type == "AutoML":
-            return self.best_model_.get_attr(attr_name)
-        if self._model_type not in (
-            "DBSCAN",
-            "LocalOutlierFactor",
-            "KNeighborsClassifier",
-            "KNeighborsRegressor",
-            "NearestCentroid",
-            "CountVectorizer",
-        ):
-            name = (
-                self.tree_name
-                if self._model_type == "KernelDensity"
-                else self.model_name
-            )
+        if self._is_native or self._is_using_native:
             vertica_version(condition=[8, 1, 1])
             if attr_name:
                 attr_name_str = f", attr_name = '{attr_name}'"
             else:
                 attr_name_str = ""
-            result = TableSample.read_sql(
+            return TableSample.read_sql(
                 query=f"""
                     SELECT 
-                        GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                            model_name = '{name}'{attr_name_str})""",
+                        GET_MODEL_ATTRIBUTE(
+                            USING PARAMETERS 
+                            model_name = '{self.model_name}'{attr_name_str})""",
                 title="Getting Model Attributes.",
             )
-            return result
-        elif self._model_type == "DBSCAN":
-            if attr_name == "n_cluster":
-                return self.n_cluster_
-            elif attr_name == "n_noise":
-                return self.n_noise_
-            elif not (attr_name):
-                result = TableSample(
-                    values={
-                        "attr_name": ["n_cluster", "n_noise"],
-                        "value": [self.n_cluster_, self.n_noise_],
-                    },
-                )
-                return result
-            else:
-                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self._model_type == "CountVectorizer":
-            if attr_name == "lowercase":
-                return self.parameters["lowercase"]
-            elif attr_name == "max_df":
-                return self.parameters["max_df"]
-            elif attr_name == "min_df":
-                return self.parameters["min_df"]
-            elif attr_name == "max_features":
-                return self.parameters["max_features"]
-            elif attr_name == "ignore_special":
-                return self.parameters["ignore_special"]
-            elif attr_name == "max_text_size":
-                return self.parameters["max_text_size"]
-            elif attr_name == "vocabulary":
-                return self.parameters["vocabulary"]
-            elif attr_name == "stop_words":
-                return self.parameters["stop_words"]
-            elif not (attr_name):
-                result = TableSample(
-                    values={
-                        "attr_name": [
-                            "lowercase",
-                            "max_df",
-                            "min_df",
-                            "max_features",
-                            "ignore_special",
-                            "max_text_size",
-                            "vocabulary",
-                            "stop_words",
-                        ],
-                    },
-                )
-                return result
-            else:
-                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self._model_type == "KNeighborsClassifier":
-            if attr_name == "p":
-                return self.parameters["p"]
-            elif attr_name == "n_neighbors":
-                return self.parameters["n_neighbors"]
-            elif attr_name == "classes":
-                return self.classes_
-            elif not (attr_name):
-                result = TableSample(
-                    values={"attr_name": ["n_neighbors", "p", "classes"],},
-                )
-                return result
-            else:
-                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self._model_type == "KNeighborsRegressor":
-            if attr_name == "p":
-                return self.parameters["p"]
-            elif attr_name == "n_neighbors":
-                return self.parameters["n_neighbors"]
-            elif not (attr_name):
-                result = TableSample(values={"attr_name": ["n_neighbors", "p"],},)
-                return result
-            else:
-                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self._model_type == "LocalOutlierFactor":
-            if attr_name == "n_errors":
-                return self.n_errors_
-            elif not (attr_name):
-                result = TableSample(
-                    values={"attr_name": ["n_errors"], "value": [self.n_errors_]},
-                )
-                return result
-            else:
-                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
-        elif self._model_type == "KernelDensity":
-            if attr_name == "map":
-                return self.map_
-            elif not (attr_name):
-                result = TableSample(values={"attr_name": ["map"]})
-                return result
-            else:
-                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         else:
-            raise FunctionError(
-                f"Method 'get_attr' for '{self._model_type}' doesn't exist."
+            raise AttributeError(
+                "Method 'get_vertica_attributes' is not available for "
+                "non-native models.\nUse 'get_attributes' method instead."
             )
 
     def get_params(self):
@@ -672,7 +448,8 @@ Base Class for Vertica Models.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Any optional parameter to pass to the 
+        Matplotlib functions.
 
     Returns
     -------
@@ -685,7 +462,7 @@ Base Class for Vertica Models.
             "LinearSVC",
             "LinearSVR",
         ):
-            coefficients = self.get_attr("details").values["coefficient"]
+            coefficients = self.get_vertica_attributes("details").values["coefficient"]
             if self._model_type == "LogisticRegression":
                 return logit_plot(
                     self.X,
@@ -725,7 +502,7 @@ Base Class for Vertica Models.
         ):
             if self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",):
                 if self._model_type == "KPrototypes":
-                    centers = self.get_attr("centers")
+                    centers = self.get_vertica_attributes("centers")
                     if any(
                         [
                             ("char" in centers.dtype[key].lower())
@@ -917,55 +694,56 @@ class Supervised(vModel):
             does_model_exist(name=self.model_name, raise_error=True)
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
-        nb_lookup_table = {
-            "bernoulli": "bool",
-            "categorical": "varchar",
-            "multinomial": "int",
-            "gaussian": "float",
-        }
-        if (self._model_type == "NaiveBayes") and (
-            self.parameters["nbtype"] in nb_lookup_table
-        ):
-            new_types = {}
-            for x in X:
-                new_types[x] = nb_lookup_table[self.parameters["nbtype"]]
-            if not (isinstance(input_relation, vDataFrame)):
-                input_relation = vDataFrame(input_relation)
-            else:
-                input_relation.copy()
-            input_relation.astype(new_types)
-        does_model_exist(name=self.model_name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
-        if self._model_type in (
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "XGBClassifier",
-            "XGBRegressor",
-        ) and isinstance(conf.get_option("random_state"), int):
-            id_column = f""", 
-                ROW_NUMBER() OVER 
-                (ORDER BY {', '.join(X)}) 
-                AS {id_column_name}"""
-        tmp_view = False
+        if self._is_native:
+            nb_lookup_table = {
+                "bernoulli": "bool",
+                "categorical": "varchar",
+                "multinomial": "int",
+                "gaussian": "float",
+            }
+            if (self._model_type == "NaiveBayes") and (
+                self.parameters["nbtype"] in nb_lookup_table
+            ):
+                new_types = {}
+                for x in X:
+                    new_types[x] = nb_lookup_table[self.parameters["nbtype"]]
+                if not (isinstance(input_relation, vDataFrame)):
+                    input_relation = vDataFrame(input_relation)
+                else:
+                    input_relation.copy()
+                input_relation.astype(new_types)
+            if self._model_type in (
+                "RandomForestClassifier",
+                "RandomForestRegressor",
+                "XGBClassifier",
+                "XGBRegressor",
+            ) and isinstance(conf.get_option("random_state"), int):
+                id_column = f""", 
+                    ROW_NUMBER() OVER 
+                    (ORDER BY {', '.join(X)}) 
+                    AS {id_column_name}"""
+            tmp_view = False
         if isinstance(input_relation, vDataFrame) or (id_column):
             tmp_view = True
             if isinstance(input_relation, vDataFrame):
                 self.input_relation = input_relation._genSQL()
             else:
                 self.input_relation = input_relation
-            relation = gen_tmp_name(
-                schema=schema_relation(self.model_name)[0], name="view"
-            )
-            drop(relation, method="view")
-            _executeSQL(
-                query=f"""
-                    CREATE VIEW {relation} AS 
-                        SELECT 
-                            /*+LABEL('learn.vModel.fit')*/ 
-                            *{id_column} 
-                        FROM {self.input_relation}""",
-                title="Creating a temporary view to fit the model.",
-            )
+            if self._is_native:
+                relation = gen_tmp_name(
+                    schema=schema_relation(self.model_name)[0], name="view"
+                )
+                drop(relation, method="view")
+                _executeSQL(
+                    query=f"""
+                        CREATE VIEW {relation} AS 
+                            SELECT 
+                                /*+LABEL('learn.vModel.fit')*/ 
+                                *{id_column} 
+                            FROM {self.input_relation}""",
+                    title="Creating a temporary view to fit the model.",
+                )
         else:
             self.input_relation = input_relation
             relation = input_relation
@@ -975,53 +753,99 @@ class Supervised(vModel):
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        parameters = self._get_vertica_param_dict()
-        if (
-            "regularization" in parameters
-            and parameters["regularization"].lower() == "'enet'"
-        ):
-            alpha = parameters["alpha"]
-            del parameters["alpha"]
-        else:
-            alpha = None
-        if "mtry" in parameters:
-            if parameters["mtry"] == "'auto'":
-                parameters["mtry"] = int(len(self.X) / 3 + 1)
-            elif parameters["mtry"] == "'max'":
-                parameters["mtry"] = len(self.X)
-        fun = self._vertica_fit_sql
-        query = f"""
-            SELECT 
-                /*+LABEL('learn.vModel.fit')*/ 
-                {self._vertica_fit_sql}
-                ('{self.model_name}', 
-                 '{relation}',
-                 '{self.y}',
-                 '{', '.join(self.X)}' 
-                 USING PARAMETERS 
-                 {', '.join([f"{p} = {parameters[p]}" for p in parameters])}"""
-        if alpha != None:
-            query += f", alpha = {alpha}"
-        if self._model_type in (
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "XGBClassifier",
-            "XGBRegressor",
-        ) and isinstance(conf.get_option("random_state"), int):
-            query += f""", 
-                seed={conf.get_option('random_state')}, 
-                id_column='{id_column_name}'"""
-        query += ")"
-        try:
-            _executeSQL(query, title="Fitting the model.")
-        finally:
-            if tmp_view:
-                drop(relation, method="view")
+        if self._is_native:
+            parameters = self._get_vertica_param_dict()
+            if (
+                "regularization" in parameters
+                and parameters["regularization"].lower() == "'enet'"
+            ):
+                alpha = parameters["alpha"]
+                del parameters["alpha"]
+            else:
+                alpha = None
+            if "mtry" in parameters:
+                if parameters["mtry"] == "'auto'":
+                    parameters["mtry"] = int(len(self.X) / 3 + 1)
+                elif parameters["mtry"] == "'max'":
+                    parameters["mtry"] = len(self.X)
+            fun = self._vertica_fit_sql
+            query = f"""
+                SELECT 
+                    /*+LABEL('learn.vModel.fit')*/ 
+                    {self._vertica_fit_sql}
+                    ('{self.model_name}', 
+                     '{relation}',
+                     '{self.y}',
+                     '{', '.join(self.X)}' 
+                     USING PARAMETERS 
+                     {', '.join([f"{p} = {parameters[p]}" for p in parameters])}"""
+            if alpha != None:
+                query += f", alpha = {alpha}"
+            if self._model_type in (
+                "RandomForestClassifier",
+                "RandomForestRegressor",
+                "XGBClassifier",
+                "XGBRegressor",
+            ) and isinstance(conf.get_option("random_state"), int):
+                query += f""", 
+                    seed={conf.get_option('random_state')}, 
+                    id_column='{id_column_name}'"""
+            query += ")"
+            try:
+                _executeSQL(query, title="Fitting the model.")
+            finally:
+                if tmp_view:
+                    drop(relation, method="view")
         self._compute_attributes()
         return self
 
 
 class Tree:
+    def _compute_features_importance(self, tree_id: Optional[int] = None) -> None:
+        """
+        Computes the features importance.
+        """
+        vertica_version(condition=[9, 1, 1])
+        tree_id_str = "" if tree_id is None else f", tree_id={tree_id}"
+        query = f"""
+        SELECT /*+LABEL('learn.vModel.features_importance')*/
+            predictor_name AS predictor, 
+            SIGN({self._model_importance_feature})::int * 
+            ROUND(100 * ABS({self._model_importance_feature}) / 
+            SUM(ABS({self._model_importance_feature}))
+            OVER (), 2)::float AS importance
+        FROM 
+            (SELECT {self._model_importance_function} ( 
+                    USING PARAMETERS model_name = '{self.model_name}'{tree_id_str})) 
+                    VERTICAPY_SUBTABLE 
+        ORDER BY 2 DESC;"""
+        importance = _executeSQL(
+            query=query, title="Computing Features Importance.", method="fetchall"
+        )
+        importance = self._format_vector(self.X, importance)
+        if isinstance(tree_id, int) and (0 <= tree_id < self.n_estimators_):
+            if hasattr(self, "features_importance_trees_"):
+                self.features_importance_trees_[tree_id] = importance
+            else:
+                self.features_importance_trees_ = {tree_id: importance}
+        elif tree_id == None:
+            self.features_importance_ = importance
+        return None
+
+    def _get_features_importance(self, tree_id: Optional[int] = None) -> np.ndarray:
+        if tree_id == None and hasattr(self, "features_importance_"):
+            return copy.deepcopy(self.features_importance_)
+        elif (
+            isinstance(tree_id, int)
+            and (0 <= tree_id < self.n_estimators_)
+            and hasattr(self, "features_importance_trees_")
+            and (tree_id in self.features_importance_trees_)
+        ):
+            return copy.deepcopy(self.features_importance_trees_[tree_id])
+        else:
+            self._compute_features_importance(tree_id=tree_id)
+            return self._get_features_importance(tree_id=tree_id)
+
     def _compute_trees_arrays(
         self, tree: TableSample, X: list, return_probability: bool = False
     ):
@@ -1081,6 +905,42 @@ class Tree:
         if return_probability:
             trees_arrays += [tree["probability/variance"]]
         return trees_arrays
+
+    def features_importance(
+        self, tree_id: Optional[int] = None, show: bool = True, ax=None, **style_kwds
+    ) -> TableSample:
+        """
+        Computes the model's features importance.
+
+        Parameters
+        ----------
+        tree_id: int
+            Tree ID.
+        show: bool
+            If set to True, draw the features importance.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        TableSample
+            An object containing the result. For more information,
+            see utilities.TableSample.
+        """
+        fi = self._get_features_importance(tree_id=tree_id)
+        if show:
+            plot_importance(
+                self.X, fi, print_legend=False, ax=ax, **style_kwds,
+            )
+        importances = {
+            "index": [quote_ident(x)[1:-1].lower() for x in self.X],
+            "importance": list(abs(fi)),
+            "sign": list(np.sign(fi)),
+        }
+        return TableSample(values=importances).sort(column="importance", desc=True)
 
     def to_graphviz(
         self,
@@ -1157,15 +1017,13 @@ class Tree:
 		An object containing the result. For more information, see
 		utilities.TableSample.
 		"""
-        name = (
-            self.tree_name if self._model_type == "KernelDensity" else self.model_name
-        )
-        query = f"""SELECT * FROM (SELECT READ_TREE (USING PARAMETERS 
-                                                     model_name = '{name}', 
-                                                     tree_id = {tree_id}, 
-                                                     format = 'tabular')) x ORDER BY node_id;"""
-        result = TableSample.read_sql(query=query, title="Reading Tree.")
-        return result
+        query = f"""
+            SELECT * FROM (SELECT READ_TREE (
+                             USING PARAMETERS 
+                             model_name = '{self.model_name}', 
+                             tree_id = {tree_id}, 
+                             format = 'tabular')) x ORDER BY node_id;"""
+        return TableSample.read_sql(query=query, title="Reading Tree.")
 
     def plot_tree(
         self, tree_id: int = 0, pic_path: str = "", *argv, **kwds,
@@ -1201,29 +1059,22 @@ class Tree:
         Parameters
         ----------
         tree_id: int, optional
-            Unique tree identifier, an integer in the range [0, n_estimators - 1].
-            If tree_id is undefined, all the trees in the model are used to compute 
+            Unique tree identifier, an integer in the range 
+            [0, n_estimators - 1]. If tree_id is undefined, 
+            all the trees in the model are used to compute 
             the metrics.
 
         Returns
         -------
         TableSample
-            An object containing the result. For more information, see
-            utilities.TableSample.
+            An object containing the result. For more information, 
+            see utilities.TableSample.
         """
-        name = (
-            self.tree_name if self._model_type == "KernelDensity" else self.model_name
-        )
-        if self._model_type in ("XGBClassifier", "XGBRegressor",):
-            vertica_version(condition=[12, 0, 3])
-            fname = "XGB_PREDICTOR_IMPORTANCE"
-        else:
-            vertica_version(condition=[9, 1, 1])
-            fname = "RF_PREDICTOR_IMPORTANCE"
-        tree_id = "" if tree_id is None else f", tree_id={tree_id}"
-        query = f"SELECT {fname} (USING PARAMETERS model_name = '{name}'{tree_id})"
-        result = TableSample.read_sql(query=query, title="Reading Tree.")
-        return result
+        tree_id = "" if tree_id == None else f", tree_id={tree_id}"
+        query = f"""
+            SELECT {self._model_importance_function} 
+            (USING PARAMETERS model_name = '{self.model_name}'{tree_id})"""
+        return TableSample.read_sql(query=query, title="Reading Tree.")
 
 
 class Classifier(Supervised):
@@ -2717,8 +2568,8 @@ class Preprocessing(Unsupervised):
         else:
             X = [quote_ident(x) for x in X]
         if self._model_type == "OneHotEncoder":
-            raise ModelError(
-                "method 'inverse_transform' is not supported for OneHotEncoder models."
+            raise AttributeError(
+                "method 'deployInverseSQL' is not supported for OneHotEncoder models."
             )
         sql = f"""
             {self._vertica_inverse_transform_sql}({', '.join(X)} 
@@ -2816,7 +2667,7 @@ class Preprocessing(Unsupervised):
         if isinstance(X, str):
             X = [X]
         if self._model_type == "OneHotEncoder":
-            raise ModelError(
+            raise AttributeError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
         if not (vdf):
@@ -2955,7 +2806,9 @@ class Decomposition(Preprocessing):
             ax=ax,
             **style_kwds,
         )
-        explained_variance = self.get_attr("singular_values")["explained_variance"]
+        explained_variance = self.get_vertica_attributes("singular_values")[
+            "explained_variance"
+        ]
         if not (explained_variance[dimensions[0] - 1]):
             dimensions_1 = ""
         else:
@@ -2983,12 +2836,22 @@ class Decomposition(Preprocessing):
         Matplotlib axes object
         """
         if self._model_type == "SVD":
-            x = self.get_attr("right_singular_vectors")[f"vector{dimensions[0]}"]
-            y = self.get_attr("right_singular_vectors")[f"vector{dimensions[1]}"]
+            x = self.get_vertica_attributes("right_singular_vectors")[
+                f"vector{dimensions[0]}"
+            ]
+            y = self.get_vertica_attributes("right_singular_vectors")[
+                f"vector{dimensions[1]}"
+            ]
         else:
-            x = self.get_attr("principal_components")[f"PC{dimensions[0]}"]
-            y = self.get_attr("principal_components")[f"PC{dimensions[1]}"]
-        explained_variance = self.get_attr("singular_values")["explained_variance"]
+            x = self.get_vertica_attributes("principal_components")[
+                f"PC{dimensions[0]}"
+            ]
+            y = self.get_vertica_attributes("principal_components")[
+                f"PC{dimensions[1]}"
+            ]
+        explained_variance = self.get_vertica_attributes("singular_values")[
+            "explained_variance"
+        ]
         return plot_pca_circle(
             x,
             y,
@@ -3018,7 +2881,9 @@ class Decomposition(Preprocessing):
     ax
         Matplotlib axes object
         """
-        explained_variance = self.get_attr("singular_values")["explained_variance"]
+        explained_variance = self.get_vertica_attributes("singular_values")[
+            "explained_variance"
+        ]
         explained_variance, n = (
             [100 * elem for elem in explained_variance],
             len(explained_variance),

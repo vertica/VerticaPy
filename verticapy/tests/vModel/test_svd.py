@@ -45,10 +45,7 @@ def model(winequality_vd):
 
 class TestSVD:
     def test_repr(self, model):
-        assert "SVD" in model.__repr__()
-        model_repr = SVD("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<SVD>"
+        assert model.__repr__() == "<SVD>"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_SVD("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'SVD_model_test\', match_by_pos = \'true\', cutoff = 1)'
@@ -94,8 +91,8 @@ class TestSVD:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "columns",
@@ -113,7 +110,7 @@ class TestSVD:
         ]
         assert m_att["#_of_rows"] == [3, 3, 3, 3, 1]
 
-        m_att_details = model.get_attr(attr_name="singular_values")
+        m_att_details = model.get_vertica_attributes(attr_name="singular_values")
 
         assert m_att_details["value"][0] == pytest.approx(968.964362586858, abs=1e-6)
         assert m_att_details["value"][1] == pytest.approx(354.585184720344, abs=1e-6)

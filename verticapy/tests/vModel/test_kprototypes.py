@@ -65,10 +65,7 @@ version = get_version()
 )
 class TestKPrototypes:
     def test_repr(self, model):
-        assert "kprototypes" in model.__repr__()
-        model_repr = KPrototypes("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<KPrototypes>"
+        assert model.__repr__() == "<KPrototypes>"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_KPROTOTYPES("SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm", "Species" USING PARAMETERS model_name = \'kprototypes_model_test\', match_by_pos = \'true\')'
@@ -92,8 +89,8 @@ class TestKPrototypes:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == ["centers", "metrics"]
         assert m_att["attr_fields"] == [
@@ -102,7 +99,7 @@ class TestKPrototypes:
         ]
         assert m_att["#_of_rows"] == [3, 1]
 
-        m_att_centers = model.get_attr(attr_name="centers")
+        m_att_centers = model.get_vertica_attributes(attr_name="centers")
 
         assert m_att_centers["sepallengthcm"] == [
             pytest.approx(5.006),

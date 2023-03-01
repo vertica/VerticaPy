@@ -73,10 +73,7 @@ def titanic_vd():
 )
 class TestIsolationForest:
     def test_repr(self, model):
-        assert "SELECT iforest('public.iforest_model_test'," in model.__repr__()
-        model_repr = IsolationForest("iF_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<IsolationForest>"
+        assert model.__repr__() == "<IsolationForest>"
 
     def test_contour(self, titanic_vd):
         model_test = IsolationForest("model_contour_iF",)
@@ -136,8 +133,8 @@ class TestIsolationForest:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "tree_count",
@@ -155,7 +152,7 @@ class TestIsolationForest:
         ]
         assert m_att["#_of_rows"] == [1, 1, 1, 1, 5]
 
-        m_att_details = model.get_attr(attr_name="details")
+        m_att_details = model.get_vertica_attributes(attr_name="details")
 
         assert m_att_details["predictor"] == [
             "gender",
@@ -172,12 +169,18 @@ class TestIsolationForest:
             "int",
         ]
 
-        assert model.get_attr("tree_count")["tree_count"][0] == 100
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
+        assert model.get_vertica_attributes("tree_count")["tree_count"][0] == 100
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 10
+        )
         assert (
             "SELECT iforest('public.iforest_model_test',"
-            in model.get_attr("call_string")["call_string"][0]
+            in model.get_vertica_attributes("call_string")["call_string"][0]
         )
 
     def test_get_params(self, model):

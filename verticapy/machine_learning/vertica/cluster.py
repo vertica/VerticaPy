@@ -94,6 +94,10 @@ tol: float, optional
     def _model_type(self) -> Literal["KMeans"]:
         return "KMeans"
 
+    @property
+    def _attributes(self) -> Literal["clusters_", "p_", "metrics_"]:
+        return ["clusters_", "p_", "metrics_"]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -116,13 +120,13 @@ tol: float, optional
         """
         Computes the model's attributes.
         """
-        centers = self.get_attr("centers")
+        centers = self.get_vertica_attributes("centers")
         self.clusters_ = centers.to_numpy()
         self.p_ = 2
         self.metrics_ = self._compute_metrics()
 
     def _compute_metrics(self):
-        metrics_str = self.get_attr("metrics").values["metrics"][0]
+        metrics_str = self.get_vertica_attributes("metrics").values["metrics"][0]
         metrics = {
             "index": [
                 "Between-Cluster Sum of Squares",
@@ -263,6 +267,28 @@ tol: float, optional
     def _model_type(self) -> Literal["BisectingKMeans"]:
         return "BisectingKMeans"
 
+    @property
+    def _attributes(
+        self,
+    ) -> Literal[
+        "clusters_",
+        "children_left_",
+        "children_right_",
+        "cluster_size_",
+        "cluster_score_",
+        "p_",
+        "metrics_",
+    ]:
+        return Literal[
+            "clusters_",
+            "children_left_",
+            "children_right_",
+            "cluster_size_",
+            "cluster_score_",
+            "p_",
+            "metrics_",
+        ]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -293,7 +319,7 @@ tol: float, optional
         """
         Computes the model's attributes.
         """
-        centers = self.get_attr("BKTree")
+        centers = self.get_vertica_attributes("BKTree")
         self.clusters_ = centers.to_numpy()[:, 1 : len(self.X) + 1]
         self.children_left_ = np.array(centers["left_child"])
         self.children_right_ = np.array(centers["right_child"])
@@ -302,7 +328,7 @@ tol: float, optional
         n = len(wt)
         self.cluster_score_ = np.array([wt[i] / tot[i] for i in range(n)])
         self.p_ = 2
-        self.metrics_ = self.get_attr("Metrics")
+        self.metrics_ = self.get_vertica_attributes("Metrics")
 
     def to_graphviz(
         self,
@@ -390,7 +416,7 @@ tol: float, optional
         """
     Returns a table containing information about the BK-tree.
         """
-        return self.get_attr("BKTree")
+        return self.get_vertica_attributes("BKTree")
 
 
 class KPrototypes(KMeans):
@@ -432,6 +458,12 @@ gamma: float, optional
     def _model_type(self) -> Literal["KPrototypes"]:
         return "KPrototypes"
 
+    @property
+    def _attributes(
+        self,
+    ) -> Literal["clusters_", "p_", "gamma_", "is_categorical_", "metrics_"]:
+        return Literal["clusters_", "p_", "gamma_", "is_categorical_", "metrics_"]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -456,7 +488,7 @@ gamma: float, optional
         """
         Computes the model's attributes.
         """
-        centers = self.get_attr("centers")
+        centers = self.get_vertica_attributes("centers")
         self.clusters_ = centers.to_numpy()
         self.p_ = 2
         self.gamma_ = self.parameters["gamma"]
@@ -534,6 +566,10 @@ p: int, optional
     def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
         self.model_name = name
         self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
+
+    @property
+    def _attributes(self) -> Literal["n_cluster_", "n_noise_", "p_"]:
+        return ["n_cluster_", "n_noise_", "p_"]
 
     def fit(
         self,
@@ -726,6 +762,7 @@ p: int, optional
                 method="fetchfirstelem",
                 print_time_sql=False,
             )
+            self.p_ = self.parameters["p"]
         finally:
             drop(f"v_temp_schema.{name_main}", method="table")
             drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")
@@ -788,6 +825,10 @@ p: int, optional
     def _model_type(self) -> Literal["NearestCentroid"]:
         return "NearestCentroid"
 
+    @property
+    def _attributes(self) -> Literal["clusters_", "classes_", "p_"]:
+        return Literal["clusters_", "classes_", "p_"]
+
     @save_verticapy_logs
     def __init__(self, name: str, p: int = 2):
         self.model_name = name
@@ -813,49 +854,6 @@ p: int, optional
         self.clusters_ = centroids.to_numpy()[:, 0:-1]
         self.classes_ = self._array_to_int(centroids.to_numpy()[:, -1])
         self.p_ = self.parameters["p"]
-
-    def fit(
-        self,
-        input_relation: Union[str, vDataFrame],
-        X: Union[str, list],
-        y: str,
-        test_relation: Union[str, vDataFrame] = "",
-    ):
-        """
-    Trains the model.
-
-    Parameters
-    ----------
-    input_relation: str/vDataFrame
-        Training relation.
-    X: list
-        List of the predictors.
-    y: str
-        Response column.
-    test_relation: str/vDataFrame, optional
-        Relation used to test the model.
-
-    Returns
-    -------
-    object
-        self
-        """
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation._genSQL()
-        else:
-            self.input_relation = input_relation
-        if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation._genSQL()
-        elif test_relation:
-            self.test_relation = test_relation
-        else:
-            self.test_relation = self.input_relation
-        self.X = [quote_ident(column) for column in X]
-        self.y = quote_ident(y)
-        self._compute_attributes()
-        return self
 
     def to_memmodel(self):
         """

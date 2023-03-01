@@ -78,6 +78,10 @@ nbtype: str, optional
     def _model_type(self) -> Literal["NaiveBayes"]:
         return "NaiveBayes"
 
+    @property
+    def _attributes(self) -> Literal["attributes_", "prior_", "classes_"]:
+        return Literal["attributes_", "prior_", "classes_"]
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -95,8 +99,10 @@ nbtype: str, optional
         """
         Computes the model's attributes.
         """
-        self.classes_ = self._array_to_int(np.array(self.get_attr("prior")["class"]))
-        self.prior_ = np.array(self.get_attr("prior")["probability"])
+        self.classes_ = self._array_to_int(
+            np.array(self.get_vertica_attributes("prior")["class"])
+        )
+        self.prior_ = np.array(self.get_vertica_attributes("prior")["probability"])
         self.attributes_ = self._get_nb_attributes()
 
     def _get_nb_attributes(self):
@@ -110,20 +116,20 @@ nbtype: str, optional
             if vdf[elem].isbool():
                 var_info[elem]["type"] = "bernoulli"
                 for c in self.classes_:
-                    var_info[elem][c] = self.get_attr(f"bernoulli.{c}")["probability"][
-                        bernoulli_incr
-                    ]
+                    var_info[elem][c] = self.get_vertica_attributes(f"bernoulli.{c}")[
+                        "probability"
+                    ][bernoulli_incr]
                 bernoulli_incr += 1
             elif vdf[elem].category() == "int":
                 var_info[elem]["type"] = "multinomial"
                 for c in self.classes_:
-                    multinomial = self.get_attr(f"multinomial.{c}")
+                    multinomial = self.get_vertica_attributes(f"multinomial.{c}")
                     var_info[elem][c] = multinomial["probability"][multinomial_incr]
                 multinomial_incr += 1
             elif vdf[elem].isnum():
                 var_info[elem]["type"] = "gaussian"
                 for c in self.classes_:
-                    gaussian = self.get_attr(f"gaussian.{c}")
+                    gaussian = self.get_vertica_attributes(f"gaussian.{c}")
                     var_info[elem][c] = {
                         "mu": gaussian["mu"][gaussian_incr],
                         "sigma_sq": gaussian["sigma_sq"][gaussian_incr],
@@ -132,12 +138,12 @@ nbtype: str, optional
             else:
                 var_info[elem]["type"] = "categorical"
                 my_cat = "categorical." + quote_ident(elem)[1:-1]
-                attr = self.get_attr()["attr_name"]
+                attr = self.get_vertica_attributes()["attr_name"]
                 for item in attr:
                     if item.lower() == my_cat.lower():
                         my_cat = item
                         break
-                val = self.get_attr(my_cat).values
+                val = self.get_vertica_attributes(my_cat).values
                 for item in val:
                     if item != "category":
                         if item not in var_info[elem]:

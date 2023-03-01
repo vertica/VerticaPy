@@ -27,7 +27,11 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting._matplotlib.mlplot import plot_bubble_ml, plot_stepwise_ml
+from verticapy.plotting._matplotlib.mlplot import (
+    plot_bubble_ml,
+    plot_importance,
+    plot_stepwise_ml,
+)
 
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.vertica.automl import AutoDataPrep
@@ -511,25 +515,74 @@ model_grid_ : TableSample
             self.preprocess_.final_relation_ = vDataFrame(self.preprocess_.sql_)
         return self.model_grid_
 
+    def features_importance(self, ax=None, **kwds):
+        """
+        Computes the model's features importance.
+
+        Parameters
+        ----------
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **kwds
+            Any optional parameter to pass to the best estimator
+            features importance method.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        TableSample
+            An object containing the result. For more information, 
+            see utilities.TableSample.
+        """
+        if self.stepwise_:
+            coeff_importances = {}
+            for idx in range(len(self.stepwise_["importance"])):
+                if self.stepwise_["variable"][idx] != None:
+                    coeff_importances[self.stepwise_["variable"][idx]] = self.stepwise_[
+                        "importance"
+                    ][idx]
+            return plot_importance(
+                coeff_importances, print_legend=False, ax=ax, **style_kwds
+            )
+        return self.best_model_.features_importance(**kwds)
+
+    def get_vertica_attributes(self, attr_name: str = "") -> TableSample:
+        """
+        Returns the model attribute.
+
+        Parameters
+        ----------
+        attr_name: str, optional
+            Attribute Name.
+
+        Returns
+        -------
+        TableSample
+            model attributes.
+        """
+        return self.best_model_.get_vertica_attributes(attr_name)
+
     def plot(self, mltype: str = "champion", ax=None, **style_kwds):
         """
-    Draws the AutoML plot.
+        Draws the AutoML plot.
 
-    Parameters
-    ----------
-    mltype: str, optional
-        The plot type.
-            champion: champion challenger plot.
-            step    : stepwise plot.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        mltype: str, optional
+            The plot type.
+                champion: champion challenger plot.
+                step    : stepwise plot.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib functions.
 
-    Returns
-    -------
-    ax
-        Matplotlib axes object
+        Returns
+        -------
+        ax
+            Matplotlib axes object
         """
         if mltype == "champion":
             return plot_bubble_ml(

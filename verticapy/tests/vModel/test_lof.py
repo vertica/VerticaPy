@@ -51,10 +51,7 @@ def model(titanic_vd):
 
 class TestLocalOutlierFactor:
     def test_repr(self, model):
-        assert "Additional Info" in model.__repr__()
-        model_repr = LocalOutlierFactor("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<LocalOutlierFactor>"
+        assert model.__repr__() == "<LocalOutlierFactor>"
 
     def test_get_params(self, model):
         assert model.get_params() == {"n_neighbors": 20, "p": 2}
@@ -66,9 +63,9 @@ class TestLocalOutlierFactor:
             1.17226637499694, abs=1e-6
         )
 
-    def test_get_attr(self, model):
-        result = model.get_attr()
-        assert result["value"] == [0]
+    def test_get_attributes(self, model):
+        result = model.get_attributes()
+        assert result == ["n_neighbors_", "p_", "n_errors_"]
 
     def test_get_plot(self, model):
         result = model.plot(color=["r", "b"])

@@ -61,6 +61,10 @@ steps: list
     def _model_type(self) -> Literal["Pipeline"]:
         return "Pipeline"
 
+    @property
+    def _attributes(self) -> None:
+        raise NotImplementedError
+
     @save_verticapy_logs
     def __init__(self, steps: list):
         self.steps = []

@@ -49,39 +49,11 @@ def model(titanic_vd):
 
 class TestCountVectorizer:
     def test_repr(self, model):
-        assert "Vocabulary" in model.__repr__()
-        model_repr = CountVectorizer("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<CountVectorizer>"
+        assert model.__repr__() == "<CountVectorizer>"
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
-        assert m_att["attr_name"] == [
-            "lowercase",
-            "max_df",
-            "min_df",
-            "max_features",
-            "ignore_special",
-            "max_text_size",
-            "vocabulary",
-            "stop_words",
-        ]
-        m_att = model.get_attr("lowercase")
-        assert m_att == model.parameters["lowercase"]
-        m_att = model.get_attr("max_df")
-        assert m_att == model.parameters["max_df"]
-        m_att = model.get_attr("min_df")
-        assert m_att == model.parameters["min_df"]
-        m_att = model.get_attr("max_features")
-        assert m_att == model.parameters["max_features"]
-        m_att = model.get_attr("ignore_special")
-        assert m_att == model.parameters["ignore_special"]
-        m_att = model.get_attr("max_text_size")
-        assert m_att == model.parameters["max_text_size"]
-        m_att = model.get_attr("vocabulary")
-        assert m_att == model.parameters["vocabulary"]
-        m_att = model.get_attr("stop_words")
-        assert m_att == model.parameters["stop_words"]
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_attributes()
+        assert m_att == ["stop_words_", "vocabulary_", "n_errors_"]
 
     def test_deploySQL(self, model):
         expected_sql = (
@@ -101,9 +73,9 @@ class TestCountVectorizer:
 
         assert result_sql == clean_query(expected_sql)
 
-    def test_get_attr(self, model):
+    def test_get_attributes(self, model):
         assert sorted(model.vocabulary_)[0:3] == ["a", "aaron", "abbing"]
-        assert model.stop_words_ == []
+        assert len(model.stop_words_) == 0
 
     def test_get_params(self, model):
         assert model.get_params() == {

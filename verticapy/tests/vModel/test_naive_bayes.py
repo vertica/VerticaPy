@@ -66,10 +66,7 @@ def model(iris_vd):
 
 class TestNB:
     def test_repr(self, model):
-        assert "predictor  |  type" in model.__repr__()
-        model_repr = NaiveBayes("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<NaiveBayes>"
+        assert model.__repr__() == "<NaiveBayes>"
 
     def test_NB_subclasses(self, winequality_vd):
         model_test = BernoulliNB("model_test")
@@ -288,8 +285,8 @@ class TestNB:
         )
         assert score == pytest.approx(1.0)
 
-    def test_get_attr(self, model):
-        attr = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        attr = model.get_vertica_attributes()
         assert attr["attr_name"] == [
             "details",
             "alpha",
@@ -314,7 +311,7 @@ class TestNB:
         ]
         assert attr["#_of_rows"] == [5, 1, 3, 1, 1, 1, 4, 4, 4]
 
-        details = model.get_attr("details")
+        details = model.get_vertica_attributes("details")
         assert details["predictor"] == [
             "Species",
             "SepalLengthCm",
@@ -330,29 +327,35 @@ class TestNB:
             "Gaussian",
         ]
 
-        assert model.get_attr("alpha")["alpha"][0] == 1.0
+        assert model.get_vertica_attributes("alpha")["alpha"][0] == 1.0
 
-        assert model.get_attr("prior")["class"] == [
+        assert model.get_vertica_attributes("prior")["class"] == [
             "Iris-setosa",
             "Iris-versicolor",
             "Iris-virginica",
         ]
-        assert model.get_attr("prior")["probability"] == [
+        assert model.get_vertica_attributes("prior")["probability"] == [
             pytest.approx(0.333333333333333),
             pytest.approx(0.333333333333333),
             pytest.approx(0.333333333333333),
         ]
 
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 150
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 150
+        )
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
 
-        assert model.get_attr("gaussian.Iris-setosa")["mu"] == [
+        assert model.get_vertica_attributes("gaussian.Iris-setosa")["mu"] == [
             pytest.approx(5.006),
             pytest.approx(3.418),
             pytest.approx(1.464),
             pytest.approx(0.244),
         ]
-        assert model.get_attr("gaussian.Iris-setosa")["sigma_sq"] == [
+        assert model.get_vertica_attributes("gaussian.Iris-setosa")["sigma_sq"] == [
             pytest.approx(0.12424897959183),
             pytest.approx(0.145179591836736),
             pytest.approx(0.0301061224489805),
@@ -360,7 +363,7 @@ class TestNB:
         ]
 
         assert (
-            model.get_attr("call_string")["call_string"][0]
+            model.get_vertica_attributes("call_string")["call_string"][0]
             == "naive_bayes('public.nb_model_test', 'public.iris', '\"species\"', '\"SepalLengthCm\", \"SepalWidthCm\", \"PetalLengthCm\", \"PetalWidthCm\"' USING PARAMETERS exclude_columns='', alpha=1)"
         )
 

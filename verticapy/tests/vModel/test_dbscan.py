@@ -52,10 +52,7 @@ def model(titanic_vd):
 
 class TestDBSCAN:
     def test_repr(self, model):
-        assert "Additional Info" in model.__repr__()
-        model_repr = DBSCAN("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<DBSCAN>"
+        assert model.__repr__() == "<DBSCAN>"
 
     def test_get_params(self, model):
         assert model.get_params() == {"eps": 0.5, "min_samples": 5, "p": 2}
@@ -65,9 +62,9 @@ class TestDBSCAN:
 
         assert titanic_copy["dbscan_cluster"].min() == pytest.approx(-1, abs=1e-6)
 
-    def test_get_attr(self, model):
-        result = model.get_attr()
-        assert result["attr_name"] == ["n_cluster", "n_noise"]
+    def test_get_attributes(self, model):
+        result = model.get_attributes()
+        assert result == ["n_cluster_", "n_noise_", "p_"]
 
     def test_get_plot(self, model):
         result = model.plot()
