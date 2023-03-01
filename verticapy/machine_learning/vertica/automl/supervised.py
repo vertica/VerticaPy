@@ -160,11 +160,29 @@ model_grid_ : TableSample
     Grid containing the different models information.
     """
 
-    _vertica_fit_sql = ""
-    _vertica_predict_sql = ""
-    _model_category = "SUPERVISED"
-    _model_subcategory = ""
-    _model_type = "AutoML"
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
+
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_type(self) -> Literal["AutoML"]:
+        return "AutoML"
 
     @save_verticapy_logs
     def __init__(
@@ -211,22 +229,39 @@ model_grid_ : TableSample
             "preprocess_dict": preprocess_dict,
         }
 
+    def deploySQL(self, X: Union[str, list] = []):
+        """
+        Returns the SQL code needed to deploy the model. 
+
+        Parameters
+        ----------
+        X: str / list, optional
+            List of the columns used to deploy the model.
+            If empty, the model predictors will be used.
+
+        Returns
+        -------
+        str
+            the SQL code needed to deploy the model.
+        """
+        return self.best_model_.deploySQL(X)
+
     def fit(self, input_relation: Union[str, vDataFrame], X: list = [], y: str = ""):
         """
-    Trains the model.
+        Trains the model.
 
-    Parameters
-    ----------
-    input_relation: str/vDataFrame
-        Training Relation.
-    X: list, optional
-        List of the predictors.
-    y: str, optional
-        Response column.
-    Returns
-    -------
-    object
-        model grid
+        Parameters
+        ----------
+        input_relation: str/vDataFrame
+            Training Relation.
+        X: list, optional
+            List of the predictors.
+        y: str, optional
+            Response column.
+        Returns
+        -------
+        object
+            model grid.
         """
         if conf.get_option("overwrite_model"):
             self.drop()

@@ -67,8 +67,10 @@ from verticapy.sql.drop import drop
 
 class VerticaModel:
     """
-Base Class for Vertica Models.
+    Base Class for Vertica Models.
 	"""
+
+    # Properties.
 
     @property
     def _is_native(self) -> Literal[True]:
@@ -106,6 +108,8 @@ Base Class for Vertica Models.
         """Must be overridden in child class"""
         raise NotImplementedError
 
+    # Formatting Methods.
+
     @staticmethod
     def _format_vector(X: ArrayLike, vector: list[tuple]) -> np.ndarray:
         """
@@ -119,11 +123,19 @@ Base Class for Vertica Models.
                     res += [y[1]]
         return np.array(res)
 
+    # System Methods.
+
     def __repr__(self):
         """
-	Returns the model Representation.
-		"""
+        Returns the model Representation.
+        """
         return f"<{self._model_type}>"
+
+    def drop(self):
+        """
+        Drops the model from the Vertica database.
+        """
+        drop(self.model_name, method="model")
 
     def summarize(self):
         if self._is_native:
@@ -144,73 +156,7 @@ Base Class for Vertica Models.
                 "Method 'summarize' is not available for non-native models."
             )
 
-    def contour(
-        self, nbins: int = 100, ax=None, **style_kwds,
-    ):
-        """
-        Draws the model's contour plot.
-
-        Parameters
-        ----------
-        nbins: int, optional
-             Number of bins used to discretize the two predictors.
-        ax: Matplotlib axes object, optional
-            The axes to plot on.
-        **style_kwds
-            Any optional parameter to pass to the Matplotlib 
-            functions.
-
-        Returns
-        -------
-        ax
-            Matplotlib axes object
-        """
-        return vDataFrame(self.input_relation).contour(
-            self.X,
-            self.deploySQL(X=self.X),
-            cbar_title=self.y,
-            nbins=nbins,
-            ax=ax,
-            **style_kwds,
-        )
-
-    def deploySQL(self, X: Union[str, list] = []):
-        """
-	Returns the SQL code needed to deploy the model. 
-
-	Parameters
-	----------
-	X: str / list, optional
-		List of the columns used to deploy the model. If empty, the model
-		predictors will be used.
-
-	Returns
-	-------
-	str
-		the SQL code needed to deploy the model.
-		"""
-        if isinstance(X, str):
-            X = [X]
-        if self._model_type == "AutoML":
-            return self.best_model_.deploySQL(X)
-        if self._model_type not in ("DBSCAN", "LocalOutlierFactor"):
-            X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
-            sql = f"""
-                {self._vertica_predict_sql}({', '.join(X)} 
-                                                    USING PARAMETERS 
-                                                    model_name = '{self.model_name}',
-                                                    match_by_pos = 'true')"""
-            return clean_query(sql)
-        else:
-            raise FunctionError(
-                f"Method 'deploySQL' for '{self._model_type}' doesn't exist."
-            )
-
-    def drop(self):
-        """
-	Drops the model from the Vertica database.
-		"""
-        drop(self.model_name, method="model")
+    # Attributes Methods.
 
     def get_attributes(self, attr_name: str = "") -> Any:
         """
@@ -243,18 +189,18 @@ Base Class for Vertica Models.
 
     def get_vertica_attributes(self, attr_name: str = ""):
         """
-	Returns the model vertica attributes. Those are stored in Vertica.
+    Returns the model vertica attributes. Those are stored in Vertica.
 
-	Parameters
-	----------
-	attr_name: str, optional
-		Attribute Name.
+    Parameters
+    ----------
+    attr_name: str, optional
+        Attribute Name.
 
-	Returns
-	-------
-	TableSample
-		model attributes.
-		"""
+    Returns
+    -------
+    TableSample
+        model attributes.
+        """
         if self._is_native or self._is_using_native:
             vertica_version(condition=[8, 1, 1])
             if attr_name:
@@ -275,22 +221,7 @@ Base Class for Vertica Models.
                 "non-native models.\nUse 'get_attributes' method instead."
             )
 
-    def get_params(self):
-        """
-	Returns the parameters of the model.
-
-	Returns
-	-------
-	dict
-		model parameters
-		"""
-        all_init_params = list(get_type_hints(self.__init__).keys())
-        parameters = copy.deepcopy(self.parameters)
-        parameters_keys = list(parameters.keys())
-        for p in parameters_keys:
-            if p not in all_init_params:
-                del parameters[p]
-        return parameters
+    # Parameters Methods.
 
     def _get_vertica_param_dict(self):
         """
@@ -376,15 +307,32 @@ Base Class for Vertica Models.
 
         return parameters
 
+    def get_params(self):
+        """
+    Returns the parameters of the model.
+
+    Returns
+    -------
+    dict
+        model parameters
+        """
+        all_init_params = list(get_type_hints(self.__init__).keys())
+        parameters = copy.deepcopy(self.parameters)
+        parameters_keys = list(parameters.keys())
+        for p in parameters_keys:
+            if p not in all_init_params:
+                del parameters[p]
+        return parameters
+
     def set_params(self, parameters: dict = {}):
         """
-	Sets the parameters of the model.
+    Sets the parameters of the model.
 
-	Parameters
-	----------
-	parameters: dict, optional
-		New parameters.
-		"""
+    Parameters
+    ----------
+    parameters: dict, optional
+        New parameters.
+        """
         all_init_params = list(get_type_hints(self.__init__).keys())
         new_parameters = copy.deepcopy(self.parameters)
         new_parameters_keys = list(new_parameters.keys())
@@ -399,6 +347,38 @@ Base Class for Vertica Models.
                 warnings.warn(warning_message, Warning)
             new_parameters[p] = parameters[p]
         self.__init__(name=self.model_name, **new_parameters)
+
+    # I/O Methods.
+
+    def deploySQL(self, X: Union[str, list] = []):
+        """
+        Returns the SQL code needed to deploy the model. 
+
+        Parameters
+        ----------
+        X: str / list, optional
+            List of the columns used to deploy the model. 
+            If empty, the model predictors will be used.
+
+        Returns
+        -------
+        str
+            the SQL code needed to deploy the model.
+        """
+        if self._vertica_predict_sql:
+            if isinstance(X, str):
+                X = [X]
+            X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
+            sql = f"""
+                {self._vertica_predict_sql}({', '.join(X)} 
+                                                    USING PARAMETERS 
+                                                    model_name = '{self.model_name}',
+                                                    match_by_pos = 'true')"""
+            return clean_query(sql)
+        else:
+            raise AttributeError(
+                f"Method 'deploySQL' does not exist for {self._model_type} models."
+            )
 
     def to_python(
         self, return_proba: bool = False, return_distance_clusters: bool = False,
@@ -467,6 +447,38 @@ Base Class for Vertica Models.
             return model.predict_sql(X)
         else:
             return model.transform_sql(X)
+
+    # Plotting Methods.
+
+    def contour(
+        self, nbins: int = 100, ax=None, **style_kwds,
+    ):
+        """
+        Draws the model's contour plot.
+
+        Parameters
+        ----------
+        nbins: int, optional
+             Number of bins used to discretize the two predictors.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        return vDataFrame(self.input_relation).contour(
+            self.X,
+            self.deploySQL(X=self.X),
+            cbar_title=self.y,
+            nbins=nbins,
+            ax=ax,
+            **style_kwds,
+        )
 
 
 class Supervised(VerticaModel):
@@ -2272,7 +2284,9 @@ class Unsupervised(VerticaModel):
                         line += [str(val) + " AS " + X[j]]
                     line = ",".join(line)
                     if i == 0:
-                        query0 += ["SELECT /*+LABEL('learn.VerticaModel.fit')*/ " + line]
+                        query0 += [
+                            "SELECT /*+LABEL('learn.VerticaModel.fit')*/ " + line
+                        ]
                     else:
                         query0 += ["SELECT " + line]
                 query0 = " UNION ".join(query0)

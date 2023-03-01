@@ -72,11 +72,29 @@ model_: object
     Final model used for the clustering.
     """
 
-    _vertica_fit_sql = ""
-    _vertica_predict_sql = ""
-    _model_category = "UNSUPERVISED"
-    _model_subcategory = "CLUSTERING"
-    _model_type = "AutoClustering"
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
+
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["CLUSTERING"]:
+        return "CLUSTERING"
+
+    @property
+    def _model_type(self) -> Literal["AutoClustering"]:
+        return "AutoClustering"
 
     @save_verticapy_logs
     def __init__(

@@ -106,7 +106,7 @@ class Clustering(Unsupervised):
             fun = vdf.bubble
             name = "anomaly_score"
             kwds["cmap_col"] = name
-       else:
+        else:
             fun = vdf.scatter
             name = "cluster"
             kwds["catcol"] = name

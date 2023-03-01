@@ -103,12 +103,29 @@ final_relation_: vDataFrame
     Relation created after fitting the model.
     """
 
-    _vertica_fit_sql = ""
-    _vertica_transform_sql = ""
-    _vertica_inverse_transform_sql = ""
-    _model_category = "UNSUPERVISED"
-    _model_subcategory = "PREPROCESSING"
-    _model_type = "AutoDataPrep"
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
+
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["PREPROCESSING"]:
+        return "PREPROCESSING"
+
+    @property
+    def _model_type(self) -> Literal["AutoDataPrep"]:
+        return "AutoDataPrep"
 
     @save_verticapy_logs
     def __init__(

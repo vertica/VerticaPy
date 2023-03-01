@@ -147,7 +147,7 @@ class LinearModel:
             self.X,
             self.y,
             self.input_relation,
-            np.concatenate([self.intercept_], self.coef_)
+            np.concatenate([self.intercept_], self.coef_),
             max_nb_points,
             ax=ax,
             **style_kwds,
@@ -199,7 +199,7 @@ class LinearModelClassifier(LinearModel):
             self.X,
             self.y,
             self.input_relation,
-            np.concatenate([self.intercept_], self.coef_)
+            np.concatenate([self.intercept_], self.coef_),
             max_nb_points,
             ax=ax,
             **style_kwds,
