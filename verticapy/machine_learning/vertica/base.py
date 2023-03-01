@@ -145,8 +145,7 @@ Base Class for Vertica Models.
             )
         else:
             raise AttributeError(
-                "Method 'summarize' is not available for non-native "
-                "models.\nUse 'get_attributes' method instead."
+                "Method 'summarize' is not available for non-native models."
             )
 
     def contour(
@@ -935,11 +934,11 @@ class Tree:
                 self.X, fi, print_legend=False, ax=ax, **style_kwds,
             )
         importances = {
-            "index": self.X,
+            "index": [quote_ident(x)[1:-1].lower() for x in self.X],
             "importance": list(abs(fi)),
             "sign": list(np.sign(fi)),
         }
-        return TableSample(values=importances)
+        return TableSample(values=importances).sort(column="importance", desc=True)
 
     def to_graphviz(
         self,
@@ -2567,8 +2566,8 @@ class Preprocessing(Unsupervised):
         else:
             X = [quote_ident(x) for x in X]
         if self._model_type == "OneHotEncoder":
-            raise ModelError(
-                "method 'inverse_transform' is not supported for OneHotEncoder models."
+            raise AttributeError(
+                "method 'deployInverseSQL' is not supported for OneHotEncoder models."
             )
         sql = f"""
             {self._vertica_inverse_transform_sql}({', '.join(X)} 
@@ -2666,7 +2665,7 @@ class Preprocessing(Unsupervised):
         if isinstance(X, str):
             X = [X]
         if self._model_type == "OneHotEncoder":
-            raise ModelError(
+            raise AttributeError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
         if not (vdf):

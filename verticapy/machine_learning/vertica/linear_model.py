@@ -116,11 +116,11 @@ class LinearModel:
                 self.X, fi, print_legend=True, ax=ax, **style_kwds,
             )
         importances = {
-            "index": self.X,
+            "index": [quote_ident(x)[1:-1].lower() for x in self.X],
             "importance": list(abs(fi)),
             "sign": list(np.sign(fi)),
         }
-        return TableSample(values=importances)
+        return TableSample(values=importances).sort(column="importance", desc=True)
 
     def to_memmodel(self) -> mm.LinearModel:
         """

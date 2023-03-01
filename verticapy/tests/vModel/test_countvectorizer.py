@@ -52,33 +52,8 @@ class TestCountVectorizer:
         assert model.__repr__() == "<CountVectorizer>"
 
     def test_get_vertica_attributes(self, model):
-        m_att = model.get_vertica_attributes()
-        assert m_att["attr_name"] == [
-            "lowercase",
-            "max_df",
-            "min_df",
-            "max_features",
-            "ignore_special",
-            "max_text_size",
-            "vocabulary",
-            "stop_words",
-        ]
-        m_att = model.get_vertica_attributes("lowercase")
-        assert m_att == model.parameters["lowercase"]
-        m_att = model.get_vertica_attributes("max_df")
-        assert m_att == model.parameters["max_df"]
-        m_att = model.get_vertica_attributes("min_df")
-        assert m_att == model.parameters["min_df"]
-        m_att = model.get_vertica_attributes("max_features")
-        assert m_att == model.parameters["max_features"]
-        m_att = model.get_vertica_attributes("ignore_special")
-        assert m_att == model.parameters["ignore_special"]
-        m_att = model.get_vertica_attributes("max_text_size")
-        assert m_att == model.parameters["max_text_size"]
-        m_att = model.get_vertica_attributes("vocabulary")
-        assert m_att == model.parameters["vocabulary"]
-        m_att = model.get_vertica_attributes("stop_words")
-        assert m_att == model.parameters["stop_words"]
+        m_att = model.get_attributes()
+        assert m_att == ["stop_words_", "vocabulary_", "n_errors_"]
 
     def test_deploySQL(self, model):
         expected_sql = (

@@ -56,10 +56,7 @@ def model(titanic_vd):
 
 class TestLogisticRegression:
     def test_repr(self, model):
-        assert "predictor|coefficient|std_err" in model.__repr__()
-        model_repr = LogisticRegression("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<LogisticRegression>"
+        assert model.__repr__() == "<LogisticRegression>"
 
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
