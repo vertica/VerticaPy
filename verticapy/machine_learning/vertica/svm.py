@@ -19,6 +19,8 @@ from typing import Literal, Union
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
+from verticapy.plotting._matplotlib.mlplot import svm_classifier_plot
+
 from verticapy.machine_learning.vertica.base import BinaryClassifier, Regressor
 from verticapy.machine_learning.vertica.linear_model import (
     LinearModel,
@@ -108,6 +110,35 @@ max_iter: int, optional
             "class_weight": class_weight,
             "max_iter": max_iter,
         }
+
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        return svm_classifier_plot(
+            self.X,
+            self.y,
+            self.input_relation,
+            np.concatenate([self.intercept_], self.coef_)
+            max_nb_points,
+            ax=ax,
+            **style_kwds,
+        )
 
 
 class LinearSVR(Regressor, LinearModel):

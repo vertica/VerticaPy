@@ -33,6 +33,7 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import updated_dict
+from verticapy.plotting._matplotlib.mlplot import lof_plot
 
 import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.model_selection.model_validation import (
@@ -1396,7 +1397,7 @@ p: int, optional
 
     @property
     def _attributes(self) -> list[str]:
-        return ["n_neighbors_", "p_", "n_errors_"]
+        return ["n_neighbors_", "p_", "n_errors_", "cnt_"]
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
@@ -1406,6 +1407,11 @@ p: int, optional
     def _compute_attributes(self):
         self.p_ = self.parameters["p"]
         self.n_neighbors_ = self.parameters["n_neighbors"]
+        self.cnt_ = _executeSQL(
+            query=f"SELECT /*+LABEL('learn.VerticaModel.plot')*/ COUNT(*) FROM {self.model_name}",
+            method="fetchfirstelem",
+            print_time_sql=False,
+        )
 
     def fit(
         self,
@@ -1590,6 +1596,30 @@ p: int, optional
             drop(f"v_temp_schema.{tmp_lrd_table_name}", method="table")
             drop(f"v_temp_schema.{tmp_lof_table_name}", method="table")
         return self
+
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        sample = 100 * min(float(max_nb_points / self.cnt_), 1)
+        return lof_plot(
+            self.model_name, self.X, "lof_score", sample, ax=ax, **style_kwds
+        )
 
     def predict(self):
         """

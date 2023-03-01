@@ -75,11 +75,44 @@ class Clustering(Unsupervised):
             Matplotlib axes object
         """
         cbar_title = "cluster"
-        if self._model_type == "IsolationForest":
+        if self._model_subcategory == "ANOMALY_DETECTION":
             cbar_title = "anomaly_score"
         return vDataFrame(self.input_relation).contour(
             self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds,
         )
+
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object.
+        """
+        vdf = vDataFrame(self.input_relation)
+        kwds = {columns: self.X, "max_nb_points": max_nb_points, "ax": ax, **style_kwds}
+        if self._model_subcategory == "ANOMALY_DETECTION":
+            fun = vdf.bubble
+            name = "anomaly_score"
+            kwds["cmap_col"] = name
+       else:
+            fun = vdf.scatter
+            name = "cluster"
+            kwds["catcol"] = name
+            kwds["max_cardinality"] = 100
+        self.predict(vdf, name=name)
+        return fun(**kwds)
 
     def predict(
         self,
@@ -676,6 +709,34 @@ p: int, optional
     @property
     def _attributes(self) -> list[str]:
         return ["n_cluster_", "n_noise_", "p_"]
+
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object.
+        """
+        return vDataFrame(self.model_name).scatter(
+            columns=self.X,
+            catcol="dbscan_cluster",
+            max_cardinality=100,
+            max_nb_points=max_nb_points,
+            ax=ax,
+            **style_kwds,
+        )
 
     def fit(
         self,

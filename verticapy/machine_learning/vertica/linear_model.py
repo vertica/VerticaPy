@@ -29,6 +29,8 @@ from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.plotting._matplotlib.mlplot import logit_plot, regression_plot
+
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 
@@ -122,6 +124,35 @@ class LinearModel:
         }
         return TableSample(values=importances).sort(column="importance", desc=True)
 
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        return regression_plot(
+            self.X,
+            self.y,
+            self.input_relation,
+            np.concatenate([self.intercept_], self.coef_)
+            max_nb_points,
+            ax=ax,
+            **style_kwds,
+        )
+
     def to_memmodel(self) -> mm.LinearModel:
         """
         Converts the model to an InMemory object which
@@ -144,6 +175,35 @@ class LinearModelClassifier(LinearModel):
         self.intercept_ = details["coefficient"][0]
         self.classes_ = np.array([0, 1])
         return None
+
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        ax
+            Matplotlib axes object
+        """
+        return logit_plot(
+            self.X,
+            self.y,
+            self.input_relation,
+            np.concatenate([self.intercept_], self.coef_)
+            max_nb_points,
+            ax=ax,
+            **style_kwds,
+        )
 
     def to_memmodel(self) -> mm.LinearModelClassifier:
         """

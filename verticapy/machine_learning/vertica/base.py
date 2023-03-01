@@ -43,11 +43,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.plotting._matplotlib.mlplot import (
     plot_importance,
     regression_tree_plot,
-    lof_plot,
     plot_pca_circle,
-    logit_plot,
-    svm_classifier_plot,
-    regression_plot,
 )
 
 from verticapy.machine_learning._utils import get_match_index
@@ -379,129 +375,6 @@ Base Class for Vertica Models.
                 parameters[map_to_vertica_param_name(param)] = self.parameters[param]
 
         return parameters
-
-    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
-        """
-	Draws the model.
-
-	Parameters
-	----------
-	max_nb_points: int
-		Maximum number of points to display.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the 
-        Matplotlib functions.
-
-    Returns
-    -------
-    ax
-        Matplotlib axes object
-		"""
-        if self._model_type in (
-            "LinearRegression",
-            "LogisticRegression",
-            "LinearSVC",
-            "LinearSVR",
-        ):
-            coefficients = self.get_vertica_attributes("details").values["coefficient"]
-            if self._model_type == "LogisticRegression":
-                return logit_plot(
-                    self.X,
-                    self.y,
-                    self.input_relation,
-                    coefficients,
-                    max_nb_points,
-                    ax=ax,
-                    **style_kwds,
-                )
-            elif self._model_type == "LinearSVC":
-                return svm_classifier_plot(
-                    self.X,
-                    self.y,
-                    self.input_relation,
-                    coefficients,
-                    max_nb_points,
-                    ax=ax,
-                    **style_kwds,
-                )
-            else:
-                return regression_plot(
-                    self.X,
-                    self.y,
-                    self.input_relation,
-                    coefficients,
-                    max_nb_points,
-                    ax=ax,
-                    **style_kwds,
-                )
-        elif self._model_type in (
-            "KMeans",
-            "BisectingKMeans",
-            "KPrototypes",
-            "DBSCAN",
-            "IsolationForest",
-        ):
-            if self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",):
-                if self._model_type == "KPrototypes":
-                    centers = self.get_vertica_attributes("centers")
-                    if any(
-                        [
-                            ("char" in centers.dtype[key].lower())
-                            for key in centers.dtype
-                        ]
-                    ):
-                        raise TypeError(
-                            "KPrototypes' plots with categorical inputs is not yet supported."
-                        )
-                vdf = vDataFrame(self.input_relation)
-                catcol = f"{self._model_type.lower()}_cluster"
-                self.predict(vdf, name=catcol)
-            elif self._model_type == "DBSCAN":
-                vdf = vDataFrame(self.model_name)
-                catcol = "dbscan_cluster"
-            elif self._model_type == "IsolationForest":
-                vdf = vDataFrame(self.input_relation)
-                self.predict(vdf, name="anomaly_score")
-                return vdf.bubble(
-                    columns=self.X,
-                    cmap_col="anomaly_score",
-                    max_nb_points=max_nb_points,
-                    ax=ax,
-                    **style_kwds,
-                )
-            return vdf.scatter(
-                columns=self.X,
-                catcol=catcol,
-                max_cardinality=100,
-                max_nb_points=max_nb_points,
-                ax=ax,
-                **style_kwds,
-            )
-        elif self._model_type == "LocalOutlierFactor":
-            cnt = _executeSQL(
-                query=f"SELECT /*+LABEL('learn.VerticaModel.plot')*/ COUNT(*) FROM {self.model_name}",
-                method="fetchfirstelem",
-                print_time_sql=False,
-            )
-            TableSample = 100 * min(float(max_nb_points / cnt), 1)
-            return lof_plot(
-                self.model_name, self.X, "lof_score", 100, ax=ax, **style_kwds
-            )
-        elif self._model_type in ("RandomForestRegressor", "XGBRegressor"):
-            return regression_tree_plot(
-                self.X + [self.deploySQL()],
-                self.y,
-                self.input_relation,
-                max_nb_points,
-                ax=ax,
-                **style_kwds,
-            )
-        else:
-            raise FunctionError(
-                f"Method 'plot' for '{self._model_type}' doesn't exist."
-            )
 
     def set_params(self, parameters: dict = {}):
         """
@@ -848,6 +721,37 @@ class Tree:
         if return_probability:
             trees_arrays += [tree["probability/variance"]]
         return trees_arrays
+
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+        """
+    Draws the model.
+
+    Parameters
+    ----------
+    max_nb_points: int
+        Maximum number of points to display.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the 
+        Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        if self._model_subcategory == "REGRESSOR":
+            return regression_tree_plot(
+                self.X + [self.deploySQL()],
+                self.y,
+                self.input_relation,
+                max_nb_points,
+                ax=ax,
+                **style_kwds,
+            )
+        else:
+            raise NotImplementedError
 
     def features_importance(
         self, tree_id: Optional[int] = None, show: bool = True, ax=None, **style_kwds
