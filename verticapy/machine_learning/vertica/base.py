@@ -694,106 +694,108 @@ class Supervised(vModel):
             does_model_exist(name=self.model_name, raise_error=True)
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
-        nb_lookup_table = {
-            "bernoulli": "bool",
-            "categorical": "varchar",
-            "multinomial": "int",
-            "gaussian": "float",
-        }
-        if (self._model_type == "NaiveBayes") and (
-            self.parameters["nbtype"] in nb_lookup_table
-        ):
-            new_types = {}
-            for x in X:
-                new_types[x] = nb_lookup_table[self.parameters["nbtype"]]
-            if not (isinstance(input_relation, vDataFrame)):
-                input_relation = vDataFrame(input_relation)
-            else:
-                input_relation.copy()
-            input_relation.astype(new_types)
-        does_model_exist(name=self.model_name, raise_error=True)
-        id_column, id_column_name = "", gen_tmp_name(name="id_column")
-        if self._model_type in (
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "XGBClassifier",
-            "XGBRegressor",
-        ) and isinstance(conf.get_option("random_state"), int):
-            id_column = f""", 
-                ROW_NUMBER() OVER 
-                (ORDER BY {', '.join(X)}) 
-                AS {id_column_name}"""
-        tmp_view = False
-        if isinstance(input_relation, vDataFrame) or (id_column):
-            tmp_view = True
-            if isinstance(input_relation, vDataFrame):
-                self.input_relation = input_relation._genSQL()
-            else:
-                self.input_relation = input_relation
-            relation = gen_tmp_name(
-                schema=schema_relation(self.model_name)[0], name="view"
-            )
-            drop(relation, method="view")
-            _executeSQL(
-                query=f"""
-                    CREATE VIEW {relation} AS 
-                        SELECT 
-                            /*+LABEL('learn.vModel.fit')*/ 
-                            *{id_column} 
-                        FROM {self.input_relation}""",
-                title="Creating a temporary view to fit the model.",
-            )
-        else:
-            self.input_relation = input_relation
-            relation = input_relation
         if isinstance(test_relation, vDataFrame):
             self.test_relation = test_relation._genSQL()
         elif test_relation:
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        parameters = self._get_vertica_param_dict()
-        if (
-            "regularization" in parameters
-            and parameters["regularization"].lower() == "'enet'"
-        ):
-            alpha = parameters["alpha"]
-            del parameters["alpha"]
-        else:
-            alpha = None
-        if "mtry" in parameters:
-            if parameters["mtry"] == "'auto'":
-                parameters["mtry"] = int(len(self.X) / 3 + 1)
-            elif parameters["mtry"] == "'max'":
-                parameters["mtry"] = len(self.X)
-        fun = self._vertica_fit_sql
-        query = f"""
-            SELECT 
-                /*+LABEL('learn.vModel.fit')*/ 
-                {self._vertica_fit_sql}
-                ('{self.model_name}', 
-                 '{relation}',
-                 '{self.y}',
-                 '{', '.join(self.X)}' 
-                 USING PARAMETERS 
-                 {', '.join([f"{p} = {parameters[p]}" for p in parameters])}"""
-        if alpha != None:
-            query += f", alpha = {alpha}"
-        if self._model_type in (
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "XGBClassifier",
-            "XGBRegressor",
-        ) and isinstance(conf.get_option("random_state"), int):
-            query += f""", 
-                seed={conf.get_option('random_state')}, 
-                id_column='{id_column_name}'"""
-        query += ")"
-        try:
-            _executeSQL(query, title="Fitting the model.")
-        finally:
-            if tmp_view:
+        if self._is_native:
+            nb_lookup_table = {
+                "bernoulli": "bool",
+                "categorical": "varchar",
+                "multinomial": "int",
+                "gaussian": "float",
+            }
+            if (self._model_type == "NaiveBayes") and (
+                self.parameters["nbtype"] in nb_lookup_table
+            ):
+                new_types = {}
+                for x in X:
+                    new_types[x] = nb_lookup_table[self.parameters["nbtype"]]
+                if not (isinstance(input_relation, vDataFrame)):
+                    input_relation = vDataFrame(input_relation)
+                else:
+                    input_relation.copy()
+                input_relation.astype(new_types)
+            id_column, id_column_name = "", gen_tmp_name(name="id_column")
+            if self._model_type in (
+                "RandomForestClassifier",
+                "RandomForestRegressor",
+                "XGBClassifier",
+                "XGBRegressor",
+            ) and isinstance(conf.get_option("random_state"), int):
+                id_column = f""", 
+                    ROW_NUMBER() OVER 
+                    (ORDER BY {', '.join(X)}) 
+                    AS {id_column_name}"""
+            tmp_view = False
+        if isinstance(input_relation, vDataFrame) or (id_column):
+            tmp_view = True
+            if isinstance(input_relation, vDataFrame):
+                self.input_relation = input_relation._genSQL()
+            else:
+                self.input_relation = input_relation
+            if self._is_native:
+                relation = gen_tmp_name(
+                    schema=schema_relation(self.model_name)[0], name="view"
+                )
                 drop(relation, method="view")
+                _executeSQL(
+                    query=f"""
+                        CREATE VIEW {relation} AS 
+                            SELECT 
+                                /*+LABEL('learn.vModel.fit')*/ 
+                                *{id_column} 
+                            FROM {self.input_relation}""",
+                    title="Creating a temporary view to fit the model.",
+                )
+        else:
+            self.input_relation = input_relation
+            relation = input_relation
+        if self._is_native:
+            parameters = self._get_vertica_param_dict()
+            if (
+                "regularization" in parameters
+                and parameters["regularization"].lower() == "'enet'"
+            ):
+                alpha = parameters["alpha"]
+                del parameters["alpha"]
+            else:
+                alpha = None
+            if "mtry" in parameters:
+                if parameters["mtry"] == "'auto'":
+                    parameters["mtry"] = int(len(self.X) / 3 + 1)
+                elif parameters["mtry"] == "'max'":
+                    parameters["mtry"] = len(self.X)
+            fun = self._vertica_fit_sql
+            query = f"""
+                SELECT 
+                    /*+LABEL('learn.vModel.fit')*/ 
+                    {self._vertica_fit_sql}
+                    ('{self.model_name}', 
+                     '{relation}',
+                     '{self.y}',
+                     '{', '.join(self.X)}' 
+                     USING PARAMETERS 
+                     {', '.join([f"{p} = {parameters[p]}" for p in parameters])}"""
+            if alpha != None:
+                query += f", alpha = {alpha}"
+            if self._model_type in (
+                "RandomForestClassifier",
+                "RandomForestRegressor",
+                "XGBClassifier",
+                "XGBRegressor",
+            ) and isinstance(conf.get_option("random_state"), int):
+                query += f""", 
+                    seed={conf.get_option('random_state')}, 
+                    id_column='{id_column_name}'"""
+            query += ")"
+            try:
+                _executeSQL(query, title="Fitting the model.")
+            finally:
+                if tmp_view:
+                    drop(relation, method="view")
         self._compute_attributes()
         return self
 

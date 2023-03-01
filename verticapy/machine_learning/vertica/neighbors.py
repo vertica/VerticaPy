@@ -46,6 +46,7 @@ from verticapy.machine_learning.vertica.base import (
     Tree,
     vModel,
 )
+from verticapy.machine_learning.vertica.tree import DecisionTreeRegressor
 
 from verticapy.sql.drop import drop
 
@@ -207,55 +208,8 @@ p: int, optional
                      WHERE order_prediction = 1) predict_neighbors_table"""
         return clean_query(sql)
 
-    def fit(
-        self,
-        input_relation: Union[str, vDataFrame],
-        X: Union[str, list],
-        y: str,
-        test_relation: Union[str, vDataFrame] = "",
-    ):
-        """
-	Trains the model.
-
-	Parameters
-	----------
-	input_relation: str/vDataFrame
-		Training relation.
-	X: str / list
-		List of the predictors.
-	y: str
-		Response column.
-	test_relation: str/vDataFrame, optional
-		Relation used to test the model.
-
-	Returns
-	-------
-	object
- 		self
-		"""
-        if isinstance(X, str):
-            X = [X]
-        if conf.get_option("overwrite_model"):
-            self.drop()
-        else:
-            does_model_exist(name=self.model_name, raise_error=True)
-        if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation._genSQL()
-        else:
-            self.input_relation = input_relation
-        if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation._genSQL()
-        elif test_relation:
-            self.test_relation = test_relation
-        else:
-            self.test_relation = self.input_relation
-        self.X = [quote_ident(column) for column in X]
-        self.y = quote_ident(y)
-        self._compute_attributes()
-        return self
-
     def classification_report(
-        self, cutoff: Union[int, float, list] = [], labels: list = []
+        self, cutoff: Union[int, float, list] = [], labels: Union[ArrayLike, str] = []
     ):
         """
     Computes a classification report using multiple metrics to evaluate the model
@@ -270,7 +224,7 @@ p: int, optional
         For multiclass classification, each tested category becomes positive case
         and untested categories are merged into the negative cases. This list 
         represents the threshold for each class. If empty, the best cutoff is be used.
-    labels: list, optional
+    labels: ArrayLike / str, optional
         List of the different labels to be used during the computation.
 
     Returns
@@ -866,6 +820,99 @@ xlim: list, optional
         else:
             self.verticapy_store = False
 
+    def density_kde(
+        self, vdf: vDataFrame, columns: list, kernel: str, x, p: int, h=None
+    ):
+        for col in columns:
+            if not (vdf[col].isnum()):
+                raise TypeError(
+                    f"Cannot compute KDE for non-numerical columns. {col} is not numerical."
+                )
+        if kernel == "gaussian":
+            fkernel = "EXP(-1 / 2 * POWER({0}, 2)) / SQRT(2 * PI())"
+
+        elif kernel == "logistic":
+            fkernel = "1 / (2 + EXP({0}) + EXP(-{0}))"
+
+        elif kernel == "sigmoid":
+            fkernel = "2 / (PI() * (EXP({0}) + EXP(-{0})))"
+
+        elif kernel == "silverman":
+            fkernel = (
+                "EXP(-1 / SQRT(2) * ABS({0})) / 2 * SIN(ABS({0}) / SQRT(2) + PI() / 4)"
+            )
+
+        else:
+            raise ParameterError(
+                "The parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman]."
+            )
+        if isinstance(x, (tuple)):
+            return self.density_kde(vdf, columns, kernel, [x], p, h)[0]
+        elif isinstance(x, (list)):
+            N = vdf.shape()[0]
+            L = []
+            for xj in x:
+                distance = []
+                for i in range(len(columns)):
+                    distance += [f"POWER({columns[i]} - {xj[i]}, {p})"]
+                distance = " + ".join(distance)
+                distance = f"POWER({distance}, {1.0 / p})"
+                fkernel_tmp = fkernel.format(f"{distance} / {h}")
+                L += [f"SUM({fkernel_tmp}) / ({h} * {N})"]
+            query = f"""
+                SELECT 
+                    /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
+                    {", ".join(L)} 
+                FROM {vdf._genSQL()}"""
+            result = _executeSQL(
+                query=query, title="Computing the KDE", method="fetchrow"
+            )
+            return list(result)
+        else:
+            return 0
+
+    def density_compute(
+        self,
+        vdf: vDataFrame,
+        columns: list,
+        h=None,
+        kernel: str = "gaussian",
+        nbins: int = 5,
+        p: int = 2,
+    ):
+        columns = vdf._format_colnames(columns)
+        x_vars = []
+        y = []
+        for idx, column in enumerate(columns):
+            if self.parameters["xlim"]:
+                try:
+                    x_min, x_max = self.parameters["xlim"][idx]
+                    N = vdf[column].count()
+                except:
+                    warning_message = (
+                        f"Wrong xlim for the vcolumn {column}.\n"
+                        "The max and the min will be used instead."
+                    )
+                    warnings.warn(warning_message, Warning)
+                    x_min, x_max, N = vdf.agg(
+                        func=["min", "max", "count"], columns=[column]
+                    ).transpose()[column]
+            else:
+                x_min, x_max, N = vdf.agg(
+                    func=["min", "max", "count"], columns=[column]
+                ).transpose()[column]
+            x_vars += [
+                [(x_max - x_min) * i / nbins + x_min for i in range(0, nbins + 1)]
+            ]
+        x = list(itertools.product(*x_vars))
+        try:
+            y = self.density_kde(vdf, columns, kernel, x, p, h)
+        except:
+            for xi in x:
+                K = self.density_kde(vdf, columns, kernel, xi, p, h)
+                y += [K]
+        return [x, y]
+
     def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
         """
     Trains the model.
@@ -901,96 +948,7 @@ xlim: list, optional
             if not (X):
                 X = vdf.numcol()
         X = vdf._format_colnames(X)
-
-        def density_compute(
-            vdf: vDataFrame,
-            columns: list,
-            h=None,
-            kernel: str = "gaussian",
-            nbins: int = 5,
-            p: int = 2,
-        ):
-            def density_kde(vdf, columns: list, kernel: str, x, p: int, h=None):
-                for col in columns:
-                    if not (vdf[col].isnum()):
-                        raise TypeError(
-                            f"Cannot compute KDE for non-numerical columns. {col} is not numerical."
-                        )
-                if kernel == "gaussian":
-                    fkernel = "EXP(-1 / 2 * POWER({0}, 2)) / SQRT(2 * PI())"
-
-                elif kernel == "logistic":
-                    fkernel = "1 / (2 + EXP({0}) + EXP(-{0}))"
-
-                elif kernel == "sigmoid":
-                    fkernel = "2 / (PI() * (EXP({0}) + EXP(-{0})))"
-
-                elif kernel == "silverman":
-                    fkernel = "EXP(-1 / SQRT(2) * ABS({0})) / 2 * SIN(ABS({0}) / SQRT(2) + PI() / 4)"
-
-                else:
-                    raise ParameterError(
-                        "The parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman]."
-                    )
-                if isinstance(x, (tuple)):
-                    return density_kde(vdf, columns, kernel, [x], p, h)[0]
-                elif isinstance(x, (list)):
-                    N = vdf.shape()[0]
-                    L = []
-                    for xj in x:
-                        distance = []
-                        for i in range(len(columns)):
-                            distance += [f"POWER({columns[i]} - {xj[i]}, {p})"]
-                        distance = " + ".join(distance)
-                        distance = f"POWER({distance}, {1.0 / p})"
-                        fkernel_tmp = fkernel.format(f"{distance} / {h}")
-                        L += [f"SUM({fkernel_tmp}) / ({h} * {N})"]
-                    query = f"""
-                        SELECT 
-                            /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
-                            {", ".join(L)} 
-                        FROM {vdf._genSQL()}"""
-                    result = _executeSQL(
-                        query, title="Computing the KDE", method="fetchrow"
-                    )
-                    return [x for x in result]
-                else:
-                    return 0
-
-            columns = vdf._format_colnames(columns)
-            x_vars = []
-            y = []
-            for idx, column in enumerate(columns):
-                if self.parameters["xlim"]:
-                    try:
-                        x_min, x_max = self.parameters["xlim"][idx]
-                        N = vdf[column].count()
-                    except:
-                        warning_message = (
-                            f"Wrong xlim for the vcolumn {column}.\n"
-                            "The max and the min will be used instead."
-                        )
-                        warnings.warn(warning_message, Warning)
-                        x_min, x_max, N = vdf.agg(
-                            func=["min", "max", "count"], columns=[column]
-                        ).transpose()[column]
-                else:
-                    x_min, x_max, N = vdf.agg(
-                        func=["min", "max", "count"], columns=[column]
-                    ).transpose()[column]
-                x_vars += [
-                    [(x_max - x_min) * i / nbins + x_min for i in range(0, nbins + 1)]
-                ]
-            x = list(itertools.product(*x_vars))
-            try:
-                y = density_kde(vdf, columns, kernel, x, p, h)
-            except:
-                for xi in x:
-                    K = density_kde(vdf, columns, kernel, xi, p, h)
-                    y += [K]
-            return [x, y]
-
-        x, y = density_compute(
+        x, y = self.density_compute(
             vdf,
             X,
             self.parameters["bandwidth"],
@@ -998,10 +956,10 @@ xlim: list, optional
             self.parameters["nbins"],
             self.parameters["p"],
         )
-        name_str = self.model_name.replace('"', "")
+        table_name = self.model_name.replace('"', "") + "_KernelDensity_Map"
         if self.verticapy_store:
             _executeSQL(
-                query=f"""CREATE TABLE {name_str}_KernelDensity_Map AS    
+                query=f"""CREATE TABLE {table_name} AS    
                             SELECT 
                                 /*+LABEL('learn.neighbors.KernelDensity.fit')*/
                                 {", ".join(X)}, 0.0::float AS KDE 
@@ -1018,7 +976,7 @@ xlim: list, optional
                 _executeSQL(
                     query=f"""
                     INSERT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
-                    INTO {name_str}_KernelDensity_Map 
+                    INTO {table_name}
                     ({", ".join(X)}, KDE) {" UNION ".join(values)}""",
                     title=f"Computing the KDE [Step {idx}].",
                 )
@@ -1026,14 +984,10 @@ xlim: list, optional
                 r += 100
                 idx += 1
             self.X, self.input_relation = X, input_relation
-            self.map = f"{name_str}_KernelDensity_Map"
-            self.tree_name = f"{name_str}_KernelDensity_Tree"
+            self.map = table_name
             self.y = "KDE"
-
-            from verticapy.machine_learning.vertica.tree import DecisionTreeRegressor
-
             model = DecisionTreeRegressor(
-                name=self.tree_name,
+                name=self.model_name,
                 max_features=len(self.X),
                 max_leaf_nodes=self.parameters["max_leaf_nodes"],
                 max_depth=self.parameters["max_depth"],
@@ -1273,53 +1227,6 @@ p: int, optional
              WHERE ordered_distance <= {n_neighbors} 
              GROUP BY {", ".join(X)}{key_columns_str}, row_id) knr_table"""
         return clean_query(sql)
-
-    def fit(
-        self,
-        input_relation: Union[str, vDataFrame],
-        X: Union[str, list],
-        y: str,
-        test_relation: Union[str, vDataFrame] = "",
-    ):
-        """
-	Trains the model.
-
-	Parameters
-	----------
-	input_relation: str / vDataFrame
-		Training relation.
-	X: str / list
-		List of the predictors.
-	y: str
-		Response column.
-	test_relation: str / vDataFrame, optional
-		Relation used to test the model.
-
-	Returns
-	-------
-	object
- 		self
-		"""
-        if isinstance(X, str):
-            X = [X]
-        if conf.get_option("overwrite_model"):
-            self.drop()
-        else:
-            does_model_exist(name=self.model_name, raise_error=True)
-        if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation._genSQL()
-        else:
-            self.input_relation = input_relation
-        if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation._genSQL()
-        elif test_relation:
-            self.test_relation = test_relation
-        else:
-            self.test_relation = self.input_relation
-        self.X = [quote_ident(column) for column in X]
-        self.y = quote_ident(y)
-        self._compute_attributes()
-        return self
 
     def predict(
         self,
