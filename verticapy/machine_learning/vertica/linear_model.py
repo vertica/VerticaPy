@@ -173,7 +173,6 @@ class LinearModelClassifier(LinearModel):
         details = self.get_vertica_attributes("details")
         self.coef_ = np.array(details["coefficient"][1:])
         self.intercept_ = details["coefficient"][0]
-        self.classes_ = np.array([0, 1])
         return None
 
     def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):

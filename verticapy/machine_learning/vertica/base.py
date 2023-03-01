@@ -765,8 +765,7 @@ class Tree:
         Returns
         -------
         TableSample
-            An object containing the result. For more information,
-            see utilities.TableSample.
+            features importance.
         """
         fi = self._get_features_importance(tree_id=tree_id)
         if show:
@@ -795,8 +794,7 @@ class Tree:
         Returns
         -------
         TableSample
-            An object containing the result. For more information, 
-            see utilities.TableSample.
+            model's score.
         """
         tree_id = "" if tree_id == None else f", tree_id={tree_id}"
         query = f"""
@@ -855,8 +853,7 @@ class Tree:
         Returns
         -------
         TableSample
-            An object containing the result. For more information,
-            see utilities.TableSample.
+            tree.
         """
         query = f"""
             SELECT * FROM (SELECT READ_TREE (
@@ -957,79 +954,32 @@ class Classifier(Supervised):
 
 class BinaryClassifier(Classifier):
 
-    classes_ = np.array([0, 1])
+    # Attributes Methods.
 
-    def classification_report(
-        self, cutoff: Union[int, float] = 0.5, nbins: int = 10000,
-    ):
+    @property
+    def classes_(self) -> np.ndarray:
+        return np.array([0, 1])
+
+    # I/O Methods.
+
+    def deploySQL(self, cutoff: Union[int, float] = -1, X: Union[str, list] = []) -> str:
         """
-	Computes a classification report using multiple metrics to evaluate the model
-	(AUC, accuracy, PRC AUC, F1...). 
+    	Returns the SQL code needed to deploy the model. 
 
-	Parameters
-	----------
-	cutoff: int / float, optional
-		Probability cutoff.
-    nbins: int, optional
-        [Used to compute ROC AUC, PRC AUC and the best cutoff]
-        An integer value that determines the number of decision boundaries. 
-        Decision boundaries are set at equally spaced intervals between 0 and 1, 
-        inclusive. Greater values for nbins give more precise estimations of the 
-        metrics, but can potentially decrease performance. The maximum value 
-        is 999,999. If negative, the maximum value is used.
+    	Parameters
+    	----------
+    	cutoff: int / float, optional
+    		Probability cutoff. If this number is not between 
+            0 and 1, the method will return the probability 
+            to be of class 1.
+    	X: str / list, optional
+    		List of the columns used to deploy the model. If 
+            empty, the model predictors will be used.
 
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
-		"""
-        if cutoff > 1 or cutoff < 0:
-            cutoff = self.score(method="best_cutoff")
-        return mt.classification_report(
-            self.y,
-            [self.deploySQL(), self.deploySQL(cutoff)],
-            self.test_relation,
-            cutoff=cutoff,
-            nbins=nbins,
-        )
-
-    report = classification_report
-
-    def confusion_matrix(self, cutoff: Union[int, float] = 0.5):
-        """
-	Computes the model confusion matrix.
-
-	Parameters
-	----------
-	cutoff: int / float, optional
-		Probability cutoff.
-
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
-		"""
-        return mt.confusion_matrix(self.y, self.deploySQL(cutoff), self.test_relation,)
-
-    def deploySQL(self, cutoff: Union[int, float] = -1, X: Union[str, list] = []):
-        """
-	Returns the SQL code needed to deploy the model. 
-
-	Parameters
-	----------
-	cutoff: int / float, optional
-		Probability cutoff. If this number is not between 0 and 1, the method 
-		will return the probability to be of class 1.
-	X: str / list, optional
-		List of the columns used to deploy the model. If empty, the model
-		predictors will be used.
-
-	Returns
-	-------
-	str
-		the SQL code needed to deploy the model.
+    	Returns
+    	-------
+    	str
+    		the SQL code needed to deploy the model.
 		"""
         if not (X):
             X = self.X
@@ -1054,61 +1004,137 @@ class BinaryClassifier(Classifier):
                 END)"""
         return clean_query(sql)
 
-    def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds):
+    # Model Evaluation Methods.
+
+    def classification_report(
+        self, cutoff: Union[int, float] = 0.5, nbins: int = 10000,
+    ) -> TableSample:
         """
-	Draws the model Lift Chart.
+        Computes a classification report using multiple metrics 
+        to evaluate the model (AUC, accuracy, PRC AUC, F1...). 
 
-    Parameters
-    ----------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    nbins: int, optional
-        The number of bins.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        cutoff: int / float, optional
+            Probability cutoff.
+        nbins: int, optional
+            [Used to compute ROC AUC, PRC AUC and the best cutoff]
+            An integer value that determines the number of decision 
+            boundaries. Decision boundaries are set at equally spaced 
+            intervals between 0 and 1, inclusive. Greater values for
+            nbins give more precise estimations of the metrics, but 
+            can potentially decrease performance. The maximum value 
+            is 999,999. If negative, the maximum value is used.
 
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
-		"""
-        return ms.lift_chart(
+        Returns
+        -------
+        TableSample
+            report.
+        """
+        if cutoff > 1 or cutoff < 0:
+            cutoff = self.score(method="best_cutoff")
+        return mt.classification_report(
             self.y,
-            self.deploySQL(),
+            [self.deploySQL(), self.deploySQL(cutoff)],
             self.test_relation,
-            ax=ax,
+            cutoff=cutoff,
             nbins=nbins,
-            **style_kwds,
         )
 
-    def prc_curve(self, ax=None, nbins: int = 30, **style_kwds):
+    report = classification_report
+
+    def confusion_matrix(self, cutoff: Union[int, float] = 0.5) -> TableSample:
         """
-	Draws the model PRC curve.
+        Computes the model confusion matrix.
 
-    Parameters
-    ----------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    nbins: int, optional
-        The number of bins.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        cutoff: int / float, optional
+            Probability cutoff.
 
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
-		"""
-        return ms.prc_curve(
-            self.y,
-            self.deploySQL(),
-            self.test_relation,
-            ax=ax,
-            nbins=nbins,
-            **style_kwds,
-        )
+        Returns
+        -------
+        TableSample
+            confusion matrix.
+        """
+        return mt.confusion_matrix(self.y, self.deploySQL(cutoff), self.test_relation,)
+
+    def score(
+        self,
+        method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
+        cutoff: Union[int, float] = 0.5,
+        nbins: int = 10000,
+    ) -> float:
+        """
+        Computes the model score.
+
+        Parameters
+        ----------
+        method: str, optional
+            The method to use to compute the score.
+                accuracy    : Accuracy
+                aic         : Akaike’s Information Criterion
+                auc         : Area Under the Curve (ROC)
+                best_cutoff : Cutoff which optimised the ROC 
+                              Curve prediction.
+                bic         : Bayesian Information Criterion
+                bm          : Informedness = tpr + tnr - 1
+                csi         : Critical Success Index 
+                              = tp / (tp + fn + fp)
+                f1          : F1 Score 
+                logloss     : Log Loss
+                mcc         : Matthews Correlation Coefficient 
+                mk          : Markedness = ppv + npv - 1
+                npv         : Negative Predictive Value 
+                              = tn / (tn + fn)
+                prc_auc     : Area Under the Curve (PRC)
+                precision   : Precision = tp / (tp + fp)
+                recall      : Recall = tp / (tp + fn)
+                specificity : Specificity = tn / (tn + fp)
+        cutoff: int / float, optional
+            Cutoff for which the tested category will be
+            accepted as a prediction.
+        nbins: int, optional
+            [Only when method is set to auc|prc_auc|best_cutoff] 
+            An integer value that determines the number of decision
+            boundaries. Decision boundaries are set at equally spaced 
+            intervals between 0 and 1, inclusive. Greater values for 
+            nbins give more precise estimations of the AUC, but can 
+            potentially decrease performance. The maximum value is 
+            999,999. If negative, the maximum value is used.
+
+        Returns
+        -------
+        float
+            score
+        """
+        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
+        if method in (
+            "log_loss",
+            "logloss",
+            "aic",
+            "bic",
+            "prc_auc",
+            "auc",
+            "best_cutoff",
+            "best_threshold",
+        ):
+            args2 = self.deploySQL()
+        else:
+            args2 = self.deploySQL(cutoff)
+        args = [self.y, args2, self.test_relation]
+        kwds = {}
+        if method in ("accuracy", "acc"):
+            kwds["pos_label"] = 1
+        elif method in ("aic", "bic"):
+            args += [len(self.X)]
+        elif method in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
+            kwds["nbins"] = nbins
+            if method in ("best_cutoff", "best_threshold"):
+                kwds["best_threshold"] = True
+        return fun(*args, **kwds)
+
+    # Prediction / Transformation Methods.
 
     def predict(
         self,
@@ -1119,30 +1145,33 @@ class BinaryClassifier(Classifier):
         inplace: bool = True,
     ):
         """
-	Predicts using the input relation.
+        Predicts using the input relation.
 
-	Parameters
-	----------
-	vdf: SQLRelation
-		Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example, 
-        "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
-        incorrect.
-	X: str / list, optional
-		List of the columns used to deploy the models. If empty, the model
-		predictors will be used.
-	name: str, optional
-		Name of the added vcolumn. If empty, a name will be generated.
-	cutoff: float, optional
-		Probability cutoff.
-	inplace: bool, optional
-		If set to True, the prediction will be added to the vDataFrame.
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object to use to run the prediction. You can also
+            specify a customized relation, but you must enclose 
+            it with an alias. For example, "(SELECT 1) x" is 
+            correct, whereas "(SELECT 1)" and "SELECT 1" are 
+            incorrect.
+        X: str / list, optional
+            List of the columns used to deploy the models. If 
+            empty, the model predictors will be used.
+        name: str, optional
+            Name of the added vcolumn. If empty, a name will be 
+            generated.
+        cutoff: float, optional
+            Probability cutoff.
+        inplace: bool, optional
+            If set to True, the prediction will be added to the 
+            vDataFrame.
 
-	Returns
-	-------
-	vDataFrame
-		the input object.
-		"""
+        Returns
+        -------
+        vDataFrame
+            the input object.
+        """
         # Inititalization
         if isinstance(X, str):
             X = [X]
@@ -1171,29 +1200,33 @@ class BinaryClassifier(Classifier):
         inplace: bool = True,
     ):
         """
-    Returns the model's probabilities using the input relation.
+        Returns the model's probabilities using the input relation.
 
-    Parameters
-    ----------
-    vdf: SQLRelation
-        Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example, 
-        "(SELECT 1) x" is correct whereas, "(SELECT 1)" and "SELECT 1" are 
-        incorrect.
-    X: str / list, optional
-        List of the columns used to deploy the models. If empty, the model
-        predictors will be used.
-    name: str, optional
-        Name of the added vcolumn. If empty, a name will be generated.
-    pos_label: int / float / str, optional
-        Class label. For binary classification, this can be either 1 or 0.
-    inplace: bool, optional
-        If set to True, the prediction will be added to the vDataFrame.
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object to use to run the prediction. You can also 
+            specify a customized relation, but you must enclose 
+            it with an alias. For example, "(SELECT 1) x" is 
+            correct whereas, "(SELECT 1)" and "SELECT 1" are 
+            incorrect.
+        X: str / list, optional
+            List of the columns used to deploy the models. If 
+            empty, the model predictors will be used.
+        name: str, optional
+            Name of the added vcolumn. If empty, a name will be 
+            generated.
+        pos_label: int / float / str, optional
+            Class label. For binary classification, this can be 
+            either 1 or 0.
+        inplace: bool, optional
+            If set to True, the prediction will be added to the 
+            vDataFrame.
 
-    Returns
-    -------
-    vDataFrame
-        the input object.
+        Returns
+        -------
+        vDataFrame
+            the input object.
         """
         # Inititalization
         if isinstance(X, str):
@@ -1224,24 +1257,26 @@ class BinaryClassifier(Classifier):
 
         return vdf_return
 
-    def cutoff_curve(self, ax=None, nbins: int = 30, **style_kwds):
+    # Plotting Methods.
+
+    def cutoff_curve(self, ax=None, nbins: int = 30, **style_kwds) -> TableSample:
         """
-    Draws the model Cutoff curve.
+        Draws the model Cutoff curve.
 
-    Parameters
-    ----------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    nbins: int, optional
-        The number of bins.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        nbins: int, optional
+            The number of bins.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
+        Returns
+        -------
+        TableSample
+            cutoff curve data points.
         """
         return ms.roc_curve(
             self.y,
@@ -1253,26 +1288,26 @@ class BinaryClassifier(Classifier):
             **style_kwds,
         )
 
-    def roc_curve(self, ax=None, nbins: int = 30, **style_kwds):
+    def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds) -> TableSample:
         """
-	Draws the model ROC curve.
+    	Draws the model Lift Chart.
 
-    Parameters
-    ----------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    nbins: int, optional
-        The number of bins.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        nbins: int, optional
+            The number of bins.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
 
-	Returns
-	-------
-	TableSample
-		An object containing the result. For more information, see
-		utilities.TableSample.
+    	Returns
+    	-------
+    	TableSample
+    		lift chart data points.
 		"""
-        return ms.roc_curve(
+        return ms.lift_chart(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -1281,75 +1316,61 @@ class BinaryClassifier(Classifier):
             **style_kwds,
         )
 
-    def score(
-        self,
-        method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
-        cutoff: Union[int, float] = 0.5,
-        nbins: int = 10000,
-    ):
+    def prc_curve(self, ax=None, nbins: int = 30, **style_kwds) -> TableSample:
         """
-	Computes the model score.
+    	Draws the model PRC curve.
 
-	Parameters
-	----------
-	method: str, optional
-		The method to use to compute the score.
-			accuracy	: Accuracy
-            aic         : Akaike’s Information Criterion
-			auc		    : Area Under the Curve (ROC)
-			best_cutoff : Cutoff which optimised the ROC Curve prediction.
-            bic         : Bayesian Information Criterion
-			bm		    : Informedness = tpr + tnr - 1
-			csi		    : Critical Success Index = tp / (tp + fn + fp)
-			f1		    : F1 Score 
-			logloss	    : Log Loss
-			mcc		    : Matthews Correlation Coefficient 
-			mk		    : Markedness = ppv + npv - 1
-			npv		    : Negative Predictive Value = tn / (tn + fn)
-			prc_auc	    : Area Under the Curve (PRC)
-			precision   : Precision = tp / (tp + fp)
-			recall	    : Recall = tp / (tp + fn)
-			specificity : Specificity = tn / (tn + fp)
-	cutoff: int / float, optional
-		Cutoff for which the tested category will be accepted as a prediction.
-    nbins: int, optional
-        [Only when method is set to auc|prc_auc|best_cutoff] 
-        An integer value that determines the number of decision boundaries. 
-        Decision boundaries are set at equally spaced intervals between 0 and 1, 
-        inclusive. Greater values for nbins give more precise estimations of the AUC, 
-        but can potentially decrease performance. The maximum value is 999,999. 
-        If negative, the maximum value is used.
+        Parameters
+        ----------
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        nbins: int, optional
+            The number of bins.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
 
-	Returns
-	-------
-	float
-		score
+    	Returns
+    	-------
+    	TableSample
+    		PRC curve data points.
 		"""
-        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
-        if method in (
-            "log_loss",
-            "logloss",
-            "aic",
-            "bic",
-            "prc_auc",
-            "auc",
-            "best_cutoff",
-            "best_threshold",
-        ):
-            args2 = self.deploySQL()
-        else:
-            args2 = self.deploySQL(cutoff)
-        args = [self.y, args2, self.test_relation]
-        kwds = {}
-        if method in ("accuracy", "acc"):
-            kwds["pos_label"] = 1
-        elif method in ("aic", "bic"):
-            args += [len(self.X)]
-        elif method in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
-            kwds["nbins"] = nbins
-            if method in ("best_cutoff", "best_threshold"):
-                kwds["best_threshold"] = True
-        return fun(*args, **kwds)
+        return ms.prc_curve(
+            self.y,
+            self.deploySQL(),
+            self.test_relation,
+            ax=ax,
+            nbins=nbins,
+            **style_kwds,
+        )
+
+    def roc_curve(self, ax=None, nbins: int = 30, **style_kwds) -> TableSample:
+        """
+        Draws the model ROC curve.
+
+        Parameters
+        ----------
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
+        nbins: int, optional
+            The number of bins.
+        **style_kwds
+            Any optional parameter to pass to the
+            Matplotlib functions.
+
+        Returns
+        -------
+        TableSample
+            ROC curve data points.
+        """
+        return ms.roc_curve(
+            self.y,
+            self.deploySQL(),
+            self.test_relation,
+            ax=ax,
+            nbins=nbins,
+            **style_kwds,
+        )
 
 
 class MulticlassClassifier(Classifier):
