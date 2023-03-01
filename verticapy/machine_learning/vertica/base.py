@@ -694,12 +694,6 @@ class Supervised(vModel):
             does_model_exist(name=self.model_name, raise_error=True)
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
-        if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation._genSQL()
-        elif test_relation:
-            self.test_relation = test_relation
-        else:
-            self.test_relation = self.input_relation
         if self._is_native:
             nb_lookup_table = {
                 "bernoulli": "bool",
@@ -753,6 +747,12 @@ class Supervised(vModel):
         else:
             self.input_relation = input_relation
             relation = input_relation
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation._genSQL()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
         if self._is_native:
             parameters = self._get_vertica_param_dict()
             if (
