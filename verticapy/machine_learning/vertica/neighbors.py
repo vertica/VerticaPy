@@ -26,6 +26,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import ArrayLike
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample

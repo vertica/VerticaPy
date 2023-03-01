@@ -855,49 +855,6 @@ p: int, optional
         self.classes_ = self._array_to_int(centroids.to_numpy()[:, -1])
         self.p_ = self.parameters["p"]
 
-    def fit(
-        self,
-        input_relation: Union[str, vDataFrame],
-        X: Union[str, list],
-        y: str,
-        test_relation: Union[str, vDataFrame] = "",
-    ):
-        """
-    Trains the model.
-
-    Parameters
-    ----------
-    input_relation: str/vDataFrame
-        Training relation.
-    X: list
-        List of the predictors.
-    y: str
-        Response column.
-    test_relation: str/vDataFrame, optional
-        Relation used to test the model.
-
-    Returns
-    -------
-    object
-        self
-        """
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation._genSQL()
-        else:
-            self.input_relation = input_relation
-        if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation._genSQL()
-        elif test_relation:
-            self.test_relation = test_relation
-        else:
-            self.test_relation = self.input_relation
-        self.X = [quote_ident(column) for column in X]
-        self.y = quote_ident(y)
-        self._compute_attributes()
-        return self
-
     def to_memmodel(self):
         """
         Converts the model to an InMemory object which

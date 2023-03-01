@@ -473,8 +473,17 @@ nbins: int, optional
         return "RandomForestRegressor"
 
     @property
-    def _attributes(self) -> Literal["n_estimators_", "trees_", "features_importance_"]:
-        return Literal["n_estimators_", "trees_", "features_importance_"]
+    def _attributes(
+        self,
+    ) -> Literal[
+        "n_estimators_", "trees_", "features_importance_", "features_importance_trees_"
+    ]:
+        return Literal[
+            "n_estimators_",
+            "trees_",
+            "features_importance_",
+            "features_importance_trees_",
+        ]
 
     @check_minimum_version
     @save_verticapy_logs
@@ -617,9 +626,21 @@ col_sample_by_node: float, optional
     @property
     def _attributes(
         self,
-    ) -> Literal["n_estimators_", "eta_", "mean_", "trees_", "features_importance_"]:
+    ) -> Literal[
+        "n_estimators_",
+        "eta_",
+        "mean_",
+        "trees_",
+        "features_importance_",
+        "features_importance_trees_",
+    ]:
         return Literal[
-            "n_estimators_", "eta_", "mean_", "trees_", "features_importance_"
+            "n_estimators_",
+            "eta_",
+            "mean_",
+            "trees_",
+            "features_importance_",
+            "features_importance_trees_",
         ]
 
     @check_minimum_version
@@ -781,8 +802,20 @@ nbins: int, optional
     @property
     def _attributes(
         self,
-    ) -> Literal["n_estimators_", "classes_", "trees_", "features_importance_"]:
-        return Literal["n_estimators_", "classes_", "trees_", "features_importance_"]
+    ) -> Literal[
+        "n_estimators_",
+        "classes_",
+        "trees_",
+        "features_importance_",
+        "features_importance_trees_",
+    ]:
+        return Literal[
+            "n_estimators_",
+            "classes_",
+            "trees_",
+            "features_importance_",
+            "features_importance_trees_",
+        ]
 
     @check_minimum_version
     @save_verticapy_logs
@@ -948,6 +981,7 @@ col_sample_by_node: float, optional
         "logodds_",
         "trees_",
         "features_importance_",
+        "features_importance_trees_",
     ]:
         return Literal[
             "n_estimators_",
@@ -956,6 +990,7 @@ col_sample_by_node: float, optional
             "logodds_",
             "trees_",
             "features_importance_",
+            "features_importance_trees_",
         ]
 
     @check_minimum_version
