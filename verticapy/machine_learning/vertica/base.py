@@ -69,7 +69,7 @@ from verticapy.sql.drop import drop
 ##
 
 
-class vModel:
+class VerticaModel:
     """
 Base Class for Vertica Models.
 	"""
@@ -83,8 +83,8 @@ Base Class for Vertica Models.
         return False
 
     @property
-    def _object_type(self) -> Literal["vModel"]:
-        return "vModel"
+    def _object_type(self) -> Literal["VerticaModel"]:
+        return "VerticaModel"
 
     @property
     @abstractmethod
@@ -139,7 +139,7 @@ Base Class for Vertica Models.
             except VersionError:
                 func = f"SUMMARIZE_MODEL('{self.model_name}')"
             return _executeSQL(
-                f"SELECT /*+LABEL('learn.vModel.__repr__')*/ {func}",
+                f"SELECT /*+LABEL('learn.VerticaModel.__repr__')*/ {func}",
                 title="Summarizing the model.",
                 method="fetchfirstelem",
             )
@@ -481,7 +481,7 @@ Base Class for Vertica Models.
             )
         elif self._model_type == "LocalOutlierFactor":
             cnt = _executeSQL(
-                query=f"SELECT /*+LABEL('learn.vModel.plot')*/ COUNT(*) FROM {self.model_name}",
+                query=f"SELECT /*+LABEL('learn.VerticaModel.plot')*/ COUNT(*) FROM {self.model_name}",
                 method="fetchfirstelem",
                 print_time_sql=False,
             )
@@ -596,7 +596,7 @@ Base Class for Vertica Models.
             return model.transform_sql(X)
 
 
-class Supervised(vModel):
+class Supervised(VerticaModel):
     @property
     @abstractmethod
     def _vertica_predict_sql(self) -> str:
@@ -682,7 +682,7 @@ class Supervised(vModel):
                     query=f"""
                         CREATE VIEW {relation} AS 
                             SELECT 
-                                /*+LABEL('learn.vModel.fit')*/ 
+                                /*+LABEL('learn.VerticaModel.fit')*/ 
                                 *{id_column} 
                             FROM {self.input_relation}""",
                     title="Creating a temporary view to fit the model.",
@@ -714,7 +714,7 @@ class Supervised(vModel):
             fun = self._vertica_fit_sql
             query = f"""
                 SELECT 
-                    /*+LABEL('learn.vModel.fit')*/ 
+                    /*+LABEL('learn.VerticaModel.fit')*/ 
                     {self._vertica_fit_sql}
                     ('{self.model_name}', 
                      '{relation}',
@@ -751,7 +751,7 @@ class Tree:
         vertica_version(condition=[9, 1, 1])
         tree_id_str = "" if tree_id is None else f", tree_id={tree_id}"
         query = f"""
-        SELECT /*+LABEL('learn.vModel.features_importance')*/
+        SELECT /*+LABEL('learn.VerticaModel.features_importance')*/
             predictor_name AS predictor, 
             SIGN({self._model_importance_feature})::int * 
             ROUND(100 * ABS({self._model_importance_feature}) / 
@@ -1442,7 +1442,7 @@ class MulticlassClassifier(Classifier):
         classes = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('learn.vModel.fit')*/ 
+                    /*+LABEL('learn.VerticaModel.fit')*/ 
                     DISTINCT {self.y} 
                 FROM {self.input_relation} 
                 WHERE {self.y} IS NOT NULL 
@@ -2249,7 +2249,7 @@ class Regressor(Supervised):
         return fun(*arg)
 
 
-class Unsupervised(vModel):
+class Unsupervised(VerticaModel):
     def fit(self, input_relation: Union[str, vDataFrame], X: Union[str, list] = []):
         """
 	Trains the model.
@@ -2307,7 +2307,7 @@ class Unsupervised(vModel):
                 query=f"""
                     CREATE VIEW {relation} AS 
                         SELECT 
-                            /*+LABEL('learn.vModel.fit')*/ *
+                            /*+LABEL('learn.VerticaModel.fit')*/ *
                             {id_column} 
                         FROM {self.input_relation}""",
                 title="Creating a temporary view to fit the model.",
@@ -2328,7 +2328,7 @@ class Unsupervised(vModel):
         fun = self._vertica_fit_sql if self._model_type != "MCA" else "PCA"
         query = f"""
             SELECT 
-                /*+LABEL('learn.vModel.fit')*/ 
+                /*+LABEL('learn.VerticaModel.fit')*/ 
                 {fun}('{self.model_name}', '{relation}', '{', '.join(self.X)}'"""
         if self._model_type in ("BisectingKMeans", "KMeans", "KPrototypes",):
             query += f", {parameters['n_cluster']}"
@@ -2368,7 +2368,7 @@ class Unsupervised(vModel):
                         line += [str(val) + " AS " + X[j]]
                     line = ",".join(line)
                     if i == 0:
-                        query0 += ["SELECT /*+LABEL('learn.vModel.fit')*/ " + line]
+                        query0 += ["SELECT /*+LABEL('learn.VerticaModel.fit')*/ " + line]
                     else:
                         query0 += ["SELECT " + line]
                 query0 = " UNION ".join(query0)

@@ -36,7 +36,7 @@ from verticapy.plotting._matplotlib.mlplot import (
 
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.vertica.automl import AutoDataPrep
-from verticapy.machine_learning.vertica.base import vModel
+from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.ensemble import (
     RandomForestRegressor,
     RandomForestClassifier,
@@ -64,7 +64,7 @@ from verticapy.machine_learning.vertica.neighbors import (
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 
 
-class AutoML(vModel):
+class AutoML(VerticaModel):
     """
 Tests multiple models to find those that maximize the input score.
 

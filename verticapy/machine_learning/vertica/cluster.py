@@ -32,7 +32,8 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.machine_learning.vertica.base import (
     MulticlassClassifier,
     Tree,
-    vModel,
+    Unsupervised,
+    VerticaModel,
 )
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.model_management.read import does_model_exist
@@ -610,7 +611,7 @@ gamma: float, optional
         )
 
 
-class DBSCAN(vModel):
+class DBSCAN(VerticaModel):
     """
 [Beta Version]
 Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin 

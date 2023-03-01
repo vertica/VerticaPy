@@ -22,12 +22,12 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.vertica.base import vModel
+from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 from verticapy.machine_learning.model_selection import best_k
 
 
-class AutoClustering(vModel):
+class AutoClustering(VerticaModel):
     """
 Automatically creates k different groups with which to generalize the data.
 

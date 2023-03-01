@@ -29,7 +29,7 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
-from verticapy.machine_learning.vertica.base import Preprocessing, vModel
+from verticapy.machine_learning.vertica.base import Preprocessing, VerticaModel
 
 
 @check_minimum_version
@@ -85,7 +85,7 @@ vDataFrame
     return vDataFrame(name)
 
 
-class CountVectorizer(vModel):
+class CountVectorizer(VerticaModel):
     """
 Creates a Text Index which will count the occurences of each word in the 
 data.

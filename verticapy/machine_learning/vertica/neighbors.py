@@ -45,7 +45,7 @@ from verticapy.machine_learning.vertica.base import (
     MulticlassClassifier,
     Regressor,
     Tree,
-    vModel,
+    VerticaModel,
 )
 from verticapy.machine_learning.vertica.tree import DecisionTreeRegressor
 
@@ -1345,7 +1345,7 @@ p: int, optional
             return vDataFrame(sql)
 
 
-class LocalOutlierFactor(vModel):
+class LocalOutlierFactor(VerticaModel):
     """
 [Beta Version]
 Creates a LocalOutlierFactor object by using the Local Outlier Factor algorithm 

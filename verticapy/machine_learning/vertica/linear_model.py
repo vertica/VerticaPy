@@ -59,7 +59,7 @@ class LinearModel:
         """
         vertica_version(condition=[8, 1, 1])
         query = f"""
-        SELECT /*+LABEL('learn.vModel.features_importance')*/
+        SELECT /*+LABEL('learn.VerticaModel.features_importance')*/
             predictor, 
             sign * ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance
         FROM (SELECT 

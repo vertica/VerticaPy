@@ -25,11 +25,11 @@ from verticapy.errors import ParameterError
 
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.vertica.base import vModel
+from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.decomposition import PCA
 
 
-class AutoDataPrep(vModel):
+class AutoDataPrep(VerticaModel):
     """
 Automatically find relations between the different features to preprocess
 the data according to each column type.
