@@ -694,6 +694,7 @@ class Supervised(vModel):
             does_model_exist(name=self.model_name, raise_error=True)
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
+        id_column, id_column_name = "", gen_tmp_name(name="id_column")
         if self._is_native:
             nb_lookup_table = {
                 "bernoulli": "bool",
@@ -712,7 +713,6 @@ class Supervised(vModel):
                 else:
                     input_relation.copy()
                 input_relation.astype(new_types)
-            id_column, id_column_name = "", gen_tmp_name(name="id_column")
             if self._model_type in (
                 "RandomForestClassifier",
                 "RandomForestRegressor",
