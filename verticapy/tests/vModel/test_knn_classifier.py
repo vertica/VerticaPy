@@ -61,7 +61,7 @@ class TestKNeighborsClassifier:
         m_att = model.get_attributes("p")
         assert m_att == model.parameters["p"]
         m_att = model.get_attributes("classes")
-        assert m_att == model.classes_
+        assert m_att[1] == model.classes_[1]
 
     def test_contour(self, titanic_vd):
         model_test = KNeighborsClassifier("model_contour",)

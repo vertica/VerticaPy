@@ -210,7 +210,6 @@ class TestvDFPlot:
             0.12236628849270664
         )
         assert result.get_yticks()[1] == pytest.approx(42.694100000000006)
-        plt.close("all")
 
         # auto + date
         result = amazon_vd["date"].bar(color="b")
@@ -221,7 +220,6 @@ class TestvDFPlot:
             0.06693523396343352
         )
         assert result.get_yticks()[1] == pytest.approx(44705828.571428575)
-        plt.close("all")
 
         # method=sum of=survived and nbins=5
         result2 = titanic_vd["fare"].bar(
@@ -234,7 +232,6 @@ class TestvDFPlot:
             34
         )
         assert result2.get_yticks()[1] == pytest.approx(102.46583999999999)
-        plt.close("all")
 
         # testing vDataFrame.bar
         # auto & stacked
@@ -252,7 +249,6 @@ class TestvDFPlot:
             assert result3.get_default_bbox_extra_artists()[
                 3
             ].get_width() == pytest.approx(77.9583)
-            plt.close("all")
         # fully_stacked
         result4 = titanic_vd.bar(
             columns=["pclass", "survived"], hist_type="fully_stacked", color="b",
@@ -263,7 +259,6 @@ class TestvDFPlot:
         assert result4.get_default_bbox_extra_artists()[3].get_width() == pytest.approx(
             0.6121794871794872
         )
-        plt.close("all")
         # pyramid
         result5 = titanic_vd.bar(
             columns=["pclass", "survived"], hist_type="pyramid", color="b"
