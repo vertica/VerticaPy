@@ -210,7 +210,7 @@ class KNeighborsRegressor(Regressor):
 
     # Prediction / Transformation Methods.
 
-    def predict(
+    def _predict(
         self,
         vdf: SQLRelation,
         X: SQLColumns = [],
@@ -220,29 +220,6 @@ class KNeighborsRegressor(Regressor):
     ) -> vDataFrame:
         """
         Predicts using the input relation.
-
-        Parameters
-        ----------
-        vdf: SQLRelation
-            Object to use to run the prediction. You can 
-            also specify a customized relation, but you 
-            must enclose it with an alias. For example 
-            "(SELECT 1) x" is correct whereas "(SELECT 1)" 
-            and "SELECT 1" are incorrect.
-        X: SQLColumns, optional
-            List of the columns used to deploy the models. 
-            If empty, the model predictors will be used.
-        name: str, optional
-            Name of the added vcolumn. If empty, a name will 
-            be generated.
-        inplace: bool, optional
-            If set to True, the prediction will be added to 
-            the vDataFrame.
-
-        Returns
-        -------
-        vDataFrame
-            the vDataFrame of the prediction.
         """
         if isinstance(X, str):
             X = [X]
@@ -278,31 +255,15 @@ class KNeighborsRegressor(Regressor):
 
     # Plotting Methods.
 
-    def contour(
-        self, nbins: int = 100, ax: Optional[Axes] = None, **style_kwds,
-    ) -> Axes:
+    def _get_plot_args(self, method: Optional[str] = None) -> list:
         """
-        Draws the model's contour plot.
-
-        Parameters
-        ----------
-        nbins: int, optional
-            Number of bins used to discretize the two 
-            predictors.
-        ax: Axes, optional
-            The axes to plot on.
-        **style_kwds
-            Any optional parameter to pass to the 
-            Matplotlib functions.
-
-        Returns
-        -------
-        Axes
-            Matplotlib axes object.
+        Returns the args used by plotting methods.
         """
-        return vDataFrame(self.input_relation).contour(
-            self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
-        )
+        if method == "contour":
+            args = [self.X, self]
+        else:
+            raise NotImplementedError
+        return args
 
 
 """
@@ -391,26 +352,27 @@ class KNeighborsClassifier(MulticlassClassifier):
         test_relation: str = "",
         predict: bool = False,
         key_columns: SQLColumns = [],
-    ):
+    ) -> str:
         """
-    Returns the SQL code needed to deploy the model. 
+        Returns the SQL code needed to deploy the model. 
 
-    Parameters
-    ----------
-    X: SQLColumns
-        List of the predictors.
-    test_relation: str, optional
-        Relation to use to do the predictions.
-    predict: bool, optional
-        If set to True, returns the prediction instead of the probability.
-    key_columns: SQLColumns, optional
-        A list of columns to include in the results, but to exclude from 
-        computation of the prediction.
+        Parameters
+        ----------
+        X: SQLColumns
+            List of the predictors.
+        test_relation: str, optional
+            Relation to use to do the predictions.
+        predict: bool, optional
+            If set to True, returns the prediction instead of 
+            the probability.
+        key_columns: SQLColumns, optional
+            A list of columns to include in the results, but 
+            to exclude from computation of the prediction.
 
-    Returns
-    -------
-    SQLExpression
-        the SQL code needed to deploy the model.
+        Returns
+        -------
+        SQLExpression
+            the SQL code needed to deploy the model.
         """
         if isinstance(X, str):
             X = [X]
@@ -482,33 +444,57 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     # Prediction / Transformation Methods.
 
-    def confusion_matrix(
+    def _get_final_relation(self, pos_label: PythonScalar = None,) -> str:
+        """
+        Returns the final relation used to do the predictions.
+        """
+        return f"""
+            (SELECT 
+                * 
+            FROM {self.deploySQL()} 
+            WHERE predict_neighbors = '{pos_label}') 
+            final_centroids_relation"""
+
+    def _get_y_proba(self, pos_label: PythonScalar = None,) -> str:
+        """
+        Returns the input which represents the model's probabilities.
+        """
+        return "proba_predict"
+
+    def _get_y_score(
+        self, pos_label: PythonScalar = None, cutoff: PythonNumber = 0.5,
+    ) -> str:
+        """
+        Returns the input which represents the model's scoring.
+        """
+        return f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
+
+    def _compute_accuracy(self):
+        """
+        Computes the model accuracy.
+        """
+        return mt.accuracy_score(
+            self.y, "predict_neighbors", self.deploySQL(predict=True)
+        )
+
+    def _confusion_matrix(
         self, pos_label: PythonScalar = None, cutoff: PythonNumber = -1,
     ):
         """
-    Computes the model confusion matrix.
-
-    Parameters
-    ----------
-    pos_label: PythonScalar, optional
-        Label to consider as positive. All the other classes will be merged and
-        considered as negative for multiclass classification.
-    cutoff: PythonNumber, optional
-        Cutoff for which the tested category will be accepted as a prediction. If the 
-        cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
-
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
+        Computes the model confusion matrix.
         """
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
-        if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
+        if pos_label == None:
+            input_relation = f"""
+                (SELECT 
+                    *, 
+                    ROW_NUMBER() OVER(PARTITION BY {", ".join(self.X)}, row_id 
+                                      ORDER BY proba_predict DESC) AS pos 
+                 FROM {self.deploySQL()}) neighbors_table WHERE pos = 1"""
+            return mt.multilabel_confusion_matrix(
+                self.y, "predict_neighbors", input_relation, self.classes_
+            )
+        else:
+            pos_label = self._check_pos_label(pos_label=pos_label)
             input_relation = (
                 self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
             )
@@ -525,20 +511,10 @@ class KNeighborsClassifier(MulticlassClassifier):
                         str(pos_label): result.values[1],
                     },
                 )
-        else:
-            input_relation = f"""
-                (SELECT 
-                    *, 
-                    ROW_NUMBER() OVER(PARTITION BY {", ".join(self.X)}, row_id 
-                                      ORDER BY proba_predict DESC) AS pos 
-                 FROM {self.deploySQL()}) neighbors_table WHERE pos = 1"""
-            return mt.multilabel_confusion_matrix(
-                self.y, "predict_neighbors", input_relation, self.classes_
-            )
 
     # Model Evaluation Methods.
 
-    def predict(
+    def _predict(
         self,
         vdf: SQLRelation,
         X: SQLColumns = [],
@@ -548,30 +524,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         **kwargs,
     ):
         """
-    Predicts using the input relation.
-
-    Parameters
-    ----------
-    vdf: SQLRelation
-        Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example,  
-        "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
-        incorrect.
-    X: SQLColumns, optional
-        List of the columns used to deploy the models. If empty, the model
-        predictors will be used.
-    name: str, optional
-        Name of the added vcolumn. If empty, a name will be generated.
-    cutoff: float, optional
-        Cutoff for which the tested category will be accepted as a prediction.
-        This parameter is only used for binary classification.
-    inplace: bool, optional
-        If set to True, the prediction will be added to the vDataFrame.
-
-    Returns
-    -------
-    vDataFrame
-        the vDataFrame of the prediction
+        Predicts using the input relation.
         """
         if isinstance(X, str):
             X = [X]
@@ -594,11 +547,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         if not (name):
             name = gen_name([self._model_type, self.model_name])
 
-        if (
-            len(self.classes_) == 2
-            and self.classes_[0] in [0, "0"]
-            and self.classes_[1] in [1, "1"]
-        ):
+        if self._is_binary_classifier:
             table = self.deploySQL(
                 X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
             )
@@ -625,7 +574,8 @@ class KNeighborsClassifier(MulticlassClassifier):
                     predict_neighbors AS {name} 
                  FROM {table}"""
         if inplace:
-            return vdf.__init__(sql)
+            vdf.__init__(sql)
+            return vdf
         else:
             return vDataFrame(sql)
 

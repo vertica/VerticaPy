@@ -1158,6 +1158,15 @@ class NearestCentroid(MulticlassClassifier):
         self.p_ = self.parameters["p"]
         return None
 
+    # Prediction / Transformation Methods.
+
+    def _get_y_proba(self, pos_label: PythonScalar = None,) -> str:
+        """
+        Returns the input which represents the model's probabilities.
+        """
+        idx = get_match_index(pos_label, self.classes_, False)
+        return self.deploySQL(allSQL=True)[idx]
+
     # I/O Methods.
 
     def to_memmodel(self) -> mm.NearestCentroid:

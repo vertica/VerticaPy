@@ -480,6 +480,29 @@ class VerticaModel:
 
     # Plotting Methods.
 
+    def _get_plot_args(self, method: Optional[str] = None) -> list:
+        """
+        Returns the args used by plotting methods.
+        """
+        if method == "contour":
+            args = [self.X, self.deploySQL(X=self.X)]
+        else:
+            raise NotImplementedError
+        return args
+
+    def _get_plot_kwargs(
+        self, nbins: int = 30, ax: Optional[Axes] = None, method: Optional[str] = None,
+    ) -> dict:
+        """
+        Returns the kwargs used by plotting methods.
+        """
+        res = {"nbins": nbins, "ax": ax}
+        if method == "contour":
+            res["cbar_title"] = self.y
+        else:
+            raise NotImplementedError
+        return res
+
     def contour(
         self, nbins: int = 100, ax: Optional[Axes] = None, **style_kwds,
     ) -> Axes:
@@ -502,12 +525,7 @@ class VerticaModel:
             Matplotlib axes object
         """
         return vDataFrame(self.input_relation).contour(
-            self.X,
-            self.deploySQL(X=self.X),
-            cbar_title=self.y,
-            nbins=nbins,
-            ax=ax,
-            **style_kwds,
+            *self._get_plot_args(), **self._get_plot_kwargs(), **style_kwds,
         )
 
 
@@ -1419,6 +1437,20 @@ class BinaryClassifier(Classifier):
 
 class MulticlassClassifier(Classifier):
 
+    # System & Special Methods.
+
+    def _check_pos_label(self, pos_label: PythonScalar) -> PythonScalar:
+        """
+        Checks if the pos_label is correct.
+        """
+        if pos_label == None and self._is_binary_classifier:
+            return 1
+        elif pos_label not in self.classes_:
+            raise ParameterError(
+                "Parameter 'pos_label' must be one of the response column classes."
+            )
+        return pos_label
+
     # Attributes Methods.
 
     def _get_classes(self) -> np.ndarray:
@@ -1539,6 +1571,32 @@ class MulticlassClassifier(Classifier):
 
     # Model Evaluation Methods.
 
+    def _get_final_relation(self, pos_label: PythonScalar = None,) -> str:
+        """
+        Returns the final relation used to do the predictions.
+        """
+        return self.test_relation
+
+    def _get_y_proba(self, pos_label: PythonScalar = None,) -> str:
+        """
+        Returns the input which represents the model's probabilities.
+        """
+        return self.deploySQL(allSQL=True)[0].format(pos_label)
+
+    def _get_y_score(
+        self, pos_label: PythonScalar = None, cutoff: PythonNumber = 0.5,
+    ) -> str:
+        """
+        Returns the input which represents the model's scoring.
+        """
+        return self.deploySQL(pos_label, cutoff)
+
+    def _compute_accuracy(self):
+        """
+        Computes the model accuracy.
+        """
+        return mt.accuracy_score(self.y, self.deploySQL(), self.test_relation)
+
     def classification_report(
         self,
         cutoff: Union[PythonNumber, list] = [],
@@ -1610,18 +1668,19 @@ class MulticlassClassifier(Classifier):
         TableSample
             confusion matrix.
         """
-        if pos_label == None and len(self.classes_) == 2:
-            pos_label = self.classes_[1]
-        elif pos_label:
+        if hasattr(self, "_confusion_matrix"):
+            return self._confusion_matrix(pos_label=pos_label, cutoff=cutoff,)
+        elif pos_label == None:
+            return mt.multilabel_confusion_matrix(
+                self.y, self.deploySQL(), self.test_relation, self.classes_
+            )
+        else:
+            pos_label = self._check_pos_label(pos_label=pos_label)
             return mt.confusion_matrix(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
                 pos_label=pos_label,
-            )
-        else:
-            return mt.multilabel_confusion_matrix(
-                self.y, self.deploySQL(), self.test_relation, self.classes_
             )
 
     def score(
@@ -1678,31 +1737,17 @@ class MulticlassClassifier(Classifier):
         float
             score.
         """
+        if (
+            method in ("accuracy", "acc")
+            and pos_label == None
+            and not (self._is_binary_classifier)
+        ):
+            return self._compute_accuracy()
         fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
-        if method in ("accuracy", "acc") and pos_label == None:
-            if self._model_type == "KNeighborsClassifier":
-                args = [self.y, "predict_neighbors", self.deploySQL(predict=True)]
-            else:
-                args = [self.y, self.deploySQL(), self.test_relation]
-            return fun(*args)
         pos_label = self._check_pos_label(pos_label=pos_label)
-        if self._model_type == "KNeighborsClassifier":
-            y_proba = "proba_predict"
-            y_score = f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
-            final_relation = f"""
-                (SELECT 
-                    * 
-                 FROM {self.deploySQL()} 
-                 WHERE predict_neighbors = '{pos_label}') 
-                 final_centroids_relation"""
-        else:
-            if self._model_type == "NearestCentroid":
-                idx = get_match_index(pos_label, self.classes_, False)
-                y_proba = self.deploySQL(allSQL=True)[idx]
-            else:
-                y_proba = self.deploySQL(allSQL=True)[0].format(pos_label)
-            y_score = self.deploySQL(pos_label, cutoff)
-            final_relation = self.test_relation
+        y_proba = self._get_y_proba(pos_label=pos_label)
+        y_score = self._get_y_score(pos_label=pos_label, cutoff=cutoff)
+        final_relation = self._get_final_relation(pos_label=pos_label)
         args = [self.y, y_score, final_relation]
         kwds = {}
         if method in ("accuracy", "acc"):
@@ -1718,7 +1763,7 @@ class MulticlassClassifier(Classifier):
             "logloss",
         ):
             args = [
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",  # y_true
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",
                 y_proba,
                 final_relation,
             ]
@@ -1768,6 +1813,12 @@ class MulticlassClassifier(Classifier):
         vDataFrame
             the input object.
         """
+        # Using special method in case of non-native models
+        if hasattr(self, "_predict"):
+            return self._predict(
+                vdf=vdf, X=X, name=name, cutoff=cutoff, inplace=inplace
+            )
+
         # Inititalization
         if not (X):
             X = self.X
@@ -1873,18 +1924,6 @@ class MulticlassClassifier(Classifier):
         return vdf_return
 
     # Plotting Methods.
-
-    def _check_pos_label(self, pos_label: PythonScalar) -> PythonScalar:
-        """
-        Checks if the pos_label is correct.
-        """
-        if pos_label == None and self._is_binary_classifier:
-            return 1
-        elif pos_label not in self.classes_:
-            raise ParameterError(
-                "Parameter 'pos_label' must be one of the response column classes."
-            )
-        return pos_label
 
     def _get_sql_plot(self, pos_label: PythonScalar) -> str:
         """
@@ -2302,6 +2341,8 @@ class Regressor(Supervised):
     	vDataFrame
     		the input object.
 		"""
+        if hasattr(self, "_predict"):
+            return self._predict(vdf=vdf, X=X, name=name, inplace=inplace)
         if not (X):
             X = self.X
         if isinstance(X, str):
