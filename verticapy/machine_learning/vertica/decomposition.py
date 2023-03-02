@@ -247,7 +247,7 @@ class Decomposition(Preprocessing):
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
         columns = self.deploySQL(
-            n_components, cutoff, exclude_columns, exclude_columns, all_columns
+            all_columns, n_components, cutoff, exclude_columns, exclude_columns,
         )
         main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
