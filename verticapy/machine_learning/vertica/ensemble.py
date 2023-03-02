@@ -121,7 +121,7 @@ class XGBoost(Tree):
         """
         Dummy trees are used to store the prior probabilities.
         The Python XGBoost API do not use those information 
-        and start the training with priors = 0
+        and start the training with priors = 0.
         """
         return {
             "base_weights": [0.0],

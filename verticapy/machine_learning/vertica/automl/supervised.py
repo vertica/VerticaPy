@@ -28,12 +28,6 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting._matplotlib.mlplot import (
-    plot_bubble_ml,
-    plot_importance,
-    plot_stepwise_ml,
-)
-
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.vertica.automl import AutoDataPrep
 from verticapy.machine_learning.vertica.base import VerticaModel
@@ -62,6 +56,8 @@ from verticapy.machine_learning.vertica.neighbors import (
     KNeighborsRegressor,
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
+
+import verticapy.plotting._matplotlib as vpy_plt
 
 
 class AutoML(VerticaModel):
@@ -577,7 +573,7 @@ model_grid_ : TableSample
                     coeff_importances[self.stepwise_["variable"][idx]] = self.stepwise_[
                         "importance"
                     ][idx]
-            return plot_importance(
+            return vpy_plt.plot_importance(
                 coeff_importances, print_legend=False, ax=ax, **style_kwds
             )
         return self.best_model_.features_importance(**kwds)
@@ -619,7 +615,7 @@ model_grid_ : TableSample
             Matplotlib axes object
         """
         if mltype == "champion":
-            return plot_bubble_ml(
+            return vpy_plt.plot_bubble_ml(
                 self.model_grid_["avg_time"],
                 self.model_grid_["avg_score"],
                 self.model_grid_["score_std"],
@@ -632,7 +628,7 @@ model_grid_ : TableSample
                 **style_kwds,
             )
         else:
-            return plot_stepwise_ml(
+            return vpy_plt.plot_stepwise_ml(
                 [len(elem) for elem in self.stepwise_["features"]],
                 self.stepwise_[self.parameters["stepwise_criterion"]],
                 self.stepwise_["variable"],

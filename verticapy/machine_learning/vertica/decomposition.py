@@ -31,7 +31,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.preprocessing import Preprocessing
 
-from verticapy.plotting._matplotlib.mlplot import plot_pca_circle, plot_var
+import verticapy.plotting._matplotlib as vpy_plt
 
 """
 General Classes.
@@ -333,7 +333,7 @@ class Decomposition(Preprocessing):
         explained_variance = self.get_vertica_attributes("singular_values")[
             "explained_variance"
         ]
-        return plot_pca_circle(
+        return vpy_plt.plot_pca_circle(
             x,
             y,
             self.X,
@@ -732,7 +732,7 @@ class MCA(PCA):
         explained_variance = self.get_vertica_attributes("singular_values")[
             "explained_variance"
         ]
-        return plot_var(
+        return vpy_plt.plot_var(
             x,
             y,
             self.X,

@@ -32,12 +32,10 @@ from verticapy.errors import VersionError
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.plotting._matplotlib.mlplot import logit_plot, regression_plot
-
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 
-from verticapy.plotting._matplotlib.mlplot import plot_importance
+import verticapy.plotting._matplotlib as vpy_plt
 
 """
 General Classes.
@@ -126,7 +124,7 @@ class LinearModel:
         """
         fi = self._get_features_importance()
         if show:
-            plot_importance(
+            vpy_plt.plot_importance(
                 self.X, fi, print_legend=True, ax=ax, **style_kwds,
             )
         importances = {
@@ -168,7 +166,7 @@ class LinearModel:
         Axes
             Matplotlib axes object.
         """
-        return regression_plot(
+        return vpy_plt.regression_plot(
             self.X,
             self.y,
             self.input_relation,
@@ -230,7 +228,7 @@ class LinearModelClassifier(LinearModel):
         Axes
             Matplotlib axes object.
         """
-        return logit_plot(
+        return vpy_plt.logit_plot(
             self.X,
             self.y,
             self.input_relation,

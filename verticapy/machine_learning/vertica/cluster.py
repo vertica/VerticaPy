@@ -116,53 +116,35 @@ class Clustering(Unsupervised):
 
     # Plotting Methods.
 
-    def contour(
-        self, nbins: int = 100, ax: Optional[Axes] = None, **style_kwds,
-    ) -> Axes:
+    def _get_plot_args(self, method: Optional[str] = None) -> list:
         """
-        Draws the model's contour plot.
-
-        Parameters
-        ----------
-        nbins: int, optional
-            Number of bins used to discretize the two 
-            predictors.
-        ax: Axes, optional
-            The axes to plot on.
-        **style_kwds
-            Any optional parameter to pass to the 
-            Matplotlib functions.
-
-        Returns
-        -------
-        Axes
-            Matplotlib axes object.
+        Returns the args used by plotting methods.
         """
-        cbar_title = "cluster"
-        if self._model_subcategory == "ANOMALY_DETECTION":
-            cbar_title = "anomaly_score"
-        return vDataFrame(self.input_relation).contour(
-            self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds,
-        )
+        if method == "contour":
+            args = [self.X, self]
+        else:
+            raise NotImplementedError
+        return args
 
-    def plot(self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds):
+    def _get_plot_kwargs(
+        self, nbins: int = 30, ax: Optional[Axes] = None, method: Optional[str] = None,
+    ) -> dict:
+        """
+        Returns the kwargs used by plotting methods.
+        """
+        res = {"nbins": nbins, "ax": ax}
+        if method == "contour":
+            if self._model_subcategory == "ANOMALY_DETECTION":
+                res["cbar_title"] = "anomaly_score"
+            else:
+                res["cbar_title"] = "cluster"
+        else:
+            raise NotImplementedError
+        return res
+
+    def _plot(self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds):
         """
         Draws the model.
-
-        Parameters
-        ----------
-        max_nb_points: int
-            Maximum number of points to display.
-        ax: Axes, optional
-            The axes to plot on.
-        **style_kwds
-            Any optional parameter to pass to the 
-            Matplotlib functions.
-
-        Returns
-        -------
-        Axes
-            Matplotlib axes object.
         """
         vdf = vDataFrame(self.input_relation)
         kwds = {
@@ -347,25 +329,25 @@ class KMeans(Clustering):
         **style_kwds,
     ) -> Figure:
         """
-    Draws the Voronoi Graph of the model.
+        Draws the Voronoi Graph of the model.
 
-    Parameters
-    ----------
-    max_nb_points: int, optional
-        Maximum number of points to display.
-    plot_crosses: bool, optional
-        If set to True, the centers are represented 
-        by white crosses.
-    ax: Axes, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the 
-        Matplotlib functions.
+        Parameters
+        ----------
+        max_nb_points: int, optional
+            Maximum number of points to display.
+        plot_crosses: bool, optional
+            If set to True, the centers are represented 
+            by white crosses.
+        ax: Axes, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
 
-    Returns
-    -------
-    Figure
-        Matplotlib Figure.
+        Returns
+        -------
+        Figure
+            Matplotlib Figure.
         """
         if len(self.X) == 2:
             from verticapy.plotting._matplotlib import voronoi_plot
@@ -735,21 +717,9 @@ class BisectingKMeans(KMeans, Tree):
             leaf_style=leaf_style,
         )
 
-    def plot_tree(self, pic_path: str = "", *argv, **kwds,) -> "Source":
+    def _plot_tree(self, pic_path: str = "", *argv, **kwds,) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
-
-        Parameters
-        ----------
-        pic_path: str, optional
-            Absolute path to save the image of the tree.
-        *argv, **kwds: Any, optional
-            Arguments to pass to the 'to_graphviz' method.
-
-        Returns
-        -------
-        graphviz.Source
-            graphviz object.
         """
         return self.to_memmodel().plot_tree(pic_path=pic_path, *argv, **kwds,)
 

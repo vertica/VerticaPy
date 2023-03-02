@@ -49,15 +49,11 @@ from verticapy.errors import (
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting._matplotlib.mlplot import (
-    plot_importance,
-    regression_tree_plot,
-    plot_pca_circle,
-)
-
 import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.model_management.read import does_model_exist
 import verticapy.machine_learning.model_selection as ms
+
+import verticapy.plotting._matplotlib as vpy_plt
 
 from verticapy.sql.drop import drop
 
@@ -836,7 +832,7 @@ class Tree:
         """
         fi = self._get_features_importance(tree_id=tree_id)
         if show:
-            plot_importance(
+            vpy_plt.plot_importance(
                 self.X, fi, print_legend=False, ax=ax, **style_kwds,
             )
         importances = {
@@ -893,7 +889,7 @@ class Tree:
             Matplotlib axes object.
         """
         if self._model_subcategory == "REGRESSOR":
-            return regression_tree_plot(
+            return vpy_plt.regression_tree_plot(
                 self.X + [self.deploySQL()],
                 self.y,
                 self.input_relation,
@@ -1010,6 +1006,8 @@ class Tree:
         graphviz.Source
             graphviz object.
         """
+        if hasattr(self, "_plot_tree"):
+            return self._plot_tree(tree_id=tree_id, pic_path=pic_path, *argv, **kwds,)
         return self.trees_[tree_id].plot_tree(
             pic_path=pic_path, feature_names=self.X, *argv, **kwds,
         )

@@ -39,8 +39,9 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
+import verticapy.plotting._matplotlib as vpy_plt
+
 from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy.plotting._matplotlib.mlplot import lof_plot
 
 import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.model_selection.model_validation import (
@@ -1387,6 +1388,6 @@ class LocalOutlierFactor(VerticaModel):
             Matplotlib axes object.
         """
         sample = 100 * min(float(max_nb_points / self.cnt_), 1)
-        return lof_plot(
+        return vpy_plt.lof_plot(
             self.model_name, self.X, "lof_score", sample, ax=ax, **style_kwds
         )

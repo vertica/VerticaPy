@@ -22,13 +22,13 @@ from matplotlib.axes import Axes
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
-from verticapy.plotting._matplotlib.mlplot import svm_classifier_plot
-
 from verticapy.machine_learning.vertica.base import BinaryClassifier, Regressor
 from verticapy.machine_learning.vertica.linear_model import (
     LinearModel,
     LinearModelClassifier,
 )
+
+import verticapy.plotting._matplotlib as vpy_plt
 
 """
 Algorithms used for regression.
@@ -253,7 +253,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         Axes
             Matplotlib axes object.
         """
-        return svm_classifier_plot(
+        return vpy_plt.svm_classifier_plot(
             self.X,
             self.y,
             self.input_relation,
