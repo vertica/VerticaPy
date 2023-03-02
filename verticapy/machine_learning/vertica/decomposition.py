@@ -18,7 +18,7 @@ from typing import Literal
 import numpy as np
 
 from verticapy._config.colors import get_cmap, get_colors
-from verticapy._typing import PythonNumber, SQLColumns
+from verticapy._typing import PythonNumber, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 

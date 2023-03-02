@@ -15,8 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
-from typing import Any, Callable, Literal, Optional, Union, get_type_hints
 from abc import abstractmethod
+from typing import Any, Callable, Literal, Optional, Union, get_type_hints
 from collections.abc import Iterable
 import numpy as np
 
@@ -2286,7 +2286,7 @@ class Unsupervised(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> Unsupervised:
+    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> VerticaModel:
         """
     	Trains the model.
 
