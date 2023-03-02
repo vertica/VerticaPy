@@ -18,7 +18,7 @@ import math
 from collections.abc import Iterable
 from typing import Union
 
-from verticapy._typing import PythonScalar, SQLRelation
+from verticapy._typing import PythonNumber, PythonScalar, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
