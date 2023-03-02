@@ -523,7 +523,7 @@ class Supervised(VerticaModel):
         X: SQLColumns,
         y: str,
         test_relation: SQLRelation = "",
-    ) -> str:
+    ) -> Optional[str]:
         """
     	Trains the model.
 
@@ -537,6 +537,11 @@ class Supervised(VerticaModel):
     		Response column.
     	test_relation: SQLRelation, optional
     		Relation used to test the model.
+
+        Returns
+        -------
+        str
+            model's summary.
 		"""
         if isinstance(X, str):
             X = [X]
@@ -649,7 +654,10 @@ class Supervised(VerticaModel):
                 if tmp_view:
                     drop(relation, method="view")
         self._compute_attributes()
-        return self.summarize()
+        if self._is_native:
+            return self.summarize()
+        else:
+            return None
 
 
 class Tree:
@@ -2288,7 +2296,7 @@ class Unsupervised(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> str:
+    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> Optional[str]:
         """
     	Trains the model.
 
@@ -2302,8 +2310,8 @@ class Unsupervised(VerticaModel):
 
     	Returns
     	-------
-    	object
-    		model.
+    	str
+    		model's summary.
 		"""
         if isinstance(X, str):
             X = [X]
@@ -2450,4 +2458,7 @@ class Unsupervised(VerticaModel):
             ):
                 drop(name_init, method="table")
         self._compute_attributes()
-        return self.summarize()
+        if self._is_native:
+            return self.summarize()
+        else:
+            return None
