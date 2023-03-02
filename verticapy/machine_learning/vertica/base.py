@@ -1679,6 +1679,12 @@ class MulticlassClassifier(Classifier):
             score.
         """
         fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
+        if method in ("accuracy", "acc") and pos_label == None:
+            if self._model_type == "KNeighborsClassifier":
+                args = [self.y, "predict_neighbors", self.deploySQL(predict=True)]
+            else:
+                args = [self.y, self.deploySQL(), self.test_relation]
+            return fun(*args)
         pos_label = self._check_pos_label(pos_label=pos_label)
         if self._model_type == "KNeighborsClassifier":
             y_proba = "proba_predict"
