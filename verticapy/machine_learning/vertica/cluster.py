@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import os, vertica_python
 from abc import abstractmethod
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
 
 from matplotlib.axes import Axes
