@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import warnings, itertools
 from collections.abc import Iterable
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
