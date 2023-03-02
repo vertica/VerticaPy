@@ -210,7 +210,7 @@ class Pipeline:
                 step[1].fit(current_vdf, X_new)
             if idx < len(self.steps) - 1:
                 current_vdf = step[1].transform(current_vdf, X_new)
-                X_new = step[1].get_names(X=X)
+                X_new = step[1]._get_names(X=X)
         self.input_relation = self.steps[0][1].input_relation
         self.X = [column for column in self.steps[0][1].X]
         try:
@@ -311,7 +311,7 @@ class Pipeline:
                     current_vdf = step[1].predict(current_vdf, X_new, name=name)
             else:
                 current_vdf = step[1].transform(current_vdf, X_new)
-                X_new = step[1].get_names(X=X)
+                X_new = step[1]._get_names(X=X)
                 X_all += X_new
         return current_vdf[vdf.get_columns() + [name]]
 
@@ -351,7 +351,7 @@ class Pipeline:
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
             current_vdf = step[1].transform(current_vdf, X_new)
-            X_new = step[1].get_names(X=X)
+            X_new = step[1]._get_names(X=X)
             X_all += X_new
         return current_vdf
 
@@ -393,6 +393,6 @@ class Pipeline:
         for idx in range(1, len(self.steps) + 1):
             step = self.steps[-idx]
             current_vdf = step[1].inverse_transform(current_vdf, X_new)
-            X_new = step[1].get_names(inverse=True, X=X)
+            X_new = step[1]._get_names(inverse=True, X=X)
             X_all += X_new
         return current_vdf

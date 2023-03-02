@@ -1964,7 +1964,7 @@ class MulticlassClassifier(Classifier):
         pos_label = self._check_pos_label(pos_label=pos_label)
         return vDataFrame(self.input_relation).contour(
             *self._get_plot_args(pos_label=pos_label, method="contour"),
-            **self._get_plot_kwds(nbins=nbins, ax=ax, method="contour"),
+            **self._get_plot_kwargs(nbins=nbins, ax=ax, method="contour"),
             **style_kwds,
         )
 
@@ -2000,7 +2000,7 @@ class MulticlassClassifier(Classifier):
         """
         return ms.roc_curve(
             *self._get_plot_args(pos_label=pos_label, method="cutoff"),
-            **self._get_plot_kwds(nbins=nbins, ax=ax, method="cutoff"),
+            **self._get_plot_kwargs(nbins=nbins, ax=ax, method="cutoff"),
             **style_kwds,
         )
 
@@ -2038,7 +2038,7 @@ class MulticlassClassifier(Classifier):
 		"""
         return ms.lift_chart(
             *self._get_plot_args(pos_label=pos_label),
-            **self._get_plot_kwds(nbins=nbins, ax=ax),
+            **self._get_plot_kwargs(nbins=nbins, ax=ax),
             **style_kwds,
         )
 
@@ -2077,7 +2077,7 @@ class MulticlassClassifier(Classifier):
 		"""
         return ms.prc_curve(
             *self._get_plot_args(pos_label=pos_label),
-            **self._get_plot_kwds(nbins=nbins, ax=ax),
+            **self._get_plot_kwargs(nbins=nbins, ax=ax),
             **style_kwds,
         )
 
@@ -2116,7 +2116,7 @@ class MulticlassClassifier(Classifier):
 		"""
         return ms.roc_curve(
             *self._get_plot_args(pos_label=pos_label),
-            **self._get_plot_kwds(nbins=nbins, ax=ax),
+            **self._get_plot_kwargs(nbins=nbins, ax=ax),
             **style_kwds,
         )
 
