@@ -330,19 +330,21 @@ class KNeighborsClassifier(MulticlassClassifier):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
+    def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+        return None
 
     # Attributes Methods.
 
-    def _compute_attributes(self):
+    def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
         """
         self.classes_ = self._get_classes()
         self.p_ = self.parameters["p"]
         self.n_neighbors_ = self.parameters["n_neighbors"]
+        return None
 
     # I/O Methods.
 
@@ -469,7 +471,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         return f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
 
-    def _compute_accuracy(self):
+    def _compute_accuracy(self) -> float:
         """
         Computes the model accuracy.
         """
@@ -479,7 +481,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     def _confusion_matrix(
         self, pos_label: PythonScalar = None, cutoff: PythonNumber = -1,
-    ):
+    ) -> TableSample:
         """
         Computes the model confusion matrix.
         """
@@ -522,7 +524,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         cutoff: PythonNumber = 0.5,
         inplace: bool = True,
         **kwargs,
-    ):
+    ) -> vDataFrame:
         """
         Predicts using the input relation.
         """
@@ -587,7 +589,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         pos_label: PythonScalar = None,
         inplace: bool = True,
         **kwargs,
-    ):
+    ) -> vDataFrame:
         """
         Returns the model's probabilities using the 
         input relation.
@@ -775,7 +777,7 @@ class KernelDensity(Regressor, Tree):
         nbins: int = 5,
         xlim: list = [],
         **kwargs,
-    ):
+    ) -> None:
         self.model_name = name
         self.parameters = {
             "nbins": nbins,
@@ -788,13 +790,19 @@ class KernelDensity(Regressor, Tree):
             "xlim": xlim,
         }
         if "store" not in kwargs or kwargs["store"]:
-            self.verticapy_store = True
+            self._verticapy_store = True
         else:
-            self.verticapy_store = False
+            self._verticapy_store = False
+        return None
 
-    def density_kde(
+    # System & Special Methods.
+
+    def _density_kde(
         self, vdf: vDataFrame, columns: list, kernel: str, x, p: int, h=None
     ):
+        """
+        Returns the result of the KDE.
+        """
         for col in columns:
             if not (vdf[col].isnum()):
                 raise TypeError(
@@ -819,7 +827,7 @@ class KernelDensity(Regressor, Tree):
                 "The parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman]."
             )
         if isinstance(x, (tuple)):
-            return self.density_kde(vdf, columns, kernel, [x], p, h)[0]
+            return self._density_kde(vdf, columns, kernel, [x], p, h)[0]
         elif isinstance(x, (list)):
             N = vdf.shape()[0]
             L = []
@@ -843,7 +851,7 @@ class KernelDensity(Regressor, Tree):
         else:
             return 0
 
-    def density_compute(
+    def _density_compute(
         self,
         vdf: vDataFrame,
         columns: list,
@@ -852,6 +860,9 @@ class KernelDensity(Regressor, Tree):
         nbins: int = 5,
         p: int = 2,
     ):
+        """
+        Returns the result of the KDE for all the data points.
+        """
         columns = vdf._format_colnames(columns)
         x_vars = []
         y = []
@@ -878,28 +889,25 @@ class KernelDensity(Regressor, Tree):
             ]
         x = list(itertools.product(*x_vars))
         try:
-            y = self.density_kde(vdf, columns, kernel, x, p, h)
+            y = self._density_kde(vdf, columns, kernel, x, p, h)
         except:
             for xi in x:
-                K = self.density_kde(vdf, columns, kernel, xi, p, h)
+                K = self._density_kde(vdf, columns, kernel, xi, p, h)
                 y += [K]
         return [x, y]
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []):
+    # Model Fitting Method.
+
+    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> None:
         """
-    Trains the model.
+        Trains the model.
 
-    Parameters
-    ----------
-    input_relation: str/vDataFrame
-        Training relation.
-    X: list, optional
-        List of the predictors.
-
-    Returns
-    -------
-    object
-        self
+        Parameters
+        ----------
+        input_relation: str/vDataFrame
+            Training relation.
+        X: list, optional
+            List of the predictors.
         """
         if isinstance(X, str):
             X = [X]
@@ -920,7 +928,7 @@ class KernelDensity(Regressor, Tree):
             if not (X):
                 X = vdf.numcol()
         X = vdf._format_colnames(X)
-        x, y = self.density_compute(
+        x, y = self._density_compute(
             vdf,
             X,
             self.parameters["bandwidth"],
@@ -929,7 +937,7 @@ class KernelDensity(Regressor, Tree):
             self.parameters["p"],
         )
         table_name = self.model_name.replace('"', "") + "_KernelDensity_Map"
-        if self.verticapy_store:
+        if self._verticapy_store:
             _executeSQL(
                 query=f"""CREATE TABLE {table_name} AS    
                             SELECT 
@@ -971,26 +979,29 @@ class KernelDensity(Regressor, Tree):
             self.X, self.input_relation = X, input_relation
             self.verticapy_x = x
             self.verticapy_y = y
-        return self
+        return None
 
-    def plot(self, ax=None, **style_kwds):
+    # Plotting Methods.
+
+    def plot(self, ax: Optional[Axes] = None, **style_kwds) -> Axes:
         """
-    Draws the Model.
+        Draws the Model.
 
-    Parameters
-    ----------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        ax: Axes, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
 
-    Returns
-    -------
-    ax
-        Matplotlib axes object
+        Returns
+        -------
+        Axes
+            Matplotlib axes object.
         """
         if len(self.X) == 1:
-            if self.verticapy_store:
+            if self._verticapy_store:
                 query = f"""
                     SELECT 
                         /*+LABEL('learn.neighbors.KernelDensity.plot')*/ 
@@ -1019,7 +1030,7 @@ class KernelDensity(Regressor, Tree):
             return ax
         elif len(self.X) == 2:
             n = self.parameters["nbins"]
-            if self.verticapy_store:
+            if self._verticapy_store:
                 query = f"""
                     SELECT 
                         /*+LABEL('learn.neighbors.KernelDensity.plot')*/ 
@@ -1063,7 +1074,7 @@ class KernelDensity(Regressor, Tree):
             ax.set_xlabel(self.X[0])
             return ax
         else:
-            raise Exception("KDE Plots are only available in 1D or 2D.")
+            raise AttributeError("KDE Plots are only available in 1D or 2D.")
 
 
 """
@@ -1073,28 +1084,38 @@ Algorithms used for anomaly detection.
 
 class LocalOutlierFactor(VerticaModel):
     """
-[Beta Version]
-Creates a LocalOutlierFactor object by using the Local Outlier Factor algorithm 
-as defined by Markus M. Breunig, Hans-Peter Kriegel, Raymond T. Ng and Jörg 
-Sander. This object is using pure SQL to compute all the distances and final 
-score.
+    [Beta Version]
+    Creates a LocalOutlierFactor object by using the 
+    Local Outlier Factor algorithm as defined by Markus 
+    M. Breunig, Hans-Peter Kriegel, Raymond T. Ng and Jörg 
+    Sander. This object is using pure SQL to compute all 
+    the distances and final score.
 
-\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
-                 is therefore computationally expensive at O(n * n), where
-                 n is the total number of elementss. Since LocalOutlierFactor 
-                 is uses the p-distance, it is highly sensitive to unnormalized 
-                 data. A table will be created at the end of the learning phase.
+    \u26A0 Warning : This algorithm uses a CROSS JOIN 
+                     during computation and is therefore 
+                     computationally expensive at O(n * n), 
+                     where n is the total number of elements. 
+                     Since LocalOutlierFactor is uses the 
+                     p-distance, it is highly sensitive to 
+                     unnormalized data. A table will be 
+                     created at the end of the learning 
+                     phase.
 
-Parameters
-----------
-name: str
-	Name of the the model. This is not a built-in model, so this name will be used
-	to build the final table.
-n_neighbors: int, optional
-	Number of neighbors to consider when computing the score.
-p: int, optional
-	The p of the p-distances (distance metric used during the model computation).
+    Parameters
+    ----------
+    name: str
+    	Name of the the model. This is not a built-in 
+        model, so this name will be used to build the 
+        final table.
+    n_neighbors: int, optional
+    	Number of neighbors to consider when computing 
+        the score.
+    p: int, optional
+    	The p of the p-distances (distance metric used 
+        during the model computation).
 	"""
+
+    # Properties.
 
     @property
     def _is_native(self) -> Literal[False]:
@@ -1124,12 +1145,19 @@ p: int, optional
     def _attributes(self) -> list[str]:
         return ["n_neighbors_", "p_", "n_errors_", "cnt_"]
 
+    # System & Special Methods.
+
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
+    # Attributes Methods.
+
     def _compute_attributes(self):
+        """
+        Computes the model's attributes.
+        """
         self.p_ = self.parameters["p"]
         self.n_neighbors_ = self.parameters["n_neighbors"]
         self.cnt_ = _executeSQL(
@@ -1138,33 +1166,33 @@ p: int, optional
             print_time_sql=False,
         )
 
+    # Model Fitting Method.
+
     def fit(
         self,
         input_relation: SQLRelation,
         X: SQLColumns = [],
         key_columns: SQLColumns = [],
         index: str = "",
-    ):
+    ) -> None:
         """
-	Trains the model.
+    	Trains the model.
 
-	Parameters
-	----------
-	input_relation: SQLRelation
-		Training relation.
-	X: SQLColumns, optional
-		List of the predictors.
-	key_columns: list, optional
-		Columns not used during the algorithm computation but which will be used
-		to create the final relation.
-	index: str, optional
-		Index used to identify each row separately. It is highly recommanded to
-        have one already in the main table to avoid creating temporary tables.
-
-	Returns
-	-------
-	object
- 		self
+    	Parameters
+    	----------
+    	input_relation: SQLRelation
+    		Training relation.
+    	X: SQLColumns, optional
+    		List of the predictors.
+    	key_columns: list, optional
+    		Columns not used during the algorithm 
+            computation but which will be used to 
+            create the final relation.
+    	index: str, optional
+    		Index used to identify each row separately. 
+            It is highly recommanded to have one already 
+            in the main table to avoid creating temporary 
+            tables.
 		"""
         if isinstance(X, str):
             X = [X]
@@ -1320,9 +1348,26 @@ p: int, optional
             drop(f"v_temp_schema.{tmp_distance_table_name}", method="table")
             drop(f"v_temp_schema.{tmp_lrd_table_name}", method="table")
             drop(f"v_temp_schema.{tmp_lof_table_name}", method="table")
-        return self
+        return None
 
-    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+    # Prediction / Transformation Methods.
+
+    def predict(self) -> vDataFrame:
+        """
+        Creates a vDataFrame of the model.
+
+        Returns
+        -------
+        vDataFrame
+            the vDataFrame including the prediction.
+        """
+        return vDataFrame(self.model_name)
+
+    # Plotting Methods.
+
+    def plot(
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+    ) -> Axes:
         """
         Draws the model.
 
@@ -1330,7 +1375,7 @@ p: int, optional
         ----------
         max_nb_points: int
             Maximum number of points to display.
-        ax: Matplotlib axes object, optional
+        ax: Axes, optional
             The axes to plot on.
         **style_kwds
             Any optional parameter to pass to the 
@@ -1338,21 +1383,10 @@ p: int, optional
 
         Returns
         -------
-        ax
-            Matplotlib axes object
+        Axes
+            Matplotlib axes object.
         """
         sample = 100 * min(float(max_nb_points / self.cnt_), 1)
         return lof_plot(
             self.model_name, self.X, "lof_score", sample, ax=ax, **style_kwds
         )
-
-    def predict(self):
-        """
-	Creates a vDataFrame of the model.
-
-	Returns
-	-------
-	vDataFrame
- 		the vDataFrame including the prediction.
-		"""
-        return vDataFrame(self.model_name)

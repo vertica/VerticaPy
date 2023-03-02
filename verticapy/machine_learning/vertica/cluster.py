@@ -1164,7 +1164,7 @@ class NearestCentroid(MulticlassClassifier):
         """
         Returns the input which represents the model's probabilities.
         """
-        idx = get_match_index(pos_label, self.classes_, False)
+        idx = self._get_match_index(pos_label, self.classes_, False)
         return self.deploySQL(allSQL=True)[idx]
 
     # I/O Methods.

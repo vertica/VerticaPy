@@ -202,7 +202,6 @@ class vDFMachineLearning:
         An independent model containing the result. For more information, see
         learn.memmodel.
         """
-        from verticapy.machine_learning._utils import get_match_index
         from verticapy.machine_learning.memmodel.tree import NonBinaryTree
 
         if "process" not in kwds or kwds["process"]:
@@ -222,7 +221,7 @@ class vDFMachineLearning:
             p["is_numerical"][0],
             p["chi2"][0],
         )
-        split_predictor_idx = get_match_index(
+        split_predictor_idx = self._get_match_index(
             split_predictor,
             columns
             if "process" not in kwds or kwds["process"]

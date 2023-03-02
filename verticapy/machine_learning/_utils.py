@@ -150,12 +150,3 @@ def reverse_score(metric: str):
     ]:
         return False
     return True
-
-
-def get_match_index(x: str, col_list: list, str_check: bool = True):
-    for idx, col in enumerate(col_list):
-        if (str_check and quote_ident(x.lower()) == quote_ident(col.lower())) or (
-            x == col
-        ):
-            return idx
-    return None

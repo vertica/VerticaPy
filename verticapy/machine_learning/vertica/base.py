@@ -55,7 +55,6 @@ from verticapy.plotting._matplotlib.mlplot import (
     plot_pca_circle,
 )
 
-from verticapy.machine_learning._utils import get_match_index
 import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.model_management.read import does_model_exist
 import verticapy.machine_learning.model_selection as ms
@@ -142,6 +141,18 @@ class VerticaModel:
                 if quote_ident(y[0]).lower() == x.lower():
                     res += [y[1]]
         return np.array(res)
+
+    @staticmethod
+    def _get_match_index(x: str, col_list: list, str_check: bool = True):
+        """
+        Returns the matching index.
+        """
+        for idx, col in enumerate(col_list):
+            if (str_check and quote_ident(x.lower()) == quote_ident(col.lower())) or (
+                x == col
+            ):
+                return idx
+        return None
 
     # System & Special Methods.
 
@@ -525,7 +536,9 @@ class VerticaModel:
             Matplotlib axes object
         """
         return vDataFrame(self.input_relation).contour(
-            *self._get_plot_args(), **self._get_plot_kwargs(), **style_kwds,
+            *self._get_plot_args(method="contour"),
+            **self._get_plot_kwargs(method="contour"),
+            **style_kwds,
         )
 
 
@@ -1542,7 +1555,7 @@ class MulticlassClassifier(Classifier):
         if not (allSQL):
             if pos_label in self.classes_:
                 if self._model_type == "NearestCentroid":
-                    sql = sql[get_match_index(pos_label, self.classes_, False)]
+                    sql = sql[self._get_match_index(pos_label, self.classes_, False)]
                 else:
                     sql = sql[0].format(pos_label)
             if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
@@ -1894,7 +1907,9 @@ class MulticlassClassifier(Classifier):
             the input object.
         """
         if hasattr(self, "_predict_proba"):
-            return self._predict_proba(vdf=vdf, X = X, name = name, pos_label = pos_label, inplace = inplace,)
+            return self._predict_proba(
+                vdf=vdf, X=X, name=name, pos_label=pos_label, inplace=inplace,
+            )
         # Inititalization
         if not (X):
             X = self.X
@@ -1934,7 +1949,7 @@ class MulticlassClassifier(Classifier):
         pos_label = self._check_pos_label(pos_label)
         if self._model_type == "NearestCentroid":
             return self.deploySQL(allSQL=True)[
-                get_match_index(pos_label, self.classes_, False)
+                self._get_match_index(pos_label, self.classes_, False)
             ]
         else:
             return self.deploySQL(allSQL=True)[0].format(pos_label)
