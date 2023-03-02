@@ -441,7 +441,7 @@ class vDCEncode:
                     name = f'"{prefix}{k}"'
                 else:
                     name = f'"{prefix}{distinct_elements_k}"'
-                assert not (self._parent.is_colname_in(name)), NameError(
+                assert not (self._parent._is_colname_in(name)), NameError(
                     "A vDataColumn has already the alias of one of "
                     f"the dummies ({name}).\nIt can be the result "
                     "of using previously the method on the vDataColumn "
