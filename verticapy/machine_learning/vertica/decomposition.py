@@ -20,14 +20,16 @@ import numpy as np
 from verticapy._config.colors import get_cmap, get_colors
 from verticapy._typing import PythonNumber, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.preprocessing import Preprocessing
 
-from verticapy.plotting._matplotlib.mlplot import plot_var
+from verticapy.plotting._matplotlib.mlplot import plot_pca_circle, plot_var
 
 """
 General Classes.
