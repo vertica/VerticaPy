@@ -18,6 +18,7 @@ import warnings, itertools
 from collections.abc import Iterable
 from typing import Literal, Union
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
@@ -59,26 +60,283 @@ from verticapy.machine_learning.vertica.tree import DecisionTreeRegressor
 from verticapy.sql.drop import drop
 
 
+"""
+Algorithms used for regression.
+"""
+
+
+class KNeighborsRegressor(Regressor):
+    """
+    [Beta Version]
+    Creates a KNeighborsRegressor object using the 
+    k-nearest neighbors algorithm. This object uses 
+    pure SQL to compute all the distances and final 
+    score.
+
+    \u26A0 Warning : This algorithm uses a CROSS JOIN 
+                     during computation and is therefore 
+                     computationally expensive at O(n * n), 
+                     where n is the total number of elements. 
+                     Since KNeighborsRegressor uses the p-
+                     distance, it is highly sensitive to 
+                     unnormalized data.
+
+    Parameters
+    ----------
+    n_neighbors: int, optional
+        Number of neighbors to consider when computing 
+        the score.
+    p: int, optional
+        The p corresponding to the one of the p-distances 
+        (distance metric used during the model computation).
+    """
+
+    # Properties.
+
+    @property
+    def _is_native(self) -> Literal[False]:
+        return False
+
+    @property
+    def _vertica_fit_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _vertica_predict_sql(self) -> Literal[""]:
+        return ""
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["KNeighborsRegressor"]:
+        return "KNeighborsRegressor"
+
+    @property
+    def _attributes(self) -> list[str]:
+        return ["n_neighbors_", "p_"]
+
+    # System & Special Methods.
+
+    @save_verticapy_logs
+    def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
+        self.model_name = name
+        self.parameters = {"n_neighbors": n_neighbors, "p": p}
+        return None
+
+    # Attributes Methods.
+
+    def _compute_attributes(self) -> None:
+        self.p_ = self.parameters["p"]
+        self.n_neighbors_ = self.parameters["n_neighbors"]
+        return None
+
+    # I/O Methods.
+
+    def deploySQL(
+        self, X: SQLColumns = [], test_relation: str = "", key_columns: SQLColumns = [],
+    ) -> str:
+        """
+        Returns the SQL code needed to deploy the model. 
+
+        Parameters
+        ----------
+        X: SQLColumns
+            List of the predictors.
+        test_relation: str, optional
+            Relation to use to do the predictions.
+        key_columns: SQLColumns, optional
+            A list of columns to include in the results, 
+            but to exclude from computation of the prediction.
+
+        Returns
+        -------
+        str
+            the SQL code needed to deploy the model.
+        """
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        if not (test_relation):
+            test_relation = self.test_relation
+        if not (key_columns) and key_columns != None:
+            key_columns = [self.y]
+        p = self.parameters["p"]
+        X_str = ", ".join([f"x.{x}" for x in X])
+        if key_columns:
+            key_columns_str = ", " + ", ".join(
+                ["x." + quote_ident(x) for x in key_columns]
+            )
+        else:
+            key_columns_str = ""
+        sql = [f"POWER(ABS(x.{X[i]} - y.{self.X[i]}), {p})" for i in range(len(self.X))]
+        sql = f"""
+            SELECT 
+                {X_str}{key_columns_str}, 
+                ROW_NUMBER() OVER(PARTITION BY {X_str}, row_id 
+                                  ORDER BY POWER({' + '.join(sql)}, 1 / {p})) 
+                                  AS ordered_distance, 
+                y.{self.y} AS predict_neighbors, 
+                row_id 
+            FROM
+                (SELECT 
+                    *, 
+                    ROW_NUMBER() OVER() AS row_id 
+                 FROM {test_relation} 
+                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in X])}) x 
+                 CROSS JOIN 
+                 (SELECT 
+                    * 
+                 FROM {self.input_relation} 
+                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in self.X])}) y"""
+        if key_columns:
+            key_columns_str = ", " + ", ".join([quote_ident(x) for x in key_columns])
+        n_neighbors = self.parameters["n_neighbors"]
+        sql = f"""
+            (SELECT 
+                {", ".join(X)}{key_columns_str}, 
+                AVG(predict_neighbors) AS predict_neighbors 
+             FROM ({sql}) z 
+             WHERE ordered_distance <= {n_neighbors} 
+             GROUP BY {", ".join(X)}{key_columns_str}, row_id) knr_table"""
+        return clean_query(sql)
+
+    # Prediction / Transformation Methods.
+
+    def predict(
+        self,
+        vdf: SQLRelation,
+        X: SQLColumns = [],
+        name: str = "",
+        inplace: bool = True,
+        **kwargs,
+    ) -> vDataFrame:
+        """
+        Predicts using the input relation.
+
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object to use to run the prediction. You can 
+            also specify a customized relation, but you 
+            must enclose it with an alias. For example 
+            "(SELECT 1) x" is correct whereas "(SELECT 1)" 
+            and "SELECT 1" are incorrect.
+        X: SQLColumns, optional
+            List of the columns used to deploy the models. 
+            If empty, the model predictors will be used.
+        name: str, optional
+            Name of the added vcolumn. If empty, a name will 
+            be generated.
+        inplace: bool, optional
+            If set to True, the prediction will be added to 
+            the vDataFrame.
+
+        Returns
+        -------
+        vDataFrame
+            the vDataFrame of the prediction.
+        """
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(vdf, str):
+            vdf = vDataFrame(vdf)
+        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        key_columns = vdf.get_columns(exclude_columns=X)
+        if "key_columns" in kwargs:
+            key_columns_arg = None
+        else:
+            key_columns_arg = key_columns
+        if not (name):
+            name = f"{self._model_type}_" + "".join(
+                ch for ch in self.model_name if ch.isalnum()
+            )
+        if key_columns:
+            key_columns_str = ", " + ", ".join(key_columns)
+        else:
+            key_columns_str = ""
+        table = self.deploySQL(
+            X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
+        )
+        sql = f"""
+            SELECT 
+                {", ".join(X)}{key_columns_str}, 
+                predict_neighbors AS {name} 
+             FROM {table}"""
+        if inplace:
+            vdf.__init__(sql)
+            return vdf
+        else:
+            return vDataFrame(sql)
+
+    # Plotting Methods.
+
+    def contour(
+        self, nbins: int = 100, ax: Optional[Axes] = None, **style_kwds,
+    ) -> Axes:
+        """
+        Draws the model's contour plot.
+
+        Parameters
+        ----------
+        nbins: int, optional
+            Number of bins used to discretize the two 
+            predictors.
+        ax: Axes, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        Axes
+            Matplotlib axes object.
+        """
+        return vDataFrame(self.input_relation).contour(
+            self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
+        )
+
+
+"""
+Algorithms used for classification.
+"""
+
+
 class KNeighborsClassifier(MulticlassClassifier):
     """
-[Beta Version]
-Creates a KNeighborsClassifier object using the k-nearest neighbors algorithm. 
-This object uses pure SQL to compute the distances and final score.
+    [Beta Version]
+    Creates a KNeighborsClassifier object using the 
+    k-nearest neighbors algorithm. This object uses 
+    pure SQL to compute all the distances and final 
+    score.
 
-\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
-                 is therefore computationally expensive at O(n * n), where
-                 n is the total number of elements. Because this algorithm  
-                 uses the p-distance, it is highly sensitive to unnormalized 
-                 data.
+    \u26A0 Warning : This algorithm uses a CROSS JOIN 
+                     during computation and is therefore 
+                     computationally expensive at O(n * n), 
+                     where n is the total number of elements. 
+                     Since KNeighborsClassifier uses the p-
+                     distance, it is highly sensitive to 
+                     unnormalized data.
 
-Parameters
-----------
-n_neighbors: int, optional
-	Number of neighbors to consider when computing the score.
-p: int, optional
-	The p corresponding to the one of the p-distances (distance metric used  
-	to compute the model).
+    Parameters
+    ----------
+    n_neighbors: int, optional
+        Number of neighbors to consider when computing 
+        the score.
+    p: int, optional
+        The p corresponding to the one of the p-distances 
+        (distance metric used during the model computation).
 	"""
+
+    # Properties.
 
     @property
     def _is_native(self) -> Literal[False]:
@@ -108,10 +366,14 @@ p: int, optional
     def _attributes(self) -> list[str]:
         return ["classes_", "n_neighbors_", "p_"]
 
+    # System & Special Methods.
+
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+
+    # Attributes Methods.
 
     def _compute_attributes(self):
         """
@@ -121,42 +383,7 @@ p: int, optional
         self.p_ = self.parameters["p"]
         self.n_neighbors_ = self.parameters["n_neighbors"]
 
-    def contour(
-        self, pos_label: PythonScalar = None, nbins: int = 100, ax=None, **style_kwds,
-    ):
-        """
-        Draws the model's contour plot.
-
-        Parameters
-        ----------
-        pos_label: PythonScalar, optional
-            Label to consider as positive. All the other 
-            classes will be merged and considered as negative 
-            for multiclass classification.
-        nbins: int, optional
-             Number of bins used to discretize the two predictors.
-        ax: Matplotlib axes object, optional
-            The axes to plot on.
-        **style_kwds
-            Any optional parameter to pass to the Matplotlib 
-            functions.
-
-        Returns
-        -------
-        ax
-            Matplotlib axes object
-        """
-        if not (pos_label):
-            pos_label = sorted(self.classes_)[-1]
-        return vDataFrame(self.input_relation).contour(
-            self.X,
-            self,
-            pos_label=pos_label,
-            cbar_title=self.y,
-            nbins=nbins,
-            ax=ax,
-            **style_kwds,
-        )
+    # I/O Methods.
 
     def deploySQL(
         self,
@@ -166,7 +393,7 @@ p: int, optional
         key_columns: SQLColumns = [],
     ):
         """
-	Returns the SQL code needed to deploy the model. 
+    Returns the SQL code needed to deploy the model. 
 
     Parameters
     ----------
@@ -184,7 +411,7 @@ p: int, optional
     -------
     SQLExpression
         the SQL code needed to deploy the model.
-		"""
+        """
         if isinstance(X, str):
             X = [X]
         if isinstance(key_columns, str):
@@ -253,74 +480,7 @@ p: int, optional
                      WHERE order_prediction = 1) predict_neighbors_table"""
         return clean_query(sql)
 
-    def classification_report(
-        self, cutoff: Union[PythonNumber, list] = [], labels: Union[ArrayLike, str] = []
-    ):
-        """
-    Computes a classification report using multiple metrics to evaluate the model
-    (AUC, accuracy, PRC AUC, F1, etc.). For multiclass classification, this 
-    function tests the model by considering one class as the sole positive case, 
-    repeating the process until it tests all classes.
-
-    Parameters
-    ----------
-    cutoff: PythonNumber / list, optional
-        Cutoff for which the tested category is accepted as a prediction. 
-        For multiclass classification, each tested category becomes positive case
-        and untested categories are merged into the negative cases. This list 
-        represents the threshold for each class. If empty, the best cutoff is be used.
-    labels: ArrayLike / str, optional
-        List of the different labels to be used during the computation.
-
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-        """
-        if not (isinstance(labels, Iterable)) or isinstance(labels, str):
-            labels = [labels]
-        if not (labels):
-            labels = self.classes_
-        return mt.classification_report(cutoff=cutoff, estimator=self, labels=labels)
-
-    report = classification_report
-
-    def cutoff_curve(self, pos_label: PythonScalar = None, ax=None, **style_kwds):
-        """
-    Draws the ROC curve of a classification model.
-
-    Parameters
-    ----------
-    pos_label: PythonScalar
-        The response column class to be considered positive.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-        """
-        if pos_label == None and len(self.classes_) == 2:
-            pos_label = self.classes_[1]
-        if pos_label not in self.classes_:
-            raise ParameterError(
-                "'pos_label' must be one of the response column classes"
-            )
-        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
-        return roc_curve(
-            self.y,
-            "proba_predict",
-            input_relation,
-            pos_label,
-            ax=ax,
-            cutoff_curve=True,
-            **style_kwds,
-        )
+    # Prediction / Transformation Methods.
 
     def confusion_matrix(
         self, pos_label: PythonScalar = None, cutoff: PythonNumber = -1,
@@ -376,67 +536,7 @@ p: int, optional
                 self.y, "predict_neighbors", input_relation, self.classes_
             )
 
-    def lift_chart(self, pos_label: PythonScalar = None, ax=None, **style_kwds):
-        """
-    Draws the model Lift Chart.
-
-    Parameters
-    ----------
-    pos_label: PythonScalar
-        To draw a lift chart, one of the response column classes must be the 
-        positive one. The parameter 'pos_label' represents this class.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-        """
-        if pos_label == None and len(self.classes_) == 2:
-            pos_label = self.classes_[1]
-        if pos_label not in self.classes_:
-            raise ParameterError(
-                "'pos_label' must be one of the response column classes"
-            )
-        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
-        return lift_chart(
-            self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
-        )
-
-    def prc_curve(self, pos_label: PythonScalar = None, ax=None, **style_kwds):
-        """
-    Draws the model PRC curve.
-
-    Parameters
-    ----------
-    pos_label: PythonScalar
-        To draw the PRC curve, one of the response column classes must be the 
-        positive one. The parameter 'pos_label' represents this class.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-        """
-        if pos_label == None and len(self.classes_) == 2:
-            pos_label = self.classes_[1]
-        if pos_label not in self.classes_:
-            raise ParameterError(
-                "'pos_label' must be one of the response column classes"
-            )
-        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
-        return prc_curve(
-            self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
-        )
+    # Model Evaluation Methods.
 
     def predict(
         self,
@@ -552,11 +652,11 @@ p: int, optional
         predictors will be used.
     name: str, optional
         Name of the additional prediction vDataColumn. If unspecified, a name is 
-	    generated based on the model and class names.
+        generated based on the model and class names.
     pos_label: PythonScalar, optional
         Class label, the class for which the probability is calculated. 
-	    If name is specified and pos_label is unspecified, the probability column 
-	    names use the following format: name_class1, name_class2, etc.
+        If name is specified and pos_label is unspecified, the probability column 
+        names use the following format: name_class1, name_class2, etc.
         inplace: bool, optional
         If set to True, the prediction will be added to the vDataFrame.
 
@@ -622,148 +722,47 @@ p: int, optional
         else:
             return vDataFrame(sql)
 
-    def roc_curve(self, pos_label: PythonScalar = None, ax=None, **style_kwds):
+    # Plotting Methods.
+
+    def _get_plot_args(
+        self, pos_label: PythonScalar = None, method: Optional[str] = None
+    ) -> list:
         """
-    Draws the model ROC curve.
-
-    Parameters
-    ----------
-    pos_label: PythonScalar
-        To draw the ROC curve, one of the response column classes must be the 
-        positive one. The parameter 'pos_label' represents this class.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
+        Returns the args used by plotting methods.
         """
-        pos_label = (
-            self.classes_[1]
-            if (pos_label == None and len(self.classes_) == 2)
-            else pos_label
-        )
-        if pos_label not in self.classes_:
-            raise ParameterError(
-                "'pos_label' must be one of the response column classes"
-            )
-        input_relation = self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
-        return roc_curve(
-            self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
-        )
-
-    def score(
-        self,
-        method: str = "accuracy",
-        pos_label: Union[str, int, float] = None,
-        cutoff: PythonNumber = -1,
-        nbins: int = 10000,
-    ):
-        """
-    Computes the model score.
-
-    Parameters
-    ----------
-    pos_label: PythonScalar, optional
-        Label to consider as positive. All the other classes will be merged and
-        considered as negative for multiclass classification.
-    cutoff: float, optional
-        Cutoff for which the tested category will be accepted as a prediction. 
-    method: str, optional
-        The method to use to compute the score.
-            accuracy    : Accuracy
-            auc         : Area Under the Curve (ROC)
-            best_cutoff : Cutoff which optimised the ROC Curve prediction.
-            bm          : Informedness = tpr + tnr - 1
-            csi         : Critical Success Index = tp / (tp + fn + fp)
-            f1          : F1 Score 
-            logloss     : Log Loss
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness = ppv + npv - 1
-            npv         : Negative Predictive Value = tn / (tn + fn)
-            prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision = tp / (tp + fp)
-            recall      : Recall = tp / (tp + fn)
-            specificity : Specificity = tn / (tn + fp)
-    nbins: int, optional
-        [Only when method is set to auc|prc_auc|best_cutoff] 
-        An integer value that determines the number of decision boundaries. 
-        Decision boundaries are set at equally spaced intervals between 0 and 1, 
-        inclusive. Greater values for nbins give more precise estimations of the AUC, 
-        but can potentially decrease performance. The maximum value is 999,999. 
-        If negative, the maximum value is used.
-
-    Returns
-    -------
-    float
-        score
-        """
-        if pos_label == None and len(self.classes_) == 2:
-            pos_label = self.classes_[1]
-        input_relation = f"""
-            (SELECT 
-                * 
-             FROM {self.deploySQL()} 
-             WHERE predict_neighbors = '{pos_label}') final_centroids_relation"""
-        y_score = f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
-        y_proba = "proba_predict"
-        y_true = f"DECODE({self.y}, '{pos_label}', 1, 0)"
-        if (pos_label not in self.classes_) and (method != "accuracy"):
-            raise ParameterError(
-                "'pos_label' must be one of the response column classes"
-            )
-        elif (cutoff >= 1 or cutoff <= 0) and (method != "accuracy"):
-            cutoff = self.score(pos_label=pos_label, cutoff=0.5, method="best_cutoff")
-        if method in ("accuracy", "acc"):
-            if pos_label not in self.classes_:
-                return mt.accuracy_score(
-                    self.y,
-                    "predict_neighbors",
-                    self.deploySQL(predict=True),
-                    pos_label=None,
-                )
-            else:
-                return mt.accuracy_score(
-                    y_true, y_score, input_relation, pos_label=pos_label
-                )
-        elif method == "auc":
-            return mt.auc(y_true, y_proba, input_relation, nbins=nbins)
-        elif method == "prc_auc":
-            return mt.prc_auc(y_true, y_proba, input_relation, nbins=nbins)
-        elif method in ("best_cutoff", "best_threshold"):
-            return mt.roc_curve(
-                y_true, y_proba, input_relation, best_threshold=True, nbins=nbins
-            )
-        elif method in ("recall", "tpr"):
-            return mt.recall_score(y_true, y_score, input_relation)
-        elif method in ("precision", "ppv"):
-            return mt.precision_score(y_true, y_score, input_relation)
-        elif method in ("specificity", "tnr"):
-            return mt.specificity_score(y_true, y_score, input_relation)
-        elif method in ("negative_predictive_value", "npv"):
-            return mt.precision_score(y_true, y_score, input_relation)
-        elif method in ("log_loss", "logloss"):
-            return mt.log_loss(y_true, y_proba, input_relation)
-        elif method == "f1":
-            return mt.f1_score(y_true, y_score, input_relation)
-        elif method == "mcc":
-            return mt.matthews_corrcoef(y_true, y_score, input_relation)
-        elif method in ("bm", "informedness"):
-            return mt.informedness(y_true, y_score, input_relation)
-        elif method in ("mk", "markedness"):
-            return mt.markedness(y_true, y_score, input_relation)
-        elif method in ("csi", "critical_success_index"):
-            return mt.critical_success_index(y_true, y_score, input_relation)
+        pos_label = self._check_pos_label(pos_label)
+        if method == "contour":
+            args = [self.X, self]
         else:
-            raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|"
-                "recall|precision|log_loss|negative_predictive_value|specificity|"
-                "mcc|informedness|markedness|critical_success_index"
+            input_relation = (
+                self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
             )
+            args = [self.y, "proba_predict", input_relation, pos_label]
+        return args
+
+    def _get_plot_kwargs(
+        self,
+        pos_label: PythonScalar = None,
+        nbins: int = 30,
+        ax: Optional[Axes] = None,
+        method: Optional[str] = None,
+    ) -> dict:
+        """
+        Returns the kwargs used by plotting methods.
+        """
+        pos_label = self._check_pos_label(pos_label)
+        res = {"nbins": nbins, "ax": ax}
+        if method == "contour":
+            res["cbar_title"] = self.y
+            res["pos_label"] = pos_label
+        elif method == "cutoff":
+            res["cutoff_curve"] = True
+        return res
+
+
+"""
+Algorithms used for density analysis.
+"""
 
 
 class KernelDensity(Regressor, Tree):
@@ -1131,222 +1130,9 @@ xlim: list, optional
             raise Exception("KDE Plots are only available in 1D or 2D.")
 
 
-class KNeighborsRegressor(Regressor):
-    """
-[Beta Version]
-Creates a KNeighborsRegressor object using the k-nearest neighbors 
-algorithm. This object uses pure SQL to compute all the distances and 
-final score.
-
-\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
-                 is therefore computationally expensive at O(n * n), where
-                 n is the total number of elements. Since KNeighborsRegressor 
-                 uses the p-distance, it is highly sensitive to unnormalized 
-                 data.
-
-Parameters
-----------
-n_neighbors: int, optional
-	Number of neighbors to consider when computing the score.
-p: int, optional
-	The p corresponding to the one of the p-distances (distance metric used during 
-	the model computation).
-	"""
-
-    @property
-    def _is_native(self) -> Literal[False]:
-        return False
-
-    @property
-    def _vertica_fit_sql(self) -> Literal[""]:
-        return ""
-
-    @property
-    def _vertica_predict_sql(self) -> Literal[""]:
-        return ""
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["REGRESSOR"]:
-        return "REGRESSOR"
-
-    @property
-    def _model_type(self) -> Literal["KNeighborsRegressor"]:
-        return "KNeighborsRegressor"
-
-    @property
-    def _attributes(self) -> list[str]:
-        return ["n_neighbors_", "p_"]
-
-    @save_verticapy_logs
-    def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
-        self.model_name = name
-        self.parameters = {"n_neighbors": n_neighbors, "p": p}
-
-    def _compute_attributes(self):
-        self.p_ = self.parameters["p"]
-        self.n_neighbors_ = self.parameters["n_neighbors"]
-
-    def contour(
-        self, nbins: int = 100, ax=None, **style_kwds,
-    ):
-        """
-        Draws the model's contour plot.
-
-        Parameters
-        ----------
-        nbins: int, optional
-            Number of bins used to discretize the two predictors.
-        ax: Matplotlib axes object, optional
-            The axes to plot on.
-        **style_kwds
-            Any optional parameter to pass to the Matplotlib 
-            functions.
-
-        Returns
-        -------
-        ax
-            Matplotlib axes object
-        """
-        return vDataFrame(self.input_relation).contour(
-            self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
-        )
-
-    def deploySQL(
-        self, X: SQLColumns = [], test_relation: str = "", key_columns: SQLColumns = [],
-    ):
-        """
-    Returns the SQL code needed to deploy the model. 
-
-    Parameters
-    ----------
-    X: SQLColumns
-        List of the predictors.
-    test_relation: str, optional
-        Relation to use to do the predictions.
-    key_columns: SQLColumns, optional
-        A list of columns to include in the results, but to exclude from 
-        computation of the prediction.
-
-    Returns
-    -------
-    SQLExpression
-        the SQL code needed to deploy the model.
-        """
-        from verticapy._utils._sql._format import clean_query
-
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(key_columns, str):
-            key_columns = [key_columns]
-        X = [quote_ident(elem) for elem in X] if (X) else self.X
-        if not (test_relation):
-            test_relation = self.test_relation
-        if not (key_columns) and key_columns != None:
-            key_columns = [self.y]
-        p = self.parameters["p"]
-        X_str = ", ".join([f"x.{x}" for x in X])
-        if key_columns:
-            key_columns_str = ", " + ", ".join(
-                ["x." + quote_ident(x) for x in key_columns]
-            )
-        else:
-            key_columns_str = ""
-        sql = [f"POWER(ABS(x.{X[i]} - y.{self.X[i]}), {p})" for i in range(len(self.X))]
-        sql = f"""
-            SELECT 
-                {X_str}{key_columns_str}, 
-                ROW_NUMBER() OVER(PARTITION BY {X_str}, row_id 
-                                  ORDER BY POWER({' + '.join(sql)}, 1 / {p})) 
-                                  AS ordered_distance, 
-                y.{self.y} AS predict_neighbors, 
-                row_id 
-            FROM
-                (SELECT 
-                    *, 
-                    ROW_NUMBER() OVER() AS row_id 
-                 FROM {test_relation} 
-                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in X])}) x 
-                 CROSS JOIN 
-                 (SELECT 
-                    * 
-                 FROM {self.input_relation} 
-                 WHERE {" AND ".join([f"{x} IS NOT NULL" for x in self.X])}) y"""
-        if key_columns:
-            key_columns_str = ", " + ", ".join([quote_ident(x) for x in key_columns])
-        n_neighbors = self.parameters["n_neighbors"]
-        sql = f"""
-            (SELECT 
-                {", ".join(X)}{key_columns_str}, 
-                AVG(predict_neighbors) AS predict_neighbors 
-             FROM ({sql}) z 
-             WHERE ordered_distance <= {n_neighbors} 
-             GROUP BY {", ".join(X)}{key_columns_str}, row_id) knr_table"""
-        return clean_query(sql)
-
-    def predict(
-        self,
-        vdf: SQLRelation,
-        X: SQLColumns = [],
-        name: str = "",
-        inplace: bool = True,
-        **kwargs,
-    ):
-        """
-    Predicts using the input relation.
-
-    Parameters
-    ----------
-    vdf: SQLRelation
-        Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
-        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: SQLColumns, optional
-        List of the columns used to deploy the models. If empty, the model
-        predictors will be used.
-    name: str, optional
-        Name of the added vcolumn. If empty, a name will be generated.
-    inplace: bool, optional
-        If set to True, the prediction will be added to the vDataFrame.
-
-    Returns
-    -------
-    vDataFrame
-        the vDataFrame of the prediction
-        """
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(vdf, str):
-            vdf = vDataFrame(vdf)
-        X = [quote_ident(elem) for elem in X] if (X) else self.X
-        key_columns = vdf.get_columns(exclude_columns=X)
-        if "key_columns" in kwargs:
-            key_columns_arg = None
-        else:
-            key_columns_arg = key_columns
-        if not (name):
-            name = f"{self._model_type}_" + "".join(
-                ch for ch in self.model_name if ch.isalnum()
-            )
-        if key_columns:
-            key_columns_str = ", " + ", ".join(key_columns)
-        else:
-            key_columns_str = ""
-        table = self.deploySQL(
-            X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
-        )
-        sql = f"""
-            SELECT 
-                {", ".join(X)}{key_columns_str}, 
-                predict_neighbors AS {name} 
-             FROM {table}"""
-        if inplace:
-            return vdf.__init__(sql)
-        else:
-            return vDataFrame(sql)
+"""
+Algorithms used for anomaly detection.
+"""
 
 
 class LocalOutlierFactor(VerticaModel):

@@ -1679,19 +1679,25 @@ class MulticlassClassifier(Classifier):
             score.
         """
         fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
-        if pos_label == None and len(self.classes_) == 2:
-            pos_label = self.classes_[1]
-        if (pos_label not in self.classes_) and (method != "accuracy"):
-            raise ParameterError(
-                "'pos_label' must be one of the response column classes"
-            )
-        if self._model_type == "NearestCentroid":
-            deploySQL_str = self.deploySQL(allSQL=True)[
-                get_match_index(pos_label, self.classes_, False)
-            ]
+        pos_label = self._check_pos_label(pos_label=pos_label)
+        if self._model_type == "KNeighborsClassifier":
+            y_proba = "proba_predict"
+            y_score = f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
+            final_relation = f"""
+                (SELECT 
+                    * 
+                 FROM {self.deploySQL()} 
+                 WHERE predict_neighbors = '{pos_label}') 
+                 final_centroids_relation"""
         else:
-            deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
-        args = [self.y, self.deploySQL(pos_label, cutoff), self.test_relation]
+            if self._model_type == "NearestCentroid":
+                idx = get_match_index(pos_label, self.classes_, False)
+                y_proba = self.deploySQL(allSQL=True)[idx]
+            else:
+                y_proba = self.deploySQL(allSQL=True)[0].format(pos_label)
+            y_score = self.deploySQL(pos_label, cutoff)
+            final_relation = self.test_relation
+        args = [self.y, y_score, final_relation]
         kwds = {}
         if method in ("accuracy", "acc"):
             args += [pos_label]
@@ -1706,9 +1712,9 @@ class MulticlassClassifier(Classifier):
             "logloss",
         ):
             args = [
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                deploySQL_str,
-                self.test_relation,
+                f"DECODE({self.y}, '{pos_label}', 1, 0)",  # y_true
+                y_proba,
+                final_relation,
             ]
             if method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
                 kwds["nbins"] = nbins
@@ -1862,22 +1868,68 @@ class MulticlassClassifier(Classifier):
 
     # Plotting Methods.
 
-    def _get_sql_plot(self, pos_label: PythonScalar) -> str:
+    def _check_pos_label(self, pos_label: PythonScalar) -> PythonScalar:
         """
-        Returns the SQL needed to draw the plot.
+        Checks if the pos_label is correct.
         """
         if pos_label == None and self._is_binary_classifier:
-            pos_label = 1
+            return 1
         elif pos_label not in self.classes_:
             raise ParameterError(
                 "Parameter 'pos_label' must be one of the response column classes."
             )
+        return pos_label
+
+    def _get_sql_plot(self, pos_label: PythonScalar) -> str:
+        """
+        Returns the SQL needed to draw the plot.
+        """
+        pos_label = self._check_pos_label(pos_label)
         if self._model_type == "NearestCentroid":
             return self.deploySQL(allSQL=True)[
                 get_match_index(pos_label, self.classes_, False)
             ]
         else:
             return self.deploySQL(allSQL=True)[0].format(pos_label)
+
+    def _get_plot_args(
+        self, pos_label: PythonScalar = None, method: Optional[str] = None
+    ) -> list:
+        """
+        Returns the args used by plotting methods.
+        """
+        pos_label = self._check_pos_label(pos_label)
+        if method == "contour":
+            args = [
+                self.X,
+                self.deploySQL(X=self.X, pos_label=pos_label),
+            ]
+        else:
+            args = [
+                self.y,
+                self._get_sql_plot(pos_label),
+                self.test_relation,
+                pos_label,
+            ]
+        return args
+
+    def _get_plot_kwargs(
+        self,
+        pos_label: PythonScalar = None,
+        nbins: int = 30,
+        ax: Optional[Axes] = None,
+        method: Optional[str] = None,
+    ) -> dict:
+        """
+        Returns the kwargs used by plotting methods.
+        """
+        pos_label = self._check_pos_label(pos_label)
+        res = {"nbins": nbins, "ax": ax}
+        if method == "contour":
+            res["cbar_title"] = self.y
+        elif method == "cutoff":
+            res["cutoff_curve"] = True
+        return res
 
     def contour(
         self,
@@ -1909,18 +1961,10 @@ class MulticlassClassifier(Classifier):
         Axes
             Matplotlib axes object.
         """
-        if pos_label == None and self._is_binary_classifier:
-            pos_label = 1
-        elif pos_label not in self.classes_:
-            raise ParameterError(
-                "Parameter 'pos_label' must be one of the response column classes."
-            )
+        pos_label = self._check_pos_label(pos_label=pos_label)
         return vDataFrame(self.input_relation).contour(
-            self.X,
-            self.deploySQL(X=self.X, pos_label=pos_label),
-            cbar_title=self.y,
-            nbins=nbins,
-            ax=ax,
+            *self._get_plot_args(pos_label=pos_label, method="contour"),
+            **self._get_plot_kwds(nbins=nbins, ax=ax, method="contour"),
             **style_kwds,
         )
 
@@ -1954,16 +1998,9 @@ class MulticlassClassifier(Classifier):
         TableSample
             cutoff curve data points.
         """
-        if pos_label == None and self._is_binary_classifier:
-            pos_label = 1
         return ms.roc_curve(
-            self.y,
-            self._get_sql_plot(pos_label),
-            self.test_relation,
-            pos_label,
-            ax=ax,
-            cutoff_curve=True,
-            nbins=nbins,
+            *self._get_plot_args(pos_label=pos_label, method="cutoff"),
+            **self._get_plot_kwds(nbins=nbins, ax=ax, method="cutoff"),
             **style_kwds,
         )
 
@@ -1999,15 +2036,9 @@ class MulticlassClassifier(Classifier):
     	TableSample
     		lift chart data points.
 		"""
-        if pos_label == None and self._is_binary_classifier:
-            pos_label = 1
         return ms.lift_chart(
-            self.y,
-            self._get_sql_plot(pos_label),
-            self.test_relation,
-            pos_label,
-            ax=ax,
-            nbins=nbins,
+            *self._get_plot_args(pos_label=pos_label),
+            **self._get_plot_kwds(nbins=nbins, ax=ax),
             **style_kwds,
         )
 
@@ -2044,15 +2075,9 @@ class MulticlassClassifier(Classifier):
     	TableSample
     		PRC curve data points.
 		"""
-        if pos_label == None and self._is_binary_classifier:
-            pos_label = 1
         return ms.prc_curve(
-            self.y,
-            self._get_sql_plot(pos_label),
-            self.test_relation,
-            pos_label,
-            ax=ax,
-            nbins=nbins,
+            *self._get_plot_args(pos_label=pos_label),
+            **self._get_plot_kwds(nbins=nbins, ax=ax),
             **style_kwds,
         )
 
@@ -2089,15 +2114,9 @@ class MulticlassClassifier(Classifier):
     	TableSample
     		roc curve data points.
 		"""
-        if pos_label == None and self._is_binary_classifier:
-            pos_label = 1
         return ms.roc_curve(
-            self.y,
-            self._get_sql_plot(pos_label),
-            self.test_relation,
-            pos_label,
-            ax=ax,
-            nbins=nbins,
+            *self._get_plot_args(pos_label=pos_label),
+            **self._get_plot_kwds(nbins=nbins, ax=ax),
             **style_kwds,
         )
 
