@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal, Union
 
+from verticapy._typing import SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import extract_and_rename_subquery
 from verticapy._utils._gen import gen_tmp_name
@@ -31,8 +32,8 @@ class vDFJoinUnionSort:
     def append(
         self,
         input_relation: Union[str, StringSQL],
-        expr1: Union[str, list] = [],
-        expr2: Union[str, list] = [],
+        expr1: SQLExpression = [],
+        expr2: SQLExpression = [],
         union_all: bool = True,
     ):
         """
@@ -43,12 +44,12 @@ class vDFJoinUnionSort:
     ----------
     input_relation: SQLRelation
         Relation to use to do the merging.
-    expr1: str / list, optional
+    expr1: SQLExpression, optional
         List of pure-SQL expressions from the current vDataFrame to use during merging.
         For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and 'POWER("column", 2)' 
         will work. If empty, all vDataFrame vDataColumns will be used. Aliases are 
         recommended to avoid auto-naming.
-    expr2: str / list, optional
+    expr2: SQLExpression, optional
         List of pure-SQL expressions from the input relation to use during the merging.
         For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and 'POWER("column", 2)' 
         will work. If empty, all input relation columns will be used. Aliases are 
@@ -102,8 +103,8 @@ class vDFJoinUnionSort:
         how: Literal[
             "left", "right", "cross", "full", "natural", "self", "inner", ""
         ] = "natural",
-        expr1: Union[str, list] = ["*"],
-        expr2: Union[str, list] = ["*"],
+        expr1: SQLExpression = ["*"],
+        expr2: SQLExpression = ["*"],
     ):
         """
     Joins the vDataFrame with another one or an input relation.
@@ -161,11 +162,11 @@ class vDFJoinUnionSort:
             full    : Full Outer Join.
             natural : Natural Join.
             inner   : Inner Join.
-    expr1: str / list, optional
+    expr1: SQLExpression, optional
         List of the different columns in pure SQL to select from the current 
         vDataFrame, optionally as aliases. Aliases are recommended to avoid 
         ambiguous names. For example: 'column' or 'column AS my_new_alias'. 
-    expr2: str / list, optional
+    expr2: SQLExpression, optional
         List of the different columns in pure SQL to select from the input 
         relation optionally as aliases. Aliases are recommended to avoid 
         ambiguous names. For example: 'column' or 'column AS my_new_alias'.

@@ -19,6 +19,7 @@ from typing import Literal, Union
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
+from verticapy._typing import PythonNumber, SQLColumns, SQLExpression
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -46,8 +47,8 @@ class vDFAgg:
     @save_verticapy_logs
     def groupby(
         self,
-        columns: Union[str, list],
-        expr: Union[str, list] = [],
+        columns: SQLColumns,
+        expr: SQLExpression = [],
         rollup: Union[bool, list] = False,
         having: str = "",
     ):
@@ -56,10 +57,10 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: str / list
+    columns: SQLColumns
         List of the vDataColumns used to group the elements or a customized expression. 
         If rollup is set to True, this can be a list of tuples.
-    expr: str / list, optional
+    expr: SQLExpression, optional
         List of the different aggregations in pure SQL. Aliases can be used.
         For example, 'SUM(column)' or 'AVG(column) AS my_new_alias' are correct 
         whereas 'AVG' is incorrect. Aliases are recommended to keep the track of 
@@ -175,14 +176,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def duplicated(
-        self, columns: Union[str, list] = [], count: bool = False, limit: int = 30
+        self, columns: SQLColumns = [], count: bool = False, limit: int = 30
     ):
         """
     Returns the duplicated values.
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all vDataColumns will be selected.
     count: bool, optional
         If set to True, the method will also return the count of each duplicates.
@@ -254,8 +255,8 @@ class vDFAgg:
     @save_verticapy_logs
     def aggregate(
         self,
-        func: Union[str, list],
-        columns: Union[str, list] = [],
+        func: SQLExpression,
+        columns: SQLColumns = [],
         ncols_block: int = 20,
         processes: int = 1,
     ):
@@ -264,7 +265,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    func: str / list
+    func: SQLExpression
         List of the different aggregations.
             aad            : average absolute deviation
             approx_median  : approximate median
@@ -299,7 +300,7 @@ class vDFAgg:
             var            : variance
                 Other aggregations will work if supported by your version of 
                 the database.
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumn's names. If empty, depending on the aggregations,
         all or only numerical vDataColumns will be used.
     ncols_block: int, optional
@@ -967,7 +968,7 @@ class vDFAgg:
     @save_verticapy_logs
     def count_percent(
         self,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         sort_result: bool = True,
         desc: bool = True,
         **agg_kwds,
@@ -978,7 +979,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of vDataColumn names. If empty, all vDataColumns will be used.
     sort_result: bool, optional
         If set to True, the result will be sorted.
@@ -1009,7 +1010,7 @@ class vDFAgg:
         method: Literal[
             "numerical", "categorical", "statistics", "length", "range", "all", "auto",
         ] = "auto",
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         unique: bool = False,
         ncols_block: int = 20,
         processes: int = 1,
@@ -1036,7 +1037,7 @@ class vDFAgg:
                 aggregations - min, max, range...
             statistics  : Aggregates the vDataFrame using multiple statistical 
                 aggregations - kurtosis, skewness, min, max...
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, the vDataColumns will be selected
         depending on the parameter 'method'.
     unique: bool, optional
@@ -1606,7 +1607,7 @@ class vDFAgg:
     @save_verticapy_logs
     def quantile(
         self,
-        q: Union[int, float, list],
+        q: Union[PythonNumber, list],
         columns: list = [],
         approx: bool = True,
         **agg_kwds,
@@ -1616,7 +1617,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    q: int / float / list
+    q: PythonNumber / list
         List of the different quantiles. They must be numbers between 0 and 1.
         For example [0.25, 0.75] will return Q1 and Q3.
     columns: list, optional
@@ -2256,13 +2257,13 @@ class vDCAgg:
         return top
 
     @save_verticapy_logs
-    def mul(self, x: Union[int, float]):
+    def mul(self, x: PythonNumber):
         """
     Multiplies the vDataColumn by the input element.
 
     Parameters
     ----------
-    x: int / float
+    x: PythonNumber
         Input number.
 
     Returns
@@ -2321,13 +2322,13 @@ class vDCAgg:
     prod = product
 
     @save_verticapy_logs
-    def quantile(self, x: Union[int, float], approx: bool = True):
+    def quantile(self, x: PythonNumber, approx: bool = True):
         """
     Aggregates the vDataColumn using an input 'quantile'.
 
     Parameters
     ----------
-    x: int / float
+    x: PythonNumber
         A float between 0 and 1 that represents the quantile.
         For example: 0.25 represents Q1.
     approx: bool, optional

@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal, Union
 
+from verticapy._typing import PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
@@ -39,7 +40,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         of the two following methods.
             auto : square root of the total number of predictors.
             max  : number of predictors.
-    max_leaf_nodes: int / float, optional
+    max_leaf_nodes: PythonNumber, optional
         The maximum number of leaf nodes a tree in the forest can have, an
         integer between 1 and 1e9, inclusive.
     max_depth: int, optional
@@ -49,7 +50,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         The minimum number of samples each branch must have after splitting a
         node, an integer between 1 and 1e6, inclusive. A split that causes
         fewer remaining samples is discarded.
-    min_info_gain: int / float, optional
+    min_info_gain: PythonNumber, optional
         The minimum threshold for including a split, a float between 0.0 and
         1.0, inclusive. A split with information gain less than this threshold
         is discarded.
@@ -64,10 +65,10 @@ class DecisionTreeClassifier(RandomForestClassifier):
         self,
         name: str,
         max_features: Union[Literal["auto", "max"], int] = "auto",
-        max_leaf_nodes: Union[int, float] = 1e9,
+        max_leaf_nodes: PythonNumber = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
-        min_info_gain: Union[int, float] = 0.0,
+        min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ):
         self.model_name = name
@@ -97,7 +98,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         of the two following methods.
             auto : square root of the total number of predictors.
             max  : number of predictors.
-    max_leaf_nodes: int / float, optional
+    max_leaf_nodes: PythonNumber, optional
         The maximum number of leaf nodes a tree in the forest can have, an
         integer between 1 and 1e9, inclusive.
     max_depth: int, optional
@@ -107,7 +108,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         The minimum number of samples each branch must have after splitting
         a node, an integer between 1 and 1e6, inclusive. A split that causes
         fewer remaining samples is discarded.
-    min_info_gain: int / float, optional
+    min_info_gain: PythonNumber, optional
         The minimum threshold for including a split, a float between 0.0 and
         1.0, inclusive. A split with information gain less than this threshold
         is discarded.
@@ -122,10 +123,10 @@ class DecisionTreeRegressor(RandomForestRegressor):
         self,
         name: str,
         max_features: Union[Literal["auto", "max"], int] = "auto",
-        max_leaf_nodes: Union[int, float] = 1e9,
+        max_leaf_nodes: PythonNumber = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
-        min_info_gain: Union[int, float] = 0.0,
+        min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ):
         self.model_name = name

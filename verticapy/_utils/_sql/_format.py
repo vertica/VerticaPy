@@ -21,11 +21,12 @@ import numpy as np
 import pandas as pd
 
 import verticapy._config.config as conf
+from verticapy._typing import SQLExpression
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy.errors import ParsingError
 
 
-def clean_query(query: Union[str, list]) -> Union[str, list]:
+def clean_query(query: SQLExpression) -> SQLExpression:
     if isinstance(query, list):
         return [clean_query(q) for q in query]
     else:

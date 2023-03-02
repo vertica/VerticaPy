@@ -22,11 +22,17 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._typing import (
+    ArrayLike,
+    PythonNumber,
+    PythonScalar,
+    SQLColumns,
+    SQLRelation,
+)
 from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import ArrayLike, PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -154,29 +160,29 @@ p: int, optional
 
     def deploySQL(
         self,
-        X: Union[str, list] = [],
+        X: SQLColumns = [],
         test_relation: str = "",
         predict: bool = False,
-        key_columns: Union[str, list] = [],
+        key_columns: SQLColumns = [],
     ):
         """
 	Returns the SQL code needed to deploy the model. 
 
     Parameters
     ----------
-    X: str / list
+    X: SQLColumns
         List of the predictors.
     test_relation: str, optional
         Relation to use to do the predictions.
     predict: bool, optional
         If set to True, returns the prediction instead of the probability.
-    key_columns: str / list, optional
+    key_columns: SQLColumns, optional
         A list of columns to include in the results, but to exclude from 
         computation of the prediction.
 
     Returns
     -------
-    str/list
+    SQLExpression
         the SQL code needed to deploy the model.
 		"""
         if isinstance(X, str):
@@ -248,7 +254,7 @@ p: int, optional
         return clean_query(sql)
 
     def classification_report(
-        self, cutoff: Union[int, float, list] = [], labels: Union[ArrayLike, str] = []
+        self, cutoff: Union[PythonNumber, list] = [], labels: Union[ArrayLike, str] = []
     ):
         """
     Computes a classification report using multiple metrics to evaluate the model
@@ -258,7 +264,7 @@ p: int, optional
 
     Parameters
     ----------
-    cutoff: int / float / list, optional
+    cutoff: PythonNumber / list, optional
         Cutoff for which the tested category is accepted as a prediction. 
         For multiclass classification, each tested category becomes positive case
         and untested categories are merged into the negative cases. This list 
@@ -286,7 +292,7 @@ p: int, optional
 
     Parameters
     ----------
-    pos_label: int / float / str
+    pos_label: PythonScalar
         The response column class to be considered positive.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -317,17 +323,17 @@ p: int, optional
         )
 
     def confusion_matrix(
-        self, pos_label: PythonScalar = None, cutoff: Union[int, float] = -1,
+        self, pos_label: PythonScalar = None, cutoff: PythonNumber = -1,
     ):
         """
     Computes the model confusion matrix.
 
     Parameters
     ----------
-    pos_label: int / float / str, optional
+    pos_label: PythonScalar, optional
         Label to consider as positive. All the other classes will be merged and
         considered as negative for multiclass classification.
-    cutoff: int / float, optional
+    cutoff: PythonNumber, optional
         Cutoff for which the tested category will be accepted as a prediction. If the 
         cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
 
@@ -376,7 +382,7 @@ p: int, optional
 
     Parameters
     ----------
-    pos_label: int / float / str
+    pos_label: PythonScalar
         To draw a lift chart, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -407,7 +413,7 @@ p: int, optional
 
     Parameters
     ----------
-    pos_label: int / float / str
+    pos_label: PythonScalar
         To draw the PRC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -435,9 +441,9 @@ p: int, optional
     def predict(
         self,
         vdf: SQLRelation,
-        X: Union[str, list] = [],
+        X: SQLColumns = [],
         name: str = "",
-        cutoff: Union[int, float] = 0.5,
+        cutoff: PythonNumber = 0.5,
         inplace: bool = True,
         **kwargs,
     ):
@@ -451,7 +457,7 @@ p: int, optional
         relation, but you must enclose it with an alias. For example,  
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
         incorrect.
-    X: str / list, optional
+    X: SQLColumns, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
@@ -526,9 +532,9 @@ p: int, optional
     def predict_proba(
         self,
         vdf: SQLRelation,
-        X: Union[str, list] = [],
+        X: SQLColumns = [],
         name: str = "",
-        pos_label: Union[int, str, float] = None,
+        pos_label: PythonScalar = None,
         inplace: bool = True,
         **kwargs,
     ):
@@ -541,13 +547,13 @@ p: int, optional
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
         is correct, whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: str / list, optional
+    X: SQLColumns, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
         Name of the additional prediction vDataColumn. If unspecified, a name is 
 	    generated based on the model and class names.
-    pos_label: int / float / str, optional
+    pos_label: PythonScalar, optional
         Class label, the class for which the probability is calculated. 
 	    If name is specified and pos_label is unspecified, the probability column 
 	    names use the following format: name_class1, name_class2, etc.
@@ -622,7 +628,7 @@ p: int, optional
 
     Parameters
     ----------
-    pos_label: int / float / str
+    pos_label: PythonScalar
         To draw the ROC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
@@ -654,7 +660,7 @@ p: int, optional
         self,
         method: str = "accuracy",
         pos_label: Union[str, int, float] = None,
-        cutoff: Union[int, float] = -1,
+        cutoff: PythonNumber = -1,
         nbins: int = 10000,
     ):
         """
@@ -768,7 +774,7 @@ This object uses pure SQL to compute the final score.
 
 Parameters
 ----------
-bandwidth: int / float, optional
+bandwidth: PythonNumber, optional
     The bandwidth of the kernel.
 kernel: str, optional
     The kernel used during the learning phase.
@@ -779,7 +785,7 @@ kernel: str, optional
 p: int, optional
     The p corresponding to the one of the p-distances (distance metric used during 
     the model computation).
-max_leaf_nodes: int / float, optional
+max_leaf_nodes: PythonNumber, optional
     The maximum number of leaf nodes, an integer between 1 and 1e9, inclusive.
 max_depth: int, optional
     The maximum tree depth, an integer between 1 and 100, inclusive.
@@ -825,10 +831,10 @@ xlim: list, optional
     def __init__(
         self,
         name: str,
-        bandwidth: Union[int, float] = 1.0,
+        bandwidth: PythonNumber = 1.0,
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         p: int = 2,
-        max_leaf_nodes: Union[int, float] = 1e9,
+        max_leaf_nodes: PythonNumber = 1e9,
         max_depth: int = 5,
         min_samples_leaf: int = 1,
         nbins: int = 5,
@@ -944,7 +950,7 @@ xlim: list, optional
                 y += [K]
         return [x, y]
 
-    def fit(self, input_relation: SQLRelation, X: Union[str, list] = []):
+    def fit(self, input_relation: SQLRelation, X: SQLColumns = []):
         """
     Trains the model.
 
@@ -1210,27 +1216,24 @@ p: int, optional
         )
 
     def deploySQL(
-        self,
-        X: Union[str, list] = [],
-        test_relation: str = "",
-        key_columns: Union[str, list] = [],
+        self, X: SQLColumns = [], test_relation: str = "", key_columns: SQLColumns = [],
     ):
         """
     Returns the SQL code needed to deploy the model. 
 
     Parameters
     ----------
-    X: str / list
+    X: SQLColumns
         List of the predictors.
     test_relation: str, optional
         Relation to use to do the predictions.
-    key_columns: str / list, optional
+    key_columns: SQLColumns, optional
         A list of columns to include in the results, but to exclude from 
         computation of the prediction.
 
     Returns
     -------
-    str/list
+    SQLExpression
         the SQL code needed to deploy the model.
         """
         from verticapy._utils._sql._format import clean_query
@@ -1287,7 +1290,7 @@ p: int, optional
     def predict(
         self,
         vdf: SQLRelation,
-        X: Union[str, list] = [],
+        X: SQLColumns = [],
         name: str = "",
         inplace: bool = True,
         **kwargs,
@@ -1301,7 +1304,7 @@ p: int, optional
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
         is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: str / list, optional
+    X: SQLColumns, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
@@ -1416,8 +1419,8 @@ p: int, optional
     def fit(
         self,
         input_relation: SQLRelation,
-        X: Union[str, list] = [],
-        key_columns: Union[str, list] = [],
+        X: SQLColumns = [],
+        key_columns: SQLColumns = [],
         index: str = "",
     ):
         """
@@ -1427,7 +1430,7 @@ p: int, optional
 	----------
 	input_relation: SQLRelation
 		Training relation.
-	X: str / list, optional
+	X: SQLColumns, optional
 		List of the predictors.
 	key_columns: list, optional
 		Columns not used during the algorithm computation but which will be used

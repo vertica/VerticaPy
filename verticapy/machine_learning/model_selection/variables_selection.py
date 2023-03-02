@@ -19,9 +19,9 @@ from typing import Literal, Union
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
+from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -44,12 +44,12 @@ from verticapy.sql.drop import drop
 def randomized_features_search_cv(
     estimator,
     input_relation: SQLRelation,
-    X: Union[str, list],
+    X: SQLColumns,
     y: str,
     metric: str = "auto",
     cv: int = 3,
     pos_label: PythonScalar = None,
-    cutoff: Union[int, float] = -1,
+    cutoff: PythonNumber = -1,
     training_score: bool = True,
     comb_limit: int = 100,
     skip_error: bool = True,
@@ -67,7 +67,7 @@ estimator: object
     Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
-X: str / list
+X: SQLColumns
     List of the predictor columns.
 y: str
     Response Column.
@@ -287,7 +287,7 @@ TableSample
 def stepwise(
     estimator,
     input_relation: SQLRelation,
-    X: Union[str, list],
+    X: SQLColumns,
     y: str,
     criterion: Literal["aic", "bic"] = "bic",
     direction: Literal["forward", "backward"] = "backward",
@@ -310,7 +310,7 @@ estimator: object
     Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
-X: str / list
+X: SQLColumns
     List of the predictor columns.
 y: str
     Response Column.

@@ -20,12 +20,12 @@ from typing import Literal, Union
 import numpy as np
 
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
-from verticapy._typing import SQLRelation
 from verticapy.connection import current_cursor
 
 from verticapy.core.tablesample.base import TableSample
@@ -123,7 +123,7 @@ class Clustering(Unsupervised):
     def predict(
         self,
         vdf: SQLRelation,
-        X: Union[str, list] = [],
+        X: SQLColumns = [],
         name: str = "",
         inplace: bool = True,
     ) -> vDataFrame:
@@ -136,7 +136,7 @@ class Clustering(Unsupervised):
         Object to use to run the prediction. You can also specify a customized 
         relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
         is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: str / list, optional
+    X: SQLColumns, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
@@ -747,8 +747,8 @@ p: int, optional
     def fit(
         self,
         input_relation: SQLRelation,
-        X: Union[str, list] = [],
-        key_columns: Union[str, list] = [],
+        X: SQLColumns = [],
+        key_columns: SQLColumns = [],
         index: str = "",
     ):
         """
@@ -758,9 +758,9 @@ p: int, optional
     ----------
     input_relation: SQLRelation
         Training relation.
-    X: str / list, optional
+    X: SQLColumns, optional
         List of the predictors. If empty, all the numerical vcolumns will be used.
-    key_columns: str / list, optional
+    key_columns: SQLColumns, optional
         Columns not used during the algorithm computation but which will be used
         to create the final relation.
     index: str, optional

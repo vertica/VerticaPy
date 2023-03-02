@@ -40,7 +40,7 @@ class vDFUtils:
         objects and to get all of them formatted.
         Example: self._format_colnames(x0, x1, x2) will return x0_f, x1_f, 
         x2_f where xi_f represents xi correctly formatted.
-    columns: str / list / dict, optional
+    columns: SQLColumns / dict, optional
         List of columns' names to format.
     expected_nb_of_cols: int / list
         [Only used for the function first argument]
@@ -53,7 +53,7 @@ class vDFUtils:
 
     Returns
     -------
-    str / list
+    SQLExpression
         Formatted columns' names.
         """
         if argv:

@@ -18,19 +18,295 @@ from typing import Literal, Union
 import numpy as np
 
 import verticapy._config.config as conf
-from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._typing import SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident, schema_relation, clean_query
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
-from verticapy._typing import SQLRelation
 
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
-from verticapy.machine_learning.vertica.base import Preprocessing, VerticaModel
+from verticapy.machine_learning.vertica.base import Unsupervised, VerticaModel
+
+"""
+General Classes.
+"""
+
+
+class Preprocessing(Unsupervised):
+    @property
+    @abstractmethod
+    def _vertica_transform_sql(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def _vertica_inverse_transform_sql(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
+    def deploySQL(
+        self,
+        key_columns: SQLColumns = [],
+        exclude_columns: SQLColumns = [],
+        X: SQLColumns = [],
+    ):
+        """
+    Returns the SQL code needed to deploy the model. 
+
+    Parameters
+    ----------
+    key_columns: SQLColumns, optional
+        Predictors used during the algorithm computation which will be deployed
+        with the principal components.
+    exclude_columns: SQLColumns, optional
+        Columns to exclude from the prediction.
+    X: SQLColumns, optional
+        List of the columns used to deploy the self. If empty, the model
+        predictors will be used.
+
+    Returns
+    -------
+    str
+        the SQL code needed to deploy the model.
+        """
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        if isinstance(exclude_columns, str):
+            exclude_columns = [exclude_columns]
+        if isinstance(X, str):
+            X = [X]
+        if not (X):
+            X = self.X
+        else:
+            X = [quote_ident(elem) for elem in X]
+        if key_columns:
+            key_columns = ", ".join([quote_ident(col) for col in key_columns])
+        if exclude_columns:
+            exclude_columns = ", ".join([quote_ident(col) for col in exclude_columns])
+        sql = f"""
+            {self._vertica_transform_sql}({', '.join(X)} 
+               USING PARAMETERS 
+               model_name = '{self.model_name}',
+               match_by_pos = 'true'"""
+        if key_columns:
+            sql += f", key_columns = '{key_columns}'"
+        if exclude_columns:
+            sql += f", exclude_columns = '{exclude_columns}'"
+        if self._model_type == "OneHotEncoder":
+            if self.parameters["separator"] == None:
+                separator = "null"
+            else:
+                separator = self.parameters["separator"].lower()
+            sql += f""", 
+                drop_first = '{str(self.parameters['drop_first']).lower()}',
+                ignore_null = '{str(self.parameters['ignore_null']).lower()}',
+                separator = '{separator}',
+                column_naming = '{self.parameters['column_naming']}'"""
+            if self.parameters["column_naming"].lower() in (
+                "values",
+                "values_relaxed",
+            ):
+                if self.parameters["null_column_name"] == None:
+                    null_column_name = "null"
+                else:
+                    null_column_name = self.parameters["null_column_name"].lower()
+                sql += f", null_column_name = '{null_column_name}'"
+        sql += ")"
+        return clean_query(sql)
+
+    def deployInverseSQL(
+        self,
+        key_columns: SQLColumns = [],
+        exclude_columns: SQLColumns = [],
+        X: SQLColumns = [],
+    ) -> str:
+        """
+    Returns the SQL code needed to deploy the inverse model. 
+
+    Parameters
+    ----------
+    key_columns: SQLColumns, optional
+        Predictors used during the algorithm computation which will be deployed
+        with the principal components.
+    exclude_columns: SQLColumns, optional
+        Columns to exclude from the prediction.
+    X: SQLColumns, optional
+        List of the columns used to deploy the inverse model. If empty, the model
+        predictors will be used.
+
+    Returns
+    -------
+    str
+        the SQL code needed to deploy the inverse model.
+        """
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        if isinstance(exclude_columns, str):
+            exclude_columns = [exclude_columns]
+        if not (X):
+            X = self.X
+        elif isinstance(X, str):
+            X = [X]
+        else:
+            X = [quote_ident(x) for x in X]
+        if self._model_type == "OneHotEncoder":
+            raise AttributeError(
+                "method 'deployInverseSQL' is not supported for OneHotEncoder models."
+            )
+        sql = f"""
+            {self._vertica_inverse_transform_sql}({', '.join(X)} 
+                                                          USING PARAMETERS 
+                                                          model_name = '{self.model_name}',
+                                                          match_by_pos = 'true'"""
+        if key_columns:
+            key_columns = ", ".join([quote_ident(kcol) for kcol in key_columns])
+            sql += f", key_columns = '{key_columns}'"
+        if exclude_columns:
+            exclude_columns = ", ".join([quote_ident(ecol) for ecol in exclude_columns])
+            sql += f", exclude_columns = '{exclude_columns}'"
+        sql += ")"
+        return clean_query(sql)
+
+    def get_names(self, inverse: bool = False, X: list = []):
+        """
+    Returns the Transformation output names.
+
+    Parameters
+    ----------
+    inverse: bool, optional
+        If set to True, it returns the inverse transform output names.
+    X: list, optional
+        List of the columns used to get the model output names. If empty, 
+        the model predictors names will be used.
+
+    Returns
+    -------
+    list
+        Python list.
+        """
+        if isinstance(X, str):
+            X = [X]
+        X = [quote_ident(elem) for elem in X]
+        if not (X):
+            X = self.X
+        if self._model_type in ("PCA", "SVD", "MCA") and not (inverse):
+            if self._model_type in ("PCA", "SVD"):
+                n = self.parameters["n_components"]
+                if not (n):
+                    n = len(self.X)
+            else:
+                n = len(self.X)
+            return [f"col{i}" for i in range(1, n + 1)]
+        elif self._model_type == "OneHotEncoder" and not (inverse):
+            names = []
+            for column in self.X:
+                k = 0
+                for i in range(len(self.cat_["category_name"])):
+                    if quote_ident(self.cat_["category_name"][i]) == quote_ident(
+                        column
+                    ):
+                        if (k != 0 or not (self.parameters["drop_first"])) and (
+                            not (self.parameters["ignore_null"])
+                            or self.cat_["category_level"][i] != None
+                        ):
+                            if self.parameters["column_naming"] == "indices":
+                                name = f'"{quote_ident(column)[1:-1]}{self.parameters["separator"]}'
+                                name += f'{self.cat_["category_level_index"][i]}"'
+                                names += [name]
+                            else:
+                                if self.cat_["category_level"][i] != None:
+                                    category_level = self.cat_["category_level"][
+                                        i
+                                    ].lower()
+                                else:
+                                    category_level = self.parameters["null_column_name"]
+                                name = f'"{quote_ident(column)[1:-1]}{self.parameters["separator"]}'
+                                name += f'{category_level}"'
+                                names += [name]
+                        k += 1
+            return names
+        else:
+            return X
+
+    def inverse_transform(self, vdf: SQLRelation, X: SQLColumns = []):
+        """
+    Applies the Inverse Model on a vDataFrame.
+
+    Parameters
+    ----------
+    vdf: SQLRelation
+        input vDataFrame. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+    X: SQLColumns, optional
+        List of the input vcolumns.
+
+    Returns
+    -------
+    vDataFrame
+        object result of the model transformation.
+        """
+        if isinstance(X, str):
+            X = [X]
+        if self._model_type == "OneHotEncoder":
+            raise AttributeError(
+                "method 'inverse_transform' is not supported for OneHotEncoder models."
+            )
+        if not (vdf):
+            vdf = self.input_relation
+        if not (X):
+            X = self.get_names()
+        if isinstance(vdf, str):
+            vdf = vDataFrame(vdf)
+        X = vdf._format_colnames(X)
+        relation = vdf._genSQL()
+        exclude_columns = vdf.get_columns(exclude_columns=X)
+        all_columns = vdf.get_columns()
+        inverse_sql = self.deployInverseSQL(
+            exclude_columns, exclude_columns, all_columns
+        )
+        main_relation = f"(SELECT {inverse_sql} FROM {relation}) VERTICAPY_SUBTABLE"
+        return vDataFrame(main_relation)
+
+    def transform(self, vdf: SQLRelation = None, X: SQLColumns = []):
+        """
+    Applies the model on a vDataFrame.
+
+    Parameters
+    ----------
+    vdf: SQLRelation, optional
+        Input vDataFrame. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+    X: SQLColumns, optional
+        List of the input vcolumns.
+
+    Returns
+    -------
+    vDataFrame
+        object result of the model transformation.
+        """
+        if isinstance(X, str):
+            X = [X]
+        if not (vdf):
+            vdf = self.input_relation
+        if not (X):
+            X = self.X
+        if isinstance(vdf, str):
+            vdf = vDataFrame(vdf)
+        X = vdf._format_colnames(X)
+        relation = vdf._genSQL()
+        exclude_columns = vdf.get_columns(exclude_columns=X)
+        all_columns = vdf.get_columns()
+        columns = self.deploySQL(exclude_columns, exclude_columns, all_columns)
+        main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
+        return vDataFrame(main_relation)
 
 
 @check_minimum_version
@@ -198,7 +474,7 @@ max_text_size: int, optional
 
     Returns
     -------
-    str/list
+    SQLExpression
         the SQL code needed to deploy the model.
         """
         query = f"""
@@ -223,7 +499,7 @@ max_text_size: int, optional
 
         return clean_query(query.format("*", ""))
 
-    def fit(self, input_relation: SQLRelation, X: Union[str, list] = []):
+    def fit(self, input_relation: SQLRelation, X: SQLColumns = []):
         """
 	Trains the model.
 
@@ -231,7 +507,7 @@ max_text_size: int, optional
 	----------
 	input_relation: SQLRelation
 		Training relation.
-	X: str / list
+	X: SQLColumns
 		List of the predictors. If empty, all the columns will be used.
 
 	Returns

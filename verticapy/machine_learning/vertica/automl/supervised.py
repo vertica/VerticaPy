@@ -18,11 +18,11 @@ from typing import Literal, Union
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
+from verticapy._typing import PythonScalar, SQLRelation, SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import schema_relation
 from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -229,13 +229,13 @@ model_grid_ : TableSample
             "preprocess_dict": preprocess_dict,
         }
 
-    def deploySQL(self, X: Union[str, list] = []):
+    def deploySQL(self, X: SQLColumns = []):
         """
         Returns the SQL code needed to deploy the model. 
 
         Parameters
         ----------
-        X: str / list, optional
+        X: SQLColumns, optional
             List of the columns used to deploy the model.
             If empty, the model predictors will be used.
 

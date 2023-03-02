@@ -130,7 +130,7 @@ input_relation: str / TableSample / pandas.DataFrame
     If it is a pandas.DataFrame, a temporary local table is created.
     Otherwise, the vDataFrame is created using the generated SQL code 
     of multiple UNIONs. 
-usecols: str / list, optional
+usecols: SQLColumns, optional
     When input_relation is not an array-like type:
     List of columns to use to create the object. As Vertica is a columnar 
     DB including less columns makes the process faster. Do not hesitate 

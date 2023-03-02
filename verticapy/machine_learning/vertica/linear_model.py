@@ -18,6 +18,7 @@ import copy
 from typing import Literal, Union
 import numpy as np
 
+from verticapy._typing import PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -225,7 +226,7 @@ name: str
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy 
     result.
-C: int / float, optional
+C: PythonNumber, optional
 	The regularization parameter value. The value must be zero or 
     non-negative.
 max_iter: int, optional
@@ -272,7 +273,7 @@ fit_intercept: bool, optional
         self,
         name: str,
         tol: float = 1e-6,
-        C: Union[int, float] = 1.0,
+        C: PythonNumber = 1.0,
         max_iter: int = 100,
         solver: Literal["newton", "bfgs", "cgd"] = "cgd",
         l1_ratio: float = 0.5,
@@ -307,7 +308,7 @@ name: str
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy 
     result.
-C: int / float, optional
+C: PythonNumber, optional
     The regularization parameter value. The value must be zero or 
     non-negative.
 max_iter: int, optional
@@ -351,7 +352,7 @@ fit_intercept: bool, optional
         self,
         name: str,
         tol: float = 1e-6,
-        C: Union[int, float] = 1.0,
+        C: PythonNumber = 1.0,
         max_iter: int = 100,
         solver: Literal["newton", "bfgs", "cgd"] = "cgd",
         fit_intercept: bool = True,
@@ -455,7 +456,7 @@ name: str
 tol: float, optional
 	Determines whether the algorithm has reached the specified 
     accuracy result.
-C: int / float, optional
+C: PythonNumber, optional
     The regularization parameter value. The value must be zero 
     or non-negative.
 max_iter: int, optional
@@ -498,7 +499,7 @@ fit_intercept: bool, optional
         self,
         name: str,
         tol: float = 1e-6,
-        C: Union[int, float] = 1.0,
+        C: PythonNumber = 1.0,
         max_iter: int = 100,
         solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
@@ -541,7 +542,7 @@ penalty: str, optional
         enet : Combination between L1 and L2
 tol: float, optional
     Determines whether the algorithm has reached the specified accuracy result.
-C: int / float, optional
+C: PythonNumber, optional
     The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
     Determines the maximum number of iterations the algorithm performs before 
@@ -588,7 +589,7 @@ fit_intercept: bool, optional
         name: str,
         penalty: Literal["none", "l1", "l2", "enet", None] = "none",
         tol: float = 1e-6,
-        C: Union[int, float] = 1.0,
+        C: PythonNumber = 1.0,
         max_iter: int = 100,
         solver: Literal["newton", "bfgs", "cgd"] = "newton",
         l1_ratio: float = 0.5,

@@ -18,15 +18,351 @@ from typing import Literal
 import numpy as np
 
 from verticapy._config.colors import get_cmap, get_colors
+from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.tablesample.base import TableSample
 
 import verticapy.machine_learning.memmodel as mm
-from verticapy.machine_learning.vertica.base import Decomposition
+from verticapy.machine_learning.vertica.preprocessing import Preprocessing
 
 from verticapy.plotting._matplotlib.mlplot import plot_var
+
+"""
+General Classes.
+"""
+
+
+class Decomposition(Preprocessing):
+    def deploySQL(
+        self,
+        n_components: int = 0,
+        cutoff: PythonNumber = 1,
+        key_columns: SQLColumns = [],
+        exclude_columns: SQLColumns = [],
+        X: SQLColumns = [],
+    ):
+        """
+    Returns the SQL code needed to deploy the model. 
+
+    Parameters
+    ----------
+    n_components: int, optional
+        Number of components to return. If set to 0, all the components will be
+        deployed.
+    cutoff: PythonNumber, optional
+        Specifies the minimum accumulated explained variance. Components are taken 
+        until the accumulated explained variance reaches this value.
+    key_columns: SQLColumns, optional
+        Predictors used during the algorithm computation which will be deployed
+        with the principal components.
+    exclude_columns: SQLColumns, optional
+        Columns to exclude from the prediction.
+    X: SQLColumns, optional
+        List of the columns used to deploy the self. If empty, the model
+        predictors will be used.
+
+    Returns
+    -------
+    str
+        the SQL code needed to deploy the model.
+        """
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        if isinstance(exclude_columns, str):
+            exclude_columns = [exclude_columns]
+        if isinstance(X, str):
+            X = [X]
+        if not (X):
+            X = self.X
+        else:
+            X = [quote_ident(elem) for elem in X]
+        fun = self._vertica_transform_sql
+        sql = f"""{self._vertica_transform_sql}({', '.join(X)} 
+                                            USING PARAMETERS
+                                            model_name = '{self.model_name}',
+                                            match_by_pos = 'true'"""
+        if key_columns:
+            key_columns = ", ".join([quote_ident(col) for col in key_columns])
+            sql += f", key_columns = '{key_columns}'"
+        if exclude_columns:
+            exclude_columns = ", ".join([quote_ident(col) for col in exclude_columns])
+            sql += f", exclude_columns = '{exclude_columns}'"
+        if n_components:
+            sql += f", num_components = {n_components}"
+        else:
+            sql += f", cutoff = {cutoff}"
+        sql += ")"
+        return clean_query(sql)
+
+    def plot(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
+        """
+    Draws a decomposition scatter plot.
+    Parameters
+    ----------
+    dimensions: tuple, optional
+        Tuple of two elements representing the IDs of the model's components.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        vdf = vDataFrame(self.input_relation)
+        ax = self.transform(vdf).scatter(
+            columns=[f"col{dimensions[0]}", f"col{dimensions[1]}"],
+            max_nb_points=100000,
+            ax=ax,
+            **style_kwds,
+        )
+        explained_variance = self.get_vertica_attributes("singular_values")[
+            "explained_variance"
+        ]
+        if not (explained_variance[dimensions[0] - 1]):
+            dimensions_1 = ""
+        else:
+            dimensions_1 = f"({round(explained_variance[dimensions[0] - 1] * 100, 1)}%)"
+        ax.set_xlabel(f"Dim{dimensions[0]} {dimensions_1}")
+        ax.set_ylabel(f"Dim{dimensions[0]} {dimensions_1}")
+        return ax
+
+    def plot_circle(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
+        """
+    Draws a decomposition circle.
+
+    Parameters
+    ----------
+    dimensions: tuple, optional
+        Tuple of two elements representing the IDs of the model's components.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        if self._model_type == "SVD":
+            x = self.get_vertica_attributes("right_singular_vectors")[
+                f"vector{dimensions[0]}"
+            ]
+            y = self.get_vertica_attributes("right_singular_vectors")[
+                f"vector{dimensions[1]}"
+            ]
+        else:
+            x = self.get_vertica_attributes("principal_components")[
+                f"PC{dimensions[0]}"
+            ]
+            y = self.get_vertica_attributes("principal_components")[
+                f"PC{dimensions[1]}"
+            ]
+        explained_variance = self.get_vertica_attributes("singular_values")[
+            "explained_variance"
+        ]
+        return plot_pca_circle(
+            x,
+            y,
+            self.X,
+            (
+                explained_variance[dimensions[0] - 1],
+                explained_variance[dimensions[1] - 1],
+            ),
+            dimensions,
+            ax,
+            **style_kwds,
+        )
+
+    def plot_scree(self, ax=None, **style_kwds):
+        """
+    Draws a decomposition scree plot.
+
+    Parameters
+    ----------
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        explained_variance = self.get_vertica_attributes("singular_values")[
+            "explained_variance"
+        ]
+        explained_variance, n = (
+            [100 * elem for elem in explained_variance],
+            len(explained_variance),
+        )
+        information = TableSample(
+            {
+                "dimensions": [i + 1 for i in range(n)],
+                "percentage_explained_variance": explained_variance,
+            }
+        ).to_vdf()
+        information["dimensions_center"] = information["dimensions"] + 0.5
+        ax = information["dimensions"].hist(
+            method="avg",
+            of="percentage_explained_variance",
+            h=1,
+            max_cardinality=1,
+            ax=ax,
+            **style_kwds,
+        )
+        ax = information["percentage_explained_variance"].plot(
+            ts="dimensions_center", ax=ax, color="black"
+        )
+        ax.set_xlim(1, n + 1)
+        ax.set_xticks([i + 1.5 for i in range(n)])
+        ax.set_xticklabels([i + 1 for i in range(n)])
+        ax.set_ylabel('"percentage_explained_variance"')
+        ax.set_xlabel('"dimensions"')
+        for i in range(n):
+            text_str = f"{round(explained_variance[i], 1)}%"
+            ax.text(
+                i + 1.5, explained_variance[i] + 1, text_str,
+            )
+        return ax
+
+    def score(
+        self,
+        X: SQLColumns = [],
+        input_relation: str = "",
+        method: Literal["avg", "median"] = "avg",
+        p: int = 2,
+    ):
+        """
+    Returns the decomposition score on a dataset for each transformed column. It
+    is the average / median of the p-distance between the real column and its 
+    result after applying the decomposition model and its inverse.  
+
+    Parameters
+    ----------
+    X: SQLColumns, optional
+        List of the columns used to deploy the self. If empty, the model
+        predictors will be used.
+    input_relation: str, optional
+        Input Relation. If empty, the model input relation will be used.
+    method: str, optional
+        Distance Method used to do the scoring.
+            avg    : The average is used as aggregation.
+            median : The median is used as aggregation.
+    p: int, optional
+        The p of the p-distance.
+
+    Returns
+    -------
+    TableSample
+        An object containing the result. For more information, see
+        utilities.TableSample.
+        """
+        if isinstance(X, str):
+            X = [X]
+        if not (X):
+            X = self.X
+        if not (input_relation):
+            input_relation = self.input_relation
+        method = str(method).upper()
+        if method == "MEDIAN":
+            method = "APPROXIMATE_MEDIAN"
+        if self._model_type in ("PCA", "SVD"):
+            n_components = self.parameters["n_components"]
+            if not (n_components):
+                n_components = len(X)
+        else:
+            n_components = len(X)
+        col_init_1 = [f"{X[idx]} AS col_init{idx}" for idx in range(len(X))]
+        col_init_2 = [f"col_init{idx}" for idx in range(len(X))]
+        cols = [f"col{idx + 1}" for idx in range(n_components)]
+        query = f"""SELECT 
+                        {self._vertica_transform_sql}
+                        ({', '.join(self.X)} 
+                            USING PARAMETERS 
+                            model_name = '{self.model_name}', 
+                            key_columns = '{', '.join(self.X)}', 
+                            num_components = {n_components}) OVER () 
+                    FROM {input_relation}"""
+        query = f"""
+            SELECT 
+                {', '.join(col_init_1 + cols)} 
+            FROM ({query}) VERTICAPY_SUBTABLE"""
+        query = f"""
+            SELECT 
+                {self._vertica_inverse_transform_sql}
+                ({', '.join(col_init_2 + cols)} 
+                    USING PARAMETERS 
+                    model_name = '{self.model_name}', 
+                    key_columns = '{', '.join(col_init_2)}', 
+                    exclude_columns = '{', '.join(col_init_2)}', 
+                    num_components = {n_components}) OVER () 
+            FROM ({query}) y"""
+        p_distances = [
+            f"""{method}(POWER(ABS(POWER({X[idx]}, {p}) 
+                         - POWER(col_init{idx}, {p})), {1 / p})) 
+                         AS {X[idx]}"""
+            for idx in range(len(X))
+        ]
+        query = f"""
+            SELECT 
+                'Score' AS 'index', 
+                {', '.join(p_distances)} 
+            FROM ({query}) z"""
+        return TableSample.read_sql(query, title="Getting Model Score.").transpose()
+
+    def transform(
+        self,
+        vdf: SQLRelation = None,
+        X: SQLColumns = [],
+        n_components: int = 0,
+        cutoff: PythonNumber = 1,
+    ):
+        """
+    Applies the model on a vDataFrame.
+
+    Parameters
+    ----------
+    vdf: SQLRelation, optional
+        Input vDataFrame. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+    X: SQLColumns, optional
+        List of the input vcolumns.
+    n_components: int, optional
+        Number of components to return. If set to 0, all the components will 
+        be deployed.
+    cutoff: PythonNumber, optional
+        Specifies the minimum accumulated explained variance. Components are 
+        taken until the accumulated explained variance reaches this value.
+
+    Returns
+    -------
+    vDataFrame
+        object result of the model transformation.
+        """
+        if isinstance(X, str):
+            X = [X]
+        if not (vdf):
+            vdf = self.input_relation
+        if not (X):
+            X = self.X
+        if isinstance(vdf, str):
+            vdf = vDataFrame(vdf)
+        X = vdf._format_colnames(X)
+        relation = vdf._genSQL()
+        exclude_columns = vdf.get_columns(exclude_columns=X)
+        all_columns = vdf.get_columns()
+        columns = self.deploySQL(
+            n_components, cutoff, exclude_columns, exclude_columns, all_columns
+        )
+        main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
+        return vDataFrame(main_relation)
 
 
 class PCA(Decomposition):

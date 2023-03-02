@@ -18,6 +18,7 @@ from typing import Union
 from collections.abc import Iterable
 
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, extract_subquery, quote_ident
@@ -149,13 +150,13 @@ class vDFRead:
         you don't want to activate interactive table for all vDataFrames."""
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
-    def get_columns(self, exclude_columns: Union[str, list] = []):
+    def get_columns(self, exclude_columns: SQLColumns = []):
         """
     Returns the vDataFrame vDataColumns.
 
     Parameters
     ----------
-    exclude_columns: str / list, optional
+    exclude_columns: SQLColumns, optional
         List of the vDataColumns names to exclude from the final list. 
 
     Returns
@@ -203,7 +204,7 @@ class vDFRead:
         """
         return self.iloc(limit=limit, offset=0)
 
-    def iloc(self, limit: int = 5, offset: int = 0, columns: Union[str, list] = []):
+    def iloc(self, limit: int = 5, offset: int = 0, columns: SQLColumns = []):
         """
     Returns a part of the vDataFrame (delimited by an offset and a limit).
 
@@ -213,7 +214,7 @@ class vDFRead:
         Number of elements to display.
     offset: int, optional
         Number of elements to skip.
-    columns: str / list, optional
+    columns: SQLColumns, optional
         A list containing the names of the vDataColumns to include in the result. 
         If empty, all vDataColumns will be selected.
 
@@ -326,13 +327,13 @@ class vDFRead:
         return self.iloc(limit=limit, offset=-1)
 
     @save_verticapy_logs
-    def select(self, columns: Union[str, list]):
+    def select(self, columns: SQLColumns):
         """
     Returns a copy of the vDataFrame with only the selected vDataColumns.
 
     Parameters
     ----------
-    columns: str / list
+    columns: SQLColumns
         List of the vDataColumns to select. It can also be customized expressions.
 
     Returns

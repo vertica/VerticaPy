@@ -18,8 +18,8 @@ from typing import Literal, Union
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
+from verticapy._typing import ArrayLike, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._typing import SQLRelation
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -102,7 +102,7 @@ model_: object
         self,
         name: str,
         n_cluster: int = None,
-        init: Union[str, list] = "kmeanspp",
+        init: Union[Literal["kmeanspp", "random"], ArrayLike] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
         use_kprototype: bool = False,

@@ -19,6 +19,7 @@ from typing import Literal, Union
 from collections.abc import Iterable
 
 import verticapy._config.config as conf
+from verticapy._typing import PythonNumber, SQLColumns, SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -61,7 +62,7 @@ class vDFFilter:
         column: str,
         method: Literal["hybrid", "over", "under"] = "hybrid",
         x: float = 0.5,
-        order_by: Union[str, list] = [],
+        order_by: SQLColumns = [],
     ):
         """
     Balances the dataset using the input method.
@@ -81,7 +82,7 @@ class vDFFilter:
     x: float, optional
         The desired ratio between the majority class and minority classes.
         Only used when method is 'over' or 'under'.
-    order_by: str / list, optional
+    order_by: SQLColumns, optional
         vDataColumns used to sort the data.
 
     Returns
@@ -153,7 +154,7 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def drop(self, columns: Union[str, list] = []):
+    def drop(self, columns: SQLColumns = []):
         """
     Drops the input vDataColumns from the vDataFrame. Dropping vDataColumns means 
     not selecting them in the final SQL code generation.
@@ -162,7 +163,7 @@ class vDFFilter:
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names.
 
     Returns
@@ -178,7 +179,7 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def drop_duplicates(self, columns: Union[str, list] = []):
+    def drop_duplicates(self, columns: SQLColumns = []):
         """
     Filters the duplicated using a partition by the input vDataColumns.
 
@@ -190,7 +191,7 @@ class vDFFilter:
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all vDataColumns will be selected.
 
     Returns
@@ -221,13 +222,13 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def dropna(self, columns: Union[str, list] = []):
+    def dropna(self, columns: SQLColumns = []):
         """
     Filters the vDataFrame where the input vDataColumns are missing.
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all vDataColumns will be selected.
 
     Returns
@@ -266,7 +267,7 @@ class vDFFilter:
 
     Parameters
     ---------- 
-    conditions: str / list, optional
+    conditions: SQLExpression, optional
         List of expressions. For example to keep only the records where the 
         vDataColumn 'column' is greater than 5 and lesser than 10 you can write 
         ['"column" > 5', '"column" < 10'].
@@ -469,10 +470,10 @@ class vDFFilter:
     @save_verticapy_logs
     def sample(
         self,
-        n: Union[int, float] = None,
+        n: PythonNumber = None,
         x: float = None,
         method: Literal["random", "systematic", "stratified"] = "random",
-        by: Union[str, list] = [],
+        by: SQLColumns = [],
     ):
         """
     Downsamples the input vDataFrame.
@@ -482,7 +483,7 @@ class vDFFilter:
 
     Parameters
      ----------
-     n: int / float, optional
+     n: PythonNumber, optional
         Approximate number of element to consider in the sample.
      x: float, optional
         The sample size. For example it has to be equal to 0.33 to downsample to 
@@ -492,7 +493,7 @@ class vDFFilter:
             random     : random sampling.
             systematic : systematic sampling.
             stratified : stratified sampling.
-    by: str / list, optional
+    by: SQLColumns, optional
         vDataColumns used in the partition.
 
     Returns
@@ -563,9 +564,9 @@ class vDFFilter:
     @save_verticapy_logs
     def search(
         self,
-        conditions: Union[str, list] = "",
-        usecols: Union[str, list] = [],
-        expr: Union[str, list] = [],
+        conditions: SQLExpression = "",
+        usecols: SQLColumns = [],
+        expr: SQLExpression = [],
         order_by: Union[str, dict, list] = [],
     ):
         """
@@ -573,12 +574,12 @@ class vDFFilter:
     
     Parameters
     ----------
-    conditions: str / list, optional
+    conditions: SQLExpression, optional
         Filters of the search. It can be a list of conditions or an expression.
-    usecols: str / list, optional
+    usecols: SQLColumns, optional
         vDataColumns to select from the final vDataFrame relation. If empty, all
         vDataColumns will be selected.
-    expr: str / list, optional
+    expr: SQLExpression, optional
         List of customized expressions in pure SQL.
         For example: 'column1 * column2 AS my_name'.
     order_by: str / dict / list, optional
@@ -665,22 +666,22 @@ class vDCFilter:
     @save_verticapy_logs
     def drop_outliers(
         self,
-        threshold: Union[int, float] = 4.0,
+        threshold: PythonNumber = 4.0,
         use_threshold: bool = True,
-        alpha: Union[int, float] = 0.05,
+        alpha: PythonNumber = 0.05,
     ):
         """
     Drops outliers in the vDataColumn.
 
     Parameters
     ----------
-    threshold: int / float, optional
+    threshold: PythonNumber, optional
         Uses the Gaussian distribution to identify outliers. After normalizing 
         the data (Z-Score), if the absolute value of the record is greater than 
         the threshold, it will be considered as an outlier.
     use_threshold: bool, optional
         Uses the threshold instead of the 'alpha' parameter.
-    alpha: int / float, optional
+    alpha: PythonNumber, optional
         Number representing the outliers threshold. Values lesser than 
         quantile(alpha) or greater than quantile(1-alpha) will be dropped.
 
@@ -740,7 +741,7 @@ class vDCFilter:
 
     Parameters
     ----------
-    val: str / int / float / date / list
+    val: str / PythonNumber / date / list
         List of the different records. For example, to check if Badr and Fouad  
         are in the vDataColumn. You can write the following list: ["Fouad", "Badr"]
 

@@ -18,9 +18,9 @@ import math
 from collections.abc import Iterable
 from typing import Union
 
+from verticapy._typing import PythonScalar, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
-from verticapy._typing import PythonScalar, SQLRelation
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -51,7 +51,7 @@ input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int / float / str, optional
+pos_label: PythonScalar, optional
 	Label to use to identify the positive class. If pos_label is NULL then the
 	global accuracy will be computed.
 
@@ -134,7 +134,7 @@ def classification_report(
     y_score: list = [],
     input_relation: SQLRelation = "",
     labels: list = [],
-    cutoff: Union[int, float, list] = [],
+    cutoff: Union[PythonNumber, list] = [],
     estimator=None,
     nbins: int = 10000,
 ):
@@ -155,7 +155,7 @@ input_relation: SQLRelation, optional
     For example: (SELECT ... FROM ...) x
 labels: list, optional
 	List of the response column categories to use.
-cutoff: int / float / list, optional
+cutoff: PythonNumber / list, optional
 	Cutoff for which the tested category will be accepted as prediction. 
 	For multiclass classification, the list will represent the the classes 
     threshold. If it is empty, the best cutoff will be used.
@@ -314,7 +314,7 @@ input_relation: SQLRelation
 	Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: str / int / float, optional
+pos_label: str / PythonNumber, optional
 	To compute the one dimension Confusion Matrix, one of the response column 
 	class must be the positive one. The parameter 'pos_label' represents 
 	this class.

@@ -17,8 +17,8 @@ permissions and limitations under the License.
 from typing import Literal, Union
 
 import verticapy._config.config as conf
-from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._typing import SQLRelation
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy.errors import ParameterError, ModelError
 
 from verticapy.core.vdataframe.base import vDataFrame

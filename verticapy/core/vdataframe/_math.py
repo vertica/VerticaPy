@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import random
 from typing import Literal, Union
 
+from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -64,13 +65,13 @@ class vDFMath:
         return vdf
 
     @save_verticapy_logs
-    def abs(self, columns: Union[str, list] = []):
+    def abs(self, columns: SQLColumns = []):
         """
     Applies the absolute value function to all input vDataColumns. 
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will 
         be used.
 
@@ -97,8 +98,8 @@ class vDFMath:
     def analytic(
         self,
         func: str,
-        columns: Union[str, list] = [],
-        by: Union[str, list] = [],
+        columns: SQLColumns = [],
+        by: SQLColumns = [],
         order_by: Union[dict, list] = [],
         name: str = "",
         offset: int = 1,
@@ -155,9 +156,9 @@ class vDFMath:
             var          : variance
                 Other analytical functions could work if it is part of 
                 the DB version you are using.
-    columns: str / list, optional
+    columns: SQLColumns, optional
         Input vDataColumns. It can be a list of one or two elements.
-    by: str / list, optional
+    by: SQLColumns, optional
         vDataColumns used in the partition.
     order_by: dict / list, optional
         List of the vDataColumns to use to sort the data using asc order or
@@ -576,7 +577,7 @@ class vDCMath:
         return self.apply(func="ABS({})")
 
     @save_verticapy_logs
-    def add(self, x: Union[int, float]):
+    def add(self, x: PythonNumber):
         """
     Adds the input element to the vDataColumn.
 
@@ -757,7 +758,7 @@ class vDCMath:
             sum          : sum
             tan          : trigonometric tangent
             tanh         : hyperbolic tangent
-    x: int / float / str, optional
+    x: PythonScalar, optional
         If the function has two arguments (example, power or mod), 'x' represents 
         the second argument.
 
@@ -857,13 +858,13 @@ class vDCMath:
         return self.apply(func=decode(StringSQL("{}"), *argv))
 
     @save_verticapy_logs
-    def div(self, x: Union[int, float]):
+    def div(self, x: PythonNumber):
         """
     Divides the vDataColumn by the input element.
 
     Parameters
     ----------
-    x: int / float
+    x: PythonNumber
         Input number.
 
     Returns
@@ -957,13 +958,13 @@ class vDCMath:
         )
 
     @save_verticapy_logs
-    def sub(self, x: Union[int, float]):
+    def sub(self, x: PythonNumber):
         """
     Subtracts the input element from the vDataColumn.
 
     Parameters
     ----------
-    x: int / float
+    x: PythonNumber
         If the vDataColumn type is date like (date, datetime ...), the parameter 'x' 
         will represent the number of seconds, otherwise it will represent a number.
 

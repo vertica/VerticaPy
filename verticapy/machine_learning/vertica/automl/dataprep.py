@@ -18,10 +18,10 @@ import datetime
 from typing import Literal, Union
 
 import verticapy._config.config as conf
+from verticapy._typing import SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.vdataframe.base import vDataFrame

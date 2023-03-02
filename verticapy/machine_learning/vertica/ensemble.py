@@ -20,15 +20,15 @@ import numpy as np
 
 from vertica_python.errors import MissingRelation, QueryError
 
-from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._typing import PythonNumber, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_name
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
-from verticapy._typing import SQLRelation
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -429,7 +429,7 @@ max_features: int / str, optional
     methods.
         auto : square root of the total number of predictors.
         max  : number of predictors.
-max_leaf_nodes: int / float, optional
+max_leaf_nodes: PythonNumber, optional
     The maximum number of leaf nodes a tree in the forest 
     can have, an integer between 1 and 1e9, inclusive.
 sample: float, optional
@@ -444,7 +444,7 @@ min_samples_leaf: int, optional
     after splitting a node, an integer between 1 and 1e6, 
     inclusive. A split that causes fewer remaining samples 
     is discarded. 
-min_info_gain: int / float, optional
+min_info_gain: PythonNumber, optional
     The minimum threshold for including a split, a float 
     between 0.0 and 1.0, inclusive. A split with information 
     gain less than this threshold is discarded.
@@ -489,11 +489,11 @@ nbins: int, optional
         name: str,
         n_estimators: int = 10,
         max_features: Union[Literal["auto", "max"], int] = "auto",
-        max_leaf_nodes: Union[int, float] = 1e9,
+        max_leaf_nodes: PythonNumber = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
         min_samples_leaf: int = 1,
-        min_info_gain: Union[int, float] = 0.0,
+        min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
         self.model_name = name
@@ -743,7 +743,7 @@ max_features: int / str, optional
     methods.
         auto : square root of the total number of predictors.
         max  : number of predictors.
-max_leaf_nodes: int / float, optional
+max_leaf_nodes: PythonNumber, optional
     The maximum number of leaf nodes a tree in the forest 
     can have, an integer between 1 and 1e9, inclusive.
 sample: float, optional
@@ -758,7 +758,7 @@ min_samples_leaf: int, optional
     after splitting a node, an integer between 1 and 1e6, 
     inclusive. A split that causes fewer remaining samples 
     is discarded. 
-min_info_gain: int / float, optional
+min_info_gain: PythonNumber, optional
     The minimum threshold for including a split, a float 
     between 0.0 and 1.0, inclusive. A split with information 
     gain less than this threshold is discarded.
@@ -804,11 +804,11 @@ nbins: int, optional
         name: str,
         n_estimators: int = 10,
         max_features: Union[Literal["auto", "max"], int] = "auto",
-        max_leaf_nodes: Union[int, float] = 1e9,
+        max_leaf_nodes: PythonNumber = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
         min_samples_leaf: int = 1,
-        min_info_gain: Union[int, float] = 0.0,
+        min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
         self.model_name = name
@@ -1244,9 +1244,9 @@ col_sample_by_tree: float, optional
 
     def deploySQL(
         self,
-        X: Union[str, list] = [],
-        cutoff: Union[int, float] = 0.7,
-        contamination: Union[int, float] = None,
+        X: SQLColumns = [],
+        cutoff: PythonNumber = 0.7,
+        contamination: PythonNumber = None,
         return_score: bool = False,
     ) -> str:
         """
@@ -1254,16 +1254,16 @@ col_sample_by_tree: float, optional
 
     Parameters
     ----------
-    X: str / list, optional
+    X: SQLColumns, optional
         List of the columns used to deploy the model. 
         If empty, the model predictors are used.
-    cutoff: int / float, optional
+    cutoff: PythonNumber, optional
         Float in the range (0.0, 1.0), specifies the 
         threshold that determines if a data point is 
         an anomaly. If the anomaly_score for a data 
         point is greater than or equal to the cutoff, 
         the data point is marked as an anomaly.
-    contamination: int / float, optional
+    contamination: PythonNumber, optional
         Float in the range (0,1), the approximate ratio 
         of data points in the training data that should 
         be labeled as anomalous. If this parameter is 
@@ -1310,10 +1310,10 @@ col_sample_by_tree: float, optional
     def predict(
         self,
         vdf: SQLRelation,
-        X: Union[str, list] = [],
+        X: SQLColumns = [],
         name: str = "",
-        cutoff: Union[int, float] = 0.7,
-        contamination: Union[int, float] = None,
+        cutoff: PythonNumber = 0.7,
+        contamination: PythonNumber = None,
         inplace: bool = True,
     ) -> vDataFrame:
         """
@@ -1333,13 +1333,13 @@ col_sample_by_tree: float, optional
     name: str, optional
         Name of the additional vDataColumn. If empty, 
         a name is generated.
-    cutoff: int / float, optional
+    cutoff: PythonNumber, optional
         Float in the range (0.0, 1.0), specifies the 
         threshold that determines if a data point is 
         an anomaly. If the anomaly_score for a data 
         point is greater than or equal to the cutfoff, 
         the data point is marked as an anomaly.
-    contamination: int / float, optional
+    contamination: PythonNumber, optional
         Float in the range (0,1), the approximate ratio 
         of data points in the training data that should 
         be labeled as anomalous. If this parameter is 

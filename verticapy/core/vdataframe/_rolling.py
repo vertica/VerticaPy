@@ -17,9 +17,10 @@ permissions and limitations under the License.
 import datetime, random
 from typing import Union
 
-from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._typing import SQLColumns
 from verticapy._utils._gen import gen_name
 from verticapy._utils._map import verticapy_agg_name
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import ParameterError
 
@@ -30,8 +31,8 @@ class vDFRolling:
         self,
         func: str,
         window: Union[list, tuple],
-        columns: Union[str, list],
-        by: Union[str, list] = [],
+        columns: SQLColumns,
+        by: SQLColumns = [],
         order_by: Union[dict, list] = [],
         name: str = "",
     ):
@@ -74,9 +75,9 @@ class vDFRolling:
         a Time Window. For example, if set to (-5, 1), the moving windows will
         take 5 rows preceding and one following. If set to ('- 5 minutes', '0 minutes'),
         the moving window will take all elements of the last 5 minutes.
-    columns: str / list
+    columns: SQLColumns
         Input vDataColumns. It can be a list of one or two elements.
-    by: str / list, optional
+    by: SQLColumns, optional
         vDataColumns used in the partition.
     order_by: dict / list, optional
         List of the vDataColumns to use to sort the data using asc order or

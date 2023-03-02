@@ -17,6 +17,7 @@ permissions and limitations under the License.
 from typing import Literal, Union
 import numpy as np
 
+from verticapy._typing import PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -87,7 +88,7 @@ nbtype: str, optional
     def __init__(
         self,
         name: str,
-        alpha: Union[int, float] = 1.0,
+        alpha: PythonNumber = 1.0,
         nbtype: Literal[
             "auto", "bernoulli", "categorical", "multinomial", "gaussian"
         ] = "auto",

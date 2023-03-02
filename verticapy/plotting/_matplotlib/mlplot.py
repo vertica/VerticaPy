@@ -25,6 +25,7 @@ from matplotlib.lines import Line2D
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
+from verticapy._typing import PythonNumber
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
@@ -229,7 +230,7 @@ def lof_plot(
     input_relation: str,
     columns: list,
     lof: str,
-    TableSample: Union[int, float] = -1,
+    TableSample: PythonNumber = -1,
     ax=None,
     **style_kwds,
 ):

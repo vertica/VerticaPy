@@ -18,6 +18,7 @@ import math, warnings
 from typing import Literal, Union
 
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -26,7 +27,7 @@ class vDFNorm:
     @save_verticapy_logs
     def normalize(
         self,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
     ):
         """
@@ -34,7 +35,7 @@ class vDFNorm:
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     method: str, optional
@@ -80,7 +81,7 @@ class vDCNorm:
     def normalize(
         self,
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
-        by: Union[str, list] = [],
+        by: SQLColumns = [],
         return_trans: bool = False,
     ):
         """
@@ -96,7 +97,7 @@ class vDCNorm:
                 (x - median) / (1.4826 * mad)
             minmax        : Normalization using the MinMax (min and max).
                 (x - min) / (max - min)
-    by: str / list, optional
+    by: SQLColumns, optional
         vDataColumns used in the partition.
     return_trans: bool, optimal
         If set to True, the method will return the transformation used instead of
