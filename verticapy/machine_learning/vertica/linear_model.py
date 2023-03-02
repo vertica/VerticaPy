@@ -241,6 +241,11 @@ class LinearModelClassifier(LinearModel):
         )
 
 
+"""
+Algorithms used for regression.
+"""
+
+
 class ElasticNet(Regressor, LinearModel):
     """
     Creates a ElasticNet object using the Vertica 

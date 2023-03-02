@@ -28,6 +28,10 @@ import verticapy.machine_learning.memmodel as mm
 
 from verticapy.machine_learning.vertica.base import MulticlassClassifier
 
+"""
+Algorithms used for classification.
+"""
+
 
 class NaiveBayes(MulticlassClassifier):
     """

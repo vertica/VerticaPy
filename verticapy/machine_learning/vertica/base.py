@@ -326,7 +326,7 @@ class VerticaModel:
                 del parameters[p]
         return parameters
 
-    def set_params(self, parameters: dict = {}) -> None:
+    def set_params(self, parameters: dict = {}, **kwds) -> None:
         """
         Sets the parameters of the model.
 
@@ -334,9 +334,12 @@ class VerticaModel:
         ----------
         parameters: dict, optional
             New parameters.
+        **kwds
+            New parameters can also be passed as arguments
+            Example: set_params(param1 = val1, param2 = val2)
         """
         all_init_params = list(get_type_hints(self.__init__).keys())
-        new_parameters = copy.deepcopy(self.parameters)
+        new_parameters = copy.deepcopy({**self.parameters, **kwds})
         new_parameters_keys = list(new_parameters.keys())
         for p in new_parameters_keys:
             if p not in all_init_params:

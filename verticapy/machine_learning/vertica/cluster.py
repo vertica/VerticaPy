@@ -49,7 +49,7 @@ if conf._get_import_success("graphviz"):
     from graphviz import Source
 
 """
-General Classes.
+General Class.
 """
 
 
@@ -755,7 +755,7 @@ class BisectingKMeans(KMeans, Tree):
 
 
 """
-Algorithms used for Clustering.
+Algorithms used for clustering.
 """
 
 

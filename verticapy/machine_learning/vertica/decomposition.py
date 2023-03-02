@@ -402,7 +402,7 @@ class Decomposition(Preprocessing):
 
 
 """
-Decomposition Algorithms.
+Algorithms used for decomposition.
 """
 
 

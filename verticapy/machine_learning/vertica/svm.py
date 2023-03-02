@@ -30,6 +30,109 @@ from verticapy.machine_learning.vertica.linear_model import (
     LinearModelClassifier,
 )
 
+"""
+Algorithms used for regression.
+"""
+
+
+class LinearSVR(Regressor, LinearModel):
+    """
+    Creates a LinearSVR object using the Vertica 
+    SVM (Support Vector Machine) algorithm. This 
+    algorithm finds the hyperplane used to approximate 
+    distribution of the data.
+
+    Parameters
+    ----------
+    name: str
+        Name of the the model. The model will be 
+        stored in the DB.
+    tol: float, optional
+        To use to control accuracy.
+    C: float, optional
+        The weight for misclassification cost. 
+        The algorithm minimizes the regularization 
+        cost and the misclassification cost.
+    fit_intercept: bool, optional
+        A bool to fit also the intercept.
+    intercept_scaling: float
+        A float value, serves as the value of a 
+        dummy feature whose coefficient Vertica 
+        uses to calculate the model intercept. 
+        Because the dummy feature is not in the 
+        training data, its values are set to a 
+        constant, by default set to 1. 
+    intercept_mode: str, optional
+        Specify how to treat the intercept.
+            regularized   : Fits the intercept and 
+                            applies a regularization 
+                            on it.
+            unregularized : Fits the intercept but 
+                            does not include it in 
+                            regularization. 
+    acceptable_error_margin: float, optional
+        Defines the acceptable error margin. Any 
+        data points outside this region add a 
+        penalty to the cost function. 
+    max_iter: int, optional
+        The maximum number of iterations that the 
+        algorithm performs.
+    """
+
+    # Properties.
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["SVM_REGRESSOR"]:
+        return "SVM_REGRESSOR"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_SVM_REGRESSOR"]:
+        return "PREDICT_SVM_REGRESSOR"
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["LinearSVR"]:
+        return "LinearSVR"
+
+    # System & Special Methods.
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        tol: float = 1e-4,
+        C: float = 1.0,
+        fit_intercept: bool = True,
+        intercept_scaling: float = 1.0,
+        intercept_mode: Literal["regularized", "unregularized"] = "regularized",
+        acceptable_error_margin: float = 0.1,
+        max_iter: int = 100,
+    ) -> None:
+        self.model_name = name
+        self.parameters = {
+            "tol": tol,
+            "C": C,
+            "fit_intercept": fit_intercept,
+            "intercept_scaling": intercept_scaling,
+            "intercept_mode": str(intercept_mode).lower(),
+            "acceptable_error_margin": acceptable_error_margin,
+            "max_iter": max_iter,
+        }
+        return None
+
+
+"""
+Algorithms used for classification.
+"""
+
 
 class LinearSVC(BinaryClassifier, LinearModelClassifier):
     """
@@ -159,97 +262,3 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
             ax=ax,
             **style_kwds,
         )
-
-
-class LinearSVR(Regressor, LinearModel):
-    """
-    Creates a LinearSVR object using the Vertica 
-    SVM (Support Vector Machine) algorithm. This 
-    algorithm finds the hyperplane used to approximate 
-    distribution of the data.
-
-    Parameters
-    ----------
-    name: str
-    	Name of the the model. The model will be 
-        stored in the DB.
-    tol: float, optional
-    	To use to control accuracy.
-    C: float, optional
-    	The weight for misclassification cost. 
-        The algorithm minimizes the regularization 
-        cost and the misclassification cost.
-    fit_intercept: bool, optional
-    	A bool to fit also the intercept.
-    intercept_scaling: float
-    	A float value, serves as the value of a 
-        dummy feature whose coefficient Vertica 
-        uses to calculate the model intercept. 
-    	Because the dummy feature is not in the 
-        training data, its values are set to a 
-        constant, by default set to 1. 
-    intercept_mode: str, optional
-    	Specify how to treat the intercept.
-    		regularized   : Fits the intercept and 
-                            applies a regularization 
-    						on it.
-    		unregularized : Fits the intercept but 
-                            does not include it in 
-    						regularization. 
-    acceptable_error_margin: float, optional
-    	Defines the acceptable error margin. Any 
-        data points outside this region add a 
-        penalty to the cost function. 
-    max_iter: int, optional
-    	The maximum number of iterations that the 
-        algorithm performs.
-	"""
-
-    # Properties.
-
-    @property
-    def _vertica_fit_sql(self) -> Literal["SVM_REGRESSOR"]:
-        return "SVM_REGRESSOR"
-
-    @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_SVM_REGRESSOR"]:
-        return "PREDICT_SVM_REGRESSOR"
-
-    @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
-    def _model_subcategory(self) -> Literal["REGRESSOR"]:
-        return "REGRESSOR"
-
-    @property
-    def _model_type(self) -> Literal["LinearSVR"]:
-        return "LinearSVR"
-
-    # System & Special Methods.
-
-    @check_minimum_version
-    @save_verticapy_logs
-    def __init__(
-        self,
-        name: str,
-        tol: float = 1e-4,
-        C: float = 1.0,
-        fit_intercept: bool = True,
-        intercept_scaling: float = 1.0,
-        intercept_mode: Literal["regularized", "unregularized"] = "regularized",
-        acceptable_error_margin: float = 0.1,
-        max_iter: int = 100,
-    ) -> None:
-        self.model_name = name
-        self.parameters = {
-            "tol": tol,
-            "C": C,
-            "fit_intercept": fit_intercept,
-            "intercept_scaling": intercept_scaling,
-            "intercept_mode": str(intercept_mode).lower(),
-            "acceptable_error_margin": acceptable_error_margin,
-            "max_iter": max_iter,
-        }
-        return None

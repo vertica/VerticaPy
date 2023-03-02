@@ -34,11 +34,79 @@ import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Unsupervised, VerticaModel
 
 """
+General Functions.
+"""
+
+
+@check_minimum_version
+@save_verticapy_logs
+def Balance(
+    name: str,
+    input_relation: str,
+    y: str,
+    method: Literal["hybrid", "over", "under"] = "hybrid",
+    ratio: float = 0.5,
+) -> vDataFrame:
+    """
+    Creates a view with an equal distribution of the 
+    input data based on the response_column.
+     
+    Parameters
+    ----------
+    name: str
+        Name of the the view.
+    input_relation: str
+        Relation to use to create the new relation.
+    y: str
+        Response column.
+    method: str, optional
+        Method to use to do the balancing.
+            hybrid : Performs over-sampling and 
+                     under-sampling on different 
+                     classes so each class is 
+                     equally represented.
+            over   : Over-samples on all classes, 
+                     with the exception of the 
+                     most majority class, towards 
+                     the most majority class's 
+                     cardinality. 
+            under  : Under-samples on all classes,
+                     with the exception of the most 
+                     minority class, towards the most 
+                     minority class's cardinality.
+    ratio: float, optional
+        The desired ratio between the majority class and 
+        the minority class. This value has no effect when 
+        used with balance method 'hybrid'.
+
+    Returns
+    -------
+    vDataFrame
+        vDataFrame of the created view.
+    """
+    _executeSQL(
+        query=f"""
+            SELECT 
+                /*+LABEL('learn.preprocessing.Balance')*/ 
+                BALANCE('{name}', 
+                        '{input_relation}', 
+                        '{y}', 
+                        '{method}_sampling' 
+                        USING PARAMETERS 
+                        sampling_ratio = {ratio})""",
+        title="Computing the Balanced Relation.",
+    )
+    return vDataFrame(name)
+
+
+"""
 General Classes.
 """
 
 
 class Preprocessing(Unsupervised):
+    # Properties.
+
     @property
     @abstractmethod
     def _vertica_transform_sql(self) -> str:
@@ -51,30 +119,95 @@ class Preprocessing(Unsupervised):
         """Must be overridden in child class"""
         raise NotImplementedError
 
+    # I/O Methods.
+
+    def _get_names(self, inverse: bool = False, X: list = []) -> list[str]:
+        """
+        Returns the Transformation output names.
+
+        Parameters
+        ----------
+        inverse: bool, optional
+            If set to True, it returns the inverse transform 
+            output names.
+        X: list, optional
+            List of the columns used to get the model output 
+            names. If empty, the model predictors names will 
+            be used.
+
+        Returns
+        -------
+        list
+            names.
+        """
+        if isinstance(X, str):
+            X = [X]
+        X = [quote_ident(elem) for elem in X]
+        if not (X):
+            X = self.X
+        if self._model_type in ("PCA", "SVD", "MCA") and not (inverse):
+            if self._model_type in ("PCA", "SVD"):
+                n = self.parameters["n_components"]
+                if not (n):
+                    n = len(self.X)
+            else:
+                n = len(self.X)
+            return [f"col{i}" for i in range(1, n + 1)]
+        elif self._model_type == "OneHotEncoder" and not (inverse):
+            names = []
+            for column in self.X:
+                k = 0
+                for i in range(len(self.cat_["category_name"])):
+                    if quote_ident(self.cat_["category_name"][i]) == quote_ident(
+                        column
+                    ):
+                        if (k != 0 or not (self.parameters["drop_first"])) and (
+                            not (self.parameters["ignore_null"])
+                            or self.cat_["category_level"][i] != None
+                        ):
+                            if self.parameters["column_naming"] == "indices":
+                                name = f'"{quote_ident(column)[1:-1]}{self.parameters["separator"]}'
+                                name += f'{self.cat_["category_level_index"][i]}"'
+                                names += [name]
+                            else:
+                                if self.cat_["category_level"][i] != None:
+                                    category_level = self.cat_["category_level"][
+                                        i
+                                    ].lower()
+                                else:
+                                    category_level = self.parameters["null_column_name"]
+                                name = f'"{quote_ident(column)[1:-1]}{self.parameters["separator"]}'
+                                name += f'{category_level}"'
+                                names += [name]
+                        k += 1
+            return names
+        else:
+            return X
+
     def deploySQL(
         self,
+        X: SQLColumns = [],
         key_columns: SQLColumns = [],
         exclude_columns: SQLColumns = [],
-        X: SQLColumns = [],
-    ):
+    ) -> str:
         """
-    Returns the SQL code needed to deploy the model. 
+        Returns the SQL code needed to deploy the model. 
 
-    Parameters
-    ----------
-    key_columns: SQLColumns, optional
-        Predictors used during the algorithm computation which will be deployed
-        with the principal components.
-    exclude_columns: SQLColumns, optional
-        Columns to exclude from the prediction.
-    X: SQLColumns, optional
-        List of the columns used to deploy the self. If empty, the model
-        predictors will be used.
+        Parameters
+        ----------
+        X: SQLColumns, optional
+            List of the columns used to deploy the model. 
+            If empty, the model predictors will be used.
+        key_columns: SQLColumns, optional
+            Predictors used during the algorithm computation 
+            which will be deployed with the principal components.
+        exclude_columns: SQLColumns, optional
+            Columns to exclude from the prediction.
 
-    Returns
-    -------
-    str
-        the SQL code needed to deploy the model.
+        Returns
+        -------
+        str
+            the SQL code needed to deploy the model.
         """
         if isinstance(key_columns, str):
             key_columns = [key_columns]
@@ -128,23 +261,24 @@ class Preprocessing(Unsupervised):
         X: SQLColumns = [],
     ) -> str:
         """
-    Returns the SQL code needed to deploy the inverse model. 
+        Returns the SQL code needed to deploy the inverse 
+        model. 
 
-    Parameters
-    ----------
-    key_columns: SQLColumns, optional
-        Predictors used during the algorithm computation which will be deployed
-        with the principal components.
-    exclude_columns: SQLColumns, optional
-        Columns to exclude from the prediction.
-    X: SQLColumns, optional
-        List of the columns used to deploy the inverse model. If empty, the model
-        predictors will be used.
+        Parameters
+        ----------
+        key_columns: SQLColumns, optional
+            Predictors used during the algorithm computation 
+            which will be deployed with the principal components.
+        exclude_columns: SQLColumns, optional
+            Columns to exclude from the prediction.
+        X: SQLColumns, optional
+            List of the columns used to deploy the inverse model. 
+            If empty, the model predictors will be used.
 
-    Returns
-    -------
-    str
-        the SQL code needed to deploy the inverse model.
+        Returns
+        -------
+        str
+            the SQL code needed to deploy the inverse model.
         """
         if isinstance(key_columns, str):
             key_columns = [key_columns]
@@ -174,84 +308,62 @@ class Preprocessing(Unsupervised):
         sql += ")"
         return clean_query(sql)
 
-    def get_names(self, inverse: bool = False, X: list = []):
+    # Prediction / Transformation Methods.
+
+    def transform(self, vdf: SQLRelation = None, X: SQLColumns = []) -> vDataFrame:
         """
-    Returns the Transformation output names.
+        Applies the model on a vDataFrame.
 
-    Parameters
-    ----------
-    inverse: bool, optional
-        If set to True, it returns the inverse transform output names.
-    X: list, optional
-        List of the columns used to get the model output names. If empty, 
-        the model predictors names will be used.
+        Parameters
+        ----------
+        vdf: SQLRelation, optional
+            Input vDataFrame. You can also specify a customized 
+            relation, but you must enclose it with an alias. 
+            For example "(SELECT 1) x" is correct whereas 
+            "(SELECT 1)" and "SELECT 1" are incorrect.
+        X: SQLColumns, optional
+            List of the input vcolumns.
 
-    Returns
-    -------
-    list
-        Python list.
+        Returns
+        -------
+        vDataFrame
+            object result of the model transformation.
         """
         if isinstance(X, str):
             X = [X]
-        X = [quote_ident(elem) for elem in X]
+        if not (vdf):
+            vdf = self.input_relation
         if not (X):
             X = self.X
-        if self._model_type in ("PCA", "SVD", "MCA") and not (inverse):
-            if self._model_type in ("PCA", "SVD"):
-                n = self.parameters["n_components"]
-                if not (n):
-                    n = len(self.X)
-            else:
-                n = len(self.X)
-            return [f"col{i}" for i in range(1, n + 1)]
-        elif self._model_type == "OneHotEncoder" and not (inverse):
-            names = []
-            for column in self.X:
-                k = 0
-                for i in range(len(self.cat_["category_name"])):
-                    if quote_ident(self.cat_["category_name"][i]) == quote_ident(
-                        column
-                    ):
-                        if (k != 0 or not (self.parameters["drop_first"])) and (
-                            not (self.parameters["ignore_null"])
-                            or self.cat_["category_level"][i] != None
-                        ):
-                            if self.parameters["column_naming"] == "indices":
-                                name = f'"{quote_ident(column)[1:-1]}{self.parameters["separator"]}'
-                                name += f'{self.cat_["category_level_index"][i]}"'
-                                names += [name]
-                            else:
-                                if self.cat_["category_level"][i] != None:
-                                    category_level = self.cat_["category_level"][
-                                        i
-                                    ].lower()
-                                else:
-                                    category_level = self.parameters["null_column_name"]
-                                name = f'"{quote_ident(column)[1:-1]}{self.parameters["separator"]}'
-                                name += f'{category_level}"'
-                                names += [name]
-                        k += 1
-            return names
-        else:
-            return X
+        if isinstance(vdf, str):
+            vdf = vDataFrame(vdf)
+        X = vdf._format_colnames(X)
+        relation = vdf._genSQL()
+        exclude_columns = vdf.get_columns(exclude_columns=X)
+        all_columns = vdf.get_columns()
+        columns = self.deploySQL(all_columns, exclude_columns, exclude_columns)
+        main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
+        return vDataFrame(main_relation)
 
-    def inverse_transform(self, vdf: SQLRelation, X: SQLColumns = []):
+    def inverse_transform(self, vdf: SQLRelation, X: SQLColumns = []) -> vDataFrame:
         """
-    Applies the Inverse Model on a vDataFrame.
+        Applies the Inverse Model on a vDataFrame.
 
-    Parameters
-    ----------
-    vdf: SQLRelation
-        input vDataFrame. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: SQLColumns, optional
-        List of the input vcolumns.
+        Parameters
+        ----------
+        vdf: SQLRelation
+            input vDataFrame. You can also specify a 
+            customized relation, but you must enclose 
+            it with an alias. For example "(SELECT 1) x" 
+            is correct whereas "(SELECT 1)" and "SELECT 1" 
+            are incorrect.
+        X: SQLColumns, optional
+            List of the input vcolumns.
 
-    Returns
-    -------
-    vDataFrame
-        object result of the model transformation.
+        Returns
+        -------
+        vDataFrame
+            object result of the model transformation.
         """
         if isinstance(X, str):
             X = [X]
@@ -262,7 +374,7 @@ class Preprocessing(Unsupervised):
         if not (vdf):
             vdf = self.input_relation
         if not (X):
-            X = self.get_names()
+            X = self._get_names()
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = vdf._format_colnames(X)
@@ -275,119 +387,42 @@ class Preprocessing(Unsupervised):
         main_relation = f"(SELECT {inverse_sql} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
 
-    def transform(self, vdf: SQLRelation = None, X: SQLColumns = []):
-        """
-    Applies the model on a vDataFrame.
 
-    Parameters
-    ----------
-    vdf: SQLRelation, optional
-        Input vDataFrame. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: SQLColumns, optional
-        List of the input vcolumns.
-
-    Returns
-    -------
-    vDataFrame
-        object result of the model transformation.
-        """
-        if isinstance(X, str):
-            X = [X]
-        if not (vdf):
-            vdf = self.input_relation
-        if not (X):
-            X = self.X
-        if isinstance(vdf, str):
-            vdf = vDataFrame(vdf)
-        X = vdf._format_colnames(X)
-        relation = vdf._genSQL()
-        exclude_columns = vdf.get_columns(exclude_columns=X)
-        all_columns = vdf.get_columns()
-        columns = self.deploySQL(exclude_columns, exclude_columns, all_columns)
-        main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
-        return vDataFrame(main_relation)
-
-
-@check_minimum_version
-@save_verticapy_logs
-def Balance(
-    name: str,
-    input_relation: str,
-    y: str,
-    method: Literal["hybrid", "over", "under"] = "hybrid",
-    ratio: float = 0.5,
-):
-    """
-Creates a view with an equal distribution of the input data based on the 
-response_column.
- 
-Parameters
-----------
-name: str
-	Name of the the view.
-input_relation: str
-	Relation to use to create the new relation.
-y: str
-	Response column.
-method: str, optional
-	Method to use to do the balancing.
-		hybrid : Performs over-sampling and under-sampling on different 
-			classes so each class is equally represented.
-		over   : Over-samples on all classes, with the exception of the 
-			most majority class, towards the most majority class's cardinality. 
-		under  : Under-samples on all classes, with the exception of the most 
-			minority class, towards the most minority class's cardinality.
-ratio: float, optional
-	The desired ratio between the majority class and the minority class. This 
-	value has no effect when used with balance method 'hybrid'.
-
-Returns
--------
-vDataFrame
-	vDataFrame of the created view
-	"""
-    _executeSQL(
-        query=f"""
-            SELECT 
-                /*+LABEL('learn.preprocessing.Balance')*/ 
-                BALANCE('{name}', 
-                        '{input_relation}', 
-                        '{y}', 
-                        '{method}_sampling' 
-                        USING PARAMETERS 
-                        sampling_ratio = {ratio})""",
-        title="Computing the Balanced Relation.",
-    )
-    return vDataFrame(name)
+"""
+Algorithms used for text analytics.
+"""
 
 
 class CountVectorizer(VerticaModel):
     """
-Creates a Text Index which will count the occurences of each word in the 
-data.
- 
-Parameters
-----------
-name: str
-	Name of the the model.
-lowercase: bool, optional
-	Converts all the elements to lowercase before processing.
-max_df: float, optional
-	Keeps the words which represent less than this float in the total dictionary 
-	distribution.
-min_df: float, optional
-	Keeps the words which represent more than this float in the total dictionary 
-	distribution.
-max_features: int, optional
-	Keeps only the top words of the dictionary.
-ignore_special: bool, optional
-	Ignores all the special characters to build the dictionary.
-max_text_size: int, optional
-	The maximum size of the column which is the concatenation of all the text 
-	columns during the fitting.
+    Creates a Text Index which will count the occurences 
+    of each word in the data.
+     
+    Parameters
+    ----------
+    name: str
+    	Name of the the model.
+    lowercase: bool, optional
+    	Converts all the elements to lowercase before 
+        processing.
+    max_df: float, optional
+    	Keeps the words which represent less than this 
+        float in the total dictionary distribution.
+    min_df: float, optional
+    	Keeps the words which represent more than this 
+        float in the total dictionary distribution.
+    max_features: int, optional
+    	Keeps only the top words of the dictionary.
+    ignore_special: bool, optional
+    	Ignores all the special characters to build the 
+        dictionary.
+    max_text_size: int, optional
+    	The maximum size of the column which is the 
+        concatenation of all the text columns during 
+        the fitting.
 	"""
+
+    # Properties.
 
     @property
     def _is_native(self) -> Literal[False]:
@@ -421,6 +456,8 @@ max_text_size: int, optional
     def _attributes(self) -> list[str]:
         return ["stop_words_", "vocabulary_", "n_errors_"]
 
+    # System & Special Methods.
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -442,14 +479,19 @@ max_text_size: int, optional
             "max_text_size": max_text_size,
         }
 
+    # Attributes Methods.
+
     def _compute_attributes(self):
+        """
+        Computes the model's attributes.
+        """
         self.stop_words_ = self._compute_stop_words()
         self.vocabulary_ = self._compute_vocabulary()
 
     def _compute_stop_words(self):
         """
-    Computes the CountVectorizer Stop Words. It will affect the result to the
-    stop_words_ attribute.
+        Computes the CountVectorizer Stop Words. It will 
+        affect the result to the stop_words_ attribute.
         """
         query = self.deploySQL(return_main_table=True)
         query = query.format(
@@ -463,20 +505,22 @@ max_text_size: int, optional
 
     def _compute_vocabulary(self):
         """
-    Computes the CountVectorizer Vocabulary. It will affect the result to the
-    vocabulary_ attribute.
+        Computes the CountVectorizer Vocabulary. It will 
+        affect the result to the vocabulary_ attribute.
         """
         res = _executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
         return np.array([w[0] for w in res])
 
+    # I/O Methods.
+
     def deploySQL(self, return_main_table: bool = False):
         """
-    Returns the SQL code needed to deploy the model.
+        Returns the SQL code needed to deploy the model.
 
-    Returns
-    -------
-    SQLExpression
-        the SQL code needed to deploy the model.
+        Returns
+        -------
+        SQLExpression
+            the SQL code needed to deploy the model.
         """
         query = f"""
             SELECT 
@@ -500,21 +544,19 @@ max_text_size: int, optional
 
         return clean_query(query.format("*", ""))
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []):
+    # Model Fitting Method.
+
+    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> None:
         """
-	Trains the model.
+    	Trains the model.
 
-	Parameters
-	----------
-	input_relation: SQLRelation
-		Training relation.
-	X: SQLColumns
-		List of the predictors. If empty, all the columns will be used.
-
-	Returns
-	-------
-	object
- 		self
+    	Parameters
+    	----------
+    	input_relation: SQLRelation
+    		Training relation.
+    	X: SQLColumns
+    		List of the predictors. If empty, all the 
+            columns will be used.
 		"""
         if isinstance(X, str):
             X = [X]
@@ -563,37 +605,46 @@ max_text_size: int, optional
             title="Computing the CountVectorizer [Step 2].",
         )
         self._compute_attributes()
-        return self
+        return None
 
-    def transform(self):
+    # Prediction / Transformation Methods.
+
+    def transform(self) -> vDataFrame:
         """
-	Creates a vDataFrame of the model.
+    	Creates a vDataFrame of the model.
 
-	Returns
-	-------
-	vDataFrame
- 		object result of the model transformation.
+    	Returns
+    	-------
+    	vDataFrame
+     		object result of the model transformation.
 		"""
         return vDataFrame(self.deploySQL())
 
 
+"""
+Algorithms used for scaling.
+"""
+
+
 class Scaler(Preprocessing):
     """
-Creates a Vertica Scaler object.
- 
-Parameters
-----------
-name: str
-	Name of the the model.
-method: str, optional
-	Method to use to normalize.
-		zscore        : Normalization using the Z-Score (avg and std).
-		(x - avg) / std
-		robust_zscore : Normalization using the Robust Z-Score (median and mad).
-		(x - median) / (1.4826 * mad)
-		minmax        : Normalization using the MinMax (min and max).
-		(x - min) / (max - min)
+    Creates a Vertica Scaler object.
+     
+    Parameters
+    ----------
+    name: str
+    	Name of the the model.
+    method: str, optional
+    	Method to use to normalize.
+    		zscore        : Normalization using the Z-Score.
+                            (x - avg) / std
+    		robust_zscore : Normalization using the Robust Z-Score.
+    		                (x - median) / (1.4826 * mad)
+    		minmax        : Normalization using the Min & Max.
+    		                (x - min) / (max - min)
 	"""
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["NORMALIZE_FIT"]:
@@ -628,6 +679,8 @@ method: str, optional
         else:
             return ["mean_", "std_"]
 
+    # System & Special Methods.
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -635,6 +688,8 @@ method: str, optional
     ):
         self.model_name = name
         self.parameters = {"method": str(method).lower()}
+
+    # Attributes Methods.
 
     def _compute_attributes(self) -> None:
         """
@@ -651,6 +706,8 @@ method: str, optional
             self.mean_ = values[:, 0]
             self.std_ = values[:, 1]
         return None
+
+    # I/O Methods.
 
     def to_memmodel(self) -> mm.Scaler:
         """
@@ -698,38 +755,55 @@ class MinMaxScaler(Scaler):
         super().__init__(name, "minmax")
 
 
+"""
+Algorithms used for encoding.
+"""
+
+
 class OneHotEncoder(Preprocessing):
     """
-Creates a Vertica One Hot Encoder object.
- 
-Parameters
-----------
-name: str
-	Name of the the model.
-extra_levels: dict, optional
-	Additional levels in each category that are not in the input relation.
-drop_first: bool, optional
-    If set to True, it treats the first level of the categorical variable 
-    as the reference level. Otherwise, every level of the categorical variable 
-    has a corresponding column in the output view.
-ignore_null: bool, optional
-    If set to True, Null values set all corresponding one-hot binary columns to null. 
-    Otherwise, null values in the input columns are treated as a categorical level.
-separator: str, optional
-    The character that separates the input variable name and the indicator variable 
-    level in the output table.To avoid using any separator, set this parameter to 
-    null value.
-column_naming: str, optional
-    Appends categorical levels to column names according to the specified method:
-        indices                : Uses integer indices to represent categorical levels.
-        values/values_relaxed  : Both methods use categorical level names. If duplicate 
-                                 column names occur, the function attempts to disambiguate 
-                                 them by appending _n, where n is a zero-based integer 
-                                 index (_0, _1,…).
-null_column_name: str, optional
-    The string used in naming the indicator column for null values, used only if 
-    ignore_null is set to false and column_naming is set to values or values_relaxed.
+    Creates a Vertica One Hot Encoder object.
+     
+    Parameters
+    ----------
+    name: str
+    	Name of the the model.
+    extra_levels: dict, optional
+    	Additional levels in each category that 
+        are not in the input relation.
+    drop_first: bool, optional
+        If set to True, it treats the first level 
+        of the categorical variable as the reference 
+        level. Otherwise, every level of the categorical 
+        variable has a corresponding column in the output 
+        view.
+    ignore_null: bool, optional
+        If set to True, Null values set all corresponding 
+        one-hot binary columns to null. Otherwise, null 
+        values in the input columns are treated as a 
+        categorical level.
+    separator: str, optional
+        The character that separates the input variable 
+        name and the indicator variable level in the 
+        output table.To avoid using any separator, 
+        set this parameter to null value.
+    column_naming: str, optional
+        Appends categorical levels to column names according 
+        to the specified method:
+            indices : Uses integer indices to represent 
+                      categorical levels.
+            values  : Uses categorical level names. If 
+                      duplicate column names occur, the 
+                      function attempts to disambiguate 
+                      them by appending _n, where n is 
+                      a zero-based integer index (_0, _1,…).
+    null_column_name: str, optional
+        The string used in naming the indicator column for 
+        null values, used only if ignore_null is set to false 
+        and column_naming is set to values or values_relaxed.
 	"""
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["ONE_HOT_ENCODER_FIT"]:
@@ -759,6 +833,8 @@ null_column_name: str, optional
     def _attributes(self) -> list[str]:
         return ["categories_", "column_naming_", "drop_first_"]
 
+    # System & Special Methods.
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -770,7 +846,7 @@ null_column_name: str, optional
         separator: str = "_",
         column_naming: Literal["indices", "values", "values_relaxed"] = "indices",
         null_column_name: str = "null",
-    ):
+    ) -> None:
         self.model_name = name
         self.parameters = {
             "extra_levels": extra_levels,
@@ -780,26 +856,50 @@ null_column_name: str, optional
             "column_naming": str(column_naming).lower(),
             "null_column_name": null_column_name,
         }
+        return None
+
+    # Attributes Methods.
+
+    @staticmethod
+    def _compute_ohe_list(categories: list):
+        """
+        Allows to split the One Hot Encoder Array by 
+        features categories.
+        """
+        cat, tmp_cat = [], []
+        init_cat, X = categories[0][0], [categories[0][0]]
+        for c in categories:
+            if c[0] != init_cat:
+                init_cat = c[0]
+                X += [c[0]]
+                cat += [tmp_cat]
+                tmp_cat = [c[1]]
+            else:
+                tmp_cat += [c[1]]
+        cat += [tmp_cat]
+        return [X, cat]
 
     def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
         """
-        query = f"""SELECT 
-                        category_name, 
-                        category_level::varchar, 
-                        category_level_index 
-                    FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                    model_name = '{self.model_name}', 
-                                    attr_name = 'integer_categories')) 
-                                    VERTICAPY_SUBTABLE"""
+        query = f"""
+            SELECT 
+                category_name, 
+                category_level::varchar, 
+                category_level_index 
+            FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                            model_name = '{self.model_name}', 
+                            attr_name = 'integer_categories')) 
+                            VERTICAPY_SUBTABLE"""
         try:
             self.cat_ = TableSample.read_sql(
-                query=f"""{query}
-                          UNION ALL 
-                          SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
-                                    model_name = '{self.model_name}', 
-                                    attr_name = 'varchar_categories')""",
+                query=f"""
+                    {query}
+                    UNION ALL 
+                    SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                            model_name = '{self.model_name}', 
+                            attr_name = 'varchar_categories')""",
                 title="Getting Model Attributes.",
             )
         except:
@@ -824,21 +924,7 @@ null_column_name: str, optional
         self.drop_first_ = self.parameters["drop_first"]
         return None
 
-    @staticmethod
-    def _compute_ohe_list(categories: list):
-        # Allows to split the One Hot Encoder Array by features categories
-        cat, tmp_cat = [], []
-        init_cat, X = categories[0][0], [categories[0][0]]
-        for c in categories:
-            if c[0] != init_cat:
-                init_cat = c[0]
-                X += [c[0]]
-                cat += [tmp_cat]
-                tmp_cat = [c[1]]
-            else:
-                tmp_cat += [c[1]]
-        cat += [tmp_cat]
-        return [X, cat]
+    # I/O Methods.
 
     def to_memmodel(self) -> mm.OneHotEncoder:
         """
