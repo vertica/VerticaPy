@@ -1893,6 +1893,8 @@ class MulticlassClassifier(Classifier):
         vDataFrame
             the input object.
         """
+        if hasattr(self, "_predict_proba"):
+            return self._predict_proba(vdf=vdf, X = X, name = name, pos_label = pos_label, inplace = inplace,)
         # Inititalization
         if not (X):
             X = self.X

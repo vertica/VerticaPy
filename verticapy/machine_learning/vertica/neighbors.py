@@ -579,7 +579,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         else:
             return vDataFrame(sql)
 
-    def predict_proba(
+    def _predict_proba(
         self,
         vdf: SQLRelation,
         X: SQLColumns = [],
@@ -589,31 +589,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         **kwargs,
     ):
         """
-    Returns the model's probabilities using the input relation.
-
-    Parameters
-    ----------
-    vdf: SQLRelation
-        Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
-        is correct, whereas "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: SQLColumns, optional
-        List of the columns used to deploy the models. If empty, the model
-        predictors will be used.
-    name: str, optional
-        Name of the additional prediction vDataColumn. If unspecified, a name is 
-        generated based on the model and class names.
-    pos_label: PythonScalar, optional
-        Class label, the class for which the probability is calculated. 
-        If name is specified and pos_label is unspecified, the probability column 
-        names use the following format: name_class1, name_class2, etc.
-        inplace: bool, optional
-        If set to True, the prediction will be added to the vDataFrame.
-
-    Returns
-    -------
-    vDataFrame
-        the vDataFrame of the prediction
+        Returns the model's probabilities using the 
+        input relation.
         """
         # Inititalization
         if isinstance(X, str):
@@ -668,7 +645,8 @@ class KNeighborsClassifier(MulticlassClassifier):
 
         # Result
         if inplace:
-            return vdf.__init__(sql)
+            vdf.__init__(sql)
+            return vdf
         else:
             return vDataFrame(sql)
 
@@ -717,36 +695,42 @@ Algorithms used for density analysis.
 
 class KernelDensity(Regressor, Tree):
     """
-[Beta Version]
-Creates a KernelDensity object. 
-This object uses pure SQL to compute the final score.
+    [Beta Version]
+    Creates a KernelDensity object. 
+    This object uses pure SQL to compute the final score.
 
-Parameters
-----------
-bandwidth: PythonNumber, optional
-    The bandwidth of the kernel.
-kernel: str, optional
-    The kernel used during the learning phase.
-        gaussian  : Gaussian Kernel.
-        logistic  : Logistic Kernel.
-        sigmoid   : Sigmoid Kernel.
-        silverman : Silverman Kernel.
-p: int, optional
-    The p corresponding to the one of the p-distances (distance metric used during 
-    the model computation).
-max_leaf_nodes: PythonNumber, optional
-    The maximum number of leaf nodes, an integer between 1 and 1e9, inclusive.
-max_depth: int, optional
-    The maximum tree depth, an integer between 1 and 100, inclusive.
-min_samples_leaf: int, optional
-    The minimum number of samples each branch must have after splitting a node, an 
-    integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
-    is discarded.
-nbins: int, optional 
-    The number of bins to use to discretize the input features.
-xlim: list, optional
-    List of tuples use to compute the kernel window.
+    Parameters
+    ----------
+    bandwidth: PythonNumber, optional
+        The bandwidth of the kernel.
+    kernel: str, optional
+        The kernel used during the learning phase.
+            gaussian  : Gaussian Kernel.
+            logistic  : Logistic Kernel.
+            sigmoid   : Sigmoid Kernel.
+            silverman : Silverman Kernel.
+    p: int, optional
+        The p corresponding to the one of the p-distances 
+        (distance metric used during the model computation).
+    max_leaf_nodes: PythonNumber, optional
+        The maximum number of leaf nodes, an integer between 
+        1 and 1e9, inclusive.
+    max_depth: int, optional
+        The maximum tree depth, an integer between 1 and 100, 
+        inclusive.
+    min_samples_leaf: int, optional
+        The minimum number of samples each branch must have 
+        after splitting a node, an integer between 1 and 1e6, 
+        inclusive. A split that causes fewer remaining samples 
+        is discarded.
+    nbins: int, optional 
+        The number of bins to use to discretize the input 
+        features.
+    xlim: list, optional
+        List of tuples use to compute the kernel window.
     """
+
+    # Properties.
 
     @property
     def _is_native(self) -> Literal[False]:
@@ -775,6 +759,8 @@ xlim: list, optional
     @property
     def _model_type(self) -> Literal["KernelDensity"]:
         return "KernelDensity"
+
+    # System & Special Methods.
 
     @save_verticapy_logs
     def __init__(

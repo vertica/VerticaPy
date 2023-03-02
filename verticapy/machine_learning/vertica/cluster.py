@@ -23,7 +23,7 @@ from matplotlib.axes import Axes
 from matplotlib.pyplot import Figure
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns, SQLRelation
+from verticapy._typing import SQLColumns, SQLRelation, PythonScalar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
