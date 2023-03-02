@@ -31,33 +31,43 @@ from verticapy.machine_learning.vertica.base import MulticlassClassifier
 
 class NaiveBayes(MulticlassClassifier):
     """
-Creates a NaiveBayes object using the Vertica Naive Bayes algorithm on 
-the data. It is a "probabilistic classifier" based on applying Bayes' 
-theorem with strong (naïve) independence assumptions between the features.
+    Creates a NaiveBayes object using the Vertica 
+    Naive Bayes algorithm on the data. It is a 
+    "probabilistic classifier" based on applying 
+    Bayes' theorem with strong (naïve) independence 
+    assumptions between the features.
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-alpha: float, optional
-	A float that specifies use of Laplace smoothing if the event model is 
-	categorical, multinomial, or Bernoulli.
-nbtype: str, optional
-    Naive Bayes Type.
-    - auto        : Vertica NB will treat columns according to data type:
-        * FLOAT        : Values are assumed to follow some Gaussian 
-                         distribution.
-        * INTEGER      : Values are assumed to belong to one multinomial 
-                         distribution.
-        * CHAR/VARCHAR : Values are assumed to follow some categorical 
-                         distribution. The string values stored in these 
-                         columns must not be greater than 128 characters.
-        * BOOLEAN      : Values are treated as categorical with two values.
-     - bernoulli   : Casts the variables to boolean.
-     - categorical : Casts the variables to categorical.
-     - multinomial : Casts the variables to integer.
-     - gaussian    : Casts the variables to float.
+    Parameters
+    ----------
+    name: str
+    	Name of the the model. The model will be 
+        stored in the DB.
+    alpha: float, optional
+    	A float that specifies use of Laplace smoothing 
+        if the event model is categorical, multinomial, 
+        or Bernoulli.
+    nbtype: str, optional
+        Naive Bayes Type.
+        - auto        : Vertica NB will treat columns 
+                        according to data type:
+            * FLOAT        : Values are assumed to follow 
+                             some Gaussian distribution.
+            * INTEGER      : Values are assumed to belong 
+                             to one multinomial distribution.
+            * CHAR/VARCHAR : Values are assumed to follow 
+                             some categorical distribution. 
+                             The string values stored in these 
+                             columns must not be greater than 
+                             128 characters.
+            * BOOLEAN      : Values are treated as categorical 
+                             with two values.
+        - bernoulli   : Casts the variables to boolean.
+        - categorical : Casts the variables to categorical.
+        - multinomial : Casts the variables to integer.
+        - gaussian    : Casts the variables to float.
 	"""
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["NAIVE_BAYES"]:
@@ -83,6 +93,8 @@ nbtype: str, optional
     def _attributes(self) -> list[str]:
         return ["attributes_", "prior_", "classes_"]
 
+    # System & Special Methods.
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -92,11 +104,14 @@ nbtype: str, optional
         nbtype: Literal[
             "auto", "bernoulli", "categorical", "multinomial", "gaussian"
         ] = "auto",
-    ):
+    ) -> None:
         self.model_name = name
         self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
+        return None
 
-    def _compute_attributes(self):
+    # Attributes Methods.
+
+    def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
         """
@@ -105,8 +120,9 @@ nbtype: str, optional
         )
         self.prior_ = np.array(self.get_vertica_attributes("prior")["probability"])
         self.attributes_ = self._get_nb_attributes()
+        return None
 
-    def _get_nb_attributes(self):
+    def _get_nb_attributes(self) -> list[dict]:
         # Returns a list of dictionary for each of the NB variables.
         # It is used to translate NB to Python
         vdf = vDataFrame(self.input_relation)
@@ -161,7 +177,9 @@ nbtype: str, optional
             del elem["rank"]
         return var_info_simplified
 
-    def to_memmodel(self):
+    # I/O Methods.
+
+    def to_memmodel(self) -> mm.NaiveBayes:
         """
         Converts the model to an InMemory object which
         can be used to do different types of predictions.

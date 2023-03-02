@@ -15,8 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
+
+from matplotlib.axes import Axes
 
 from verticapy._typing import PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -26,7 +28,7 @@ from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
-from verticapy.errors import ParameterError
+from verticapy.errors import VersionError
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -43,9 +45,14 @@ General Classes.
 
 
 class LinearModel:
+
+    # Properties.
+
     @property
     def _attributes(self) -> list[str]:
         return ["coef_", "intercept_", "features_importance_"]
+
+    # Attributes Methods.
 
     def _compute_attributes(self) -> None:
         """
@@ -55,6 +62,8 @@ class LinearModel:
         self.coef_ = np.array(details["coefficient"][1:])
         self.intercept_ = details["coefficient"][0]
         return None
+
+    # Features Importance Methods.
 
     def _compute_features_importance(self) -> None:
         """
@@ -87,12 +96,15 @@ class LinearModel:
         self.features_importance_ = self._format_vector(self.X, importance)
 
     def _get_features_importance(self) -> np.ndarray:
+        """
+        Returns the features' importance.
+        """
         if not (hasattr(self, "features_importance_")):
             self._compute_features_importance()
         return copy.deepcopy(self.features_importance_)
 
     def features_importance(
-        self, show: bool = True, ax=None, **style_kwds
+        self, show: bool = True, ax: Optional[Axes] = None, **style_kwds
     ) -> TableSample:
         """
         Computes the model's features importance.
@@ -101,7 +113,7 @@ class LinearModel:
         ----------
         show: bool
             If set to True, draw the features importance.
-        ax: Matplotlib axes object, optional
+        ax: Axes, optional
             The axes to plot on.
         **style_kwds
             Any optional parameter to pass to the Matplotlib 
@@ -110,8 +122,7 @@ class LinearModel:
         Returns
         -------
         TableSample
-            An object containing the result. For more information, see
-            utilities.TableSample.
+            features importance.
         """
         fi = self._get_features_importance()
         if show:
@@ -125,7 +136,20 @@ class LinearModel:
         }
         return TableSample(values=importances).sort(column="importance", desc=True)
 
-    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+    # I/O Methods.
+
+    def to_memmodel(self) -> mm.LinearModel:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.LinearModel(self.coef_, self.intercept_)
+
+    # Plotting Methods.
+
+    def plot(
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+    ) -> Axes:
         """
         Draws the model.
 
@@ -133,7 +157,7 @@ class LinearModel:
         ----------
         max_nb_points: int
             Maximum number of points to display.
-        ax: Matplotlib axes object, optional
+        ax: Axes, optional
             The axes to plot on.
         **style_kwds
             Any optional parameter to pass to the 
@@ -141,8 +165,8 @@ class LinearModel:
 
         Returns
         -------
-        ax
-            Matplotlib axes object
+        Axes
+            Matplotlib axes object.
         """
         return regression_plot(
             self.X,
@@ -154,18 +178,16 @@ class LinearModel:
             **style_kwds,
         )
 
-    def to_memmodel(self) -> mm.LinearModel:
-        """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
-        """
-        return mm.LinearModel(self.coef_, self.intercept_)
-
 
 class LinearModelClassifier(LinearModel):
+
+    # Properties.
+
     @property
     def _attributes(self) -> list[str]:
         return ["coef_", "intercept_", "classes_", "features_importance_"]
+
+    # Attributes Methods.
 
     def _compute_attributes(self) -> None:
         """
@@ -176,7 +198,20 @@ class LinearModelClassifier(LinearModel):
         self.intercept_ = details["coefficient"][0]
         return None
 
-    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+    # I/O Methods.
+
+    def to_memmodel(self) -> mm.LinearModelClassifier:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return mm.LinearModelClassifier(self.coef_, self.intercept_)
+
+    # Plotting Methods.
+
+    def plot(
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+    ) -> Axes:
         """
         Draws the model.
 
@@ -184,7 +219,7 @@ class LinearModelClassifier(LinearModel):
         ----------
         max_nb_points: int
             Maximum number of points to display.
-        ax: Matplotlib axes object, optional
+        ax: Axes, optional
             The axes to plot on.
         **style_kwds
             Any optional parameter to pass to the 
@@ -192,8 +227,8 @@ class LinearModelClassifier(LinearModel):
 
         Returns
         -------
-        ax
-            Matplotlib axes object
+        Axes
+            Matplotlib axes object.
         """
         return logit_plot(
             self.X,
@@ -205,47 +240,47 @@ class LinearModelClassifier(LinearModel):
             **style_kwds,
         )
 
-    def to_memmodel(self) -> mm.LinearModelClassifier:
-        """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
-        """
-        return mm.LinearModelClassifier(self.coef_, self.intercept_)
-
 
 class ElasticNet(Regressor, LinearModel):
     """
-Creates a ElasticNet object using the Vertica Linear Regression algorithm 
-on the data. The Elastic Net is a regularized regression method that 
-linearly combines the L1 and L2 penalties of the Lasso and Ridge methods.
+    Creates a ElasticNet object using the Vertica 
+    Linear Regression algorithm on the data. The 
+    Elastic Net is a regularized regression method 
+    that linearly combines the L1 and L2 penalties 
+    of the Lasso and Ridge methods.
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-tol: float, optional
-	Determines whether the algorithm has reached the specified accuracy 
-    result.
-C: PythonNumber, optional
-	The regularization parameter value. The value must be zero or 
-    non-negative.
-max_iter: int, optional
-	Determines the maximum number of iterations the algorithm performs 
-    before achieving the specified accuracy result.
-solver: str, optional
-	The optimizer method to use to train the model. 
-		newton : Newton Method
-		bfgs   : Broyden Fletcher Goldfarb Shanno
-		cgd    : Coordinate Gradient Descent
-l1_ratio: float, optional
-	ENet mixture parameter that defines how much L1 versus L2 
-    regularization to provide.
-fit_intercept: bool, optional
-    Boolean, specifies whether the model includes an intercept. 
-    By setting to false, no intercept will be used in training the model. 
-    Note that setting fit_intercept to false does not work well with the 
-    BFGS optimizer.
+    Parameters
+    ----------
+    name: str
+    	Name of the the model. The model will be 
+        stored in the DB.
+    tol: float, optional
+    	Determines whether the algorithm has reached 
+        the specified accuracy result.
+    C: PythonNumber, optional
+    	The regularization parameter value. The value 
+        must be zero or non-negative.
+    max_iter: int, optional
+    	Determines the maximum number of iterations 
+        the algorithm performs before achieving the 
+        specified accuracy result.
+    solver: str, optional
+    	The optimizer method to use to train the model. 
+    		newton : Newton Method
+    		bfgs   : Broyden Fletcher Goldfarb Shanno
+    		cgd    : Coordinate Gradient Descent
+    l1_ratio: float, optional
+    	ENet mixture parameter that defines how much L1 
+        versus L2 regularization to provide.
+    fit_intercept: bool, optional
+        Boolean, specifies whether the model includes an 
+        intercept. By setting to false, no intercept will 
+        be used in training the model. Note that setting 
+        fit_intercept to false does not work well with the 
+        BFGS optimizer.
 	"""
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["LINEAR_REG"]:
@@ -266,6 +301,8 @@ fit_intercept: bool, optional
     @property
     def _model_type(self) -> Literal["LinearRegression"]:
         return "LinearRegression"
+
+    # System & Special Methods.
 
     @check_minimum_version
     @save_verticapy_logs
@@ -278,12 +315,12 @@ fit_intercept: bool, optional
         solver: Literal["newton", "bfgs", "cgd"] = "cgd",
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
-    ):
+    ) -> None:
         self.model_name = name
         if vertica_version()[0] < 12 and not (fit_intercept):
-            raise ParameterError(
-                "The parameter fit_intercept is only available for Vertica "
-                "versions greater or equal to 12."
+            raise VersionError(
+                "The parameter 'fit_intercept' can be activated for "
+                "Vertica versions greater or equal to 12."
             )
         self.parameters = {
             "penalty": "enet",
@@ -294,37 +331,45 @@ fit_intercept: bool, optional
             "l1_ratio": l1_ratio,
             "fit_intercept": fit_intercept,
         }
+        return None
 
 
 class Lasso(Regressor, LinearModel):
     """
-Creates a Lasso object using the Vertica Linear Regression algorithm on the 
-data. The Lasso is a regularized regression method which uses an L1 penalty.
+    Creates a Lasso object using the Vertica 
+    Linear Regression algorithm on the data. 
+    The Lasso is a regularized regression method 
+    which uses an L1 penalty.
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-tol: float, optional
-	Determines whether the algorithm has reached the specified accuracy 
-    result.
-C: PythonNumber, optional
-    The regularization parameter value. The value must be zero or 
-    non-negative.
-max_iter: int, optional
-	Determines the maximum number of iterations the algorithm performs 
-    before achieving the specified accuracy result.
-solver: str, optional
-	The optimizer method to use to train the model. 
-		newton : Newton Method
-		bfgs   : Broyden Fletcher Goldfarb Shanno
-		cgd    : Coordinate Gradient Descent
-fit_intercept: bool, optional
-    Boolean, specifies whether the model includes an intercept. 
-    By setting to false, no intercept will be used in training the model. 
-    Note that setting fit_intercept to false does not work well with the 
-    BFGS optimizer.
+    Parameters
+    ----------
+    name: str
+    	Name of the the model. The model will be 
+        stored in the DB.
+    tol: float, optional
+    	Determines whether the algorithm has reached 
+        the specified accuracy result.
+    C: PythonNumber, optional
+        The regularization parameter value. The value 
+        must be zero or non-negative.
+    max_iter: int, optional
+    	Determines the maximum number of iterations 
+        the algorithm performs before achieving the 
+        specified accuracy result.
+    solver: str, optional
+    	The optimizer method to use to train the model. 
+    		newton : Newton Method
+    		bfgs   : Broyden Fletcher Goldfarb Shanno
+    		cgd    : Coordinate Gradient Descent
+    fit_intercept: bool, optional
+        Boolean, specifies whether the model includes an 
+        intercept. By setting to false, no intercept will 
+        be used in training the model. Note that setting 
+        fit_intercept to false does not work well with the 
+        BFGS optimizer.
 	"""
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["LINEAR_REG"]:
@@ -345,6 +390,8 @@ fit_intercept: bool, optional
     @property
     def _model_type(self) -> Literal["LinearRegression"]:
         return "LinearRegression"
+
+    # System & Special Methods.
 
     @check_minimum_version
     @save_verticapy_logs
@@ -356,12 +403,12 @@ fit_intercept: bool, optional
         max_iter: int = 100,
         solver: Literal["newton", "bfgs", "cgd"] = "cgd",
         fit_intercept: bool = True,
-    ):
+    ) -> None:
         self.model_name = name
         if vertica_version()[0] < 12 and not (fit_intercept):
-            raise ParameterError(
-                "The parameter fit_intercept is only available for Vertica "
-                "versions greater or equal to 12."
+            raise VersionError(
+                "The parameter 'fit_intercept' can be activated for "
+                "Vertica versions greater or equal to 12."
             )
         self.parameters = {
             "penalty": "l1",
@@ -371,33 +418,39 @@ fit_intercept: bool, optional
             "solver": str(solver).lower(),
             "fit_intercept": fit_intercept,
         }
+        return None
 
 
 class LinearRegression(Regressor, LinearModel):
     """
-Creates a LinearRegression object using the Vertica Linear Regression 
-algorithm on the data.
+    Creates a LinearRegression object using the Vertica 
+    Linear Regression algorithm on the data.
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-tol: float, optional
-	Determines whether the algorithm has reached the specified accuracy 
-    result.
-max_iter: int, optional
-	Determines the maximum number of iterations the algorithm performs 
-    before achieving the specified accuracy result.
-solver: str, optional
-	The optimizer method to use to train the model. 
-		newton : Newton Method
-		bfgs   : Broyden Fletcher Goldfarb Shanno
-fit_intercept: bool, optional
-    Boolean, specifies whether the model includes an intercept. 
-    By setting to false, no intercept will be used in training the model. 
-    Note that setting fit_intercept to false does not work well with the 
-    BFGS optimizer.
+    Parameters
+    ----------
+    name: str
+    	Name of the the model. The model will be stored 
+        in the DB.
+    tol: float, optional
+    	Determines whether the algorithm has reached the 
+        specified accuracy result.
+    max_iter: int, optional
+    	Determines the maximum number of iterations the 
+        algorithm performs before achieving the specified 
+        accuracy result.
+    solver: str, optional
+    	The optimizer method to use to train the model. 
+    		newton : Newton Method
+    		bfgs   : Broyden Fletcher Goldfarb Shanno
+    fit_intercept: bool, optional
+        Boolean, specifies whether the model includes an 
+        intercept. By setting to false, no intercept will 
+        be used in training the model. Note that setting 
+        fit_intercept to false does not work well with the 
+        BFGS optimizer.
 	"""
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["LINEAR_REG"]:
@@ -418,6 +471,8 @@ fit_intercept: bool, optional
     @property
     def _model_type(self) -> Literal["LinearRegression"]:
         return "LinearRegression"
+
+    # System & Special Methods.
 
     @check_minimum_version
     @save_verticapy_logs
@@ -428,12 +483,12 @@ fit_intercept: bool, optional
         max_iter: int = 100,
         solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
-    ):
+    ) -> None:
         self.model_name = name
         if vertica_version()[0] < 12 and not (fit_intercept):
-            raise ParameterError(
-                "The parameter fit_intercept is only available for Vertica "
-                "versions greater or equal to 12."
+            raise VersionError(
+                "The parameter 'fit_intercept' can be activated for "
+                "Vertica versions greater or equal to 12."
             )
         self.parameters = {
             "penalty": "none",
@@ -442,36 +497,44 @@ fit_intercept: bool, optional
             "solver": str(solver).lower(),
             "fit_intercept": fit_intercept,
         }
+        return None
 
 
 class Ridge(Regressor, LinearModel):
     """
-Creates a Ridge object using the Vertica Linear Regression algorithm on the 
-data. The Ridge is a regularized regression method which uses an L2 penalty. 
+    Creates a Ridge object using the Vertica 
+    Linear Regression algorithm on the data. 
+    The Ridge is a regularized regression method 
+    which uses an L2 penalty. 
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-tol: float, optional
-	Determines whether the algorithm has reached the specified 
-    accuracy result.
-C: PythonNumber, optional
-    The regularization parameter value. The value must be zero 
-    or non-negative.
-max_iter: int, optional
-	Determines the maximum number of iterations the algorithm 
-    performs before achieving the specified accuracy result.
-solver: str, optional
-	The optimizer method to use to train the model. 
-		newton : Newton Method
-		bfgs   : Broyden Fletcher Goldfarb Shanno
-fit_intercept: bool, optional
-    Boolean, specifies whether the model includes an intercept. 
-    By setting to false, no intercept will be used in training the model. 
-    Note that setting fit_intercept to false does not work well with the 
-    BFGS optimizer.
+    Parameters
+    ----------
+    name: str
+    	Name of the the model. The model will be 
+        stored in the DB.
+    tol: float, optional
+    	Determines whether the algorithm has reached 
+        the specified accuracy result.
+    C: PythonNumber, optional
+        The regularization parameter value. The value 
+        must be zero or non-negative.
+    max_iter: int, optional
+    	Determines the maximum number of iterations 
+        the algorithm performs before achieving the 
+        specified accuracy result.
+    solver: str, optional
+    	The optimizer method to use to train the model. 
+    		newton : Newton Method
+    		bfgs   : Broyden Fletcher Goldfarb Shanno
+    fit_intercept: bool, optional
+        Boolean, specifies whether the model includes 
+        an intercept. By setting to false, no intercept 
+        will be used in training the model. 
+        Note that setting fit_intercept to false does 
+        not work well with the BFGS optimizer.
 	"""
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["LINEAR_REG"]:
@@ -492,6 +555,8 @@ fit_intercept: bool, optional
     @property
     def _model_type(self) -> Literal["LinearRegression"]:
         return "LinearRegression"
+
+    # System & Special Methods.
 
     @check_minimum_version
     @save_verticapy_logs
@@ -503,12 +568,12 @@ fit_intercept: bool, optional
         max_iter: int = 100,
         solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
-    ):
+    ) -> None:
         self.model_name = name
         if vertica_version()[0] < 12 and not (fit_intercept):
-            raise ParameterError(
-                "The parameter fit_intercept is only available for Vertica "
-                "versions greater or equal to 12."
+            raise VersionError(
+                "The parameter 'fit_intercept' can be activated for "
+                "Vertica versions greater or equal to 12."
             )
         self.parameters = {
             "penalty": "l2",
@@ -518,6 +583,7 @@ fit_intercept: bool, optional
             "solver": str(solver).lower(),
             "fit_intercept": fit_intercept,
         }
+        return None
 
 
 """
@@ -527,40 +593,47 @@ Algorithms used for classification.
 
 class LogisticRegression(BinaryClassifier, LinearModelClassifier):
     """
-Creates a LogisticRegression object using the Vertica Logistic Regression
-algorithm on the data.
+    Creates a LogisticRegression object using the Vertica 
+    Logistic Regression algorithm on the data.
 
-Parameters
-----------
-name: str
-    Name of the the model. The model will be stored in the DB.
-penalty: str, optional
-    Determines the method of regularization.
-        None : No Regularization
-        l1   : L1 Regularization
-        l2   : L2 Regularization
-        enet : Combination between L1 and L2
-tol: float, optional
-    Determines whether the algorithm has reached the specified accuracy result.
-C: PythonNumber, optional
-    The regularization parameter value. The value must be zero or non-negative.
-max_iter: int, optional
-    Determines the maximum number of iterations the algorithm performs before 
-    achieving the specified accuracy result.
-solver: str, optional
-    The optimizer method to use to train the model. 
-        newton : Newton Method
-        bfgs   : Broyden Fletcher Goldfarb Shanno
-        cgd    : Coordinate Gradient Descent
-l1_ratio: float, optional
-    ENet mixture parameter that defines how much L1 versus L2 regularization 
-    to provide.
-fit_intercept: bool, optional
-    Boolean, specifies whether the model includes an intercept. 
-    By setting to false, no intercept will be used in training the model. 
-    Note that setting fit_intercept to false does not work well with the 
-    BFGS optimizer.
+    Parameters
+    ----------
+    name: str
+        Name of the the model. The model will be stored in 
+        the DB.
+    penalty: str, optional
+        Determines the method of regularization.
+            None : No Regularization
+            l1   : L1 Regularization
+            l2   : L2 Regularization
+            enet : Combination between L1 and L2
+    tol: float, optional
+        Determines whether the algorithm has reached the 
+        specified accuracy result.
+    C: PythonNumber, optional
+        The regularization parameter value. The value must 
+        be zero or non-negative.
+    max_iter: int, optional
+        Determines the maximum number of iterations the 
+        algorithm performs before achieving the specified 
+        accuracy result.
+    solver: str, optional
+        The optimizer method to use to train the model. 
+            newton : Newton Method
+            bfgs   : Broyden Fletcher Goldfarb Shanno
+            cgd    : Coordinate Gradient Descent
+    l1_ratio: float, optional
+        ENet mixture parameter that defines how much L1 
+        versus L2 regularization to provide.
+    fit_intercept: bool, optional
+        Boolean, specifies whether the model includes an 
+        intercept. 
+        By setting to false, no intercept will be used in 
+        training the model. Note that setting fit_intercept 
+        to false does not work well with the BFGS optimizer.
     """
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["LOGISTIC_REG"]:
@@ -582,6 +655,8 @@ fit_intercept: bool, optional
     def _model_type(self) -> Literal["LogisticRegression"]:
         return "LogisticRegression"
 
+    # System & Special Methods.
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -599,9 +674,9 @@ fit_intercept: bool, optional
         solver = str(solver).lower()
         self.model_name = name
         if vertica_version()[0] < 12 and not (fit_intercept):
-            raise ParameterError(
-                "The parameter fit_intercept is only available for Vertica "
-                "versions greater or equal to 12."
+            raise VersionError(
+                "The parameter 'fit_intercept' can be activated for "
+                "Vertica versions greater or equal to 12."
             )
         self.parameters = {
             "penalty": penalty,

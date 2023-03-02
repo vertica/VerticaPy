@@ -143,7 +143,7 @@ class VerticaModel:
                     res += [y[1]]
         return np.array(res)
 
-    # System Methods.
+    # System & Special Methods.
 
     def __repr__(self) -> str:
         """
@@ -156,28 +156,6 @@ class VerticaModel:
         Drops the model from the Vertica database.
         """
         return drop(self.model_name, method="model")
-
-    def summarize(self) -> str:
-        """
-        Summarizes the model.
-        """
-        if self._is_native:
-            try:
-                vertica_version(condition=[9, 0, 0])
-                func = f"""
-                    GET_MODEL_SUMMARY(USING PARAMETERS 
-                    model_name = '{self.model_name}')"""
-            except VersionError:
-                func = f"SUMMARIZE_MODEL('{self.model_name}')"
-            return _executeSQL(
-                f"SELECT /*+LABEL('learn.VerticaModel.__repr__')*/ {func}",
-                title="Summarizing the model.",
-                method="fetchfirstelem",
-            )
-        else:
-            raise AttributeError(
-                "Method 'summarize' is not available for non-native models."
-            )
 
     # Attributes Methods.
 
@@ -372,6 +350,30 @@ class VerticaModel:
             new_parameters[p] = parameters[p]
         return self.__init__(name=self.model_name, **new_parameters)
 
+    # Model's Summary.
+
+    def summarize(self) -> str:
+        """
+        Summarizes the model.
+        """
+        if self._is_native:
+            try:
+                vertica_version(condition=[9, 0, 0])
+                func = f"""
+                    GET_MODEL_SUMMARY(USING PARAMETERS 
+                    model_name = '{self.model_name}')"""
+            except VersionError:
+                func = f"SUMMARIZE_MODEL('{self.model_name}')"
+            return _executeSQL(
+                f"SELECT /*+LABEL('learn.VerticaModel.__repr__')*/ {func}",
+                title="Summarizing the model.",
+                method="fetchfirstelem",
+            )
+        else:
+            raise AttributeError(
+                "Method 'summarize' is not available for non-native models."
+            )
+
     # I/O Methods.
 
     def deploySQL(self, X: SQLColumns = []) -> str:
@@ -521,7 +523,7 @@ class Supervised(VerticaModel):
         X: SQLColumns,
         y: str,
         test_relation: SQLRelation = "",
-    ) -> None:
+    ) -> str:
         """
     	Trains the model.
 
@@ -647,11 +649,11 @@ class Supervised(VerticaModel):
                 if tmp_view:
                     drop(relation, method="view")
         self._compute_attributes()
-        return None
+        return self.summarize()
 
 
 class Tree:
-    # System Methods.
+    # System & Special Methods.
 
     def _compute_trees_arrays(
         self, tree: TableSample, X: list, return_probability: bool = False
@@ -2286,7 +2288,7 @@ class Unsupervised(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> VerticaModel:
+    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> str:
         """
     	Trains the model.
 
@@ -2448,4 +2450,4 @@ class Unsupervised(VerticaModel):
             ):
                 drop(name_init, method="table")
         self._compute_attributes()
-        return self
+        return self.summarize()

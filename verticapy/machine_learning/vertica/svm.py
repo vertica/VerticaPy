@@ -14,8 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
+
+from matplotlib.axes import Axes
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -31,42 +33,54 @@ from verticapy.machine_learning.vertica.linear_model import (
 
 class LinearSVC(BinaryClassifier, LinearModelClassifier):
     """
-Creates a LinearSVC object using the Vertica Support Vector Machine (SVM) 
-algorithm on the data. Given a set of training examples, each marked as 
-belonging to one or the other of two categories, an SVM training algorithm 
-builds a model that assigns new examples to one category or the other, 
-making it a non-probabilistic binary linear classifier.
+    Creates a LinearSVC object using the Vertica
+    Support Vector Machine (SVM) algorithm on the 
+    data. Given a set of training examples, each 
+    marked as belonging to one or the other of two 
+    categories, an SVM training algorithm builds a 
+    model that assigns new examples to one category 
+    or the other, making it a non-probabilistic 
+    binary linear classifier.
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-tol: float, optional
-	to use to control accuracy.
-C: float, optional
-	The weight for misclassification cost. The algorithm minimizes the 
-	regularization cost and the misclassification cost.
-fit_intercept: bool, optional
-	A bool to fit also the intercept.
-intercept_scaling: float
-	A float value, serves as the value of a dummy feature whose 
-	coefficient Vertica uses to calculate the model intercept. 
-	Because the dummy feature is not in the training data, its 
-	values are set to a constant, by default set to 1. 
-intercept_mode: str, optional
-	Specify how to treat the intercept.
-		regularized   : Fits the intercept and applies a 
-						regularization on it.
-		unregularized : Fits the intercept but does not include 
-						it in regularization. 
-class_weight: str / list, optional
-	Specifies how to determine weights of the two classes. It can 
-	be a list of 2 elements or one of the following method:
-		auto : Weights each class according to the number of samples.
-		none : No weights are used.
-max_iter: int, optional
-	The maximum number of iterations that the algorithm performs.
+    Parameters
+    ----------
+    name: str
+    	Name of the the model. The model will be 
+        stored in the DB.
+    tol: float, optional
+    	to use to control accuracy.
+    C: float, optional
+    	The weight for misclassification cost. The 
+        algorithm minimizes the regularization cost 
+        and the misclassification cost.
+    fit_intercept: bool, optional
+    	A bool to fit also the intercept.
+    intercept_scaling: float
+    	A float value, serves as the value of a dummy 
+        feature whose coefficient Vertica uses to 
+        calculate the model intercept. 
+    	Because the dummy feature is not in the training 
+        data, its values are set to a constant, by default 
+        set to 1. 
+    intercept_mode: str, optional
+    	Specify how to treat the intercept.
+    		regularized   : Fits the intercept and applies 
+                            a regularization on it.
+    		unregularized : Fits the intercept but does not 
+                            include it in regularization. 
+    class_weight: str / list, optional
+    	Specifies how to determine weights of the two classes. 
+        It can be a list of 2 elements or one of the following 
+        method:
+    		auto : Weights each class according to the number 
+                   of samples.
+    		none : No weights are used.
+    max_iter: int, optional
+    	The maximum number of iterations that the algorithm 
+        performs.
 	"""
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["SVM_CLASSIFIER"]:
@@ -88,6 +102,8 @@ max_iter: int, optional
     def _model_type(self) -> Literal["LinearSVC"]:
         return "LinearSVC"
 
+    # System & Special Methods.
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -100,7 +116,7 @@ max_iter: int, optional
         intercept_mode: Literal["regularized", "unregularized"] = "regularized",
         class_weight: Union[Literal["auto", "none"], list] = [1, 1],
         max_iter: int = 100,
-    ):
+    ) -> None:
         self.model_name = name
         self.parameters = {
             "tol": tol,
@@ -111,8 +127,11 @@ max_iter: int, optional
             "class_weight": class_weight,
             "max_iter": max_iter,
         }
+        return None
 
-    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
+    # Plotting Methods.
+
+    def plot(self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds):
         """
         Draws the model.
 
@@ -120,7 +139,7 @@ max_iter: int, optional
         ----------
         max_nb_points: int
             Maximum number of points to display.
-        ax: Matplotlib axes object, optional
+        ax: Axes, optional
             The axes to plot on.
         **style_kwds
             Any optional parameter to pass to the 
@@ -128,8 +147,8 @@ max_iter: int, optional
 
         Returns
         -------
-        ax
-            Matplotlib axes object
+        Axes
+            Matplotlib axes object.
         """
         return svm_classifier_plot(
             self.X,
@@ -144,59 +163,49 @@ max_iter: int, optional
 
 class LinearSVR(Regressor, LinearModel):
     """
-Creates a LinearSVR object using the Vertica SVM (Support Vector Machine) 
-algorithm. This algorithm finds the hyperplane used to approximate 
-distribution of the data..
+    Creates a LinearSVR object using the Vertica 
+    SVM (Support Vector Machine) algorithm. This 
+    algorithm finds the hyperplane used to approximate 
+    distribution of the data.
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-tol: float, optional
-	To use to control accuracy.
-C: float, optional
-	The weight for misclassification cost. The algorithm minimizes 
-	the regularization cost and the misclassification cost.
-fit_intercept: bool, optional
-	A bool to fit also the intercept.
-intercept_scaling: float
-	A float value, serves as the value of a dummy feature whose 
-	coefficient Vertica uses to calculate the model intercept. 
-	Because the dummy feature is not in the training data, its 
-	values are set to a constant, by default set to 1. 
-intercept_mode: str, optional
-	Specify how to treat the intercept.
-		regularized   : Fits the intercept and applies a regularization 
-						on it.
-		unregularized : Fits the intercept but does not include it in 
-						regularization. 
-acceptable_error_margin: float, optional
-	Defines the acceptable error margin. Any data points outside this 
-	region add a penalty to the cost function. 
-max_iter: int, optional
-	The maximum number of iterations that the algorithm performs.
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-coef: TableSample
-	Coefficients and their mathematical information 
-	(pvalue, std, value...)
-input_relation: str
-	Training relation.
-X: list
-	List of the predictors.
-y: str
-	Response column.
-test_relation: str
-	Relation used to test the model. All the model methods are abstractions
-	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the training relation will be
-	used as test. You can change it anytime by changing the test_relation
-	attribute of the object.
+    Parameters
+    ----------
+    name: str
+    	Name of the the model. The model will be 
+        stored in the DB.
+    tol: float, optional
+    	To use to control accuracy.
+    C: float, optional
+    	The weight for misclassification cost. 
+        The algorithm minimizes the regularization 
+        cost and the misclassification cost.
+    fit_intercept: bool, optional
+    	A bool to fit also the intercept.
+    intercept_scaling: float
+    	A float value, serves as the value of a 
+        dummy feature whose coefficient Vertica 
+        uses to calculate the model intercept. 
+    	Because the dummy feature is not in the 
+        training data, its values are set to a 
+        constant, by default set to 1. 
+    intercept_mode: str, optional
+    	Specify how to treat the intercept.
+    		regularized   : Fits the intercept and 
+                            applies a regularization 
+    						on it.
+    		unregularized : Fits the intercept but 
+                            does not include it in 
+    						regularization. 
+    acceptable_error_margin: float, optional
+    	Defines the acceptable error margin. Any 
+        data points outside this region add a 
+        penalty to the cost function. 
+    max_iter: int, optional
+    	The maximum number of iterations that the 
+        algorithm performs.
 	"""
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["SVM_REGRESSOR"]:
@@ -218,6 +227,8 @@ test_relation: str
     def _model_type(self) -> Literal["LinearSVR"]:
         return "LinearSVR"
 
+    # System & Special Methods.
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -230,7 +241,7 @@ test_relation: str
         intercept_mode: Literal["regularized", "unregularized"] = "regularized",
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
-    ):
+    ) -> None:
         self.model_name = name
         self.parameters = {
             "tol": tol,
@@ -241,3 +252,4 @@ test_relation: str
             "acceptable_error_margin": acceptable_error_margin,
             "max_iter": max_iter,
         }
+        return None

@@ -1353,7 +1353,7 @@ col_sample_by_tree: float, optional
     vDataFrame
         the input object.
         """
-        # Inititalization
+        # Initialization
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         if not (name):
