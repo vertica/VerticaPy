@@ -1527,52 +1527,52 @@ class MulticlassClassifier(Classifier):
             X = self.X
         elif isinstance(X, str):
             X = [X]
-        else:
-            X = [quote_ident(x) for x in X]
-        fun = self._vertica_predict_sql
+        X = [quote_ident(x) for x in X]
 
-        if self._model_type == "NearestCentroid":
+        if not(self._is_native):
             sql = self.to_memmodel().predict_proba_sql(X)
         else:
             sql = [
                 f"""
-                {fun}({', '.join(X)} 
+                {self._vertica_predict_sql}
+                    ({', '.join(X)} 
                       USING PARAMETERS 
                       model_name = '{self.model_name}',
                       class = '{{}}',
                       type = 'probability',
                       match_by_pos = 'true')""",
                 f"""
-                    {fun}({', '.join(X)} 
+                {self._vertica_predict_sql}
+                        ({', '.join(X)} 
                           USING PARAMETERS 
                           model_name = '{self.model_name}',
                           match_by_pos = 'true')""",
             ]
         if not (allSQL):
-            if pos_label in self.classes_:
-                if self._model_type == "NearestCentroid":
+            if pos_label in list(self.classes_):
+                if not(self._is_native):
                     sql = sql[self._get_match_index(pos_label, self.classes_, False)]
                 else:
                     sql = sql[0].format(pos_label)
-            if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
-                sql = f"""
-                    (CASE 
-                        WHEN {sql} >= {cutoff} 
-                            THEN '{pos_label}' 
-                        WHEN {sql} IS NULL 
-                            THEN NULL 
-                        ELSE '{{}}' 
-                    END)"""
-                if len(self.classes_) > 2:
-                    sql = sql.format(f"Non-{pos_label}")
-                else:
-                    if self.classes_[0] != pos_label:
-                        non_pos_label = self.classes_[0]
+                if 0 <= cutoff <= 1:
+                    sql = f"""
+                        (CASE 
+                            WHEN {sql} >= {cutoff} 
+                                THEN '{pos_label}' 
+                            WHEN {sql} IS NULL 
+                                THEN NULL 
+                            ELSE '{{}}' 
+                        END)"""
+                    if len(self.classes_) > 2:
+                        sql = sql.format(f"Non-{pos_label}")
                     else:
-                        non_pos_label = self.classes_[1]
-                    sql = sql.format(non_pos_label)
-            elif str(pos_label) not in [str(c) for c in self.classes_]:
-                if self._model_type == "NearestCentroid":
+                        if self.classes_[0] != pos_label:
+                            non_pos_label = self.classes_[0]
+                        else:
+                            non_pos_label = self.classes_[1]
+                        sql = sql.format(non_pos_label)
+            else:
+                if not(self._is_native):
                     sql = self.to_memmodel().predict_sql(X)
                 else:
                     sql = sql[1]
@@ -1943,7 +1943,7 @@ class MulticlassClassifier(Classifier):
         Returns the SQL needed to draw the plot.
         """
         pos_label = self._check_pos_label(pos_label)
-        if self._model_type == "NearestCentroid":
+        if not(self._is_native):
             return self.deploySQL(allSQL=True)[
                 self._get_match_index(pos_label, self.classes_, False)
             ]
