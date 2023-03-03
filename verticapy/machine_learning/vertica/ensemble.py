@@ -215,12 +215,11 @@ class XGBoost(Tree):
         """
         Method used to converts the model to JSON.
         """
-        n = self.get_vertica_attributes("tree_count")["tree_count"][0]
         if self._model_type == "XGBClassifier" and (
             len(self.classes_) > 2 or self.classes_[1] != 1 or self.classes_[0] != 0
         ):
             trees = []
-            for i in range(n):
+            for i in range(self.n_estimators_):
                 for c in self.classes_:
                     trees += [self._to_json_tree_dict(i, str(c))]
             v = vertica_version()
@@ -228,12 +227,14 @@ class XGBoost(Tree):
             if not (v):
                 for i in range(len(self.classes_)):
                     trees += [self._to_json_dummy_tree_dict(i)]
-            tree_info = [i for i in range(len(self.classes_))] * (n + int(not (v)))
+            tree_info = [i for i in range(len(self.classes_))] * (
+                self.n_estimators_ + int(not (v))
+            )
             for idx, tree in enumerate(trees):
                 tree["id"] = idx
         else:
-            trees = [self._to_json_tree_dict(i) for i in range(n)]
-            tree_info = [0 for i in range(n)]
+            trees = [self._to_json_tree_dict(i) for i in range(self.n_estimators_)]
+            tree_info = [0 for i in range(self.n_estimators_)]
         return {
             "model": {
                 "trees": trees,
@@ -261,7 +262,6 @@ class XGBoost(Tree):
         condition = [f"{predictor} IS NOT NULL" for predictor in self.X] + [
             f"{self.y} IS NOT NULL"
         ]
-        n = self.get_vertica_attributes("tree_count")["tree_count"][0]
         if self._model_type == "XGBRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
@@ -275,7 +275,7 @@ class XGBoost(Tree):
                 objective = "reg:squarederror"
                 attributes_dict = {
                     "scikit_learn": '{"n_estimators": '
-                    + str(n)
+                    + str(self.n_estimators_)
                     + ', "objective": "reg:squarederror", "max_depth": '
                     + str(self.parameters["max_depth"])
                     + ', "learning_rate": '
@@ -297,7 +297,7 @@ class XGBoost(Tree):
                 objective = "binary:logistic"
                 attributes_dict = {
                     "scikit_learn": '{"use_label_encoder": true, "n_estimators": '
-                    + str(n)
+                    + str(self.n_estimators_)
                     + ', "objective": "binary:logistic", "max_depth": '
                     + str(self.parameters["max_depth"])
                     + ', "learning_rate": '
@@ -326,7 +326,7 @@ class XGBoost(Tree):
             )
             attributes_dict = {
                 "scikit_learn": '{"use_label_encoder": true, "n_estimators": '
-                + str(n)
+                + str(self.n_estimators_)
                 + ', "objective": "multi:softprob", "max_depth": '
                 + str(self.parameters["max_depth"])
                 + ', "learning_rate": '

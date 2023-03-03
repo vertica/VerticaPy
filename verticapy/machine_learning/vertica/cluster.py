@@ -574,6 +574,7 @@ class BisectingKMeans(KMeans, Tree):
     @property
     def _attributes(self) -> list[str]:
         return [
+            "tree_",
             "clusters_",
             "children_left_",
             "children_right_",
@@ -623,6 +624,7 @@ class BisectingKMeans(KMeans, Tree):
         Computes the model's attributes.
         """
         centers = self.get_vertica_attributes("BKTree")
+        self.tree_ = copy.deepcopy(centers)
         self.clusters_ = centers.to_numpy()[:, 1 : len(self.X) + 1]
         self.children_left_ = np.array(centers["left_child"])
         self.children_right_ = np.array(centers["right_child"])
@@ -662,7 +664,7 @@ class BisectingKMeans(KMeans, Tree):
         Returns a table containing information about the 
         BK-tree.
         """
-        return self.get_vertica_attributes("BKTree")
+        return self.tree_
 
     def to_graphviz(
         self,

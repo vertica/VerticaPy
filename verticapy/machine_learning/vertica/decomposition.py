@@ -283,13 +283,12 @@ class Decomposition(Preprocessing):
             ax=ax,
             **style_kwds,
         )
-        explained_variance = self.get_vertica_attributes("singular_values")[
-            "explained_variance"
-        ]
-        if not (explained_variance[dimensions[0] - 1]):
+        if not (self.explained_variance_[dimensions[0] - 1]):
             dimensions_1 = ""
         else:
-            dimensions_1 = f"({round(explained_variance[dimensions[0] - 1] * 100, 1)}%)"
+            dimensions_1 = (
+                f"({round(self.explained_variance_[dimensions[0] - 1] * 100, 1)}%)"
+            )
         ax.set_xlabel(f"Dim{dimensions[0]} {dimensions_1}")
         ax.set_ylabel(f"Dim{dimensions[0]} {dimensions_1}")
         return ax
@@ -317,29 +316,18 @@ class Decomposition(Preprocessing):
             Matplotlib axes object.
         """
         if self._model_type == "SVD":
-            x = self.get_vertica_attributes("right_singular_vectors")[
-                f"vector{dimensions[0]}"
-            ]
-            y = self.get_vertica_attributes("right_singular_vectors")[
-                f"vector{dimensions[1]}"
-            ]
+            x = self.vectors_[:, : dimensions[0]]
+            y = self.vectors_[:, : dimensions[1]]
         else:
-            x = self.get_vertica_attributes("principal_components")[
-                f"PC{dimensions[0]}"
-            ]
-            y = self.get_vertica_attributes("principal_components")[
-                f"PC{dimensions[1]}"
-            ]
-        explained_variance = self.get_vertica_attributes("singular_values")[
-            "explained_variance"
-        ]
+            x = self.principal_components_[:, : dimensions[0]]
+            y = self.principal_components_[:, : dimensions[1]]
         return vpy_plt.plot_pca_circle(
             x,
             y,
             self.X,
             (
-                explained_variance[dimensions[0] - 1],
-                explained_variance[dimensions[1] - 1],
+                self.explained_variance_[dimensions[0] - 1],
+                self.explained_variance_[dimensions[1] - 1],
             ),
             dimensions,
             ax,
@@ -363,11 +351,8 @@ class Decomposition(Preprocessing):
         Axes
             Matplotlib axes object.
         """
-        explained_variance = self.get_vertica_attributes("singular_values")[
-            "explained_variance"
-        ]
         explained_variance, n = (
-            [100 * elem for elem in explained_variance],
+            [100 * x for x in self.explained_variance_],
             len(explained_variance),
         )
         information = TableSample(
@@ -460,7 +445,7 @@ class PCA(Decomposition):
 
     @property
     def _attributes(self) -> list[str]:
-        return ["principal_components_", "mean_", "cos2_"]
+        return ["principal_components_", "mean_", "cos2_", "explained_variance_"]
 
     # System & Special Methods.
 
@@ -491,6 +476,9 @@ class PCA(Decomposition):
             "principal_components"
         ).to_numpy()
         self.mean_ = np.array(self.get_vertica_attributes("columns")["mean"])
+        self.explained_variance_ = np.array(
+            self.get_vertica_attributes("singular_values")["explained_variance"]
+        )
         cos2 = self.get_vertica_attributes("principal_components").to_list()
         for i in range(len(cos2)):
             cos2[i] = [v ** 2 for v in cos2[i]]
@@ -599,7 +587,7 @@ class MCA(PCA):
         Axes
             Matplotlib axes object.
         """
-        contrib = self.get_vertica_attributes("principal_components")[f"PC{dimension}"]
+        contrib = self.principal_components_[:, :dimension]
         contrib = [elem ** 2 for elem in contrib]
         total = sum(contrib)
         contrib = [100 * elem / total for elem in contrib]
@@ -700,8 +688,8 @@ class MCA(PCA):
         Axes
             Matplotlib axes object.
         """
-        x = self.get_vertica_attributes("principal_components")[f"PC{dimensions[0]}"]
-        y = self.get_vertica_attributes("principal_components")[f"PC{dimensions[1]}"]
+        x = self.principal_components_[:, : dimensions[0]]
+        y = self.principal_components_[:, : dimensions[1]]
         n = len(self.cos2_[f"PC{dimensions[0]}"])
         if method in ("cos2", "contrib"):
             if method == "cos2":
@@ -729,16 +717,13 @@ class MCA(PCA):
                 style_kwds["cmap"] = get_cmap(
                     color=[get_colors()[0], get_colors()[1], get_colors()[2],]
                 )
-        explained_variance = self.get_vertica_attributes("singular_values")[
-            "explained_variance"
-        ]
         return vpy_plt.plot_var(
             x,
             y,
             self.X,
             (
-                explained_variance[dimensions[0] - 1],
-                explained_variance[dimensions[1] - 1],
+                self.explained_variance_[dimensions[0] - 1],
+                self.explained_variance_[dimensions[1] - 1],
             ),
             dimensions,
             method,
@@ -798,7 +783,7 @@ class SVD(Decomposition):
 
     @property
     def _attributes(self) -> list[str]:
-        return ["vectors_", "values_"]
+        return ["vectors_", "values_", "explained_variance_"]
 
     # System & Special Methods.
 
@@ -822,6 +807,9 @@ class SVD(Decomposition):
         """
         self.vectors_ = self.get_vertica_attributes("right_singular_vectors").to_numpy()
         self.values_ = np.array(self.get_vertica_attributes("singular_values")["value"])
+        self.explained_variance_ = np.array(
+            self.get_vertica_attributes("singular_values")["explained_variance"]
+        )
         return None
 
     # I/O Methods.
