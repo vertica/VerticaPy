@@ -172,9 +172,7 @@ class XGBoost(Tree):
             for i in range(self.n_estimators_):
                 for c in self.classes_:
                     trees += [self._to_json_tree_dict(i, str(c))]
-            tree_info = [i for i in range(len(self.classes_))] * (
-                self.n_estimators_ + int(not (v))
-            )
+            tree_info = [i for i in range(len(self.classes_))] * self.n_estimators_
             for idx, tree in enumerate(trees):
                 tree["id"] = idx
         else:

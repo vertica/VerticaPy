@@ -183,7 +183,7 @@ class TestKNeighborsClassifier:
         assert model.score(method="logloss") == pytest.approx(0.248241359319007)
         assert model.score(method="mcc") == pytest.approx(0.40382652359985155)
         assert model.score(method="mk") == pytest.approx(0.41516247778624016)
-        assert model.score(method="npv") == pytest.approx(0.4773561811505508)
+        assert model.score(method="npv") == pytest.approx(0.6811881188118812)
         assert model.score(method="prc_auc") == pytest.approx(0.7776321621297582)
         assert model.score(method="precision") == pytest.approx(0.4773561811505508)
         assert model.score(method="specificity") == pytest.approx(0.0)

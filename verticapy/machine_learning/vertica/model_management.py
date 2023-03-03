@@ -155,8 +155,8 @@ def load_model(
         epsilon = parameters_dict["epsilon"]
     else:
         epsilon = 0.001
-    if model_type == "rf_regressor":
-        model = RandomForestRegressor(
+    if model_type in ("rf_regressor", "rf_classifier"):
+        args = [
             name,
             int(parameters_dict["ntree"]),
             int(parameters_dict["mtry"]),
@@ -166,19 +166,11 @@ def load_model(
             int(parameters_dict["min_leaf_size"]),
             float(parameters_dict["min_info_gain"]),
             int(parameters_dict["nbins"]),
-        )
-    elif model_type == "rf_classifier":
-        model = RandomForestClassifier(
-            name,
-            int(parameters_dict["ntree"]),
-            int(parameters_dict["mtry"]),
-            int(parameters_dict["max_breadth"]),
-            float(parameters_dict["sampling_size"]),
-            int(parameters_dict["max_depth"]),
-            int(parameters_dict["min_leaf_size"]),
-            float(parameters_dict["min_info_gain"]),
-            int(parameters_dict["nbins"]),
-        )
+        ]
+        if model_type == "rf_regressor":
+            model = RandomForestRegressor(*args)
+        elif model_type == "rf_classifier":
+            model = RandomForestClassifier(*args)
     elif model_type == "iforest":
         model = IsolationForest(
             name,
@@ -188,8 +180,8 @@ def load_model(
             float(parameters_dict["sampling_size"]),
             float(parameters_dict["col_sample_by_tree"]),
         )
-    elif model_type == "xgb_classifier":
-        model = XGBClassifier(
+    elif model_type in ("xgb_classifier", "xgb_regressor"):
+        args = [
             name,
             int(parameters_dict["max_ntree"]),
             int(parameters_dict["max_depth"]),
@@ -202,22 +194,11 @@ def load_model(
             float(parameters_dict["sampling_size"]),
             float(parameters_dict["col_sample_by_tree"]),
             float(parameters_dict["col_sample_by_node"]),
-        )
-    elif model_type == "xgb_regressor":
-        model = XGBRegressor(
-            name,
-            int(parameters_dict["max_ntree"]),
-            int(parameters_dict["max_depth"]),
-            int(parameters_dict["nbins"]),
-            split_proposal_method,
-            float(epsilon),
-            float(parameters_dict["learning_rate"]),
-            float(parameters_dict["min_split_loss"]),
-            float(parameters_dict["weight_reg"]),
-            float(parameters_dict["sampling_size"]),
-            float(parameters_dict["col_sample_by_tree"]),
-            float(parameters_dict["col_sample_by_node"]),
-        )
+        ]
+        if model_type == "xgb_classifier":
+            model = XGBClassifier(*args)
+        elif model_type == "xgb_regressor":
+            model = XGBRegressor(*args)
     elif model_type == "logistic_reg":
         model = LogisticRegression(
             name,

@@ -150,7 +150,7 @@ class TestXGBC:
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = """PREDICT_XGB_CLASSIFIER(Gender, "owned cars", cost, income 
+        expected_sql = """PREDICT_XGB_CLASSIFIER("Gender", "owned cars", "cost", "income" 
                               USING PARAMETERS 
                               model_name = 'xgbc_model_test', 
                               match_by_pos = 'true')"""
