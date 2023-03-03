@@ -18,7 +18,6 @@ from verticapy._typing import SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import schema_relation
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -44,7 +43,6 @@ from verticapy.machine_learning.vertica.linear_model import (
     LogisticRegression,
     Ridge,
 )
-from verticapy.machine_learning.vertica.model_management import load_model
 from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
 from verticapy.machine_learning.vertica.preprocessing import Scaler, OneHotEncoder
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
@@ -202,6 +200,8 @@ def load_model(
             float(parameters_dict["min_split_loss"]),
             float(parameters_dict["weight_reg"]),
             float(parameters_dict["sampling_size"]),
+            float(parameters_dict["col_sample_by_tree"]),
+            float(parameters_dict["col_sample_by_node"]),
         )
     elif model_type == "xgb_regressor":
         model = XGBRegressor(
@@ -215,6 +215,8 @@ def load_model(
             float(parameters_dict["min_split_loss"]),
             float(parameters_dict["weight_reg"]),
             float(parameters_dict["sampling_size"]),
+            float(parameters_dict["col_sample_by_tree"]),
+            float(parameters_dict["col_sample_by_node"]),
         )
     elif model_type == "logistic_reg":
         model = LogisticRegression(
@@ -348,15 +350,5 @@ def load_model(
         end -= 1
     model.X = info.split(",")[start:end]
     model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-    if model_type in ("xgb_classifier", "xgb_regressor"):
-        v = vertica_version()
-        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-        if v:
-            model.set_params(
-                {
-                    "col_sample_by_tree": float(parameters_dict["col_sample_by_tree"]),
-                    "col_sample_by_node": float(parameters_dict["col_sample_by_node"]),
-                }
-            )
     model._compute_attributes()
     return model

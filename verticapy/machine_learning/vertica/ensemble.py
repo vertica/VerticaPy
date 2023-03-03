@@ -25,10 +25,7 @@ from verticapy._utils._gen import gen_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._utils._sql._vertica_version import (
-    check_minimum_version,
-    vertica_version,
-)
+from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -80,8 +77,6 @@ class XGBoost(Tree):
             XGB Priors.
         """
         condition = [f"{x} IS NOT NULL" for x in self.X] + [f"{self.y} IS NOT NULL"]
-        v = vertica_version()
-        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
         query = f"""
             SELECT 
                 /*+LABEL('learn.ensemble.XGBoost._compute_prior')*/ 
@@ -96,56 +91,11 @@ class XGBoost(Tree):
                 method="fetchfirstelem",
                 print_time_sql=False,
             )
-        elif not (v):
-            prior_ = []
-            for c in self.classes_:
-                avg = _executeSQL(
-                    query=query.format("COUNT(*)", f" AND {self.y} = '{c}'"),
-                    method="fetchfirstelem",
-                    print_time_sql=False,
-                )
-                avg /= _executeSQL(
-                    query=query.format("COUNT(*)", ""),
-                    method="fetchfirstelem",
-                    print_time_sql=False,
-                )
-                logodds = np.log(avg / (1 - avg))
-                prior_ += [logodds]
         else:
             prior_ = np.array([0.0 for p in self.classes_])
         return prior_
 
     # I/O Methods.
-
-    def _to_json_dummy_tree_dict(self, i: int = 0) -> dict:
-        """
-        Dummy trees are used to store the prior probabilities.
-        The Python XGBoost API do not use those information 
-        and start the training with priors = 0.
-        """
-        return {
-            "base_weights": [0.0],
-            "categories": [],
-            "categories_nodes": [],
-            "categories_segments": [],
-            "categories_sizes": [],
-            "default_left": [True],
-            "id": -1,
-            "left_children": [-1],
-            "loss_changes": [0.0],
-            "parents": [random.randint(2, 999999999)],
-            "right_children": [-1],
-            "split_conditions": [self.logodds_[i]],
-            "split_indices": [0],
-            "split_type": [0],
-            "sum_hessian": [0.0],
-            "tree_param": {
-                "num_deleted": "0",
-                "num_feature": str(len(self.X)),
-                "num_nodes": "1",
-                "size_leaf_vector": "0",
-            },
-        }
 
     def _to_json_tree_dict(self, tree_id: int, c: str = None) -> dict:
         """
@@ -222,11 +172,6 @@ class XGBoost(Tree):
             for i in range(self.n_estimators_):
                 for c in self.classes_:
                     trees += [self._to_json_tree_dict(i, str(c))]
-            v = vertica_version()
-            v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-            if not (v):
-                for i in range(len(self.classes_)):
-                    trees += [self._to_json_dummy_tree_dict(i)]
             tree_info = [i for i in range(len(self.classes_))] * (
                 self.n_estimators_ + int(not (v))
             )
@@ -251,14 +196,6 @@ class XGBoost(Tree):
         """
         Method used to converts the model to JSON.
         """
-        v = vertica_version()
-        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-        if v:
-            col_sample_by_tree = self.parameters["col_sample_by_tree"]
-            col_sample_by_node = self.parameters["col_sample_by_node"]
-        else:
-            col_sample_by_tree = "null"
-            col_sample_by_node = "null"
         condition = [f"{predictor} IS NOT NULL" for predictor in self.X] + [
             f"{self.y} IS NOT NULL"
         ]
@@ -283,9 +220,9 @@ class XGBoost(Tree):
                     + ', "verbosity": null, "booster": null, "tree_method": null,'
                     + ' "gamma": null, "min_child_weight": null, "max_delta_step":'
                     + ' null, "subsample": null, "colsample_bytree": '
-                    + str(col_sample_by_tree)
+                    + str(self.parameters["col_sample_by_tree"])
                     + ', "colsample_bylevel": null, "colsample_bynode": '
-                    + str(col_sample_by_node)
+                    + str(self.parameters["col_sample_by_node"])
                     + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
                     + ' null, "base_score": null, "missing": NaN, "num_parallel_tree"'
                     + ': null, "kwargs": {}, "random_state": null, "n_jobs": null, '
@@ -305,9 +242,9 @@ class XGBoost(Tree):
                     + ', "verbosity": null, "booster": null, "tree_method": null,'
                     + ' "gamma": null, "min_child_weight": null, "max_delta_step":'
                     + ' null, "subsample": null, "colsample_bytree": '
-                    + str(col_sample_by_tree)
+                    + str(self.parameters["col_sample_by_tree"])
                     + ', "colsample_bylevel": null, "colsample_bynode": '
-                    + str(col_sample_by_node)
+                    + str(self.parameters["col_sample_by_node"])
                     + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
                     + ' null, "base_score": null, "missing": NaN, "num_parallel_tree"'
                     + ': null, "kwargs": {}, "random_state": null, "n_jobs": null,'
@@ -334,9 +271,9 @@ class XGBoost(Tree):
                 + ', "verbosity": null, "booster": null, "tree_method": null, '
                 + '"gamma": null, "min_child_weight": null, "max_delta_step": '
                 + 'null, "subsample": null, "colsample_bytree": '
-                + str(col_sample_by_tree)
+                + str(self.parameters["col_sample_by_tree"])
                 + ', "colsample_bylevel": null, "colsample_bynode": '
-                + str(col_sample_by_node)
+                + str(self.parameters["col_sample_by_node"])
                 + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
                 + ' null, "base_score": null, "missing": NaN, "num_parallel_tree":'
                 + ' null, "kwargs": {}, "random_state": null, "n_jobs": null, '
@@ -682,12 +619,9 @@ class XGBRegressor(XGBoost, Regressor):
             "min_split_loss": min_split_loss,
             "weight_reg": weight_reg,
             "sample": sample,
+            "col_sample_by_tree": col_sample_by_tree,
+            "col_sample_by_node": col_sample_by_node,
         }
-        v = vertica_version()
-        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-        if v:
-            params["col_sample_by_tree"] = col_sample_by_tree
-            params["col_sample_by_node"] = col_sample_by_node
         self.parameters = params
         return None
 
@@ -1030,12 +964,9 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
             "min_split_loss": min_split_loss,
             "weight_reg": weight_reg,
             "sample": sample,
+            "col_sample_by_tree": col_sample_by_tree,
+            "col_sample_by_node": col_sample_by_node,
         }
-        v = vertica_version()
-        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-        if v:
-            params["col_sample_by_tree"] = col_sample_by_tree
-            params["col_sample_by_node"] = col_sample_by_node
         self.parameters = params
         return None
 
