@@ -30,48 +30,59 @@ from verticapy.machine_learning.model_selection import best_k
 
 class AutoClustering(VerticaModel):
     """
-Automatically creates k different groups with which to generalize the data.
+    Automatically creates k different groups with which 
+    to generalize the data.
 
-Parameters
-----------
-name: str
-    Name of the model.
-n_cluster: int, optional
-    Number of clusters. If empty, an optimal number of clusters will be
-    determined using multiple k-means models.
-init: str / list, optional
-    The method for finding the initial cluster centers.
-        kmeanspp : Uses the k-means++ method to initialize the centers.
-                   [Only available when use_kprototype is set to False]
-        random   : Randomly subsamples the data to find initial centers.
-    Alternatively, you can specify a list with the initial custer centers.
-max_iter: int, optional
-    The maximum number of iterations for the algorithm.
-tol: float, optional
-    Determines whether the algorithm has converged. The algorithm is considered 
-    converged after no center has moved more than a distance of 'tol' from the 
-    previous iteration.
-use_kprototype: bool, optional
-    If set to True, the function uses the k-prototypes algorithm instead of
-    k-means. k-prototypes can handle categorical features.
-gamma: float, optional
-    [Only if use_kprototype is set to True] Weighting factor for categorical columns. 
-    It determines the relative importance of numerical and categorical attributes.
-preprocess_data: bool, optional
-    If True, the data will be preprocessed.
-preprocess_dict: dict, optional
-    Dictionary to pass to the AutoDataPrep class in order to 
-    preprocess the data before the clustering.
-print_info: bool
-    If True, prints the model information at each step.
+    Parameters
+    ----------
+    name: str
+        Name of the model.
+    n_cluster: int, optional
+        Number of clusters. If empty, an optimal number 
+        of clusters will be determined using multiple 
+        k-means models.
+    init: str / list, optional
+        The method for finding the initial cluster centers.
+            kmeanspp : Uses the k-means++ method to 
+                       initialize the centers.
+                       [Only available when use_kprototype 
+                        is set to False]
+            random   : Randomly subsamples the data to find 
+                       initial centers.
+        Alternatively, you can specify a list with the initial 
+        custer centers.
+    max_iter: int, optional
+        The maximum number of iterations for the algorithm.
+    tol: float, optional
+        Determines whether the algorithm has converged. The 
+        algorithm is considered converged after no center has 
+        moved more than a distance of 'tol' from the previous 
+        iteration.
+    use_kprototype: bool, optional
+        If set to True, the function uses the k-prototypes 
+        algorithm instead of k-means. k-prototypes can handle 
+        categorical features.
+    gamma: float, optional
+        [Only if use_kprototype is set to True] Weighting factor 
+        for categorical columns. It determines the relative 
+        importance of numerical and categorical attributes.
+    preprocess_data: bool, optional
+        If True, the data will be preprocessed.
+    preprocess_dict: dict, optional
+        Dictionary to pass to the AutoDataPrep class in order to 
+        preprocess the data before the clustering.
+    print_info: bool
+        If True, prints the model information at each step.
 
-Attributes
-----------
-preprocess_: object
-    Model used to preprocess the data.
-model_: object
-    Final model used for the clustering.
+    Attributes
+    ----------
+    preprocess_: object
+        Model used to preprocess the data.
+    model_: object
+        Final model used for the clustering.
     """
+
+    # Properties.
 
     @property
     def _is_native(self) -> Literal[False]:
@@ -97,6 +108,12 @@ model_: object
     def _model_type(self) -> Literal["AutoClustering"]:
         return "AutoClustering"
 
+    @property
+    def _attributes(self) -> list[str]:
+        return ["preprocess_", "model_"]
+
+    # System & Special Methods.
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -115,7 +132,7 @@ model_: object
             "na_method": "drop",
         },
         print_info: bool = True,
-    ):
+    ) -> None:
         self.model_name = name
         self.parameters = {
             "n_cluster": n_cluster,
@@ -128,22 +145,20 @@ model_: object
             "preprocess_data": preprocess_data,
             "preprocess_dict": preprocess_dict,
         }
+        return None
+
+    # Model Fitting Method.
 
     def fit(self, input_relation: SQLRelation, X: list = []):
         """
-    Trains the model.
+        Trains the model.
 
-    Parameters
-    ----------
-    input_relation: str/vDataFrame
-        Training Relation.
-    X: list, optional
-        List of the predictors.
-
-    Returns
-    -------
-    object
-        clustering model
+        Parameters
+        ----------
+        input_relation: str/vDataFrame
+            Training Relation.
+        X: list, optional
+            List of the predictors.
         """
         from verticapy.machine_learning.vertica.automl import AutoDataPrep
 
@@ -155,8 +170,9 @@ model_: object
             print(f"\033[1m\033[4mStarting AutoClustering\033[0m\033[0m\n")
         if self.parameters["preprocess_data"]:
             model_preprocess = AutoDataPrep(**self.parameters["preprocess_dict"])
-            input_relation = model_preprocess.fit(input_relation, X=X)
-            X = [elem for elem in model_preprocess.X_out]
+            model_preprocess.fit(input_relation, X=X)
+            input_relation = model_preprocess.final_relation_
+            X = [elem for elem in model_preprocess.X_out_]
             self.preprocess_ = model_preprocess
         else:
             self.preprocess_ = None
@@ -202,4 +218,4 @@ model_: object
                     tol=self.parameters["tol"],
                 )
             self.model_.fit(input_relation, X=X)
-        return self.model_
+        return None
