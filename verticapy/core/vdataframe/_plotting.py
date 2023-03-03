@@ -19,6 +19,7 @@ from typing import Literal, Union
 from collections.abc import Iterable
 
 import verticapy._config.config as conf
+from verticapy._typing import PythonNumber, SQLColumns, SQLExpression
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -60,7 +61,7 @@ class vDFPlot:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names.
     by: str, optional
         Categorical vDataColumn used in the partition.
@@ -234,7 +235,7 @@ class vDFPlot:
     @save_verticapy_logs
     def bar(
         self,
-        columns: Union[str, list],
+        columns: SQLColumns,
         method: str = "density",
         of: str = "",
         max_cardinality: tuple = (6, 6),
@@ -256,7 +257,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: str / list
+    columns: SQLColumns
         List of the vDataColumns names. The list must have one or two elements.
     method: str, optional
         The method to use to aggregate the data.
@@ -331,13 +332,13 @@ class vDFPlot:
             )
 
     @save_verticapy_logs
-    def boxplot(self, columns: Union[str, list] = [], ax=None, **style_kwds):
+    def boxplot(self, columns: SQLColumns = [], ax=None, **style_kwds):
         """
     Draws the Box Plot of the input vDataColumns. 
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will 
         be used.
     ax: Matplotlib axes object, optional
@@ -368,7 +369,7 @@ class vDFPlot:
     @save_verticapy_logs
     def bubble(
         self,
-        columns: Union[str, list],
+        columns: SQLColumns,
         size_bubble_col: str = "",
         catcol: str = "",
         cmap_col: str = "",
@@ -383,7 +384,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: str / list
+    columns: SQLColumns
         List of the vDataColumns names. The list must have two elements.
     size_bubble_col: str
         Numerical vDataColumn to use to represent the Bubble size.
@@ -465,7 +466,7 @@ class vDFPlot:
     @save_verticapy_logs
     def density(
         self,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         bandwidth: float = 1.0,
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 50,
@@ -478,7 +479,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will 
         be selected.
     bandwidth: float, optional
@@ -548,10 +549,10 @@ class vDFPlot:
     @save_verticapy_logs
     def hchart(
         self,
-        x: Union[str, list] = None,
-        y: Union[str, list] = None,
-        z: Union[str, list] = None,
-        c: Union[str, list] = None,
+        x: SQLExpression = None,
+        y: SQLExpression = None,
+        z: SQLExpression = None,
+        c: SQLExpression = None,
         aggregate: bool = True,
         kind: Literal[
             "area",
@@ -606,7 +607,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    x / y / z / c: str / list
+    x / y / z / c: SQLExpression
         The vDataColumns and aggregations used to draw the chart. These will depend 
         on the chart type. You can also specify an expression, but it must be a SQL 
         statement. For example: AVG(column1) + SUM(column2) AS new_name.
@@ -747,7 +748,7 @@ class vDFPlot:
     @save_verticapy_logs
     def heatmap(
         self,
-        columns: Union[str, list],
+        columns: SQLColumns,
         method: str = "count",
         of: str = "",
         h: tuple = (None, None),
@@ -759,7 +760,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: str / list
+    columns: SQLColumns
         List of the vDataColumns names. The list must have two elements.
     method: str, optional
         The method to use to aggregate the data.
@@ -818,7 +819,7 @@ class vDFPlot:
     @save_verticapy_logs
     def hexbin(
         self,
-        columns: Union[str, list],
+        columns: SQLColumns,
         method: Literal["density", "count", "avg", "min", "max", "sum"] = "count",
         of: str = "",
         bbox: list = [],
@@ -831,7 +832,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: str / list
+    columns: SQLColumns
         List of the vDataColumns names. The list must have two elements.
     method: str, optional
         The method to use to aggregate the data.
@@ -870,7 +871,7 @@ class vDFPlot:
     @save_verticapy_logs
     def hist(
         self,
-        columns: Union[str, list],
+        columns: SQLColumns,
         method: str = "density",
         of: str = "",
         max_cardinality: tuple = (6, 6),
@@ -884,7 +885,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: str / list
+    columns: SQLColumns
         List of the vDataColumns names. The list must have less than 5 elements.
     method: str, optional
         The method to use to aggregate the data.
@@ -898,7 +899,7 @@ class vDFPlot:
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
         The vDataColumn to use to compute the aggregation.
-    h: int/float/tuple, optional
+    h: int / float /tuple, optional
         Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
         vDataColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
@@ -960,7 +961,7 @@ class vDFPlot:
     @save_verticapy_logs
     def outliers_plot(
         self,
-        columns: Union[str, list],
+        columns: SQLColumns,
         threshold: float = 3.0,
         color: str = "orange",
         outliers_color: str = "black",
@@ -975,7 +976,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: str / list
+    columns: SQLColumns
         List of one or two vDataColumn names.
     threshold: float, optional
         ZSCORE threshold used to detect outliers.
@@ -1018,7 +1019,7 @@ class vDFPlot:
     @save_verticapy_logs
     def pie(
         self,
-        columns: Union[str, list],
+        columns: SQLColumns,
         max_cardinality: Union[int, tuple, list] = None,
         h: Union[float, tuple] = None,
         ax=None,
@@ -1060,7 +1061,7 @@ class vDFPlot:
     @save_verticapy_logs
     def pivot_table(
         self,
-        columns: Union[str, list],
+        columns: SQLColumns,
         method: str = "count",
         of: str = "",
         max_cardinality: tuple = (20, 20),
@@ -1076,7 +1077,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: str / list
+    columns: SQLColumns
         List of the vDataColumns names. The list must have one or two elements.
     method: str, optional
         The method to use to aggregate the data.
@@ -1158,10 +1159,10 @@ class vDFPlot:
     columns: list, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    start_date: str / int / float / date, optional
+    start_date: str / PythonNumber / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str / int / float / date, optional
+    end_date: str / PythonNumber / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     step: bool, optional
@@ -1191,7 +1192,7 @@ class vDFPlot:
     @save_verticapy_logs
     def scatter(
         self,
-        columns: Union[str, list],
+        columns: SQLColumns,
         catcol: str = "",
         max_cardinality: int = 6,
         cat_priority: list = [],
@@ -1294,13 +1295,13 @@ class vDFPlot:
         return plt.scatter(*args, ax=ax, **style_kwds,)
 
     @save_verticapy_logs
-    def scatter_matrix(self, columns: Union[str, list] = [], **style_kwds):
+    def scatter_matrix(self, columns: SQLColumns = [], **style_kwds):
         """
     Draws the scatter matrix of the vDataFrame.
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **style_kwds
@@ -1342,10 +1343,10 @@ class vDFPlot:
     columns: list, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used. They must all include only positive values.
-    start_date: int / float / str / date, optional
+    start_date: PythonScalar / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: int / float / str / date, optional
+    end_date: PythonScalar / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     fully: bool, optional
@@ -1479,7 +1480,7 @@ class vDCPlot:
         of: str = "",
         max_cardinality: int = 6,
         nbins: int = 0,
-        h: Union[int, float] = 0,
+        h: PythonNumber = 0,
         ax=None,
         **style_kwds,
     ):
@@ -1505,7 +1506,7 @@ class vDCPlot:
         (No h will be picked or computed)
     nbins: int, optional
         Number of nbins. If empty, an optimized number of nbins will be computed.
-    h: int / float, optional
+    h: PythonNumber, optional
         Interval width of the bar. If empty, an optimized h will be computed.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -1528,7 +1529,7 @@ class vDCPlot:
     def boxplot(
         self,
         by: str = "",
-        h: Union[int, float] = 0,
+        h: PythonNumber = 0,
         max_cardinality: int = 8,
         cat_priority: Union[str, int, datetime.datetime, datetime.date, list] = [],
         ax=None,
@@ -1541,7 +1542,7 @@ class vDCPlot:
     ----------
     by: str, optional
         vDataColumn to use to partition the data.
-    h: int / float, optional
+    h: PythonNumber, optional
         Interval width if the vDataColumn is numerical or of type date like. Optimized 
         h will be computed if the parameter is empty or invalid.
     max_cardinality: int, optional
@@ -1576,7 +1577,7 @@ class vDCPlot:
     def density(
         self,
         by: str = "",
-        bandwidth: Union[int, float] = 1.0,
+        bandwidth: PythonNumber = 1.0,
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 200,
         xlim: tuple = None,
@@ -1590,7 +1591,7 @@ class vDCPlot:
     ----------
     by: str, optional
         vDataColumn to use to partition the data.
-    bandwidth: int / float, optional
+    bandwidth: PythonNumber, optional
         The bandwidth of the kernel.
     kernel: str, optional
         The method used for the plot.
@@ -1732,7 +1733,7 @@ class vDCPlot:
         of: str = "",
         max_cardinality: int = 6,
         nbins: int = 0,
-        h: Union[int, float] = 0,
+        h: PythonNumber = 0,
         ax=None,
         **style_kwds,
     ):
@@ -1758,7 +1759,7 @@ class vDCPlot:
         (No h will be picked or computed)
     nbins: int, optional
         Number of bins. If empty, an optimized number of bins will be computed.
-    h: int / float, optional
+    h: PythonNumber, optional
         Interval width of the bar. If empty, an optimized h will be computed.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -1785,7 +1786,7 @@ class vDCPlot:
         method: str = "density",
         of: str = "",
         max_cardinality: int = 6,
-        h: Union[int, float] = 0,
+        h: PythonNumber = 0,
         pie_type: Literal["auto", "donut", "rose"] = "auto",
         ax=None,
         **style_kwds,
@@ -1810,7 +1811,7 @@ class vDCPlot:
     max_cardinality: int, optional
         Maximum number of the vDataColumn distinct elements to be used as categorical 
         (No h will be picked or computed)
-    h: int / float, optional
+    h: PythonNumber, optional
         Interval width of the bar. If empty, an optimized h will be computed.
     pie_type: str, optional
         The type of pie chart.
@@ -1860,10 +1861,10 @@ class vDCPlot:
         date like (date, datetime, timestamp...) or numerical.
     by: str, optional
         vDataColumn to use to partition the TS.
-    start_date: str / int / float / date, optional
+    start_date: str / PythonNumber / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str / int / float / date, optional
+    end_date: str / PythonNumber / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     area: bool, optional
@@ -1911,10 +1912,10 @@ class vDCPlot:
         date like (date, datetime, timestamp...) or numerical.
     q: tuple / list, optional
         Tuple including the 2 quantiles used to draw the Plot.
-    start_date: str / int / float / date, optional
+    start_date: str / PythonNumber / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str / int / float / date, optional
+    end_date: str / PythonNumber / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     plot_median: bool, optional
@@ -1968,7 +1969,7 @@ class vDCPlot:
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
         The vDataColumn to use to compute the aggregation.
-    h: int / float / tuple / list, optional
+    h: PythonNumber / tuple / list, optional
         Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
         vDataColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.

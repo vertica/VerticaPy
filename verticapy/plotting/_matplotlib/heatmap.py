@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap, get_colors
 import verticapy._config.config as conf
+from verticapy._typing import PythonScalar
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -121,7 +122,7 @@ def contour_plot(
     func,
     nbins: int = 100,
     cbar_title: str = "",
-    pos_label: Union[int, str, float] = None,
+    pos_label: PythonScalar = None,
     ax=None,
     **style_kwds,
 ):

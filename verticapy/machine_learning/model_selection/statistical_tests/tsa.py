@@ -20,6 +20,7 @@ import numpy as np
 from scipy.stats import chi2, norm, f
 
 import verticapy._config.config as conf
+from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import schema_relation
@@ -458,7 +459,7 @@ def ljungbox(
     ts: str,
     by: list = [],
     p: int = 1,
-    alpha: Union[int, float] = 0.05,
+    alpha: PythonNumber = 0.05,
     box_pierce: bool = False,
 ):
     """
@@ -478,7 +479,7 @@ by: list, optional
     vcolumns used in the partition.
 p: int, optional
     Number of lags to consider in the test.
-alpha: int / float, optional
+alpha: PythonNumber, optional
     Significance Level. Probability to accept H0.
 box_pierce: bool
     If set to True, the Box-Pierce statistic will be used.
@@ -516,7 +517,7 @@ TableSample
 
 
 @save_verticapy_logs
-def mkt(vdf: vDataFrame, column: str, ts: str, alpha: Union[int, float] = 0.05):
+def mkt(vdf: vDataFrame, column: str, ts: str, alpha: PythonNumber = 0.05):
     """
 Mann Kendall test (Time Series trend).
 
@@ -534,7 +535,7 @@ column: str
 ts: str
     vcolumn used as timeline. It will be to use to order the data. It can be
     a numerical or type date like (date, datetime, timestamp...) vcolumn.
-alpha: int / float, optional
+alpha: PythonNumber, optional
     Significance Level. Probability to accept H0.
 
 Returns
@@ -606,7 +607,7 @@ def seasonal_decompose(
     vdf: vDataFrame,
     column: str,
     ts: str,
-    by: Union[str, list] = [],
+    by: SQLColumns = [],
     period: int = -1,
     polynomial_order: int = 1,
     estimate_seasonality: bool = True,
@@ -626,7 +627,7 @@ column: str
 ts: str
     TS (Time Series) vcolumn to use to order the data. It can be of type date
     or a numerical vcolumn.
-by: str / list, optional
+by: SQLColumns, optional
     vcolumns used in the partition.
 period: int, optional
 	Time Series period. It is used to retrieve the seasonality component.

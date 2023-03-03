@@ -24,8 +24,9 @@ import scipy.special as scipy_special
 
 from verticapy._config.colors import get_cmap
 import verticapy._config.config as conf
-from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._typing import SQLColumns
 from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
@@ -736,7 +737,7 @@ class vDFCorr:
     @save_verticapy_logs
     def corr(
         self,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         method: Literal[
             "pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"
         ] = "pearson",
@@ -751,7 +752,7 @@ class vDFCorr:
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     method: str, optional
@@ -1015,7 +1016,7 @@ class vDFCorr:
     @save_verticapy_logs
     def cov(
         self,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         focus: str = "",
         show: bool = True,
         ax=None,
@@ -1026,7 +1027,7 @@ class vDFCorr:
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     focus: str, optional
@@ -1075,7 +1076,7 @@ class vDFCorr:
         self,
         column: str,
         ts: str,
-        by: Union[str, list] = [],
+        by: SQLColumns = [],
         p: Union[int, list] = 12,
         unit: str = "rows",
         method: Literal[
@@ -1099,7 +1100,7 @@ class vDFCorr:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. It can be of type date
         or a numerical vDataColumn.
-    by: str / list, optional
+    by: SQLColumns, optional
         vDataColumns used in the partition.
     p: int/list, optional
         Int equals to the maximum number of lag to consider during the computation
@@ -1231,7 +1232,7 @@ class vDFCorr:
         self,
         column: str,
         ts: str,
-        by: Union[str, list] = [],
+        by: SQLColumns = [],
         p: Union[int, list] = 5,
         unit: str = "rows",
         confidence: bool = True,
@@ -1250,7 +1251,7 @@ class vDFCorr:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. It can be of type date
         or a numerical vDataColumn.
-    by: str / list, optional
+    by: SQLColumns, optional
         vDataColumns used in the partition.
     p: int/list, optional
         Int equals to the maximum number of lag to consider during the computation
@@ -1386,7 +1387,7 @@ class vDFCorr:
     @save_verticapy_logs
     def regr(
         self,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         method: Literal[
             "avgx",
             "avgy",
@@ -1574,7 +1575,7 @@ class vDFCorr:
     def iv_woe(
         self,
         y: str,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         nbins: int = 10,
         show: bool = True,
         ax=None,
@@ -1587,7 +1588,7 @@ class vDFCorr:
     ----------
     y: str
         Response vDataColumn.
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all vDataColumns except the response 
         will be used.
     nbins: int, optional

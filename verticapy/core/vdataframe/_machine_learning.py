@@ -21,6 +21,7 @@ import numpy as np
 import scipy.stats as scipy_st
 
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -86,7 +87,7 @@ class vDFMachineLearning:
     @save_verticapy_logs
     def cdt(
         self,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         max_cardinality: int = 20,
         nbins: int = 10,
         tcdt: bool = True,
@@ -103,7 +104,7 @@ class vDFMachineLearning:
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names.
     max_cardinality: int, optional
         For any categorical variable, keeps the most frequent categories and 
@@ -159,7 +160,7 @@ class vDFMachineLearning:
     def chaid(
         self,
         response: str,
-        columns: Union[str, list],
+        columns: SQLColumns,
         nbins: int = 4,
         method: Literal["smart", "same_width"] = "same_width",
         RFmodel_params: dict = {},
@@ -174,7 +175,7 @@ class vDFMachineLearning:
     ----------
     response: str
         Categorical response vDataColumn.
-    columns: str / list
+    columns: SQLColumns
         List of the vDataColumn names. The maximum number of categories for each
         categorical column is 16; categorical columns with a higher cardinality
         are discarded.
@@ -201,7 +202,6 @@ class vDFMachineLearning:
         An independent model containing the result. For more information, see
         learn.memmodel.
         """
-        from verticapy.machine_learning._utils import get_match_index
         from verticapy.machine_learning.memmodel.tree import NonBinaryTree
 
         if "process" not in kwds or kwds["process"]:
@@ -221,7 +221,7 @@ class vDFMachineLearning:
             p["is_numerical"][0],
             p["chi2"][0],
         )
-        split_predictor_idx = get_match_index(
+        split_predictor_idx = self._get_match_index(
             split_predictor,
             columns
             if "process" not in kwds or kwds["process"]
@@ -397,7 +397,7 @@ class vDFMachineLearning:
     @save_verticapy_logs
     def outliers(
         self,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         name: str = "distribution_outliers",
         threshold: float = 3.0,
         robust: bool = False,
@@ -408,7 +408,7 @@ class vDFMachineLearning:
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     name: str, optional
@@ -460,7 +460,7 @@ class vDFMachineLearning:
     def pivot_table_chi2(
         self,
         response: str,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         nbins: int = 16,
         method: Literal["smart", "same_width"] = "same_width",
         RFmodel_params: dict = {},
@@ -473,7 +473,7 @@ class vDFMachineLearning:
     ----------
     response: str
         Categorical response vDataColumn.
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumn names. The maximum number of categories for each
         categorical columns is 16. Categorical columns with a higher cardinality
         are discarded.
@@ -565,14 +565,14 @@ class vDFMachineLearning:
         return TableSample(result)
 
     @save_verticapy_logs
-    def polynomial_comb(self, columns: Union[str, list] = [], r: int = 2):
+    def polynomial_comb(self, columns: SQLColumns = [], r: int = 2):
         """
     Returns a vDataFrame containing different product combination of the 
     input vDataColumns. This function is ideal for bivariate analysis.
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     r: int, optional
@@ -637,10 +637,10 @@ class vDFMachineLearning:
     ts: str, optional
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    start_date: str / int / float / date, optional
+    start_date: str / PythonNumber / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str / int / float / date, optional
+    end_date: str / PythonNumber / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
 
@@ -783,7 +783,7 @@ class vDFMachineLearning:
     def sessionize(
         self,
         ts: str,
-        by: Union[str, list] = [],
+        by: SQLColumns = [],
         session_threshold: str = "30 minutes",
         name: str = "session_id",
     ):
@@ -797,7 +797,7 @@ class vDFMachineLearning:
     ts: str
         vDataColumn used as timeline. It will be to use to order the data. It can be
         a numerical or type date like (date, datetime, timestamp...) vDataColumn.
-    by: str / list, optional
+    by: SQLColumns, optional
         vDataColumns used in the partition.
     session_threshold: str, optional
         This parameter is the threshold which will determine the end of the 

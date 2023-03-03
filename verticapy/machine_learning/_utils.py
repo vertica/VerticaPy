@@ -16,9 +16,9 @@ permissions and limitations under the License.
 """
 from typing import Union
 
+from verticapy._typing import PythonScalar, SQLRelation
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import PythonScalar, SQLRelation
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -41,7 +41,7 @@ input_relation: SQLRelation
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int / float / str, optional
+pos_label: PythonScalar, optional
     To compute the Confusion Matrix, one of the response column classes must 
     be the positive one. The parameter 'pos_label' represents this class.
 
@@ -150,12 +150,3 @@ def reverse_score(metric: str):
     ]:
         return False
     return True
-
-
-def get_match_index(x: str, col_list: list, str_check: bool = True):
-    for idx, col in enumerate(col_list):
-        if (str_check and quote_ident(x.lower()) == quote_ident(col.lower())) or (
-            x == col
-        ):
-            return idx
-    return None

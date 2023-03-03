@@ -40,7 +40,7 @@ class vDFUtils:
         objects and to get all of them formatted.
         Example: self._format_colnames(x0, x1, x2) will return x0_f, x1_f, 
         x2_f where xi_f represents xi correctly formatted.
-    columns: str / list / dict, optional
+    columns: SQLColumns / dict, optional
         List of columns' names to format.
     expected_nb_of_cols: int / list
         [Only used for the function first argument]
@@ -53,7 +53,7 @@ class vDFUtils:
 
     Returns
     -------
-    str / list
+    SQLExpression
         Formatted columns' names.
         """
         if argv:
@@ -122,7 +122,19 @@ class vDFUtils:
                     )
         return result
 
-    def is_colname_in(self, column: str):
+    @staticmethod
+    def _get_match_index(x: str, col_list: list, str_check: bool = True):
+        """
+        Returns the matching index.
+        """
+        for idx, col in enumerate(col_list):
+            if (str_check and quote_ident(x.lower()) == quote_ident(col.lower())) or (
+                x == col
+            ):
+                return idx
+        return None
+
+    def _is_colname_in(self, column: str):
         """
     Method used to check if the input column name is used by the vDataFrame.
     If not, the function raises an error.
@@ -144,30 +156,3 @@ class vDFUtils:
             if column == quote_ident(col).lower():
                 return True
         return False
-
-    def get_nearest_column(self, column: str):
-        """
-    Method used to find the nearest column's name to the input one.
-
-    Parameters
-    ----------
-    column: str
-        Input column.
-
-    Returns
-    -------
-    tuple
-        (nearest column, levenstein distance)
-        """
-        columns = self.get_columns()
-        col = column.replace('"', "").lower()
-        result = (columns[0], levenshtein(col, columns[0].replace('"', "").lower()))
-        if len(columns) == 1:
-            return result
-        for col in columns:
-            if col != result[0]:
-                current_col = col.replace('"', "").lower()
-                d = levenshtein(current_col, col)
-                if result[1] > d:
-                    result = (col, d)
-        return result

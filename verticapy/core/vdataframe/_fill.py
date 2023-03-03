@@ -19,6 +19,7 @@ from itertools import combinations_with_replacement
 from typing import Literal, Union
 
 import verticapy._config.config as conf
+from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._cast import to_category, to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -98,7 +99,7 @@ class vDFFill:
         ts: str,
         rule: Union[str, datetime.timedelta],
         method: dict = {},
-        by: Union[str, list] = [],
+        by: SQLColumns = [],
     ):
         """
     Computes a regular time interval vDataFrame by interpolating the missing 
@@ -120,7 +121,7 @@ class vDFFill:
             bfill  : Interpolates with the final value of the time slice.
             ffill  : Interpolates with the first value of the time slice.
             linear : Linear interpolation.
-    by: str / list, optional
+    by: SQLColumns, optional
         vDataColumns used in the partition.
 
     Returns
@@ -186,9 +187,9 @@ class vDCFill:
 
     Parameters
     ----------
-    lower: int / float / date, optional
+    lower: PythonNumber / date, optional
         Lower bound.
-    upper: int / float / date, optional
+    upper: PythonNumber / date, optional
         Upper bound.
 
     Returns
@@ -221,9 +222,9 @@ class vDCFill:
     def fill_outliers(
         self,
         method: Literal["winsorize", "null", "mean"] = "winsorize",
-        threshold: Union[int, float] = 4.0,
+        threshold: PythonNumber = 4.0,
         use_threshold: bool = True,
-        alpha: Union[int, float] = 0.05,
+        alpha: PythonNumber = 0.05,
     ):
         """
     Fills the vDataColumns outliers using the input method.
@@ -238,13 +239,13 @@ class vDCFill:
                 winsorize : Clips the vDataColumn using as lower bound quantile(alpha) and as 
                     upper bound quantile(1-alpha) if 'use_threshold' is set to False else 
                     the lower and upper ZScores.
-        threshold: int / float, optional
+        threshold: PythonNumber, optional
             Uses the Gaussian distribution to define the outliers. After normalizing the 
             data (Z-Score), if the absolute value of the record is greater than the 
             threshold it will be considered as an outlier.
         use_threshold: bool, optional
             Uses the threshold instead of the 'alpha' parameter.
-        alpha: int / float, optional
+        alpha: PythonNumber, optional
             Number representing the outliers threshold. Values lesser than quantile(alpha) 
             or greater than quantile(1-alpha) will be filled.
 
@@ -340,15 +341,15 @@ class vDCFill:
             "backfill",
         ] = "auto",
         expr: Union[str, StringSQL] = "",
-        by: Union[str, list] = [],
-        order_by: Union[str, list] = [],
+        by: SQLColumns = [],
+        order_by: SQLColumns = [],
     ):
         """
     Fills missing elements in the vDataColumn with a user-specified rule.
 
     Parameters
     ----------
-    val: int / float / str / date, optional
+    val: PythonScalar / date, optional
         Value to use to impute the vDataColumn.
     method: dict, optional
         Method to use to impute the missing values.
@@ -361,9 +362,9 @@ class vDCFill:
             0ifnull : 0 when the vDataColumn is null, 1 otherwise.
     expr: str, optional
         SQL expression.
-    by: str / list, optional
+    by: SQLColumns, optional
         vDataColumns used in the partition.
-    order_by: str / list, optional
+    order_by: SQLColumns, optional
         List of the vDataColumns to use to sort the data when using TS methods.
 
     Returns

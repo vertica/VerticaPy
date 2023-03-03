@@ -19,9 +19,9 @@ from typing import Union
 import numpy as np
 from scipy.stats import f
 
+from verticapy._typing import PythonNumber, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import SQLRelation
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -348,14 +348,14 @@ float
 
 @save_verticapy_logs
 def quantile_error(
-    q: Union[int, float], y_true: str, y_score: str, input_relation: SQLRelation,
+    q: PythonNumber, y_true: str, y_score: str, input_relation: SQLRelation,
 ):
     """
 Computes the input Quantile of the Error.
 
 Parameters
 ----------
-q: int / float
+q: PythonNumber
     Input Quantile
 y_true: str
     Response column.

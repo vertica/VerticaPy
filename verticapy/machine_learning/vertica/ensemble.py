@@ -20,15 +20,15 @@ import numpy as np
 
 from vertica_python.errors import MissingRelation, QueryError
 
-from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._typing import PythonNumber, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_name
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
     vertica_version,
 )
-from verticapy._typing import SQLRelation
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -46,6 +46,8 @@ General Classes.
 
 
 class RandomForest(Tree):
+    # Properties.
+
     @property
     def _model_importance_function(self) -> Literal["RF_PREDICTOR_IMPORTANCE"]:
         return "RF_PREDICTOR_IMPORTANCE"
@@ -56,6 +58,8 @@ class RandomForest(Tree):
 
 
 class XGBoost(Tree):
+    # Properties.
+
     @property
     def _model_importance_function(self) -> Literal["XGB_PREDICTOR_IMPORTANCE"]:
         return "XGB_PREDICTOR_IMPORTANCE"
@@ -63,6 +67,8 @@ class XGBoost(Tree):
     @property
     def _model_importance_feature(self) -> Literal["AVG_GAIN"]:
         return "AVG_GAIN"
+
+    # Attributes Methods.
 
     def _compute_prior(self) -> Union[float, list[float]]:
         """
@@ -109,11 +115,13 @@ class XGBoost(Tree):
             prior_ = np.array([0.0 for p in self.classes_])
         return prior_
 
+    # I/O Methods.
+
     def _to_json_dummy_tree_dict(self, i: int = 0) -> dict:
         """
         Dummy trees are used to store the prior probabilities.
         The Python XGBoost API do not use those information 
-        and start the training with priors = 0
+        and start the training with priors = 0.
         """
         return {
             "base_weights": [0.0],
@@ -207,12 +215,11 @@ class XGBoost(Tree):
         """
         Method used to converts the model to JSON.
         """
-        n = self.get_vertica_attributes("tree_count")["tree_count"][0]
         if self._model_type == "XGBClassifier" and (
             len(self.classes_) > 2 or self.classes_[1] != 1 or self.classes_[0] != 0
         ):
             trees = []
-            for i in range(n):
+            for i in range(self.n_estimators_):
                 for c in self.classes_:
                     trees += [self._to_json_tree_dict(i, str(c))]
             v = vertica_version()
@@ -220,12 +227,14 @@ class XGBoost(Tree):
             if not (v):
                 for i in range(len(self.classes_)):
                     trees += [self._to_json_dummy_tree_dict(i)]
-            tree_info = [i for i in range(len(self.classes_))] * (n + int(not (v)))
+            tree_info = [i for i in range(len(self.classes_))] * (
+                self.n_estimators_ + int(not (v))
+            )
             for idx, tree in enumerate(trees):
                 tree["id"] = idx
         else:
-            trees = [self._to_json_tree_dict(i) for i in range(n)]
-            tree_info = [0 for i in range(n)]
+            trees = [self._to_json_tree_dict(i) for i in range(self.n_estimators_)]
+            tree_info = [0 for i in range(self.n_estimators_)]
         return {
             "model": {
                 "trees": trees,
@@ -253,7 +262,6 @@ class XGBoost(Tree):
         condition = [f"{predictor} IS NOT NULL" for predictor in self.X] + [
             f"{self.y} IS NOT NULL"
         ]
-        n = self.get_vertica_attributes("tree_count")["tree_count"][0]
         if self._model_type == "XGBRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
@@ -267,7 +275,7 @@ class XGBoost(Tree):
                 objective = "reg:squarederror"
                 attributes_dict = {
                     "scikit_learn": '{"n_estimators": '
-                    + str(n)
+                    + str(self.n_estimators_)
                     + ', "objective": "reg:squarederror", "max_depth": '
                     + str(self.parameters["max_depth"])
                     + ', "learning_rate": '
@@ -289,7 +297,7 @@ class XGBoost(Tree):
                 objective = "binary:logistic"
                 attributes_dict = {
                     "scikit_learn": '{"use_label_encoder": true, "n_estimators": '
-                    + str(n)
+                    + str(self.n_estimators_)
                     + ', "objective": "binary:logistic", "max_depth": '
                     + str(self.parameters["max_depth"])
                     + ', "learning_rate": '
@@ -318,7 +326,7 @@ class XGBoost(Tree):
             )
             attributes_dict = {
                 "scikit_learn": '{"use_label_encoder": true, "n_estimators": '
-                + str(n)
+                + str(self.n_estimators_)
                 + ', "objective": "multi:softprob", "max_depth": '
                 + str(self.parameters["max_depth"])
                 + ', "learning_rate": '
@@ -407,51 +415,56 @@ Algorithms used for regression.
 
 class RandomForestRegressor(RandomForest, Regressor):
     """
-Creates a RandomForestRegressor object using the 
-Vertica RF_REGRESSOR function. It is one of the 
-ensemble learning methods for regression that 
-operates by constructing a multitude of decision 
-trees at training-time and outputting a class 
-with the mode.
+    Creates a RandomForestRegressor object using the 
+    Vertica RF_REGRESSOR function. It is one of the 
+    ensemble learning methods for regression that 
+    operates by constructing a multitude of decision 
+    trees at training-time and outputting a class 
+    with the mode.
 
-Parameters
-----------
-name: str
-    Name of the the model. The model will be stored 
-    in the DB.
-n_estimators: int, optional
-    The number of trees in the forest, an integer 
-    between 1 and 1000, inclusive.
-max_features: int / str, optional
-    The number of randomly chosen features from which 
-    to pick the best feature to split on a given tree 
-    node. It can be an integer or one of the two following
-    methods.
-        auto : square root of the total number of predictors.
-        max  : number of predictors.
-max_leaf_nodes: int / float, optional
-    The maximum number of leaf nodes a tree in the forest 
-    can have, an integer between 1 and 1e9, inclusive.
-sample: float, optional
-    The portion of the input data set that is randomly 
-    picked for training each tree, a float between 0.0 
-    and 1.0, inclusive. 
-max_depth: int, optional
-    The maximum depth for growing each tree, an integer 
-    between 1 and 100, inclusive.
-min_samples_leaf: int, optional
-    The minimum number of samples each branch must have 
-    after splitting a node, an integer between 1 and 1e6, 
-    inclusive. A split that causes fewer remaining samples 
-    is discarded. 
-min_info_gain: int / float, optional
-    The minimum threshold for including a split, a float 
-    between 0.0 and 1.0, inclusive. A split with information 
-    gain less than this threshold is discarded.
-nbins: int, optional 
-    The number of bins to use for continuous features, an 
-    integer between 2 and 1000, inclusive.
+    Parameters
+    ----------
+    name: str
+        Name of the the model. The model will be 
+        stored in the DB.
+    n_estimators: int, optional
+        The number of trees in the forest, an integer 
+        between 1 and 1000, inclusive.
+    max_features: int / str, optional
+        The number of randomly chosen features from 
+        which to pick the best feature to split on a 
+        given tree node. It can be an integer or one 
+        of the two following methods.
+            auto : square root of the total number of 
+                   predictors.
+            max  : number of predictors.
+    max_leaf_nodes: PythonNumber, optional
+        The maximum number of leaf nodes a tree in the 
+        forest can have, an integer between 1 and 1e9, 
+        inclusive.
+    sample: float, optional
+        The portion of the input data set that is 
+        randomly picked for training each tree, a 
+        float between 0.0 and 1.0, inclusive. 
+    max_depth: int, optional
+        The maximum depth for growing each tree, an 
+        integer between 1 and 100, inclusive.
+    min_samples_leaf: int, optional
+        The minimum number of samples each branch must 
+        have after splitting a node, an integer between 
+        1 and 1e6, inclusive. A split that causes fewer 
+        remaining samples is discarded. 
+    min_info_gain: PythonNumber, optional
+        The minimum threshold for including a split, a 
+        float between 0.0 and 1.0, inclusive. A split 
+        with information gain less than this threshold 
+        is discarded.
+    nbins: int, optional 
+        The number of bins to use for continuous features, 
+        an integer between 2 and 1000, inclusive.
     """
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["RF_REGRESSOR"]:
@@ -482,6 +495,8 @@ nbins: int, optional
             "features_importance_trees_",
         ]
 
+    # System & Special Methods.
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -489,11 +504,11 @@ nbins: int, optional
         name: str,
         n_estimators: int = 10,
         max_features: Union[Literal["auto", "max"], int] = "auto",
-        max_leaf_nodes: Union[int, float] = 1e9,
+        max_leaf_nodes: PythonNumber = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
         min_samples_leaf: int = 1,
-        min_info_gain: Union[int, float] = 0.0,
+        min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
         self.model_name = name
@@ -508,6 +523,8 @@ nbins: int, optional
             "nbins": nbins,
         }
         return None
+
+    # Attributes Methods.
 
     def _compute_attributes(self) -> None:
         """
@@ -535,6 +552,8 @@ nbins: int, optional
         self.trees_ = trees
         return None
 
+    # I/O Methods.
+
     def to_memmodel(self) -> Union[mm.RandomForestRegressor, mm.BinaryTreeRegressor]:
         """
         Converts the model to an InMemory object which
@@ -548,57 +567,59 @@ nbins: int, optional
 
 class XGBRegressor(XGBoost, Regressor):
     """
-Creates an XGBRegressor object using the Vertica 
-XGB_REGRESSOR algorithm.
+    Creates an XGBRegressor object using the Vertica 
+    XGB_REGRESSOR algorithm.
 
-Parameters
-----------
-name: str
-    Name of the the model. The model will be stored 
-    in the DB.
-max_ntree: int, optional
-    Maximum number of trees that will be created.
-max_depth: int, optional
-    Maximum depth of each tree, an integer between 1 
-    and 20, inclusive.
-nbins: int, optional
-    Number of bins to use for finding splits in each 
-    column, more splits leads to longer runtime but 
-    more fine-grained and possibly better splits, an 
-    integer between 2 and 1000, inclusive.
-split_proposal_method: str, optional
-    approximate splitting strategy. Can be 'global' 
-    or 'local' (not yet supported)
-tol: float, optional
-    approximation error of quantile summary structures 
-    used in the approximate split finding method.
-learning_rate: float, optional
-    weight applied to each tree's prediction, reduces 
-    each tree's impact allowing for later trees to 
-    contribute, keeping earlier trees from 'hogging' 
-    all the improvements.
-min_split_loss: float, optional
-    Each split must improve the objective function value 
-    of the model by at least this much in order to not 
-    be pruned. Value of 0 is the same as turning off 
-    this parameter (trees will still be pruned based 
-    on positive/negative objective function values).
-weight_reg: float, optional
-    Regularization term that is applied to the weights 
-    of the leaves in the regression tree. The higher 
-    this value is, the more sparse/smooth the weights 
-    will be, which often helps prevent overfitting.
-sample: float, optional
-    Fraction of rows to use in training per iteration.
-col_sample_by_tree: float, optional
-    Float in the range (0,1] that specifies the fraction 
-    of columns (features), chosen at random, to use when 
-    building each tree.
-col_sample_by_node: float, optional
-    Float in the range (0,1] that specifies the fraction 
-    of columns (features), chosen at random, to use when 
-    evaluating each split.
+    Parameters
+    ----------
+    name: str
+        Name of the the model. The model will be stored 
+        in the DB.
+    max_ntree: int, optional
+        Maximum number of trees that will be created.
+    max_depth: int, optional
+        Maximum depth of each tree, an integer between 1 
+        and 20, inclusive.
+    nbins: int, optional
+        Number of bins to use for finding splits in each 
+        column, more splits leads to longer runtime but 
+        more fine-grained and possibly better splits, an 
+        integer between 2 and 1000, inclusive.
+    split_proposal_method: str, optional
+        approximate splitting strategy. Can be 'global' 
+        or 'local' (not yet supported)
+    tol: float, optional
+        approximation error of quantile summary structures 
+        used in the approximate split finding method.
+    learning_rate: float, optional
+        weight applied to each tree's prediction, reduces 
+        each tree's impact allowing for later trees to 
+        contribute, keeping earlier trees from 'hogging' 
+        all the improvements.
+    min_split_loss: float, optional
+        Each split must improve the objective function value 
+        of the model by at least this much in order to not 
+        be pruned. Value of 0 is the same as turning off 
+        this parameter (trees will still be pruned based 
+        on positive/negative objective function values).
+    weight_reg: float, optional
+        Regularization term that is applied to the weights 
+        of the leaves in the regression tree. The higher 
+        this value is, the more sparse/smooth the weights 
+        will be, which often helps prevent overfitting.
+    sample: float, optional
+        Fraction of rows to use in training per iteration.
+    col_sample_by_tree: float, optional
+        Float in the range (0,1] that specifies the fraction 
+        of columns (features), chosen at random, to use when 
+        building each tree.
+    col_sample_by_node: float, optional
+        Float in the range (0,1] that specifies the fraction 
+        of columns (features), chosen at random, to use when 
+        evaluating each split.
     """
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["XGB_REGRESSOR"]:
@@ -630,6 +651,8 @@ col_sample_by_node: float, optional
             "features_importance_",
             "features_importance_trees_",
         ]
+
+    # System & Special Methods.
 
     @check_minimum_version
     @save_verticapy_logs
@@ -668,6 +691,8 @@ col_sample_by_node: float, optional
         self.parameters = params
         return None
 
+    # Attributes Methods.
+
     def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
@@ -703,15 +728,14 @@ col_sample_by_node: float, optional
         self.trees_ = trees
         return None
 
-    def to_memmodel(self) -> Union[mm.XGBRegressor, mm.BinaryTreeRegressor]:
+    # I/O Methods.
+
+    def to_memmodel(self) -> mm.XGBRegressor:
         """
         Converts the model to an InMemory object which
         can be used to do different types of predictions.
         """
-        if self.n_estimators_ == 1:
-            return self.trees_[0]
-        else:
-            return mm.XGBRegressor(self.trees_, self.mean_, self.eta_)
+        return mm.XGBRegressor(self.trees_, self.mean_, self.eta_)
 
 
 """
@@ -721,51 +745,56 @@ Algorithms used for classification.
 
 class RandomForestClassifier(RandomForest, MulticlassClassifier):
     """
-Creates a RandomForestClassifier object using the 
-Vertica RF_CLASSIFIER function. It is one of the 
-ensemble learning methods for classification that 
-operates by constructing a multitude of decision 
-trees at training-time and outputting a class with 
-the mode.
+    Creates a RandomForestClassifier object using the 
+    Vertica RF_CLASSIFIER function. It is one of the 
+    ensemble learning methods for classification that 
+    operates by constructing a multitude of decision 
+    trees at training-time and outputting a class with 
+    the mode.
 
-Parameters
-----------
-name: str
-    Name of the the model. The model will be stored 
-    in the DB.
-n_estimators: int, optional
-    The number of trees in the forest, an integer 
-    between 1 and 1000, inclusive.
-max_features: int / str, optional
-    The number of randomly chosen features from which 
-    to pick the best feature to split on a given tree 
-    node. It can be an integer or one of the two following
-    methods.
-        auto : square root of the total number of predictors.
-        max  : number of predictors.
-max_leaf_nodes: int / float, optional
-    The maximum number of leaf nodes a tree in the forest 
-    can have, an integer between 1 and 1e9, inclusive.
-sample: float, optional
-    The portion of the input data set that is randomly 
-    picked for training each tree, a float between 0.0 
-    and 1.0, inclusive. 
-max_depth: int, optional
-    The maximum depth for growing each tree, an integer 
-    between 1 and 100, inclusive.
-min_samples_leaf: int, optional
-    The minimum number of samples each branch must have 
-    after splitting a node, an integer between 1 and 1e6, 
-    inclusive. A split that causes fewer remaining samples 
-    is discarded. 
-min_info_gain: int / float, optional
-    The minimum threshold for including a split, a float 
-    between 0.0 and 1.0, inclusive. A split with information 
-    gain less than this threshold is discarded.
-nbins: int, optional 
-    The number of bins to use for continuous features, an 
-    integer between 2 and 1000, inclusive.
+    Parameters
+    ----------
+    name: str
+        Name of the the model. The model will be stored 
+        in the DB.
+    n_estimators: int, optional
+        The number of trees in the forest, an integer 
+        between 1 and 1000, inclusive.
+    max_features: int / str, optional
+        The number of randomly chosen features from 
+        which to pick the best feature to split on a 
+        given tree node. It can be an integer or one 
+        of the two following methods.
+            auto : square root of the total number of 
+                   predictors.
+            max  : number of predictors.
+    max_leaf_nodes: PythonNumber, optional
+        The maximum number of leaf nodes a tree in the 
+        forest can have, an integer between 1 and 1e9, 
+        inclusive.
+    sample: float, optional
+        The portion of the input data set that is 
+        randomly picked for training each tree, a 
+        float between 0.0 and 1.0, inclusive. 
+    max_depth: int, optional
+        The maximum depth for growing each tree, an 
+        integer between 1 and 100, inclusive.
+    min_samples_leaf: int, optional
+        The minimum number of samples each branch must 
+        have after splitting a node, an integer between 
+        1 and 1e6, inclusive. A split that causes fewer 
+        remaining samples is discarded. 
+    min_info_gain: PythonNumber, optional
+        The minimum threshold for including a split, a 
+        float between 0.0 and 1.0, inclusive. A split 
+        with information gain less than this threshold 
+        is discarded.
+    nbins: int, optional 
+        The number of bins to use for continuous features, 
+        an integer between 2 and 1000, inclusive.
     """
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["RF_CLASSIFIER"]:
@@ -797,6 +826,8 @@ nbins: int, optional
             "features_importance_trees_",
         ]
 
+    # System & Special Methods.
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -804,11 +835,11 @@ nbins: int, optional
         name: str,
         n_estimators: int = 10,
         max_features: Union[Literal["auto", "max"], int] = "auto",
-        max_leaf_nodes: Union[int, float] = 1e9,
+        max_leaf_nodes: PythonNumber = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
         min_samples_leaf: int = 1,
-        min_info_gain: Union[int, float] = 0.0,
+        min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
         self.model_name = name
@@ -823,6 +854,8 @@ nbins: int, optional
             "nbins": nbins,
         }
         return None
+
+    # Attributes Methods.
 
     def _compute_attributes(self) -> None:
         """
@@ -866,6 +899,8 @@ nbins: int, optional
         self.trees_ = trees
         return None
 
+    # I/O Methods.
+
     def to_memmodel(self) -> Union[mm.RandomForestClassifier, mm.BinaryTreeClassifier]:
         """
         Converts the model to an InMemory object which
@@ -879,57 +914,59 @@ nbins: int, optional
 
 class XGBClassifier(XGBoost, MulticlassClassifier):
     """
-Creates an XGBClassifier object using the Vertica 
-XGB_CLASSIFIER algorithm.
+    Creates an XGBClassifier object using the Vertica 
+    XGB_CLASSIFIER algorithm.
 
-Parameters
-----------
-name: str
-    Name of the the model. The model will be stored 
-    in the DB.
-max_ntree: int, optional
-    Maximum number of trees that will be created.
-max_depth: int, optional
-    Maximum depth of each tree, an integer between 1 
-    and 20, inclusive.
-nbins: int, optional
-    Number of bins to use for finding splits in each 
-    column, more splits leads to longer runtime but 
-    more fine-grained and possibly better splits, 
-    an integer between 2 and 1000, inclusive.
-split_proposal_method: str, optional
-    approximate splitting strategy. Can be 'global' 
-    or 'local' (not yet supported)
-tol: float, optional
-    approximation error of quantile summary structures
-    used in the approximate split finding method.
-learning_rate: float, optional
-    weight applied to each tree's prediction, reduces
-    each tree's impact allowing for later trees to 
-    contribute, keeping earlier trees from 'hogging' 
-    all the improvements.
-min_split_loss: float, optional
-    Each split must improve the objective function 
-    value of the model by at least this much in order 
-    to not be pruned. Value of 0 is the same as turning 
-    off this parameter (trees will still be pruned based 
-    on positive/negative objective function values).
-weight_reg: float, optional
-    Regularization term that is applied to the weights 
-    of the leaves in the regression tree. The higher 
-    this value is, the more sparse/smooth the weights 
-    will be, which often helps prevent overfitting.
-sample: float, optional
-    Fraction of rows to use in training per iteration.
-col_sample_by_tree: float, optional
-    Float in the range (0,1] that specifies the fraction 
-    of columns (features), chosen at random, to use when 
-    building each tree.
-col_sample_by_node: float, optional
-    Float in the range (0,1] that specifies the fraction 
-    of columns (features), chosen at random, to use when 
-    evaluating each split.
+    Parameters
+    ----------
+    name: str
+        Name of the the model. The model will be stored 
+        in the DB.
+    max_ntree: int, optional
+        Maximum number of trees that will be created.
+    max_depth: int, optional
+        Maximum depth of each tree, an integer between 1 
+        and 20, inclusive.
+    nbins: int, optional
+        Number of bins to use for finding splits in each 
+        column, more splits leads to longer runtime but 
+        more fine-grained and possibly better splits, 
+        an integer between 2 and 1000, inclusive.
+    split_proposal_method: str, optional
+        approximate splitting strategy. Can be 'global' 
+        or 'local' (not yet supported)
+    tol: float, optional
+        approximation error of quantile summary structures
+        used in the approximate split finding method.
+    learning_rate: float, optional
+        weight applied to each tree's prediction, reduces
+        each tree's impact allowing for later trees to 
+        contribute, keeping earlier trees from 'hogging' 
+        all the improvements.
+    min_split_loss: float, optional
+        Each split must improve the objective function 
+        value of the model by at least this much in order 
+        to not be pruned. Value of 0 is the same as turning 
+        off this parameter (trees will still be pruned based 
+        on positive/negative objective function values).
+    weight_reg: float, optional
+        Regularization term that is applied to the weights 
+        of the leaves in the regression tree. The higher 
+        this value is, the more sparse/smooth the weights 
+        will be, which often helps prevent overfitting.
+    sample: float, optional
+        Fraction of rows to use in training per iteration.
+    col_sample_by_tree: float, optional
+        Float in the range (0,1] that specifies the fraction 
+        of columns (features), chosen at random, to use when 
+        building each tree.
+    col_sample_by_node: float, optional
+        Float in the range (0,1] that specifies the fraction 
+        of columns (features), chosen at random, to use when 
+        evaluating each split.
     """
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["XGB_CLASSIFIER"]:
@@ -962,6 +999,8 @@ col_sample_by_node: float, optional
             "features_importance_",
             "features_importance_trees_",
         ]
+
+    # System & Special Methods.
 
     @check_minimum_version
     @save_verticapy_logs
@@ -999,6 +1038,8 @@ col_sample_by_node: float, optional
             params["col_sample_by_node"] = col_sample_by_node
         self.parameters = params
         return None
+
+    # Attributes Methods.
 
     def _compute_attributes(self) -> None:
         """
@@ -1065,17 +1106,14 @@ col_sample_by_node: float, optional
         self.trees_ = trees
         return None
 
-    def to_memmodel(self) -> Union[mm.XGBClassifier, mm.BinaryTreeClassifier]:
+    # I/O Methods.
+
+    def to_memmodel(self) -> mm.XGBClassifier:
         """
         Converts the model to an InMemory object which
         can be used to do different types of predictions.
         """
-        if self.n_estimators_ == 1:
-            return self.trees_[0]
-        else:
-            return mm.XGBClassifier(
-                self.trees_, self.logodds_, self.classes_, self.eta_
-            )
+        return mm.XGBClassifier(self.trees_, self.logodds_, self.classes_, self.eta_)
 
 
 """
@@ -1085,33 +1123,38 @@ Algorithms used for anomaly detection.
 
 class IsolationForest(Clustering, Tree):
     """
-Creates an IsolationForest object using the Vertica 
-IFOREST algorithm.
+    Creates an IsolationForest object using the 
+    Vertica IFOREST algorithm.
 
-Parameters
-----------
-name: str
-    Name of the the model. The model is stored in the DB.
-n_estimators: int, optional
-    The number of trees in the forest, an integer between 
-    1 and 1000, inclusive.
-max_depth: int, optional
-    Maximum depth of each tree, an integer between 1 and 
-    100, inclusive.
-nbins: int, optional
-    Number of bins used for finding splits in each column. 
-    A larger number of splits leads to a longer runtime 
-    but results in more fine-grained and possibly better 
-    splits, an integer between 2 and 1000, inclusive.
-sample: float, optional
-    The portion of the input data set that is randomly 
-    selected for training each tree, a float between 0.0 
-    and 1.0, inclusive. 
-col_sample_by_tree: float, optional
-    Float in the range (0,1] that specifies the fraction 
-    of columns (features), which are chosen at random, used 
-    when building each tree.
+    Parameters
+    ----------
+    name: str
+        Name of the the model. The model is stored 
+        in the DB.
+    n_estimators: int, optional
+        The number of trees in the forest, an integer 
+        between 1 and 1000, inclusive.
+    max_depth: int, optional
+        Maximum depth of each tree, an integer between 
+        1 and 100, inclusive.
+    nbins: int, optional
+        Number of bins used for finding splits in each 
+        column. A larger number of splits leads to a 
+        longer runtime but results in more fine-grained 
+        and possibly better splits, an integer between 
+        2 and 1000, inclusive.
+    sample: float, optional
+        The portion of the input data set that is 
+        randomly selected for training each tree, 
+        a float between 0.0 and 1.0, inclusive. 
+    col_sample_by_tree: float, optional
+        Float in the range (0,1] that specifies the 
+        fraction of columns (features), which are 
+        chosen at random, used when building each 
+        tree.
     """
+
+    # Properties.
 
     @property
     def _vertica_fit_sql(self) -> Literal["IFOREST"]:
@@ -1137,6 +1180,8 @@ col_sample_by_tree: float, optional
     def _attributes(self) -> list[str]:
         return ["n_estimators_", "psy_", "trees_"]
 
+    # System & Special Methods.
+
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
@@ -1157,6 +1202,8 @@ col_sample_by_tree: float, optional
             "col_sample_by_tree": col_sample_by_tree,
         }
         return None
+
+    # Attributes Methods.
 
     def _compute_attributes(self) -> None:
         """
@@ -1190,93 +1237,43 @@ col_sample_by_tree: float, optional
         self.trees_ = trees
         return None
 
-    def to_memmodel(self) -> Union[mm.IsolationForest, mm.BinaryTreeAnomaly]:
-        """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
-        """
-        if self.n_estimators_ == 1:
-            return self.trees_[0]
-        else:
-            return mm.IsolationForest(self.trees_)
-
-    def decision_function(
-        self, vdf: SQLRelation, X: list = [], name: str = "", inplace: bool = True,
-    ) -> vDataFrame:
-        """
-    Returns the anomaly score using the input 
-    relation.
-
-    Parameters
-    ----------
-    vdf: SQLRelation
-        Object to use for the prediction. You can 
-        specify a customized relation if it is 
-        enclosed with an alias. For example, 
-        "(SELECT 1) x" is correct, whereas 
-        "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: list, optional
-        List of columns used to deploy the models. 
-        If empty, the model predictors are used.
-    name: str, optional
-        Name of the additional vDataColumn. If 
-        empty, a name is generated.
-    inplace: bool, optional
-        If True, the prediction is added to the 
-        vDataFrame.
-
-    Returns
-    -------
-    vDataFrame
-        the input object.
-        """
-        # Inititalization
-        if isinstance(vdf, str):
-            vdf = vDataFrame(vdf)
-        if not (name):
-            name = gen_name([self._model_type, self.model_name])
-
-        # In Place
-        vdf_return = vdf if inplace else vdf.copy()
-
-        # Result
-        return vdf_return.eval(name, self.deploySQL(X=X, return_score=True,))
+    # I/O Methods.
 
     def deploySQL(
         self,
-        X: Union[str, list] = [],
-        cutoff: Union[int, float] = 0.7,
-        contamination: Union[int, float] = None,
+        X: SQLColumns = [],
+        cutoff: PythonNumber = 0.7,
+        contamination: PythonNumber = None,
         return_score: bool = False,
     ) -> str:
         """
-    Returns the SQL code needed to deploy the model. 
+        Returns the SQL code needed to deploy the model. 
 
-    Parameters
-    ----------
-    X: str / list, optional
-        List of the columns used to deploy the model. 
-        If empty, the model predictors are used.
-    cutoff: int / float, optional
-        Float in the range (0.0, 1.0), specifies the 
-        threshold that determines if a data point is 
-        an anomaly. If the anomaly_score for a data 
-        point is greater than or equal to the cutoff, 
-        the data point is marked as an anomaly.
-    contamination: int / float, optional
-        Float in the range (0,1), the approximate ratio 
-        of data points in the training data that should 
-        be labeled as anomalous. If this parameter is 
-        specified, the cutoff parameter is ignored.
-    return_score: bool, optional
-        If set to True, the anomaly score is returned, 
-        and the parameters 'cutoff' and 'contamination' 
-        are ignored.
+        Parameters
+        ----------
+        X: SQLColumns, optional
+            List of the columns used to deploy the model. 
+            If empty, the model predictors are used.
+        cutoff: PythonNumber, optional
+            Float in the range (0.0, 1.0), specifies the 
+            threshold that determines if a data point is 
+            an anomaly. If the anomaly_score for a data 
+            point is greater than or equal to the cutoff, 
+            the data point is marked as an anomaly.
+        contamination: PythonNumber, optional
+            Float in the range (0,1), the approximate ratio 
+            of data points in the training data that should 
+            be labeled as anomalous. If this parameter is 
+            specified, the cutoff parameter is ignored.
+        return_score: bool, optional
+            If set to True, the anomaly score is returned, 
+            and the parameters 'cutoff' and 'contamination' 
+            are ignored.
 
-    Returns
-    -------
-    str
-        the SQL code needed to deploy the model.
+        Returns
+        -------
+        str
+            the SQL code needed to deploy the model.
         """
         if isinstance(X, str):
             X = [X]
@@ -1307,53 +1304,107 @@ col_sample_by_tree: float, optional
             sql = f"(({sql}).is_anomaly)::int"
         return clean_query(sql)
 
+    def to_memmodel(self) -> Union[mm.IsolationForest, mm.BinaryTreeAnomaly]:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        if self.n_estimators_ == 1:
+            return self.trees_[0]
+        else:
+            return mm.IsolationForest(self.trees_)
+
+    # Prediction / Transformation Methods.
+
+    def decision_function(
+        self, vdf: SQLRelation, X: list = [], name: str = "", inplace: bool = True,
+    ) -> vDataFrame:
+        """
+        Returns the anomaly score using the input 
+        relation.
+
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object to use for the prediction. You can 
+            specify a customized relation if it is 
+            enclosed with an alias. For example, 
+            "(SELECT 1) x" is correct, whereas 
+            "(SELECT 1)" and "SELECT 1" are incorrect.
+        X: list, optional
+            List of columns used to deploy the models. 
+            If empty, the model predictors are used.
+        name: str, optional
+            Name of the additional vDataColumn. If 
+            empty, a name is generated.
+        inplace: bool, optional
+            If True, the prediction is added to the 
+            vDataFrame.
+
+        Returns
+        -------
+        vDataFrame
+            the input object.
+        """
+        # Inititalization
+        if isinstance(vdf, str):
+            vdf = vDataFrame(vdf)
+        if not (name):
+            name = gen_name([self._model_type, self.model_name])
+
+        # In Place
+        vdf_return = vdf if inplace else vdf.copy()
+
+        # Result
+        return vdf_return.eval(name, self.deploySQL(X=X, return_score=True,))
+
     def predict(
         self,
         vdf: SQLRelation,
-        X: Union[str, list] = [],
+        X: SQLColumns = [],
         name: str = "",
-        cutoff: Union[int, float] = 0.7,
-        contamination: Union[int, float] = None,
+        cutoff: PythonNumber = 0.7,
+        contamination: PythonNumber = None,
         inplace: bool = True,
     ) -> vDataFrame:
         """
-    Predicts using the input relation.
+        Predicts using the input relation.
 
-    Parameters
-    ----------
-    vdf: SQLRelation
-        Object to use for the prediction. You can 
-        specify a customized relation if it is 
-        enclosed with an alias. For example, 
-        "(SELECT 1) x" is correct, whereas 
-        "(SELECT 1)" and "SELECT 1" are incorrect.
-    X: list, optional
-        List of the columns used to deploy the model. 
-        If empty, the model predictors are used.
-    name: str, optional
-        Name of the additional vDataColumn. If empty, 
-        a name is generated.
-    cutoff: int / float, optional
-        Float in the range (0.0, 1.0), specifies the 
-        threshold that determines if a data point is 
-        an anomaly. If the anomaly_score for a data 
-        point is greater than or equal to the cutfoff, 
-        the data point is marked as an anomaly.
-    contamination: int / float, optional
-        Float in the range (0,1), the approximate ratio 
-        of data points in the training data that should 
-        be labeled as anomalous. If this parameter is 
-        specified, the cutoff parameter is ignored.
-    inplace: bool, optional
-        If set to True, the prediction is added to the 
-        vDataFrame.
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object to use for the prediction. You can 
+            specify a customized relation if it is 
+            enclosed with an alias. For example, 
+            "(SELECT 1) x" is correct, whereas 
+            "(SELECT 1)" and "SELECT 1" are incorrect.
+        X: list, optional
+            List of the columns used to deploy the model. 
+            If empty, the model predictors are used.
+        name: str, optional
+            Name of the additional vDataColumn. If empty, 
+            a name is generated.
+        cutoff: PythonNumber, optional
+            Float in the range (0.0, 1.0), specifies the 
+            threshold that determines if a data point is 
+            an anomaly. If the anomaly_score for a data 
+            point is greater than or equal to the cutfoff, 
+            the data point is marked as an anomaly.
+        contamination: PythonNumber, optional
+            Float in the range (0,1), the approximate ratio 
+            of data points in the training data that should 
+            be labeled as anomalous. If this parameter is 
+            specified, the cutoff parameter is ignored.
+        inplace: bool, optional
+            If set to True, the prediction is added to the 
+            vDataFrame.
 
-    Returns
-    -------
-    vDataFrame
-        the input object.
+        Returns
+        -------
+        vDataFrame
+            the input object.
         """
-        # Inititalization
+        # Initialization
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         if not (name):

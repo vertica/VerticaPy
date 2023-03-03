@@ -14,14 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime
+import copy, datetime
 from typing import Literal, Union
 
 import verticapy._config.config as conf
+from verticapy._typing import SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.vdataframe.base import vDataFrame
@@ -32,77 +32,87 @@ from verticapy.machine_learning.vertica.decomposition import PCA
 
 class AutoDataPrep(VerticaModel):
     """
-Automatically find relations between the different features to preprocess
-the data according to each column type.
+    Automatically find relations between the different 
+    features to preprocess the data according to each
+    column type.
 
-Parameters
-----------
-name: str, optional
-    Name of the model in which to store the output relation in the
-    Vertica database.
-cat_method: str, optional
-    Method for encoding categorical features. This can be set to 'label' for
-    label encoding and 'ooe' for One-Hot Encoding.
-num_method: str, optional
-    [Only used for non-time series datasets]
-    Method for encoding numerical features. This can be set to 'same_freq' to
-    encode using frequencies, 'same_width' to encode using regular bins, or
-    'none' to not encode numerical features.
-nbins: int, optional
-    [Only used for non-time series datasets]
-    Number of bins used to discretize numerical features.
-outliers_threshold: float, optional
-    [Only used for non-time series datasets]
-    How to deal with outliers. If a number is used, all elements with an absolute 
-    z-score greater than the threshold will be converted to NULL values. Otherwise,
-    outliers are treated as regular values.
-na_method: str, optional
-    Method for handling missing values.
-        auto: Mean for the numerical features and creates a new category for the 
-              categorical vDataColumns. For time series datasets, 'constant' interpolation 
-              is used for categorical features and 'linear' for the others.
-        drop: Drops the missing values.
-cat_topk: int, optional
-    Keeps the top-k most frequent categories and merges the others into one unique 
-    category. If unspecified, all categories are kept.
-normalize: bool, optional
-    If True, the data will be normalized using the z-score. The 'num_method' parameter
-    must be set to 'none'.
-normalize_min_cat: int, optional
-    Minimum feature cardinality before using normalization.
-id_method: str, optional
-    Method for handling ID features.
-        drop: Drops any feature detected as ID.
-        none: Does not change ID features.
-apply_pca: bool, optional
-    [Only used for non-time series datasets]
-    If True, a PCA is applied at the end of the preprocessing.
-rule: str / time, optional
-    [Only used for time series datasets]
-    Interval to use to slice the time. For example, '5 minutes' will create records
-    separated by '5 minutes' time interval.
-    If set to auto, the rule will be detected using aggregations.
-identify_ts: bool, optional
-    If True and parameter 'ts' is undefined when fitting the model, the function will
-    try to automatically detect the parameter 'ts'.
-save: bool, optional
-    If True, saves the final relation inside the database.
+    Parameters
+    ----------
+    name: str, optional
+        Name of the model in which to store the output 
+        relation in the Vertica database.
+    cat_method: str, optional
+        Method for encoding categorical features. This 
+        can be set to 'label' for label encoding and 
+        'ooe' for One-Hot Encoding.
+    num_method: str, optional
+        [Only used for non-time series datasets]
+        Method for encoding numerical features. This 
+        can be set to 'same_freq' to encode using 
+        frequencies, 'same_width' to encode using 
+        regular bins, or 'none' to not encode numerical 
+        features.
+    nbins: int, optional
+        [Only used for non-time series datasets]
+        Number of bins used to discretize numerical 
+        features.
+    outliers_threshold: float, optional
+        [Only used for non-time series datasets]
+        How to deal with outliers. If a number is used, 
+        all elements with an absolute z-score greater 
+        than the threshold will be converted to NULL 
+        values. Otherwise, outliers are treated as 
+        regular values.
+    na_method: str, optional
+        Method for handling missing values.
+            auto: Mean for the numerical features and 
+                  creates a new category for the 
+                  categorical vDataColumns. For time 
+                  series datasets, 'constant' interpolation 
+                  is used for categorical features and 
+                  'linear' for the others.
+            drop: Drops the missing values.
+    cat_topk: int, optional
+        Keeps the top-k most frequent categories and merges 
+        the others into one unique category. If unspecified, 
+        all categories are kept.
+    normalize: bool, optional
+        If True, the data will be normalized using the z-score. 
+        The 'num_method' parameter must be set to 'none'.
+    normalize_min_cat: int, optional
+        Minimum feature cardinality before using normalization.
+    id_method: str, optional
+        Method for handling ID features.
+            drop: Drops any feature detected as ID.
+            none: Does not change ID features.
+    apply_pca: bool, optional
+        [Only used for non-time series datasets]
+        If True, a PCA is applied at the end of the preprocessing.
+    rule: str / time, optional
+        [Only used for time series datasets]
+        Interval to use to slice the time. For example, '5 minutes' 
+        will create records separated by '5 minutes' time interval.
+        If set to auto, the rule will be detected using aggregations.
+    identify_ts: bool, optional
+        If True and parameter 'ts' is undefined when fitting the 
+        model, the function will try to automatically detect the 
+        parameter 'ts'.
+    save: bool, optional
+        If True, saves the final relation inside the database.
 
-Attributes
-----------
-X_in: list
-    Variables used to fit the model.
-X_out: list
-    Variables created by the model.
-ts: str
-    TS component.
-by: list
-    vcolumns used in the partition.
-sql_: str
-    SQL needed to deploy the model.
-final_relation_: vDataFrame
-    Relation created after fitting the model.
+    Attributes
+    ----------
+    X_in_: list
+        Variables used to fit the model.
+    X_out_: list
+        Variables created by the model.
+    sql_: str
+        SQL needed to deploy the model.
+    final_relation_: vDataFrame
+        Relation created after fitting the model.
     """
+
+    # Properties.
 
     @property
     def _is_native(self) -> Literal[False]:
@@ -128,6 +138,12 @@ final_relation_: vDataFrame
     def _model_type(self) -> Literal["AutoDataPrep"]:
         return "AutoDataPrep"
 
+    @property
+    def _attributes(self) -> list[str]:
+        return ["X_in_", "X_out_", "sql_", "final_relation_"]
+
+    # System & Special Methods.
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -145,7 +161,7 @@ final_relation_: vDataFrame
         rule: Union[str, datetime.timedelta] = "auto",
         identify_ts: bool = True,
         save: bool = True,
-    ):
+    ) -> None:
         self.model_name = name
         if not (self.model_name):
             self.model_name = gen_tmp_name(
@@ -166,29 +182,28 @@ final_relation_: vDataFrame
             "identify_ts": identify_ts,
             "save": save,
         }
+        return None
+
+    # Model Fitting Method.
 
     def fit(
         self, input_relation: SQLRelation, X: list = [], ts: str = "", by: list = [],
-    ):
+    ) -> None:
         """
-    Trains the model.
+        Trains the model.
 
-    Parameters
-    ----------
-    input_relation: str/vDataFrame
-        Training Relation.
-    X: list, optional
-        List of the features to preprocess.
-    ts: str, optional
-        Time series vcolumn to use to order the data. The vcolumn type must be
-        date-like (date, datetime, timestamp...)
-    by: list, optional
-        vcolumns used in the partition.
-
-    Returns
-    -------
-    object
-        the cleaned relation
+        Parameters
+        ----------
+        input_relation: str/vDataFrame
+            Training Relation.
+        X: list, optional
+            List of the features to preprocess.
+        ts: str, optional
+            Time series vcolumn to use to order the data. 
+            The vcolumn type must be
+            date-like (date, datetime, timestamp...)
+        by: list, optional
+            vcolumns used in the partition.
         """
         if conf.get_option("overwrite_model"):
             self.drop()
@@ -346,8 +361,8 @@ final_relation_: vDataFrame
                         method[elem] = "ffill"
             vdf = vdf.interpolate(ts=ts, rule=rule, method=method, by=by)
             vdf.dropna()
-        self.X_in = [elem for elem in X]
-        self.X_out = vdf.get_columns(
+        self.X_in_ = copy.deepcopy(X)
+        self.X_out_ = vdf.get_columns(
             exclude_columns=by + [ts] + X_diff if ts else by + X_diff
         )
         self.by = by
@@ -355,9 +370,9 @@ final_relation_: vDataFrame
         if self.parameters["apply_pca"] and not (ts):
             model_pca = PCA(self.model_name + "_pca")
             model_pca.drop()
-            model_pca.fit(vdf, self.X_out)
+            model_pca.fit(vdf, self.X_out_)
             vdf = model_pca.transform()
-            self.X_out = vdf.get_columns(
+            self.X_out_ = vdf.get_columns(
                 exclude_columns=by + [ts] + X_diff if ts else by + X_diff
             )
         self.sql_ = vdf._genSQL()
@@ -365,4 +380,4 @@ final_relation_: vDataFrame
             vdf.to_db(name=self.model_name, relation_type="table", inplace=True)
         self.final_relation_ = vdf
         conf.set_option("print_info", current_print_info)
-        return self.final_relation_
+        return None

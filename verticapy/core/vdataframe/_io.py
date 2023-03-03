@@ -24,6 +24,7 @@ import pandas as pd
 pickle.DEFAULT_PROTOCOL = 4
 
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns, SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._random import _current_random
@@ -99,7 +100,7 @@ class vDFInOut:
         sep: str = ",",
         na_rep: str = "",
         quotechar: str = '"',
-        usecols: Union[str, list] = [],
+        usecols: SQLColumns = [],
         header: bool = True,
         new_header: list = [],
         order_by: Union[str, list, dict] = [],
@@ -120,7 +121,7 @@ class vDFInOut:
         Missing values representation.
     quotechar: str, optional
         Char which will enclose the str values.
-    usecols: str / list, optional
+    usecols: SQLColumns, optional
         vDataColumns to select from the final vDataFrame relation. If empty, all
         vDataColumns will be selected.
     header: bool, optional
@@ -246,12 +247,12 @@ class vDFInOut:
     def to_db(
         self,
         name: str,
-        usecols: Union[str, list] = [],
+        usecols: SQLColumns = [],
         relation_type: Literal[
             "view", "temporary", "table", "local", "insert"
         ] = "view",
         inplace: bool = False,
-        db_filter: Union[str, list] = "",
+        db_filter: SQLExpression = "",
         nb_split: int = 0,
     ):
         """
@@ -263,7 +264,7 @@ class vDFInOut:
         Name of the relation. To save the relation in a specific schema you can
         write '"my_schema"."my_relation"'. Use double quotes '"' to avoid errors
         due to special characters.
-    usecols: str / list, optional
+    usecols: SQLColumns, optional
         vDataColumns to select from the final vDataFrame relation. If empty, all
         vDataColumns will be selected.
     relation_type: str, optional
@@ -275,7 +276,7 @@ class vDFInOut:
             insert    : Inserts into an existing table
     inplace: bool, optional
         If set to True, the vDataFrame will be replaced using the new relation.
-    db_filter: str / list, optional
+    db_filter: SQLExpression, optional
         Filter used before creating the relation in the DB. It can be a list of
         conditions or an expression. This parameter is very useful to create train 
         and test sets on TS.
@@ -428,7 +429,7 @@ class vDFInOut:
     def to_json(
         self,
         path: str = "",
-        usecols: Union[str, list] = [],
+        usecols: SQLColumns = [],
         order_by: Union[str, list, dict] = [],
         n_files: int = 1,
     ):
@@ -441,7 +442,7 @@ class vDFInOut:
     path: str, optional
         File/Folder system path. Be careful: if a JSON file with the same name 
         exists, it will over-write it.
-    usecols: str / list, optional
+    usecols: SQLColumns, optional
         vDataColumns to select from the final vDataFrame relation. If empty, all
         vDataColumns will be selected.
     order_by: str / dict / list, optional
@@ -634,7 +635,7 @@ class vDFInOut:
         fileMode: str = "660",
         dirMode: str = "755",
         int96AsTimestamp: bool = True,
-        by: Union[str, list] = [],
+        by: SQLColumns = [],
         order_by: Union[str, list, dict] = [],
     ):
         """
@@ -688,7 +689,7 @@ class vDFInOut:
     int96AsTimestamp: bool, optional
         Boolean, specifies whether to export timestamps as int96 physical type (True) or int64 
         physical type (False).
-    by: str / list, optional
+    by: SQLColumns, optional
         vDataColumns used in the partition.
     order_by: str / dict / list, optional
         If specified as a list: the list of vDataColumns useed to sort the data in ascending order.
@@ -760,7 +761,7 @@ class vDFInOut:
         self,
         name: str,
         path: str,
-        usecols: Union[str, list] = [],
+        usecols: SQLColumns = [],
         overwrite: bool = True,
         shape: Literal[
             "Point",

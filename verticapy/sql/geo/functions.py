@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Union
 
+from verticapy._typing import PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -32,7 +33,7 @@ def coordinate_converter(
     x: str,
     y: str,
     x0: float = 0.0,
-    earth_radius: Union[int, float] = 6371,
+    earth_radius: PythonNumber = 6371,
     reverse: bool = False,
 ) -> vDataFrame:
     """
@@ -49,7 +50,7 @@ y: str
     vDataColumn used as the ordinate (latitude).
 x0: float, optional
     The initial abscissa.
-earth_radius: int / float, optional
+earth_radius: PythonNumber, optional
     Earth radius in km.
 reverse: bool, optional
     If set to True, the Euclidean coordinates are converted to latitude 
