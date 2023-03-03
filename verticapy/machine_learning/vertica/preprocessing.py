@@ -31,6 +31,7 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
+from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.base import Unsupervised, VerticaModel
 
 """

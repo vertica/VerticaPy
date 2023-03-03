@@ -26,6 +26,7 @@ from verticapy.errors import ParameterError
 
 from verticapy.core.vdataframe.base import vDataFrame
 
+from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.decomposition import PCA
 

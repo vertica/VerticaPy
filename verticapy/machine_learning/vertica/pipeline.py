@@ -24,6 +24,7 @@ from verticapy.errors import ParameterError, ModelError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
+from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.base import Regressor, VerticaModel
 
 """

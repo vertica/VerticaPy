@@ -31,6 +31,7 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning._utils import reverse_score
+from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.automl import AutoDataPrep
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.ensemble import (

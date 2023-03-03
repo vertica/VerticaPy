@@ -49,7 +49,7 @@ from verticapy.machine_learning.model_selection.model_validation import (
     roc_curve,
     lift_chart,
 )
-from verticapy.machine_learning.model_management.read import does_model_exist
+from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.base import (
     MulticlassClassifier,
     Regressor,
@@ -69,17 +69,17 @@ Algorithms used for regression.
 class KNeighborsRegressor(Regressor):
     """
     [Beta Version]
-    Creates a KNeighborsRegressor object using the 
+    Creates a  KNeighborsRegressor object using the 
     k-nearest neighbors algorithm. This object uses 
     pure SQL to compute all the distances and final 
     score.
 
-    \u26A0 Warning : This algorithm uses a CROSS JOIN 
-                     during computation and is therefore 
-                     computationally expensive at O(n * n), 
+    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN 
+                     during   computation  and  is  therefore 
+                     computationally  expensive at  O(n * n), 
                      where n is the total number of elements. 
-                     Since KNeighborsRegressor uses the p-
-                     distance, it is highly sensitive to 
+                     Since  KNeighborsRegressor  uses  the p-
+                     distance,  it  is  highly  sensitive  to 
                      unnormalized data.
 
     Parameters
@@ -280,12 +280,12 @@ class KNeighborsClassifier(MulticlassClassifier):
     pure SQL to compute all the distances and final 
     score.
 
-    \u26A0 Warning : This algorithm uses a CROSS JOIN 
-                     during computation and is therefore 
-                     computationally expensive at O(n * n), 
+    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN 
+                     during   computation  and  is  therefore 
+                     computationally  expensive at  O(n * n), 
                      where n is the total number of elements. 
-                     Since KNeighborsClassifier uses the p-
-                     distance, it is highly sensitive to 
+                     Since  KNeighborsClassifier uses  the p-
+                     distance,  it  is  highly  sensitive  to 
                      unnormalized data.
 
     Parameters
@@ -1092,15 +1092,15 @@ class LocalOutlierFactor(VerticaModel):
     Sander. This object is using pure SQL to compute all 
     the distances and final score.
 
-    \u26A0 Warning : This algorithm uses a CROSS JOIN 
-                     during computation and is therefore 
-                     computationally expensive at O(n * n), 
+    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN 
+                     during   computation  and  is  therefore 
+                     computationally  expensive at  O(n * n), 
                      where n is the total number of elements. 
-                     Since LocalOutlierFactor is uses the 
-                     p-distance, it is highly sensitive to 
-                     unnormalized data. A table will be 
-                     created at the end of the learning 
-                     phase.
+                     Since  LocalOutlierFactor   uses  the p-
+                     distance,  it  is  highly  sensitive  to 
+                     unnormalized data. 
+                     A  table  will be created at the  end of 
+                     the learning phase.
 
     Parameters
     ----------

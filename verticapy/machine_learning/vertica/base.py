@@ -50,7 +50,7 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.metrics as mt
-from verticapy.machine_learning.model_management.read import does_model_exist
+from verticapy.machine_learning.sys.model_checking import does_model_exist
 import verticapy.machine_learning.model_selection as ms
 
 import verticapy.plotting._matplotlib as vpy_plt
@@ -232,7 +232,7 @@ class VerticaModel:
 
     # Parameters Methods.
 
-    def _get_vertica_param_dict(self) -> dict:
+    def _get_vertica_param_dict(self) -> dict[str, str]:
         """
         Returns the Vertica parameters dict to use when fitting 
         the model. As some model's parameters names are not the 
@@ -342,7 +342,7 @@ class VerticaModel:
         parameters: dict, optional
             New parameters.
         **kwds
-            New parameters can also be passed as arguments
+            New  parameters can  also be passed as  arguments
             Example: set_params(param1 = val1, param2 = val2)
         """
         all_init_params = list(get_type_hints(self.__init__).keys())
@@ -394,7 +394,7 @@ class VerticaModel:
         ----------
         X: SQLColumns, optional
             List of the columns used to deploy the model. 
-            If empty, the model predictors will be used.
+            If empty,  the model predictors will be used.
 
         Returns
         -------
@@ -407,9 +407,9 @@ class VerticaModel:
             X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
             sql = f"""
                 {self._vertica_predict_sql}({', '.join(X)} 
-                                                    USING PARAMETERS 
-                                                    model_name = '{self.model_name}',
-                                                    match_by_pos = 'true')"""
+                                            USING PARAMETERS 
+                                            model_name = '{self.model_name}',
+                                            match_by_pos = 'true')"""
             return clean_query(sql)
         else:
             raise AttributeError(
@@ -426,12 +426,12 @@ class VerticaModel:
         Parameters
         ----------
         return_proba: bool, optional
-            If set to True and the model is a classifier,
-            the function returns the model probabilities.
+            If  set to True  and the  model is a  classifier,
+            the  function  returns the  model  probabilities.
         return_distance_clusters: bool, optional
-            If set to True and the model is cluster-based, 
+            If  set to  True and the  model is  cluster-based, 
             the function returns the model clusters distances. 
-            If the model is KPrototypes, the function returns 
+            If the model is KPrototypes, the  function returns 
             the dissimilarity function.
 
         Returns
@@ -454,7 +454,7 @@ class VerticaModel:
         return_distance_clusters: bool = False,
     ) -> SQLExpression:
         """
-        Returns the SQL code needed to deploy the model 
+        Returns  the SQL  code  needed  to deploy the  model 
         without using built-in Vertica functions.
 
         Parameters
@@ -462,12 +462,12 @@ class VerticaModel:
         X: list, optional
             input predictors name.
         return_proba: bool, optional
-            If set to True and the model is a classifier,
+            If  set to  True and the  model is a  classifier,
             the function will return the class probabilities.
         return_distance_clusters: bool, optional
-            If set to True and the model is cluster-based, 
+            If  set to  True and the  model is  cluster-based, 
             the function returns the model clusters distances. 
-            If the model is KPrototypes, the function returns 
+            If the model is  KPrototypes, the function returns 
             the dissimilarity function.
 
         Returns
@@ -519,12 +519,13 @@ class VerticaModel:
         Parameters
         ----------
         nbins: int, optional
-             Number of bins used to discretize the two predictors.
+            Number of bins used to discretize the 
+            two predictors.
         ax: Axes, optional
             The axes to plot on.
         **style_kwds
-            Any optional parameter to pass to the Matplotlib 
-            functions.
+            Any optional parameter to pass to the 
+            Matplotlib functions.
 
         Returns
         -------
@@ -1051,11 +1052,11 @@ class BinaryClassifier(Classifier):
         else:
             X = [quote_ident(elem) for elem in X]
         sql = f"""
-            {self._vertica_predict_sql}
-            ({', '.join(X)} USING PARAMETERS
-                            model_name = '{self.model_name}',
-                            type = 'probability',
-                            match_by_pos = 'true')"""
+        {self._vertica_predict_sql}({', '.join(X)} 
+            USING PARAMETERS
+            model_name = '{self.model_name}',
+            type = 'probability',
+            match_by_pos = 'true')"""
         if cutoff <= 1 and cutoff >= 0:
             sql = f"""
                 (CASE 
@@ -1529,28 +1530,26 @@ class MulticlassClassifier(Classifier):
             X = [X]
         X = [quote_ident(x) for x in X]
 
-        if not(self._is_native):
+        if not (self._is_native):
             sql = self.to_memmodel().predict_proba_sql(X)
         else:
             sql = [
                 f"""
-                {self._vertica_predict_sql}
-                    ({', '.join(X)} 
-                      USING PARAMETERS 
-                      model_name = '{self.model_name}',
-                      class = '{{}}',
-                      type = 'probability',
-                      match_by_pos = 'true')""",
+                {self._vertica_predict_sql}({', '.join(X)} 
+                    USING PARAMETERS 
+                    model_name = '{self.model_name}',
+                    class = '{{}}',
+                    type = 'probability',
+                    match_by_pos = 'true')""",
                 f"""
-                {self._vertica_predict_sql}
-                        ({', '.join(X)} 
-                          USING PARAMETERS 
-                          model_name = '{self.model_name}',
-                          match_by_pos = 'true')""",
+                {self._vertica_predict_sql}({', '.join(X)} 
+                    USING PARAMETERS 
+                    model_name = '{self.model_name}',
+                    match_by_pos = 'true')""",
             ]
         if not (allSQL):
             if pos_label in list(self.classes_):
-                if not(self._is_native):
+                if not (self._is_native):
                     sql = sql[self._get_match_index(pos_label, self.classes_, False)]
                 else:
                     sql = sql[0].format(pos_label)
@@ -1572,7 +1571,7 @@ class MulticlassClassifier(Classifier):
                             non_pos_label = self.classes_[1]
                         sql = sql.format(non_pos_label)
             else:
-                if not(self._is_native):
+                if not (self._is_native):
                     sql = self.to_memmodel().predict_sql(X)
                 else:
                     sql = sql[1]
@@ -1705,40 +1704,45 @@ class MulticlassClassifier(Classifier):
         Parameters
         ----------
         pos_label: PythonScalar, optional
-            Label to consider as positive. All the 
+            Label  to  consider  as  positive.  All the 
             other classes will be merged and considered 
             as negative for multiclass classification.
         cutoff: PythonNumber, optional
-            Cutoff for which the tested category will be 
-            accepted as a prediction.
+            Cutoff  for which the tested category  will 
+            be accepted as a prediction.
         method: str, optional
             The method to use to compute the score.
                 accuracy    : Accuracy
                 auc         : Area Under the Curve (ROC)
                 best_cutoff : Cutoff which optimised the 
                               ROC Curve prediction.
-                bm          : Informedness = tpr + tnr - 1
+                bm          : Informedness 
+                              = tpr + tnr - 1
                 csi         : Critical Success Index 
                               = tp / (tp + fn + fp)
                 f1          : F1 Score 
                 logloss     : Log Loss
-                mcc         : Matthews Correlation Coefficient 
-                mk          : Markedness = ppv + npv - 1
+                mcc         : Matthews Corr Coefficient
+                mk          : Markedness 
+                              = ppv + npv - 1
                 npv         : Negative Predictive Value 
                               = tn / (tn + fn)
                 prc_auc     : Area Under the Curve (PRC)
-                precision   : Precision = tp / (tp + fp)
-                recall      : Recall = tp / (tp + fn)
-                specificity : Specificity = tn / (tn + fp)
+                precision   : Precision 
+                              = tp / (tp + fp)
+                recall      : Recall 
+                              = tp / (tp + fn)
+                specificity : Specificity 
+                              = tn / (tn + fp)
         nbins: int, optional
             [Only used when the method is set to 'auc,' 
              'prc_auc,' or 'best_cutoff']
-            An integer value that determines the number of 
-            decision boundaries. Decision boundaries are set 
-            at equally-spaced intervals between 0 and 1, 
+            An  integer  value  that  determines  the number  of 
+            decision  boundaries.  Decision  boundaries are  set 
+            at   equally-spaced   intervals   between  0  and  1, 
             inclusive. The greater number of decision boundaries, 
-            the greater precision, but the greater decrease in 
-            performance. Maximum value: 999,999. If negative, 
+            the  greater  precision, but the greater decrease  in 
+            performance.  Maximum  value: 999,999.  If  negative, 
             the maximum value is used.
 
         Returns
@@ -1943,7 +1947,7 @@ class MulticlassClassifier(Classifier):
         Returns the SQL needed to draw the plot.
         """
         pos_label = self._check_pos_label(pos_label)
-        if not(self._is_native):
+        if not (self._is_native):
             return self.deploySQL(allSQL=True)[
                 self._get_match_index(pos_label, self.classes_, False)
             ]

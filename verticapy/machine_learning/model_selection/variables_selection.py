@@ -34,7 +34,7 @@ from verticapy.plotting._matplotlib import (
 
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.metrics import aic_bic
-from verticapy.machine_learning.model_management.read import does_model_exist
+from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
 from verticapy.sql.drop import drop

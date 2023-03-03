@@ -14,88 +14,70 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union
-
+from verticapy._typing import SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident, schema_relation
+from verticapy._utils._sql._format import schema_relation
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.core.tablesample.base import TableSample
 
-
-def does_model_exist(
-    name: str, raise_error: bool = False, return_model_type: bool = False
-) -> Union[bool, str]:
-    """
-Checks if the model already exists.
-
-Parameters
-----------
-name: str
-    Model name.
-raise_error: bool, optional
-    If set to True and an error occurs, it raises the error.
-return_model_type: bool, optional
-    If set to True, returns the model type.
-
-Returns
--------
-int
-    0 if the model does not exist.
-    1 if the model exists.
-    """
-    model_type = None
-    schema, model_name = schema_relation(name)
-    schema, model_name = schema[1:-1], model_name[1:-1]
-    result = _executeSQL(
-        query=f"""
-            SELECT 
-                /*+LABEL('learn.tools.does_model_exist')*/ 
-                model_type 
-            FROM MODELS 
-            WHERE LOWER(model_name) = LOWER('{model_name}') 
-              AND LOWER(schema_name) = LOWER('{schema}') 
-            LIMIT 1""",
-        method="fetchrow",
-        print_time_sql=False,
-    )
-    if result:
-        model_type = result[0]
-        result = True
-    else:
-        result = False
-    if raise_error and result:
-        raise NameError(f"The model '{name}' already exists !")
-    if return_model_type:
-        return model_type
-    return result
+from verticapy.machine_learning.sys.model_checking import does_model_exist
+from verticapy.machine_learning.vertica.base import VerticaModel
+from verticapy.machine_learning.vertica.cluster import (
+    BisectingKMeans,
+    KMeans,
+    KPrototypes,
+)
+from verticapy.machine_learning.vertica.decomposition import PCA, SVD
+from verticapy.machine_learning.vertica.ensemble import (
+    IsolationForest,
+    RandomForestClassifier,
+    RandomForestRegressor,
+    XGBClassifier,
+    XGBRegressor,
+)
+from verticapy.machine_learning.vertica.linear_model import (
+    ElasticNet,
+    Lasso,
+    LinearRegression,
+    LogisticRegression,
+    Ridge,
+)
+from verticapy.machine_learning.vertica.model_management import load_model
+from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
+from verticapy.machine_learning.vertica.preprocessing import Scaler, OneHotEncoder
+from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 
 
 @save_verticapy_logs
-def load_model(name: str, input_relation: str = "", test_relation: str = ""):
+def load_model(
+    name: str, input_relation: SQLRelation = "", test_relation: SQLRelation = ""
+) -> VerticaModel:
     """
-Loads a Vertica model and returns the associated object.
+    Loads a Vertica model and returns the associated 
+    object.
 
-Parameters
-----------
-name: str
-    Model Name.
-input_relation: str, optional
-    Some automated functions may depend on the input relation. If the 
-    load_model function cannot find the input relation from the call string, 
-    you should fill it manually.
-test_relation: str, optional
-    Relation to use to do the testing. All the methods will use this relation 
-    for the scoring. If empty, the training relation will be used as testing.
+    Parameters
+    ----------
+    name: str
+        Model Name.
+    input_relation: str, optional
+        Some automated functions may depend on the 
+        input relation. If the load_model function 
+        cannot  find the  input relation from  the 
+        call string, you should fill it manually.
+    test_relation: str, optional
+        Relation to use to do the testing. All the 
+        methods  will  use this  relation for  the 
+        scoring.  If empty, the training  relation 
+        will be used as testing.
 
-Returns
--------
-model
-    The model.
+    Returns
+    -------
+    model
+        The model.
     """
-    import verticapy.machine_learning.vertica as vml
-
     model_type = does_model_exist(name=name, raise_error=False, return_model_type=True)
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
@@ -115,7 +97,7 @@ model
         mtype = model_type.lower() + "("
         info = mtype + info.split(mtype)[1]
     elif model_type.lower() == "normalize_fit":
-        model = vml.Scaler(name)
+        model = Scaler(name)
         param = model.get_vertica_attributes("details")
         model.X = ['"' + item + '"' for item in param.values["column_name"]]
         if "avg" in param.values:
@@ -176,7 +158,7 @@ model
     else:
         epsilon = 0.001
     if model_type == "rf_regressor":
-        model = vml.RandomForestRegressor(
+        model = RandomForestRegressor(
             name,
             int(parameters_dict["ntree"]),
             int(parameters_dict["mtry"]),
@@ -188,7 +170,7 @@ model
             int(parameters_dict["nbins"]),
         )
     elif model_type == "rf_classifier":
-        model = vml.RandomForestClassifier(
+        model = RandomForestClassifier(
             name,
             int(parameters_dict["ntree"]),
             int(parameters_dict["mtry"]),
@@ -200,7 +182,7 @@ model
             int(parameters_dict["nbins"]),
         )
     elif model_type == "iforest":
-        model = vml.IsolationForest(
+        model = IsolationForest(
             name,
             int(parameters_dict["ntree"]),
             int(parameters_dict["max_depth"]),
@@ -209,7 +191,7 @@ model
             float(parameters_dict["col_sample_by_tree"]),
         )
     elif model_type == "xgb_classifier":
-        model = vml.XGBClassifier(
+        model = XGBClassifier(
             name,
             int(parameters_dict["max_ntree"]),
             int(parameters_dict["max_depth"]),
@@ -222,7 +204,7 @@ model
             float(parameters_dict["sampling_size"]),
         )
     elif model_type == "xgb_regressor":
-        model = vml.XGBRegressor(
+        model = XGBRegressor(
             name,
             int(parameters_dict["max_ntree"]),
             int(parameters_dict["max_depth"]),
@@ -235,7 +217,7 @@ model
             float(parameters_dict["sampling_size"]),
         )
     elif model_type == "logistic_reg":
-        model = vml.LogisticRegression(
+        model = LogisticRegression(
             name,
             parameters_dict["regularization"],
             float(parameters_dict["epsilon"]),
@@ -246,14 +228,14 @@ model
         )
     elif model_type == "linear_reg":
         if parameters_dict["regularization"] == "none":
-            model = vml.LinearRegression(
+            model = LinearRegression(
                 name,
                 float(parameters_dict["epsilon"]),
                 int(parameters_dict["max_iterations"]),
                 parameters_dict["optimizer"],
             )
         elif parameters_dict["regularization"] == "l1":
-            model = vml.Lasso(
+            model = Lasso(
                 name,
                 float(parameters_dict["epsilon"]),
                 float(parameters_dict["lambda"]),
@@ -261,7 +243,7 @@ model
                 parameters_dict["optimizer"],
             )
         elif parameters_dict["regularization"] == "l2":
-            model = vml.Ridge(
+            model = Ridge(
                 name,
                 float(parameters_dict["epsilon"]),
                 float(parameters_dict["lambda"]),
@@ -269,7 +251,7 @@ model
                 parameters_dict["optimizer"],
             )
         else:
-            model = vml.ElasticNet(
+            model = ElasticNet(
                 name,
                 float(parameters_dict["epsilon"]),
                 float(parameters_dict["lambda"]),
@@ -278,9 +260,9 @@ model
                 float(parameters_dict["alpha"]),
             )
     elif model_type == "naive_bayes":
-        model = vml.NaiveBayes(name, float(parameters_dict["alpha"]))
+        model = NaiveBayes(name, float(parameters_dict["alpha"]))
     elif model_type == "svm_regressor":
-        model = vml.LinearSVR(
+        model = LinearSVR(
             name,
             float(parameters_dict["epsilon"]),
             float(parameters_dict["C"]),
@@ -297,7 +279,7 @@ model
                 class_weights[idx] = float(class_weights[idx])
             except:
                 class_weights[idx] = None
-        model = vml.LinearSVC(
+        model = LinearSVC(
             name,
             float(parameters_dict["epsilon"]),
             float(parameters_dict["C"]),
@@ -308,7 +290,7 @@ model
             int(parameters_dict["max_iterations"]),
         )
     elif model_type == "kmeans":
-        model = vml.KMeans(
+        model = KMeans(
             name,
             int(info.split(",")[-1]),
             parameters_dict["init_method"],
@@ -316,7 +298,7 @@ model
             float(parameters_dict["epsilon"]),
         )
     elif model_type == "kprototypes":
-        model = vml.KPrototypes(
+        model = KPrototypes(
             name,
             int(info.split(",")[-1]),
             parameters_dict["init_method"],
@@ -325,7 +307,7 @@ model
             float(parameters_dict["gamma"]),
         )
     elif model_type == "bisecting_kmeans":
-        model = vml.BisectingKMeans(
+        model = BisectingKMeans(
             name,
             int(info.split(",")[-1]),
             int(parameters_dict["bisection_iterations"]),
@@ -337,11 +319,11 @@ model
             float(parameters_dict["kmeans_epsilon"]),
         )
     elif model_type == "pca":
-        model = vml.PCA(name, 0, bool(parameters_dict["scale"]))
+        model = PCA(name, 0, bool(parameters_dict["scale"]))
     elif model_type == "svd":
-        model = vml.SVD(name)
+        model = SVD(name)
     elif model_type == "one_hot_encoder_fit":
-        model = vml.OneHotEncoder(name)
+        model = OneHotEncoder(name)
     if not (input_relation):
         model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
     else:
