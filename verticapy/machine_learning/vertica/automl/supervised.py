@@ -31,7 +31,12 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning._utils import reverse_score
-from verticapy.machine_learning.sys.model_checking import does_model_exist
+import verticapy.machine_learning.memmodel as mm
+from verticapy.machine_learning.model_selection import (
+    gen_params_grid,
+    grid_search_cv,
+    stepwise,
+)
 from verticapy.machine_learning.vertica.automl import AutoDataPrep
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.ensemble import (
@@ -47,12 +52,6 @@ from verticapy.machine_learning.vertica.linear_model import (
     ElasticNet,
     Lasso,
     Ridge,
-)
-import verticapy.machine_learning.memmodel as mm
-from verticapy.machine_learning.model_selection import (
-    gen_params_grid,
-    grid_search_cv,
-    stepwise,
 )
 from verticapy.machine_learning.vertica.neighbors import (
     KNeighborsClassifier,
@@ -326,7 +325,7 @@ class AutoML(VerticaModel):
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
-            does_model_exist(name=self.model_name, raise_error=True)
+            self._is_already_stored(raise_error=True)
         if not (X):
             if not (y):
                 exclude_columns = []

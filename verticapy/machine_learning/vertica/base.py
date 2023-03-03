@@ -50,7 +50,6 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.metrics as mt
-from verticapy.machine_learning.sys.model_checking import does_model_exist
 import verticapy.machine_learning.model_selection as ms
 
 import verticapy.plotting._matplotlib as vpy_plt
@@ -164,6 +163,83 @@ class VerticaModel:
         """
         return drop(self.model_name, method="model")
 
+    def _is_already_stored(
+        self, raise_error: bool = False, return_model_type: bool = False,
+    ) -> Union[bool, str]:
+        """
+        Checks if the model is stored in the Vertica DB.
+
+        Parameters
+        ----------
+        raise_error: bool, optional
+            If set to True and an error occurs, it 
+            raises the error.
+        return_model_type: bool, optional
+            If set to True, returns the model type.
+
+        Returns
+        -------
+        bool
+            True if the model is stored in the
+            Vertica DB.
+        """
+        return self.does_model_exists(
+            name=self.model_name,
+            raise_error=raise_error,
+            return_model_type=return_model_type,
+        )
+
+    @staticmethod
+    def does_model_exists(
+        name: str, raise_error: bool = False, return_model_type: bool = False,
+    ) -> Union[bool, str]:
+        """
+        Checks if the model is stored in the Vertica DB.
+
+        Parameters
+        ----------
+        name: str, optional
+            Model's name.
+        raise_error: bool, optional
+            If set to True and an error occurs, it 
+            raises the error.
+        return_model_type: bool, optional
+            If set to True, returns the model type.
+
+        Returns
+        -------
+        bool
+            True if the model is stored in the
+            Vertica DB.
+        """
+        model_type = None
+        if name == None:
+            name = self.model_name
+        schema, model_name = schema_relation(name)
+        schema, model_name = schema[1:-1], model_name[1:-1]
+        res = _executeSQL(
+            query=f"""
+                SELECT 
+                    /*+LABEL('learn.tools._is_already_stored')*/ 
+                    model_type 
+                FROM MODELS 
+                WHERE LOWER(model_name) = LOWER('{model_name}') 
+                  AND LOWER(schema_name) = LOWER('{schema}') 
+                LIMIT 1""",
+            method="fetchrow",
+            print_time_sql=False,
+        )
+        if res:
+            model_type = res[0]
+            res = True
+        else:
+            res = False
+        if raise_error and res:
+            raise NameError(f"The model '{model_name}' already exists !")
+        if return_model_type:
+            return model_type
+        return res
+
     # Attributes Methods.
 
     def get_attributes(self, attr_name: str = "") -> Any:
@@ -273,7 +349,7 @@ class VerticaModel:
 
         for param in self.parameters:
 
-            if isinstance(param, list):
+            if isinstance(self.parameters[param], (list, np.ndarray)):
                 parameters[
                     param
                 ] = f"'{', '.join([str(p) for p in self.parameters[param]])}'"
@@ -290,7 +366,7 @@ class VerticaModel:
 
         return parameters
 
-    def _map_to_verticapy_param_name(param: str) -> str:
+    def _map_to_verticapy_param_name(self, param: str) -> str:
         options = self._map_to_vertica_param_dict()
         for key in options:
             if options[key] == param:
@@ -567,7 +643,7 @@ class Supervised(VerticaModel):
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
-            does_model_exist(name=self.model_name, raise_error=True)
+            self._is_already_stored(raise_error=True)
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
@@ -2392,7 +2468,7 @@ class Unsupervised(VerticaModel):
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
-            does_model_exist(name=self.model_name, raise_error=True)
+            self._is_already_stored(raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
         if self._model_type in ("BisectingKMeans", "IsolationForest") and isinstance(
             conf.get_option("random_state"), int

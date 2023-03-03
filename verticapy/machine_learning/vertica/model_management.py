@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Union
+
 from verticapy._typing import SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import schema_relation
@@ -21,7 +23,6 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.cluster import (
     BisectingKMeans,
@@ -76,7 +77,9 @@ def load_model(
     model
         The model.
     """
-    model_type = does_model_exist(name=name, raise_error=False, return_model_type=True)
+    model_type = VerticaModel.does_model_exists(
+        name=name, raise_error=False, return_model_type=True
+    )
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
     if not (model_type):
@@ -162,8 +165,11 @@ def load_model(
         crossentropy = "crossentropy"
         if " lambda=" in parameters:
             parameters = parameters.replace(" lambda=", " C=")
-        parameters = parameters.replace("''", ' """ ')
-        parameters = eval("model._get_verticapy_param_dict(" + parameters + ")")
+        try:
+            parameters = eval("model._get_verticapy_param_dict(" + parameters + ")")
+        except SyntaxError:
+            parameters = parameters.replace("''", ' """ ')
+            parameters = eval("model._get_verticapy_param_dict(" + parameters + ")")
         if model_type in ("kmeans", "bisecting_kmeans", "kprototypes"):
             parameters["n_cluster"] = info[-1]
         if model_type == "linear_reg":

@@ -24,7 +24,6 @@ from verticapy.errors import ParameterError, ModelError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.base import Regressor, VerticaModel
 
 """
@@ -200,8 +199,6 @@ class Pipeline:
             vdf = input_relation
         if conf.get_option("overwrite_model"):
             self.drop()
-        else:
-            does_model_exist(name=self.model_name, raise_error=True)
         X_new = [elem for elem in X]
         current_vdf = vdf
         for idx, step in enumerate(self.steps):

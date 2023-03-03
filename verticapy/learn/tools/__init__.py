@@ -14,5 +14,4 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.model_management import load_model

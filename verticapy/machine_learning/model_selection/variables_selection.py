@@ -34,7 +34,6 @@ from verticapy.plotting._matplotlib import (
 
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.metrics import aic_bic
-from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
 from verticapy.sql.drop import drop
@@ -352,7 +351,7 @@ TableSample
         X = [X]
     assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
     if not (conf.get_option("overwrite_model")):
-        does_model_exist(name=estimator.model_name, raise_error=True)
+        estimator._is_already_stored(raise_error=True)
     result, current_step = [], 0
     table = (
         input_relation if isinstance(input_relation, str) else input_relation._genSQL()

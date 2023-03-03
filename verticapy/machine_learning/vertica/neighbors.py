@@ -49,7 +49,6 @@ from verticapy.machine_learning.model_selection.model_validation import (
     roc_curve,
     lift_chart,
 )
-from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.base import (
     MulticlassClassifier,
     Regressor,
@@ -915,7 +914,7 @@ class KernelDensity(Regressor, Tree):
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
-            does_model_exist(name=self.model_name, raise_error=True)
+            self._is_already_stored(raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
@@ -1202,7 +1201,7 @@ class LocalOutlierFactor(VerticaModel):
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
-            does_model_exist(name=self.model_name, raise_error=True)
+            self._is_already_stored(raise_error=True)
         self.key_columns = [quote_ident(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation._genSQL()

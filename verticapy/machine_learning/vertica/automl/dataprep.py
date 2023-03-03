@@ -26,7 +26,6 @@ from verticapy.errors import ParameterError
 
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.decomposition import PCA
 
@@ -209,7 +208,7 @@ class AutoDataPrep(VerticaModel):
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
-            does_model_exist(name=self.model_name, raise_error=True)
+            self._is_already_stored(raise_error=True)
         current_print_info = conf.get_option("print_info")
         conf.set_option("print_info", False)
         assert not (by) or (ts), ParameterError(

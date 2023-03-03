@@ -40,7 +40,6 @@ from verticapy.plotting._matplotlib.timeseries import range_curve
 
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
-from verticapy.machine_learning.sys.model_checking import does_model_exist
 
 from verticapy.sql.drop import drop
 

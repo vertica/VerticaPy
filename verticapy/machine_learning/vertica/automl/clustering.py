@@ -25,7 +25,6 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.model_selection import best_k
-from verticapy.machine_learning.sys.model_checking import does_model_exist
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 
@@ -167,7 +166,7 @@ class AutoClustering(VerticaModel):
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
-            does_model_exist(name=self.model_name, raise_error=True)
+            self._is_already_stored(raise_error=True)
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoClustering\033[0m\033[0m\n")
         if self.parameters["preprocess_data"]:
