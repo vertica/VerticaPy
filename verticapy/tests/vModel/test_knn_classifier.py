@@ -186,7 +186,7 @@ class TestKNeighborsClassifier:
         assert model.score(method="npv") == pytest.approx(0.6811881188118812)
         assert model.score(method="prc_auc") == pytest.approx(0.7776321621297582)
         assert model.score(method="precision") == pytest.approx(0.7339743589743589)
-        assert model.score(method="specificity") == pytest.approx(0.0)
+        assert model.score(method="specificity") == pytest.approx(0.8056206088992974)
 
     def test_set_params(self, model):
         model.set_params({"p": 1})
