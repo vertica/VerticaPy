@@ -349,10 +349,13 @@ class VerticaModel:
 
         for param in self.parameters:
 
-            if isinstance(self.parameters[param], (list, np.ndarray)):
-                parameters[
-                    param
-                ] = f"'{', '.join([str(p) for p in self.parameters[param]])}'"
+            if param == "class_weight":
+                if isinstance(self.parameters[param], (list, np.ndarray)):
+                    parameters[
+                        "class_weights"
+                    ] = f"'{', '.join([str(p) for p in self.parameters[param]])}'"
+                else:
+                    parameters["class_weights"] = f"'{self.parameters[param]}'"
 
             elif isinstance(self.parameters[param], (str, dict)):
                 parameters[

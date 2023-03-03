@@ -181,6 +181,12 @@ class NaiveBayes(MulticlassClassifier):
             del elem["rank"]
         return var_info_simplified
 
+    # Parameters Methods.
+
+    @staticmethod
+    def _map_to_vertica_param_dict():
+        return {}
+
     # I/O Methods.
 
     def to_memmodel(self) -> mm.NaiveBayes:
