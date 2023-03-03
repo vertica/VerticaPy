@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import os, vertica_python
+import copy, os, vertica_python
 from abc import abstractmethod
 from typing import Literal, Optional, Union
 import numpy as np
@@ -142,9 +142,24 @@ class Clustering(Unsupervised):
             raise NotImplementedError
         return res
 
-    def _plot(self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds):
+    def plot(self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds):
         """
         Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of points to display.
+        ax: Axes, optional
+            The axes to plot on.
+        **style_kwds
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        Axes
+            Matplotlib axes object.
         """
         vdf = vDataFrame(self.input_relation)
         kwds = {

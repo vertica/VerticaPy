@@ -165,8 +165,8 @@ def contour_plot(
                 "NearestCentroid",
                 "KNeighborsClassifier",
             ):
-                if func._model_type in ("NearestCentroid", "KNeighborsClassifier"):
-                    vdf_tmp = func.predict_proba(
+                if func._model_type == "KNeighborsClassifier":
+                    vdf_tmp = func._predict_proba(
                         vdf=vdf_tmp,
                         X=columns,
                         name="verticapy_predict",
@@ -183,7 +183,7 @@ def contour_plot(
                     )
             else:
                 if func._model_type == "KNeighborsRegressor":
-                    vdf_tmp = func.predict(
+                    vdf_tmp = func._predict(
                         vdf=vdf_tmp,
                         X=columns,
                         name="verticapy_predict",
