@@ -656,6 +656,16 @@ class BisectingKMeans(KMeans, Tree):
         self.cluster_i_ss_ = np.array(metrics[4:])
         return None
 
+    # Parameters Methods.
+
+    @staticmethod
+    def _map_to_vertica_param_dict():
+        return {
+            "tol": "kmeans_epsilon",
+            "max_iter": "kmeans_max_iterations",
+            "init": "kmeans_center_init_method",
+        }
+
     # I/O Methods.
 
     def to_memmodel(self) -> mm.BisectingKMeans:

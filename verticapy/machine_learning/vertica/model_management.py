@@ -82,16 +82,20 @@ def load_model(
     if not (model_type):
         raise NameError(f"The model '{name}' doesn't exist.")
     if model_type.lower() in ("kmeans", "kprototypes",):
-        info = _executeSQL(
-            query=f"""
+        info = (
+            _executeSQL(
+                query=f"""
                 SELECT 
                     /*+LABEL('learn.tools.load_model')*/ 
                     GET_MODEL_SUMMARY 
                     (USING PARAMETERS 
                     model_name = '{name}')""",
-            method="fetchfirstelem",
-            print_time_sql=False,
-        ).replace("\n", " ")
+                method="fetchfirstelem",
+                print_time_sql=False,
+            )
+            .replace("\n", " ")
+            .strip()
+        )
         mtype = model_type.lower() + "("
         info = mtype + info.split(mtype)[1]
     elif model_type.lower() == "normalize_fit":
@@ -107,229 +111,78 @@ def load_model(
         model._compute_attributes()
         return model
     else:
-        info = _executeSQL(
-            query=f"""
+        info = (
+            _executeSQL(
+                query=f"""
                 SELECT 
                     /*+LABEL('learn.tools.load_model')*/ 
                     GET_MODEL_ATTRIBUTE 
                     (USING PARAMETERS 
                     model_name = '{name}',
                     attr_name = 'call_string')""",
-            method="fetchfirstelem",
-            print_time_sql=False,
-        ).replace("\n", " ")
-    if "SELECT " in info:
-        info = info.split("SELECT ")[1].split("(")
+                method="fetchfirstelem",
+                print_time_sql=False,
+            )
+            .replace("\n", " ")
+            .strip()
+        )
+    if info.lower()[0:7] == "select ":
+        info = info[7:].split("(")
     else:
         info = info.split("(")
     model_type = info[0].lower()
-    info = info[1].split(")")[0].replace(" ", "").split("USINGPARAMETERS")
-    if (
-        model_type == "svm_classifier"
-        and "class_weights='none'" not in " ".join(info).lower()
-    ):
-        parameters = "".join(info[1].split("class_weights=")[1].split("'"))
-        parameters = parameters[3 : len(parameters)].split(",")
-        del parameters[0]
-        parameters += [
-            "class_weights=" + info[1].split("class_weights=")[1].split("'")[1]
-        ]
-    elif model_type != "svd":
-        parameters = info[1].split(",")
+    info = ")".join("(".join(info[1:]).split(")")[0:-1])
+    if " USING PARAMETERS " in info:
+        info = info.split(" USING PARAMETERS ")
+        parameters = info[1]
+        info = info[0]
+    info = eval("[" + info + "]")
+    lookup_table = {
+        "rf_regressor": RandomForestRegressor,
+        "rf_classifier": RandomForestClassifier,
+        "iforest": IsolationForest,
+        "xgb_classifier": XGBClassifier,
+        "xgb_regressor": XGBRegressor,
+        "logistic_reg": LogisticRegression,
+        "naive_bayes": NaiveBayes,
+        "svm_regressor": LinearSVR,
+        "svm_classifier": LinearSVC,
+        "linear_reg": LinearRegression,
+        "kmeans": KMeans,
+        "kprototypes": KPrototypes,
+        "bisecting_kmeans": BisectingKMeans,
+        "pca": PCA,
+        "svd": SVD,
+        "one_hot_encoder_fit": OneHotEncoder,
+    }
+    model = lookup_table[model_type](name)
+    if model_type != "svd":
+        true, false = True, False
+        squarederror = "squarederror"
+        crossentropy = "crossentropy"
+        if " lambda=" in parameters:
+            parameters = parameters.replace(" lambda=", " C=")
+        parameters = parameters.replace("''", ' """ ')
+        parameters = eval("model._get_verticapy_param_dict(" + parameters + ")")
+        if model_type in ("kmeans", "bisecting_kmeans", "kprototypes"):
+            parameters["n_cluster"] = info[-1]
+        if model_type == "linear_reg":
+            lr_lookup_table = {
+                "none": LinearRegression,
+                "l1": Lasso,
+                "l2": Ridge,
+                "enet": ElasticNet,
+            }
+            model = lr_lookup_table[parameters["penalty"]](name)
     else:
-        parameters = []
-    parameters = [item.split("=") for item in parameters]
-    parameters_dict = {}
-    for item in parameters:
-        if len(item) > 1:
-            parameters_dict[item[0]] = item[1]
-    info = info[0]
-    for elem in parameters_dict:
-        if isinstance(parameters_dict[elem], str):
-            parameters_dict[elem] = parameters_dict[elem].replace("'", "")
-    if "split_proposal_method" in parameters_dict:
-        split_proposal_method = parameters_dict["split_proposal_method"]
+        parameters = {}
+    model.set_params(**parameters)
+    model.input_relation = input_relation if (input_relation) else info[1]
+    if model._model_category == "SUPERVISED":
+        model.y = info[2]
+        model.X = eval("[" + info[3] + "]")
+        model.test_relation = test_relation if (test_relation) else model.input_relation
     else:
-        split_proposal_method = "global"
-    if "epsilon" in parameters_dict:
-        epsilon = parameters_dict["epsilon"]
-    else:
-        epsilon = 0.001
-    if model_type in ("rf_regressor", "rf_classifier"):
-        args = [
-            name,
-            int(parameters_dict["ntree"]),
-            int(parameters_dict["mtry"]),
-            int(parameters_dict["max_breadth"]),
-            float(parameters_dict["sampling_size"]),
-            int(parameters_dict["max_depth"]),
-            int(parameters_dict["min_leaf_size"]),
-            float(parameters_dict["min_info_gain"]),
-            int(parameters_dict["nbins"]),
-        ]
-        if model_type == "rf_regressor":
-            model = RandomForestRegressor(*args)
-        elif model_type == "rf_classifier":
-            model = RandomForestClassifier(*args)
-    elif model_type == "iforest":
-        model = IsolationForest(
-            name,
-            int(parameters_dict["ntree"]),
-            int(parameters_dict["max_depth"]),
-            int(parameters_dict["nbins"]),
-            float(parameters_dict["sampling_size"]),
-            float(parameters_dict["col_sample_by_tree"]),
-        )
-    elif model_type in ("xgb_classifier", "xgb_regressor"):
-        args = [
-            name,
-            int(parameters_dict["max_ntree"]),
-            int(parameters_dict["max_depth"]),
-            int(parameters_dict["nbins"]),
-            split_proposal_method,
-            float(epsilon),
-            float(parameters_dict["learning_rate"]),
-            float(parameters_dict["min_split_loss"]),
-            float(parameters_dict["weight_reg"]),
-            float(parameters_dict["sampling_size"]),
-            float(parameters_dict["col_sample_by_tree"]),
-            float(parameters_dict["col_sample_by_node"]),
-        ]
-        if model_type == "xgb_classifier":
-            model = XGBClassifier(*args)
-        elif model_type == "xgb_regressor":
-            model = XGBRegressor(*args)
-    elif model_type == "logistic_reg":
-        model = LogisticRegression(
-            name,
-            parameters_dict["regularization"],
-            float(parameters_dict["epsilon"]),
-            float(parameters_dict["lambda"]),
-            int(parameters_dict["max_iterations"]),
-            parameters_dict["optimizer"],
-            float(parameters_dict["alpha"]),
-        )
-    elif model_type == "linear_reg":
-        if parameters_dict["regularization"] == "none":
-            model = LinearRegression(
-                name,
-                float(parameters_dict["epsilon"]),
-                int(parameters_dict["max_iterations"]),
-                parameters_dict["optimizer"],
-            )
-        elif parameters_dict["regularization"] == "l1":
-            model = Lasso(
-                name,
-                float(parameters_dict["epsilon"]),
-                float(parameters_dict["lambda"]),
-                int(parameters_dict["max_iterations"]),
-                parameters_dict["optimizer"],
-            )
-        elif parameters_dict["regularization"] == "l2":
-            model = Ridge(
-                name,
-                float(parameters_dict["epsilon"]),
-                float(parameters_dict["lambda"]),
-                int(parameters_dict["max_iterations"]),
-                parameters_dict["optimizer"],
-            )
-        else:
-            model = ElasticNet(
-                name,
-                float(parameters_dict["epsilon"]),
-                float(parameters_dict["lambda"]),
-                int(parameters_dict["max_iterations"]),
-                parameters_dict["optimizer"],
-                float(parameters_dict["alpha"]),
-            )
-    elif model_type == "naive_bayes":
-        model = NaiveBayes(name, float(parameters_dict["alpha"]))
-    elif model_type == "svm_regressor":
-        model = LinearSVR(
-            name,
-            float(parameters_dict["epsilon"]),
-            float(parameters_dict["C"]),
-            True,
-            float(parameters_dict["intercept_scaling"]),
-            parameters_dict["intercept_mode"],
-            float(parameters_dict["error_tolerance"]),
-            int(parameters_dict["max_iterations"]),
-        )
-    elif model_type == "svm_classifier":
-        class_weights = parameters_dict["class_weights"].split(",")
-        for idx, elem in enumerate(class_weights):
-            try:
-                class_weights[idx] = float(class_weights[idx])
-            except:
-                class_weights[idx] = None
-        model = LinearSVC(
-            name,
-            float(parameters_dict["epsilon"]),
-            float(parameters_dict["C"]),
-            True,
-            float(parameters_dict["intercept_scaling"]),
-            parameters_dict["intercept_mode"],
-            class_weights,
-            int(parameters_dict["max_iterations"]),
-        )
-    elif model_type == "kmeans":
-        model = KMeans(
-            name,
-            int(info.split(",")[-1]),
-            parameters_dict["init_method"],
-            int(parameters_dict["max_iterations"]),
-            float(parameters_dict["epsilon"]),
-        )
-    elif model_type == "kprototypes":
-        model = KPrototypes(
-            name,
-            int(info.split(",")[-1]),
-            parameters_dict["init_method"],
-            int(parameters_dict["max_iterations"]),
-            float(parameters_dict["epsilon"]),
-            float(parameters_dict["gamma"]),
-        )
-    elif model_type == "bisecting_kmeans":
-        model = BisectingKMeans(
-            name,
-            int(info.split(",")[-1]),
-            int(parameters_dict["bisection_iterations"]),
-            parameters_dict["split_method"],
-            int(parameters_dict["min_divisible_cluster_size"]),
-            parameters_dict["distance_method"],
-            parameters_dict["kmeans_center_init_method"],
-            int(parameters_dict["kmeans_max_iterations"]),
-            float(parameters_dict["kmeans_epsilon"]),
-        )
-    elif model_type == "pca":
-        model = PCA(name, 0, bool(parameters_dict["scale"]))
-    elif model_type == "svd":
-        model = SVD(name)
-    elif model_type == "one_hot_encoder_fit":
-        model = OneHotEncoder(name)
-    if not (input_relation):
-        model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
-    else:
-        model.input_relation = input_relation
-    model.test_relation = test_relation if (test_relation) else model.input_relation
-    if model_type not in (
-        "kmeans",
-        "kprototypes",
-        "pca",
-        "svd",
-        "one_hot_encoder_fit",
-        "bisecting_kmeans",
-        "iforest",
-        "normalizer",
-    ):
-        start = 3
-        model.y = info.split(",")[2].replace("'", "").replace("\\", "")
-    else:
-        start = 2
-    end = len(info.split(","))
-    if model_type in ("bisecting_kmeans",):
-        end -= 1
-    model.X = info.split(",")[start:end]
-    model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
+        model.X = eval("[" + info[2] + "]")
     model._compute_attributes()
     return model

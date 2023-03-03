@@ -450,7 +450,7 @@ class RandomForestRegressor(RandomForest, Regressor):
         self.parameters = {
             "n_estimators": n_estimators,
             "max_features": max_features,
-            "max_leaf_nodes": max_leaf_nodes,
+            "max_leaf_nodes": int(max_leaf_nodes),
             "sample": sample,
             "max_depth": max_depth,
             "min_samples_leaf": min_samples_leaf,
@@ -778,7 +778,7 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
         self.parameters = {
             "n_estimators": n_estimators,
             "max_features": max_features,
-            "max_leaf_nodes": max_leaf_nodes,
+            "max_leaf_nodes": int(max_leaf_nodes),
             "sample": sample,
             "max_depth": max_depth,
             "min_samples_leaf": min_samples_leaf,

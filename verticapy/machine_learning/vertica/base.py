@@ -232,6 +232,32 @@ class VerticaModel:
 
     # Parameters Methods.
 
+    @staticmethod
+    def _map_to_vertica_param_dict():
+        return {
+            "class_weights": "class_weight",
+            "solver": "optimizer",
+            "tol": "epsilon",
+            "max_iter": "max_iterations",
+            "penalty": "regularization",
+            "C": "lambda",
+            "l1_ratio": "alpha",
+            "n_estimators": "ntree",
+            "max_features": "mtry",
+            "sample": "sampling_size",
+            "max_leaf_nodes": "max_breadth",
+            "min_samples_leaf": "min_leaf_size",
+            "n_components": "num_components",
+            "init": "init_method",
+        }
+
+    def _map_to_vertica_param_name(self, param: str):
+        options = self._map_to_vertica_param_dict()
+        param = param.lower()
+        if param in options:
+            return options[param]
+        return param
+
     def _get_vertica_param_dict(self) -> dict[str, str]:
         """
         Returns the Vertica parameters dict to use when fitting 
@@ -243,77 +269,39 @@ class VerticaModel:
         dict
             Vertica parameters.
         """
-
-        def map_to_vertica_param_name(param: str):
-            param = param.lower()
-            options = {
-                "class_weights": "class_weight",
-                "solver": "optimizer",
-                "tol": "epsilon",
-                "max_iter": "max_iterations",
-                "penalty": "regularization",
-                "C": "lambda",
-                "l1_ratio": "alpha",
-                "n_estimators": "ntree",
-                "max_features": "mtry",
-                "sample": "sampling_size",
-                "max_leaf_nodes": "max_breadth",
-                "min_samples_leaf": "min_leaf_size",
-                "n_components": "num_components",
-                "init": "init_method",
-            }
-            if param in options:
-                return options[param]
-            return param
-
         parameters = {}
 
         for param in self.parameters:
 
-            if self._model_type in ("LinearSVC", "LinearSVR") and param == "C":
-                parameters[param] = self.parameters[param]
-
-            elif (
-                self._model_type in ("LinearRegression", "LogisticRegression")
-                and param == "C"
-            ):
-                parameters["lambda"] = self.parameters[param]
-
-            elif self._model_type == "BisectingKMeans" and param in (
-                "init",
-                "max_iter",
-                "tol",
-            ):
-                if param == "init":
-                    parameters["kmeans_center_init_method"] = (
-                        "'" + self.parameters[param] + "'"
-                    )
-                elif param == "max_iter":
-                    parameters["kmeans_max_iterations"] = self.parameters[param]
-                elif param == "tol":
-                    parameters["kmeans_epsilon"] = self.parameters[param]
-
-            elif param == "max_leaf_nodes":
-                parameters[map_to_vertica_param_name(param)] = int(
-                    self.parameters[param]
-                )
-
-            elif param == "class_weight":
-                if isinstance(self.parameters[param], Iterable):
-                    parameters[
-                        "class_weights"
-                    ] = f"'{', '.join([str(p) for p in self.parameters[param]])}'"
-                else:
-                    parameters["class_weights"] = f"'{self.parameters[param]}'"
+            if isinstance(param, list):
+                parameters[
+                    param
+                ] = f"'{', '.join([str(p) for p in self.parameters[param]])}'"
 
             elif isinstance(self.parameters[param], (str, dict)):
                 parameters[
-                    map_to_vertica_param_name(param)
+                    self._map_to_vertica_param_name(param)
                 ] = f"'{self.parameters[param]}'"
 
             else:
-                parameters[map_to_vertica_param_name(param)] = self.parameters[param]
+                parameters[self._map_to_vertica_param_name(param)] = self.parameters[
+                    param
+                ]
 
+        return parameters
+
+    def _map_to_verticapy_param_name(param: str) -> str:
+        options = self._map_to_vertica_param_dict()
+        for key in options:
+            if options[key] == param:
+                return key
+        return param
+
+    def _get_verticapy_param_dict(self, options: dict = {}, **kwds) -> dict:
+        parameters = {}
+        map_dict = {**options, **kwds}
+        for param in map_dict:
+            parameters[self._map_to_verticapy_param_name(param)] = map_dict[param]
         return parameters
 
     def get_params(self) -> dict:

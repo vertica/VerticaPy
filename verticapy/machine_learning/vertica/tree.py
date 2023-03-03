@@ -86,7 +86,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
-            "max_leaf_nodes": max_leaf_nodes,
+            "max_leaf_nodes": int(max_leaf_nodes),
             "sample": 1.0,
             "max_depth": max_depth,
             "min_samples_leaf": min_samples_leaf,
@@ -118,7 +118,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",
-            "max_leaf_nodes": 1e9,
+            "max_leaf_nodes": int(1e9),
             "sample": 1.0,
             "max_depth": 100,
             "min_samples_leaf": 1,
@@ -189,7 +189,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
-            "max_leaf_nodes": max_leaf_nodes,
+            "max_leaf_nodes": int(max_leaf_nodes),
             "sample": 1.0,
             "max_depth": max_depth,
             "min_samples_leaf": min_samples_leaf,
@@ -221,7 +221,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",
-            "max_leaf_nodes": 1e9,
+            "max_leaf_nodes": int(1e9),
             "sample": 1.0,
             "max_depth": 100,
             "min_samples_leaf": 1,

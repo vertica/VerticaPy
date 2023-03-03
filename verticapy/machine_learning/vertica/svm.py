@@ -128,6 +128,15 @@ class LinearSVR(Regressor, LinearModel):
         }
         return None
 
+    # Parameters Methods.
+
+    @staticmethod
+    def _map_to_vertica_param_dict():
+        return {
+            "tol": "epsilon",
+            "max_iter": "max_iterations",
+        }
+
 
 """
 Algorithms used for classification.
@@ -231,6 +240,16 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
             "max_iter": max_iter,
         }
         return None
+
+    # Parameters Methods.
+
+    @staticmethod
+    def _map_to_vertica_param_dict():
+        return {
+            "class_weights": "class_weight",
+            "tol": "epsilon",
+            "max_iter": "max_iterations",
+        }
 
     # Plotting Methods.
 
