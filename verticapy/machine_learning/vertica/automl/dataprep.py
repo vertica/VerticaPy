@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime
+import copy, datetime
 from typing import Literal, Union
 
 import verticapy._config.config as conf
@@ -361,7 +361,7 @@ class AutoDataPrep(VerticaModel):
                         method[elem] = "ffill"
             vdf = vdf.interpolate(ts=ts, rule=rule, method=method, by=by)
             vdf.dropna()
-        self.X_in_ = [elem for elem in X]
+        self.X_in_ = copy.deepcopy(X)
         self.X_out_ = vdf.get_columns(
             exclude_columns=by + [ts] + X_diff if ts else by + X_diff
         )
