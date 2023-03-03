@@ -533,7 +533,7 @@ class VerticaModel:
         """
         return vDataFrame(self.input_relation).contour(
             *self._get_plot_args(method="contour"),
-            **self._get_plot_kwargs(method="contour"),
+            **self._get_plot_kwargs(nbins=nbins, ax=ax, method="contour"),
             **style_kwds,
         )
 
@@ -1006,8 +1006,6 @@ class Tree:
         graphviz.Source
             graphviz object.
         """
-        if hasattr(self, "_plot_tree"):
-            return self._plot_tree(tree_id=tree_id, pic_path=pic_path, *argv, **kwds,)
         return self.trees_[tree_id].plot_tree(
             pic_path=pic_path, feature_names=self.X, *argv, **kwds,
         )

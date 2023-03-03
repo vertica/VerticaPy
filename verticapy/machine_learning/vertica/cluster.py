@@ -734,9 +734,21 @@ class BisectingKMeans(KMeans, Tree):
             leaf_style=leaf_style,
         )
 
-    def _plot_tree(self, pic_path: str = "", *argv, **kwds,) -> "Source":
+    def plot_tree(self, pic_path: str = "", *argv, **kwds,) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
+
+        Parameters
+        ----------
+        pic_path: str, optional
+            Absolute path to save the image of the tree.
+        *argv, **kwds: Any, optional
+            Arguments to pass to the 'to_graphviz' method.
+
+        Returns
+        -------
+        graphviz.Source
+            graphviz object.
         """
         return self.to_memmodel().plot_tree(pic_path=pic_path, *argv, **kwds,)
 

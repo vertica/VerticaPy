@@ -116,13 +116,14 @@ model
         info = mtype + info.split(mtype)[1]
     elif model_type.lower() == "normalize_fit":
         model = vml.Scaler(name)
+        param = model.get_vertica_attributes("details")
         model.X = [
             '"' + item + '"'
-            for item in model.get_vertica_attributes("details").values["column_name"]
+            for item in param.values["column_name"]
         ]
-        if "avg" in model.param_.values:
+        if "avg" in param.values:
             model.parameters["method"] = "zscore"
-        elif "max" in model.param_.values:
+        elif "max" in param.values:
             model.parameters["method"] = "minmax"
         else:
             model.parameters["method"] = "robust_zscore"
