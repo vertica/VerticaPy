@@ -1454,7 +1454,7 @@ class MulticlassClassifier(Classifier):
         """
         if pos_label == None and self._is_binary_classifier:
             return 1
-        elif pos_label not in self.classes_:
+        elif str(pos_label) not in [str(c) for c in self.classes_]:
             raise ParameterError(
                 "Parameter 'pos_label' must be one of the response column classes."
             )
@@ -1571,7 +1571,7 @@ class MulticlassClassifier(Classifier):
                     else:
                         non_pos_label = self.classes_[1]
                     sql = sql.format(non_pos_label)
-            elif pos_label not in self.classes_:
+            elif str(pos_label) not in [str(c) for c in self.classes_]:
                 if self._model_type == "NearestCentroid":
                     sql = self.to_memmodel().predict_sql(X)
                 else:
