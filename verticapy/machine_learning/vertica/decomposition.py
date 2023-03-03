@@ -316,11 +316,11 @@ class Decomposition(Preprocessing):
             Matplotlib axes object.
         """
         if self._model_type == "SVD":
-            x = self.vectors_[:, : dimensions[0]]
-            y = self.vectors_[:, : dimensions[1]]
+            x = self.vectors_[:, dimensions[0] - 1]
+            y = self.vectors_[:, dimensions[1] - 1]
         else:
-            x = self.principal_components_[:, : dimensions[0]]
-            y = self.principal_components_[:, : dimensions[1]]
+            x = self.principal_components_[:, dimensions[0] - 1]
+            y = self.principal_components_[:, dimensions[1] - 1]
         return vpy_plt.plot_pca_circle(
             x,
             y,
@@ -351,10 +351,8 @@ class Decomposition(Preprocessing):
         Axes
             Matplotlib axes object.
         """
-        explained_variance, n = (
-            [100 * x for x in self.explained_variance_],
-            len(explained_variance),
-        )
+        n = len(self.explained_variance_)
+        explained_variance = [100 * x for x in self.explained_variance_]
         information = TableSample(
             {
                 "dimensions": [i + 1 for i in range(n)],
@@ -490,7 +488,7 @@ class PCA(Decomposition):
         ):
             if v != "index":
                 values[v] = [c[idx - 1] for c in cos2]
-        self.cos2_ = TableSample(values)
+        self.cos2_ = TableSample(values).to_numpy()
         return None
 
     # I/O Methods.
@@ -587,7 +585,7 @@ class MCA(PCA):
         Axes
             Matplotlib axes object.
         """
-        contrib = self.principal_components_[:, :dimension]
+        contrib = self.principal_components_[:, dimension - 1]
         contrib = [elem ** 2 for elem in contrib]
         total = sum(contrib)
         contrib = [100 * elem / total for elem in contrib]
@@ -638,8 +636,8 @@ class MCA(PCA):
         Axes
             Matplotlib axes object.
         """
-        cos2_1 = self.cos2_[f"PC{dimensions[0]}"]
-        cos2_2 = self.cos2_[f"PC{dimensions[1]}"]
+        cos2_1 = self.cos2_[:, dimensions[0] - 1]
+        cos2_2 = self.cos2_[:, dimensions[1] - 1]
         n = len(cos2_1)
         quality = []
         for i in range(n):
@@ -688,27 +686,27 @@ class MCA(PCA):
         Axes
             Matplotlib axes object.
         """
-        x = self.principal_components_[:, : dimensions[0]]
-        y = self.principal_components_[:, : dimensions[1]]
-        n = len(self.cos2_[f"PC{dimensions[0]}"])
+        x = self.principal_components_[:, dimensions[0] - 1]
+        y = self.principal_components_[:, dimensions[1] - 1]
+        n = len(self.cos2_[:, dimensions[0] - 1])
         if method in ("cos2", "contrib"):
             if method == "cos2":
                 c = [
-                    self.cos2_[f"PC{dimensions[0]}"][i]
-                    + self.cos2_[f"PC{dimensions[1]}"][i]
+                    self.cos2_[:, dimensions[0] - 1][i]
+                    + self.cos2_[:, dimensions[1] - 1][i]
                     for i in range(n)
                 ]
             else:
                 sum_1, sum_2 = (
-                    sum(self.cos2_[f"PC{dimensions[0]}"]),
-                    sum(self.cos2_[f"PC{dimensions[1]}"]),
+                    sum(self.cos2_[:, dimensions[0] - 1]),
+                    sum(self.cos2_[:, dimensions[1] - 1]),
                 )
                 c = [
                     0.5
                     * 100
                     * (
-                        self.cos2_[f"PC{dimensions[0]}"][i] / sum_1
-                        + self.cos2_[f"PC{dimensions[1]}"][i] / sum_2
+                        self.cos2_[:, dimensions[0] - 1][i] / sum_1
+                        + self.cos2_[:, dimensions[1] - 1][i] / sum_2
                     )
                     for i in range(n)
                 ]
