@@ -20,7 +20,7 @@ import numpy as np
 from scipy.stats import chi2, norm, f
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, SQLColumns, SQLRelation
+from verticapy._typing import PythonNumber, SQLColumns, SQLRelation, TimeInterval
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import schema_relation
