@@ -688,6 +688,62 @@ def _compute_function_metrics(
         result[2] = [0] + result[2] + [1]
     return result
 
+@save_verticapy_logs
+def best_cutoff(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    pos_label: PythonScalar = 1,
+    nbins: int = 10000,
+) -> float:
+    """
+    Computes the ROC AUC (Area Under Curve).
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+    nbins: int, optional
+        An integer value that determines the number of 
+        decision boundaries. 
+        Decision boundaries  are set at equally spaced 
+        intervals between 0 and 1, inclusive. 
+        Greater  values  for nbins give  more  precise 
+        estimations  of the AUC,  but can  potentially 
+        decrease  performance.  The  maximum value  is 
+        999,999.  If negative,  the  maximum value  is 
+        used.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    threshold, false_positive, true_positive = _compute_function_metrics(
+        y_true=y_true,
+        y_score=y_score,
+        input_relation=input_relation,
+        pos_label=pos_label,
+        nbins=nbins,
+        fun_sql_name="roc",
+    )
+    l = [abs(y - x) for x, y in zip(false_positive, true_positive)]
+    best_threshold_arg = max(zip(l, range(len(l))))[1]
+    best = max(threshold[best_threshold_arg], 0.001)
+    best = min(best, 0.999)
+    return best
+
 
 @save_verticapy_logs
 def roc_auc(
@@ -857,8 +913,6 @@ def classification_report(
     TableSample
      	report.
 	"""
-    from verticapy.machine_learning.model_selection.model_validation import roc_curve
-
     if estimator:
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes != 2) else [estimator.classes_[1]]
@@ -946,8 +1000,8 @@ def classification_report(
             y_p = f"DECODE({y_p}, '{l}', 1, 0)"
             logloss = log_loss(y_t, y_s, input_relation, 1)
             if not (cutoff):
-                current_cutoff = roc_curve(
-                    y_t, y_s, input_relation, best_threshold=True, nbins=nbins,
+                current_cutoff = best_cutoff(
+                    y_t, y_s, input_relation, nbins=nbins,
                 )
             elif isinstance(cutoff, Iterable):
                 if len(cutoff) == 1:

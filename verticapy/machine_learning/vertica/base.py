@@ -1261,8 +1261,6 @@ class BinaryClassifier(Classifier):
             args += [len(self.X)]
         elif method in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
             kwds["nbins"] = nbins
-            if method in ("best_cutoff", "best_threshold"):
-                kwds["best_threshold"] = True
         return fun(*args, **kwds)
 
     # Prediction / Transformation Methods.
@@ -1849,8 +1847,6 @@ class MulticlassClassifier(Classifier):
             ]
             if method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
                 kwds["nbins"] = nbins
-            if method in ("best_cutoff", "best_threshold"):
-                kwds["best_threshold"] = True
         return fun(*args, **kwds)
 
     # Prediction / Transformation Methods.

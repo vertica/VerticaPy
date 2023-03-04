@@ -772,10 +772,7 @@ class vDFMachineLearning:
         kwds = {}
         if method in ("accuracy", "acc"):
             kwds["pos_label"] = None
-        elif method in ("best_cutoff", "best_threshold"):
-            kwds["nbins"] = nbins
-            kwds["best_threshold"] = True
-        elif method in ("roc_curve", "roc", "prc_curve", "prc", "lift_chart", "lift"):
+        elif method in ("best_cutoff", "best_threshold", "roc_curve", "roc", "prc_curve", "prc", "lift_chart", "lift"):
             kwds["nbins"] = nbins
         return FUNCTIONS_DICTIONNARY[method](*argv, **kwds)
 

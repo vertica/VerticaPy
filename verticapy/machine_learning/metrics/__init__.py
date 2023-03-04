@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy.machine_learning.metrics.classification import (
     accuracy_score,
+    best_cutoff,
     classification_report,
     confusion_matrix,
     critical_success_index,
@@ -56,8 +57,8 @@ FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
     "acc": accuracy_score,
     "auc": roc_auc,
     "prc_auc": prc_auc,
-    "best_cutoff": roc_curve,
-    "best_threshold": roc_curve,
+    "best_cutoff": best_cutoff,
+    "best_threshold": best_cutoff,
     "recall": recall_score,
     "tpr": recall_score,
     "precision": precision_score,
