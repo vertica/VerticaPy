@@ -806,11 +806,12 @@ class KernelDensity(Regressor, Tree):
         Drops the model from the Vertica database.
         """
         try:
-            _executeSQL(
-                query=f"SELECT KDE FROM {self.map} LIMIT 0;",
-                title="Looking if the KDE table exists.",
-            )
-            drop(self.map, method="table")
+            if hasattr(self, "map"):
+                _executeSQL(
+                    query=f"SELECT KDE FROM {self.map} LIMIT 0;",
+                    title="Looking if the KDE table exists.",
+                )
+                drop(self.map, method="table")
         except QueryError:
             return False
         return drop(self.model_name, method="model")

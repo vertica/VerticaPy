@@ -669,6 +669,7 @@ TableSample
         nbins=nbins,
         fun_sql_name="prc",
     )
+    auc = _compute_area(precision, recall)
     if not (ax):
         fig, ax = plt.subplots()
         if conf._get_import_success("jupyter"):
@@ -754,6 +755,7 @@ TableSample
         nbins=nbins,
         fun_sql_name="roc",
     )
+    auc = _compute_area(true_positive, false_positive)
     if not (ax):
         fig, ax = plt.subplots()
         if conf._get_import_success("jupyter"):

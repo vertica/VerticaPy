@@ -165,7 +165,7 @@ def _compute_tn_fn_fp_tp(
         tn, fn, fp, tp
     """
     res = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    return res[0][0], res[0][1], res[1][0], res[1][1]
+    return res[0][0], res[1][0], res[0][1], res[1][1]
 
 
 @check_minimum_version
@@ -940,8 +940,8 @@ def classification_report(
             y_t = f"DECODE({y_true}, '{pos_label}', 1, 0)"
             matrix = confusion_matrix(y_true, y_p, input_relation, pos_label)
         tn = matrix[0][0]
-        fn = matrix[0][1]
-        fp = matrix[1][0]
+        fn = matrix[1][0]
+        fp = matrix[0][1]
         tp = matrix[1][1]
         ppv = tp / (tp + fp) if (tp + fp != 0) else 0  # precision
         tpr = tp / (tp + fn) if (tp + fn != 0) else 0  # recall
