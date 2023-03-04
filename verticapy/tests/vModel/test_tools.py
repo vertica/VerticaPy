@@ -36,7 +36,7 @@ from verticapy.learn.neighbors import *
 from verticapy.learn.decomposition import *
 from verticapy.learn.preprocessing import *
 from verticapy.learn.tsa import *
-from verticapy.learn.tools import does_model_exist, load_model
+from verticapy.learn.tools import load_model
 import verticapy.machine_learning.memmodel.decomposition as mm
 
 set_option("print_info", False)
@@ -51,17 +51,15 @@ def titanic_vd():
 
 
 class TestTools:
-    def test_does_model_exist(self, titanic_vd):
+    def test__is_already_stored(self, titanic_vd):
         current_cursor().execute("CREATE SCHEMA IF NOT EXISTS load_model_test")
         model = LinearRegression("load_model_test.model_test")
         model.drop()
-        assert does_model_exist("load_model_test.model_test") == False
+        assert model._is_already_stored() == False
         model.fit(titanic_vd, ["age", "fare"], "survived")
-        assert does_model_exist("load_model_test.model_test") == True
+        assert model._is_already_stored() == True
         assert (
-            does_model_exist(
-                "load_model_test.model_test", return_model_type=True
-            ).lower()
+            model._is_already_stored(return_model_type=True).lower()
             == "linear_regression"
         )
         model.drop()

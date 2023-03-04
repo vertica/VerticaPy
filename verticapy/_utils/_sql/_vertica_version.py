@@ -65,8 +65,8 @@ MINIMUM_VERTICA_VERSION = {
     "soundex_matches": [10, 1, 0],
     "StandardScaler": [8, 1, 0],
     "SVD": [9, 1, 0],
-    "XGBClassifier": [10, 1, 0],
-    "XGBRegressor": [10, 1, 0],
+    "XGBClassifier": [11, 1, 0],
+    "XGBRegressor": [11, 1, 0],
 }
 
 

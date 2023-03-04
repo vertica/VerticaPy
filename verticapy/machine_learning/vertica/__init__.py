@@ -39,6 +39,7 @@ from verticapy.machine_learning.vertica.linear_model import (
     LogisticRegression,
     Ridge,
 )
+from verticapy.machine_learning.vertica.model_management import load_model
 from verticapy.machine_learning.vertica.naive_bayes import (
     BernoulliNB,
     CategoricalNB,

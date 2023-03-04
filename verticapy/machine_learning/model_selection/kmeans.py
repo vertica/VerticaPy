@@ -21,10 +21,10 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
-from verticapy._typing import SQLRelation
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -35,7 +35,7 @@ from verticapy.plotting._matplotlib.base import updated_dict
 @save_verticapy_logs
 def best_k(
     input_relation: SQLRelation,
-    X: Union[str, list] = [],
+    X: SQLColumns = [],
     n_cluster: Union[tuple, list] = (1, 100),
     init: Literal["kmeanspp", "random", None] = None,
     max_iter: int = 50,
@@ -52,13 +52,13 @@ Parameters
 ----------
 input_relation: str/vDataFrame
     Relation to use to train the model.
-X: str / list, optional
+X: SQLColumns, optional
 	List of the predictor columns. If empty, all numerical columns will
     be used.
 n_cluster: tuple/list, optional
 	Tuple representing the number of clusters to start and end with.
     This can also be customized list with various k values to test.
-init: str/list, optional
+init: str / list, optional
 	The method used to find the initial cluster centers.
 		kmeanspp : Use the k-means++ method to initialize the centers.
                    [Only available when use_kprototype is set to False]
@@ -132,7 +132,7 @@ int
 @save_verticapy_logs
 def elbow(
     input_relation: SQLRelation,
-    X: Union[str, list] = [],
+    X: SQLColumns = [],
     n_cluster: Union[tuple, list] = (1, 15),
     init: Literal["kmeanspp", "random", None] = None,
     max_iter: int = 50,
@@ -149,7 +149,7 @@ Parameters
 ----------
 input_relation: SQLRelation
     Relation to use to train the model.
-X: str / list, optional
+X: SQLColumns, optional
     List of the predictor columns. If empty all the numerical vcolumns will
     be used.
 n_cluster: tuple / list, optional

@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal, Union
 
+from verticapy._typing import PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
@@ -24,63 +25,9 @@ from verticapy.machine_learning.vertica.ensemble import (
     RandomForestRegressor,
 )
 
-
-class DecisionTreeClassifier(RandomForestClassifier):
-    """
-    A DecisionTreeClassifier made of a single tree.
-
-    Parameters
-    ----------
-    name: str
-        Name of the the model. The model will be stored in the DB.
-    max_features: str / int, optional
-        The number of randomly chosen features from which to pick the best
-        feature to split on a given tree node. It can be an integer or one
-        of the two following methods.
-            auto : square root of the total number of predictors.
-            max  : number of predictors.
-    max_leaf_nodes: int / float, optional
-        The maximum number of leaf nodes a tree in the forest can have, an
-        integer between 1 and 1e9, inclusive.
-    max_depth: int, optional
-        The maximum depth for growing each tree, an integer between 1 and 100,
-        inclusive.
-    min_samples_leaf: int, optional
-        The minimum number of samples each branch must have after splitting a
-        node, an integer between 1 and 1e6, inclusive. A split that causes
-        fewer remaining samples is discarded.
-    min_info_gain: int / float, optional
-        The minimum threshold for including a split, a float between 0.0 and
-        1.0, inclusive. A split with information gain less than this threshold
-        is discarded.
-    nbins: int, optional
-        The number of bins to use for continuous features, an integer between 2
-        and 1000, inclusive.
-    """
-
-    @check_minimum_version
-    @save_verticapy_logs
-    def __init__(
-        self,
-        name: str,
-        max_features: Union[Literal["auto", "max"], int] = "auto",
-        max_leaf_nodes: Union[int, float] = 1e9,
-        max_depth: int = 100,
-        min_samples_leaf: int = 1,
-        min_info_gain: Union[int, float] = 0.0,
-        nbins: int = 32,
-    ):
-        self.model_name = name
-        self.parameters = {
-            "n_estimators": 1,
-            "max_features": max_features,
-            "max_leaf_nodes": max_leaf_nodes,
-            "sample": 1.0,
-            "max_depth": max_depth,
-            "min_samples_leaf": min_samples_leaf,
-            "min_info_gain": min_info_gain,
-            "nbins": nbins,
-        }
+"""
+Algorithms used for regression.
+"""
 
 
 class DecisionTreeRegressor(RandomForestRegressor):
@@ -90,31 +37,38 @@ class DecisionTreeRegressor(RandomForestRegressor):
     Parameters
     ----------
     name: str
-        Name of the the model. The model will be stored in the DB.
+        Name of the the model. The model will be stored 
+        in the DB.
     max_features: str / int, optional
-        The number of randomly chosen features from which to pick the best
-        feature to split on a given tree node. It can be an integer or one
-        of the two following methods.
-            auto : square root of the total number of predictors.
+        The number of randomly chosen features from which 
+        to pick the best feature to split on a given tree 
+        node. It can be an integer or one of the two 
+        following methods.
+            auto : square root of the total number of 
+                   predictors.
             max  : number of predictors.
-    max_leaf_nodes: int / float, optional
-        The maximum number of leaf nodes a tree in the forest can have, an
-        integer between 1 and 1e9, inclusive.
-    max_depth: int, optional
-        The maximum depth for growing each tree, an integer between 1 and 100,
+    max_leaf_nodes: PythonNumber, optional
+        The maximum number of leaf nodes a tree in the 
+        forest can have, an integer between 1 and 1e9, 
         inclusive.
+    max_depth: int, optional
+        The maximum depth for growing each tree, an 
+        integer between 1 and 100, inclusive.
     min_samples_leaf: int, optional
-        The minimum number of samples each branch must have after splitting
-        a node, an integer between 1 and 1e6, inclusive. A split that causes
-        fewer remaining samples is discarded.
-    min_info_gain: int / float, optional
-        The minimum threshold for including a split, a float between 0.0 and
-        1.0, inclusive. A split with information gain less than this threshold
+        The minimum number of samples each branch must have 
+        after splitting a node, an integer between 1 and 1e6, 
+        inclusive. A split that causes fewer remaining samples 
         is discarded.
+    min_info_gain: PythonNumber, optional
+        The minimum threshold for including a split, a float 
+        between 0.0 and 1.0, inclusive. A split with information 
+        gain less than this threshold is discarded.
     nbins: int, optional
-        The number of bins to use for continuous features, an integer between 2
-        and 1000, inclusive.
+        The number of bins to use for continuous features, an 
+        integer between 2 and 1000, inclusive.
     """
+
+    # System & Special Methods.
 
     @check_minimum_version
     @save_verticapy_logs
@@ -122,74 +76,156 @@ class DecisionTreeRegressor(RandomForestRegressor):
         self,
         name: str,
         max_features: Union[Literal["auto", "max"], int] = "auto",
-        max_leaf_nodes: Union[int, float] = 1e9,
+        max_leaf_nodes: PythonNumber = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
-        min_info_gain: Union[int, float] = 0.0,
+        min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
-    ):
+    ) -> None:
         self.model_name = name
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
-            "max_leaf_nodes": max_leaf_nodes,
+            "max_leaf_nodes": int(max_leaf_nodes),
             "sample": 1.0,
             "max_depth": max_depth,
             "min_samples_leaf": min_samples_leaf,
             "min_info_gain": min_info_gain,
             "nbins": nbins,
         }
-
-
-class DummyTreeClassifier(RandomForestClassifier):
-    """
-    A classifier that overfits the training data. These models are typically
-    used as a control to compare with your other models.
-
-    Parameters
-    ----------
-    name: str
-        Name of the the model. The model will be stored in the DB.
-    """
-
-    @check_minimum_version
-    @save_verticapy_logs
-    def __init__(self, name: str):
-        self.model_name = name
-        self.parameters = {
-            "n_estimators": 1,
-            "max_features": "max",
-            "max_leaf_nodes": 1e9,
-            "sample": 1.0,
-            "max_depth": 100,
-            "min_samples_leaf": 1,
-            "min_info_gain": 0.0,
-            "nbins": 1000,
-        }
+        return None
 
 
 class DummyTreeRegressor(RandomForestRegressor):
     """
-    A regressor that overfits the training data. These models are typically
-    used as a control to compare with your other models.
+    A regressor that overfits the training data. 
+    These models are typically used as a control 
+    to compare with your other models.
 
     Parameters
     ----------
     name: str
-        Name of the the model. The model will be stored in the DB.
+        Name of the the model. The model will be 
+        stored in the DB.
     """
+
+    # System & Special Methods.
 
     @check_minimum_version
     @save_verticapy_logs
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self.model_name = name
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",
-            "max_leaf_nodes": 1e9,
+            "max_leaf_nodes": int(1e9),
             "sample": 1.0,
             "max_depth": 100,
             "min_samples_leaf": 1,
             "min_info_gain": 0.0,
             "nbins": 1000,
         }
+        return None
+
+
+"""
+Algorithms used for classification.
+"""
+
+
+class DecisionTreeClassifier(RandomForestClassifier):
+    """
+    A DecisionTreeClassifier made of a single tree.
+
+    Parameters
+    ----------
+    name: str
+        Name of the the model. The model will be stored 
+        in the DB.
+    max_features: str / int, optional
+        The number of randomly chosen features from which 
+        to pick the best feature to split on a given tree 
+        node. It can be an integer or one of the two 
+        following methods.
+            auto : square root of the total number of 
+                   predictors.
+            max  : number of predictors.
+    max_leaf_nodes: PythonNumber, optional
+        The maximum number of leaf nodes a tree in the 
+        forest can have, an integer between 1 and 1e9, 
+        inclusive.
+    max_depth: int, optional
+        The maximum depth for growing each tree, an 
+        integer between 1 and 100, inclusive.
+    min_samples_leaf: int, optional
+        The minimum number of samples each branch must have 
+        after splitting a node, an integer between 1 and 1e6, 
+        inclusive. A split that causes fewer remaining samples 
+        is discarded.
+    min_info_gain: PythonNumber, optional
+        The minimum threshold for including a split, a float 
+        between 0.0 and 1.0, inclusive. A split with information 
+        gain less than this threshold is discarded.
+    nbins: int, optional
+        The number of bins to use for continuous features, an 
+        integer between 2 and 1000, inclusive.
+    """
+
+    # System & Special Methods.
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str,
+        max_features: Union[Literal["auto", "max"], int] = "auto",
+        max_leaf_nodes: PythonNumber = 1e9,
+        max_depth: int = 100,
+        min_samples_leaf: int = 1,
+        min_info_gain: PythonNumber = 0.0,
+        nbins: int = 32,
+    ) -> None:
+        self.model_name = name
+        self.parameters = {
+            "n_estimators": 1,
+            "max_features": max_features,
+            "max_leaf_nodes": int(max_leaf_nodes),
+            "sample": 1.0,
+            "max_depth": max_depth,
+            "min_samples_leaf": min_samples_leaf,
+            "min_info_gain": min_info_gain,
+            "nbins": nbins,
+        }
+        return None
+
+
+class DummyTreeClassifier(RandomForestClassifier):
+    """
+    A classifier that overfits the training data.
+    These models are typically used as a control 
+    to compare with your other models.
+
+    Parameters
+    ----------
+    name: str
+        Name of the the model. The model will be 
+        stored in the DB.
+    """
+
+    # System & Special Methods.
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(self, name: str) -> None:
+        self.model_name = name
+        self.parameters = {
+            "n_estimators": 1,
+            "max_features": "max",
+            "max_leaf_nodes": int(1e9),
+            "sample": 1.0,
+            "max_depth": 100,
+            "min_samples_leaf": 1,
+            "min_info_gain": 0.0,
+            "nbins": 1000,
+        }
+        return None

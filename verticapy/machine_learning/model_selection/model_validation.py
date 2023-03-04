@@ -24,10 +24,10 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
+from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
-from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -100,12 +100,12 @@ def _compute_function_metrics(
 def cross_validate(
     estimator,
     input_relation: SQLRelation,
-    X: Union[str, list],
+    X: SQLColumns,
     y: str,
-    metric: Union[str, list] = "all",
+    metric: Union[str, list[str]] = "all",
     cv: int = 3,
     pos_label: Union[str, int, float] = None,
-    cutoff: Union[int, float] = -1,
+    cutoff: PythonNumber = -1,
     show_time: bool = True,
     training_score: bool = False,
     **kwargs,
@@ -119,11 +119,11 @@ estimator: object
 	Vertica estimator with a fit method.
 input_relation: SQLRelation
 	Relation to use to train the model.
-X: str / list
+X: SQLColumns
 	List of the predictor columns.
 y: str
 	Response Column.
-metric: str/list, optional
+metric: str / list, optional
     Metric used to do the model evaluation. It can also be a list of metrics.
         all: The model will compute all the possible metrics.
     For Classification:
@@ -157,7 +157,7 @@ cv: int, optional
 	Number of folds.
 pos_label: PythonScalar, optional
 	The main class to be considered as positive (classification only).
-cutoff: int / float, optional
+cutoff: PythonNumber, optional
 	The model cutoff (classification only).
 show_time: bool, optional
     If set to True, the time and the average time will be added to the report.
@@ -370,15 +370,15 @@ TableSample
 def learning_curve(
     estimator,
     input_relation: SQLRelation,
-    X: Union[str, list],
+    X: SQLColumns,
     y: str,
     sizes: list = [0.1, 0.33, 0.55, 0.78, 1.0],
     method: Literal["efficiency", "performance", "scalability"] = "efficiency",
     metric: str = "auto",
     cv: int = 3,
     pos_label: PythonScalar = None,
-    cutoff: Union[int, float] = -1,
-    std_coeff: Union[int, float] = 1,
+    cutoff: PythonNumber = -1,
+    std_coeff: PythonNumber = 1,
     ax=None,
     **style_kwds,
 ):
@@ -391,7 +391,7 @@ estimator: object
     Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
-X: str / list
+X: SQLColumns
     List of the predictor columns.
 y: str
     Response Column.
@@ -434,9 +434,9 @@ cv: int, optional
     Number of folds.
 pos_label: PythonScalar, optional
     The main class to be considered as positive (classification only).
-cutoff: int / float, optional
+cutoff: PythonNumber, optional
     The model cutoff (classification only).
-std_coeff: int / float, optional
+std_coeff: PythonNumber, optional
     Value of the standard deviation coefficient used to compute the area plot 
     around each score.
 ax: Matplotlib axes object, optional
@@ -603,7 +603,7 @@ input_relation: SQLRelation
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
-pos_label: int / float / str, optional
+pos_label: PythonScalar, optional
     To compute the Lift Chart, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional

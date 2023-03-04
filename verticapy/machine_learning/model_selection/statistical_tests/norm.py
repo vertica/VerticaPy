@@ -18,6 +18,7 @@ import math
 from typing import Union
 from scipy.stats import chi2, norm
 
+from verticapy._typing import PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
 
 from verticapy.core.tablesample.base import TableSample
@@ -25,7 +26,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 
 @save_verticapy_logs
-def jarque_bera(vdf: vDataFrame, column: str, alpha: Union[int, float] = 0.05):
+def jarque_bera(vdf: vDataFrame, column: str, alpha: PythonNumber = 0.05):
     """
 Jarque-Bera test (Distribution Normality).
 
@@ -35,7 +36,7 @@ vdf: vDataFrame
     input vDataFrame.
 column: str
     Input vcolumn to test.
-alpha: int / float, optional
+alpha: PythonNumber, optional
     Significance Level. Probability to accept H0.
 
 Returns

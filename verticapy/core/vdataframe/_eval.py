@@ -36,7 +36,7 @@ class vDFEval:
             val, vDataColumn
         ):
             val = str(val)
-            if self.is_colname_in(attr):
+            if self._is_colname_in(attr):
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
@@ -78,7 +78,7 @@ class vDFEval:
         if isinstance(expr, StringSQL):
             expr = str(expr)
         name = quote_ident(name.replace('"', "_"))
-        if self.is_colname_in(name):
+        if self._is_colname_in(name):
             raise NameError(
                 f"A vDataColumn has already the alias {name}.\n"
                 "By changing the parameter 'name', you'll "

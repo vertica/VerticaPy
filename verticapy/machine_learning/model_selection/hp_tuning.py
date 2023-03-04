@@ -24,10 +24,10 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
+from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -40,7 +40,6 @@ from verticapy.plotting._matplotlib.timeseries import range_curve
 
 from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
-from verticapy.machine_learning.model_management.read import does_model_exist
 
 from verticapy.sql.drop import drop
 
@@ -1062,12 +1061,12 @@ def grid_search_cv(
     estimator,
     param_grid: Union[dict, list],
     input_relation: SQLRelation,
-    X: Union[str, list],
+    X: SQLColumns,
     y: str,
     metric: str = "auto",
     cv: int = 3,
     pos_label: PythonScalar = None,
-    cutoff: Union[int, float] = -1,
+    cutoff: PythonNumber = -1,
     training_score: bool = True,
     skip_error: bool = True,
     print_info: bool = True,
@@ -1320,7 +1319,7 @@ def plot_acf_pacf(
     vdf: vDataFrame,
     column: str,
     ts: str,
-    by: Union[str, list] = [],
+    by: SQLColumns = [],
     p: Union[int, list] = 15,
     **style_kwds,
 ):

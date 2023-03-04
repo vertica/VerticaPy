@@ -14,27 +14,29 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 
+from matplotlib.axes import Axes
+
 import verticapy._config.config as conf
+from verticapy._typing import PythonScalar, SQLRelation, SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import schema_relation
 from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy._typing import PythonScalar, SQLRelation
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting._matplotlib.mlplot import (
-    plot_bubble_ml,
-    plot_importance,
-    plot_stepwise_ml,
-)
-
 from verticapy.machine_learning._utils import reverse_score
+import verticapy.machine_learning.memmodel as mm
+from verticapy.machine_learning.model_selection import (
+    gen_params_grid,
+    grid_search_cv,
+    stepwise,
+)
 from verticapy.machine_learning.vertica.automl import AutoDataPrep
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.ensemble import (
@@ -51,114 +53,139 @@ from verticapy.machine_learning.vertica.linear_model import (
     Lasso,
     Ridge,
 )
-import verticapy.machine_learning.memmodel as mm
-from verticapy.machine_learning.model_selection import (
-    gen_params_grid,
-    grid_search_cv,
-    stepwise,
-)
 from verticapy.machine_learning.vertica.neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 
+import verticapy.plotting._matplotlib as vpy_plt
+
 
 class AutoML(VerticaModel):
     """
-Tests multiple models to find those that maximize the input score.
+    Tests multiple models to find those that maximize 
+    the input score.
 
-Parameters
-----------
-name: str
-    Name of the model.
-estimator: list / 'native' / 'all' / 'fast' / object
-    List of Vertica estimators with a fit method.
-    Alternatively, you can specify 'native' for all native Vertica models,
-    'all' for all VerticaPy models and 'fast' for quick modeling.
-estimator_type: str, optional
-    Estimator Type.
-        auto      : Automatically detects the estimator type.
-        regressor : The estimator will be used to perform a regression.
-        binary    : The estimator will be used to perform a binary classification.
-        multi     : The estimator will be used to perform a multiclass classification.
-metric: str, optional
-    Metric used to do the model evaluation.
-        auto: logloss for classification & rmse for regression.
-    For Classification:
-        accuracy    : Accuracy
-        auc         : Area Under the Curve (ROC)
-        bm          : Informedness = tpr + tnr - 1
-        csi         : Critical Success Index = tp / (tp + fn + fp)
-        f1          : F1 Score 
-        logloss     : Log Loss
-        mcc         : Matthews Correlation Coefficient 
-        mk          : Markedness = ppv + npv - 1
-        npv         : Negative Predictive Value = tn / (tn + fn)
-        prc_auc     : Area Under the Curve (PRC)
-        precision   : Precision = tp / (tp + fp)
-        recall      : Recall = tp / (tp + fn)
-        specificity : Specificity = tn / (tn + fp)
-    For Regression:
-        max    : Max error
-        mae    : Mean absolute error
-        median : Median absolute error
-        mse    : Mean squared error
-        msle   : Mean squared log error
-        r2     : R-squared coefficient
-        r2a    : R2 adjusted
-        rmse   : Root-mean-squared error
-        var    : Explained variance
-cv: int, optional
-    Number of folds.
-pos_label: PythonScalar, optional
-    The main class to be considered as positive (classification only).
-cutoff: float, optional
-    The model cutoff (classification only).
-nbins: int, optional
-    Number of bins used to compute the different parameter categories.
-lmax: int, optional
-    Maximum length of each parameter list.
-optimized_grid: int, optional
-    If set to 0, the randomness is based on the input parameters.
-    If set to 1, the randomness is limited to some parameters while others
-    are picked based on a default grid.
-    If set to 2, no randomness is used and a default grid is returned.
-stepwise: bool, optional
-    If True, the stepwise algorithm will be used to determine the
-    final model list of parameters.
-stepwise_criterion: str, optional
-    Criterion used when doing the final estimator stepwise.
-        aic : Akaike’s information criterion
-        bic : Bayesian information criterion
-stepwise_direction: str, optional
-    Which direction to start the stepwise search. Can be done 'backward' or 'forward'.
-stepwise_max_steps: int, optional
-    The maximum number of steps to be considered when doing the final estimator 
-    stepwise.
-x_order: str, optional
-    Method for preprocessing X before using the stepwise algorithm.
-        pearson  : X is ordered based on the Pearson's correlation coefficient.
-        spearman : X is ordered based on Spearman's rank correlation coefficient.
-        random   : Shuffles the vector X before applying the stepwise algorithm.
-        none     : Does not change the order of X.
-preprocess_data: bool, optional
-    If True, the data will be preprocessed.
-preprocess_dict: dict, optional
-    Dictionary to pass to the AutoDataPrep class in order to 
-    preprocess the data before the clustering.
-print_info: bool
-    If True, prints the model information at each step.
+    Parameters
+    ----------
+    name: str
+        Name of the model.
+    estimator: list / 'native' / 'all' / 'fast' / object
+        List of Vertica estimators with a fit method.
+        Alternatively, you can specify 'native' for all 
+        native Vertica models, 'all' for all VerticaPy 
+        models and 'fast' for quick modeling.
+    estimator_type: str, optional
+        Estimator Type.
+            auto      : Automatically detects the estimator 
+                        type.
+            regressor : The estimator will be used to 
+                        perform a regression.
+            binary    : The estimator will be used to 
+                        perform  a binary classification.
+            multi     : The estimator will be used to 
+                        perform a multiclass classification.
+    metric: str, optional
+        Metric used to do the model evaluation.
+            auto: logloss for classification & rmse for 
+                  regression.
+        For Classification:
+            accuracy    : Accuracy
+            auc         : Area Under the Curve 
+                          (ROC)
+            bm          : Informedness 
+                          = tpr + tnr - 1
+            csi         : Critical Success Index 
+                          = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness 
+                          = ppv + npv - 1
+            npv         : Negative Predictive Value 
+                          = tn / (tn + fn)
+            prc_auc     : Area Under the Curve 
+                          (PRC)
+            precision   : Precision 
+                          = tp / (tp + fp)
+            recall      : Recall 
+                          = tp / (tp + fn)
+            specificity : Specificity 
+                          = tn / (tn + fp)
+        For Regression:
+            max    : Max error
+            mae    : Mean absolute error
+            median : Median absolute error
+            mse    : Mean squared error
+            msle   : Mean squared log error
+            r2     : R-squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root-mean-squared error
+            var    : Explained variance
+    cv: int, optional
+        Number of folds.
+    pos_label: PythonScalar, optional
+        The main class to be considered as positive 
+        (classification only).
+    cutoff: float, optional
+        The model cutoff (classification only).
+    nbins: int, optional
+        Number of bins used to compute the different 
+        parameter categories.
+    lmax: int, optional
+        Maximum length of each parameter list.
+    optimized_grid: int, optional
+        If set to 0, the randomness is based on the 
+        input parameters.
+        If set to 1, the randomness is limited to some 
+        parameters while others are picked based on a 
+        default grid.
+        If set to 2, no randomness is used and a default 
+        grid is returned.
+    stepwise: bool, optional
+        If True, the stepwise algorithm will be used to 
+        determine the final model list of parameters.
+    stepwise_criterion: str, optional
+        Criterion used when doing the final estimator 
+        stepwise.
+            aic : Akaike’s information criterion
+            bic : Bayesian information criterion
+    stepwise_direction: str, optional
+        Which direction to start the stepwise search. 
+        Can be done 'backward' or 'forward'.
+    stepwise_max_steps: int, optional
+        The maximum number of steps to be considered when 
+        doing the final estimator stepwise.
+    x_order: str, optional
+        Method for preprocessing X before using the stepwise 
+        algorithm.
+            pearson  : X is ordered based on the Pearson's 
+                       correlation coefficient.
+            spearman : X is ordered based on Spearman's 
+                       rank correlation coefficient.
+            random   : Shuffles the vector X before applying 
+                       the stepwise algorithm.
+            none     : Does not change the order of X.
+    preprocess_data: bool, optional
+        If True, the data will be preprocessed.
+    preprocess_dict: dict, optional
+        Dictionary to pass to the AutoDataPrep class in order 
+        to preprocess the data before the clustering.
+    print_info: bool
+        If True, prints the model information at each step.
 
-Attributes
-----------
-preprocess_: object
-    Model used to preprocess the data.
-best_model_: object
-    Most efficient models found during the search.
-model_grid_ : TableSample
-    Grid containing the different models information.
+    Attributes
+    ----------
+    preprocess_: object
+        Model used to preprocess the data.
+    best_model_: object
+        Most efficient models found during the search.
+    model_grid_ : TableSample
+        Grid containing the different models information.
     """
+
+    # Properties.
 
     @property
     def _is_native(self) -> Literal[False]:
@@ -184,6 +211,12 @@ model_grid_ : TableSample
     def _model_type(self) -> Literal["AutoML"]:
         return "AutoML"
 
+    @property
+    def _attributes(self) -> list[str]:
+        return ["preprocess_", "best_model_", "model_grid_"]
+
+    # System & Special Methods.
+
     @save_verticapy_logs
     def __init__(
         self,
@@ -205,7 +238,7 @@ model_grid_ : TableSample
         preprocess_data: bool = True,
         preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
-    ):
+    ) -> None:
         if optimized_grid not in [0, 1, 2]:
             raise ParameterError("Optimized Grid must be an integer between 0 and 2.")
         self.model_name = name
@@ -228,14 +261,35 @@ model_grid_ : TableSample
             "preprocess_data": preprocess_data,
             "preprocess_dict": preprocess_dict,
         }
+        return None
 
-    def deploySQL(self, X: Union[str, list] = []):
+    # Attributes Methods.
+
+    def get_vertica_attributes(self, attr_name: str = "") -> TableSample:
+        """
+        Returns the model attribute.
+
+        Parameters
+        ----------
+        attr_name: str, optional
+            Attribute Name.
+
+        Returns
+        -------
+        TableSample
+            model attributes.
+        """
+        return self.best_model_.get_vertica_attributes(attr_name)
+
+    # I/O Methods.
+
+    def deploySQL(self, X: SQLColumns = []) -> str:
         """
         Returns the SQL code needed to deploy the model. 
 
         Parameters
         ----------
-        X: str / list, optional
+        X: SQLColumns, optional
             List of the columns used to deploy the model.
             If empty, the model predictors will be used.
 
@@ -246,7 +300,16 @@ model_grid_ : TableSample
         """
         return self.best_model_.deploySQL(X)
 
-    def fit(self, input_relation: SQLRelation, X: list = [], y: str = ""):
+    def to_memmodel(self) -> mm.InMemoryModel:
+        """
+        Converts the model to an InMemory object which
+        can be used to do different types of predictions.
+        """
+        return self.best_model_.to_memmodel()
+
+    # Model Fitting Method.
+
+    def fit(self, input_relation: SQLRelation, X: list = [], y: str = "") -> None:
         """
         Trains the model.
 
@@ -258,15 +321,11 @@ model_grid_ : TableSample
             List of the predictors.
         y: str, optional
             Response column.
-        Returns
-        -------
-        object
-            model grid.
         """
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
-            does_model_exist(name=self.model_name, raise_error=True)
+            self._is_already_stored(raise_error=True)
         if not (X):
             if not (y):
                 exclude_columns = []
@@ -433,8 +492,9 @@ model_grid_ : TableSample
             model_preprocess = AutoDataPrep(
                 name=name, **self.parameters["preprocess_dict"]
             )
-            input_relation = model_preprocess.fit(input_relation, X=X)
-            X = [elem for elem in model_preprocess.X_out]
+            model_preprocess.fit(input_relation, X=X)
+            input_relation = model_preprocess.final_relation_
+            X = [elem for elem in model_preprocess.X_out_]
             self.preprocess_ = model_preprocess
         else:
             self.preprocess_ = None
@@ -547,9 +607,11 @@ model_grid_ : TableSample
         if self.preprocess_ != None:
             self.preprocess_.drop()
             self.preprocess_.final_relation_ = vDataFrame(self.preprocess_.sql_)
-        return self.model_grid_
+        return None
 
-    def features_importance(self, ax=None, **kwds):
+    # Features Importance Methods.
+
+    def features_importance(self, ax=None, **kwds) -> TableSample:
         """
         Computes the model's features importance.
 
@@ -558,17 +620,16 @@ model_grid_ : TableSample
         ax: Matplotlib axes object, optional
             The axes to plot on.
         **kwds
-            Any optional parameter to pass to the best estimator
-            features importance method.
+            Any optional parameter to pass to the 
+            best estimator features importance method.
         **style_kwds
-            Any optional parameter to pass to the Matplotlib 
-            functions.
+            Any optional parameter to pass to the 
+            Matplotlib functions.
 
         Returns
         -------
         TableSample
-            An object containing the result. For more information, 
-            see utilities.TableSample.
+            features importance.
         """
         if self.stepwise_:
             coeff_importances = {}
@@ -577,28 +638,19 @@ model_grid_ : TableSample
                     coeff_importances[self.stepwise_["variable"][idx]] = self.stepwise_[
                         "importance"
                     ][idx]
-            return plot_importance(
+            return vpy_plt.plot_importance(
                 coeff_importances, print_legend=False, ax=ax, **style_kwds
             )
         return self.best_model_.features_importance(**kwds)
 
-    def get_vertica_attributes(self, attr_name: str = "") -> TableSample:
-        """
-        Returns the model attribute.
+    # Plotting Methods.
 
-        Parameters
-        ----------
-        attr_name: str, optional
-            Attribute Name.
-
-        Returns
-        -------
-        TableSample
-            model attributes.
-        """
-        return self.best_model_.get_vertica_attributes(attr_name)
-
-    def plot(self, mltype: str = "champion", ax=None, **style_kwds):
+    def plot(
+        self,
+        mltype: Literal["champion", "step"] = "champion",
+        ax: Optional[Axes] = None,
+        **style_kwds,
+    ) -> Axes:
         """
         Draws the AutoML plot.
 
@@ -615,11 +667,11 @@ model_grid_ : TableSample
 
         Returns
         -------
-        ax
+        Axes
             Matplotlib axes object
         """
         if mltype == "champion":
-            return plot_bubble_ml(
+            return vpy_plt.plot_bubble_ml(
                 self.model_grid_["avg_time"],
                 self.model_grid_["avg_score"],
                 self.model_grid_["score_std"],
@@ -632,7 +684,7 @@ model_grid_ : TableSample
                 **style_kwds,
             )
         else:
-            return plot_stepwise_ml(
+            return vpy_plt.plot_stepwise_ml(
                 [len(elem) for elem in self.stepwise_["features"]],
                 self.stepwise_[self.parameters["stepwise_criterion"]],
                 self.stepwise_["variable"],
@@ -644,10 +696,3 @@ model_grid_ : TableSample
                 ax=ax,
                 **style_kwds,
             )
-
-    def to_memmodel(self) -> mm.InMemoryModel:
-        """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
-        """
-        return self.best_model_.to_memmodel()

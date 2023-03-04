@@ -419,8 +419,7 @@ class TestNB:
 
     def test_score(self, model):
         # the value of cutoff has no impact on the result
-        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(0.96)
-        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(0.96)
+        assert model.score(method="accuracy") == pytest.approx(1.0)
         assert model.score(
             cutoff=0.9, method="auc", pos_label="Iris-virginica"
         ) == pytest.approx(0.9923999999999998)

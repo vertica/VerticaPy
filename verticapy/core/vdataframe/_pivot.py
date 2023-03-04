@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Union
 
+from verticapy._typing import SQLColumns, SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
@@ -28,7 +29,7 @@ class vDFPivot:
     @save_verticapy_logs
     def flat_vmap(
         self,
-        vmap_col: Union[str, list] = [],
+        vmap_col: SQLExpression = [],
         limit: int = 100,
         exclude_columns: list = [],
     ):
@@ -42,7 +43,7 @@ class vDFPivot:
 
     Parameters
     ----------
-    vmap_col: str / list, optional
+    vmap_col: SQLColumns, optional
         List of VMap columns to flatten.
     limit: int, optional
         Maximum number of keys to consider for each VMap. Only the most occurent 
@@ -83,7 +84,7 @@ class vDFPivot:
         return self.select(self.get_columns() + maplookup)
 
     @save_verticapy_logs
-    def merge_similar_names(self, skip_word: Union[str, list]):
+    def merge_similar_names(self, skip_word: Union[str, list[str]]):
         """
     Merges columns with similar names. The function generates a COALESCE 
     statement that merges the columns into a single column that excludes 
@@ -115,8 +116,8 @@ class vDFPivot:
     @save_verticapy_logs
     def narrow(
         self,
-        index: Union[str, list],
-        columns: Union[str, list] = [],
+        index: SQLColumns,
+        columns: SQLColumns = [],
         col_name: str = "column",
         val_name: str = "value",
     ):
@@ -125,9 +126,9 @@ class vDFPivot:
 
     Parameters
     ----------
-    index: str / list
+    index: SQLColumns
         Index(es) used to identify the Row.
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all vDataColumns except the index(es)
         will be used.
     col_name: str, optional

@@ -21,10 +21,7 @@ import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._sql._dblink import replace_external_queries_in_query
 from verticapy._utils._sql._display import print_query, print_time
-from verticapy._utils._sql._format import (
-    clean_query,
-    erase_label,
-)
+from verticapy._utils._sql._format import clean_query, erase_label
 from verticapy.connection.connect import current_cursor
 
 

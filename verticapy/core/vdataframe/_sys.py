@@ -619,7 +619,7 @@ class vDCSystem:
         assert name.replace('"', ""), EmptyParameter(
             "The parameter 'name' must not be empty"
         )
-        assert not (self._parent.is_colname_in(name)), NameError(
+        assert not (self._parent._is_colname_in(name)), NameError(
             f"A vDataColumn has already the alias {name}.\nBy changing "
             "the parameter 'name', you'll be able to solve this issue."
         )
@@ -721,7 +721,7 @@ class vDCSystem:
         """
         old_name = quote_ident(self._alias)
         new_name = new_name.replace('"', "")
-        assert not (self._parent.is_colname_in(new_name)), NameError(
+        assert not (self._parent._is_colname_in(new_name)), NameError(
             f"A vDataColumn has already the alias {new_name}.\n"
             "By changing the parameter 'new_name', you'll "
             "be able to solve this issue."

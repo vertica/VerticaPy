@@ -19,8 +19,8 @@ from typing import Literal
 import numpy as np
 
 import verticapy._config.config as conf
-from verticapy._utils._sql._format import clean_query
 from verticapy._typing import ArrayLike
+from verticapy._utils._sql._format import clean_query
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel, MulticlassClassifier
 from verticapy.machine_learning.memmodel.tree import (

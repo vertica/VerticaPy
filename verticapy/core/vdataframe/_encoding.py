@@ -18,6 +18,7 @@ import math, warnings
 from typing import Literal, Union
 
 import verticapy._config.config as conf
+from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -31,7 +32,7 @@ class vDFEncode:
     @save_verticapy_logs
     def one_hot_encode(
         self,
-        columns: Union[str, list] = [],
+        columns: SQLColumns = [],
         max_cardinality: int = 12,
         prefix_sep: str = "_",
         drop_first: bool = True,
@@ -42,7 +43,7 @@ class vDFEncode:
 
     Parameters
     ----------
-    columns: str / list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns to use to train the One Hot Encoding model. If empty, 
         only the vDataColumns having a cardinality lesser than 'max_cardinality' will 
         be used.
@@ -162,7 +163,7 @@ class vDCEncode:
     def discretize(
         self,
         method: Literal["auto", "smart", "same_width", "same_freq", "topk"] = "auto",
-        h: Union[int, float] = 0,
+        h: PythonNumber = 0,
         nbins: int = -1,
         k: int = 6,
         new_category: str = "Others",
@@ -185,7 +186,7 @@ class vDCEncode:
                 relevant interval to use for the discretization.
             topk       : Keeps the topk most frequent categories and merge the other 
                 into one unique category.
-    h: int / float, optional
+    h: PythonNumber, optional
         The interval size to convert to use to convert the vDataColumn. If this parameter 
         is equal to 0, an optimised interval will be computed.
     nbins: int, optional
@@ -440,7 +441,7 @@ class vDCEncode:
                     name = f'"{prefix}{k}"'
                 else:
                     name = f'"{prefix}{distinct_elements_k}"'
-                assert not (self._parent.is_colname_in(name)), NameError(
+                assert not (self._parent._is_colname_in(name)), NameError(
                     "A vDataColumn has already the alias of one of "
                     f"the dummies ({name}).\nIt can be the result "
                     "of using previously the method on the vDataColumn "
