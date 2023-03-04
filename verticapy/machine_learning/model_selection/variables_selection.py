@@ -64,7 +64,7 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: SQLColumns
     List of the predictor columns.
@@ -307,7 +307,7 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: SQLColumns
     List of the predictor columns.

@@ -14,9 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings, itertools
+import itertools, warnings
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
+from vertica_python.errors import QueryError
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -128,6 +129,12 @@ class KNeighborsRegressor(Regressor):
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
         return None
+
+    def drop(self) -> bool:
+        """
+        KNN models are not stored in the Vertica DB.
+        """
+        return False
 
     # Attributes Methods.
 
@@ -290,10 +297,10 @@ class KNeighborsClassifier(MulticlassClassifier):
     Parameters
     ----------
     n_neighbors: int, optional
-        Number of neighbors to consider when computing 
-        the score.
+        Number  of neighbors to consider when computing  the 
+        score.
     p: int, optional
-        The p corresponding to the one of the p-distances 
+        The  p corresponding  to the one of the  p-distances 
         (distance metric used during the model computation).
 	"""
 
@@ -334,6 +341,12 @@ class KNeighborsClassifier(MulticlassClassifier):
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
         return None
+
+    def drop(self) -> bool:
+        """
+        KNN models are not stored in the Vertica DB.
+        """
+        return False
 
     # Attributes Methods.
 
@@ -703,6 +716,9 @@ class KernelDensity(Regressor, Tree):
 
     Parameters
     ----------
+    name: str
+        Name of the the model. This is not a built-in model, 
+        so this name will be used to build the final table.
     bandwidth: PythonNumber, optional
         The bandwidth of the kernel.
     kernel: str, optional
@@ -795,7 +811,21 @@ class KernelDensity(Regressor, Tree):
             self._verticapy_store = False
         return None
 
-    # System & Special Methods.
+    def drop(self) -> bool:
+        """
+        Drops the model from the Vertica database.
+        """
+        try:
+            _executeSQL(
+                query=f"SELECT KDE FROM {self.map} LIMIT 0;",
+                title="Looking if the KDE table exists.",
+            )
+            drop(self.map, method="table")
+        except QueryError:
+            return False
+        return drop(self.model_name, method="model")
+
+    # Attributes Methods.
 
     def _density_kde(
         self, vdf: vDataFrame, columns: list, kernel: str, x, p: int, h=None
@@ -904,7 +934,7 @@ class KernelDensity(Regressor, Tree):
 
         Parameters
         ----------
-        input_relation: str/vDataFrame
+        input_relation: SQLRelation
             Training relation.
         X: list, optional
             List of the predictors.
@@ -939,12 +969,13 @@ class KernelDensity(Regressor, Tree):
         table_name = self.model_name.replace('"', "") + "_KernelDensity_Map"
         if self._verticapy_store:
             _executeSQL(
-                query=f"""CREATE TABLE {table_name} AS    
-                            SELECT 
-                                /*+LABEL('learn.neighbors.KernelDensity.fit')*/
-                                {", ".join(X)}, 0.0::float AS KDE 
-                            FROM {vdf._genSQL()} 
-                            LIMIT 0""",
+                query=f"""
+                    CREATE TABLE {table_name} AS    
+                        SELECT 
+                            /*+LABEL('learn.neighbors.KernelDensity.fit')*/
+                            {", ".join(X)}, 0.0::float AS KDE 
+                        FROM {vdf._genSQL()} 
+                        LIMIT 0""",
                 print_time_sql=False,
             )
             r, idx = 0, 0
@@ -1151,6 +1182,19 @@ class LocalOutlierFactor(VerticaModel):
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+
+    def drop(self) -> bool:
+        """
+        Drops the model from the Vertica database.
+        """
+        try:
+            _executeSQL(
+                query=f"SELECT lof_score FROM {self.model_name} LIMIT 0;",
+                title="Looking if the LOF table exists.",
+            )
+            return drop(self.model_name, method="table")
+        except QueryError:
+            return False
 
     # Attributes Methods.
 

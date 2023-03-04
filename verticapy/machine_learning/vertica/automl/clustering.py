@@ -156,7 +156,7 @@ class AutoClustering(VerticaModel):
 
         Parameters
         ----------
-        input_relation: str/vDataFrame
+        input_relation: SQLRelation
             Training Relation.
         X: list, optional
             List of the predictors.

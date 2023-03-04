@@ -28,7 +28,7 @@ def drop(
     name: str = "",
     method: Literal["table", "view", "model", "geo", "text", "auto", "schema"] = "auto",
     raise_error: bool = False,
-):
+) -> bool:
     """
 Drops the input relation. This can be a model, view, table, text index,
 schema, or geo index.

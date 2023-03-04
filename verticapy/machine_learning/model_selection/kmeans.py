@@ -50,7 +50,7 @@ Finds the k-means / k-prototypes k based on a score.
 
 Parameters
 ----------
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: SQLColumns, optional
 	List of the predictor columns. If empty, all numerical columns will

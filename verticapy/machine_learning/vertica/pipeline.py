@@ -177,13 +177,13 @@ class Pipeline:
 
         Parameters
         ----------
-        input_relation: str/vDataFrame
+        input_relation: SQLRelation
             Training relation.
         X: list
             List of the predictors.
         y: str, optional
             Response column.
-        test_relation: str/vDataFrame, optional
+        test_relation: SQLRelation, optional
             Relation used to test the model.
 
         Returns
@@ -269,7 +269,7 @@ class Pipeline:
 
         Parameters
         ----------
-        vdf: str/vDataFrame, optional
+        vdf: SQLRelation, optional
             Input vDataFrame. You can also specify a 
             customized relation, but you must enclose 
             it with an alias. For example "(SELECT 1) x" 
@@ -319,7 +319,7 @@ class Pipeline:
 
         Parameters
         ----------
-        vdf: str/vDataFrame, optional
+        vdf: SQLRelation, optional
             Input vDataFrame. You can also specify a 
             customized relation, but you must enclose 
             it with an alias. For example "(SELECT 1) x" 
@@ -359,7 +359,7 @@ class Pipeline:
 
         Parameters
         ----------
-        vdf: str/vDataFrame, optional
+        vdf: SQLRelation, optional
             Input vDataFrame. You can also specify a customized 
             relation, but you must enclose it with an alias. 
             For example "(SELECT 1) x" is correct whereas 

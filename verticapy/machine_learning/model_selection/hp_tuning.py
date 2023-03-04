@@ -73,7 +73,7 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: list
     List of the predictor columns.
@@ -307,7 +307,7 @@ Computes the k-fold grid search using multiple ENet models.
 
 Parameters
 ----------
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: list
     List of the predictor columns.
@@ -1082,7 +1082,7 @@ estimator: object
 param_grid: dict/list
     Dictionary of the parameters to test. It can also be a list of the
     different combinations.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: list
     List of the predictor columns.
@@ -1438,7 +1438,7 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: list
     List of the predictor columns.
@@ -1539,7 +1539,7 @@ param_name: str
     Parameter name.
 param_range: list
     Parameter Range.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: list
     List of the predictor columns.

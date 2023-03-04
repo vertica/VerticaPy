@@ -18,6 +18,7 @@ import copy, os, vertica_python
 from abc import abstractmethod
 from typing import Literal, Optional, Union
 import numpy as np
+from vertica_python.errors import QueryError
 
 from matplotlib.axes import Axes
 from matplotlib.pyplot import Figure
@@ -769,44 +770,47 @@ Algorithms used for clustering.
 
 class DBSCAN(VerticaModel):
     """
-[Beta Version]
-Creates a DBSCAN object by using the DBSCAN algorithm 
-as defined by Martin Ester, Hans-Peter Kriegel, Jörg 
-Sander, and Xiaowei Xu. This object uses pure SQL to 
-compute the distances and neighbors and uses Python to 
-compute the cluster propagation (non-scalable phase).
+    [Beta Version]
+    Creates a DBSCAN object by using the DBSCAN algorithm 
+    as defined by Martin Ester, Hans-Peter Kriegel, Jörg 
+    Sander, and Xiaowei Xu. This object uses pure SQL to 
+    compute the distances and neighbors and uses Python to 
+    compute the cluster propagation (non-scalable phase).
 
-\u26A0 Warning : This algorithm uses a CROSS JOIN 
-                 during computation and is therefore 
-                 computationally expensive at O(n * n), 
-                 where n is the total number of elements. 
-                 This algorithm indexes elements of the 
-                 table in order to be optimal (the CROSS 
-                 JOIN will happen only with IDs which are 
-                 integers). 
-                 Since DBSCAN is uses the p-distance, it 
-                 is highly sensitive to unnormalized data. 
-                 However, DBSCAN is robust to outliers and 
-                 can find non-linear clusters. It is a very 
-                 powerful algorithm for outliers detection 
-                 and clustering. A table will be created at 
-                 the end of the learning phase.
+    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN 
+                     during   computation  and  is  therefore 
+                     computationally  expensive at  O(n * n), 
+                     where n is the total number of elements. 
+                     This  algorithm indexes elements of  the 
+                     table in order to be optimal  (the CROSS 
+                     JOIN will happen only with IDs which are 
+                     integers). 
+                     Since  DBSCAN is uses  the  p-distance, it 
+                     is highly sensitive  to unnormalized data. 
+                     However,  DBSCAN is robust to outliers and 
+                     can find non-linear clusters. It is a very 
+                     powerful algorithm for outliers  detection 
+                     and clustering. A table will be created at 
+                     the end of the learning phase.
 
-Parameters
-----------
-name: str
-    Name of the the model. This is not a built-in model, 
-    so this name will be used to build the final table.
-eps: float, optional
-    The radius of a neighborhood with respect to some 
-    point.
-min_samples: int, optional
-    Minimum number of points required to form a dense 
-    region.
-p: int, optional
-    The p of the p-distance (distance metric used during 
-    the model computation).
+    Parameters
+    ----------
+    name: str
+        Name of the the model. This is not a built-in 
+        model, so this name will be used to build the 
+        final table.
+    eps: float, optional
+        The radius of a neighborhood with respect to 
+        some point.
+    min_samples: int, optional
+        Minimum number of points required to form a 
+        dense region.
+    p: int, optional
+        The p of the p-distance (distance metric used 
+        during the model computation).
     """
+
+    # Properties.
 
     @property
     def _is_native(self) -> Literal[False]:
@@ -832,14 +836,32 @@ p: int, optional
     def _model_type(self) -> Literal["DBSCAN"]:
         return "DBSCAN"
 
-    @save_verticapy_logs
-    def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
-        self.model_name = name
-        self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
-
     @property
     def _attributes(self) -> list[str]:
         return ["n_cluster_", "n_noise_", "p_"]
+
+    # System & Special Methods.
+
+    @save_verticapy_logs
+    def __init__(
+        self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2
+    ) -> None:
+        self.model_name = name
+        self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
+        return None
+
+    def drop(self) -> bool:
+        """
+        Drops the model from the Vertica database.
+        """
+        try:
+            _executeSQL(
+                query=f"SELECT dbscan_cluster FROM {self.model_name} LIMIT 0;",
+                title="Looking if the DBSCAN table exists.",
+            )
+            return drop(self.model_name, method="table")
+        except QueryError:
+            return False
 
     # Model Fitting Method.
 
@@ -858,15 +880,15 @@ p: int, optional
         input_relation: SQLRelation
             Training relation.
         X: SQLColumns, optional
-            List of the predictors. If empty, all 
-            the numerical vcolumns will be used.
+            List of the predictors. If empty, all the 
+            numerical vcolumns will be used.
         key_columns: SQLColumns, optional
-            Columns not used during the algorithm 
-            computation but which will be used to 
+            Columns  not  used  during  the  algorithm 
+            computation  but  which  will be  used  to 
             create the final relation.
         index: str, optional
-            Index used to identify each row separately. 
-            It is highly recommanded to have one already 
+            Index  used to identify each row  separately. 
+            It is highly  recommanded to have one already 
             in the main table to avoid creating temporary
             tables.
         """
@@ -1092,7 +1114,7 @@ Algorithms used for classification.
 
 class NearestCentroid(MulticlassClassifier):
     """
-    Creates a NearestCentroid object using the k-nearest 
+    Creates  a NearestCentroid object using the  k-nearest 
     centroid algorithm. 
     This object uses pure SQL to compute the distances and
     final score.
@@ -1142,6 +1164,12 @@ class NearestCentroid(MulticlassClassifier):
         self.parameters = {"p": p}
         return None
 
+    def drop(self) -> bool:
+        """
+        NearestCentroid models are not stored in the Vertica DB.
+        """
+        return False
+
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
@@ -1170,7 +1198,8 @@ class NearestCentroid(MulticlassClassifier):
 
     def _get_y_proba(self, pos_label: PythonScalar = None,) -> str:
         """
-        Returns the input which represents the model's probabilities.
+        Returns the input which represents the model's 
+        probabilities.
         """
         idx = self._get_match_index(pos_label, self.classes_, False)
         return self.deploySQL(allSQL=True)[idx]
@@ -1179,7 +1208,7 @@ class NearestCentroid(MulticlassClassifier):
 
     def to_memmodel(self) -> mm.NearestCentroid:
         """
-        Converts the model to an InMemory object which
+        Converts  the  model to  an InMemory object which
         can be used to do different types of predictions.
         """
         return mm.NearestCentroid(self.clusters_, self.classes_, self.p_,)

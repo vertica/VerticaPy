@@ -33,6 +33,8 @@ from verticapy.core.vdataframe.base import vDataFrame
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Unsupervised, VerticaModel
 
+from verticapy.sql.drop import drop
+
 """
 General Functions.
 """
@@ -479,6 +481,12 @@ class CountVectorizer(VerticaModel):
             "max_text_size": max_text_size,
         }
 
+    def drop(self) -> bool:
+        """
+        Drops the model from the Vertica database.
+        """
+        return drop(self.model_name, method="text")
+
     # Attributes Methods.
 
     def _compute_attributes(self):
@@ -769,38 +777,38 @@ class OneHotEncoder(Preprocessing):
     name: str
     	Name of the the model.
     extra_levels: dict, optional
-    	Additional levels in each category that 
-        are not in the input relation.
+    	Additional levels in each  category that are not 
+        in the input relation.
     drop_first: bool, optional
-        If set to True, it treats the first level 
-        of the categorical variable as the reference 
-        level. Otherwise, every level of the categorical 
-        variable has a corresponding column in the output 
-        view.
+        If set to True,  it treats the first level of the 
+        categorical variable as the reference level. 
+        Otherwise, every level of the categorical variable 
+        has a corresponding column in the output view.
     ignore_null: bool, optional
         If set to True, Null values set all corresponding 
-        one-hot binary columns to null. Otherwise, null 
+        one-hot binary columns to null.  Otherwise,  null 
         values in the input columns are treated as a 
         categorical level.
     separator: str, optional
-        The character that separates the input variable 
-        name and the indicator variable level in the 
-        output table.To avoid using any separator, 
-        set this parameter to null value.
+        The  character that separates the input  variable 
+        name  and  the indicator variable  level  in  the 
+        output table.  To avoid using any separator,  set 
+        this parameter to null value.
     column_naming: str, optional
-        Appends categorical levels to column names according 
-        to the specified method:
-            indices : Uses integer indices to represent 
+        Appends   categorical  levels  to  column   names 
+        according to the specified method:
+            indices : Uses  integer indices to  represent 
                       categorical levels.
-            values  : Uses categorical level names. If 
-                      duplicate column names occur, the 
-                      function attempts to disambiguate 
-                      them by appending _n, where n is 
-                      a zero-based integer index (_0, _1,…).
+            values  : Uses  categorical  level names.  If 
+                      duplicate  column names occur,  the 
+                      function attempts  to  disambiguate 
+                      them  by appending _n,  where n  is 
+                      a zero-based integer index (_0, _1,
+                      ..., _n).
     null_column_name: str, optional
-        The string used in naming the indicator column for 
-        null values, used only if ignore_null is set to false 
-        and column_naming is set to values or values_relaxed.
+        The  string used in  naming the indicator  column 
+        for null values,  used only if ignore_null is set 
+        to false and column_naming is set to 'values'.
 	"""
 
     # Properties.

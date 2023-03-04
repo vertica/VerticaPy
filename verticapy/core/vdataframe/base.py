@@ -109,61 +109,67 @@ class vDataFrame(
     vDFUtils,
 ):
     """
-An object that records all user modifications, allowing users to 
-manipulate the relation without mutating the underlying data in Vertica. 
-When changes are made, the vDataFrame queries the Vertica database, which 
-aggregates and returns the final result. The vDataFrame creates, for each ]
-column of the relation, a Virtual Column (vDataColumn) that stores the column 
-alias an all user transformations. 
+    An  object that  records  all  user modifications, allowing 
+    users to  manipulate  the  relation  without  mutating  the 
+    underlying  data in  Vertica.  When  changes are  made, the 
+    vDataFrame queries the Vertica database,  which  aggregates 
+    and returns  the final result. The vDataFrame  creates, for 
+    each column of the relation, a Virtual Column (vDataColumn) 
+    that stores the column alias an all user transformations. 
 
-Parameters
-----------
-input_relation: str / TableSample / pandas.DataFrame 
-                   / list / numpy.ndarray / dict, optional
-    If the input_relation is of type str, it must represent the relation 
-    (view, table, or temporary table) used to create the object. 
-    To get a specific schema relation, your string must include both the 
-    relation and schema: 'schema.relation' or '"schema"."relation"'. 
-    Alternatively, you can use the 'schema' parameter, in which case 
-    the input_relation must exclude the schema name.
-    It can also be the SQL query used to create the vDataFrame.
-    If it is a pandas.DataFrame, a temporary local table is created.
-    Otherwise, the vDataFrame is created using the generated SQL code 
-    of multiple UNIONs. 
-usecols: SQLColumns, optional
-    When input_relation is not an array-like type:
-    List of columns to use to create the object. As Vertica is a columnar 
-    DB including less columns makes the process faster. Do not hesitate 
-    to not include useless columns.
-    Otherwise:
-    List of column names.
-schema: str, optional
-    The schema of the relation. Specifying a schema allows you to specify a 
-    table within a particular schema, or to specify a schema and relation name 
-    that contain period '.' characters. If specified, the input_relation cannot 
-    include a schema.
-external: bool, optional
-    A boolean to indicate whether it is an external table. If set to True, a
-    Connection Identifier Database must be defined.
-    See the connect.set_external_connection function for more information.
-symbol: str, optional
-    One of the following:
-    "$", "€", "£", "%", "@", "&", "§", "?", "!"
-    Symbol used to identify the external connection.
-    See the connect.set_external_connection function for more information.
-sql_push_ext: bool, optional
-    If set to True, the external vDataFrame attempts to push the entire query 
-    to the external table (only DQL statements - SELECT; for other statements,
-    use SQL Magic directly). This can increase performance but might increase 
-    the error rate. For instance, some DBs might not support the same SQL as 
-    Vertica.
+    Parameters
+    ----------
+    input_relation: str / TableSample / pandas.DataFrame 
+                       / list / numpy.ndarray / dict, optional
+        If the input_relation is of type str, it must represent 
+        the relation  (view, table, or temporary table) used to 
+        create the object. 
+        To  get a  specific  schema relation,  your string must 
+        include both the relation and schema: 'schema.relation' 
+        or '"schema"."relation"'. 
+        Alternatively, you can use  the  'schema' parameter, in 
+        which  case the input_relation must exclude the  schema 
+        name.  It can also be the SQL query used to create  the 
+        vDataFrame.
+        If it is a pandas.DataFrame, a temporary local table is 
+        created. Otherwise, the vDataFrame is created using the 
+        generated SQL code of multiple UNIONs. 
+    usecols: SQLColumns, optional
+        When input_relation is not an array-like type:
+        List of columns to use to create the object. As Vertica 
+        is  a  columnar DB  including  less columns  makes  the 
+        process faster.  Do not hesitate to not include useless 
+        columns.
+        Otherwise:
+        List of column names.
+    schema: str, optional
+        The  schema of the relation. Specifying a schema  allows 
+        you to specify a table within a particular schema, or to 
+        specify  a schema and relation name that contain  period 
+        '.' characters. If specified, the input_relation  cannot 
+        include a schema.
+    external: bool, optional
+        A  boolean  to indicate whether it is an external table. 
+        If set to True, a Connection Identifier Database must be 
+        defined.
+    symbol: str, optional
+        One of the following:
+        "$", "€", "£", "%", "@", "&", "§", "?", "!"
+        Symbol used to identify the external connection.
+    sql_push_ext: bool, optional
+        If  set to True, the  external vDataFrame attempts to  push 
+        the entire query to the external table (only DQL statements 
+        - SELECT;  for other statements,  use SQL Magic  directly). 
+        This can increase performance  but might increase the error 
+        rate. For instance, some DBs might not support the same SQL 
+        as Vertica.
 
-Attributes
-----------
-vDataColumns : vDataColumn
-    Each vDataColumn of the vDataFrame is accessible by by specifying its name 
-    between brackets. For example, to access the vDataColumn "myVC": 
-    vDataFrame["myVC"].
+    Attributes
+    ----------
+    vDataColumns : vDataColumn
+        Each   vDataColumn  of  the  vDataFrame  is  accessible   by
+        specifying its name between brackets. For example, to access 
+        the vDataColumn "myVC": vDataFrame["myVC"].
     """
 
     @property
@@ -181,7 +187,7 @@ vDataColumns : vDataColumn
     @save_verticapy_logs
     def __init__(
         self,
-        input_relation: Union[str, pd.DataFrame, np.ndarray, list, TableSample, dict],
+        input_relation: Union[str, list, dict, pd.DataFrame, np.ndarray, TableSample],
         usecols: Union[str, list[str]] = [],
         schema: str = "",
         external: bool = False,

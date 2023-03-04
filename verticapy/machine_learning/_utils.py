@@ -14,53 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union
-
-from verticapy._typing import PythonScalar, SQLRelation
-from verticapy._utils._sql._format import quote_ident
+from verticapy._typing import SQLRelation
 from verticapy._utils._sql._sys import _executeSQL
-
-from verticapy.core.vdataframe.base import vDataFrame
-
-
-def _compute_tn_fn_fp_tp(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
-):
-    """
-A helper function that computes the confusion matrix for the specified 
-'pos_label' class and returns its values as a tuple of the following: 
-true negatives, false negatives, false positives, and true positives.
-
-Parameters
-----------
-y_true: str
-    Response column.
-y_score: str
-    Prediction.
-input_relation: SQLRelation
-    Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-pos_label: PythonScalar, optional
-    To compute the Confusion Matrix, one of the response column classes must 
-    be the positive one. The parameter 'pos_label' represents this class.
-
-Returns
--------
-tuple
-    tn, fn, fp, tp
-    """
-    from verticapy.machine_learning.metrics.classification import confusion_matrix
-
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else f"Non-{pos_label}"
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
-    return tn, fn, fp, tp
 
 
 def _compute_metric_query(
@@ -82,7 +37,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -119,20 +74,6 @@ float or tuple of floats
         title=title,
         method=method,
     )
-
-
-def compute_area(X: list, Y: list):
-    auc = 0
-    for i in range(len(Y) - 1):
-        if Y[i + 1] - Y[i] != 0.0:
-            a = (X[i + 1] - X[i]) / (Y[i + 1] - Y[i])
-            b = X[i + 1] - a * Y[i + 1]
-            auc = (
-                auc
-                + a * (Y[i + 1] * Y[i + 1] - Y[i] * Y[i]) / 2
-                + b * (Y[i + 1] - Y[i])
-            )
-    return min(-auc, 1.0)
 
 
 def reverse_score(metric: str):

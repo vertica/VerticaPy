@@ -1327,7 +1327,7 @@ class BinaryClassifier(Classifier):
         vdf: SQLRelation,
         X: SQLColumns = [],
         name: str = "",
-        pos_label: Union[str, int, float] = None,
+        pos_label: PythonScalar = None,
         inplace: bool = True,
     ):
         """

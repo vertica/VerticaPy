@@ -33,67 +33,13 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning._utils import compute_area
+from verticapy.machine_learning.metrics.classification import (
+    _compute_area,
+    _compute_function_metrics,
+)
 
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.timeseries import range_curve
-
-
-def _compute_function_metrics(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
-    nbins: int = 30,
-    fun_sql_name: str = "",
-):
-    if fun_sql_name == "lift_table":
-        label = "lift_curve"
-    else:
-        label = f"{fun_sql_name}_curve"
-    if nbins < 0:
-        nbins = 999999
-    if isinstance(input_relation, str):
-        table = input_relation
-    else:
-        table = input_relation._genSQL()
-    if fun_sql_name == "roc":
-        X = ["decision_boundary", "false_positive_rate", "true_positive_rate"]
-    elif fun_sql_name == "prc":
-        X = ["decision_boundary", "recall", "precision"]
-    else:
-        X = ["*"]
-    query_result = _executeSQL(
-        query=f"""
-            SELECT
-                {', '.join(X)}
-            FROM
-                (SELECT
-                    /*+LABEL('learn.model_selection.{label}')*/ 
-                    {fun_sql_name.upper()}(
-                            obs, prob 
-                            USING PARAMETERS 
-                            num_bins = {nbins}) OVER() 
-                 FROM 
-                    (SELECT 
-                        (CASE 
-                            WHEN {y_true} = '{pos_label}' 
-                            THEN 1 ELSE 0 END) AS obs, 
-                        {y_score}::float AS prob 
-                     FROM {table}) AS prediction_output) x""",
-        title=f"Computing the {label.upper()}.",
-        method="fetchall",
-    )
-    result = [
-        [item[0] for item in query_result],
-        [item[1] for item in query_result],
-        [item[2] for item in query_result],
-    ]
-    if fun_sql_name == "prc":
-        result[0] = [0] + result[0] + [1]
-        result[1] = [1] + result[1] + [0]
-        result[2] = [0] + result[2] + [1]
-    return result
 
 
 @save_verticapy_logs
@@ -104,7 +50,7 @@ def cross_validate(
     y: str,
     metric: Union[str, list[str]] = "all",
     cv: int = 3,
-    pos_label: Union[str, int, float] = None,
+    pos_label: PythonScalar = None,
     cutoff: PythonNumber = -1,
     show_time: bool = True,
     training_score: bool = False,
@@ -389,7 +335,7 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: SQLColumns
     List of the predictor columns.
@@ -585,7 +531,7 @@ def lift_chart(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    pos_label: Union[str, int, float] = 1,
+    pos_label: PythonScalar = 1,
     nbins: int = 30,
     ax=None,
     **style_kwds,
@@ -680,7 +626,7 @@ def prc_curve(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    pos_label: Union[str, int, float] = 1,
+    pos_label: PythonScalar = 1,
     nbins: int = 30,
     auc_prc: bool = False,
     ax=None,
@@ -695,7 +641,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction Probability.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -727,7 +673,7 @@ TableSample
         nbins=nbins,
         fun_sql_name="prc",
     )
-    auc = compute_area(precision, recall)
+    auc = _compute_area(precision, recall)
     if auc_prc:
         return auc
     if not (ax):
@@ -786,7 +732,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction Probability.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use for scoring. This relation can be a view, table, or a 
     customized relation (if an alias is used at the end of the relation). 
     For example: (SELECT ... FROM ...) x
@@ -824,7 +770,7 @@ TableSample
         nbins=nbins,
         fun_sql_name="roc",
     )
-    auc = compute_area(true_positive, false_positive)
+    auc = _compute_area(true_positive, false_positive)
     if auc_roc:
         return auc
     if best_threshold:

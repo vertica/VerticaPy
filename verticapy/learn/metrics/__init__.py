@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 from verticapy.machine_learning.metrics.classification import (
     accuracy_score,
-    auc,
     classification_report,
     confusion_matrix,
     critical_success_index,
@@ -28,6 +27,7 @@ from verticapy.machine_learning.metrics.classification import (
     multilabel_confusion_matrix,
     negative_predictive_score,
     prc_auc,
+    roc_auc,
     precision_score,
     recall_score,
     specificity_score,
@@ -59,7 +59,7 @@ FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
     "bic": bic_score,
     "accuracy": accuracy_score,
     "acc": accuracy_score,
-    "auc": auc,
+    "auc": roc_auc,
     "prc_auc": prc_auc,
     "best_cutoff": roc_curve,
     "best_threshold": roc_curve,
