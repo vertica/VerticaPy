@@ -82,15 +82,15 @@ class TestLogisticRegression:
         conf_mat1 = model.confusion_matrix()
 
         assert conf_mat1[0][0] == 558
-        assert conf_mat1[0][1] == 293
-        assert conf_mat1[1][0] == 47
+        assert conf_mat1[1][0] == 293
+        assert conf_mat1[0][1] == 47
         assert conf_mat1[1][1] == 98
 
         conf_mat2 = model.confusion_matrix(cutoff=0.2)
 
         assert conf_mat2[0][0] == 3
-        assert conf_mat2[0][1] == 0
-        assert conf_mat2[1][0] == 602
+        assert conf_mat2[1][0] == 0
+        assert conf_mat2[0][1] == 602
         assert conf_mat2[1][1] == 391
 
     def test_contour(self, titanic_vd):

@@ -936,7 +936,7 @@ def classification_report(
                 matrix = estimator.confusion_matrix(pos_label)
         else:
             y_s = y_score[0].format(pos_label)
-            y_p = y_score[0].format(pos_label)
+            y_p = y_score[1]
             y_t = f"DECODE({y_true}, '{pos_label}', 1, 0)"
             matrix = confusion_matrix(y_true, y_p, input_relation, pos_label)
         tn = matrix[0][0]

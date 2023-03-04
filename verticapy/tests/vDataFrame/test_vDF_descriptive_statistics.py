@@ -905,34 +905,6 @@ class TestvDFDescriptiveStat:
         mse = titanic_vd.score(y_true="survived", y_score="survived_pred", method="mse")
         assert mse == pytest.approx(0.228082579110535)
 
-        # Drawing ROC Curve
-        roc_res = titanic_vd.score(
-            y_true="survived", y_score="survived_pred", method="roc", nbins=1000,
-        )
-        assert roc_res["threshold"][3] == 0.003
-        assert roc_res["false_positive"][3] == 1.0
-        assert roc_res["true_positive"][3] == 1.0
-        assert roc_res["threshold"][300] == 0.3
-        assert roc_res["false_positive"][300] == pytest.approx(1.0)
-        assert roc_res["true_positive"][300] == pytest.approx(1.0)
-        assert roc_res["threshold"][900] == 0.9
-        assert roc_res["false_positive"][900] == pytest.approx(0.0148760330578512)
-        assert roc_res["true_positive"][900] == pytest.approx(0.061381074168798)
-
-        # Drawing PRC Curve
-        prc_res = titanic_vd.score(
-            y_true="survived", y_score="survived_pred", method="prc", nbins=1000,
-        )
-        assert prc_res["threshold"][3] == 0.002
-        assert prc_res["recall"][3] == 1.0
-        assert prc_res["precision"][3] == pytest.approx(0.3925702811)
-        assert prc_res["threshold"][300] == 0.299
-        assert prc_res["recall"][300] == pytest.approx(1.0)
-        assert prc_res["precision"][300] == pytest.approx(0.392570281124498)
-        assert prc_res["threshold"][900] == 0.899
-        assert prc_res["recall"][900] == pytest.approx(0.061381074168798)
-        assert prc_res["precision"][900] == pytest.approx(0.727272727272727)
-
         # dropping the created model
         model.drop()
 

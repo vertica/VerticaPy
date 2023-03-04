@@ -29,6 +29,8 @@ from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.machine_learning.metrics import FUNCTIONS_DICTIONNARY
+
 
 class vDFMachineLearning:
     @save_verticapy_logs
@@ -711,7 +713,7 @@ class vDFMachineLearning:
         self,
         y_true: str,
         y_score: str,
-        method: str,  # TODO Literal[tuple(FUNCTIONS_DICTIONNARY)]
+        method: Literal[tuple(FUNCTIONS_DICTIONNARY)],
         nbins: int = 30,
     ):
         """
@@ -747,13 +749,10 @@ class vDFMachineLearning:
             mse    : Mean Squared Error
             msle   : Mean Squared Log Error
             r2     : R squared coefficient
-            var    : Explained Variance  
-            --- Plots ---
-            roc  : ROC Curve
-            prc  : PRC Curve
-            lift : Lift Chart
+            var    : Explained Variance
     nbins: int, optional
-        Number of bins used to compute some of the metrics (AUC, PRC AUC...)
+        Number of bins used to compute some of the metrics 
+        (AUC, PRC AUC...)
 
     Returns
     -------
@@ -764,8 +763,6 @@ class vDFMachineLearning:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        from verticapy.machine_learning.metrics import FUNCTIONS_DICTIONNARY
-
         y_true, y_score = self._format_colnames(y_true, y_score)
         fun = FUNCTIONS_DICTIONNARY[method]
         argv = [y_true, y_score, self._genSQL()]
@@ -775,12 +772,8 @@ class vDFMachineLearning:
         elif method in (
             "best_cutoff",
             "best_threshold",
-            "roc_curve",
-            "roc",
-            "prc_curve",
-            "prc",
-            "lift_chart",
-            "lift",
+            "auc",
+            "prc_auc",
         ):
             kwds["nbins"] = nbins
         return FUNCTIONS_DICTIONNARY[method](*argv, **kwds)
