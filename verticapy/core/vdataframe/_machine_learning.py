@@ -714,69 +714,67 @@ class vDFMachineLearning:
         y_true: str,
         y_score: str,
         method: Literal[tuple(FUNCTIONS_DICTIONNARY)],
-        nbins: int = 30,
-    ):
+    ) -> float:
         """
-    Computes the score using the input columns and the input method.
+        Computes the score using the input columns and the 
+        input method.
 
-    Parameters
-    ----------
-    y_true: str
-        Response column.
-    y_score: str
-        Prediction.
-    method: str
-        The method to use to compute the score.
-            --- For Classification ---
-            accuracy    : Accuracy
-            auc         : Area Under the Curve (ROC)
-            best_cutoff : Cutoff which optimised the ROC Curve prediction.
-            bm          : Informedness = tpr + tnr - 1
-            csi         : Critical Success Index = tp / (tp + fn + fp)
-            f1          : F1 Score 
-            logloss     : Log Loss
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness = ppv + npv - 1
-            npv         : Negative Predictive Value = tn / (tn + fn)
-            prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision = tp / (tp + fp)
-            recall      : Recall = tp / (tp + fn)
-            specificity : Specificity = tn / (tn + fp)
-            --- For Regression ---
-            max    : Max Error
-            mae    : Mean Absolute Error
-            median : Median Absolute Error
-            mse    : Mean Squared Error
-            msle   : Mean Squared Log Error
-            r2     : R squared coefficient
-            var    : Explained Variance
-    nbins: int, optional
-        Number of bins used to compute some of the metrics 
-        (AUC, PRC AUC...)
+        Parameters
+        ----------
+        y_true: str
+            Response column.
+        y_score: str
+            Prediction.
+        method: str
+            The method to use to compute the score.
+                --- For Classification ---
+                accuracy    : Accuracy
+                auc         : Area Under the Curve 
+                              (ROC)
+                best_cutoff : Cutoff  which  optimised 
+                              the ROC Curve prediction.
+                bm          : Informedness 
+                              = tpr + tnr - 1
+                csi         : Critical  Success  Index 
+                              = tp / (tp + fn + fp)
+                f1          : F1 Score 
+                logloss     : Log Loss
+                mcc         : Matthews Correlation 
+                              Coefficient 
+                mk          : Markedness 
+                              = ppv + npv - 1
+                npv         : Negative Predictive Value 
+                              = tn / (tn + fn)
+                prc_auc     : Area Under the Curve 
+                              (PRC)
+                precision   : Precision 
+                              = tp / (tp + fp)
+                recall      : Recall 
+                              = tp / (tp + fn)
+                specificity : Specificity 
+                              = tn / (tn + fp)
+                --- For Regression ---
+                max    : Max Error
+                mae    : Mean Absolute Error
+                median : Median Absolute Error
+                mse    : Mean Squared Error
+                msle   : Mean Squared Log Error
+                r2     : R squared coefficient
+                var    : Explained Variance
 
-    Returns
-    -------
-    float / TableSample
-        score / TableSample of the curve
+        Returns
+        -------
+        float
+            score.
 
-    See Also
-    --------
-    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        See Also
+        --------
+        vDataFrame.aggregate : Computes the vDataFrame 
+                               input aggregations.
         """
         y_true, y_score = self._format_colnames(y_true, y_score)
-        fun = FUNCTIONS_DICTIONNARY[method]
         argv = [y_true, y_score, self._genSQL()]
-        kwds = {}
-        if method in ("accuracy", "acc"):
-            kwds["pos_label"] = None
-        elif method in (
-            "best_cutoff",
-            "best_threshold",
-            "auc",
-            "prc_auc",
-        ):
-            kwds["nbins"] = nbins
-        return FUNCTIONS_DICTIONNARY[method](*argv, **kwds)
+        return FUNCTIONS_DICTIONNARY[method](*argv)
 
     @save_verticapy_logs
     def sessionize(
