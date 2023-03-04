@@ -515,17 +515,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             )
             y_score = f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
             y_true = f"DECODE({self.y}, '{pos_label}', 1, 0)"
-            result = mt.confusion_matrix(y_true, y_score, input_relation)
-            if pos_label == 1:
-                return result
-            else:
-                return TableSample(
-                    values={
-                        "index": [f"Non-{pos_label}", str(pos_label),],
-                        f"Non-{pos_label}": result.values[0],
-                        str(pos_label): result.values[1],
-                    },
-                )
+            return mt.confusion_matrix(y_true, y_score, input_relation)
 
     # Model Evaluation Methods.
 

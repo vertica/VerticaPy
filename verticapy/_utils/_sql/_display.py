@@ -19,6 +19,9 @@ import shutil
 import verticapy._config.config as conf
 from verticapy._utils._sql._format import indentSQL
 
+if conf._get_import_success("jupyter"):
+    from IPython.display import HTML, display
+
 
 def print_query(query: str, title: str = ""):
     screen_columns = shutil.get_terminal_size().columns

@@ -17,9 +17,11 @@ permissions and limitations under the License.
 import math
 from collections.abc import Iterable
 from typing import Union
+import numpy as np
 
 from verticapy._typing import PythonNumber, PythonScalar, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.tablesample.base import TableSample
@@ -162,15 +164,8 @@ def _compute_tn_fn_fp_tp(
     tuple
         tn, fn, fp, tp
     """
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else f"Non-{pos_label}"
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
-    return tn, fn, fp, tp
+    res = confusion_matrix(y_true, y_score, input_relation, pos_label)
+    return res[0][0], res[0][1], res[1][0], res[1][1]
 
 
 @check_minimum_version
@@ -207,7 +202,7 @@ def confusion_matrix(
         relation = input_relation
     else:
         relation = input_relation._genSQL()
-    result = TableSample.read_sql(
+    res = _executeSQL(
         query=f"""
         SELECT 
             CONFUSION_MATRIX(obs, response 
@@ -220,21 +215,9 @@ def confusion_matrix(
                        1, NULL, NULL, 0) AS response 
              FROM {relation}) VERTICAPY_SUBTABLE;""",
         title="Computing Confusion matrix.",
+        method="fetchall",
     )
-    if pos_label in [1, "1"]:
-        labels = [0, 1]
-    else:
-        labels = [f"Non-{pos_label}", pos_label]
-    del result.values["comment"]
-    result = result.transpose()
-    result.values["actual_class"] = labels
-    result = result.transpose()
-    matrix = {"index": labels}
-    for elem in result.values:
-        if elem != "actual_class":
-            matrix[elem] = result.values[elem]
-    result.values = matrix
-    return result
+    return np.array([x[1:-1] for x in res])
 
 
 @check_minimum_version
@@ -280,17 +263,10 @@ def multilabel_confusion_matrix(
     for idx, l in enumerate(labels):
         query += f", '{l}', {idx}"
     query += f") AS response FROM {relation}) VERTICAPY_SUBTABLE;"
-    result = TableSample.read_sql(query=query, title="Computing Confusion Matrix.")
-    del result.values["comment"]
-    result = result.transpose()
-    result.values["actual_class"] = labels
-    result = result.transpose()
-    matrix = {"index": labels}
-    for elem in result.values:
-        if elem != "actual_class":
-            matrix[elem] = result.values[elem]
-    result.values = matrix
-    return result
+    res = _executeSQL(
+        query=query, title="Computing Confusion Matrix.", method="fetchall",
+    )
+    return np.array([x[1:-1] for x in res])
 
 
 """
@@ -611,6 +587,8 @@ def specificity_score(
 AUC / Lift Metrics.
 """
 
+# Special AUC / Lift Methods.
+
 
 def _compute_area(X: list, Y: list) -> float:
     """
@@ -687,6 +665,10 @@ def _compute_function_metrics(
         result[1] = [1] + result[1] + [0]
         result[2] = [0] + result[2] + [1]
     return result
+
+
+# Main AUC / Lift Methods.
+
 
 @save_verticapy_logs
 def best_cutoff(
@@ -935,9 +917,7 @@ def classification_report(
             "cutoff",
         ]
     }
-    for idx, l in enumerate(labels):
-        pos_label = l
-        non_pos_label = 0 if (l == 1) else f"Non-{l}"
+    for idx, pos_label in enumerate(labels):
         if estimator:
             if not (cutoff):
                 current_cutoff = estimator.score(
@@ -955,24 +935,14 @@ def classification_report(
             except:
                 matrix = estimator.confusion_matrix(pos_label)
         else:
-            y_s, y_p, y_t = (
-                y_score[0].format(l),
-                y_score[1],
-                f"DECODE({y_true}, '{l}', 1, 0)",
-            )
+            y_s = y_score[0].format(pos_label)
+            y_p = y_score[0].format(pos_label)
+            y_t = f"DECODE({y_true}, '{pos_label}', 1, 0)"
             matrix = confusion_matrix(y_true, y_p, input_relation, pos_label)
-        if non_pos_label in matrix.values and pos_label in matrix.values:
-            non_pos_label_, pos_label_ = non_pos_label, pos_label
-        elif 0 in matrix.values and 1 in matrix.values:
-            non_pos_label_, pos_label_ = 0, 1
-        else:
-            non_pos_label_, pos_label_ = matrix.values["index"]
-        tn, fn, fp, tp = (
-            matrix.values[non_pos_label_][0],
-            matrix.values[non_pos_label_][1],
-            matrix.values[pos_label_][0],
-            matrix.values[pos_label_][1],
-        )
+        tn = matrix[0][0]
+        fn = matrix[0][1]
+        fp = matrix[1][0]
+        tp = matrix[1][1]
         ppv = tp / (tp + fp) if (tp + fp != 0) else 0  # precision
         tpr = tp / (tp + fn) if (tp + fn != 0) else 0  # recall
         tnr = tn / (tn + fp) if (tn + fp != 0) else 0  # specificity
@@ -997,12 +967,9 @@ def classification_report(
         else:
             auc_score = roc_auc(y_t, y_s, input_relation, 1)
             prc_auc_score = prc_auc(y_t, y_s, input_relation, 1)
-            y_p = f"DECODE({y_p}, '{l}', 1, 0)"
             logloss = log_loss(y_t, y_s, input_relation, 1)
             if not (cutoff):
-                current_cutoff = best_cutoff(
-                    y_t, y_s, input_relation, nbins=nbins,
-                )
+                current_cutoff = best_cutoff(y_t, y_s, input_relation, nbins=nbins,)
             elif isinstance(cutoff, Iterable):
                 if len(cutoff) == 1:
                     current_cutoff = cutoff[0]
@@ -1011,8 +978,8 @@ def classification_report(
             else:
                 current_cutoff = cutoff
         if len(labels) == 1:
-            l = "value"
-        values[l] = [
+            pos_label = "value"
+        values[pos_label] = [
             auc_score,
             prc_auc_score,
             accuracy,
