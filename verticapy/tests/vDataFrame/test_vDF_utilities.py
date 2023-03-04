@@ -534,11 +534,11 @@ class TestvDFUtilities:
         assert result == 2
 
     def test_vDF_isdate(self, amazon_vd):
-        # test for date-like vcolumn
+        # test for date-like vDataColumn
         result = amazon_vd["date"].isdate()
         assert result == True
 
-        # test for non-date-like vcolumn
+        # test for non-date-like vDataColumn
         result2 = amazon_vd["number"].isdate()
         assert result2 == False
 
@@ -546,11 +546,11 @@ class TestvDFUtilities:
         assert result2 == False
 
     def test_vDF_isnum(self, amazon_vd):
-        # test for numerical vcolumn
+        # test for numerical vDataColumn
         result = amazon_vd["number"].isnum()
         assert result == True
 
-        # test for non-numerical vcolumn
+        # test for non-numerical vDataColumn
         result = amazon_vd["date"].isnum()
         assert result == False
 

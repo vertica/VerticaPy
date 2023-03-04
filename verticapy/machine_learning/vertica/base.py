@@ -1288,7 +1288,7 @@ class BinaryClassifier(Classifier):
             List of the columns used to deploy the models. If 
             empty, the model predictors will be used.
         name: str, optional
-            Name of the added vcolumn. If empty, a name will be 
+            Name of the added vDataColumn. If empty, a name will be 
             generated.
         cutoff: float, optional
             Probability cutoff.
@@ -1343,7 +1343,7 @@ class BinaryClassifier(Classifier):
             List of the columns used to deploy the models. If 
             empty, the model predictors will be used.
         name: str, optional
-            Name of the added vcolumn. If empty, a name will be 
+            Name of the added vDataColumn. If empty, a name will be 
             generated.
         pos_label: PythonScalar, optional
             Class label. For binary classification, this can be 
@@ -1874,7 +1874,7 @@ class MulticlassClassifier(Classifier):
             List of the columns used to deploy the models. 
             If empty, the model predictors will be used.
         name: str, optional
-            Name of the added vcolumn. If empty, a name 
+            Name of the added vDataColumn. If empty, a name 
             will be generated.
         cutoff: PythonNumber, optional
             Cutoff for which the tested category will be 
@@ -2410,7 +2410,7 @@ class Regressor(Supervised):
     		List of the columns used to deploy the models. 
             If empty, the model predictors will be used.
     	name: str, optional
-    		Name of the added vcolumn. If empty, a name will 
+    		Name of the added vDataColumn. If empty, a name will 
             be generated.
     	inplace: bool, optional
     		If set to True, the prediction will be added to 

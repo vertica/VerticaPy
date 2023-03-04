@@ -324,7 +324,7 @@ class Preprocessing(Unsupervised):
             For example "(SELECT 1) x" is correct whereas 
             "(SELECT 1)" and "SELECT 1" are incorrect.
         X: SQLColumns, optional
-            List of the input vcolumns.
+            List of the input vDataColumns.
 
         Returns
         -------
@@ -360,7 +360,7 @@ class Preprocessing(Unsupervised):
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
         X: SQLColumns, optional
-            List of the input vcolumns.
+            List of the input vDataColumns.
 
         Returns
         -------

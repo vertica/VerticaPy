@@ -276,9 +276,9 @@ class Pipeline:
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
         X: list, optional
-            List of the input vcolumns.
+            List of the input vDataColumns.
         name: str, optional
-            Name of the added vcolumn.
+            Name of the added vDataColumn.
 
         Returns
         -------
@@ -326,7 +326,7 @@ class Pipeline:
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
         X: list, optional
-            List of the input vcolumns.
+            List of the input vDataColumns.
 
         Returns
         -------
@@ -365,7 +365,7 @@ class Pipeline:
             For example "(SELECT 1) x" is correct whereas 
             "(SELECT 1)" and "SELECT 1" are incorrect.
         X: list, optional
-            List of the input vcolumns.
+            List of the input vDataColumns.
 
         Returns
         -------

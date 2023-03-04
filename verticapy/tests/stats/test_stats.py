@@ -87,82 +87,78 @@ class TestStats:
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.endogtest(result, eps="number", X=["lag_number"])
-        assert result["value"] == [
+        assert result == (
             pytest.approx(110.77204182524278),
             pytest.approx(6.638132056570419e-26),
             pytest.approx(204.73673827671277),
             pytest.approx(6.836198697261425e-34),
-        ]
+        )
 
     def test_het_arch(self, amazon_vd):
         result = st.het_arch(amazon_vd, eps="number", ts="date", by=["state"], p=2)
-        assert result["value"] == [
+        assert result == (
             pytest.approx(883.1042774059952),
             pytest.approx(1.7232277858576802e-192),
             pytest.approx(511.3347213420665),
             pytest.approx(7.463757606288815e-207),
-        ]
+        )
 
     def test_het_breuschpagan(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.het_breuschpagan(result, eps="number", X=["lag_number"])
-        assert result["value"] == [
+        assert result["value"] == (
             pytest.approx(68.30346484950417),
             pytest.approx(1.4017446778018072e-16),
             pytest.approx(94.83450355369129),
             pytest.approx(4.572276908758215e-19),
-        ]
+        )
 
     def test_het_goldfeldquandt(self, amazon_vd):
         vdf = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         vdf["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.het_goldfeldquandt(vdf, y="number", X=["lag_number"])
-        assert result["value"] == [
+        assert result == (
             pytest.approx(30.17263128858259),
             pytest.approx(1.3988910574921388e-55),
-        ]
+        )
         result2 = st.het_goldfeldquandt(
             vdf, y="number", X=["lag_number"], alternative="decreasing"
         )
-        assert result2["value"] == [
+        assert result2 == (
             pytest.approx(30.17263128858259),
             pytest.approx(0.9999999999999999),
-        ]
+        )
         result3 = st.het_goldfeldquandt(
             vdf, y="number", X=["lag_number"], alternative="two-sided"
         )
-        assert result3["value"] == [
-            pytest.approx(30.17263128858259),
-            pytest.approx(0.0),
-        ]
+        assert result3 == (pytest.approx(30.17263128858259), pytest.approx(0.0),)
 
     def test_het_white(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.het_white(result, eps="number", X=["lag_number"])
-        assert result["value"] == [
+        assert result == (
             pytest.approx(72.93515335650999),
             pytest.approx(1.3398039866815678e-17),
             pytest.approx(104.08964747730063),
             pytest.approx(1.7004013245871353e-20),
-        ]
+        )
 
     def test_jarque_bera(self, amazon_vd):
         result = st.jarque_bera(amazon_vd, column="number")
-        assert result["value"][0] == pytest.approx(930829.520860999, 1e-2)
-        assert result["value"][1] == pytest.approx(0.0, 1e-2)
-        assert result["value"][-1] == False
+        assert result[0] == pytest.approx(930829.520860999, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_kurtosistest(self, amazon_vd):
         result = st.kurtosistest(amazon_vd, column="number")
-        assert result["value"][0] == pytest.approx(47.31605467852915, 1e-2)
-        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+        assert result[0] == pytest.approx(47.31605467852915, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_normaltest(self, amazon_vd):
         result = st.normaltest(amazon_vd, column="number")
-        assert result["value"][0] == pytest.approx(7645.980976250067, 1e-2)
-        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+        assert result[0] == pytest.approx(7645.980976250067, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_ljungbox(self, amazon_vd):
         # testing Ljung–Box
@@ -230,8 +226,8 @@ class TestStats:
 
     def test_skewtest(self, amazon_vd):
         result = st.skewtest(amazon_vd, column="number")
-        assert result["value"][0] == pytest.approx(73.53347500226347, 1e-2)
-        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+        assert result[0] == pytest.approx(73.53347500226347, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_variance_inflation_factor(self, titanic_vd):
         result = st.variance_inflation_factor(

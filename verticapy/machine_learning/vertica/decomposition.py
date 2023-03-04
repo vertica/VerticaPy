@@ -219,7 +219,7 @@ class Decomposition(Preprocessing):
             "(SELECT 1) x" is correct whereas 
             "(SELECT 1)" and "SELECT 1" are incorrect.
         X: SQLColumns, optional
-            List of the input vcolumns.
+            List of the input vDataColumns.
         n_components: int, optional
             Number of components to return. If set to 
             0, all the components will be deployed.

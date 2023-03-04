@@ -167,7 +167,7 @@ class TestvDFPreprocessing:
             "rare",
         ]
 
-        ### method = "auto" for numerical vcolumn
+        ### method = "auto" for numerical vDataColumn
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].discretize()
         assert titanic_copy["age"].distinct() == [

@@ -113,15 +113,15 @@ class TestNB:
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
 
-        assert list(conf_mat1[:,0]) == [50, 0, 0]
-        assert list(conf_mat1[:,1]) == [0, 47, 3]
-        assert list(conf_mat1[:,2]) == [0, 3, 47]
+        assert list(conf_mat1[:, 0]) == [50, 0, 0]
+        assert list(conf_mat1[:, 1]) == [0, 47, 3]
+        assert list(conf_mat1[:, 2]) == [0, 3, 47]
 
         conf_mat2 = model.confusion_matrix(cutoff=0.2)
 
-        assert list(conf_mat1[:,0]) == [50, 0, 0]
-        assert list(conf_mat1[:,1]) == [0, 47, 3]
-        assert list(conf_mat1[:,2]) == [0, 3, 47]
+        assert list(conf_mat1[:, 0]) == [50, 0, 0]
+        assert list(conf_mat1[:, 1]) == [0, 47, 3]
+        assert list(conf_mat1[:, 2]) == [0, 3, 47]
 
     def test_contour(self, titanic_vd):
         model_test = NaiveBayes("model_contour",)

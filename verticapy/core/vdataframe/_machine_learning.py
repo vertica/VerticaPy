@@ -710,10 +710,7 @@ class vDFMachineLearning:
 
     @save_verticapy_logs
     def score(
-        self,
-        y_true: str,
-        y_score: str,
-        method: Literal[tuple(FUNCTIONS_DICTIONNARY)],
+        self, y_true: str, y_score: str, method: Literal[tuple(FUNCTIONS_DICTIONNARY)],
     ) -> float:
         """
         Computes the score using the input columns and the 

@@ -894,7 +894,7 @@ class KernelDensity(Regressor, Tree):
                     N = vdf[column].count()
                 except:
                     warning_message = (
-                        f"Wrong xlim for the vcolumn {column}.\n"
+                        f"Wrong xlim for the vDataColumn {column}.\n"
                         "The max and the min will be used instead."
                     )
                     warnings.warn(warning_message, Warning)

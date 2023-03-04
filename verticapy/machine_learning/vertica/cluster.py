@@ -87,7 +87,7 @@ class Clustering(Unsupervised):
             List of the columns used to deploy the models. 
             If empty, the model predictors will be used.
         name: str, optional
-            Name of the added vcolumn. If empty, a name 
+            Name of the added vDataColumn. If empty, a name 
             will be generated.
         inplace: bool, optional
             If set to True, the prediction will be added 
@@ -881,7 +881,7 @@ class DBSCAN(VerticaModel):
             Training relation.
         X: SQLColumns, optional
             List of the predictors. If empty, all the 
-            numerical vcolumns will be used.
+            numerical vDataColumns will be used.
         key_columns: SQLColumns, optional
             Columns  not  used  during  the  algorithm 
             computation  but  which  will be  used  to 

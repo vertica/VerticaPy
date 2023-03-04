@@ -280,12 +280,12 @@ def mean_squared_error(
     float
         score.
     """
-    result = _compute_metric_query(
+    res = _compute_metric_query(
         "MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE.",
     )
     if root:
-        return math.sqrt(result)
-    return result
+        return math.sqrt(res)
+    return res
 
 
 @save_verticapy_logs
@@ -381,7 +381,7 @@ def quantile_error(
         score.
     """
     metric = f"""APPROXIMATE_PERCENTILE(ABS({{0}} - {{1}}) 
-                                        USING PARAMETERS percentile = {q})"""
+                        USING PARAMETERS percentile = {q})"""
     return _compute_metric_query(
         metric, y_true, y_score, input_relation, "Computing the Quantile Error."
     )
@@ -550,16 +550,17 @@ def regression_report(
         relation = input_relation
     else:
         relation = input_relation._genSQL()
-    query = f"""SELECT /*+LABEL('learn.metrics.regression_report')*/
-                    1 - VARIANCE({y_true} - {y_score}) / VARIANCE({y_true}), 
-                    MAX(ABS({y_true} - {y_score})),
-                    APPROXIMATE_MEDIAN(ABS({y_true} - {y_score})), 
-                    AVG(ABS({y_true} - {y_score})),
-                    AVG(POW({y_true} - {y_score}, 2)), 
-                    COUNT(*) 
-                FROM {relation} 
-                WHERE {y_true} IS NOT NULL 
-                  AND {y_score} IS NOT NULL;"""
+    query = f"""
+        SELECT /*+LABEL('learn.metrics.regression_report')*/
+            1 - VARIANCE({y_true} - {y_score}) / VARIANCE({y_true}), 
+            MAX(ABS({y_true} - {y_score})),
+            APPROXIMATE_MEDIAN(ABS({y_true} - {y_score})), 
+            AVG(ABS({y_true} - {y_score})),
+            AVG(POW({y_true} - {y_score}, 2)), 
+            COUNT(*) 
+        FROM {relation} 
+        WHERE {y_true} IS NOT NULL 
+          AND {y_score} IS NOT NULL;"""
     r2 = r2_score(y_true, y_score, input_relation)
     values = {
         "index": [

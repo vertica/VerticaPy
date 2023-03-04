@@ -383,7 +383,7 @@ def informedness(
 @save_verticapy_logs
 def markedness(
     y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
-):
+) -> float:
     """
     Computes the Markedness.
 
@@ -848,7 +848,7 @@ def classification_report(
     cutoff: Union[PythonNumber, list] = [],
     estimator=None,
     nbins: int = 10000,
-):
+) -> TableSample:
     """
     Computes  a classification  report using  multiple 
     metrics  (AUC, accuracy, PRC AUC, F1...).  It will 

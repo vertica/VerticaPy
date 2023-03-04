@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import datetime
 from typing import Union, TYPE_CHECKING
 import numpy as np
 
@@ -24,6 +25,7 @@ if TYPE_CHECKING:
 ArrayLike = Union[list, np.ndarray]
 PythonNumber = Union[None, int, float]
 PythonScalar = Union[None, bool, float, str]
+TimeInterval = Union[str, datetime.timedelta]
 
 SQLColumns = Union[str, list[str]]
 SQLExpression = Union[str, list[str], "StringSQL", list["StringSQL"]]

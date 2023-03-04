@@ -1358,11 +1358,11 @@ vdf: vDataFrame
 column: str
     Response column.
 ts: str
-    vcolumn used as timeline. It will be to use to order the data. 
+    vDataColumn used as timeline. It will be to use to order the data. 
     It can be a numerical or type date like (date, datetime, timestamp...) 
-    vcolumn.
+    vDataColumn.
 by: list, optional
-    vcolumns used in the partition.
+    vDataColumns used in the partition.
 p: int/list, optional
     Int equals to the maximum number of lag to consider during the computation
     or List of the different lags to include during the computation.

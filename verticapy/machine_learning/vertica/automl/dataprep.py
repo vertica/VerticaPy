@@ -18,7 +18,7 @@ import copy, datetime
 from typing import Literal, Union
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLRelation
+from verticapy._typing import TimeInterval, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -88,7 +88,7 @@ class AutoDataPrep(VerticaModel):
     apply_pca: bool, optional
         [Only used for non-time series datasets]
         If True, a PCA is applied at the end of the preprocessing.
-    rule: str / time, optional
+    rule: TimeInterval, optional
         [Only used for time series datasets]
         Interval to use to slice the time. For example, '5 minutes' 
         will create records separated by '5 minutes' time interval.
@@ -158,7 +158,7 @@ class AutoDataPrep(VerticaModel):
         normalize_min_cat: int = 6,
         id_method: Literal["none", "drop"] = "drop",
         apply_pca: bool = False,
-        rule: Union[str, datetime.timedelta] = "auto",
+        rule: TimeInterval = "auto",
         identify_ts: bool = True,
         save: bool = True,
     ) -> None:
@@ -199,11 +199,11 @@ class AutoDataPrep(VerticaModel):
         X: list, optional
             List of the features to preprocess.
         ts: str, optional
-            Time series vcolumn to use to order the data. 
-            The vcolumn type must be
+            Time series vDataColumn to use to order the data. 
+            The vDataColumn type must be
             date-like (date, datetime, timestamp...)
         by: list, optional
-            vcolumns used in the partition.
+            vDataColumns used in the partition.
         """
         if conf.get_option("overwrite_model"):
             self.drop()

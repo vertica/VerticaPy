@@ -19,7 +19,7 @@ from typing import Literal, Union
 from collections.abc import Iterable
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, SQLColumns, SQLExpression
+from verticapy._typing import PythonNumber, TimeInterval, SQLColumns, SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -28,7 +28,7 @@ from verticapy.errors import ParameterError
 
 class vDFFilter:
     @save_verticapy_logs
-    def at_time(self, ts: str, time: Union[str, datetime.timedelta]):
+    def at_time(self, ts: str, time: TimeInterval):
         """
     Filters the vDataFrame by only keeping the records at the input time.
 
@@ -37,7 +37,7 @@ class vDFFilter:
     ts: str
         TS (Time Series) vDataColumn to use to filter the data. The vDataColumn type must be
         date like (date, datetime, timestamp...)
-    time: str / time
+    time: TimeInterval
         Input Time. For example, time = '12:00' will filter the data when time('ts') 
         is equal to 12:00.
 
@@ -116,10 +116,7 @@ class vDFFilter:
 
     @save_verticapy_logs
     def between_time(
-        self,
-        ts: str,
-        start_time: Union[str, datetime.timedelta],
-        end_time: Union[str, datetime.timedelta],
+        self, ts: str, start_time: TimeInterval, end_time: TimeInterval,
     ):
         """
     Filters the vDataFrame by only keeping the records between two input times.
@@ -129,10 +126,10 @@ class vDFFilter:
     ts: str
         TS (Time Series) vDataColumn to use to filter the data. The vDataColumn type must be
         date like (date, datetime, timestamp...)
-    start_time: str / time
+    start_time: TimeInterval
         Input Start Time. For example, time = '12:00' will filter the data when 
         time('ts') is lesser than 12:00.
-    end_time: str / time
+    end_time: TimeInterval
         Input End Time. For example, time = '14:00' will filter the data when 
         time('ts') is greater than 14:00.
 
