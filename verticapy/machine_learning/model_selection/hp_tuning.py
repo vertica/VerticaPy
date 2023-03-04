@@ -38,7 +38,6 @@ from verticapy.datasets.generators import gen_meshgrid, gen_dataset
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.timeseries import range_curve
 
-from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
 from verticapy.sql.drop import drop
@@ -238,7 +237,20 @@ TableSample
         drop(relation, method="table")
         vdf.to_db(relation, relation_type="table", inplace=True)
         vdf = hyper_param_estimator.predict(vdf, name="score")
-        reverse = reverse_score(metric)
+        reverse = True
+        if metric in [
+            "logloss",
+            "max",
+            "mae",
+            "median",
+            "mse",
+            "msle",
+            "rmse",
+            "aic",
+            "bic",
+            "auto",
+        ]:
+            reverse = False
         vdf.sort({"score": "desc" if reverse else "asc"})
         result = vdf.head(limit=k_tops)
         new_param_grid = []
@@ -1247,7 +1259,20 @@ TableSample
             return TableSample(
                 {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
             )
-    reverse = reverse_score(metric)
+    reverse = True
+    if metric in [
+        "logloss",
+        "max",
+        "mae",
+        "median",
+        "mse",
+        "msle",
+        "rmse",
+        "aic",
+        "bic",
+        "auto",
+    ]:
+        reverse = False
     data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
         result = TableSample(

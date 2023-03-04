@@ -24,7 +24,7 @@ from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.machine_learning._utils import _compute_metric_query
+from verticapy.machine_learning.metrics.regression import _compute_metric_query
 
 """
 General Metrics.

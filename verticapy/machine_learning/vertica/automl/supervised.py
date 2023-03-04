@@ -30,7 +30,6 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning._utils import reverse_score
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.model_selection import (
     gen_params_grid,
@@ -562,7 +561,20 @@ class AutoML(VerticaModel):
             )
             for i in range(len(result["score_train_std"]))
         ]
-        reverse = reverse_score(self.parameters["metric"])
+        reverse = True
+        if self.parameters["metric"] in [
+            "logloss",
+            "max",
+            "mae",
+            "median",
+            "mse",
+            "msle",
+            "rmse",
+            "aic",
+            "bic",
+            "auto",
+        ]:
+            reverse = False
         data.sort(key=lambda tup: tup[2], reverse=reverse)
         result = TableSample(
             {

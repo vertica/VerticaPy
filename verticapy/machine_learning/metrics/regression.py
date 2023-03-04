@@ -26,8 +26,62 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning._utils import _compute_metric_query
+def _compute_metric_query(
+    metric: str,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    title: str = "",
+    fetchfirstelem: bool = True,
+):
+    """
+A helper function that uses a specified metric to generate and score a query.
 
+Parameters
+----------
+metric: str
+    The metric to use in the query.
+y_true: str
+    Response column.
+y_score: str
+    Prediction.
+input_relation: SQLRelation
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
+title: str, optional
+    Relation to use to do the scoring. The relation can be a view or a table
+    or even a customized relation. For example, you could write:
+    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
+Title of the query.
+fetchfirstelem: bool, optional
+    If set to True, this function returns one element. Otherwise, this 
+    function returns a tuple.
+
+Returns
+-------
+float or tuple of floats
+    score(s)
+    """
+    if isinstance(input_relation, str):
+        relation = input_relation
+    else:
+        relation = input_relation._genSQL()
+    if fetchfirstelem:
+        method = "fetchfirstelem"
+    else:
+        method = "fetchrow"
+    return _executeSQL(
+        query=f"""
+            SELECT 
+                /*+LABEL('learn.metrics._compute_metric_query')*/ 
+                {metric.format(y_true, y_score)} 
+            FROM {relation} 
+            WHERE {y_true} IS NOT NULL 
+              AND {y_score} IS NOT NULL;""",
+        title=title,
+        method=method,
+    )
 
 @save_verticapy_logs
 def aic_bic(

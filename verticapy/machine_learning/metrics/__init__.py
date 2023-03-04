@@ -47,11 +47,6 @@ from verticapy.machine_learning.metrics.regression import (
     r2_score,
     regression_report,
 )
-from verticapy.machine_learning.model_selection.model_validation import (
-    prc_curve,
-    roc_curve,
-    lift_chart,
-)
 
 
 FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
@@ -81,12 +76,6 @@ FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
     "markedness": markedness,
     "csi": critical_success_index,
     "critical_success_index": critical_success_index,
-    "roc_curve": roc_curve,
-    "roc": roc_curve,
-    "prc_curve": prc_curve,
-    "prc": prc_curve,
-    "lift_chart": lift_chart,
-    "lift": lift_chart,
 }
 
 FUNCTIONS_REGRESSION_DICTIONNARY = {
