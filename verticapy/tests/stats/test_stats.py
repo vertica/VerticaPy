@@ -107,7 +107,7 @@ class TestStats:
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.het_breuschpagan(result, eps="number", X=["lag_number"])
-        assert result["value"] == (
+        assert result == (
             pytest.approx(68.30346484950417),
             pytest.approx(1.4017446778018072e-16),
             pytest.approx(94.83450355369129),

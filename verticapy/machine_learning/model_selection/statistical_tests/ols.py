@@ -192,7 +192,7 @@ def het_white(
     for i in range(len(X_0)):
         for j in range(i, len(X_0)):
             if i != 0 or j != 0:
-                variables += [f"{X_0[i]} * {X_0[i]} AS var_{i}_{j}"]
+                variables += [f"{X_0[i]} * {X_0[j]} AS var_{i}_{j}"]
                 variables_names += [f"var_{i}_{j}"]
     query = f"""
         SELECT 

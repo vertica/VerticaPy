@@ -600,7 +600,7 @@ Time Series Tests: ARCH.
 @save_verticapy_logs
 def het_arch(
     input_relation: SQLRelation, eps: str, ts: str, by: SQLColumns = [], p: int = 1
-) -> TableSample:
+) -> tuple[float, float, float, float]:
     """
     Engle’s Test for Autoregressive Conditional Heteroscedasticity 
     (ARCH).
@@ -622,8 +622,9 @@ def het_arch(
 
     Returns
     -------
-    TableSample
-        result of the test.
+    tuple
+        Lagrange Multiplier statistic, LM pvalue, 
+        F statistic, F pvalue
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -660,17 +661,7 @@ def het_arch(
     lm_pvalue = chi2.sf(LM, p)
     F = (n - 2 * p - 1) * R2 / (1 - R2) / p
     f_pvalue = f.sf(F, p, n - 2 * p - 1)
-    return TableSample(
-        {
-            "index": [
-                "Lagrange Multiplier Statistic",
-                "lm_p_value",
-                "F Value",
-                "f_p_value",
-            ],
-            "value": [LM, lm_pvalue, F, f_pvalue],
-        }
-    )
+    return LM, lm_pvalue, F, f_pvalue
 
 
 """
