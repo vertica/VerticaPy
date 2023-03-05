@@ -32,12 +32,14 @@ class Clustering(InMemoryModel):
     Parameters
     ----------
     clusters: ArrayLike
-        ArrayLike of the model's cluster centers.
+        ArrayLike   of   the   model's  cluster   centers.
     p: int, optional
         The p corresponding to the one of the p-distances.
     clusters_names: ArrayLike, optional
         Names of the clusters.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["Clustering"]:
@@ -47,6 +49,8 @@ class Clustering(InMemoryModel):
     def _attributes(self) -> list[str]:
         return ["clusters_", "p_"]
 
+    # System & Special Methods.
+
     def __init__(
         self, clusters: ArrayLike, p: int = 2, clusters_names: ArrayLike = []
     ) -> None:
@@ -54,6 +58,49 @@ class Clustering(InMemoryModel):
         self.classes_ = np.array(clusters_names)
         self.p_ = p
         return None
+
+    # Prediction / Transformation Methods - IN MEMORY.
+
+    def predict(self, X: ArrayLike) -> np.ndarray:
+        """
+        Predicts  clusters  using  the input  Matrix.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The data on which to make the prediction.
+
+        Returns
+        -------
+        numpy.array
+            Predicted values.
+        """
+        distances = self.transform(X)
+        clusters_pred_id = np.argmin(distances, axis=1).astype(object)
+        if hasattr(self, "classes_") and len(self.classes_) > 0:
+            for idx, c in enumerate(self.classes_):
+                clusters_pred_id[clusters_pred_id == idx] = c
+        return clusters_pred_id
+
+    def predict_proba(self, X: ArrayLike) -> np.ndarray:
+        """
+        Predicts the probability of each input to belong 
+        to the model clusters.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The data on which to make the prediction.
+
+        Returns
+        -------
+        numpy.array
+            Probabilities.
+        """
+        distances = self.transform(X)
+        return (
+            1 / (distances + 1e-99) / np.sum(1 / (distances + 1e-99), axis=1)[:, None]
+        )
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
@@ -76,79 +123,12 @@ class Clustering(InMemoryModel):
             ]
         return np.column_stack(result)
 
-    def predict(self, X: ArrayLike) -> np.ndarray:
-        """
-        Predicts clusters using the input Matrix.
-
-        Parameters
-        ----------
-        X: ArrayLike
-            The data on which to make the prediction.
-
-        Returns
-        -------
-        numpy.array
-            Predicted values.
-        """
-        distances = self.transform(X)
-        clusters_pred_id = np.argmin(distances, axis=1).astype(object)
-        if hasattr(self, "classes_") and len(self.classes_) > 0:
-            for idx, c in enumerate(self.classes_):
-                clusters_pred_id[clusters_pred_id == idx] = c
-        return clusters_pred_id
-
-    def predict_proba(self, X: ArrayLike) -> np.ndarray:
-        """
-        Predicts the probability of each input to belong to 
-        the model clusters.
-
-        Parameters
-        ----------
-        X: ArrayLike
-            The data on which to make the prediction.
-
-        Returns
-        -------
-        numpy.array
-            Probabilities.
-        """
-        distances = self.transform(X)
-        return (
-            1 / (distances + 1e-99) / np.sum(1 / (distances + 1e-99), axis=1)[:, None]
-        )
-
-    def transform_sql(self, X: ArrayLike) -> list[str]:
-        """
-        Transforms and returns the SQL distance to each cluster.
-
-        Parameters
-        ----------
-        X: ArrayLike
-            The names or values of the input predictors.
-
-        Returns
-        -------
-        list
-            SQL code.
-        """
-        for c in self.clusters_:
-            if len(X) != len(c):
-                raise ValueError(
-                    "The length of parameter 'X' must be the same as "
-                    "the length of each cluster."
-                )
-        clusters_distance = []
-        for c in self.clusters_:
-            list_tmp = []
-            for idx, col in enumerate(X):
-                list_tmp += [f"POWER({X[idx]} - {c[idx]}, {self.p_})"]
-            clusters_distance += ["POWER(" + " + ".join(list_tmp) + f", 1 / {self.p_})"]
-        return clusters_distance
+    # Prediction / Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model using its 
-        attributes.
+        Returns the SQL code needed to deploy the model using 
+        its attributes.
 
         Parameters
         ----------
@@ -191,7 +171,8 @@ class Clustering(InMemoryModel):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model probabilities.
+        Returns  the SQL code needed to deploy the model 
+        probabilities.
 
         Parameters
         ----------
@@ -217,6 +198,35 @@ class Clustering(InMemoryModel):
         ]
         return [clean_query(p) for p in proba]
 
+    def transform_sql(self, X: ArrayLike) -> list[str]:
+        """
+        Transforms  and returns the SQL distance to each 
+        cluster.
+
+        Parameters
+        ----------
+        X: ArrayLike
+            The names or values of the input predictors.
+
+        Returns
+        -------
+        list
+            SQL code.
+        """
+        for c in self.clusters_:
+            if len(X) != len(c):
+                raise ValueError(
+                    "The length of parameter 'X' must be the same as "
+                    "the length of each cluster."
+                )
+        clusters_distance = []
+        for c in self.clusters_:
+            list_tmp = []
+            for idx, col in enumerate(X):
+                list_tmp += [f"POWER({X[idx]} - {c[idx]}, {self.p_})"]
+            clusters_distance += ["POWER(" + " + ".join(list_tmp) + f", 1 / {self.p_})"]
+        return clusters_distance
+
 
 class KMeans(Clustering):
     """
@@ -230,9 +240,13 @@ class KMeans(Clustering):
         The p corresponding to the one of the p-distances.
     """
 
+    # Properties.
+
     @property
     def _object_type(self) -> Literal["KMeans"]:
         return "KMeans"
+
+    # System & Special Methods.
 
     def __init__(self, clusters: ArrayLike, p: int = 2) -> None:
         self.clusters_ = np.array(clusters)
@@ -242,7 +256,8 @@ class KMeans(Clustering):
 
 class NearestCentroid(Clustering):
     """
-    InMemoryModel Implementation of NearestCentroid Algorithm.
+    InMemoryModel   Implementation  of   NearestCentroid 
+    Algorithm.
 
     Parameters
     ----------
@@ -254,6 +269,8 @@ class NearestCentroid(Clustering):
         The p corresponding to the one of the p-distances.
     """
 
+    # Properties.
+
     @property
     def _object_type(self) -> Literal["NearestCentroid"]:
         return "NearestCentroid"
@@ -261,6 +278,8 @@ class NearestCentroid(Clustering):
     @property
     def _attributes(self) -> list[str]:
         return ["clusters_", "classes_", "p_"]
+
+    # System & Special Methods.
 
     def __init__(self, clusters: ArrayLike, classes: ArrayLike, p: int = 2,) -> None:
         self.clusters_ = np.array(clusters)
@@ -278,20 +297,26 @@ class BisectingKMeans(Clustering, Tree):
     clusters: ArrayLike
         List of the model's cluster centers.
     children_left: ArrayLike
-        A list of node IDs, where children_left[i] is the node ID of the left
-        child of node i.
+        A list  of node IDs, where  children_left[i] is 
+        the node ID of the left child of node i.
     children_right: ArrayLike
-        A list of node IDs, where children_right[i] is the node ID of the right child
-        of node i.
+        A list of node IDs, where  children_right[i] is 
+        the node ID of the right child of node i.
     cluster_size: ArrayLike
-        A list of sizes, where cluster_size[i] is the number of elements in node i.
+        A list of sizes,  where  cluster_size[i] is the 
+        number of elements in node i.
     cluster_score: ArrayLike
-        A list of scores, where cluster_score[i] is the score for internal node i.
-        The score is the ratio between the within-cluster sum of squares of the node 
-        and the total within-cluster sum of squares.
+        A list of scores, where cluster_score[i] is the 
+        score  for internal  node i.  The score is  the 
+        ratio between the within-cluster sum of squares 
+        of the node and the total within-cluster sum of 
+        squares.
     p: int, optional
-        The p corresponding to the one of the p-distances.
+        The   p  corresponding  to  the  one   of   the 
+        p-distances.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["BisectingKMeans"]:
@@ -319,6 +344,8 @@ class BisectingKMeans(Clustering, Tree):
             "p_",
         ]
 
+    # System & Special Methods.
+
     def __init__(
         self,
         clusters: ArrayLike,
@@ -336,10 +363,12 @@ class BisectingKMeans(Clustering, Tree):
         self.p_ = p
         return None
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def _predict_tree(self, X: ArrayLike, node_id: int,) -> int:
         """
-        Function used recursively to get the Tree prediction starting
-        at the input node.
+        Function used recursively to get the Tree prediction 
+        starting at the input node.
         """
         if self.children_left_[node_id] == self.children_right_[node_id] == None:
             return int(node_id)
@@ -375,6 +404,8 @@ class BisectingKMeans(Clustering, Tree):
         """
         return np.apply_along_axis(self._predict_row, 1, X)
 
+    # Prediction / Transformation Methods - IN DATABASE.
+
     def _predict_tree_sql(
         self,
         children_right: ArrayLike,
@@ -383,7 +414,8 @@ class BisectingKMeans(Clustering, Tree):
         clusters_distance: ArrayLike,
     ) -> Union[int, str]:
         """
-        Function used recursively to do the final SQL code generation.
+        Function used recursively to do the final SQL code 
+        generation.
         """
         if children_left[node_id] == children_right[node_id] == None:
             return int(node_id)
@@ -402,8 +434,8 @@ class BisectingKMeans(Clustering, Tree):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the bisecting k-means model 
-        using its attributes.
+        Returns the SQL code needed to deploy the bisecting 
+        k-means model using its attributes.
 
         Parameters
         ----------
@@ -418,7 +450,8 @@ class BisectingKMeans(Clustering, Tree):
         for c in self.clusters_:
             if len(X) != len(c):
                 ValueError(
-                    "The length of parameter 'X' must be the same as the length of each cluster."
+                    "The length of parameter 'X' must be the same as "
+                    "the length of each cluster."
                 )
         clusters_distance = []
         for c in self.clusters_:
@@ -438,6 +471,8 @@ class BisectingKMeans(Clustering, Tree):
             END)"""
         return clean_query(sql_final)
 
+    # Trees Representation Methods.
+
     def to_graphviz(
         self,
         round_score: int = 2,
@@ -453,23 +488,24 @@ class BisectingKMeans(Clustering, Tree):
         Parameters
         ----------
         round_score: int, optional
-            The number of decimals to round the node's score to. 
-            0 rounds to an integer.
+            The number of decimals to round the node's score to 0 
+            rounds to an integer.
         percent: bool, optional
             If set to True, the scores are returned as a percent.
         vertical: bool, optional
-            If set to True, the function generates a vertical tree.
+            If  set to True,  the function  generates a  vertical 
+            tree.
         node_style: dict, optional
-            Dictionary of options to customize each node of the tree. 
-            For a list of options, see the Graphviz API: 
+            Dictionary  of options to customize each node of  the 
+            tree. For a list of options, see the Graphviz API: 
             https://graphviz.org/doc/info/attrs.html
         arrow_style: dict, optional
-            Dictionary of options to customize each arrow of the tree. 
-            For a list of options, see the Graphviz API: 
+            Dictionary  of options to customize each arrow of the 
+            tree. For a list of options, see the Graphviz API: 
             https://graphviz.org/doc/info/attrs.html
         leaf_style: dict, optional
-            Dictionary of options to customize each leaf of the tree. 
-            For a list of options, see the Graphviz API: 
+            Dictionary  of options to customize each leaf of  the 
+            tree. For a list of options, see the Graphviz API: 
             https://graphviz.org/doc/info/attrs.html
 
         Returns
@@ -544,15 +580,17 @@ class KPrototypes(Clustering):
     p: int, optional
         The p corresponding to the one of the p-distances.
     gamma: float, optional
-        Weighting factor for categorical columns. This 
-        determines relative importance of numerical and 
+        Weighting  factor  for  categorical columns.  This 
+        determines  relative  importance of numerical  and 
         categorical attributes.
     is_categorical: list / numpy.array, optional
-        ArrayLike of booleans to indicate whether X[idx] 
-        is a categorical variable, where True indicates 
-        categorical and False numerical. If empty, all
+        ArrayLike  of booleans to indicate whether  X[idx] 
+        is  a categorical  variable, where True  indicates 
+        categorical  and  False numerical.  If empty,  all
         the variables are considered categorical.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["KPrototypes"]:
@@ -561,6 +599,8 @@ class KPrototypes(Clustering):
     @property
     def _attributes(self) -> list[str]:
         return ["clusters_", "p_", "gamma_", "is_categorical_"]
+
+    # System & Special Methods.
 
     def __init__(
         self,
@@ -575,9 +615,12 @@ class KPrototypes(Clustering):
         self.is_categorical_ = np.array(is_categorical)
         return None
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def _transform_row(self, X: ArrayLike) -> list:
         """
-        Transforms and returns the distance to each cluster for one row.
+        Transforms and returns the distance to each cluster 
+        for one row.
         """
         distance = []
         for centroid in self.clusters_:
@@ -612,6 +655,8 @@ class KPrototypes(Clustering):
             Transformed values.
         """
         return np.apply_along_axis(self._transform_row, 1, X)
+
+    # Prediction / Transformation Methods - IN DATABASE.
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """

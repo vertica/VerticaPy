@@ -142,7 +142,9 @@ class Clustering(Unsupervised):
             raise NotImplementedError
         return res
 
-    def plot(self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds):
+    def plot(
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+    ) -> Axes:
         """
         Draws the model.
 

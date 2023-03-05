@@ -39,7 +39,7 @@ def _compute_metric_query(
     fetchfirstelem: bool = True,
 ) -> Union[float, tuple]:
     """
-    A helper function that uses a specified metric to 
+    A  helper  function  that uses  a  specified  metric  to 
     generate and score a query.
 
     Parameters

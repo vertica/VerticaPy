@@ -821,7 +821,7 @@ class KernelDensity(Regressor, Tree):
 
     def _density_kde(
         self, vdf: vDataFrame, columns: list, kernel: str, x, p: int, h=None
-    ):
+    ) -> str:
         """
         Returns the result of the KDE.
         """
@@ -881,7 +881,7 @@ class KernelDensity(Regressor, Tree):
         kernel: str = "gaussian",
         nbins: int = 5,
         p: int = 2,
-    ):
+    ) -> list:
         """
         Returns the result of the KDE for all the data points.
         """

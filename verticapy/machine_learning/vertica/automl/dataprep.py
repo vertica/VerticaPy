@@ -18,7 +18,7 @@ import copy, datetime
 from typing import Literal, Union
 
 import verticapy._config.config as conf
-from verticapy._typing import TimeInterval, SQLRelation
+from verticapy._typing import TimeInterval, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -33,7 +33,7 @@ from verticapy.machine_learning.vertica.decomposition import PCA
 class AutoDataPrep(VerticaModel):
     """
     Automatically find relations between the different 
-    features to preprocess the data according to each
+    features  to preprocess the data according to each
     column type.
 
     Parameters
@@ -43,62 +43,67 @@ class AutoDataPrep(VerticaModel):
         relation in the Vertica database.
     cat_method: str, optional
         Method for encoding categorical features. This 
-        can be set to 'label' for label encoding and 
+        can  be set to 'label' for label encoding  and 
         'ooe' for One-Hot Encoding.
     num_method: str, optional
         [Only used for non-time series datasets]
-        Method for encoding numerical features. This 
-        can be set to 'same_freq' to encode using 
-        frequencies, 'same_width' to encode using 
+        Method  for  encoding numerical features.  This 
+        can  be  set to  'same_freq'  to  encode  using 
+        frequencies,   'same_width'   to  encode  using 
         regular bins, or 'none' to not encode numerical 
         features.
     nbins: int, optional
         [Only used for non-time series datasets]
-        Number of bins used to discretize numerical 
+        Number  of bins used  to  discretize  numerical 
         features.
     outliers_threshold: float, optional
         [Only used for non-time series datasets]
         How to deal with outliers. If a number is used, 
-        all elements with an absolute z-score greater 
-        than the threshold will be converted to NULL 
-        values. Otherwise, outliers are treated as 
+        all  elements with an absolute z-score  greater 
+        than  the threshold  will be converted to  NULL 
+        values.  Otherwise,  outliers  are  treated  as 
         regular values.
     na_method: str, optional
         Method for handling missing values.
-            auto: Mean for the numerical features and 
-                  creates a new category for the 
-                  categorical vDataColumns. For time 
-                  series datasets, 'constant' interpolation 
-                  is used for categorical features and 
-                  'linear' for the others.
+            auto: Mean  for the numerical features  and 
+                  creates   a  new  category  for   the 
+                  categorical  vDataColumns.  For  time 
+                  series      datasets,      'constant' 
+                  interpolation is used for categorical 
+                  features and 'linear' for the others.
             drop: Drops the missing values.
     cat_topk: int, optional
-        Keeps the top-k most frequent categories and merges 
-        the others into one unique category. If unspecified, 
-        all categories are kept.
+        Keeps  the top-k  most frequent categories  and 
+        merges the others  into one unique category. If 
+        unspecified, all categories are kept.
     normalize: bool, optional
-        If True, the data will be normalized using the z-score. 
-        The 'num_method' parameter must be set to 'none'.
+        If True, the data will be normalized using  the 
+        z-score. The 'num_method' parameter must be set 
+        to 'none'.
     normalize_min_cat: int, optional
-        Minimum feature cardinality before using normalization.
+        Minimum   feature   cardinality  before   using 
+        normalization.
     id_method: str, optional
         Method for handling ID features.
             drop: Drops any feature detected as ID.
             none: Does not change ID features.
     apply_pca: bool, optional
         [Only used for non-time series datasets]
-        If True, a PCA is applied at the end of the preprocessing.
+        If  True, a PCA  is  applied at the end of  the 
+        preprocessing.
     rule: TimeInterval, optional
         [Only used for time series datasets]
-        Interval to use to slice the time. For example, '5 minutes' 
-        will create records separated by '5 minutes' time interval.
-        If set to auto, the rule will be detected using aggregations.
+        Interval to use to slice  the time. For example, 
+        '5 minutes' will  create records separated by '5 
+        minutes' time interval. If set to auto, the rule 
+        will be detected using aggregations.
     identify_ts: bool, optional
-        If True and parameter 'ts' is undefined when fitting the 
-        model, the function will try to automatically detect the 
-        parameter 'ts'.
+        If  True  and parameter 'ts' is  undefined  when 
+        fitting  the  model,  the  function will try  to 
+        automatically detect the parameter 'ts'.
     save: bool, optional
-        If True, saves the final relation inside the database.
+        If  True,  saves  the final relation inside  the 
+        database.
 
     Attributes
     ----------
@@ -187,7 +192,11 @@ class AutoDataPrep(VerticaModel):
     # Model Fitting Method.
 
     def fit(
-        self, input_relation: SQLRelation, X: list = [], ts: str = "", by: list = [],
+        self,
+        input_relation: SQLRelation,
+        X: SQLColumns = [],
+        ts: str = "",
+        by: SQLColumns = [],
     ) -> None:
         """
         Trains the model.
@@ -196,13 +205,14 @@ class AutoDataPrep(VerticaModel):
         ----------
         input_relation: SQLRelation
             Training Relation.
-        X: list, optional
+        X: SQLColumns, optional
             List of the features to preprocess.
         ts: str, optional
-            Time series vDataColumn to use to order the data. 
-            The vDataColumn type must be
-            date-like (date, datetime, timestamp...)
-        by: list, optional
+            Time series  vDataColumn to use to order the 
+            data. 
+            The vDataColumn type must be date-like (date, 
+            datetime, timestamp...)
+        by: SQLColumns, optional
             vDataColumns used in the partition.
         """
         if conf.get_option("overwrite_model"):
@@ -211,15 +221,18 @@ class AutoDataPrep(VerticaModel):
             self._is_already_stored(raise_error=True)
         current_print_info = conf.get_option("print_info")
         conf.set_option("print_info", False)
-        assert not (by) or (ts), ParameterError(
-            "Parameter 'by' must be empty if 'ts' is not defined."
-        )
+        if (by) and not (ts):
+            raise ParameterError("Parameter 'by' must be empty if 'ts' is not defined.")
         if isinstance(input_relation, str):
             vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation.copy()
         if not (X):
             X = vdf.get_columns()
+        if isinstance(by, str):
+            by = [by]
+        if isinstance(X, str):
+            X = [X]
         if not (ts) and self.parameters["identify_ts"]:
             nb_date, nb_num, nb_others = 0, 0, 0
             for x in X:

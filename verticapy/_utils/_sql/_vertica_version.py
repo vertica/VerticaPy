@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from functools import wraps
-from typing import Callable
+from typing import Any, Callable
 
 from verticapy.connection.connect import current_cursor
 from verticapy.errors import VersionError
@@ -78,7 +78,7 @@ def check_minimum_version(func: Callable) -> Callable:
     """
 
     @wraps(func)
-    def func_prec_check_minimum_version(*args, **kwargs):
+    def func_prec_check_minimum_version(*args, **kwargs) -> Any:
         fun_name, object_name, condition = func.__name__, "", []
         if len(args) > 0:
             object_name = type(args[0]).__name__

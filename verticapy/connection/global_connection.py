@@ -110,5 +110,5 @@ class GlobalConnection:
 _global_connection = GlobalConnection()
 
 
-def get_global_connection():
+def get_global_connection() -> GlobalConnection:
     return _global_connection

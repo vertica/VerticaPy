@@ -492,12 +492,13 @@ class CountVectorizer(VerticaModel):
 
     # Attributes Methods.
 
-    def _compute_attributes(self):
+    def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
         """
         self.stop_words_ = self._compute_stop_words()
         self.vocabulary_ = self._compute_vocabulary()
+        return None
 
     def _compute_stop_words(self):
         """
@@ -514,7 +515,7 @@ class CountVectorizer(VerticaModel):
         res = _executeSQL(query=query, print_time_sql=False, method="fetchall")
         return np.array([w[0] for w in res])
 
-    def _compute_vocabulary(self):
+    def _compute_vocabulary(self) -> np.ndarray:
         """
         Computes the CountVectorizer Vocabulary. It will 
         affect the result to  the vocabulary_ attribute.

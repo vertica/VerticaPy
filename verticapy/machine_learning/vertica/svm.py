@@ -246,7 +246,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
     # Parameters Methods.
 
     @staticmethod
-    def _map_to_vertica_param_dict():
+    def _map_to_vertica_param_dict() -> dict[str, str]:
         return {
             "class_weights": "class_weight",
             "tol": "epsilon",

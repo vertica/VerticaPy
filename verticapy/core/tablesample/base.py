@@ -256,7 +256,7 @@ The TableSample attributes are the same as the parameters.
             self.values[cols1[idx]] += tbs.values[cols2[idx]]
         return self
 
-    def decimal_to_float(self):
+    def decimal_to_float(self) -> "TableSample":
         """
     Converts all the TableSample's decimals to floats.
 
@@ -272,7 +272,7 @@ The TableSample attributes are the same as the parameters.
                         self.values[elem][i] = float(self.values[elem][i])
         return self
 
-    def merge(self, tbs):
+    def merge(self, tbs: "TableSample") -> "TableSample":
         """
         Merges the input TableSample to a target TableSample.
 
@@ -301,7 +301,7 @@ The TableSample attributes are the same as the parameters.
                 self.values[col] += tbs.values[col]
         return self
 
-    def narrow(self, use_number_as_category: bool = False):
+    def narrow(self, use_number_as_category: bool = False) -> Union[tuple, list]:
         """
         TODO
         """

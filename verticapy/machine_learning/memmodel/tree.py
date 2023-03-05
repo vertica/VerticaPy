@@ -27,63 +27,37 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 if conf._get_import_success("graphviz"):
     import graphviz
+    from graphviz import Source
 
 
 class Tree(InMemoryModel):
+    """
+    Base Class for Tree representation.
+    """
+
+    # System & Special Methods.
+
+    ## Math
+
     @staticmethod
-    def _heuristic_length(i: int):
+    def _heuristic_length(i: int) -> float:
         """
         Returns the heuristic length of the input integer.
         """
         GAMMA = 0.5772156649
         if i == 2:
-            return 1
+            return 1.0
         elif i > 2:
             return 2 * (math.log(i - 1) + GAMMA) - 2 * (i - 1) / i
         else:
-            return 0
+            return 0.0
 
-    @staticmethod
-    def _default_colors() -> list[str]:
-        return [
-            "#87cefa",
-            "#efc5b5",
-            "#d4ede3",
-            "#f0ead2",
-            "#d2cbaf",
-            "#fcf0e5",
-            "#f1ece2",
-            "#98f6b0",
-            "#d7d3a6",
-            "#f8f8ff",
-            "#d7cec5",
-            "#f7d560",
-            "#e5e7e9",
-            "#ffa180",
-            "#efc0fe",
-            "#ffc5cb",
-            "#eeeeaa",
-            "#e7feff",
-        ]
+    ## Tree Decision
 
-    @staticmethod
-    def _flat_dict(d: dict) -> str:
+    def _go_left(self, X: ArrayLike, node_id: int) -> bool:
         """
-        Converts dictionary to string with a specific format
-        used during the Graphviz convertion.
-        """
-        res = []
-        for key in d:
-            q = '"' if isinstance(d[key], str) else ""
-            res += [f"{key}={q}{d[key]}{q}"]
-        res = ", ".join(res)
-        if res:
-            res = f", {res}"
-        return res
-
-    def _go_left(self, X: ArrayLike, node_id: int):
-        """
-        Function used to decide either to go left or not.
+        Function used to decide either to go left 
+        or not.
         """
         th = self.threshold_[node_id]
         c = self.feature_[node_id]
@@ -107,11 +81,14 @@ class Tree(InMemoryModel):
         """
         raise NotImplementedError
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def _predict_row(
         self, X: ArrayLike, node_id: int = 0, return_proba: bool = False
     ) -> float:
         """
-        Function used recursively to get the Tree prediction.
+        Function used recursively to get the Tree 
+        prediction.
         """
         if self.children_left_[node_id] == self.children_right_[node_id]:
             if return_proba:
@@ -127,7 +104,8 @@ class Tree(InMemoryModel):
 
     def _predict_row_proba(self, X: ArrayLike, node_id: int = 0) -> ArrayLike:
         """
-        Function used recursively to get the Tree prediction.
+        Function used  recursively to get the Tree 
+        prediction.
         """
         return self._predict_row(X, node_id, True)
 
@@ -163,13 +141,15 @@ class Tree(InMemoryModel):
         """
         return np.apply_along_axis(self._predict_row_proba, 1, np.array(X))
 
+    # Prediction / Transformation Methods - IN DATABASE.
+
     def _predict_tree_sql(
         self,
         X: ArrayLike,
         node_id: int = 0,
         return_proba: bool = False,
         class_id: int = 0,
-    ):
+    ) -> str:
         """
         Function used recursively to do the final SQL code generation.
         """
@@ -232,8 +212,54 @@ class Tree(InMemoryModel):
         n = max([len(val) if val != None else 0 for val in self.value_])
         return [self._predict_tree_sql(X, 0, True, i) for i in range(n)]
 
+    # Trees Representation Methods.
+
+    @staticmethod
+    def _default_colors() -> list[str]:
+        """
+        Default colors for the tree representation.
+        """
+        return [
+            "#87cefa",
+            "#efc5b5",
+            "#d4ede3",
+            "#f0ead2",
+            "#d2cbaf",
+            "#fcf0e5",
+            "#f1ece2",
+            "#98f6b0",
+            "#d7d3a6",
+            "#f8f8ff",
+            "#d7cec5",
+            "#f7d560",
+            "#e5e7e9",
+            "#ffa180",
+            "#efc0fe",
+            "#ffc5cb",
+            "#eeeeaa",
+            "#e7feff",
+        ]
+
+    @staticmethod
+    def _flat_dict(d: dict) -> str:
+        """
+        Converts dictionary to string with a specific 
+        format used  during the Graphviz  convertion.
+        """
+        res = []
+        for key in d:
+            q = '"' if isinstance(d[key], str) else ""
+            res += [f"{key}={q}{d[key]}{q}"]
+        res = ", ".join(res)
+        if res:
+            res = f", {res}"
+        return res
+
     @property
     def _get_output_kind(self) -> Literal["pred", "prob", "logodds", "contamination"]:
+        """
+        Returns the tree's output kind.
+        """
         output_kind = "pred"
         if self._object_type == "BinaryTreeAnomaly":
             output_kind = "contamination"
@@ -255,7 +281,7 @@ class Tree(InMemoryModel):
         node_style: dict = {"shape": "box", "style": "filled"},
         arrow_style: dict = {},
         leaf_style: dict = {},
-    ):
+    ) -> str:
         """
         Returns the code for a Graphviz tree.
 
@@ -275,15 +301,15 @@ class Tree(InMemoryModel):
             If set to True, the function generates a vertical 
             tree.
         node_style: dict, optional
-            Dictionary of options to customize each node of 
+            Dictionary  of options to customize each node  of 
             the tree. For a list of options, see the Graphviz 
             API: https://graphviz.org/doc/info/attrs.html
         arrow_style: dict, optional
-            Dictionary of options to customize each arrow of 
+            Dictionary  of options to customize each arrow of 
             the tree. For a list of options, see the Graphviz 
             API: https://graphviz.org/doc/info/attrs.html
         leaf_style: dict, optional
-            Dictionary of options to customize each leaf of 
+            Dictionary  of options to customize each leaf  of 
             the tree. For a list of options, see the Graphviz 
             API: https://graphviz.org/doc/info/attrs.html
 
@@ -381,18 +407,16 @@ class Tree(InMemoryModel):
                 res += f"\n{i} [label={label}{self._flat_dict(leaf_style)}]"
         return res + "\n}"
 
-    def plot_tree(
-        self, pic_path: str = "", *argv, **kwds,
-    ):
+    def plot_tree(self, pic_path: str = "", *argv, **kwds,) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
 
         Parameters
         ----------
         pic_path: str, optional
-            Absolute path to save the image of the tree.
+            Absolute  path to  save the image of the  tree.
         *argv, **kwds: Any, optional
-            Arguments to pass to the 'to_graphviz' method.
+            Arguments to pass to  the 'to_graphviz' method.
 
         Returns
         -------
@@ -416,7 +440,8 @@ class Tree(InMemoryModel):
 
 class BinaryTreeRegressor(Tree):
     """
-    InMemoryModel Implementation of Binary Trees for Regression.
+    InMemoryModel  Implementation  of  Binary  Trees  for 
+    Regression.
 
     Parameters
     ----------
@@ -427,17 +452,20 @@ class BinaryTreeRegressor(Tree):
         A list of node IDs, children_right[i] is the node 
         id of the right child of node i.
     feature: ArrayLike
-        A list of features, where feature[i] is the feature 
-        to split on for the internal node i.
+        A  list  of features,  where  feature[i]  is  the 
+        feature to split on for the internal node i.
     threshold: ArrayLike
-        A list of thresholds, where threshold[i] is the 
+        A  list of thresholds, where threshold[i] is  the 
         threshold for the internal node i.
     value: ArrayLike
-        Contains the constant prediction value of each node. 
-        If used for classification and if return_proba is 
-        set to True, each element of the list must be a sublist 
-        with the probabilities of each class.
+        Contains  the  constant  prediction value of each 
+        node.   If  used  for   classification   and   if 
+        return_proba is set to True,  each element of the 
+        list must be a sublist  with the probabilities of 
+        each class.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["BinaryTreeRegressor"]:
@@ -446,6 +474,8 @@ class BinaryTreeRegressor(Tree):
     @property
     def _attributes(self) -> list[str]:
         return ["children_left_", "children_right_", "feature_", "threshold_", "value_"]
+
+    # System & Special Methods.
 
     def __init__(
         self,
@@ -462,6 +492,8 @@ class BinaryTreeRegressor(Tree):
         self.value_ = np.array(value, dtype=object)
         return None
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def _scoring_function(self, node_id: int = 0) -> float:
         """
         Function used to take the final decision.
@@ -471,8 +503,8 @@ class BinaryTreeRegressor(Tree):
 
 class BinaryTreeAnomaly(Tree):
     """
-    InMemoryModel Implementation of Binary Trees for Anomaly
-    Detection.
+    InMemoryModel  Implementation  of  Binary  Trees  for 
+    Anomaly Detection.
 
     Parameters
     ----------
@@ -483,19 +515,22 @@ class BinaryTreeAnomaly(Tree):
         A list of node IDs, children_right[i] is the node 
         id of the right child of node i.
     feature: ArrayLike
-        A list of features, where feature[i] is the feature 
-        to split on for the internal node i.
+        A  list  of features,  where  feature[i]  is  the 
+        feature to split on for the internal node i.
     threshold: ArrayLike
-        A list of thresholds, where threshold[i] is the 
+        A  list of thresholds, where threshold[i] is  the 
         threshold for the internal node i.
     value: ArrayLike
-        Contains the constant prediction value of each node. 
-        If used for classification and if return_proba is 
-        set to True, each element of the list must be a sublist 
-        with the probabilities of each class.
+        Contains  the  constant  prediction value of each 
+        node.   If  used  for   classification   and   if 
+        return_proba is set to True,  each element of the 
+        list must be a sublist  with the probabilities of 
+        each class.
     psy: int, optional
-        Sampling size used to compute the final score.
+        Sampling  size used to  compute the final  score.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["BinaryTreeAnomaly"]:
@@ -511,6 +546,8 @@ class BinaryTreeAnomaly(Tree):
             "value_",
             "psy_",
         ]
+
+    # System & Special Methods.
 
     def __init__(
         self,
@@ -529,6 +566,8 @@ class BinaryTreeAnomaly(Tree):
         self.psy = psy
         return None
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def _scoring_function(self, node_id: int = 0) -> float:
         """
         Function used to take the final decision.
@@ -539,7 +578,8 @@ class BinaryTreeAnomaly(Tree):
 
 class BinaryTreeClassifier(Tree):
     """
-    InMemoryModel Implementation of Binary Trees for Classification.
+    InMemoryModel  Implementation  of  Binary  Trees  for 
+    Classification.
 
     Parameters
     ----------
@@ -550,19 +590,22 @@ class BinaryTreeClassifier(Tree):
         A list of node IDs, children_right[i] is the node 
         id of the right child of node i.
     feature: ArrayLike
-        A list of features, where feature[i] is the feature 
-        to split on for the internal node i.
+        A  list  of features,  where  feature[i]  is  the 
+        feature to split on for the internal node i.
     threshold: ArrayLike
-        A list of thresholds, where threshold[i] is the 
+        A  list of thresholds, where threshold[i] is  the 
         threshold for the internal node i.
     value: ArrayLike
-        Contains the constant prediction value of each node. 
-        If used for classification and if return_proba is 
-        set to True, each element of the list must be a sublist 
-        with the probabilities of each class.
+        Contains  the  constant  prediction value of each 
+        node.   If  used  for   classification   and   if 
+        return_proba is set to True,  each element of the 
+        list must be a sublist  with the probabilities of 
+        each class.
     classes: ArrayLike, optional
         The classes for the binary tree model.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["BinaryTreeClassifier"]:
@@ -578,6 +621,8 @@ class BinaryTreeClassifier(Tree):
             "value_",
             "classes_",
         ]
+
+    # System & Special Methods.
 
     def __init__(
         self,
@@ -595,6 +640,8 @@ class BinaryTreeClassifier(Tree):
         self.value_ = copy.deepcopy(value)
         self.classes_ = np.array(classes)
         return None
+
+    # Prediction / Transformation Methods - IN MEMORY.
 
     def _scoring_function(self, node_id: int = 0) -> float:
         """
@@ -619,11 +666,14 @@ class NonBinaryTree(Tree):
     Parameters
     ----------
     tree: dict
-        A NonBinaryTree tree. Non Binary Trees can 
+        A  NonBinaryTree  tree.  Non Binary Trees  can 
         be generated with the vDataFrame.chaid method.
     classes: ArrayLike, optional
-        The p corresponding to the one of the p-distances.
+        The  p  corresponding   to  the   one  of  the 
+        p-distances.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["NonBinaryTree"]:
@@ -633,16 +683,21 @@ class NonBinaryTree(Tree):
     def _attributes(self) -> list[str]:
         return ["tree_", "classes_"]
 
+    # System & Special Methods.
+
     def __init__(self, tree: dict, classes: ArrayLike = []) -> None:
         self.tree_ = copy.deepcopy(tree)
         self.classes_ = np.array(classes)
         return None
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def _predict_tree(
         self, X: ArrayLike, tree: dict, return_proba: bool = False
     ) -> Union[ArrayLike, str, int]:
         """
-        Function used recursively to get the Tree prediction.
+        Function used recursively to get the Tree 
+        prediction.
         """
         if tree["is_leaf"]:
             if return_proba:
@@ -665,10 +720,17 @@ class NonBinaryTree(Tree):
 
     def _predict_row(self, X: ArrayLike) -> Union[ArrayLike, str, int]:
         """
-        Function used recursively to get the Tree prediction 
-        for one row.
+        Function used recursively to get the Tree 
+        prediction for one row.
         """
         return self._predict_tree(X, self.tree_, False)
+
+    def _predict_proba_row(self, X: ArrayLike) -> ArrayLike:
+        """
+        Function used recursively to get the Tree 
+        probabilities for one row.
+        """
+        return self._predict_tree(X, self.tree_, True)
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
@@ -686,16 +748,9 @@ class NonBinaryTree(Tree):
         """
         return np.apply_along_axis(self._predict_row, 1, np.array(X))
 
-    def _predict_proba_row(self, X: ArrayLike) -> ArrayLike:
-        """
-        Function used recursively to get the Tree probabilities
-        for one row.
-        """
-        return self._predict_tree(X, self.tree_, True)
-
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Returns probabilities using the CHAID model.
+        Returns probabilities  using the CHAID model.
 
         Parameters
         ----------
@@ -709,11 +764,14 @@ class NonBinaryTree(Tree):
         """
         return np.apply_along_axis(self._predict_proba_row, 1, np.array(X))
 
+    # Prediction / Transformation Methods - IN DATABASE.
+
     def _predict_tree_sql(
         self, X: ArrayLike, tree: dict, class_id: int = 0, return_proba: bool = False
-    ):
+    ) -> str:
         """
-        Function used recursively to do the final SQL code generation.
+        Function used recursively to do the final SQL 
+        code generation.
         """
         if tree["is_leaf"]:
             if return_proba:
@@ -738,8 +796,8 @@ class NonBinaryTree(Tree):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model using its 
-        attributes.
+        Returns the SQL code needed to deploy the model 
+        using its attributes.
 
         Parameters
         ----------
@@ -755,7 +813,8 @@ class NonBinaryTree(Tree):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model probabilities.
+        Returns the SQL code needed to deploy the model 
+        probabilities.
 
         Parameters
         ----------
@@ -769,6 +828,8 @@ class NonBinaryTree(Tree):
         """
         n = len(self.classes_)
         return [self._predict_tree_sql(X, self.tree_, i, True) for i in range(n)]
+
+    # Trees Representation Methods.
 
     def _to_graphviz_tree(
         self,
@@ -875,15 +936,15 @@ class NonBinaryTree(Tree):
             If set to True, the function generates a vertical 
             tree.
         node_style: dict, optional
-            Dictionary of options to customize each node of 
+            Dictionary  of options to customize each node  of 
             the tree. For a list of options, see the Graphviz 
             API: https://graphviz.org/doc/info/attrs.html
         arrow_style: dict, optional
-            Dictionary of options to customize each arrow of 
+            Dictionary  of options to customize each arrow of 
             the tree. For a list of options, see the Graphviz 
             API: https://graphviz.org/doc/info/attrs.html
         leaf_style: dict, optional
-            Dictionary of options to customize each leaf of 
+            Dictionary  of options to customize each leaf  of 
             the tree. For a list of options, see the Graphviz 
             API: https://graphviz.org/doc/info/attrs.html
 

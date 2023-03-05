@@ -30,10 +30,12 @@ class PCA(InMemoryModel):
     Parameters
     ----------
     principal_components: ArrayLike
-        Matrix of the principal components.
+        Matrix   of   the   principal   components.
     mean: ArrayLike
         List of the averages of each input feature.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["PCA"]:
@@ -43,14 +45,19 @@ class PCA(InMemoryModel):
     def _attributes(self) -> list[str]:
         return ["principal_components_", "mean_"]
 
+    # System & Special Methods.
+
     def __init__(self, principal_components: ArrayLike, mean: ArrayLike) -> None:
         self.principal_components_ = np.array(principal_components)
         self.mean_ = np.array(mean)
         return None
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms and applies the PCA model to the input matrix.
+        Transforms and applies the PCA model to the input 
+        matrix.
 
         Parameters
         ----------
@@ -70,9 +77,12 @@ class PCA(InMemoryModel):
             ]
         return np.column_stack(X_trans)
 
+    # Prediction / Transformation Methods - IN DATABASE.
+
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL needed to deploy the PCA.
+        Transforms and returns the SQL needed to deploy 
+        the PCA.
 
         Parameters
         ----------
@@ -99,13 +109,15 @@ class PCA(InMemoryModel):
             sql += [" + ".join(sql_tmp)]
         return sql
 
+    # Special Methods - Matrix Rotation.
+
     @staticmethod
     def matrix_rotation(
         Phi: ArrayLike, gamma: float = 1.0, q: int = 20, tol: float = 1e-6
     ) -> None:
         """
-        Performs a Oblimin (Varimax, Quartimax) rotation on the input
-        Matrix.
+        Performs a Oblimin  (Varimax, Quartimax)  rotation on 
+        the input Matrix.
         """
         # This piece of code was taken from
         # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
@@ -132,7 +144,7 @@ class PCA(InMemoryModel):
 
     def rotate(self, gamma: float = 1.0, q: int = 20, tol: float = 1e-6) -> None:
         """
-        Performs a Oblimin (Varimax, Quartimax) rotation on the PCA 
+        Performs  a Oblimin (Varimax, Quartimax) rotation on the  PCA 
         matrix.
 
         Parameters
@@ -145,7 +157,7 @@ class PCA(InMemoryModel):
         q: int, optional
             Maximum number of iterations.
         tol: float, optional
-            The algorithm stops when the Frobenius norm of gradient 
+            The  algorithm stops when the Frobenius norm of  gradient 
             is less than tol.
         """
         res = self.matrix_rotation(self.principal_components_, gamma, q, tol)
@@ -162,8 +174,11 @@ class SVD(InMemoryModel):
     vectors: ArrayLike
         Matrix of the right singular vectors.
     values: ArrayLike
-        List of the singular values for each input feature.
+        List of the singular values for each input 
+        feature.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["SVD"]:
@@ -173,10 +188,14 @@ class SVD(InMemoryModel):
     def _attributes(self) -> list[str]:
         return ["vectors_", "values_"]
 
+    # System & Special Methods.
+
     def __init__(self, vectors: ArrayLike, values: ArrayLike) -> None:
         self.vectors_ = np.array(vectors)
         self.values_ = np.array(values)
         return None
+
+    # Prediction / Transformation Methods - IN MEMORY.
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
@@ -198,9 +217,12 @@ class SVD(InMemoryModel):
             X_trans += [np.sum(X * self.vectors_[:, i] / self.values_[i], axis=1)]
         return np.column_stack(X_trans)
 
+    # Prediction / Transformation Methods - IN DATABASE.
+
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL needed to deploy the PCA.
+        Transforms and returns the SQL needed to deploy 
+        the PCA.
 
         Parameters
         ----------
