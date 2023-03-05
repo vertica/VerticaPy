@@ -31,7 +31,7 @@ from IPython.display import display, HTML
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._dblink import replace_external_queries_in_query
+from verticapy._utils._sql._dblink import replace_external_queries
 from verticapy._utils._sql._format import (
     clean_query,
     replace_vars_in_query,
@@ -123,7 +123,7 @@ def sql_magic(line, cell="", local_ns=None):
         # Cleaning the Query
         queries = clean_query(queries)
         queries = replace_vars_in_query(queries, locals()["local_ns"])
-        queries = replace_external_queries_in_query(queries)
+        queries = replace_external_queries(queries)
 
         # Looking at very specific external queries symbols
         gb_conn = get_global_connection()

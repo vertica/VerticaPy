@@ -24,7 +24,7 @@ import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._check import is_longvar, is_sql_select
+from verticapy._utils._sql._check import is_longvar, is_dql
 from verticapy._utils._sql._format import (
     clean_query,
     extract_precision_scale,
@@ -259,7 +259,7 @@ class vDataFrame(
 
         elif not (_empty):
 
-            if isinstance(input_relation, str) and is_sql_select(input_relation):
+            if isinstance(input_relation, str) and is_dql(input_relation):
 
                 # Cleaning the Query
                 sql = clean_query(input_relation)

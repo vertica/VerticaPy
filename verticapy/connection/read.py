@@ -21,14 +21,14 @@ from verticapy.connection.utils import get_confparser
 from verticapy.errors import ParameterError
 
 
-def available_connections():
+def available_connections() -> list[str]:
     """
-Displays all the available connections.
+    Displays all the available connections.
 
-Returns
--------
-list
-    all the available connections.
+    Returns
+    -------
+    list
+        all the available connections.
     """
     gb_conn = get_global_connection()
 
@@ -42,23 +42,25 @@ list
 available_auto_connection = available_connections
 
 
-def read_dsn(section: str, dsn: str = ""):
+def read_dsn(section: str, dsn: str = "") -> dict:
     """
-Reads the DSN information from the VERTICAPY_CONNECTION environment 
-variable or the input file.
+    Reads the DSN information from the VERTICAPY_
+    CONNECTION environment variable  or the input 
+    file.
 
-Parameters
-----------
-section: str
-    Name of the section in the configuration file.
-dsn: str, optional
-    Path to the file containing the credentials. If empty, the 
-    VERTICAPY_CONNECTION environment variable will be used.
+    Parameters
+    ----------
+    section: str
+        Name of the section in the configuration file.
+    dsn: str, optional
+        Path to the file  containing the  credentials. 
+        If empty, the VERTICAPY_CONNECTION environment 
+        variable will be used.
 
-Returns
--------
-dict
-    dictionary with all the credentials.
+    Returns
+    -------
+    dict
+        dictionary with all the credentials.
     """
     confparser = get_confparser(dsn)
 

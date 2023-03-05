@@ -14,9 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Literal, Optional
 
 
-def verticapy_agg_name(key: str, method: str = ""):
+def verticapy_agg_name(key: str, method: Optional[Literal["vertica"]] = "") -> str:
+    """
+    Returns the VerticaPy name of the input key.
+    """
     key = key.lower()
     if key in ("median", "med"):
         key = "50%"

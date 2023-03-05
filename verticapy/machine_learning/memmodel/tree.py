@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy
+import copy, math
 from collections.abc import Iterable
 from typing import Literal, Union
 import numpy as np
@@ -22,7 +22,6 @@ import numpy as np
 import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
 from verticapy._utils._sql._format import clean_query, format_magic
-from verticapy._utils.math import heuristic_length
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
 
@@ -31,6 +30,19 @@ if conf._get_import_success("graphviz"):
 
 
 class Tree(InMemoryModel):
+    @staticmethod
+    def _heuristic_length(i: int):
+        """
+        Returns the heuristic length of the input integer.
+        """
+        GAMMA = 0.5772156649
+        if i == 2:
+            return 1
+        elif i > 2:
+            return 2 * (math.log(i - 1) + GAMMA) - 2 * (i - 1) / i
+        else:
+            return 0
+
     @staticmethod
     def _default_colors() -> list[str]:
         return [
@@ -314,10 +326,10 @@ class Tree(InMemoryModel):
                         color = classes_color[0]
                     else:
                         color = "#eeeeee"
-                    anomaly_score = self.value_[i][0] + heuristic_length(
+                    anomaly_score = self.value_[i][0] + self._heuristic_length(
                         self.value_[i][1]
                     )
-                    anomaly_score = -(anomaly_score) / heuristic_length(self.psy)
+                    anomaly_score = -(anomaly_score) / self._heuristic_length(self.psy)
                     anomaly_score = float(2 ** anomaly_score)
                     if anomaly_score < 0.5:
                         color_anomaly = "#ffffff"
@@ -521,8 +533,8 @@ class BinaryTreeAnomaly(Tree):
         """
         Function used to take the final decision.
         """
-        res = self.value_[node_id][0] + heuristic_length(self.value_[node_id][1])
-        return res / heuristic_length(self.psy)
+        res = self.value_[node_id][0] + self._heuristic_length(self.value_[node_id][1])
+        return res / self._heuristic_length(self.psy)
 
 
 class BinaryTreeClassifier(Tree):

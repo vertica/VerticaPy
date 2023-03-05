@@ -15,11 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import time
-from typing import Literal
+from typing import Any, Literal
 
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
-from verticapy._utils._sql._dblink import replace_external_queries_in_query
+from verticapy._utils._sql._dblink import replace_external_queries
 from verticapy._utils._sql._display import print_query, print_time
 from verticapy._utils._sql._format import clean_query, erase_label
 from verticapy.connection.connect import current_cursor
@@ -36,7 +36,10 @@ def _executeSQL(
     print_time_sql: bool = True,
     sql_push_ext: bool = False,
     symbol: str = "$",
-):
+) -> Any:
+    """
+    Executes and returns the result of the input query.
+    """
     special_symbols = get_global_connection()._special_symbols
     # Cleaning the query
     if sql_push_ext and (symbol in special_symbols):
@@ -46,7 +49,7 @@ def _executeSQL(
     elif sql_push_ext and (symbol not in special_symbols):
         raise ParameterError(f"Symbol '{symbol}' is not supported.")
 
-    query = replace_external_queries_in_query(query)
+    query = replace_external_queries(query)
     query = clean_query(query)
 
     cursor = current_cursor()

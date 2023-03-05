@@ -15,13 +15,15 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime
-from typing import Union
+from typing import Literal, Union
 import numpy as np
 
 
-def to_varchar(
-    category: str, column: str = "{}",
-):
+def to_varchar(category: str, column: str = "{}",) -> str:
+    """
+    Uses the right SQL function to convert
+    the input column to VARCHAR.
+    """
     map_dict = {
         "vmap": f"MAPTOSTRING({column})",
         "binary": f"TO_HEX({column})",
@@ -32,7 +34,13 @@ def to_varchar(
     return column
 
 
-def to_dtype_category(expr: type) -> str:
+def to_dtype_category(
+    expr: type,
+) -> Literal["float", "int", "text", "date", "complex", "undefined"]:
+    """
+    Returns the category associated with
+    the Python input type.
+    """
     try:
         category = expr.category()
     except:
@@ -51,7 +59,11 @@ def to_dtype_category(expr: type) -> str:
     return category
 
 
-def to_sql_dtype(dtype: Union[type, str]):
+def to_sql_dtype(dtype: Union[type, str]) -> Union[type, str]:
+    """
+    Returns the SQL type associated to the
+    input Python type.
+    """
     if dtype in (str, "str", "string"):
         dtype = "varchar"
     elif dtype == float:
@@ -79,7 +91,24 @@ def to_sql_dtype(dtype: Union[type, str]):
     return dtype
 
 
-def to_category(ctype: str = ""):
+def to_category(
+    ctype: str = "",
+) -> Literal[
+    "text",
+    "int",
+    "float",
+    "date",
+    "binary",
+    "uuid",
+    "vmap",
+    "spatial",
+    "complex",
+    "undefined",
+]:
+    """
+    Returns the category associated to the
+    input SQL type.
+    """
     ctype = ctype.lower().strip()
     if ctype != "":
         if (ctype[0:5] == "array") or (ctype[0:3] == "row") or (ctype[0:3] == "set"):

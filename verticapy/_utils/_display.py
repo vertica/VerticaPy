@@ -30,7 +30,11 @@ def print_table(
     return_html: bool = False,
     dtype: dict = {},
     percent: dict = {},
-):
+) -> str:
+    """
+    Returns the HTML code or string to display the final 
+    relation.
+    """
     if not (return_html):
         data_columns_rep = [] + data_columns
         if repeat_first_column:

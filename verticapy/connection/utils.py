@@ -18,9 +18,10 @@ import os
 from configparser import ConfigParser
 
 
-def get_confparser(dsn: str = ""):
+def get_confparser(dsn: str = "") -> ConfigParser:
     """
-    TODO
+    Parses the input DSN and returns the linked
+    Config Parser.
     """
     if not (dsn):
         dsn = get_connection_file()
@@ -30,18 +31,20 @@ def get_confparser(dsn: str = ""):
     return confparser
 
 
-def get_connection_file():
+def get_connection_file() -> str:
     """
-Gets (and creates, if necessary) the auto-connection file.
-If the environment variable 'VERTICAPY_CONNECTION' is set, it is assumed 
-to be the full path to the auto-connection file.
-Otherwise, we reference "connections.verticapy" in the hidden ".verticapy" 
-folder in the user's home directory.
+    Gets  (and  creates,  if  necessary)  the  auto
+    -connection file. If the  environment  variable 
+    'VERTICAPY_CONNECTION'  is set, it  is  assumed 
+    to be the full path to the auto-connection file.
+    Otherwise, we reference "connections.verticapy" 
+    in the hidden ".verticapy" folder in the user's 
+    home directory.
 
-Returns
--------
-string
-    the full path to the auto-connection file.
+    Returns
+    -------
+    string
+        the full path to the auto-connection file.
     """
     if "VERTICAPY_CONNECTION" in os.environ:
         return os.environ["VERTICAPY_CONNECTION"]

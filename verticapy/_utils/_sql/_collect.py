@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from functools import wraps
+from typing import Any, Callable
 
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
@@ -28,35 +29,39 @@ def save_to_query_profile(
     query_label: str = "verticapy_json",
     return_query: bool = False,
     add_identifier: bool = True,
-):
+) -> bool:
     """
-Saves information about the specified VerticaPy method to the QUERY_PROFILES 
-table in the Vertica database. It is used to collect usage statistics on 
-methods and their parameters. This function generates a JSON string.
+    Saves  information about the specified  VerticaPy 
+    method to the QUERY_PROFILES table in the Vertica 
+    database.  It is used to collect usage statistics 
+    on  methods and their parameters.  This  function 
+    generates a JSON string.
 
-Parameters
-----------
-name: str
-    Name of the method.
-path: str, optional
-    Path to the function or method.
-json_dict: dict, optional
-    Dictionary of the different parameters to store.
-query_label: str, optional
-    Name to give to the identifier in the query profile table. If 
-    unspecified, the name of the method is used.
-return_query: bool, optional
-    If set to True, the query is returned.
-add_identifier: bool, optional
-    If set to True, the VerticaPy identifier is added to the generated json.
+    Parameters
+    ----------
+    name: str
+        Name of the method.
+    path: str, optional
+        Path to the function or method.
+    json_dict: dict, optional
+        Dictionary  of  the different  parameters  to 
+        store.
+    query_label: str, optional
+        Name  to give  to the identifier in the  query 
+        profile table. If unspecified, the name of the 
+        method is used.
+    return_query: bool, optional
+        If set to True, the query is returned.
+    add_identifier: bool, optional
+        If  set to True, the VerticaPy  identifier  is 
+        added to the generated json.
 
-Returns
--------
-bool
-    True if the operation succeeded, False otherwise.
+    Returns
+    -------
+    bool
+        True if the operation succeeded, False otherwise.
     """
     value = conf.get_option("save_query_profile")
-
     if not (value):
         return False
     try:
@@ -117,14 +122,15 @@ bool
         return False
 
 
-def save_verticapy_logs(func):
+def save_verticapy_logs(func: Callable) -> Callable:
     """
-save_verticapy_logs decorator. It simplifies the code and automatically
-identifies which function to save to the QUERY PROFILES table.
+    save_verticapy_logs decorator.  It simplifies the code 
+    and automatically identifies which function to save to 
+    the QUERY PROFILES table.
     """
 
     @wraps(func)
-    def func_prec_save_logs(*args, **kwargs):
+    def func_prec_save_logs(*args, **kwargs) -> Any:
 
         name = func.__name__
         path = func.__module__.replace("verticapy.", "")

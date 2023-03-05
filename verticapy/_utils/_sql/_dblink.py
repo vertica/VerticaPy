@@ -23,7 +23,10 @@ from verticapy.connection.connect import current_cursor
 from verticapy.errors import ConnectionError
 
 
-def get_dblink_fun(query: str, symbol: str = "$"):
+def get_dblink_fun(query: str, symbol: str = "$") -> str:
+    """
+    Returns the SQL needed to deploy the DBLINK UDTF.
+    """
     gb_conn = get_global_connection()
     external_connections = gb_conn._get_external_connections()
     if symbol not in external_connections:
@@ -45,7 +48,12 @@ def get_dblink_fun(query: str, symbol: str = "$"):
     return clean_query(query)
 
 
-def replace_external_queries_in_query(query: str):
+def replace_external_queries(query: str) -> str:
+    """
+    Replaces the external queries  in the input query using
+    the DBLINK UDTF.  If many  external  queries are  used,
+    they will be materialised using local temporary tables.
+    """
     gb_conn = get_global_connection()
     external_connections = gb_conn._get_external_connections()
     sql_keyword = (

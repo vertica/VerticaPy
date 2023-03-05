@@ -23,7 +23,7 @@ from verticapy.connection.connect import (
     current_cursor,
     set_connection,
     vertica_connection,
-    verticalab_connection,
+    verticapylab_connection,
 )
 from verticapy.connection.write import (
     change_auto_connection,

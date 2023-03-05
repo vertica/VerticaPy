@@ -27,6 +27,11 @@ from verticapy.errors import ParsingError
 
 
 def clean_query(query: SQLExpression) -> SQLExpression:
+    """
+    Cleans  the input query by erasing comments, spaces
+    and other useless characters.
+    Comments using '/*' and '*/' are left in the query.
+    """
     if isinstance(query, list):
         return [clean_query(q) for q in query]
     else:
@@ -44,12 +49,18 @@ def clean_query(query: SQLExpression) -> SQLExpression:
 
 
 def erase_comment(query: str) -> str:
+    """
+    Removes comments from the input query.
+    """
     query = re.sub(r"--.+(\n|\Z)", "", query)
     query = re.sub(r"/\*(.+?)\*/", "", query)
     return query.strip()
 
 
 def erase_label(query: str) -> str:
+    """
+    Removes labels from the input query.
+    """
     labels = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
     for label in labels:
         query = query.replace(f"/*+LABEL{label}*/", "")
@@ -57,6 +68,9 @@ def erase_label(query: str) -> str:
 
 
 def extract_subquery(query: str) -> str:
+    """
+    Extracts the SQL subquery from the input query.
+    """
     query_tmp = clean_query(query)
     query_tmp = erase_comment(query_tmp)
     if query_tmp[0] == "(" and query_tmp[-1] != ")":
@@ -64,7 +78,11 @@ def extract_subquery(query: str) -> str:
     return query.strip()
 
 
-def extract_and_rename_subquery(query: str, alias: str):
+def extract_and_rename_subquery(query: str, alias: str) -> str:
+    """
+    Extracts the SQL subquery from the input query
+    and renames it.
+    """
     query_tmp = extract_subquery(query)
     query_clean = clean_query(query)
     query_clean = erase_comment(query)
@@ -74,6 +92,10 @@ def extract_and_rename_subquery(query: str, alias: str):
 
 
 def extract_precision_scale(ctype: str) -> tuple:
+    """
+    Extracts the precision and scale from the
+    input sql type.
+    """
     if "(" not in ctype:
         return (0, 0)
     else:
@@ -85,7 +107,14 @@ def extract_precision_scale(ctype: str) -> tuple:
         return int(precision), int(scale)
 
 
-def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
+def format_magic(
+    x: Any, return_cat: bool = False, cast_float_int_to_str: bool = False
+) -> Any:
+    """
+    Formats  the input element using SQL  rules.
+    Ex: None values  are represented by NULL and
+        string are enclosed by single quotes "'"
+    """
     object_type = None
     if hasattr(x, "_object_type"):
         object_type = x._object_type
@@ -108,7 +137,10 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
         return val
 
 
-def indentSQL(query: str):
+def indentSQL(query: str) -> str:
+    """
+    Indents the input SQL query.
+    """
     query = (
         query.replace("SELECT", "\n   SELECT\n    ")
         .replace("FROM", "\n   FROM\n")
@@ -152,10 +184,11 @@ def indentSQL(query: str):
     return query_print
 
 
-def quote_ident(column: str):
+def quote_ident(column: str) -> str:
     """
-    Returns the specified string argument in the format that is required in
-    order to use that string as an identifier in an SQL statement.
+    Returns the specified string argument in the format 
+    that is required in  order to use that string as an 
+    identifier in an SQL statement.
 
     Parameters
     ----------
@@ -177,7 +210,13 @@ def quote_ident(column: str):
     return temp_column_str
 
 
-def replace_vars_in_query(query: str, locals_dict: dict):
+def replace_vars_in_query(query: str, locals_dict: dict) -> str:
+    """
+    Replaces the input variables by their SQL respective 
+    representations.  If they do not have one, they will
+    be materialised by a temporary local table.
+    """
+
     from verticapy.sql.parsers.pandas import read_pandas
 
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
@@ -225,6 +264,11 @@ def replace_vars_in_query(query: str, locals_dict: dict):
 
 
 def schema_relation(relation: Any) -> tuple[str, str]:
+    """
+    Extracts the schema and the table from the input
+    relation.  If  it does  not  have a schema,  the
+    temporary schema is used.
+    """
     if isinstance(relation, str):
         quote_nb = relation.count('"')
         if quote_nb not in (0, 2, 4):
@@ -250,7 +294,11 @@ def schema_relation(relation: Any) -> tuple[str, str]:
     return (quote_ident(schema), quote_ident(relation))
 
 
-def format_schema_table(schema: str, table_name: str):
+def format_schema_table(schema: str, table_name: str) -> str:
+    """
+    Returns the formatted relation. If the schema is not
+    defined, the 'public' schema is used. 
+    """
     if not (schema):
         schema = "public"
     return f"{quote_ident(schema)}.{quote_ident(table_name)}"
