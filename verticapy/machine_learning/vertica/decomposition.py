@@ -51,26 +51,25 @@ class Decomposition(Preprocessing):
         exclude_columns: SQLColumns = [],
     ) -> str:
         """
-        Returns the SQL code needed to deploy the 
-        model. 
+        Returns the SQL code needed to deploy the model. 
 
         Parameters
         ----------
         X: SQLColumns, optional
             List of the columns used to deploy the model. 
-            If empty, the model predictors will be used.
+            If empty,  the model predictors will be used.
         n_components: int, optional
-            Number of components to return. If set to 
-            0, all the components will be deployed.
+            Number  of  components to return.  If  set to 
+            0,  all  the  components  will  be  deployed.
         cutoff: PythonNumber, optional
-            Specifies the minimum accumulated explained 
-            variance. Components are taken until the 
-            accumulated explained variance reaches this 
+            Specifies  the minimum accumulated  explained 
+            variance.  Components  are  taken  until  the 
+            accumulated  explained  variance reaches this 
             value.
         key_columns: SQLColumns, optional
-            Predictors used during the algorithm 
-            computation which will be deployed with 
-            the principal components.
+            Predictors   used    during   the   algorithm 
+            computation  which will be deployed with  the 
+            principal components.
         exclude_columns: SQLColumns, optional
             Columns to exclude from the prediction.
 
@@ -117,25 +116,25 @@ class Decomposition(Preprocessing):
         p: int = 2,
     ) -> TableSample:
         """
-        Returns the decomposition score on a dataset 
-        for each transformed column. It is the average 
+        Returns  the  decomposition  score  on  a  dataset 
+        for  each  transformed column.  It is the  average 
         / median of the p-distance between the real column 
-        and its result after applying the decomposition 
+        and  its  result after applying the  decomposition 
         model and its inverse.  
 
         Parameters
         ----------
         X: SQLColumns, optional
             List of the columns used to deploy the model. 
-            If empty, the model predictors will be used.
+            If empty, the model  predictors will be used.
         input_relation: str, optional
-            Input Relation. If empty, the model input 
+            Input  Relation.  If  empty,  the model input 
             relation will be used.
         method: str, optional
             Distance Method used to do the scoring.
                 avg    : The average is used as 
                          aggregation.
-                median : The median is used as 
+                median : The median  is used as 
                          aggregation.
         p: int, optional
             The p of the p-distance.
@@ -206,26 +205,26 @@ class Decomposition(Preprocessing):
         X: SQLColumns = [],
         n_components: int = 0,
         cutoff: PythonNumber = 1,
-    ):
+    ) -> vDataFrame:
         """
         Applies the model on a vDataFrame.
 
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input vDataFrame. You can also specify 
-            a customized relation, but you must 
-            enclose it with an alias. For example 
-            "(SELECT 1) x" is correct whereas 
+            Input  vDataFrame.   You can  also  specify 
+            a  customized   relation,   but   you  must 
+            enclose  it  with  an  alias.  For  example 
+            "(SELECT 1) x"    is     correct    whereas 
             "(SELECT 1)" and "SELECT 1" are incorrect.
         X: SQLColumns, optional
             List of the input vDataColumns.
         n_components: int, optional
-            Number of components to return. If set to 
+            Number  of components to return.  If set to 
             0, all the components will be deployed.
         cutoff: PythonNumber, optional
             Specifies the minimum accumulated explained 
-            variance. Components are taken until the 
+            variance.  Components  are taken until  the 
             accumulated explained variance reaches this 
             value.
 
@@ -268,7 +267,7 @@ class Decomposition(Preprocessing):
         ax: Axes, optional
             The axes to plot on.
         **style_kwds
-            Any optional parameter to pass to the 
+            Any optional  parameter to pass to the 
             Matplotlib functions.
 
         Returns
@@ -307,7 +306,7 @@ class Decomposition(Preprocessing):
         ax: Axes, optional
             The axes to plot on.
         **style_kwds
-            Any optional parameter to pass to the 
+            Any  optional  parameter  to  pass to  the 
             Matplotlib functions.
 
         Returns
@@ -391,25 +390,26 @@ Algorithms used for decomposition.
 
 class PCA(Decomposition):
     """
-    Creates a PCA (Principal Component Analysis) object 
+    Creates a PCA  (Principal Component Analysis) object 
     using the Vertica PCA algorithm on the data.
      
     Parameters
     ----------
     name: str
-    	Name of the the model. The model will be stored 
+    	Name  of the  model.  The  model will be  stored 
         in the DB.
     n_components: int, optional
-    	The number of components to keep in the model. 
-        If this value is not provided, all components 
-        are kept. The maximum number of components is 
-        the number of non-zero singular values returned 
+    	The  number of  components to keep in the model. 
+        If  this value  is not provided,  all components 
+        are kept.  The  maximum number of components  is 
+        the number of  non-zero singular values returned 
         by the internal call to SVD. This number is less 
-        than or equal to SVD (number of columns, number 
+        than or equal to SVD  (number of columns, number 
         of rows). 
     scale: bool, optional
-    	A Boolean value that specifies whether to standardize 
-        the columns during the preparation step.
+    	A  Boolean  value  that  specifies   whether  to 
+        standardize  the columns during the  preparation 
+        step.
     method: str, optional
     	The method to use to calculate PCA.
     		lapack: Lapack definition.
@@ -495,7 +495,7 @@ class PCA(Decomposition):
 
     def to_memmodel(self) -> mm.PCA:
         """
-        Converts the model to an InMemory object which
+        Converts  the model  to an InMemory object  which
         can be used to do different types of predictions.
         """
         return mm.PCA(self.principal_components_, self.mean_)
@@ -503,18 +503,18 @@ class PCA(Decomposition):
 
 class MCA(PCA):
     """
-    Creates a MCA (multiple correspondence analysis) object 
-    using the Vertica PCA algorithm on the data. It uses 
+    Creates a MCA  (multiple correspondence analysis) object 
+    using  the Vertica PCA  algorithm  on the data. It  uses 
     the property that the MCA is a PCA applied to a complete 
-    disjunctive table. The input relation is transformed 
-    to a TCDT (transformed complete disjunctive table) 
+    disjunctive  table.  The  input relation is  transformed 
+    to  a  TCDT  (transformed  complete  disjunctive  table) 
     before applying the PCA.
      
     Parameters
     ----------
     name: str
-        Name of the the model. The model will be stored in 
-        the database.
+        Name of the model.  The model will be stored in the 
+        database.
     """
 
     # Properties.
@@ -566,13 +566,13 @@ class MCA(PCA):
         self, dimension: int = 1, ax: Optional[Axes] = None, **style_kwds
     ) -> Axes:
         """
-        Draws a decomposition contribution plot of the input 
+        Draws a decomposition  contribution plot of the input 
         dimension.
 
         Parameters
         ----------
         dimension: int, optional
-            Integer representing the IDs of the model's 
+            Integer  representing  the  IDs  of the  model's 
             component.
         ax: Axes, optional
             The axes to plot on.
@@ -662,18 +662,18 @@ class MCA(PCA):
         **style_kwds,
     ) -> Axes:
         """
-        Draws the MCA (multiple correspondence analysis) 
+        Draws  the  MCA  (multiple correspondence analysis) 
         graph.
 
         Parameters
         ----------
         dimensions: tuple, optional
-            Tuple of two IDs of the model's components.
+            Tuple  of  two IDs  of  the model's  components.
         method: str, optional
             Method used to draw the plot.
-                auto    : Only the variables are displayed.
+                auto    : Only the  variables are displayed.
                 cos2    : The cos2 is used as CMAP.
-                contrib : The feature contribution is used 
+                contrib : The feature  contribution is  used 
                           as CMAP.
         ax: Axes, optional
             The axes to plot on.
@@ -732,21 +732,21 @@ class MCA(PCA):
 
 class SVD(Decomposition):
     """
-    Creates an SVD (Singular Value Decomposition) object 
-    using the Vertica SVD algorithm on the data.
+    Creates  an  SVD  (Singular  Value  Decomposition) 
+    object using the Vertica SVD algorithm on the data.
      
     Parameters
     ----------
     name: str
-    	Name of the the model. The model will be stored 
+    	Name  of  the model.  The model will be stored 
         in the DB.
     n_components: int, optional
-    	The number of components to keep in the model. 
-        If this value is not provided, all components 
-        are kept. The maximum number of components is 
+    	The number  of components to keep in the model. 
+        If this value  is not provided,  all components 
+        are kept.  The maximum number of  components is 
         the number of non-zero singular values returned 
-        by the internal call to SVD. This number is 
-        less than or equal to SVD (number of columns, 
+        by  the  internal call to SVD. This  number  is 
+        less  than or equal to SVD (number of  columns, 
         number of rows).
     method: str, optional
     	The method to use to calculate SVD.
@@ -814,7 +814,7 @@ class SVD(Decomposition):
 
     def to_memmodel(self) -> mm.SVD:
         """
-        Converts the model to an InMemory object which
+        Converts  the model  to an InMemory object  which
         can be used to do different types of predictions.
         """
         return mm.SVD(self.vectors_, self.values_)

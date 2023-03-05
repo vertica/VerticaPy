@@ -253,7 +253,7 @@ path: str
 schema: str, optional
 	Schema where the CSV file will be ingested.
 table_name: str, optional
-	The final relation/table name. If unspecified, the the name is set to the 
+	The final relation/table name. If unspecified, the name is set to the 
     name of the file or parent directory.
 sep: str, optional
 	Column separator. 

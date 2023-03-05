@@ -872,7 +872,7 @@ def classification_report(
     	Cutoff  for which the tested category will  be 
         accepted as prediction. 
     	For  multiclass classification, the list  will 
-        represent the the classes  threshold. If it is 
+        represent the classes  threshold. If it is 
         empty, the best cutoff will be used.
     estimator: object, optional
     	Estimator to use to compute the classification 

@@ -158,7 +158,7 @@ class KNeighborsRegressor(Regressor):
         test_relation: str, optional
             Relation to use to do the predictions.
         key_columns: SQLColumns, optional
-            A list of columns to include in the results, 
+            A  list  of columns  to  include in  the  results, 
             but to exclude from computation of the prediction.
 
         Returns
@@ -378,11 +378,12 @@ class KNeighborsClassifier(MulticlassClassifier):
         test_relation: str, optional
             Relation to use to do the predictions.
         predict: bool, optional
-            If set to True, returns the prediction instead of 
-            the probability.
+            If set to True, returns the prediction instead 
+            of the probability.
         key_columns: SQLColumns, optional
-            A list of columns to include in the results, but 
-            to exclude from computation of the prediction.
+            A  list of columns to include in the  results, 
+            but  to   exclude  from   computation  of  the 
+            prediction.
 
         Returns
         -------
@@ -707,8 +708,8 @@ class KernelDensity(Regressor, Tree):
     Parameters
     ----------
     name: str
-        Name of the the model. This is not a built-in model, 
-        so this name will be used to build the final table.
+        Name of the model. This is not a built-in model, so 
+        this name will be used  to build the final table.
     bandwidth: PythonNumber, optional
         The bandwidth of the kernel.
     kernel: str, optional
@@ -718,21 +719,21 @@ class KernelDensity(Regressor, Tree):
             sigmoid   : Sigmoid Kernel.
             silverman : Silverman Kernel.
     p: int, optional
-        The p corresponding to the one of the p-distances 
-        (distance metric used during the model computation).
+        The  p corresponding to  the  one of the  p-distances 
+        (distance metric used  during the model computation).
     max_leaf_nodes: PythonNumber, optional
-        The maximum number of leaf nodes, an integer between 
+        The maximum number of leaf nodes,  an integer between 
         1 and 1e9, inclusive.
     max_depth: int, optional
-        The maximum tree depth, an integer between 1 and 100, 
+        The maximum tree depth,  an integer between 1 and 100, 
         inclusive.
     min_samples_leaf: int, optional
-        The minimum number of samples each branch must have 
-        after splitting a node, an integer between 1 and 1e6, 
+        The  minimum number of  samples each branch must  have 
+        after splitting a node,  an integer between 1 and 1e6, 
         inclusive. A split that causes fewer remaining samples 
         is discarded.
     nbins: int, optional 
-        The number of bins to use to discretize the input 
+        The  number  of  bins to use to discretize  the  input 
         features.
     xlim: list, optional
         List of tuples use to compute the kernel window.
@@ -1126,7 +1127,7 @@ class LocalOutlierFactor(VerticaModel):
     Parameters
     ----------
     name: str
-    	Name of the the model. This is not a built-in 
+    	Name  of the  model.  This is not a  built-in 
         model, so this name will be used to build the 
         final table.
     n_neighbors: int, optional
@@ -1170,9 +1171,10 @@ class LocalOutlierFactor(VerticaModel):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
+    def __init__(self, name: str, n_neighbors: int = 20, p: int = 2) -> None:
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+        return None
 
     def drop(self) -> bool:
         """
@@ -1189,7 +1191,7 @@ class LocalOutlierFactor(VerticaModel):
 
     # Attributes Methods.
 
-    def _compute_attributes(self):
+    def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
         """
@@ -1200,6 +1202,7 @@ class LocalOutlierFactor(VerticaModel):
             method="fetchfirstelem",
             print_time_sql=False,
         )
+        return None
 
     # Model Fitting Method.
 
@@ -1220,12 +1223,12 @@ class LocalOutlierFactor(VerticaModel):
     	X: SQLColumns, optional
     		List of the predictors.
     	key_columns: list, optional
-    		Columns not used during the algorithm 
-            computation but which will be used to 
+    		Columns  not  used   during  the   algorithm 
+            computation  but   which  will  be  used  to 
             create the final relation.
     	index: str, optional
-    		Index used to identify each row separately. 
-            It is highly recommanded to have one already 
+    		Index  used to identify each row  separately. 
+            It is highly  recommanded to have one already 
             in the main table to avoid creating temporary 
             tables.
 		"""
@@ -1409,7 +1412,7 @@ class LocalOutlierFactor(VerticaModel):
         Parameters
         ----------
         max_nb_points: int
-            Maximum number of points to display.
+            Maximum  number of points to display.
         ax: Axes, optional
             The axes to plot on.
         **style_kwds

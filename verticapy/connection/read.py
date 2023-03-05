@@ -73,6 +73,7 @@ def read_dsn(section: str, dsn: str = "") -> dict:
             "port": 5433,
             "user": "dbadmin",
             "session_label": gb_conn._vpy_session_label,
+            "unicode_error": "ignore",
         }
 
         env = False

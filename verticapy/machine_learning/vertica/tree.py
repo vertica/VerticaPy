@@ -37,35 +37,36 @@ class DecisionTreeRegressor(RandomForestRegressor):
     Parameters
     ----------
     name: str
-        Name of the the model. The model will be stored 
-        in the DB.
+        Name of  the  model.  The model  will be stored in 
+        the DB.
     max_features: str / int, optional
-        The number of randomly chosen features from which 
-        to pick the best feature to split on a given tree 
-        node. It can be an integer or one of the two 
+        The number of randomly  chosen features from which 
+        to pick the best feature  to split on a given tree 
+        node.  It  can  be  an integer  or one of the  two 
         following methods.
             auto : square root of the total number of 
                    predictors.
             max  : number of predictors.
     max_leaf_nodes: PythonNumber, optional
-        The maximum number of leaf nodes a tree in the 
-        forest can have, an integer between 1 and 1e9, 
+        The  maximum  number of leaf nodes a tree in  the 
+        forest  can  have,  an integer between 1 and 1e9, 
         inclusive.
     max_depth: int, optional
-        The maximum depth for growing each tree, an 
-        integer between 1 and 100, inclusive.
+        The maximum depth for growing each tree, an integer 
+        between 1 and 100, inclusive.
     min_samples_leaf: int, optional
         The minimum number of samples each branch must have 
-        after splitting a node, an integer between 1 and 1e6, 
-        inclusive. A split that causes fewer remaining samples 
-        is discarded.
+        after  splitting a node,  an integer between 1  and 
+        1e6, inclusive. A split that causes fewer remaining 
+        samples is discarded.
     min_info_gain: PythonNumber, optional
-        The minimum threshold for including a split, a float 
-        between 0.0 and 1.0, inclusive. A split with information 
-        gain less than this threshold is discarded.
+        The  minimum  threshold  for including a  split,  a 
+        float between 0.0 and 1.0,  inclusive. A split with 
+        information  gain  less  than   this  threshold  is 
+        discarded.
     nbins: int, optional
-        The number of bins to use for continuous features, an 
-        integer between 2 and 1000, inclusive.
+        The number of bins to use for continuous  features, 
+        an integer between 2 and 1000, inclusive.
     """
 
     # System & Special Methods.
@@ -105,7 +106,7 @@ class DummyTreeRegressor(RandomForestRegressor):
     Parameters
     ----------
     name: str
-        Name of the the model. The model will be 
+        Name of  the  model.  The model  will be 
         stored in the DB.
     """
 
@@ -140,35 +141,36 @@ class DecisionTreeClassifier(RandomForestClassifier):
     Parameters
     ----------
     name: str
-        Name of the the model. The model will be stored 
-        in the DB.
+        Name of  the  model.  The model  will be stored in 
+        the DB.
     max_features: str / int, optional
-        The number of randomly chosen features from which 
-        to pick the best feature to split on a given tree 
-        node. It can be an integer or one of the two 
+        The number of randomly  chosen features from which 
+        to pick the best feature  to split on a given tree 
+        node.  It  can  be  an integer  or one of the  two 
         following methods.
             auto : square root of the total number of 
                    predictors.
             max  : number of predictors.
     max_leaf_nodes: PythonNumber, optional
-        The maximum number of leaf nodes a tree in the 
-        forest can have, an integer between 1 and 1e9, 
+        The  maximum  number of leaf nodes a tree in  the 
+        forest  can  have,  an integer between 1 and 1e9, 
         inclusive.
     max_depth: int, optional
-        The maximum depth for growing each tree, an 
-        integer between 1 and 100, inclusive.
+        The maximum depth for growing each tree, an integer 
+        between 1 and 100, inclusive.
     min_samples_leaf: int, optional
         The minimum number of samples each branch must have 
-        after splitting a node, an integer between 1 and 1e6, 
-        inclusive. A split that causes fewer remaining samples 
-        is discarded.
+        after  splitting a node,  an integer between 1  and 
+        1e6, inclusive. A split that causes fewer remaining 
+        samples is discarded.
     min_info_gain: PythonNumber, optional
-        The minimum threshold for including a split, a float 
-        between 0.0 and 1.0, inclusive. A split with information 
-        gain less than this threshold is discarded.
+        The  minimum  threshold  for including a  split,  a 
+        float between 0.0 and 1.0,  inclusive. A split with 
+        information  gain  less  than   this  threshold  is 
+        discarded.
     nbins: int, optional
-        The number of bins to use for continuous features, an 
-        integer between 2 and 1000, inclusive.
+        The number of bins to use for continuous  features, 
+        an integer between 2 and 1000, inclusive.
     """
 
     # System & Special Methods.
@@ -202,13 +204,13 @@ class DecisionTreeClassifier(RandomForestClassifier):
 class DummyTreeClassifier(RandomForestClassifier):
     """
     A classifier that overfits the training data.
-    These models are typically used as a control 
+    These models are  typically used as a control 
     to compare with your other models.
 
     Parameters
     ----------
     name: str
-        Name of the the model. The model will be 
+        Name of  the  model.  The model  will be 
         stored in the DB.
     """
 

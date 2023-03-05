@@ -34,15 +34,15 @@ General Class.
 class Pipeline:
     """
     Creates a Pipeline object. Sequentially apply a 
-    list of transforms and a final estimator. The 
-    intermediate steps must implement a transform 
+    list  of  transforms and a final estimator. The 
+    intermediate  steps must  implement a transform 
     method.
 
     Parameters
     ----------
     steps: list
-        List of (name, transform) tuples (implementing 
-        fit/transform) that are chained, in the order 
+        List of (name, transform)  tuples (implementing 
+        fit/transform) that  are chained, in  the order 
         in which they are chained, with the last object 
         an estimator.
 	"""
@@ -150,8 +150,9 @@ class Pipeline:
         Parameters
         ----------
         parameters: dict, optional
-            New parameters. It must be a dictionary with as keys the 
-            Pipeline names and as value the parameters dictionary.
+            New parameters.  It must be a  dictionary with 
+            as  keys the  Pipeline  names and as value the 
+            parameters dictionary.
         **kwds
             New parameters can also be passed as arguments
             Example: set_params(pipeline1 = dict1, 
@@ -223,7 +224,7 @@ class Pipeline:
     def report(self) -> TableSample:
         """
         Computes a regression/classification report using 
-        multiple metrics to evaluate the model depending 
+        multiple metrics to  evaluate the model depending 
         on its type. 
 
         Returns
@@ -244,7 +245,7 @@ class Pipeline:
         ----------
         method: str, optional
             The method to use to compute the score.
-            Depends on the final estimator type 
+            Depends  on  the  final estimator  type 
             (classification or regression).
 
         Returns
@@ -270,9 +271,9 @@ class Pipeline:
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input vDataFrame. You can also specify a 
-            customized relation, but you must enclose 
-            it with an alias. For example "(SELECT 1) x" 
+            Input  vDataFrame.  You  can  also  specify  a 
+            customized  relation,  but  you  must  enclose 
+            it with an alias.  For example  "(SELECT 1) x" 
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
         X: list, optional
@@ -320,9 +321,9 @@ class Pipeline:
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input vDataFrame. You can also specify a 
-            customized relation, but you must enclose 
-            it with an alias. For example "(SELECT 1) x" 
+            Input  vDataFrame.  You  can  also  specify  a 
+            customized  relation,  but  you  must  enclose 
+            it with an alias. For  example  "(SELECT 1) x" 
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
         X: list, optional
@@ -355,15 +356,17 @@ class Pipeline:
 
     def inverse_transform(self, vdf: SQLRelation = None, X: list = []) -> vDataFrame:
         """
-        Applies the inverse model transformation on a vDataFrame.
+        Applies  the  inverse model transformation  on  a 
+        vDataFrame.
 
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input vDataFrame. You can also specify a customized 
-            relation, but you must enclose it with an alias. 
-            For example "(SELECT 1) x" is correct whereas 
-            "(SELECT 1)" and "SELECT 1" are incorrect.
+            Input  vDataFrame.  You  can  also  specify  a 
+            customized  relation,  but  you  must  enclose 
+            it with an alias. For  example  "(SELECT 1) x" 
+            is correct whereas "(SELECT 1)" and "SELECT 1" 
+            are incorrect.
         X: list, optional
             List of the input vDataColumns.
 

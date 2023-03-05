@@ -56,30 +56,30 @@ def Balance(
     Parameters
     ----------
     name: str
-        Name of the the view.
+        Name of the view.
     input_relation: str
         Relation to use to create the new relation.
     y: str
         Response column.
     method: str, optional
         Method to use to do the balancing.
-            hybrid : Performs over-sampling and 
-                     under-sampling on different 
-                     classes so each class is 
+            hybrid : Performs  over-sampling   and 
+                     under-sampling  on  different 
+                     classes  so   each  class  is 
                      equally represented.
-            over   : Over-samples on all classes, 
-                     with the exception of the 
-                     most majority class, towards 
-                     the most majority class's 
+            over   : Over-samples on  all classes, 
+                     with  the  exception  of  the 
+                     most  majority class, towards 
+                     the  most   majority  class's 
                      cardinality. 
-            under  : Under-samples on all classes,
+            under  : Under-samples on  all classes,
                      with the exception of the most 
-                     minority class, towards the most 
-                     minority class's cardinality.
+                     minority  class,  towards  the 
+                     most minority class's cardinality.
     ratio: float, optional
-        The desired ratio between the majority class and 
-        the minority class. This value has no effect when 
-        used with balance method 'hybrid'.
+        The  desired ratio between the majority  class 
+        and  the  minority  class.  This value has  no 
+        effect when used with balance method 'hybrid'.
 
     Returns
     -------
@@ -199,10 +199,11 @@ class Preprocessing(Unsupervised):
         ----------
         X: SQLColumns, optional
             List of the columns used to deploy the model. 
-            If empty, the model predictors will be used.
+            If empty,  the model predictors will be used.
         key_columns: SQLColumns, optional
-            Predictors used during the algorithm computation 
-            which will be deployed with the principal components.
+            Predictors   used   during   the   algorithm 
+            computation which will  be deployed with the 
+            principal components.
         exclude_columns: SQLColumns, optional
             Columns to exclude from the prediction.
 
@@ -263,19 +264,21 @@ class Preprocessing(Unsupervised):
         X: SQLColumns = [],
     ) -> str:
         """
-        Returns the SQL code needed to deploy the inverse 
+        Returns  the SQL code needed to deploy the  inverse 
         model. 
 
         Parameters
         ----------
         key_columns: SQLColumns, optional
             Predictors used during the algorithm computation 
-            which will be deployed with the principal components.
+            which  will  be  deployed   with  the  principal 
+            components.
         exclude_columns: SQLColumns, optional
             Columns to exclude from the prediction.
         X: SQLColumns, optional
-            List of the columns used to deploy the inverse model. 
-            If empty, the model predictors will be used.
+            List  of the columns used to deploy the  inverse 
+            model.  If empty,  the model predictors will  be 
+            used.
 
         Returns
         -------
@@ -320,8 +323,8 @@ class Preprocessing(Unsupervised):
         ----------
         vdf: SQLRelation, optional
             Input vDataFrame. You can also specify a customized 
-            relation, but you must enclose it with an alias. 
-            For example "(SELECT 1) x" is correct whereas 
+            relation,  but you must  enclose it with an  alias. 
+            For  example   "(SELECT 1) x"  is  correct  whereas 
             "(SELECT 1)" and "SELECT 1" are incorrect.
         X: SQLColumns, optional
             List of the input vDataColumns.
@@ -354,11 +357,10 @@ class Preprocessing(Unsupervised):
         Parameters
         ----------
         vdf: SQLRelation
-            input vDataFrame. You can also specify a 
-            customized relation, but you must enclose 
-            it with an alias. For example "(SELECT 1) x" 
-            is correct whereas "(SELECT 1)" and "SELECT 1" 
-            are incorrect.
+            Input vDataFrame. You can also specify a customized 
+            relation,  but you must  enclose it with an  alias. 
+            For  example   "(SELECT 1) x"  is  correct  whereas 
+            "(SELECT 1)" and "SELECT 1" are incorrect.
         X: SQLColumns, optional
             List of the input vDataColumns.
 
@@ -403,24 +405,24 @@ class CountVectorizer(VerticaModel):
     Parameters
     ----------
     name: str
-    	Name of the the model.
+    	Name of the model.
     lowercase: bool, optional
-    	Converts all the elements to lowercase before 
+    	Converts  all  the elements to lowercase  before 
         processing.
     max_df: float, optional
-    	Keeps the words which represent less than this 
+    	Keeps  the words which represent less than  this 
         float in the total dictionary distribution.
     min_df: float, optional
-    	Keeps the words which represent more than this 
+    	Keeps  the words which represent more than  this 
         float in the total dictionary distribution.
     max_features: int, optional
     	Keeps only the top words of the dictionary.
     ignore_special: bool, optional
-    	Ignores all the special characters to build the 
+    	Ignores all the special  characters to build the 
         dictionary.
     max_text_size: int, optional
-    	The maximum size of the column which is the 
-        concatenation of all the text columns during 
+    	The maximum  size  of  the  column which is  the 
+        concatenation  of  all the  text columns  during 
         the fitting.
 	"""
 
@@ -470,7 +472,7 @@ class CountVectorizer(VerticaModel):
         max_features: int = -1,
         ignore_special: bool = True,
         max_text_size: int = 2000,
-    ):
+    ) -> None:
         self.model_name = name
         self.parameters = {
             "lowercase": lowercase,
@@ -480,6 +482,7 @@ class CountVectorizer(VerticaModel):
             "ignore_special": ignore_special,
             "max_text_size": max_text_size,
         }
+        return None
 
     def drop(self) -> bool:
         """
@@ -499,9 +502,9 @@ class CountVectorizer(VerticaModel):
     def _compute_stop_words(self):
         """
         Computes the CountVectorizer Stop Words. It will 
-        affect the result to the stop_words_ attribute.
+        affect the result to  the stop_words_ attribute.
         """
-        query = self.deploySQL(return_main_table=True)
+        query = self.deploySQL(_return_main_table=True)
         query = query.format(
             "/*+LABEL('learn.preprocessing.CountVectorizer.compute_stop_words')*/ token",
             "not",
@@ -514,14 +517,14 @@ class CountVectorizer(VerticaModel):
     def _compute_vocabulary(self):
         """
         Computes the CountVectorizer Vocabulary. It will 
-        affect the result to the vocabulary_ attribute.
+        affect the result to  the vocabulary_ attribute.
         """
         res = _executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
         return np.array([w[0] for w in res])
 
     # I/O Methods.
 
-    def deploySQL(self, return_main_table: bool = False):
+    def deploySQL(self, _return_main_table: bool = False) -> str:
         """
         Returns the SQL code needed to deploy the model.
 
@@ -545,8 +548,10 @@ class CountVectorizer(VerticaModel):
                         FROM {self.model_name} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
                         WHERE {{}}(df BETWEEN {self.parameters['min_df']} 
                                    AND {self.parameters['max_df']})"""
-        if return_main_table:
+
+        if _return_main_table:
             return query
+
         if self.parameters["max_features"] > 0:
             query += f" AND (rnk <= {self.parameters['max_features']})"
 
@@ -641,14 +646,14 @@ class Scaler(Preprocessing):
     Parameters
     ----------
     name: str
-    	Name of the the model.
+    	Name of the model.
     method: str, optional
     	Method to use to normalize.
-    		zscore        : Normalization using the Z-Score.
+    		zscore        : Normalization   using   the   Z-Score.
                             (x - avg) / std
     		robust_zscore : Normalization using the Robust Z-Score.
     		                (x - median) / (1.4826 * mad)
-    		minmax        : Normalization using the Min & Max.
+    		minmax        : Normalization  using  the  Min  &  Max.
     		                (x - min) / (max - min)
 	"""
 
@@ -693,9 +698,10 @@ class Scaler(Preprocessing):
     @save_verticapy_logs
     def __init__(
         self, name: str, method: Literal["zscore", "robust_zscore", "minmax"] = "zscore"
-    ):
+    ) -> None:
         self.model_name = name
         self.parameters = {"method": str(method).lower()}
+        return None
 
     # Attributes Methods.
 
@@ -719,8 +725,8 @@ class Scaler(Preprocessing):
 
     def to_memmodel(self) -> mm.Scaler:
         """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
+        Converts the model to an InMemory object which can 
+        be used to do different types of predictions.
         """
         if self.parameters["method"] == "minmax":
             return mm.MinMaxScaler(self.min_, self.max_)
@@ -737,8 +743,9 @@ class StandardScaler(Scaler):
     def _attributes(self) -> list[str]:
         return ["mean_", "std_"]
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         super().__init__(name, "zscore")
+        return None
 
 
 class RobustScaler(Scaler):
@@ -748,8 +755,9 @@ class RobustScaler(Scaler):
     def _attributes(self) -> list[str]:
         return ["median_", "mad_"]
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         super().__init__(name, "robust_zscore")
+        return None
 
 
 class MinMaxScaler(Scaler):
@@ -759,8 +767,9 @@ class MinMaxScaler(Scaler):
     def _attributes(self) -> list[str]:
         return ["min_", "max_"]
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         super().__init__(name, "minmax")
+        return None
 
 
 """
@@ -775,7 +784,7 @@ class OneHotEncoder(Preprocessing):
     Parameters
     ----------
     name: str
-    	Name of the the model.
+    	Name of the model.
     extra_levels: dict, optional
     	Additional levels in each  category that are not 
         in the input relation.
@@ -869,7 +878,7 @@ class OneHotEncoder(Preprocessing):
     # Attributes Methods.
 
     @staticmethod
-    def _compute_ohe_list(categories: list):
+    def _compute_ohe_list(categories: list) -> list:
         """
         Allows to split the One Hot Encoder Array by 
         features categories.
