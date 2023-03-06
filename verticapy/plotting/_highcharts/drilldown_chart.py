@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Literal
+
 from vertica_highcharts import Highchart
 
 from verticapy._config.colors import get_colors
@@ -26,8 +28,12 @@ def drilldown_chart(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type: str = "column",
-):
+    chart_type: Literal["bar", "column"] = "column",
+) -> Highchart:
+    """
+    Draws a drill-down chart using the High Chart 
+    API and the input SQL query.
+    """
     data = _executeSQL(
         query[0],
         title=(

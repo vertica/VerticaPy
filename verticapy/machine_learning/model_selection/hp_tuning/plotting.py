@@ -17,6 +17,7 @@ permissions and limitations under the License.
 from typing import Optional, Union
 from collections.abc import Iterable
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
@@ -32,115 +33,6 @@ from verticapy.plotting._matplotlib.timeseries import range_curve
 from verticapy.machine_learning.model_selection.hp_tuning.cv import grid_search_cv
 
 from verticapy.machine_learning.vertica.base import VerticaModel
-
-"""
-Finding ARIMA parameters.
-"""
-
-
-@save_verticapy_logs
-def plot_acf_pacf(
-    vdf: vDataFrame,
-    column: str,
-    ts: str,
-    by: SQLColumns = [],
-    p: Union[int, list] = 15,
-    **style_kwds,
-) -> TableSample:
-    """
-    Draws the ACF and PACF Charts.
-
-    Parameters
-    ----------
-    vdf: vDataFrame
-        Input vDataFrame.
-    column: str
-        Response column.
-    ts: str
-        vDataColumn  used as timeline. It will be to use 
-        to order the data. It can be a numerical or type 
-        date   like   (date,   datetime,   timestamp...) 
-        vDataColumn.
-    by: list, optional
-        vDataColumns used in the partition.
-    p: int | list, optional
-        Int  equals  to  the  maximum  number  of lag to 
-        consider during the computation or  List of  the 
-        different lags to include during the computation.
-        p must be positive or a list of positive integers.
-    **style_kwds
-        Any optional  parameter to pass to the Matplotlib 
-        functions.
-
-    Returns
-    -------
-    TableSample
-        acf, pacf, confidence
-    """
-    if isinstance(by, str):
-        by = [by]
-    tmp_style = {}
-    for elem in style_kwds:
-        if elem not in ("color", "colors"):
-            tmp_style[elem] = style_kwds[elem]
-    if "color" in style_kwds:
-        color = style_kwds["color"]
-    else:
-        color = get_colors()[0]
-    by, column, ts = vdf._format_colnames(by, column, ts)
-    acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
-    pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
-    result = TableSample(
-        {
-            "index": [i for i in range(0, len(acf.values["value"]))],
-            "acf": acf.values["value"],
-            "pacf": pacf.values["value"],
-            "confidence": pacf.values["confidence"],
-        }
-    )
-    fig = plt.figure(figsize=(10, 6))
-    plt.rcParams["axes.facecolor"] = "#FCFCFC"
-    ax1 = fig.add_subplot(211)
-    x, y, confidence = (
-        result.values["index"],
-        result.values["acf"],
-        result.values["confidence"],
-    )
-    plt.xlim(-1, x[-1] + 1)
-    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
-    param = {
-        "s": 90,
-        "marker": "o",
-        "facecolors": color,
-        "edgecolors": "black",
-        "zorder": 2,
-    }
-    ax1.scatter(x, y, **updated_dict(param, tmp_style))
-    ax1.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
-    )
-    ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
-    ax1.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
-    ax1.set_title("Autocorrelation")
-    y = result.values["pacf"]
-    ax2 = fig.add_subplot(212)
-    ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
-    ax2.scatter(x, y, **updated_dict(param, tmp_style))
-    ax2.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
-    )
-    ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
-    ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
-    ax2.set_title("Partial Autocorrelation")
-    plt.show()
-    return result
-
 
 """
 Tracking Over-fitting.
@@ -293,4 +185,113 @@ def validation_curve(
         }
     )
     range_curve(X, Y, param_name, metric, ax, ["train", "test"], **style_kwds)
+    return result
+
+
+"""
+TSA - Finding ARIMA parameters.
+"""
+
+
+@save_verticapy_logs
+def plot_acf_pacf(
+    vdf: vDataFrame,
+    column: str,
+    ts: str,
+    by: SQLColumns = [],
+    p: Union[int, list] = 15,
+    **style_kwds,
+) -> TableSample:
+    """
+    Draws the ACF and PACF Charts.
+
+    Parameters
+    ----------
+    vdf: vDataFrame
+        Input vDataFrame.
+    column: str
+        Response column.
+    ts: str
+        vDataColumn  used as timeline. It will be to use 
+        to order the data. It can be a numerical or type 
+        date   like   (date,   datetime,   timestamp...) 
+        vDataColumn.
+    by: list, optional
+        vDataColumns used in the partition.
+    p: int | list, optional
+        Int  equals  to  the  maximum  number  of lag to 
+        consider during the computation or  List of  the 
+        different lags to include during the computation.
+        p must be positive or a list of positive integers.
+    **style_kwds
+        Any optional  parameter to pass to the Matplotlib 
+        functions.
+
+    Returns
+    -------
+    TableSample
+        acf, pacf, confidence
+    """
+    if isinstance(by, str):
+        by = [by]
+    tmp_style = {}
+    for elem in style_kwds:
+        if elem not in ("color", "colors"):
+            tmp_style[elem] = style_kwds[elem]
+    if "color" in style_kwds:
+        color = style_kwds["color"]
+    else:
+        color = get_colors()[0]
+    by, column, ts = vdf._format_colnames(by, column, ts)
+    acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
+    pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
+    result = TableSample(
+        {
+            "index": [i for i in range(0, len(acf.values["value"]))],
+            "acf": acf.values["value"],
+            "pacf": pacf.values["value"],
+            "confidence": pacf.values["confidence"],
+        }
+    )
+    fig = plt.figure(figsize=(10, 6))
+    plt.rcParams["axes.facecolor"] = "#FCFCFC"
+    ax1 = fig.add_subplot(211)
+    x, y, confidence = (
+        result.values["index"],
+        result.values["acf"],
+        result.values["confidence"],
+    )
+    plt.xlim(-1, x[-1] + 1)
+    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
+    param = {
+        "s": 90,
+        "marker": "o",
+        "facecolors": color,
+        "edgecolors": "black",
+        "zorder": 2,
+    }
+    ax1.scatter(x, y, **updated_dict(param, tmp_style))
+    ax1.plot(
+        [-1] + x + [x[-1] + 1],
+        [0 for elem in range(len(x) + 2)],
+        color=color,
+        zorder=0,
+    )
+    ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
+    ax1.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
+    ax1.set_title("Autocorrelation")
+    y = result.values["pacf"]
+    ax2 = fig.add_subplot(212)
+    ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
+    ax2.scatter(x, y, **updated_dict(param, tmp_style))
+    ax2.plot(
+        [-1] + x + [x[-1] + 1],
+        [0 for elem in range(len(x) + 2)],
+        color=color,
+        zorder=0,
+    )
+    ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
+    ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
+    ax2.set_title("Partial Autocorrelation")
+    plt.show()
     return result

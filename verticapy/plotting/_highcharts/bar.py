@@ -14,11 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Literal
+
 from vertica_highcharts import Highchart
 
 from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
+
+from verticapy.plotting._highcharts.utils import data_to_columns, sort_classes
 
 
 def bar(
@@ -26,10 +30,14 @@ def bar(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type: str = "regular",
-):
-    from verticapy.plotting._highcharts.base import data_to_columns, sort_classes
-
+    chart_type: Literal[
+        "regular", "hist", "bar", "stacked_hist", "stacked_bar"
+    ] = "regular",
+) -> Highchart:
+    """
+    Draws a bar chart using the High Chart API
+    and the input SQL query.
+    """
     is_stacked = "stacked" in chart_type
     if chart_type == "stacked_hist":
         chart_type = "hist"

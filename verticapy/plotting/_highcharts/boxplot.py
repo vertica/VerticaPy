@@ -14,9 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional, TYPE_CHECKING
+
 from vertica_highcharts import Highchart
 
 from verticapy._config.colors import get_colors
+from verticapy._typing import SQLColumns
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 def boxplot(
@@ -24,10 +30,14 @@ def boxplot(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    vdf=None,
-    columns: list = [],
+    vdf: Optional["vDataFrame"] = None,
+    columns: SQLColumns = [],
     by: str = "",
-):
+) -> Highchart:
+    """
+    Draws a boxplot using the High Chart API
+    and the input SQL query.
+    """
     chart = Highchart(width=width, height=height)
     default_options = {
         "chart": {"type": "boxplot"},
