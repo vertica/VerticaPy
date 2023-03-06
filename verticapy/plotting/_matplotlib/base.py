@@ -15,15 +15,19 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
+from typing import TYPE_CHECKING
 
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 
 def compute_plot_variables(
-    vdf,
+    vdf: "vDataFrame",
     method: str = "density",
     of: str = "",
     max_cardinality: int = 6,

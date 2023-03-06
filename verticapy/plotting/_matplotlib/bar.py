@@ -15,19 +15,24 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy.errors import ParameterError
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
 
 def bar(
-    vdf,
+    vdf: "vDataFrame",
     method: str = "density",
     of=None,
     max_cardinality: int = 6,
@@ -74,8 +79,8 @@ def bar(
 
 
 def bar2D(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     method: str = "density",
     of: str = "",
     max_cardinality: tuple = (6, 6),
@@ -249,7 +254,7 @@ def bar2D(
 
 
 def hist(
-    vdf,
+    vdf: "vDataFrame",
     method: str = "density",
     of=None,
     max_cardinality: int = 6,
@@ -299,8 +304,8 @@ def hist(
 
 
 def hist2D(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     method="density",
     of: str = "",
     max_cardinality: tuple = (6, 6),
@@ -389,8 +394,8 @@ def hist2D(
 
 
 def multiple_hist(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     method: str = "density",
     of: str = "",
     h: float = 0,

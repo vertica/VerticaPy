@@ -431,7 +431,9 @@ class vDFPlot:
         )
 
     @save_verticapy_logs
-    def contour(self, columns: list, func, nbins: int = 100, ax=None, **style_kwds):
+    def contour(
+        self, columns: SQLColumns, func, nbins: int = 100, ax=None, **style_kwds
+    ):
         """
     Draws the contour plot of the input function two input vDataColumns.
 
@@ -1156,7 +1158,7 @@ class vDFPlot:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     start_date: str / PythonNumber / date, optional
@@ -1340,7 +1342,7 @@ class vDFPlot:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used. They must all include only positive values.
     start_date: PythonScalar / date, optional

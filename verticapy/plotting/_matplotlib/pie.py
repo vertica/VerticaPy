@@ -14,19 +14,24 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import TYPE_CHECKING
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import numpy as np
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
 
 def nested_pie(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     max_cardinality: tuple = None,
     h: tuple = None,
     ax=None,
@@ -121,7 +126,7 @@ def nested_pie(
 
 
 def pie(
-    vdf,
+    vdf: "vDataFrame",
     method: str = "density",
     of=None,
     max_cardinality: int = 6,

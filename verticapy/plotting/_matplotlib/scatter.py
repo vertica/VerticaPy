@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
+from typing import TYPE_CHECKING
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -23,9 +24,13 @@ from matplotlib.lines import Line2D
 
 from verticapy._config.colors import get_cmap, get_colors
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
@@ -33,8 +38,8 @@ MARKERS = ["^", "o", "+", "*", "h", "x", "D", "1"]
 
 
 def bubble(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     catcol: str = "",
     cmap_col: str = "",
     max_nb_points: int = 1000,
@@ -321,8 +326,8 @@ def bubble(
 
 
 def outliers_contour_plot(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     color: str = "orange",
     outliers_color: str = "black",
     inliers_color: str = "white",
@@ -444,7 +449,7 @@ def outliers_contour_plot(
 
 
 def scatter_matrix(
-    vdf, columns: list = [], **style_kwds,
+    vdf: "vDataFrame", columns: list = [], **style_kwds,
 ):
     columns = vdf._format_colnames(columns)
     if not (columns):
@@ -509,8 +514,8 @@ def scatter_matrix(
 
 
 def scatter(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     catcol: str = "",
     max_cardinality: int = 3,
     cat_priority: list = [],

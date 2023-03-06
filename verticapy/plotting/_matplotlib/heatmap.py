@@ -15,14 +15,14 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, statistics, copy
-from typing import Union
+from typing import TYPE_CHECKING, Union
 import numpy as np
 
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap, get_colors
 import verticapy._config.config as conf
-from verticapy._typing import PythonScalar
+from verticapy._typing import PythonScalar, SQLColumns
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -30,6 +30,9 @@ from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.string_sql.base import StringSQL
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import updated_dict
 
@@ -115,8 +118,8 @@ def cmatrix(
 
 
 def contour_plot(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     func,
     nbins: int = 100,
     cbar_title: str = "",
@@ -251,8 +254,8 @@ def contour_plot(
 
 
 def hexbin(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     method: str = "count",
     of: str = "",
     bbox: list = [],
@@ -349,8 +352,8 @@ def hexbin(
 
 
 def pivot_table(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     method: str = "count",
     of: str = "",
     h: tuple = (None, None),

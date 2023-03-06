@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, warnings
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 
@@ -22,9 +23,12 @@ from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._utils._sql._sys import _executeSQL
 
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 
 def boxplot(
-    vdf,
+    vdf: "vDataFrame",
     by: str = "",
     h: float = 0,
     max_cardinality: int = 8,
@@ -248,7 +252,7 @@ def boxplot(
 
 
 def boxplot2D(
-    vdf, columns: list = [], ax=None, **style_kwds,
+    vdf: "vDataFrame", columns: list = [], ax=None, **style_kwds,
 ):
     colors = []
     if "color" in style_kwds:

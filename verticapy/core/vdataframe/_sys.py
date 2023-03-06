@@ -18,6 +18,7 @@ import copy, re, time, warnings
 from typing import Union
 
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -57,7 +58,7 @@ class vDFSystem:
         Dictionary of columns and their respective transformation. It 
         will be to use to test if an expression is correct and can be 
         added it in the final relation.
-    force_columns: list, optional
+    force_columns: SQLColumns, optional
         Columns to use to generate the final relation.
 
     Returns

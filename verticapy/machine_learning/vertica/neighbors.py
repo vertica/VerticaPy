@@ -815,7 +815,7 @@ class KernelDensity(Regressor, Tree):
     # Attributes Methods.
 
     def _density_kde(
-        self, vdf: vDataFrame, columns: list, kernel: str, x, p: int, h=None
+        self, vdf: vDataFrame, columns: SQLColumns, kernel: str, x, p: int, h=None
     ) -> str:
         """
         Returns the result of the KDE.
@@ -871,7 +871,7 @@ class KernelDensity(Regressor, Tree):
     def _density_compute(
         self,
         vdf: vDataFrame,
-        columns: list,
+        columns: SQLColumns,
         h=None,
         kernel: str = "gaussian",
         nbins: int = 5,
@@ -1217,7 +1217,7 @@ class LocalOutlierFactor(VerticaModel):
     		Training relation.
     	X: SQLColumns, optional
     		List of the predictors.
-    	key_columns: list, optional
+    	key_columns: SQLColumns, optional
     		Columns  not  used   during  the   algorithm 
             computation  but   which  will  be  used  to 
             create the final relation.

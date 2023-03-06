@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Union
 
+from verticapy._typing import SQLColumns
 from verticapy._utils._sql._cast import to_sql_dtype, to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query
@@ -157,7 +158,7 @@ class vDFTyping:
 
     Parameters
     ----------
-    exclude_columns: list, optional
+    exclude_columns: SQLColumns, optional
         List of the vDataColumns names to exclude from the final list. 
 
     Returns

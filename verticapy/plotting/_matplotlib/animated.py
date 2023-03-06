@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import warnings
 import numpy as np
+from typing import TYPE_CHECKING
 
 import matplotlib.animation as animation
 from matplotlib.lines import Line2D
@@ -23,7 +24,11 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap, get_colors
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import updated_dict
 
@@ -42,8 +47,8 @@ def parse_datetime(D: list):
 
 
 def animated_bar(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     order_by: str,
     by: str = "",
     order_by_start: str = "",
@@ -295,9 +300,9 @@ def animated_bar(
 
 
 def animated_bubble_plot(
-    vdf,
+    vdf: "vDataFrame",
     order_by: str,
-    columns: list,
+    columns: SQLColumns,
     by: str = "",
     label_name: str = "",
     order_by_start: str = "",
@@ -564,7 +569,7 @@ def animated_bubble_plot(
 
 
 def animated_ts_plot(
-    vdf,
+    vdf: "vDataFrame",
     order_by: str,
     columns: list = [],
     order_by_start: str = "",

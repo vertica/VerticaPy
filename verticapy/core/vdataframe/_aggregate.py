@@ -838,7 +838,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -858,7 +858,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def all(
-        self, columns: list, **agg_kwds,
+        self, columns: SQLColumns, **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'bool_and'.
@@ -885,7 +885,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def any(
-        self, columns: list, **agg_kwds,
+        self, columns: SQLColumns, **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'bool_or'.
@@ -918,7 +918,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -948,7 +948,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all vDataColumns will be used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1414,7 +1414,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1443,7 +1443,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1470,7 +1470,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1497,7 +1497,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     approx: bool, optional
@@ -1527,7 +1527,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1554,7 +1554,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all vDataColumns will be used.
     approx: bool, optional
         If set to True, the approximate cardinality is returned. By setting 
@@ -1585,7 +1585,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumn names. If empty, all numerical vDataColumns will be used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1620,7 +1620,7 @@ class vDFAgg:
     q: PythonNumber / list
         List of the different quantiles. They must be numbers between 0 and 1.
         For example [0.25, 0.75] will return Q1 and Q3.
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     approx: bool, optional
@@ -1657,7 +1657,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1684,7 +1684,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1713,7 +1713,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1742,7 +1742,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1769,7 +1769,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds

@@ -15,13 +15,16 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from collections.abc import Iterable
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, TYPE_CHECKING, Union
 
 from vertica_highcharts import Highchart, Highstock
 
 from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._highcharts.bar import bar
 from verticapy.plotting._highcharts.boxplot import boxplot
@@ -36,7 +39,7 @@ from verticapy.plotting._highcharts.spider import spider
 
 
 def hchart_from_vdf(
-    vdf,
+    vdf: "vDataFrame",
     x: Optional[str] = None,
     y: Optional[str] = None,
     z: Optional[str] = None,

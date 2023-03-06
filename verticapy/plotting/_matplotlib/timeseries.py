@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 
@@ -22,6 +23,9 @@ from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import updated_dict
 
@@ -91,7 +95,7 @@ def acf_plot(
 
 
 def multi_ts_plot(
-    vdf,
+    vdf: "vDataFrame",
     order_by: str,
     columns: list = [],
     order_by_start: str = "",
@@ -286,7 +290,7 @@ def range_curve(
 
 
 def range_curve_vdf(
-    vdf,
+    vdf: "vDataFrame",
     order_by: str,
     q: tuple = (0.25, 0.75),
     order_by_start: str = "",
@@ -341,7 +345,7 @@ def range_curve_vdf(
 
 
 def ts_plot(
-    vdf,
+    vdf: "vDataFrame",
     order_by: str,
     by: str = "",
     order_by_start: str = "",

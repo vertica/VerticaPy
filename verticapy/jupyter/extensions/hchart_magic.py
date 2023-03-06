@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import time, warnings
-from typing import Optional, Union
+from typing import Optional, Literal, Union
 
 from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML

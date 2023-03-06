@@ -1410,7 +1410,7 @@ class vDFCorr:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     method: str, optional

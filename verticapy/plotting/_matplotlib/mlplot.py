@@ -25,7 +25,7 @@ from matplotlib.lines import Line2D
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber
+from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
@@ -228,7 +228,7 @@ def logit_plot(
 
 def lof_plot(
     input_relation: str,
-    columns: list,
+    columns: SQLColumns,
     lof: str,
     TableSample: PythonNumber = -1,
     ax=None,
@@ -1158,7 +1158,7 @@ def svm_classifier_plot(
 
 def voronoi_plot(
     clusters: list,
-    columns: list,
+    columns: SQLColumns,
     input_relation: str,
     max_nb_points: int = 1000,
     plot_crosses: bool = True,
