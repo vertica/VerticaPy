@@ -27,32 +27,38 @@ from verticapy._utils._sql._format import (
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ExtensionError, ParameterError, MissingRelation
 
+from verticapy.core.parsers._utils import extract_compression
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.drop import drop
 from verticapy.sql.flex import compute_flextable_keys
-from verticapy.sql.parsers._utils import extract_compression
 
 
-def pjson(path: str, ingest_local: bool = True):
+def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
     """
-Parses a JSON file using flex tables. It will identify the columns and their
-respective types.
+    Parses  a JSON file  using flex tables.  It will 
+    identify the columns and their respective types.
 
-Parameters
-----------
-path: str
-    Absolute path where the JSON file is located.
-ingest_local: bool, optional
-    If set to True, the file will be ingested from the local machine.
+    Parameters
+    ----------
+    path: str
+        Absolute path where the JSON file is located.
+    ingest_local: bool, optional
+        If  set to  True,  the file will be  ingested 
+        from the local machine.
 
-Returns
--------
-dict
-    dictionary containing for each column its type.
+    Returns
+    -------
+    dict
+        dictionary  containing  for each  column  its 
+        SQL type.
 
-See Also
---------
-read_csv  : Ingests a CSV file into the Vertica database.
-read_json : Ingests a JSON file into the Vertica database.
+    See Also
+    --------
+    read_csv  : Ingests a CSV  file into the Vertica 
+                database.
+    read_json : Ingests a JSON file into the Vertica 
+                database.
     """
     flex_name = gen_tmp_name(name="flex")[1:-1]
     _executeSQL(
@@ -101,118 +107,142 @@ def read_json(
     materialize: bool = True,
     use_complex_dt: bool = False,
     is_avro: bool = False,
-):
+) -> vDataFrame:
     """
-Ingests a JSON file using flex tables.
+    Ingests a JSON file using flex tables.
 
-Parameters
-----------
-path: str
-	Absolute path where the JSON file is located.
-schema: str, optional
-	Schema where the JSON file will be ingested.
-table_name: str, optional
-	Final relation name.
-usecols: list, optional
-	List of the JSON parameters to ingest. The other ones will be 
-    ignored. If empty all the JSON parameters will be ingested.
-new_name: dict, optional
-	Dictionary of the new columns name. If the JSON file is nested, 
-    it is advised to change the final names as special characters 
-    will be included.
-	For example, {"param": {"age": 3, "name": Badr}, "date": 1993-03-11} 
-    will create 3 columns: "param.age", "param.name" and "date". 
-    You can rename these columns using the 'new_name' parameter with 
-    the following dictionary:
-	{"param.age": "age", "param.name": "name"}
-insert: bool, optional
-	If set to True, the data will be ingested to the input relation.
-    The JSON parameters must be the same as the input relation otherwise
-    they will not be ingested. Also, table_name cannot be empty if this is true.
-start_point: str, optional
-    String, name of a key in the JSON load data at which to begin parsing. 
-    The parser ignores all data before the start_point value. 
-    The value is loaded for each object in the file. The parser processes 
-    data after the first instance, and up to the second, ignoring any 
-    remaining data.
-record_terminator: str, optional
-    When set, any invalid JSON records are skipped and parsing continues 
-    with the next record. 
-    Records must be terminated uniformly. For example, if your input file 
-    has JSON records terminated by newline characters, set this parameter 
-    to '\n'). 
-    If any invalid JSON records exist, parsing continues after the next 
-    record_terminator.
-    Even if the data does not contain invalid records, specifying an 
-    explicit record terminator can improve load performance by allowing 
-    cooperative parse and apportioned load to operate more efficiently.
-    When you omit this parameter, parsing ends at the first invalid JSON 
-    record.
-suppress_nonalphanumeric_key_chars: bool, optional
-    Boolean, whether to suppress non-alphanumeric characters in JSON 
-    key values. The parser replaces these characters with an underscore 
-    (_) when this parameter is true.
-reject_on_materialized_type_error: bool, optional
-    Boolean, whether to reject a data row that contains a materialized 
-    column value that cannot be coerced into a compatible data type. 
-    If the value is false and the type cannot be coerced, the parser 
-    sets the value in that column to null.
-    If the column is a strongly-typed complex type, as opposed to a 
-    flexible complex type, then a type mismatch anywhere in the complex 
-    type causes the entire column to be treated as a mismatch. The parser 
-    does not partially load complex types.
-reject_on_duplicate: bool, optional
-    Boolean, whether to ignore duplicate records (false), or to 
-    reject duplicates (true). In either case, the load continues.
-reject_on_empty_key: bool, optional
-    Boolean, whether to reject any row containing a field key 
-    without a value.
-flatten_maps: bool, optional
-    Boolean, whether to flatten sub-maps within the JSON data, separating map levels 
-    with a period (.). This value affects all data in the load, including nested maps.
-flatten_arrays: bool, optional
-    Boolean, whether to convert lists to sub-maps with integer keys. 
-    When lists are flattened, key names are concatenated as for maps. 
-    Lists are not flattened by default. This value affects all data in 
-    the load, including nested lists.
-temporary_table: bool, optional
-    If set to True, a temporary table will be created.
-temporary_local_table: bool, optional
-    If set to True, a temporary local table will be created. The parameter 
-    'schema' must be empty, otherwise this parameter is ignored.
-gen_tmp_table_name: bool, optional
-    Sets the name of the temporary table. This parameter is only used when 
-    the parameter 'temporary_local_table' is set to True and if the parameters 
-    "table_name" and "schema" are unspecified.
-ingest_local: bool, optional
-    If set to True, the file will be ingested from the local machine.
-genSQL: bool, optional
-    If set to True, the SQL code for creating the final table is 
-    generated but not executed. This is a good way to change the final
-    relation types or to customize the data ingestion.
-materialize: bool, optional
-    If set to True, the flex table is materialized into a table.
-    Otherwise, it will remain a flex table. Flex tables simplify the
-    data ingestion but have worse performace compared to regular tables.
-use_complex_dt: bool, optional
-    Boolean, whether the input data file has complex structure.
-    When this is true, most of the other parameters will be ignored.
+    Parameters
+    ----------
+    path: str
+    	Absolute path where the JSON file is located.
+    schema: str, optional
+    	Schema  where the JSON file will be ingested.
+    table_name: str, optional
+    	Final relation name.
+    usecols: list, optional
+    	List  of the  JSON parameters to ingest.  The 
+        other ones will be ignored.  If empty all the 
+        JSON parameters will be ingested.
+    new_name: dict, optional
+    	Dictionary  of the new  columns name. If  the 
+        JSON file is nested,  it is advised to change 
+        the final names as special characters will be 
+        included.
+    	For example, {"param": {"age": 3, 
+                                "name": Badr}, 
+                      "date": 1993-03-11} 
+        will create 3 columns: "param.age", "param.name" 
+        and "date".  You can  rename these columns using 
+        the  'new_name'  parameter  with  the  following 
+        dictionary: {"param.age": "age", 
+                     "param.name": "name"}
+    insert: bool, optional
+    	If set to True, the  data will be ingested to the 
+        input relation.  The JSON  parameters must be the 
+        same  as the input  relation otherwise they  will 
+        not be ingested. Also, table_name cannot be empty 
+        if this is true.
+    start_point: str, optional
+        String,  name  of a key in the JSON load data  at 
+        which to  begin  parsing. The  parser ignores all 
+        data  before the start_point value.  The value is 
+        loaded  for each object in the file.  The  parser 
+        processes data after  the first  instance, and up 
+        to the second, ignoring any remaining data.
+    record_terminator: str, optional
+        When  set,  any invalid JSON records are  skipped 
+        and parsing continues with the next record. 
+        Records must be terminated uniformly. For example, 
+        if your input file has  JSON records terminated by 
+        newline  characters,  set this parameter to '\n'). 
+        If  any  invalid   JSON   records  exist,  parsing 
+        continues after the next record_terminator.
+        Even if the data does not contain invalid records,
+        specifying  an  explicit   record  terminator  can 
+        improve  load performance by allowing  cooperative 
+        parse   and  apportioned  load  to  operate   more 
+        efficiently.
+        When you omit this parameter, parsing ends at the 
+        first invalid JSON record.
+    suppress_nonalphanumeric_key_chars: bool, optional
+        Boolean,  whether  to   suppress  non-alphanumeric 
+        characters in JSON key values. The parser replaces 
+        these characters with  an underscore (_) when this 
+        parameter is true.
+    reject_on_materialized_type_error: bool, optional
+        Boolean, whether to reject a data row that contains 
+        a materialized column  value that cannot be coerced 
+        into a compatible data type.  If the value is false 
+        and the type cannot be coerced, the parser sets the 
+        value in that column to null.
+        If the column is a  strongly-typed complex type, as 
+        opposed  to a  flexible  complex type, then a  type 
+        mismatch  anywhere  in the complex type causes  the 
+        entire  column  to  be treated as a  mismatch.  The 
+        parser does not partially load complex types.
+    reject_on_duplicate: bool, optional
+        Boolean, whether to ignore duplicate records (false), 
+        or to reject  duplicates (true).  In either case, the 
+        load continues.
+    reject_on_empty_key: bool, optional
+        Boolean, whether to reject any row containing a field 
+        key without a value.
+    flatten_maps: bool, optional
+        Boolean, whether to flatten sub-maps within the JSON 
+        data, separating map levels  with a period (.). This 
+        value affects all data in the load, including nested 
+        maps.
+    flatten_arrays: bool, optional
+        Boolean,  whether  to convert lists to sub-maps with 
+        integer keys. 
+        When lists are flattened,  key names are concatenated 
+        as for maps. Lists are not flattened by default. This 
+        value affects all data  in the load, including nested 
+        lists.
+    temporary_table: bool, optional
+        If set to True, a temporary table will be created.
+    temporary_local_table: bool, optional
+        If  set  to  True, a temporary  local table  will  be 
+        created.  The  parameter  'schema'  must   be  empty, 
+        otherwise this parameter is ignored.
+    gen_tmp_table_name: bool, optional
+        Sets  the  name of the temporary table. This  parameter 
+        is only used when the parameter 'temporary_local_table' 
+        is  set to True and if the parameters  "table_name" and 
+        "schema" are unspecified.
+    ingest_local: bool, optional
+        If  set  to  True, the file will be ingested  from  the 
+        local machine.
+    genSQL: bool, optional
+        If  set to True,  the SQL  code for creating the  final 
+        table is generated but not executed. This is a good way
+        to change the  final relation types or to customize the 
+        data ingestion.
+    materialize: bool, optional
+        If  set to True, the flex table is materialized into a 
+        table.
+        Otherwise,  it  will  remain a flex table. Flex tables 
+        simplify the data ingestion but have worse  performace 
+        compared to regular tables.
+    use_complex_dt: bool, optional
+        Boolean,  whether  the  input data  file  has  complex 
+        structure.  When  this  is  true,  most of  the  other 
+        parameters will be ignored.
 
-Returns
--------
-vDataFrame
-	The vDataFrame of the relation.
+    Returns
+    -------
+    vDataFrame
+    	The vDataFrame of the relation.
 
-See Also
---------
-read_csv : Ingests a CSV file into the Vertica database.
+    See Also
+    --------
+    read_csv : Ingests a CSV file into the Vertica database.
 	"""
-    from verticapy.core.vdataframe.base import vDataFrame
-
     if use_complex_dt:
-        assert not (new_name), ParameterError(
-            "You cannot use the parameter " "new_name" " with " "use_complex_dt" "."
-        )
+        if new_name:
+            raise ParameterError(
+                "You cannot use the parameter 'new_name' with 'use_complex_dt'."
+            )
         if is_avro:
             max_files = 1
         elif ("*" in path) and ingest_local:

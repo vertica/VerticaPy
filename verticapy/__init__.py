@@ -84,6 +84,12 @@ from verticapy.connection.write import (
     new_connection,
 )
 
+from verticapy.core.parsers.all import read_file
+from verticapy.core.parsers.avro import read_avro
+from verticapy.core.parsers.csv import read_csv
+from verticapy.core.parsers.json import read_json
+from verticapy.core.parsers.pandas import read_pandas, read_pandas as pandas_to_vertica
+from verticapy.core.parsers.shp import read_shp
 from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -92,10 +98,4 @@ from verticapy.sql.create import create_schema, create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.insert import insert_into
-from verticapy.sql.parsers.all import read_file
-from verticapy.sql.parsers.avro import read_avro
-from verticapy.sql.parsers.csv import read_csv
-from verticapy.sql.parsers.json import read_json
-from verticapy.sql.parsers.pandas import read_pandas, read_pandas as pandas_to_vertica
-from verticapy.sql.parsers.shp import read_shp
 from verticapy.sql.sys import current_session, username

@@ -27,7 +27,8 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.errors import ExtensionError, ParameterError
 
-from verticapy.sql.parsers._utils import extract_col_dt_from_query, extract_compression
+from verticapy.core.parsers._utils import extract_col_dt_from_query, extract_compression
+from verticapy.core.vdataframe.base import vDataFrame
 
 
 @check_minimum_version
@@ -46,67 +47,75 @@ def read_file(
     ingest_local: bool = False,
     genSQL: bool = False,
     max_files: int = 100,
-):
+) -> vDataFrame:
     """
-Inspects and ingests a file in CSV, Parquet, ORC, JSON, or Avro format.
-This function uses the Vertica complex data type.
-For new table creation, the file must be located in the server.
+    Inspects and ingests a file in CSV, Parquet, ORC, 
+    JSON, or Avro format.
+    This function uses the Vertica complex data type.
+    For new table creation,  the file must be located 
+    in the server.
 
-Parameters
-----------
-path: str
-    Path to a file or glob. Valid paths include any path that is 
-    valid for COPY and that uses a file format supported by this 
-    function. 
-    When inferring the data type, only one file will be read, even 
-    if a glob specifies multiple files. However, in the case of JSON, 
-    more than one file may be read to infer the data type.
-schema: str, optional
-    Schema in which to create the table.
-table_name: str, optional
-    Name of the table to create. If empty, the file name is used.
-dtype: dict, optional
-    Dictionary of customised data type. The predicted data types will 
-    be replaced by the input data types. The dictionary must include 
-    the name of the column as key and the new data type as value.
-unknown: str, optional
-    Type used to replace unknown data types.
-varchar_varbinary_length: int, optional
-    Default length of varchar and varbinary columns.
-insert: bool, optional
-    If set to True, the data is ingested into the input relation.
-    When you set this parameter to True, most of the parameters are 
-    ignored.
-temporary_table: bool, optional
-    If set to True, a temporary table is created.
-temporary_local_table: bool, optional
-    If set to True, a temporary local table is created. The parameter 
-    'schema' must be empty, otherwise this parameter is ignored.
-gen_tmp_table_name: bool, optional
-    Sets the name of the temporary table. This parameter is only used 
-    when the parameter 'temporary_local_table' is set to True and the 
-    parameters "table_name" and "schema" are unspecified.
-ingest_local: bool, optional
-    If set to True, the file is ingested from the local machine. 
-    This currently only works for data insertion.
-genSQL: bool, optional
-    If set to True, the SQL code for creating the final table is 
-    generated but not executed. This is a good way to change the final
-    relation types or to customize the data ingestion.
-max_files: int, optional
-    (JSON only.) If path is a glob, specifies maximum number of files 
-    in path to inspect. Use this parameter to increase the amount of 
-    data the function considers. This can be beneficial if you suspect 
-    variation among files. Files are chosen arbitrarily from the glob.
-    The default value is 100.
+    Parameters
+    ----------
+    path: str
+        Path to a file  or glob.  Valid  paths include  any 
+        path that is valid  for COPY  and that uses a  file 
+        format supported by this function. 
+        When inferring  the data type, only  one file  will 
+        be read,  even if a glob specifies  multiple files. 
+        However,  in the case of  JSON, more than one  file 
+        may be read to infer the data type.
+    schema: str, optional
+        Schema in which to create the table.
+    table_name: str, optional
+        Name of the table to create. If empty, the file name 
+        is used.
+    dtype: dict, optional
+        Dictionary of customised  data  type.  The predicted 
+        data  types  will  be  replaced  by  the input  data 
+        types. The  dictionary must include the name  of the 
+        column as key and the new data type as value.
+    unknown: str, optional
+        Type used to replace unknown data types.
+    varchar_varbinary_length: int, optional
+        Default  length  of  varchar  and  varbinary columns.
+    insert: bool, optional
+        If set to True, the  data is ingested into  the input 
+        relation.
+        When  you  set this  parameter to True, most  of  the 
+        parameters are ignored.
+    temporary_table: bool, optional
+        If set to True, a temporary table is created.
+    temporary_local_table: bool, optional
+        If set to True, a  temporary local table is  created. 
+        The  parameter  'schema'  must  be  empty,  otherwise 
+        this parameter is ignored.
+    gen_tmp_table_name: bool, optional
+        Sets the name of the temporary table.  This parameter 
+        is     only      used      when     the     parameter 
+        'temporary_local_table'  is  set  to  True  and   the 
+        parameters "table_name" and "schema" are unspecified.
+    ingest_local: bool, optional
+        If set to True,  the  file is ingested from  the local 
+        machine. This currently only works for data insertion.
+    genSQL: bool, optional
+        If set to True,  the SQL  code for creating the  final 
+        table  is generated but  not executed. This is a  good 
+        way to change the final relation types or to customize 
+        the data ingestion.
+    max_files: int, optional
+        (JSON only.)  If  path  is a  glob, specifies  maximum 
+        number of files in path to inspect. Use this parameter 
+        to increase the amount of data the function considers. 
+        This can be beneficial  if you suspect variation among 
+        files.  Files  are  chosen  arbitrarily from the glob.
+        The default value is 100.
 
-Returns
--------
-vDataFrame
-    The vDataFrame of the relation.
+    Returns
+    -------
+    vDataFrame
+        The vDataFrame of the relation.
     """
-    from verticapy.core.vdataframe.base import vDataFrame
-
     assert not (ingest_local) or insert, ParameterError(
         "Ingest local to create new relations is not yet supported for 'read_file'"
     )

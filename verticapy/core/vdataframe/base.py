@@ -41,6 +41,7 @@ from verticapy.errors import (
     QueryError,
 )
 
+from verticapy.core.parsers.pandas import read_pandas
 from verticapy.core.vdataframe._aggregate import vDFAgg, vDCAgg
 from verticapy.core.vdataframe._corr import vDFCorr, vDCCorr
 from verticapy.core.vdataframe._encoding import vDFEncode, vDCEncode
@@ -70,7 +71,6 @@ from verticapy.sql.flex import (
     isvmap,
     isflextable,
 )
-from verticapy.sql.parsers.pandas import read_pandas
 
 ###                                          _____
 #   _______    ______ ____________    ____  \    \

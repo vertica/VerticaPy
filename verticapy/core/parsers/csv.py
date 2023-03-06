@@ -23,13 +23,18 @@ from verticapy._utils._sql._format import clean_query, format_schema_table, quot
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ExtensionError, MissingRelation, ParameterError
 
+from verticapy.core.parsers._utils import extract_compression, get_first_file
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.flex import compute_flextable_keys
-from verticapy.sql.parsers._utils import extract_compression, get_first_file
 
 
-def guess_sep(file_str: str):
+def guess_sep(file_str: str) -> str:
+    """
+    Guess the file's separator.
+    """
     sep = ","
     max_occur = file_str.count(",")
     for s in ("|", ";"):
@@ -40,14 +45,19 @@ def guess_sep(file_str: str):
     return sep
 
 
-def erase_space_start_end_in_list_values(L: list):
-    L_tmp = [elem for elem in L]
-    for idx in range(len(L_tmp)):
-        L_tmp[idx] = L_tmp[idx].strip()
-    return L_tmp
+def list_strip(L: list) -> list:
+    """
+    Erases all the start / end spaces from the
+    input list.
+    """
+    return [val.strip() for val in L]
 
 
-def get_header_name_csv(path: str, sep: str):
+def get_header_names(path: str, sep: str) -> list[str]:
+    """
+    Returns the input CSV file's header columns' 
+    names.
+    """
     f = open(path, "r")
     file_header = f.readline().replace("\n", "").replace('"', "")
     if not (sep):
@@ -75,7 +85,7 @@ def get_header_name_csv(path: str, sep: str):
                     "index=False when exporting with pandas.DataFrame.to_csv."
                 )
             warnings.warn(warning_message, Warning)
-    return erase_space_start_end_in_list_values(file_header)
+    return list_strip(file_header)
 
 
 def pcsv(
@@ -95,63 +105,69 @@ def pcsv(
     ingest_local: bool = True,
     flex_name: str = "",
     genSQL: bool = False,
-):
+) -> dict[str, str]:
     """
-Parses a CSV file using flex tables. It will identify the columns and their
-respective types.
+    Parses a CSV file using flex tables. It will identify the 
+    columns and their respective types.
 
-Parameters
-----------
-path: str
-    Absolute path where the CSV file is located.
-sep: str, optional
-    Column separator.
-header: bool, optional
-    If set to False, the parameter 'header_names' will be to use to name the 
-    different columns.
-header_names: list, optional
-    List of the columns names.
-na_rep: str, optional
-    Missing values representation.
-quotechar: str, optional
-    Char which is enclosing the str values.
-escape: str, optional
-    Separator between each record.
-record_terminator: str, optional
-    A single-character value used to specify the end of a record.
-trim: bool, optional
-    Boolean, specifies whether to trim white space from header names and 
-    key values.
-omit_empty_keys: bool, optional
-    Boolean, specifies how the parser handles header keys without values. 
-    If true, keys with an empty value in the header row are not loaded.
-reject_on_duplicate: bool, optional
-    Boolean, specifies whether to ignore duplicate records (False), or to 
-    reject duplicates (True). In either case, the load continues.
-reject_on_empty_key: bool, optional
-    Boolean, specifies whether to reject any row containing a key without a 
-    value.
-reject_on_materialized_type_error: bool, optional
-    Boolean, specifies whether to reject any materialized column value that the 
-    parser cannot coerce into a compatible data type.
-ingest_local: bool, optional
-    If set to True, the file will be ingested from the local machine.
-flex_name: str, optional
-    Flex table name.
-genSQL: bool, optional
-    If set to True, the SQL code for creating the final table is 
-    generated but not executed. This is a good way to change the
-    final relation types or to customize the data ingestion.
+    Parameters
+    ----------
+    path: str
+        Absolute path where the CSV file is located.
+    sep: str, optional
+        Column separator.
+    header: bool, optional
+        If set to False, the parameter 'header_names' will be to 
+        use to name the different columns.
+    header_names: list, optional
+        List of the columns names.
+    na_rep: str, optional
+        Missing values representation.
+    quotechar: str, optional
+        Char which is enclosing the str values.
+    escape: str, optional
+        Separator between each record.
+    record_terminator: str, optional
+        A single-character  value  used to  specify  the end of 
+        a record.
+    trim: bool, optional
+        Boolean,  specifies  whether to trim  white space  from 
+        header names and key values.
+    omit_empty_keys: bool, optional
+        Boolean,  specifies how the  parser handles header keys 
+        without  values.  If true,  keys with an empty value in 
+        the header row are not loaded.
+    reject_on_duplicate: bool, optional
+        Boolean,  specifies whether  to ignore duplicate records 
+        (False), or to reject duplicates (True). In either case, 
+        the load continues.
+    reject_on_empty_key: bool, optional
+        Boolean, specifies whether to reject any  row containing 
+        a key without a value.
+    reject_on_materialized_type_error: bool, optional
+        Boolean,  specifies  whether to reject any  materialized 
+        column  value  that  the  parser  cannot coerce  into  a 
+        compatible data type.
+    ingest_local: bool, optional
+        If set to True, the file will be ingested from the local 
+        machine.
+    flex_name: str, optional
+        Flex table name.
+    genSQL: bool, optional
+        If set to True, the SQL code for creating the final table 
+        is  generated  but  not executed. This is a good  way  to 
+        change the final relation  types or to customize the data 
+        ingestion.
 
-Returns
--------
-dict
-    dictionary containing each column and its type.
+    Returns
+    -------
+    dict
+        dictionary containing each column and its type.
 
-See Also
---------
-read_csv  : Ingests a CSV file into the Vertica database.
-read_json : Ingests a JSON file into the Vertica database.
+    See Also
+    --------
+    read_csv  : Ingests a CSV  file into the Vertica database.
+    read_json : Ingests a JSON file into the Vertica database.
     """
     if record_terminator == "\n":
         record_terminator = "\\n"
@@ -242,96 +258,104 @@ def read_csv(
     ingest_local: bool = True,
     genSQL: bool = False,
     materialize: bool = True,
-):
+) -> vDataFrame:
     """
-Ingests a CSV file using flex tables.
+    Ingests a CSV file using flex tables.
 
-Parameters
-----------
-path: str
-	Absolute path where the CSV file is located.
-schema: str, optional
-	Schema where the CSV file will be ingested.
-table_name: str, optional
-	The final relation/table name. If unspecified, the name is set to the 
-    name of the file or parent directory.
-sep: str, optional
-	Column separator. 
-    If empty, the separator is guessed. This is only possible if the files
-    are not compressed.
-header: bool, optional
-	If set to False, the parameter 'header_names' will be to use to name the 
-	different columns.
-header_names: list, optional
-	List of the columns names.
-dtype: dict, optional
-    Dictionary of the user types. Providing a dictionary can increase 
-    ingestion speed and precision; instead of parsing the file to guess 
-    the different types, VerticaPy will use the input types.
-na_rep: str, optional
-	Missing values representation.
-quotechar: str, optional
-	Char which is enclosing the str values.
-escape: str, optional
-	Separator between each record.
-record_terminator: str, optional
-    A single-character value used to specify the end of a record.
-trim: bool, optional
-    Boolean, specifies whether to trim white space from header names and 
-    key values.
-omit_empty_keys: bool, optional
-    Boolean, specifies how the parser handles header keys without values. 
-    If true, keys with an empty value in the header row are not loaded.
-reject_on_duplicate: bool, optional
-    Boolean, specifies whether to ignore duplicate records (False), or to 
-    reject duplicates (True). In either case, the load continues.
-reject_on_empty_key: bool, optional
-    Boolean, specifies whether to reject any row containing a key without a 
-    value.
-reject_on_materialized_type_error: bool, optional
-    Boolean, specifies whether to reject any materialized column value that the 
-    parser cannot coerce into a compatible data type.
-parse_nrows: int, optional
-	If this parameter is greater than 0. A new file of 'parse_nrows' rows
-	will be created and ingested first to identify the data types. It will be
-	then dropped and the entire file will be ingested. The data types identification
-	will be less precise but this parameter can make the process faster if the
-	file is heavy.
-insert: bool, optional
-	If set to True, the data will be ingested to the input relation. Be sure
-	that your file has a header corresponding to the name of the relation
-	columns, otherwise ingestion will fail.
-temporary_table: bool, optional
-    If set to True, a temporary table will be created.
-temporary_local_table: bool, optional
-    If set to True, a temporary local table will be created. The parameter 'schema'
-    must be empty, otherwise this parameter is ignored.
-gen_tmp_table_name: bool, optional
-    Sets the name of the temporary table. This parameter is only used when the 
-    parameter 'temporary_local_table' is set to True and if the parameters 
-    "table_name" and "schema" are unspecified.
-ingest_local: bool, optional
-    If set to True, the file will be ingested from the local machine.
-genSQL: bool, optional
-    If set to True, the SQL code for creating the final table is 
-    generated but not executed. This is a good way to change the final
-    relation types or to customize the data ingestion.
-materialize: bool, optional
-    If set to True, the flex table is materialized into a table.
-    Otherwise, it will remain a flex table. Flex tables simplify the
-    data ingestion but have worse performace compared to regular tables.
+    Parameters
+    ----------
+    path: str
+        Absolute path where the CSV file is located.
+    schema: str, optional
+        Schema where the CSV file will be ingested.
+    table_name: str, optional
+        The final relation/table name. If unspecified, the name 
+        is set to the name of the file or parent directory.
+    sep: str, optional
+        Column separator.
+    header: bool, optional
+        If set to False, the parameter 'header_names' will be to 
+        use to name the different columns.
+    header_names: list, optional
+        List of the columns names.
+    dtype: dict, optional
+        Dictionary of the user types. Providing a dictionary can 
+        increase   ingestion  speed  and  precision; instead  of 
+        parsing the file to guess the different types, VerticaPy 
+        will use the input types.
+    na_rep: str, optional
+        Missing values representation.
+    quotechar: str, optional
+        Char which is enclosing the str values.
+    escape: str, optional
+        Separator between each record.
+    record_terminator: str, optional
+        A single-character  value  used to  specify  the end of 
+        a record.
+    trim: bool, optional
+        Boolean,  specifies  whether to trim  white space  from 
+        header names and key values.
+    omit_empty_keys: bool, optional
+        Boolean,  specifies how the  parser handles header keys 
+        without  values.  If true,  keys with an empty value in 
+        the header row are not loaded.
+    reject_on_duplicate: bool, optional
+        Boolean,  specifies whether  to ignore duplicate records 
+        (False), or to reject duplicates (True). In either case, 
+        the load continues.
+    reject_on_empty_key: bool, optional
+        Boolean, specifies whether to reject any  row containing 
+        a key without a value.
+    reject_on_materialized_type_error: bool, optional
+        Boolean,  specifies  whether to reject any  materialized 
+        column  value  that  the  parser  cannot coerce  into  a 
+        compatible data type.
+    parse_nrows: int, optional
+        If  this  parameter  is greater  than 0. A new  file  of 
+        'parse_nrows' rows will be created and ingested first to 
+        identify the data types. It will be then dropped and the 
+        entire   file   will  be   ingested.  The   data   types 
+        identification  will be less precise but this  parameter 
+        can make the process faster if the file is heavy.
+    insert: bool, optional
+        If set to True,  the data will be ingested to the  input 
+        relation.   Be   sure  that  your  file  has  a   header 
+        corresponding  to  the  name  of the  relation  columns, 
+        otherwise ingestion will fail.
+    temporary_table: bool, optional
+        If set to True, a temporary table will be created.
+    temporary_local_table: bool, optional
+        If set to True, a temporary local table will be created. 
+        The parameter 'schema'  must  be  empty,  otherwise this 
+        parameter is ignored.
+    gen_tmp_table_name: bool, optional
+        Sets the name of the  temporary table. This parameter is 
+        only used when the parameter  'temporary_local_table' is 
+        set  to  True  and if  the parameters  "table_name"  and 
+        "schema" are unspecified.
+    ingest_local: bool, optional
+        If set to True, the file will be ingested from the local 
+        machine.
+    genSQL: bool, optional
+        If set to True, the SQL code for creating the final table 
+        is  generated  but  not executed. This is a good  way  to 
+        change the final relation  types or to customize the data 
+        ingestion.
+    materialize: bool, optional
+        If  set to True,  the  flex table is  materialized  into a 
+        table. Otherwise, it will remain a flex table. Flex tables 
+        simplify  the  data  ingestion but have  worse  performace 
+        compared to regular tables.
 
-Returns
--------
-vDataFrame
-	The vDataFrame of the relation.
+    Returns
+    -------
+    vDataFrame
+    	The vDataFrame of the relation.
 
-See Also
---------
-read_json : Ingests a JSON file into the Vertica database.
+    See Also
+    --------
+    read_json : Ingests a JSON file into the Vertica database.
 	"""
-    from verticapy.core.vdataframe.base import vDataFrame
-
     if schema:
         temporary_local_table = False
     elif temporary_local_table:
@@ -400,7 +424,7 @@ read_json : Ingests a JSON file into the Vertica database.
         ):
             if not (path_first_file_in_folder):
                 raise ParameterError("No CSV file detected in the folder.")
-            file_header = get_header_name_csv(path_first_file_in_folder, sep)
+            file_header = get_header_names(path_first_file_in_folder, sep)
         elif not (header_names) and not (dtype) and (compression != "UNCOMPRESSED"):
             raise ParameterError(
                 "The input file is compressed and parameters 'dtypes' and 'header_names'"
@@ -416,7 +440,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 header_names = file_header
             else:
                 header_names = [elem for elem in dtype]
-            header_names = erase_space_start_end_in_list_values(header_names)
+            header_names = list_strip(header_names)
         elif len(file_header) > len(header_names):
             header_names += [
                 f"ucol{i + len(header_names)}"

@@ -24,7 +24,8 @@ from verticapy._utils._sql._format import format_schema_table
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
-from verticapy.sql.parsers.csv import read_csv
+from verticapy.core.parsers.csv import read_csv
+from verticapy.core.vdataframe.base import vDataFrame
 
 
 @save_verticapy_logs
@@ -36,58 +37,72 @@ def read_pandas(
     parse_nrows: int = 10000,
     temp_path: str = "",
     insert: bool = False,
-):
+) -> vDataFrame:
     """
-Ingests a pandas DataFrame into the Vertica database by creating a 
-CSV file and then using flex tables to load the data.
+    Ingests a pandas DataFrame into the Vertica 
+    database  by  creating a CSV file and  then 
+    using flex tables to load the data.
 
-Parameters
-----------
-df: pandas.DataFrame
-    The pandas.DataFrame to ingest.
-name: str, optional
-    Name of the new relation or the relation in which to insert the 
-    data. If unspecified, a temporary local table is created. This 
-    temporary table is dropped at the end of the local session.
-schema: str, optional
-    Schema of the new relation. If empty, a temporary schema is used. 
-    To modify the temporary schema, use the 'set_option' function.
-dtype: dict, optional
-    Dictionary of input types. Providing a dictionary can increase 
-    ingestion speed and precision. If specified, rather than parsing 
-    the intermediate CSV and guessing the input types, VerticaPy uses 
-    the specified input types instead.
-parse_nrows: int, optional
-    If this parameter is greater than 0, VerticaPy creates and 
-    ingests a temporary file containing 'parse_nrows' number 
-    of rows to determine the input data types before ingesting 
-    the intermediate CSV file containing the rest of the data. 
-    This method of data type identification is less accurate, 
-    but is much faster for large datasets.
-temp_path: str, optional
-    The path to which to write the intermediate CSV file. This 
-    is useful in cases where the user does not have write 
-    permissions on the current directory.
-insert: bool, optional
-    If set to True, the data are ingested into the input relation. 
-    The column names of your table and the pandas.DataFrame must 
-    match.
-    
-Returns
--------
-vDataFrame
-    vDataFrame of the new relation.
+    Parameters
+    ----------
+    df: pandas.DataFrame
+        The pandas.DataFrame to ingest.
+    name: str, optional
+        Name  of  the new  relation or the  relation 
+        in which to insert the data. If unspecified, 
+        a  temporary  local  table is created.  This 
+        temporary table is dropped at the end of the 
+        local session.
+    schema: str, optional
+        Schema  of  the new  relation.  If  empty, a 
+        temporary  schema  is  used.  To modify  the 
+        temporary   schema,  use  the   'set_option' 
+        function.
+    dtype: dict, optional
+        Dictionary   of  input  types.  Providing  a 
+        dictionary can increase  ingestion speed and 
+        precision. If specified, rather than parsing 
+        the intermediate CSV and  guessing the input 
+        types,  VerticaPy uses  the specified  input 
+        types instead.
+    parse_nrows: int, optional
+        If    this   parameter  is  greater  than   0, 
+        VerticaPy  creates  and  ingests  a  temporary 
+        file containing  'parse_nrows'  number of rows 
+        to  determine  the  input  data types   before 
+        ingesting the intermediate CSV file containing 
+        the rest of the data. This method of data type 
+        identification  is less accurate, but is  much 
+        faster for large datasets.
+    temp_path: str, optional
+        The path to which to write the intermediate CSV 
+        file.  This is  useful in cases where the  user 
+        does not have write  permissions on the current 
+        directory.
+    insert: bool, optional
+        If set to True, the data are ingested into the 
+        input relation. The column names of your table 
+        and the pandas.DataFrame must match.
+        
+    Returns
+    -------
+    vDataFrame
+        vDataFrame of the new relation.
 
-See Also
---------
-read_csv  : Ingests a  CSV file into the Vertica database.
-read_json : Ingests a JSON file into the Vertica database.
+    See Also
+    --------
+    read_csv  : Ingests a  CSV file into the Vertica 
+                database.
+    read_json : Ingests a JSON file into the Vertica 
+                database.
     """
     if not (schema):
         schema = conf.get_option("temp_schema")
-    assert name or not (insert), ParameterError(
-        "Parameter 'name' can not be empty when parameter 'insert' is set to True."
-    )
+    if insert and not (name):
+        raise ParameterError(
+            "Parameter 'name' can not be empty when "
+            "parameter 'insert' is set to True."
+        )
     if not (name):
         tmp_name = gen_tmp_name(name="df")[1:-1]
     else:
@@ -95,7 +110,8 @@ read_json : Ingests a JSON file into the Vertica database.
     sep = "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else ""
     path = f"{temp_path}{sep}{name}.csv"
     try:
-        # Adding the quotes to STR pandas columns in order to simplify the ingestion.
+        # Adding the quotes to STR pandas columns in order
+        # to simplify the ingestion.
         # Not putting them can lead to wrong data ingestion.
         str_cols = []
         for c in df.columns:

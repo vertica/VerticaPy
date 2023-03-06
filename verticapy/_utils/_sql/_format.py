@@ -217,7 +217,7 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
     be materialised by a temporary local table.
     """
 
-    from verticapy.sql.parsers.pandas import read_pandas
+    from verticapy.core.parsers.pandas import read_pandas
 
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:

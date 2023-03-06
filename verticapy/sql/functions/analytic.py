@@ -127,9 +127,9 @@ def conditional_change_event(expr: SQLExpression) -> StringSQL:
 
 def conditional_true_event(expr: SQLExpression) -> StringSQL:
     """
-    Assigns an event window number to each row, starting from 0, and increments 
-    the number by 1 when the result of the boolean argument expression evaluates 
-    true.
+    Assigns an  event window number to each row,  starting 
+    from 0, and increments the number by 1 when the result 
+    of  the boolean  argument expression  evaluates  true.
 
     Parameters
     ----------
@@ -147,8 +147,8 @@ def conditional_true_event(expr: SQLExpression) -> StringSQL:
 
 def count(expr: SQLExpression) -> StringSQL:
     """
-    Returns as a BIGINT the number of rows in each group where the expression is 
-    not NULL.
+    Returns as a BIGINT the number of rows in each group 
+    where the expression is not NULL.
 
     Parameters
     ----------
@@ -166,8 +166,8 @@ def count(expr: SQLExpression) -> StringSQL:
 
 def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
     """
-    Returns the value of the input expression at the given offset before the 
-    current row within a window. 
+    Returns the value of the input expression at the given 
+    offset before the current row within a window. 
 
     Parameters
     ----------
@@ -187,8 +187,9 @@ def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
 
 def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
     """
-    Returns values from the row after the current row within a window, letting 
-    you access more than one row in a table at the same time. 
+    Returns values  from the row after the current row within 
+    a window, letting you access more than one row in a table 
+    at the same time. 
 
     Parameters
     ----------
@@ -208,7 +209,8 @@ def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
 
 def max(expr: SQLExpression) -> StringSQL:
     """
-    Returns the greatest value of an expression over a group of rows.
+    Returns the greatest value of an expression 
+    over a group of rows.
 
     Parameters
     ----------
@@ -226,7 +228,8 @@ def max(expr: SQLExpression) -> StringSQL:
 
 def median(expr: SQLExpression) -> StringSQL:
     """
-    Computes the approximate median of an expression over a group of rows.
+    Computes the approximate median of an expression 
+    over a group of rows.
 
     Parameters
     ----------
@@ -244,7 +247,8 @@ def median(expr: SQLExpression) -> StringSQL:
 
 def min(expr: SQLExpression) -> StringSQL:
     """
-    Returns the smallest value of an expression over a group of rows.
+    Returns the smallest value of an expression 
+    over a group of rows.
 
     Parameters
     ----------
@@ -262,8 +266,8 @@ def min(expr: SQLExpression) -> StringSQL:
 
 def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
     """
-    Returns the value evaluated at the row that is the nth row of the window 
-    (counting from 1).
+    Returns the value evaluated at the row that is 
+    the nth row of the window (counting from 1).
 
     Parameters
     ----------
@@ -283,15 +287,16 @@ def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
 
 def quantile(expr: SQLExpression, number: float) -> StringSQL:
     """
-    Computes the approximate percentile of an expression over a group of rows.
+    Computes  the  approximate  percentile of  an 
+    expression over a group of rows.
 
     Parameters
     ----------
     expr: SQLExpression
         Expression.
     number: float
-        Percentile value, which must be a FLOAT constant ranging from 0 to 1 
-        (inclusive).
+        Percentile value,  which must be  a FLOAT 
+        constant ranging from 0 to 1 (inclusive).
 
     Returns
     -------
@@ -307,8 +312,9 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
 
 def rank() -> StringSQL:
     """
-    Within each window partition, ranks all rows in the query results set 
-    according to the order specified by the window's ORDER BY clause.
+    Within each window partition, ranks all rows in 
+    the  query  results set according to the  order 
+    specified  by  the  window's  ORDER BY  clause.
 
     Returns
     -------
@@ -320,8 +326,8 @@ def rank() -> StringSQL:
 
 def row_number() -> StringSQL:
     """
-    Assigns a sequence of unique numbers, starting from 1, to each row in a 
-    window partition.
+    Assigns a sequence of unique numbers, starting 
+    from 1,  to  each  row in a  window partition.
 
     Returns
     -------
@@ -333,8 +339,8 @@ def row_number() -> StringSQL:
 
 def std(expr: SQLExpression) -> StringSQL:
     """
-    Evaluates the statistical sample standard deviation for each member of the 
-    group.
+    Evaluates  the  statistical  sample  standard 
+    deviation  for  each  member  of  the  group.
 
     Parameters
     ----------
@@ -355,7 +361,8 @@ stddev = std
 
 def sum(expr: SQLExpression) -> StringSQL:
     """
-    Computes the sum of an expression over a group of rows.
+    Computes the sum of an expression over a group 
+    of rows.
 
     Parameters
     ----------
@@ -373,7 +380,8 @@ def sum(expr: SQLExpression) -> StringSQL:
 
 def var(expr: SQLExpression) -> StringSQL:
     """
-    Evaluates the sample variance for each row of the group.
+    Evaluates the sample variance for each row of 
+    the group.
 
     Parameters
     ----------
