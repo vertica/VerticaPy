@@ -17,11 +17,18 @@ permissions and limitations under the License.
 import shutil
 
 import verticapy._config.config as conf
-from verticapy._utils._sql._format import indentSQL
+from verticapy._utils._sql._format import clean_query, indentSQL
+
+if conf._get_import_success("jupyter"):
+    from IPython.display import HTML, display
 
 
-def print_query(query: str, title: str = ""):
+def print_query(query: str, title: str = "") -> None:
+    """
+    Displays the input query.
+    """
     screen_columns = shutil.get_terminal_size().columns
+    query_print = clean_query(query)
     query_print = indentSQL(query)
     if conf._get_import_success("jupyter"):
         display(HTML(f"<h4>{title}</h4>"))
@@ -31,12 +38,17 @@ def print_query(query: str, title: str = ""):
         print(f"$ {title} $\n")
         print(query_print)
         print("-" * int(screen_columns) + "\n")
+    return None
 
 
-def print_time(elapsed_time: float):
+def print_time(elapsed_time: float) -> None:
+    """
+    Displays the input time.
+    """
     screen_columns = shutil.get_terminal_size().columns
     if conf._get_import_success("jupyter"):
         display(HTML(f"<div><b>Execution: </b> {round(elapsed_time, 3)}s</div>"))
     else:
         print(f"Execution: {round(elapsed_time, 3)}s")
         print("-" * int(screen_columns) + "\n")
+    return None

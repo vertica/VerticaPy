@@ -50,7 +50,7 @@ class TestvDFCreate:
 
         assert tvdf["pclass"].count() == 1234
 
-    def test_creating_vDF_using_input_relation_vcolumns(self, titanic_vd):
+    def test_creating_vDF_using_input_relation_vDataColumns(self, titanic_vd):
         tvdf = vDataFrame(input_relation="public.titanic", usecols=["age", "survived"],)
 
         assert tvdf["survived"].count() == 1234

@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy.machine_learning.metrics.classification import (
     accuracy_score,
-    auc,
+    best_cutoff,
     classification_report,
     confusion_matrix,
     critical_success_index,
@@ -28,6 +28,7 @@ from verticapy.machine_learning.metrics.classification import (
     multilabel_confusion_matrix,
     negative_predictive_score,
     prc_auc,
+    roc_auc,
     precision_score,
     recall_score,
     specificity_score,
@@ -47,11 +48,6 @@ from verticapy.machine_learning.metrics.regression import (
     r2_score,
     regression_report,
 )
-from verticapy.machine_learning.model_selection.model_validation import (
-    prc_curve,
-    roc_curve,
-    lift_chart,
-)
 
 
 FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
@@ -59,10 +55,10 @@ FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
     "bic": bic_score,
     "accuracy": accuracy_score,
     "acc": accuracy_score,
-    "auc": auc,
+    "auc": roc_auc,
     "prc_auc": prc_auc,
-    "best_cutoff": roc_curve,
-    "best_threshold": roc_curve,
+    "best_cutoff": best_cutoff,
+    "best_threshold": best_cutoff,
     "recall": recall_score,
     "tpr": recall_score,
     "precision": precision_score,
@@ -81,12 +77,6 @@ FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
     "markedness": markedness,
     "csi": critical_success_index,
     "critical_success_index": critical_success_index,
-    "roc_curve": roc_curve,
-    "roc": roc_curve,
-    "prc_curve": prc_curve,
-    "prc": prc_curve,
-    "lift_chart": lift_chart,
-    "lift": lift_chart,
 }
 
 FUNCTIONS_REGRESSION_DICTIONNARY = {

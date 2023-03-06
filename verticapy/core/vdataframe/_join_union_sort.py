@@ -117,7 +117,7 @@ class vDFJoinUnionSort:
 
     Parameters
     ----------
-    input_relation: str/vDataFrame
+    input_relation: SQLRelation
         Relation to use to do the merging.
     on: tuple / dict / list, optional
         If it is a list then:

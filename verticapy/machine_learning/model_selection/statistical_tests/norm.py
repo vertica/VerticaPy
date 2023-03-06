@@ -15,153 +15,140 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
-from typing import Union
 from scipy.stats import chi2, norm
 
-from verticapy._typing import PythonNumber
+from verticapy._typing import SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 
-from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
+"""
+Normality Tests.
+"""
+
 
 @save_verticapy_logs
-def jarque_bera(vdf: vDataFrame, column: str, alpha: PythonNumber = 0.05):
+def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     """
-Jarque-Bera test (Distribution Normality).
+    Jarque-Bera test (Distribution Normality).
 
-Parameters
-----------
-vdf: vDataFrame
-    input vDataFrame.
-column: str
-    Input vcolumn to test.
-alpha: PythonNumber, optional
-    Significance Level. Probability to accept H0.
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Input relation.
+    column: str
+        Input vDataColumn to test.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    tuple
+        statistic, p_value
     """
+    if isinstance(input_relation, vDataFrame):
+        vdf = input_relation.copy()
+    else:
+        vdf = vDataFrame(input_relation)
     column = vdf._format_colnames(column)
-    jb, kurtosis, skewness, n = (
-        vdf[column].agg(["jb", "kurtosis", "skewness", "count"]).values[column]
-    )
+    jb = vdf[column].agg(["jb"]).values[column][0]
     pvalue = chi2.sf(jb, 2)
-    result = False if pvalue < alpha else True
-    result = TableSample(
-        {
-            "index": [
-                "Jarque Bera Test Statistic",
-                "p_value",
-                "# Observations Used",
-                "Kurtosis - 3",
-                "Skewness",
-                "Distribution Normality",
-            ],
-            "value": [jb, pvalue, n, kurtosis, skewness, result],
-        }
-    )
-    return result
+    return jb, pvalue
 
 
 @save_verticapy_logs
-def kurtosistest(vdf: vDataFrame, column: str):
+def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     """
-Test whether the kurtosis is different from the Normal distribution.
+    Test whether the kurtosis is different from the 
+    Normal distribution.
 
-Parameters
-----------
-vdf: vDataFrame
-    input vDataFrame.
-column: str
-    Input vcolumn to test.
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Input relation.
+    column: str
+        Input vDataColumn to test.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    tuple
+        statistic, p_value
     """
+    if isinstance(input_relation, vDataFrame):
+        vdf = input_relation.copy()
+    else:
+        vdf = vDataFrame(input_relation)
     column = vdf._format_colnames(column)
     g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
     mu1 = -6 / (n + 1)
     mu2 = 24 * n * (n - 2) * (n - 3) / (((n + 1) ** 2) * (n + 3) * (n + 5))
-    gamma1 = (
-        6
-        * (n ** 2 - 5 * n + 2)
-        / ((n + 7) * (n + 9))
-        * math.sqrt(6 * (n + 3) * (n + 5) / (n * (n - 2) * (n - 3)))
-    )
+    gamma1 = 6 * (n ** 2 - 5 * n + 2) / ((n + 7) * (n + 9))
+    gamma1 = gamma1 * math.sqrt(6 * (n + 3) * (n + 5) / (n * (n - 2) * (n - 3)))
     A = 6 + 8 / gamma1 * (2 / gamma1 + math.sqrt(1 + 4 / (gamma1 ** 2)))
     B = (1 - 2 / A) / (1 + (g2 - mu1) / math.sqrt(mu2) * math.sqrt(2 / (A - 4)))
     B = B ** (1 / 3) if B > 0 else (-B) ** (1 / 3)
     Z2 = math.sqrt(9 * A / 2) * (1 - 2 / (9 * A) - B)
     pvalue = 2 * norm.sf(abs(Z2))
-    result = TableSample({"index": ["Statistic", "p_value"], "value": [Z2, pvalue]})
-    return result
+    return Z2, pvalue
 
 
 @save_verticapy_logs
-def normaltest(vdf: vDataFrame, column: str):
+def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     """
-Test whether a sample differs from a normal distribution.
+    Test whether a sample differs from a normal 
+    distribution.
 
-Parameters
-----------
-vdf: vDataFrame
-    input vDataFrame.
-column: str
-    Input vcolumn to test.
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Input relation.
+    column: str
+        Input vDataColumn to test.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    tuple
+        statistic, p_value
     """
-    Z1, Z2 = (
-        skewtest(vdf, column)["value"][0],
-        kurtosistest(vdf, column)["value"][0],
-    )
+    if isinstance(input_relation, vDataFrame):
+        vdf = input_relation.copy()
+    else:
+        vdf = vDataFrame(input_relation)
+    Z1 = skewtest(vdf, column)[0]
+    Z2 = kurtosistest(vdf, column)[0]
     Z = Z1 ** 2 + Z2 ** 2
     pvalue = chi2.sf(Z, 2)
-    result = TableSample({"index": ["Statistic", "p_value"], "value": [Z, pvalue]})
-    return result
+    return Z, pvalue
 
 
 @save_verticapy_logs
-def skewtest(vdf: vDataFrame, column: str):
+def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     """
-Test whether the skewness is different from the normal distribution.
+    Test whether the skewness is different from the 
+    normal distribution.
 
-Parameters
-----------
-vdf: vDataFrame
-    input vDataFrame.
-column: str
-    Input vcolumn to test.
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Input relation.
+    column: str
+        Input vDataColumn to test.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    tuple
+        statistic, p_value
     """
+    if isinstance(input_relation, vDataFrame):
+        vdf = input_relation.copy()
+    else:
+        vdf = vDataFrame(input_relation)
     column = vdf._format_colnames(column)
     g1, n = vdf[column].agg(["skewness", "count"]).values[column]
-    mu1 = 0
     mu2 = 6 * (n - 2) / ((n + 1) * (n + 3))
-    gamma1 = 0
-    gamma2 = (
-        36 * (n - 7) * (n ** 2 + 2 * n - 5) / ((n - 2) * (n + 5) * (n + 7) * (n + 9))
-    )
+    gamma2 = 36 * (n - 7) * (n ** 2 + 2 * n - 5)
+    gamma2 = gamma2 / ((n - 2) * (n + 5) * (n + 7) * (n + 9))
     W2 = math.sqrt(2 * gamma2 + 4) - 1
     delta = 1 / math.sqrt(math.log(math.sqrt(W2)))
     alpha2 = 2 / (W2 - 1)
     Z1 = delta * math.asinh(g1 / math.sqrt(alpha2 * mu2))
     pvalue = 2 * norm.sf(abs(Z1))
-    result = TableSample({"index": ["Statistic", "p_value"], "value": [Z1, pvalue]})
-    return result
+    return Z1, pvalue

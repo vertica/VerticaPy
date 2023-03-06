@@ -15,9 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
+from typing import Union
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import SQLRelation
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -25,7 +27,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 @save_verticapy_logs
 def create_index(
-    vdf: vDataFrame,
+    vdf: SQLRelation,
     gid: str,
     g: str,
     index: str,
@@ -34,41 +36,46 @@ def create_index(
     skip_nonindexable_polygons: bool = False,
 ) -> TableSample:
     """
-Creates a spatial index on a set of polygons to speed up spatial 
-intersection with a set of points.
+    Creates  a spatial  index on a set of polygons  to 
+    speed up spatial intersection with a set of points.
 
-Parameters
-----------
-vdf: vDataFrame
-    vDataFrame to use to compute the spatial join.
-gid: str
-    Name of an integer column that uniquely identifies the polygon. 
-    The gid cannot be NULL.
-g: str
-    Name of a geometry or geography (WGS84) column or expression that 
-    contains polygons and multipolygons. Only polygon and multipolygon 
-    can be indexed. Other shape types are excluded from the index.
-index: str
-    Name of the index.
-overwrite: bool, optional
-    BOOLEAN value that specifies whether to overwrite the index, if an 
-    index exists.
-max_mem_mb: int, optional
-    A positive integer that assigns a limit to the amount of memory in 
-    megabytes that create_index can allocate during index construction.
-skip_nonindexable_polygons: bool, optional
-    In rare cases, intricate polygons (for instance, with too high 
-    resolution or anomalous spikes) cannot be indexed. These polygons 
-    are considered non-indexable. 
-    When set to False, non-indexable polygons cause the index creation 
-    to fail. When set to True, index creation can succeed by excluding 
-    non-indexable polygons from the index.
+    Parameters
+    ----------
+    vdf: SQLRelation
+        vDataFrame to use to compute the spatial join.
+    gid: str
+        Name  of  an   integer  column  that  uniquely 
+        identifies the polygon. 
+        The gid cannot be NULL.
+    g: str
+        Name of a geometry or geography (WGS84) column 
+        or  expression  that   contains  polygons  and 
+        multipolygons.  Only polygon  and multipolygon 
+        can be indexed. Other shape types are excluded 
+        from the index.
+    index: str
+        Name of the index.
+    overwrite: bool, optional
+        BOOLEAN  value   that  specifies   whether  to 
+        overwrite the index, if an index exists.
+    max_mem_mb: int, optional
+        A positive integer that  assigns a limit to the 
+        amount of memory in megabytes that create_index 
+        can allocate during index construction.
+    skip_nonindexable_polygons: bool, optional
+        In rare cases, intricate polygons (for instance, 
+        with  too high  resolution or anomalous  spikes) 
+        cannot be indexed. These polygons are considered 
+        non-indexable. 
+        When set to False,  non-indexable polygons cause 
+        the  index creation  to fail. When set to  True, 
+        index   creation  can   succeed   by   excluding 
+        non-indexable polygons from the index.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    TableSample
+        geospatial indexes.
     """
     gid, g = vdf._format_colnames(gid, g)
     query = f"""
@@ -85,25 +92,29 @@ TableSample
 
 
 @save_verticapy_logs
-def describe_index(name: str = "", list_polygons: bool = False) -> TableSample:
+def describe_index(
+    name: str = "", list_polygons: bool = False
+) -> Union[TableSample, vDataFrame]:
     """
-Retrieves information about an index that contains a set of polygons. If 
-you do not pass any parameters, this function returns all defined indexes.
+    Retrieves  information about an index that 
+    contains a set of polygons.  If you do not 
+    pass any parameters, this function returns 
+    all defined indexes.
 
-Parameters
-----------
-name: str, optional
-    Index name.
-list_polygons: bool, optional
-    Boolean that specifies whether to list the polygons in the index.
-    If set to True, the function will return a vDataFrame instead of
-    a TableSample.
+    Parameters
+    ----------
+    name: str, optional
+        Index name.
+    list_polygons: bool, optional
+        Boolean that specifies whether to list 
+        the polygons  in the index.  If set to 
+        True,   the  function  will  return  a 
+        vDataFrame instead of a TableSample.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    TableSample
+        geospatial indexes.
     """
     if not (name):
         query = f"SELECT STV_Describe_Index () OVER ()"
@@ -117,32 +128,34 @@ TableSample
             OVER()"""
 
     if list_polygons:
-        result = vDataFrame(query)
+        res = vDataFrame(query)
     else:
-        result = TableSample.read_sql(query)
+        res = TableSample.read_sql(query)
 
-    return result
+    return res
 
 
 @save_verticapy_logs
 def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
     """
-Renames a spatial index.
+    Renames a spatial index.
 
-Parameters
-----------
-source: str
-    Current name of the spatial index.
-dest: str
-    New name of the spatial index.
-overwrite: bool, optional
-    BOOLEAN value that specifies whether to overwrite the index, if an 
-    index exists.
+    Parameters
+    ----------
+    source: str
+        Current  name of the spatial  index.
+    dest: str
+        New name of the spatial index.
+    overwrite: bool, optional
+        BOOLEAN value that specifies whether 
+        to overwrite the  index, if an index 
+        exists.
 
-Returns
--------
-bool
-    True if the index was renamed, False otherwise.
+    Returns
+    -------
+    bool
+        True if the index was renamed, False 
+        otherwise.
     """
 
     try:

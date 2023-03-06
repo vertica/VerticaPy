@@ -14,15 +14,25 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy._utils._sql._format import quote_ident
 
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.insert import insert_into
 
+"""
+Sample Datasets to do testing.
+"""
 
-def load_dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
-    from verticapy.core.vdataframe.base import vDataFrame
+
+def load_dataset_cl(
+    table_name: str = "dataset_cl", schema: str = "public"
+) -> vDataFrame:
+    """
+    Sample Dataset to do classification.
+    """
 
     # Classification Dataset
 
@@ -58,8 +68,12 @@ def load_dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
     return vDataFrame(input_relation=input_relation)
 
 
-def load_dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
-    from verticapy.core.vdataframe.base import vDataFrame
+def load_dataset_reg(
+    table_name: str = "dataset_reg", schema: str = "public"
+) -> vDataFrame:
+    """
+    Sample Dataset to do regression.
+    """
 
     # Regression Dataset
 
@@ -95,8 +109,12 @@ def load_dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
     return vDataFrame(input_relation=input_relation)
 
 
-def load_dataset_num(table_name: str = "dataset_num", schema: str = "public"):
-    from verticapy.core.vdataframe.base import vDataFrame
+def load_dataset_num(
+    table_name: str = "dataset_num", schema: str = "public"
+) -> vDataFrame:
+    """
+    Sample Dataset with numerical values.
+    """
 
     # Numerical Dataset
 

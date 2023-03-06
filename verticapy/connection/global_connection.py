@@ -16,15 +16,21 @@ permissions and limitations under the License.
 """
 import uuid
 from typing import Literal, Optional
+from vertica_python.vertica.connection import Connection
 
 from verticapy import __version__
 
-VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
-VERTICAPY_SESSION_IDENTIFIER = str(uuid.uuid1()).replace("-", "")
-VERTICAPY_SESSION_LABEL = f"verticapy-{__version__}-{VERTICAPY_SESSION_IDENTIFIER}"
+VERTICAPY_AUTO_CONNECTION: str = "VERTICAPY_AUTO_CONNECTION"
+VERTICAPY_SESSION_IDENTIFIER: str = str(uuid.uuid1()).replace("-", "")
+VERTICAPY_SESSION_LABEL: str = f"verticapy-{__version__}-{VERTICAPY_SESSION_IDENTIFIER}"
 
 
 class GlobalConnection:
+    """
+    Main Class to store the Global Connection used
+    by all VerticaPy objects.
+    """
+
     @property
     def _special_symbols(self) -> list[str]:
         return [
@@ -52,34 +58,39 @@ class GlobalConnection:
     def _vpy_session_label(self) -> Literal[VERTICAPY_SESSION_LABEL]:
         return VERTICAPY_SESSION_LABEL
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._connection = {
             "conn": None,
             "section": None,
             "dsn": None,
         }
         self._external_connections = {}
+        return None
 
-    def _get_connection(self):
+    def _get_connection(self) -> Connection:
         return self._connection["conn"]
 
-    def _get_external_connections(self):
+    def _get_external_connections(self) -> dict:
         return self._external_connections
 
-    def _get_dsn(self):
+    def _get_dsn(self) -> str:
         return self._connection["dsn"]
 
-    def _get_dsn_section(self):
+    def _get_dsn_section(self) -> str:
         return self._connection["section"]
 
     def _set_connection(
-        self, conn, section: Optional[str] = None, dsn: Optional[str] = None,
-    ):
+        self,
+        conn: Connection,
+        section: Optional[str] = None,
+        dsn: Optional[str] = None,
+    ) -> None:
         self._connection["conn"] = conn
         self._connection["section"] = section
         self._connection["dsn"] = dsn
+        return None
 
-    def _set_external_connections(self, symbol: str, cid: str, rowset: int):
+    def _set_external_connections(self, symbol: str, cid: str, rowset: int) -> None:
         if (
             isinstance(cid, str)
             and isinstance(rowset, int)
@@ -89,14 +100,15 @@ class GlobalConnection:
                 "cid": cid,
                 "rowset": rowset,
             }
+            return None
         else:
-            raise ParameterError(
+            raise ValueError(
                 "Could not set the external connection. Found a wrong type."
             )
 
 
-_global_connection = GlobalConnection()
+_global_connection: GlobalConnection = GlobalConnection()
 
 
-def get_global_connection():
+def get_global_connection() -> GlobalConnection:
     return _global_connection

@@ -19,14 +19,14 @@ from verticapy.connection.connect import connect
 from verticapy.connection.utils import get_confparser, get_connection_file
 
 
-def change_auto_connection(name: str):
+def change_auto_connection(name: str) -> None:
     """
-Changes the current auto connection.
+    Changes the current auto connection.
 
-Parameters
-----------
-name: str
-	Name of the new auto connection.
+    Parameters
+    ----------
+    name: str
+    	Name of the new auto connection.
 	"""
     gb_conn = get_global_connection()
 
@@ -42,6 +42,8 @@ name: str
         confparser.write(f)
         f.close()
 
+        return None
+
     else:
 
         raise NameError(
@@ -52,19 +54,21 @@ name: str
         )
 
 
-def delete_connection(name: str):
+def delete_connection(name: str) -> bool:
     """
-Deletes a specified connection from the connection file.
+    Deletes a specified connection from the 
+    connection file.
 
-Parameters
-----------
-name: str
-    Name of the connection.
+    Parameters
+    ----------
+    name: str
+        Name of the connection.
 
-Returns
--------
-bool
-    True if the connection was deleted, False otherwise.
+    Returns
+    -------
+    bool
+        True if the connection was deleted, 
+        False otherwise.
     """
     gb_conn = get_global_connection()
 
@@ -81,11 +85,13 @@ bool
         f = open(path, "w+")
         confparser.write(f)
         f.close()
+
         return True
 
     else:
 
         warnings.warn(f"The connection {name} does not exist.", Warning)
+
         return False
 
 
@@ -94,45 +100,57 @@ def new_connection(
     name: str = "vertica_connection",
     auto: bool = True,
     overwrite: bool = True,
-):
+) -> None:
     """
-Saves the new connection in the VerticaPy connection file.
-The information is saved plaintext in the local machine.
-The function 'get_connection_file' returns the associated connection file path.
-If you want a temporary connection, you can use the 'set_connection' function.
+    Saves  the new connection in the  VerticaPy 
+    connection file.
+    The information is  saved plaintext in  the 
+    local machine.
+    The function  'get_connection_file' returns 
+    the associated connection file path.
+    If you want a temporary connection, you can 
+    use the 'set_connection' function.
 
-Parameters
-----------
-conn_info: dict
-	Dictionnary containing the information to set up the connection.
-		database : Database Name.
-		host     : Server ID.
-		password : User Password.
-		port     : Database Port (optional, default: 5433).
-		user     : User ID (optional, default: dbadmin).
-        ...
-        env      : Bool to indicate whether the user and password are replaced 
-                   by the associated environment variables. If True, VerticaPy 
-                   reads the associated environment variables instead of 
-                   writing and directly using the username and password. 
-                   For example: {'user': 'ENV_USER', 'password': 'ENV_PASSWORD'}
-                   This works only for the user and password. The real values 
-                   of the other variables are stored plaintext in the VerticaPy 
-                   connection file. Using the enviornment variables hides the 
-                   username and password in cases where the local machine is 
-                   shared.
-name: str, optional
-	Name of the connection.
-auto: bool, optional
-    If set to True, the connection will become the new auto-connection.
-overwrite: bool, optional
-    If set to True and the connection already exists, it will be 
-    overwritten.
-env: bool, optional
-    If True, user and password are replaced by the associated environment 
-    variables. VerticaPy reads the associated environment variables instead 
-    of writing and directly using the username and password.
-    For example: {'user': 'ENV_USER', 'password': 'ENV_PASSWORD'}  
+    Parameters
+    ----------
+    conn_info: dict
+    	Dictionnary containing the information to 
+        set up the connection.
+    		database : Database Name.
+    		host     : Server ID.
+    		password : User Password.
+    		port     : Database Port (optional, default: 5433).
+    		user     : User ID (optional, default: dbadmin).
+            ...
+            env      : Bool  to  indicate  whether the  user  and 
+                       password  are  replaced by the  associated 
+                       environment variables.  If True, VerticaPy 
+                       reads the associated environment variables 
+                       instead of writing  and directly using the 
+                       username and password. 
+                       For example: {'user': 'ENV_USER', 
+                                     'password': 'ENV_PASSWORD'}
+                       This works only for  the user  and password. 
+                       The real values of  the  other variables are 
+                       stored plaintext in the VerticaPy connection 
+                       file.  Using the enviornment variables hides 
+                       the username and password in cases where the 
+                       local machine is shared.
+    name: str, optional
+    	Name of the connection.
+    auto: bool, optional
+        If set to True, the connection will become the new 
+        auto-connection.
+    overwrite: bool, optional
+        If set to True  and the  connection already exists, 
+        it will be overwritten.
+    env: bool, optional
+        If  True,  user and  password are  replaced  by  the 
+        associated  environment  variables. VerticaPy  reads 
+        the  associated  environment  variables  instead  of 
+        writing and directly using the username and password.
+        For example: {'user': 'ENV_USER', 
+                      'password': 'ENV_PASSWORD'}  
 	"""
     path = get_connection_file()
     confparser = get_confparser()
@@ -157,6 +175,8 @@ env: bool, optional
         change_auto_connection(name)
 
     connect(name, path)
+
+    return None
 
 
 new_auto_connection = new_connection

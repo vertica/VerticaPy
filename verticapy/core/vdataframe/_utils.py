@@ -18,11 +18,32 @@ import copy
 from typing import Union
 
 from verticapy._utils._sql._format import quote_ident
-from verticapy._utils.math import levenshtein
 from verticapy.errors import MissingColumn, ParameterError
 
 
 class vDFUtils:
+    @staticmethod
+    def _levenshtein(s: str, t: str):
+        rows = len(s) + 1
+        cols = len(t) + 1
+        dist = [[0 for x in range(cols)] for x in range(rows)]
+        for i in range(1, rows):
+            dist[i][0] = i
+        for i in range(1, cols):
+            dist[0][i] = i
+        for col in range(1, cols):
+            for row in range(1, rows):
+                if s[row - 1] == t[col - 1]:
+                    cost = 0
+                else:
+                    cost = 1
+                dist[row][col] = min(
+                    dist[row - 1][col] + 1,
+                    dist[row][col - 1] + 1,
+                    dist[row - 1][col - 1] + cost,
+                )
+        return dist[row][col]
+
     def _format_colnames(
         self,
         *argv,
@@ -81,7 +102,7 @@ class vDFUtils:
                                 is_error = False
                                 break
                             else:
-                                ldistance = levenshtein(column, col)
+                                ldistance = self._levenshtein(column, col)
                                 if ldistance < min_distance:
                                     min_distance, min_distance_op = ldistance, col
                         if is_error:

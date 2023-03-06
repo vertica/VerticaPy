@@ -15,9 +15,14 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os
+from typing import Literal
 
 
-def extract_col_dt_from_query(query: str, field: str):
+def extract_col_dt_from_query(query: str, field: str) -> tuple:
+    """
+    Extracts the column's data type from the INFER_DDL
+    generated SQL statement.
+    """
     n, m = len(query), len(field) + 2
     for i in range(n - m):
         current_word = query[i : i + m]
@@ -34,7 +39,12 @@ def extract_col_dt_from_query(query: str, field: str):
             return current_word, query[k:i]
 
 
-def extract_compression(path: str):
+def extract_compression(
+    path: str,
+) -> Literal["GZIP", "BZIP", "LZO", "ZSTD", "UNCOMPRESSED"]:
+    """
+    Extracts and returns the compression extension.
+    """
     file_extension = path.split(".")[-1].lower()
     lookup_table = {"gz": "GZIP", "bz": "BZIP", "lz": "LZO", "zs": "ZSTD"}
     if file_extension[0:2] in lookup_table:
@@ -43,7 +53,10 @@ def extract_compression(path: str):
         return "UNCOMPRESSED"
 
 
-def get_first_file(path: str, ext: str):
+def get_first_file(path: str, ext: str) -> str:
+    """
+    Returns the first file having the input extension.
+    """
     directory_name = os.path.dirname(path)
     files = os.listdir(directory_name)
     for f in files:

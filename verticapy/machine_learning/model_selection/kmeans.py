@@ -50,7 +50,7 @@ Finds the k-means / k-prototypes k based on a score.
 
 Parameters
 ----------
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: SQLColumns, optional
 	List of the predictor columns. If empty, all numerical columns will
@@ -150,7 +150,7 @@ Parameters
 input_relation: SQLRelation
     Relation to use to train the model.
 X: SQLColumns, optional
-    List of the predictor columns. If empty all the numerical vcolumns will
+    List of the predictor columns. If empty all the numerical vDataColumns will
     be used.
 n_cluster: tuple / list, optional
     Tuple representing the number of cluster to start with and to end with.

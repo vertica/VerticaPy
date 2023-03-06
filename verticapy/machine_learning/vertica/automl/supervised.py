@@ -30,14 +30,13 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning._utils import reverse_score
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.model_selection import (
     gen_params_grid,
     grid_search_cv,
     stepwise,
 )
-from verticapy.machine_learning.vertica.automl import AutoDataPrep
+from verticapy.machine_learning.vertica.automl.dataprep import AutoDataPrep
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.ensemble import (
     RandomForestRegressor,
@@ -72,23 +71,24 @@ class AutoML(VerticaModel):
     name: str
         Name of the model.
     estimator: list / 'native' / 'all' / 'fast' / object
-        List of Vertica estimators with a fit method.
-        Alternatively, you can specify 'native' for all 
-        native Vertica models, 'all' for all VerticaPy 
+        List  of Vertica  estimators with a fit  method.
+        Alternatively,  you can specify 'native' for all 
+        native  Vertica models, 'all' for all  VerticaPy 
         models and 'fast' for quick modeling.
     estimator_type: str, optional
         Estimator Type.
-            auto      : Automatically detects the estimator 
-                        type.
-            regressor : The estimator will be used to 
+            auto      : Automatically     detects     the 
+                        estimator type.
+            regressor : The estimator  will  be  used  to 
                         perform a regression.
-            binary    : The estimator will be used to 
+            binary    : The  estimator will  be  used  to 
                         perform  a binary classification.
-            multi     : The estimator will be used to 
-                        perform a multiclass classification.
+            multi     : The  estimator  will be  used  to 
+                        perform        a       multiclass 
+                        classification.
     metric: str, optional
         Metric used to do the model evaluation.
-            auto: logloss for classification & rmse for 
+            auto: logloss for  classification & rmse  for 
                   regression.
         For Classification:
             accuracy    : Accuracy
@@ -126,7 +126,7 @@ class AutoML(VerticaModel):
     cv: int, optional
         Number of folds.
     pos_label: PythonScalar, optional
-        The main class to be considered as positive 
+        The main class to  be considered as positive 
         (classification only).
     cutoff: float, optional
         The model cutoff (classification only).
@@ -136,16 +136,17 @@ class AutoML(VerticaModel):
     lmax: int, optional
         Maximum length of each parameter list.
     optimized_grid: int, optional
-        If set to 0, the randomness is based on the 
+        If set to 0,  the randomness is based on the 
         input parameters.
-        If set to 1, the randomness is limited to some 
-        parameters while others are picked based on a 
-        default grid.
-        If set to 2, no randomness is used and a default 
-        grid is returned.
+        If set to 1,  the  randomness  is limited  to 
+        some parameters while others are picked based 
+        on a default grid.
+        If  set to 2,  no  randomness is used  and  a 
+        default grid is returned.
     stepwise: bool, optional
-        If True, the stepwise algorithm will be used to 
-        determine the final model list of parameters.
+        If True, the stepwise algorithm will be  used 
+        to   determine   the  final  model  list   of 
+        parameters.
     stepwise_criterion: str, optional
         Criterion used when doing the final estimator 
         stepwise.
@@ -155,34 +156,42 @@ class AutoML(VerticaModel):
         Which direction to start the stepwise search. 
         Can be done 'backward' or 'forward'.
     stepwise_max_steps: int, optional
-        The maximum number of steps to be considered when 
-        doing the final estimator stepwise.
+        The maximum number of steps to be considered 
+        when doing the final estimator stepwise.
     x_order: str, optional
-        Method for preprocessing X before using the stepwise 
-        algorithm.
-            pearson  : X is ordered based on the Pearson's 
-                       correlation coefficient.
-            spearman : X is ordered based on Spearman's 
-                       rank correlation coefficient.
-            random   : Shuffles the vector X before applying 
-                       the stepwise algorithm.
-            none     : Does not change the order of X.
+        Method for preprocessing  X before using the 
+        stepwise algorithm.
+            pearson  : X  is ordered  based  on  the 
+                       Pearson's         correlation 
+                       coefficient.
+            spearman : X   is   ordered   based   on 
+                       Spearman's  rank  correlation 
+                       coefficient.
+            random   : Shuffles the  vector X before 
+                       applying     the     stepwise 
+                       algorithm.
+            none     : Does not  change the order of 
+                       X.
     preprocess_data: bool, optional
         If True, the data will be preprocessed.
     preprocess_dict: dict, optional
-        Dictionary to pass to the AutoDataPrep class in order 
-        to preprocess the data before the clustering.
+        Dictionary to pass to the AutoDataPrep class 
+        in  order to preprocess the data before  the 
+        clustering.
     print_info: bool
-        If True, prints the model information at each step.
+        If  True,  prints the model  information  at 
+        each step.
 
     Attributes
     ----------
     preprocess_: object
         Model used to preprocess the data.
     best_model_: object
-        Most efficient models found during the search.
+        Most  efficient   models  found  during  the 
+        search.
     model_grid_ : TableSample
-        Grid containing the different models information.
+        Grid   containing   the   different   models 
+        information.
     """
 
     # Properties.
@@ -291,7 +300,7 @@ class AutoML(VerticaModel):
         ----------
         X: SQLColumns, optional
             List of the columns used to deploy the model.
-            If empty, the model predictors will be used.
+            If empty, the model  predictors will be used.
 
         Returns
         -------
@@ -302,22 +311,22 @@ class AutoML(VerticaModel):
 
     def to_memmodel(self) -> mm.InMemoryModel:
         """
-        Converts the model to an InMemory object which
+        Converts  the model to  an InMemory object  which
         can be used to do different types of predictions.
         """
         return self.best_model_.to_memmodel()
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: list = [], y: str = "") -> None:
+    def fit(self, input_relation: SQLRelation, X: SQLColumns = [], y: str = "") -> None:
         """
         Trains the model.
 
         Parameters
         ----------
-        input_relation: str/vDataFrame
+        input_relation: SQLRelation
             Training Relation.
-        X: list, optional
+        X: SQLColumns, optional
             List of the predictors.
         y: str, optional
             Response column.
@@ -337,6 +346,8 @@ class AutoML(VerticaModel):
                 )
             else:
                 X = input_relation.get_columns(exclude_columns=exclude_columns)
+        if isinstance(X, str):
+            X = [X]
         if isinstance(self.parameters["estimator"], str):
             v = vertica_version()
             self.parameters["estimator"] = self.parameters["estimator"].lower()
@@ -562,7 +573,20 @@ class AutoML(VerticaModel):
             )
             for i in range(len(result["score_train_std"]))
         ]
-        reverse = reverse_score(self.parameters["metric"])
+        reverse = True
+        if self.parameters["metric"] in [
+            "logloss",
+            "max",
+            "mae",
+            "median",
+            "mse",
+            "msle",
+            "rmse",
+            "aic",
+            "bic",
+            "auto",
+        ]:
+            reverse = False
         data.sort(key=lambda tup: tup[2], reverse=reverse)
         result = TableSample(
             {
@@ -620,10 +644,10 @@ class AutoML(VerticaModel):
         ax: Matplotlib axes object, optional
             The axes to plot on.
         **kwds
-            Any optional parameter to pass to the 
+            Any optional  parameter  to  pass  to  the 
             best estimator features importance method.
         **style_kwds
-            Any optional parameter to pass to the 
+            Any  optional  parameter  to pass  to  the 
             Matplotlib functions.
 
         Returns
@@ -658,17 +682,18 @@ class AutoML(VerticaModel):
         ----------
         mltype: str, optional
             The plot type.
-                champion: champion challenger plot.
-                step    : stepwise plot.
+                champion : champion challenger plot.
+                step     : stepwise plot.
         ax: Matplotlib axes object, optional
             The axes to plot on.
         **style_kwds
-            Any optional parameter to pass to the Matplotlib functions.
+            Any optional  parameter  to pass to  the 
+            Matplotlib functions.
 
         Returns
         -------
         Axes
-            Matplotlib axes object
+            Matplotlib axes object.
         """
         if mltype == "champion":
             return vpy_plt.plot_bubble_ml(

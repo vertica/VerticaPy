@@ -14,27 +14,29 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy._utils._sql._format import quote_ident
+from vertica_python.errors import QueryError
+
+from verticapy._utils._sql._format import format_schema_table, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 
 
-def create_schema(
-    schema: str, raise_error: bool = False,
-):
+def create_schema(schema: str, raise_error: bool = False,) -> bool:
     """
-Creates a new schema.
+    Creates a new schema.
 
-Parameters
-----------
-schema: str
-    Schema name.
-raise_error: bool, optional
-    If the schema couldn't be created, the function raises an error.
+    Parameters
+    ----------
+    schema: str
+        Schema name.
+    raise_error: bool, optional
+        If the schema couldn't be created, the 
+        function raises an error.
 
-Returns
--------
-bool
-    True if the schema was successfully created, False otherwise.
+    Returns
+    -------
+    bool
+        True  if  the schema was  successfully 
+        created, False otherwise.
     """
     try:
         _executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
@@ -53,41 +55,50 @@ def create_table(
     temporary_local_table: bool = True,
     genSQL: bool = False,
     raise_error: bool = False,
-):
+) -> bool:
     """
-Creates a new table using the input columns' names and data types.
+    Creates a new table using the input columns' 
+    names and data types.
 
-Parameters
-----------
-table_name: str, optional
-    The final table name.
-dtype: dict
-    Dictionary of the user types. Each key represents a column name and each
-    value represents its data type. 
-    Example: {"age": "int", "name": "varchar"}
-schema: str, optional
-    Schema name.
-temporary_table: bool, optional
-    If set to True, a temporary table will be created.
-temporary_local_table: bool, optional
-    If set to True, a temporary local table will be created. The parameter 
-    'schema' must be empty, otherwise this parameter is ignored.
-genSQL: bool, optional
-    If set to True, the SQL code for creating the final table will be 
-    generated but not executed.
-raise_error: bool, optional
-    If the relation couldn't be created, raises the entire error.
+    Parameters
+    ----------
+    table_name: str, optional
+        The final table name.
+    dtype: dict
+        Dictionary  of the user types. Each  key 
+        represents  a column name and each value 
+        represents its data type. 
+        Example: {"age": "int", 
+                  "name": "varchar"}
+    schema: str, optional
+        Schema name.
+    temporary_table: bool, optional
+        If set to True, a temporary table will be 
+        created.
+    temporary_local_table: bool, optional
+        If  set to True,  a temporary local table 
+        will be created.  The  parameter 'schema' 
+        must be empty,  otherwise  this parameter 
+        is ignored.
+    genSQL: bool, optional
+        If set to True, the SQL code for creating 
+        the final table will be generated but not 
+        executed.
+    raise_error: bool, optional
+        If  the  relation  couldn't  be  created, 
+        raises the entire error.
 
-Returns
--------
-bool
-    True if the table was successfully created, False otherwise.
+    Returns
+    -------
+    bool
+        True   if  the  table  was   successfully 
+        created, False otherwise.
     """
     if schema.lower() == "v_temp_schema":
         schema = ""
         temporary_local_table = True
     if schema:
-        input_relation = quote_ident(schema) + "." + quote_ident(table_name)
+        input_relation = format_schema_table(schema, table_name)
     else:
         input_relation = quote_ident(table_name)
     temp = "TEMPORARY " if temporary_table else ""
@@ -102,7 +113,7 @@ bool
     try:
         _executeSQL(query, title="Creating the new table.")
         return True
-    except:
+    except QueryError:
         if raise_error:
             raise
         return False

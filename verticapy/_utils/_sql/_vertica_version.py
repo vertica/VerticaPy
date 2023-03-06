@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from functools import wraps
-from typing import Callable
+from typing import Any, Callable
 
 from verticapy.connection.connect import current_cursor
 from verticapy.errors import VersionError
@@ -72,12 +72,13 @@ MINIMUM_VERTICA_VERSION = {
 
 def check_minimum_version(func: Callable) -> Callable:
     """
-check_minimum_version decorator. It simplifies the code by checking if the
-feature is available in the user's version.
+    check_minimum_version  decorator.  It simplifies 
+    the code by checking if the feature is available 
+    in the user's version.
     """
 
     @wraps(func)
-    def func_prec_check_minimum_version(*args, **kwargs):
+    def func_prec_check_minimum_version(*args, **kwargs) -> Any:
         fun_name, object_name, condition = func.__name__, "", []
         if len(args) > 0:
             object_name = type(args[0]).__name__
@@ -91,19 +92,20 @@ feature is available in the user's version.
 
 def vertica_version(condition: list = []) -> list[int]:
     """
-Returns the Vertica Version.
+    Returns the Vertica Version.
 
-Parameters
-----------
-condition: list, optional
-    List of the minimal version information. If the current version is not
-    greater or equal to this one, it will raise an error.
+    Parameters
+    ----------
+    condition: list, optional
+        List of the minimal version information. If the 
+        current version is not greater or equal to this 
+        one, it will raise an error.
 
-Returns
--------
-list
-    List containing the version information.
-    [MAJOR, MINOR, PATCH, POST]
+    Returns
+    -------
+    list
+        List containing the version information.
+        [MAJOR, MINOR, PATCH, POST]
     """
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]

@@ -15,12 +15,13 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
-from typing import Literal
+from typing import Literal, Union
 import numpy as np
 from scipy.stats import chi2, f
 
-from verticapy._utils._sql._collect import save_verticapy_logs
 import verticapy._config.config as conf
+from verticapy._typing import SQLRelation
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 
 from verticapy.core.tablesample.base import TableSample
@@ -28,79 +29,37 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
-
-@save_verticapy_logs
-def endogtest(vdf: vDataFrame, eps: str, X: list):
-    """
-Endogeneity test.
-
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-eps: str
-    Input residual vcolumn.
-X: list
-    Input Variables to test the endogeneity on.
-
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
-    """
-    eps, X = vdf._format_colnames(eps, X)
-    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-    model = LinearRegression(name)
-    try:
-        model.fit(vdf, X, eps)
-        R2 = model.score("r2")
-    except:
-        model.set_params({"solver": "bfgs"})
-        model.fit(vdf, X, eps)
-        R2 = model.score("r2")
-    finally:
-        model.drop()
-    n = vdf.shape()[0]
-    k = len(X)
-    LM = n * R2
-    lm_pvalue = chi2.sf(LM, k)
-    F = (n - k - 1) * R2 / (1 - R2) / k
-    f_pvalue = f.sf(F, k, n - k - 1)
-    result = TableSample(
-        {
-            "index": [
-                "Lagrange Multiplier Statistic",
-                "lm_p_value",
-                "F Value",
-                "f_p_value",
-            ],
-            "value": [LM, lm_pvalue, F, f_pvalue],
-        }
-    )
-    return result
+"""
+OLS Tests: Heteroscedasticity.
+"""
 
 
 @save_verticapy_logs
-def het_breuschpagan(vdf: vDataFrame, eps: str, X: list):
+def het_breuschpagan(
+    input_relation: SQLRelation, eps: str, X: list
+) -> tuple[float, float, float, float]:
     """
-Uses the Breusch-Pagan to test a model for Heteroscedasticity.
+    Uses the Breusch-Pagan to test a model for Heteroscedasticity.
 
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-eps: str
-    Input residual vDataColumn.
-X: list
-    The exogenous variables to test.
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Input relation.
+    eps: str
+        Input residual vDataColumn.
+    X: list
+        The exogenous variables to test.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    tuple
+        Lagrange Multiplier statistic, LM pvalue, 
+        F statistic, F pvalue
     """
+    if isinstance(input_relation, vDataFrame):
+        vdf = input_relation.copy()
+    else:
+        vdf = vDataFrame(input_relation)
     eps, X = vdf._format_colnames(eps, X)
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
@@ -121,54 +80,44 @@ TableSample
     lm_pvalue = chi2.sf(LM, k)
     F = (n - k - 1) * R2 / (1 - R2) / k
     f_pvalue = f.sf(F, k, n - k - 1)
-    result = TableSample(
-        {
-            "index": [
-                "Lagrange Multiplier Statistic",
-                "lm_p_value",
-                "F Value",
-                "f_p_value",
-            ],
-            "value": [LM, lm_pvalue, F, f_pvalue],
-        }
-    )
-    return result
+    return LM, lm_pvalue, F, f_pvalue
 
 
 @save_verticapy_logs
 def het_goldfeldquandt(
-    vdf: vDataFrame,
+    input_relation: SQLRelation,
     y: str,
     X: list,
     idx: int = 0,
     split: float = 0.5,
     alternative: Literal["increasing", "decreasing", "two-sided"] = "increasing",
-):
+) -> tuple[float, float]:
     """
-Goldfeld-Quandt Homoscedasticity test.
+    Goldfeld-Quandt Homoscedasticity test.
 
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-y: str
-    Response Column.
-X: list
-    Exogenous Variables.
-idx: int, optional
-    Column index of variable according to which observations are sorted 
-    for the split.
-split: float, optional
-    Float to indicate where to split (Example: 0.5 to split on the median).
-alternative: str, optional
-    Specifies the alternative hypothesis for the p-value calculation,
-    one of the following variances: "increasing", "decreasing", "two-sided".
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Input relation.
+    y: str
+        Response Column.
+    X: list
+        Exogenous Variables.
+    idx: int, optional
+        Column index of variable according to which observations 
+        are sorted for the split.
+    split: float, optional
+        Float to indicate where to split (Example: 0.5 to split 
+        on the median).
+    alternative: str, optional
+        Specifies  the  alternative hypothesis  for  the  p-value 
+        calculation, one of the following variances: "increasing", 
+        "decreasing", "two-sided".
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    tuple
+        statistic, p_value
     """
 
     def model_fit(input_relation, X, y, model):
@@ -180,6 +129,10 @@ TableSample
             model.drop()
         return mse
 
+    if isinstance(input_relation, vDataFrame):
+        vdf = input_relation.copy()
+    else:
+        vdf = vDataFrame(input_relation)
     y, X = vdf._format_colnames(y, X)
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
@@ -203,30 +156,35 @@ TableSample
         fpval_sm = f.cdf(F, m - k, n - k)
         fpval_la = f.sf(F, m - k, n - k)
         f_pvalue = 2 * min(fpval_sm, fpval_la)
-    result = TableSample({"index": ["F Value", "f_p_value"], "value": [F, f_pvalue]})
-    return result
+    return F, f_pvalue
 
 
 @save_verticapy_logs
-def het_white(vdf: vDataFrame, eps: str, X: list):
+def het_white(
+    input_relation: SQLRelation, eps: str, X: list
+) -> tuple[float, float, float, float]:
     """
-White’s Lagrange Multiplier Test for Heteroscedasticity.
+    White’s Lagrange Multiplier Test for Heteroscedasticity.
 
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-eps: str
-    Input residual vcolumn.
-X: str
-    Exogenous Variables to test the Heteroscedasticity on.
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Input relation.
+    eps: str
+        Input residual vDataColumn.
+    X: str
+        Exogenous Variables to test the Heteroscedasticity on.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    tuple
+        Lagrange Multiplier statistic, LM pvalue, 
+        F statistic, F pvalue
     """
+    if isinstance(input_relation, vDataFrame):
+        vdf = input_relation.copy()
+    else:
+        vdf = vDataFrame(input_relation)
     eps, X = vdf._format_colnames(eps, X)
     X_0 = ["1"] + X
     variables = []
@@ -234,11 +192,13 @@ TableSample
     for i in range(len(X_0)):
         for j in range(i, len(X_0)):
             if i != 0 or j != 0:
-                variables += ["{} * {} AS var_{}_{}".format(X_0[i], X_0[j], i, j)]
-                variables_names += ["var_{}_{}".format(i, j)]
-    query = "SELECT {}, POWER({}, 2) AS v_eps2 FROM {}".format(
-        ", ".join(variables), eps, vdf._genSQL()
-    )
+                variables += [f"{X_0[i]} * {X_0[j]} AS var_{i}_{j}"]
+                variables_names += [f"var_{i}_{j}"]
+    query = f"""
+        SELECT 
+            {', '.join(variables)}, 
+            POWER({eps}, 2) AS v_eps2 
+        FROM {vdf._genSQL()}"""
     vdf_white = vDataFrame(query)
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
@@ -260,43 +220,96 @@ TableSample
     lm_pvalue = chi2.sf(LM, k)
     F = (n - k - 1) * R2 / (1 - R2) / k
     f_pvalue = f.sf(F, k, n - k - 1)
-    result = TableSample(
-        {
-            "index": [
-                "Lagrange Multiplier Statistic",
-                "lm_p_value",
-                "F Value",
-                "f_p_value",
-            ],
-            "value": [LM, lm_pvalue, F, f_pvalue],
-        }
-    )
-    return result
+    return LM, lm_pvalue, F, f_pvalue
+
+
+"""
+OLS Tests: Endogeneity.
+"""
 
 
 @save_verticapy_logs
-def variance_inflation_factor(vdf: vDataFrame, X: list, X_idx: int = None):
+def endogtest(
+    input_relation: SQLRelation, eps: str, X: list
+) -> tuple[float, float, float, float]:
     """
-Computes the variance inflation factor (VIF). It can be used to detect
-multicollinearity in an OLS Regression Analysis.
+    Endogeneity test.
 
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-X: list
-    Input Variables.
-X_idx: int
-    Index of the exogenous variable in X. If left to None, a TableSample will
-    be returned with all the variables VIF.
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Input relation.
+    eps: str
+        Input residual vDataColumn.
+    X: list
+        Input Variables to test the endogeneity on.
 
-Returns
--------
-float
-    VIF.
+    Returns
+    -------
+    tuple
+        Lagrange Multiplier statistic, LM pvalue, 
+        F statistic, F pvalue
     """
+    if isinstance(input_relation, vDataFrame):
+        vdf = input_relation.copy()
+    else:
+        vdf = vDataFrame(input_relation)
+    eps, X = vdf._format_colnames(eps, X)
+    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
+    model = LinearRegression(name)
+    try:
+        model.fit(vdf, X, eps)
+        R2 = model.score("r2")
+    except:
+        model.set_params({"solver": "bfgs"})
+        model.fit(vdf, X, eps)
+        R2 = model.score("r2")
+    finally:
+        model.drop()
+    n = vdf.shape()[0]
+    k = len(X)
+    LM = n * R2
+    lm_pvalue = chi2.sf(LM, k)
+    F = (n - k - 1) * R2 / (1 - R2) / k
+    f_pvalue = f.sf(F, k, n - k - 1)
+    return LM, lm_pvalue, F, f_pvalue
+
+
+"""
+OLS Tests: Multicollinearity.
+"""
+
+
+@save_verticapy_logs
+def variance_inflation_factor(
+    input_relation: SQLRelation, X: list, X_idx: int = None
+) -> Union[float, TableSample]:
+    """
+    Computes the variance inflation factor (VIF). It can be 
+    used  to detect multicollinearity in an OLS  Regression 
+    Analysis.
+
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Input relation.
+    X: list
+        Input Variables.
+    X_idx: int
+        Index of the exogenous variable in X. If left to None, 
+        a TableSample will be returned with all the  variables 
+        VIF.
+
+    Returns
+    -------
+    float / TableSample
+        VIF.
+    """
+    if isinstance(input_relation, vDataFrame):
+        vdf = input_relation.copy()
+    else:
+        vdf = vDataFrame(input_relation)
     X, X_idx = vdf._format_colnames(X, X_idx)
-
     if isinstance(X_idx, str):
         for i in range(len(X)):
             if X[i] == X_idx:
@@ -329,6 +342,6 @@ float
             VIF += [variance_inflation_factor(vdf, X, i)]
         return TableSample({"X_idx": X, "VIF": VIF})
     else:
-        raise ParameterError(
+        raise IndexError(
             f"Wrong type for Parameter X_idx.\nExpected integer, found {type(X_idx)}."
         )

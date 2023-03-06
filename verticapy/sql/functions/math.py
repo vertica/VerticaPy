@@ -14,9 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy._typing import SQLExpression
 from verticapy._utils._sql._format import format_magic
 
 from verticapy.core.string_sql.base import StringSQL
+
+"""
+Constants.
+"""
 
 E = StringSQL("EXP(1)")
 INF = StringSQL("'inf'::float")
@@ -24,28 +29,34 @@ NAN = StringSQL("'nan'::float")
 PI = StringSQL("PI()")
 TAU = StringSQL("2 * PI()")
 
+"""
+General Function.
+"""
 
-def apply(func: str, *args, **kwargs):
+
+def apply(func: SQLExpression, *args, **kwargs) -> StringSQL:
     """
-Applies any Vertica function on the input expressions.
-Please check-out Vertica Documentation to see the available functions:
+    Applies any Vertica function on the input 
+    expressions.
+    Please check-out Vertica Documentation to 
+    see the available functions:
+    https://www.vertica.com/docs/
 
-https://www.vertica.com/docs/
+    Parameters
+    ----------
+    func: SQLExpression
+        Vertica Function. In case of geospatial, 
+        you can write  the function name without 
+        the prefix ST_ or STV_.
+    args: SQLExpression, optional
+        Expressions.
+    kwargs: SQLExpression, optional
+        Optional Parameters Expressions.
 
-Parameters
-----------
-func : str
-    Vertica Function. In case of geospatial, you can write the function name
-    without the prefix ST_ or STV_.
-args : object, optional
-    Expressions.
-kwargs: object, optional
-    Optional Parameters Expressions.
-
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     ST_f = [
         "Area",
@@ -144,223 +155,226 @@ StringSQL
     return StringSQL(f"{func}({expr}{param_expr})")
 
 
-# Other Math Functions
+"""
+Mathematical Functions.
+"""
 
 
-def abs(expr):
+def abs(expr: SQLExpression) -> StringSQL:
     """
-Absolute Value.
+    Absolute Value.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"ABS({expr})", "float")
 
 
-def acos(expr):
+def acos(expr: SQLExpression) -> StringSQL:
     """
-Trigonometric Inverse Cosine.
+    Trigonometric Inverse Cosine.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"ACOS({expr})", "float")
 
 
-def asin(expr):
+def asin(expr: SQLExpression) -> StringSQL:
     """
-Trigonometric Inverse Sine.
+    Trigonometric Inverse Sine.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"ASIN({expr})", "float")
 
 
-def atan(expr):
+def atan(expr: SQLExpression) -> StringSQL:
     """
-Trigonometric Inverse Tangent.
+    Trigonometric Inverse Tangent.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"ATAN({expr})", "float")
 
 
-def atan2(quotient, divisor):
+def atan2(quotient: SQLExpression, divisor: SQLExpression) -> StringSQL:
     """
-Trigonometric Inverse Tangent of the arithmetic dividend of the arguments.
+    Trigonometric Inverse Tangent of the arithmetic 
+    dividend of the arguments.
 
-Parameters
-----------
-quotient: object
-    Expression representing the quotient.
-divisor: object
-    Expression representing the divisor.
+    Parameters
+    ----------
+    quotient: SQLExpression
+        Expression representing the quotient.
+    divisor: SQLExpression
+        Expression representing the divisor.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     quotient, divisor = format_magic(quotient), format_magic(divisor)
     return StringSQL(f"ATAN2({quotient}, {divisor})", "float")
 
 
-def cbrt(expr):
+def cbrt(expr: SQLExpression) -> StringSQL:
     """
-Cube Root.
+    Cube Root.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"CBRT({expr})", "float")
 
 
-def ceil(expr):
+def ceil(expr: SQLExpression) -> StringSQL:
     """
-Ceiling Function.
+    Ceiling Function.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"CEIL({expr})", "float")
 
 
-def comb(n: int, k: int):
+def comb(n: int, k: int) -> StringSQL:
     """
-Number of ways to choose k items from n items.
+    Number of ways to choose k items from n items.
 
-Parameters
-----------
-n : int
-    items to choose from.
-k : int
-    items to choose.
+    Parameters
+    ----------
+    n: int
+        items to choose from.
+    k: int
+        items to choose.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     return StringSQL(f"({n})! / (({k})! * ({n} - {k})!)", "float")
 
 
-def cos(expr):
+def cos(expr: SQLExpression) -> StringSQL:
     """
-Trigonometric Cosine.
+    Trigonometric Cosine.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"COS({expr})", "float")
 
 
-def cosh(expr):
+def cosh(expr: SQLExpression) -> StringSQL:
     """
-Hyperbolic Cosine.
+    Hyperbolic Cosine.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"COSH({expr})", "float")
 
 
-def cot(expr):
+def cot(expr: SQLExpression) -> StringSQL:
     """
-Trigonometric Cotangent.
+    Trigonometric Cotangent.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"COT({expr})", "float")
 
 
-def degrees(expr):
+def degrees(expr: SQLExpression) -> StringSQL:
     """
-Converts Radians to Degrees.
+    Converts Radians to Degrees.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"DEGREES({expr})", "float")
@@ -368,117 +382,120 @@ StringSQL
 
 def distance(
     lat0: float, lon0: float, lat1: float, lon1: float, radius: float = 6371.009
-):
+) -> StringSQL:
     """
-Returns the distance (in kilometers) between two points.
+    Returns the distance (in kilometers) between two 
+    points.
 
-Parameters
-----------
-lat0: float
-    Starting point latitude.
-lon0: float
-    Starting point longitude.
-lat1: float
-    Ending point latitude.
-lon1: float
-    Ending point longitude.
-radius: float
-    Specifies the radius of the curvature of the earth at the midpoint 
-    between the starting and ending points.
+    Parameters
+    ----------
+    lat0: float
+        Starting point latitude.
+    lon0: float
+        Starting point longitude.
+    lat1: float
+        Ending point latitude.
+    lon1: float
+        Ending point longitude.
+    radius: float
+        Specifies the radius of the curvature of the 
+        earth  at the midpoint between the  starting 
+        and ending points.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     return StringSQL(f"DISTANCE({lat0}, {lon0}, {lat1}, {lon1}, {radius})", "float")
 
 
-def exp(expr):
+def exp(expr: SQLExpression) -> StringSQL:
     """
-Exponential.
+    Exponential.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"EXP({expr})", "float")
 
 
-def factorial(expr):
+def factorial(expr: SQLExpression) -> StringSQL:
     """
-Factorial.
+    Factorial.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"({expr})!", "int")
 
 
-def floor(expr):
+def floor(expr: SQLExpression) -> StringSQL:
     """
-Floor Function.
+    Floor Function.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"FLOOR({expr})", "int")
 
 
-def gamma(expr):
+def gamma(expr: SQLExpression) -> StringSQL:
     """
-Gamma Function.
+    Gamma Function.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"({expr} - 1)!", "float")
 
 
-def hash(*argv):
+def hash(*argv) -> StringSQL:
     """
-Calculates a hash value over the function arguments.
+    Calculates a hash value over the function 
+    arguments.
 
-Parameters
-----------
-argv: object
-    Infinite Number of Expressions.
+    Parameters
+    ----------
+    argv: SQLExpression
+        Infinite Number of Expressions.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = []
     for arg in argv:
@@ -487,277 +504,277 @@ StringSQL
     return StringSQL(f"HASH({expr})", "float")
 
 
-def isfinite(expr):
+def isfinite(expr: SQLExpression) -> StringSQL:
     """
-Returns True if the expression is finite.
+    Returns True if the expression is finite.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr, cat = format_magic(expr, True)
     return StringSQL(f"(({expr}) = ({expr})) AND (ABS({expr}) < 'inf'::float)", cat)
 
 
-def isinf(expr):
+def isinf(expr: SQLExpression) -> StringSQL:
     """
-Returns True if the expression is infinite.
+    Returns True if the expression is infinite.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"ABS({expr}) = 'inf'::float", "float")
 
 
-def isnan(expr):
+def isnan(expr: SQLExpression) -> StringSQL:
     """
-Returns True if the expression is NaN.
+    Returns True if the expression is NaN.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr, cat = format_magic(expr, True)
     return StringSQL(f"(({expr}) != ({expr}))", cat)
 
 
-def lgamma(expr):
+def lgamma(expr: SQLExpression) -> StringSQL:
     """
-Natural Logarithm of the expression Gamma.
+    Natural Logarithm of the expression Gamma.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"LN(({expr} - 1)!)", "float")
 
 
-def ln(expr):
+def ln(expr: SQLExpression) -> StringSQL:
     """
-Natural Logarithm.
+    Natural Logarithm.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"LN({expr})", "float")
 
 
-def log(expr, base: int = 10):
+def log(expr: SQLExpression, base: int = 10) -> StringSQL:
     """
-Logarithm.
+    Logarithm.
 
-Parameters
-----------
-expr: object
-    Expression.
-base: int
-    Specifies the base.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
+    base: int
+        Specifies the base.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"LOG({base}, {expr})", "float")
 
 
-def radians(expr):
+def radians(expr: SQLExpression) -> StringSQL:
     """
-Converts Degrees to Radians.
+    Converts Degrees to Radians.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"RADIANS({expr})", "float")
 
 
-def round(expr, places: int = 0):
+def round(expr: SQLExpression, places: int = 0) -> StringSQL:
     """
-Rounds the expression.
+    Rounds the expression.
 
-Parameters
-----------
-expr: object
-    Expression.
-places: int
-    Number used to round the expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
+    places: int
+        Number used to round the expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"ROUND({expr}, {places})", "float")
 
 
-def sign(expr):
+def sign(expr: SQLExpression) -> StringSQL:
     """
-Sign of the expression.
+    Sign of the expression.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"SIGN({expr})", "int")
 
 
-def sin(expr):
+def sin(expr: SQLExpression) -> StringSQL:
     """
-Trigonometric Sine.
+    Trigonometric Sine.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"SIN({expr})", "float")
 
 
-def sinh(expr):
+def sinh(expr: SQLExpression) -> StringSQL:
     """
-Hyperbolic Sine.
+    Hyperbolic Sine.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"SINH({expr})", "float")
 
 
-def sqrt(expr):
+def sqrt(expr: SQLExpression) -> StringSQL:
     """
-Arithmetic Square Root.
+    Arithmetic Square Root.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"SQRT({expr})", "float")
 
 
-def tan(expr):
+def tan(expr: SQLExpression) -> StringSQL:
     """
-Trigonometric Tangent.
+    Trigonometric Tangent.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"TAN({expr})", "float")
 
 
-def tanh(expr):
+def tanh(expr: SQLExpression) -> StringSQL:
     """
-Hyperbolic Tangent.
+    Hyperbolic Tangent.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"TANH({expr})", "float")
 
 
-def trunc(expr, places: int = 0):
+def trunc(expr: SQLExpression, places: int = 0) -> StringSQL:
     """
-Truncates the expression.
+    Truncates the expression.
 
-Parameters
-----------
-expr: object
-    Expression.
-places: int
-    Number used to truncate the expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
+    places: int
+        Number used to truncate the expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"TRUNC({expr}, {places})", "float")

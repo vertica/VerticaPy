@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import random
 from typing import Literal, Union
 
-from verticapy._typing import PythonNumber, SQLColumns
+from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -716,7 +716,7 @@ class vDCMath:
             "tan",
             "tanh",
         ],
-        x: Union[str, int, float] = 2,
+        x: PythonScalar = 2,
     ):
         """
     Applies a default function to the vDataColumn.

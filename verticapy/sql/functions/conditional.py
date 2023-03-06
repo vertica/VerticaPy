@@ -16,27 +16,32 @@ permissions and limitations under the License.
 """
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy._utils._sql._format import format_magic
+from verticapy._typing import SQLExpression
 from verticapy.errors import ParameterError
 
 from verticapy.core.string_sql.base import StringSQL
 
 
-def case_when(*argv):
+def case_when(*argv) -> StringSQL:
     """
-Returns the conditional statement of the input arguments.
+    Returns the conditional statement of the input 
+    arguments.
 
-Parameters
-----------
-argv: object
-    Infinite Number of Expressions.
-    The expression generated will look like:
-    even: CASE ... WHEN argv[2 * i] THEN argv[2 * i + 1] ... END
-    odd : CASE ... WHEN argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END
+    Parameters
+    ----------
+    argv: SQLExpression
+        Infinite Number of Expressions.
+        The expression generated will look like:
+        even: CASE ... WHEN argv[2 * i] 
+                       THEN argv[2 * i + 1] ... END
+        odd : CASE ... WHEN argv[2 * i] 
+                       THEN argv[2 * i + 1] ... 
+                       ELSE argv[n] END
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     n = len(argv)
     if n < 2:
@@ -62,24 +67,28 @@ StringSQL
     return StringSQL(expr, category)
 
 
-def decode(expr, *argv):
+def decode(expr: SQLExpression, *argv) -> StringSQL:
     """
-Compares expression to each search value one by one.
+    Compares expression to each search value one 
+    by one.
 
-Parameters
-----------
-expr: object
-    Expression.
-argv: object
-    Infinite Number of Expressions.
-    The expression generated will look like:
-    even: CASE ... WHEN expr = argv[2 * i] THEN argv[2 * i + 1] ... END
-    odd : CASE ... WHEN expr = argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
+    argv: SQLExpression
+        Infinite Number of Expressions.
+        The expression generated will look like:
+        even: CASE ... WHEN expr = argv[2 * i] 
+                       THEN argv[2 * i + 1] ... END
+        odd : CASE ... WHEN expr = argv[2 * i] 
+                       THEN argv[2 * i + 1] ... 
+                       ELSE argv[n] END
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     n = len(argv)
     if n < 2:

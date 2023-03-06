@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import datetime
 from typing import Union, TYPE_CHECKING
 import numpy as np
 
@@ -21,9 +22,14 @@ if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
     from verticapy.core.string_sql.base import StringSQL
 
+# Pythonic data types.
+
 ArrayLike = Union[list, np.ndarray]
 PythonNumber = Union[None, int, float]
 PythonScalar = Union[None, bool, float, str]
+TimeInterval = Union[str, datetime.timedelta]
+
+# SQL data types.
 
 SQLColumns = Union[str, list[str]]
 SQLExpression = Union[str, list[str], "StringSQL", list["StringSQL"]]

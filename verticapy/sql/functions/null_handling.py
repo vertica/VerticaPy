@@ -14,27 +14,29 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy._typing import SQLExpression
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy._utils._sql._format import format_magic
 
 from verticapy.core.string_sql.base import StringSQL
 
 
-def coalesce(expr, *argv):
+def coalesce(expr: SQLExpression, *argv) -> StringSQL:
     """
-Returns the value of the first non-null expression in the list.
+    Returns the value of the first non-null 
+    expression in the list.
 
-Parameters
-----------
-expr: object
-    Expression.
-argv: object
-    Infinite Number of Expressions.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
+    argv: SQLExpression
+        Infinite Number of Expressions.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     category = to_dtype_category(expr)
     expr = [format_magic(expr)]
@@ -44,37 +46,38 @@ StringSQL
     return StringSQL(f"COALESCE({expr})", category)
 
 
-def nullifzero(expr):
+def nullifzero(expr: SQLExpression) -> StringSQL:
     """
-Evaluates to NULL if the value in the expression is 0.
+    Evaluates to NULL if the value in the 
+    expression is 0.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr, cat = format_magic(expr, True)
     return StringSQL(f"NULLIFZERO({expr})", cat)
 
 
-def zeroifnull(expr):
+def zeroifnull(expr: SQLExpression) -> StringSQL:
     """
-Evaluates to 0 if the expression is NULL.
+    Evaluates to 0 if the expression is NULL.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr, cat = format_magic(expr, True)
     return StringSQL(f"ZEROIFNULL({expr})", cat)

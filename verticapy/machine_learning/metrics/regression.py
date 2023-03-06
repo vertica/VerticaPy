@@ -24,36 +24,100 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
-from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning._utils import _compute_metric_query
+"""
+Special Functions.
+"""
+
+
+def _compute_metric_query(
+    metric: str,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    title: str = "",
+    fetchfirstelem: bool = True,
+) -> Union[float, tuple]:
+    """
+    A  helper  function  that uses  a  specified  metric  to 
+    generate and score a query.
+
+    Parameters
+    ----------
+    metric: str
+        The metric to use in the query.
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation  to use for scoring.  This relation can  be 
+        a view, table, or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    title: str, optional
+        Title of the query.
+    fetchfirstelem: bool, optional
+        If  set to True,  this function returns one  element. 
+        Otherwise, this function returns a tuple.
+
+    Returns
+    -------
+    float or tuple of floats.
+        score(s)
+    """
+    if isinstance(input_relation, str):
+        relation = input_relation
+    else:
+        relation = input_relation._genSQL()
+    if fetchfirstelem:
+        method = "fetchfirstelem"
+    else:
+        method = "fetchrow"
+    return _executeSQL(
+        query=f"""
+            SELECT 
+                /*+LABEL('learn.metrics._compute_metric_query')*/ 
+                {metric.format(y_true, y_score)} 
+            FROM {relation} 
+            WHERE {y_true} IS NOT NULL 
+              AND {y_score} IS NOT NULL;""",
+        title=title,
+        method=method,
+    )
+
+
+"""
+General Metrics.
+"""
 
 
 @save_verticapy_logs
 def aic_bic(
     y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
-):
+) -> tuple[float, float]:
     """
-Computes the AIC (Akaike’s Information Criterion) & BIC (Bayesian Information 
-Criterion).
+    Computes the AIC (Akaike’s Information Criterion) & BIC 
+    (Bayesian Information Criterion).
 
-Parameters
-----------
-y_true: str
-    Response column.
-y_score: str
-    Prediction.
-input_relation: SQLRelation
-    Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-k: int, optional
-    Number of predictors.
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    k: int, optional
+        Number of predictors.
 
-Returns
--------
-tuple of floats
-    (AIC, BIC)
+    Returns
+    -------
+    tuple of floats
+        (AIC, BIC)
     """
     rss, n = _compute_metric_query(
         "SUM(POWER({0} - {1}, 2)), COUNT(*)",
@@ -77,7 +141,10 @@ tuple of floats
 
 def aic_score(
     y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
-):
+) -> float:
+    """
+    Returns the AIC score.
+    """
     return aic_bic(y_true=y_true, y_score=y_score, input_relation=input_relation, k=k)[
         0
     ]
@@ -85,37 +152,325 @@ def aic_score(
 
 def bic_score(
     y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
-):
+) -> float:
+    """
+    Returns the BIC score.
+    """
     return aic_bic(y_true=y_true, y_score=y_score, input_relation=input_relation, k=k)[
         1
     ]
 
 
 @save_verticapy_logs
+def explained_variance(y_true: str, y_score: str, input_relation: SQLRelation) -> float:
+    """
+    Computes the Explained Variance.
+
+    Parameters
+    ----------
+    y_true: str
+    	Response column.
+    y_score: str
+    	Prediction.
+    input_relation: SQLRelation
+    	Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+
+    Returns
+    -------
+    float
+    	score.
+	"""
+    return _compute_metric_query(
+        "1 - VARIANCE({1} - {0}) / VARIANCE({0})",
+        y_true,
+        y_score,
+        input_relation,
+        "Computing the Explained Variance.",
+    )
+
+
+@save_verticapy_logs
+def max_error(y_true: str, y_score: str, input_relation: SQLRelation) -> float:
+    """
+    Computes the Max Error.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_metric_query(
+        "MAX(ABS({0} - {1}))::FLOAT",
+        y_true,
+        y_score,
+        input_relation,
+        "Computing the Max Error.",
+    )
+
+
+@save_verticapy_logs
+def mean_absolute_error(
+    y_true: str, y_score: str, input_relation: SQLRelation
+) -> float:
+    """
+    Computes the Mean Absolute Error.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+
+    Returns
+    -------
+    float
+        score.
+	"""
+    return _compute_metric_query(
+        "AVG(ABS({0} - {1}))",
+        y_true,
+        y_score,
+        input_relation,
+        "Computing the Mean Absolute Error.",
+    )
+
+
+@save_verticapy_logs
+def mean_squared_error(
+    y_true: str, y_score: str, input_relation: SQLRelation, root: bool = False,
+) -> float:
+    """
+    Computes the Mean Squared Error.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+
+    Returns
+    -------
+    float
+        score.
+    """
+    res = _compute_metric_query(
+        "MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE.",
+    )
+    if root:
+        return math.sqrt(res)
+    return res
+
+
+@save_verticapy_logs
+def mean_squared_log_error(
+    y_true: str, y_score: str, input_relation: SQLRelation
+) -> float:
+    """
+    Computes the Mean Squared Log Error.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_metric_query(
+        "AVG(POW(LOG({0} + 1) - LOG({1} + 1), 2))",
+        y_true,
+        y_score,
+        input_relation,
+        "Computing the Mean Squared Log Error.",
+    )
+
+
+@save_verticapy_logs
+def median_absolute_error(
+    y_true: str, y_score: str, input_relation: SQLRelation
+) -> float:
+    """
+    Computes the Median Absolute Error.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_metric_query(
+        "APPROXIMATE_MEDIAN(ABS({0} - {1}))",
+        y_true,
+        y_score,
+        input_relation,
+        "Computing the Median Absolute Error.",
+    )
+
+
+@save_verticapy_logs
+def quantile_error(
+    q: PythonNumber, y_true: str, y_score: str, input_relation: SQLRelation,
+) -> float:
+    """
+    Computes the input Quantile of the Error.
+
+    Parameters
+    ----------
+    q: PythonNumber
+        Input Quantile.
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+
+    Returns
+    -------
+    float
+        score.
+    """
+    metric = f"""APPROXIMATE_PERCENTILE(ABS({{0}} - {{1}}) 
+                        USING PARAMETERS percentile = {q})"""
+    return _compute_metric_query(
+        metric, y_true, y_score, input_relation, "Computing the Quantile Error."
+    )
+
+
+@save_verticapy_logs
+def r2_score(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    k: int = 0,
+    adj: bool = True,
+) -> float:
+    """
+    Computes the R2 Score.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    k: int, optional
+        Number  of predictors. Only used to compute the  R2 
+        adjusted.
+    adj: bool, optional
+        If set to True, computes the R2 adjusted.
+
+    Returns
+    -------
+    float
+    	score.
+	"""
+    result = _compute_metric_query(
+        "RSQUARED({0}, {1}) OVER()",
+        y_true,
+        y_score,
+        input_relation,
+        "Computing the R2 Score.",
+    )
+    if adj and k > 0:
+        n = _executeSQL(
+            query=f"""
+                SELECT /*+LABEL('learn.metrics.r2_score')*/ COUNT(*) 
+                FROM {input_relation} 
+                WHERE {y_true} IS NOT NULL 
+                  AND {y_score} IS NOT NULL;""",
+            title="Computing the table number of elements.",
+            method="fetchfirstelem",
+        )
+        result = 1 - ((1 - result) * (n - 1) / (n - k - 1))
+    return result
+
+
+"""
+Reports.
+"""
+
+
+@save_verticapy_logs
 def anova_table(
     y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
-):
+) -> TableSample:
     """
-Computes the Anova Table.
+    Computes the Anova Table.
 
-Parameters
-----------
-y_true: str
-    Response column.
-y_score: str
-    Prediction.
-input_relation: SQLRelation
-    Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-k: int, optional
-    Number of predictors.
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    k: int, optional
+        Number of predictors.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    TableSample
+        anova table.
     """
     if isinstance(input_relation, str):
         relation = input_relation
@@ -164,312 +519,48 @@ TableSample
 
 
 @save_verticapy_logs
-def explained_variance(y_true: str, y_score: str, input_relation: SQLRelation):
-    """
-Computes the Explained Variance.
-
-Parameters
-----------
-y_true: str
-	Response column.
-y_score: str
-	Prediction.
-input_relation: SQLRelation
-	Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-
-Returns
--------
-float
-	score
-	"""
-    return _compute_metric_query(
-        "1 - VARIANCE({1} - {0}) / VARIANCE({0})",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the Explained Variance.",
-    )
-
-
-@save_verticapy_logs
-def max_error(y_true: str, y_score: str, input_relation: SQLRelation):
-    """
-Computes the Max Error.
-
-Parameters
-----------
-y_true: str
-	Response column.
-y_score: str
-	Prediction.
-input_relation: SQLRelation
-	Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-
-Returns
--------
-float
-	score
-	"""
-    return _compute_metric_query(
-        "MAX(ABS({0} - {1}))::FLOAT",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the Max Error.",
-    )
-
-
-@save_verticapy_logs
-def mean_absolute_error(y_true: str, y_score: str, input_relation: SQLRelation):
-    """
-Computes the Mean Absolute Error.
-
-Parameters
-----------
-y_true: str
-	Response column.
-y_score: str
-	Prediction.
-input_relation: SQLRelation
-	Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-
-Returns
--------
-float
-	score
-	"""
-    return _compute_metric_query(
-        "AVG(ABS({0} - {1}))",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the Mean Absolute Error.",
-    )
-
-
-@save_verticapy_logs
-def mean_squared_error(
-    y_true: str, y_score: str, input_relation: SQLRelation, root: bool = False,
-):
-    """
-Computes the Mean Squared Error.
-
-Parameters
-----------
-y_true: str
-	Response column.
-y_score: str
-	Prediction.
-input_relation: SQLRelation
-	Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-root: bool, optional
-    If set to True, returns the RMSE (Root Mean Squared Error)
-
-Returns
--------
-float
-	score
-	"""
-    result = _compute_metric_query(
-        "MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE.",
-    )
-    if root:
-        return math.sqrt(result)
-    return result
-
-
-@save_verticapy_logs
-def mean_squared_log_error(y_true: str, y_score: str, input_relation: SQLRelation):
-    """
-Computes the Mean Squared Log Error.
-
-Parameters
-----------
-y_true: str
-	Response column.
-y_score: str
-	Prediction.
-input_relation: SQLRelation
-	Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-
-Returns
--------
-float
-	score
-	"""
-    return _compute_metric_query(
-        "AVG(POW(LOG({0} + 1) - LOG({1} + 1), 2))",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the Mean Squared Log Error.",
-    )
-
-
-@save_verticapy_logs
-def median_absolute_error(y_true: str, y_score: str, input_relation: SQLRelation):
-    """
-Computes the Median Absolute Error.
-
-Parameters
-----------
-y_true: str
-	Response column.
-y_score: str
-	Prediction.
-input_relation: SQLRelation
-	Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-
-Returns
--------
-float
-	score
-	"""
-    return _compute_metric_query(
-        "APPROXIMATE_MEDIAN(ABS({0} - {1}))",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the Median Absolute Error.",
-    )
-
-
-@save_verticapy_logs
-def quantile_error(
-    q: PythonNumber, y_true: str, y_score: str, input_relation: SQLRelation,
-):
-    """
-Computes the input Quantile of the Error.
-
-Parameters
-----------
-q: PythonNumber
-    Input Quantile
-y_true: str
-    Response column.
-y_score: str
-    Prediction.
-input_relation: SQLRelation
-    Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-    
-Returns
--------
-float
-    score
-    """
-    metric = f"""APPROXIMATE_PERCENTILE(ABS({{0}} - {{1}}) 
-                                        USING PARAMETERS percentile = {q})"""
-    return _compute_metric_query(
-        metric, y_true, y_score, input_relation, "Computing the Quantile Error."
-    )
-
-
-@save_verticapy_logs
-def r2_score(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    k: int = 0,
-    adj: bool = True,
-):
-    """
-Computes the R2 Score.
-
-Parameters
-----------
-y_true: str
-	Response column.
-y_score: str
-	Prediction.
-input_relation: SQLRelation
-	Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-k: int, optional
-    Number of predictors. Only used to compute the R2 adjusted.
-adj: bool, optional
-    If set to True, computes the R2 adjusted.
-
-Returns
--------
-float
-	score
-	"""
-    result = _compute_metric_query(
-        "RSQUARED({0}, {1}) OVER()",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the R2 Score.",
-    )
-    if adj and k > 0:
-        n = _executeSQL(
-            query=f"""
-                SELECT /*+LABEL('learn.metrics.r2_score')*/ COUNT(*) 
-                FROM {input_relation} 
-                WHERE {y_true} IS NOT NULL 
-                  AND {y_score} IS NOT NULL;""",
-            title="Computing the table number of elements.",
-            method="fetchfirstelem",
-        )
-        result = 1 - ((1 - result) * (n - 1) / (n - k - 1))
-    return result
-
-
-@save_verticapy_logs
 def regression_report(
     y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
-):
+) -> TableSample:
     """
-Computes a regression report using multiple metrics (r2, mse, max error...). 
+    Computes a regression report using multiple metrics (r2, 
+    mse, max error...). 
 
-Parameters
-----------
-y_true: str
-	Response column.
-y_score: str
-	Prediction.
-input_relation: SQLRelation
-	Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-k: int, optional
-    Number of predictors. Used to compute the adjusted R2.
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table,  or a customized relation (if an alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    k: int, optional
+        Number  of predictors. Used  to compute the adjusted 
+        R2.
 
-Returns
--------
-TableSample
- 	An object containing the result. For more information, see
- 	utilities.TableSample.
+    Returns
+    -------
+    TableSample
+     	report.
 	"""
     if isinstance(input_relation, str):
         relation = input_relation
     else:
         relation = input_relation._genSQL()
-    query = f"""SELECT /*+LABEL('learn.metrics.regression_report')*/
-                    1 - VARIANCE({y_true} - {y_score}) / VARIANCE({y_true}), 
-                    MAX(ABS({y_true} - {y_score})),
-                    APPROXIMATE_MEDIAN(ABS({y_true} - {y_score})), 
-                    AVG(ABS({y_true} - {y_score})),
-                    AVG(POW({y_true} - {y_score}, 2)), 
-                    COUNT(*) 
-                FROM {relation} 
-                WHERE {y_true} IS NOT NULL 
-                  AND {y_score} IS NOT NULL;"""
+    query = f"""
+        SELECT /*+LABEL('learn.metrics.regression_report')*/
+            1 - VARIANCE({y_true} - {y_score}) / VARIANCE({y_true}), 
+            MAX(ABS({y_true} - {y_score})),
+            APPROXIMATE_MEDIAN(ABS({y_true} - {y_score})), 
+            AVG(ABS({y_true} - {y_score})),
+            AVG(POW({y_true} - {y_score}, 2)), 
+            COUNT(*) 
+        FROM {relation} 
+        WHERE {y_true} IS NOT NULL 
+          AND {y_score} IS NOT NULL;"""
     r2 = r2_score(y_true, y_score, input_relation)
     values = {
         "index": [

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, decimal, datetime, math, time
-from typing import Literal, Union
+from typing import Any, Literal, TYPE_CHECKING, Union
 import numpy as np
 
 import pandas as pd
@@ -23,10 +23,13 @@ import pandas as pd
 import verticapy._config.config as conf
 from verticapy._utils._display import print_table
 from verticapy._utils._sql._display import print_query, print_time
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import ParameterError, MissingColumn
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -37,33 +40,35 @@ from verticapy.sql.dtypes import vertica_python_dtype
 
 class TableSample:
     """
-The TableSample is the transition from 'Big Data' to 'Small Data'. 
-This object allows you to conveniently display your results without any  
-dependencies on any other module. It stores the aggregated result in memory
-which can then be transformed into a pandas.DataFrame or vDataFrame.
+    The TableSample  is the  transition  from  'Big Data' 
+    to 'Small Data'. 
+    This object allows you to  conveniently  display your 
+    results without any dependencies on any other module. 
+    It stores the aggregated  result in memory  which can 
+    then  be  transformed   into  a  pandas.DataFrame  or 
+    vDataFrame.
 
-Parameters
-----------
-values: dict, optional
-	Dictionary of columns (keys) and their values. The dictionary must be
-	similar to the following one:
-	{"column1": [val1, ..., valm], ... "columnk": [val1, ..., valm]}
-dtype: dict, optional
-	Columns data types.
-count: int, optional
-	Number of elements if we had to load the entire dataset. It is used 
-	only for rendering purposes.
-offset: int, optional
-	Number of elements that were skipped if we had to load the entire
-	dataset. It is used only for rendering purposes.
-percent: dict, optional
-    Dictionary of missing values (Used to display the percent bars)
-max_columns: int, optional
-    Maximum number of columns to display.
-
-Attributes
-----------
-The TableSample attributes are the same as the parameters.
+    Parameters
+    ----------
+    values: dict, optional
+    	Dictionary of columns (keys) and their values. The 
+        dictionary must be similar to the following one:
+    	{"column1": [val1, ..., valm], ... 
+         "columnk": [val1, ..., valm]}
+    dtype: dict, optional
+    	Columns data types.
+    count: int, optional
+    	Number  of  elements if we had to  load the  entire 
+        dataset. It is used only for rendering purposes.
+    offset: int, optional
+    	Number of  elements that were skipped if we had  to 
+        load  the  entire  dataset.  It  is  used only  for 
+        rendering purposes.
+    percent: dict, optional
+        Dictionary  of missing values  (Used to display the 
+        percent bars)
+    max_columns: int, optional
+        Maximum number of columns to display.
 	"""
 
     @property
@@ -229,6 +234,49 @@ The TableSample attributes are the same as the parameters.
             formatted_text += "</div>"
         return formatted_text
 
+    @staticmethod
+    def _get_correct_format_and_cast(val: Any) -> str:
+        """
+        Casts the input value to the correct SQL data 
+        types.
+        """
+        if isinstance(val, str):
+            val = "'" + val.replace("'", "''") + "'"
+        elif val == None:
+            val = "NULL"
+        elif isinstance(val, bytes):
+            val = str(val)[2:-1]
+            val = f"'{val}'::binary({len(val)})"
+        elif isinstance(val, datetime.datetime):
+            val = f"'{val}'::datetime"
+        elif isinstance(val, datetime.date):
+            val = f"'{val}'::date"
+        elif isinstance(val, datetime.timedelta):
+            val = f"'{val}'::interval"
+        elif isinstance(val, datetime.time):
+            val = f"'{val}'::time"
+        elif isinstance(val, datetime.timezone):
+            val = f"'{val}'::timestamptz"
+        elif isinstance(val, (np.ndarray, list)):
+            vertica_version(condition=[10, 0, 0])
+            val = f"""
+            ARRAY[
+                {", ".join([str(self._get_correct_format_and_cast(k)) for k in val])}
+                 ]"""
+        elif isinstance(val, dict):
+            vertica_version(condition=[11, 0, 0])
+            all_elems = [
+                f"{self._get_correct_format_and_cast(val[k])} AS {k}" for k in val
+            ]
+            val = ", ".join(all_elems)
+            val = f"ROW({val})"
+        try:
+            if math.isnan(val):
+                val = "NULL"
+        except:
+            pass
+        return val
+
     def append(self, tbs: "TableSample") -> "TableSample":
         """
         Appends the input TableSample to a target TableSample.
@@ -256,14 +304,14 @@ The TableSample attributes are the same as the parameters.
             self.values[cols1[idx]] += tbs.values[cols2[idx]]
         return self
 
-    def decimal_to_float(self):
+    def decimal_to_float(self) -> "TableSample":
         """
-    Converts all the TableSample's decimals to floats.
+        Converts all the TableSample's decimals to floats.
 
-    Returns
-    -------
-    TableSample
-        self
+        Returns
+        -------
+        TableSample
+            self.
         """
         for elem in self.values:
             if elem != "index":
@@ -272,7 +320,7 @@ The TableSample attributes are the same as the parameters.
                         self.values[elem][i] = float(self.values[elem][i])
         return self
 
-    def merge(self, tbs):
+    def merge(self, tbs: "TableSample") -> "TableSample":
         """
         Merges the input TableSample to a target TableSample.
 
@@ -284,7 +332,7 @@ The TableSample attributes are the same as the parameters.
         Returns
         -------
         TableSample
-            self
+            self.
         """
         assert isinstance(tbs, TableSample), ParameterError(
             "TableSamples can only be merged with other TableSamples."
@@ -301,11 +349,12 @@ The TableSample attributes are the same as the parameters.
                 self.values[col] += tbs.values[col]
         return self
 
-    def narrow(self, use_number_as_category: bool = False):
+    def narrow(self, use_number_as_category: bool = False) -> Union[tuple, list]:
         """
-        TODO
+        Returns the narrow representation of the
+        TableSample.
         """
-        result = []
+        res = []
         d = copy.deepcopy(self.values)
         if use_number_as_category:
             categories_alpha = d["index"]
@@ -324,9 +373,9 @@ The TableSample attributes are the same as the parameters.
                     except:
                         val = val_tmp
                     if not (use_number_as_category):
-                        result += [[x, d["index"][idx], val]]
+                        res += [[x, d["index"][idx], val]]
                     else:
-                        result += [
+                        res += [
                             [
                                 bijection_categories[x],
                                 bijection_categories[d["index"][idx]],
@@ -334,9 +383,9 @@ The TableSample attributes are the same as the parameters.
                             ]
                         ]
         if use_number_as_category:
-            return result, categories_alpha, categories_beta
+            return res, categories_alpha, categories_beta
         else:
-            return result
+            return res
 
     @classmethod
     def read_sql(
@@ -346,37 +395,42 @@ The TableSample attributes are the same as the parameters.
         max_columns: int = -1,
         sql_push_ext: bool = False,
         symbol: str = "$",
-    ):
+    ) -> "TableSample":
         """
-    Returns the result of a SQL query as a TableSample object.
+        Returns the result of a SQL query as a TableSample 
+        object.
 
-    Parameters
-    ----------
-    query: str, optional
-        SQL Query.
-    title: str, optional
-        Query title when the query is displayed.
-    max_columns: int, optional
-        Maximum number of columns to display.
-    sql_push_ext: bool, optional
-        If set to True, the entire query is pushed to the external table. 
-        This can increase performance but might increase the error rate. 
-        For instance, some DBs might not support the same SQL as Vertica.
-    symbol: str, optional
-        One of the following:
-        "$", "€", "£", "%", "@", "&", "§", "%", "?", "!"
-        Symbol used to identify the external connection.
-        See the connect.set_external_connection function for more information.
+        Parameters
+        ----------
+        query: str, optional
+            SQL Query.
+        title: str, optional
+            Query title when the query is displayed.
+        max_columns: int, optional
+            Maximum number of columns to display.
+        sql_push_ext: bool, optional
+            If set to True, the entire query is pushed to the 
+            external table. 
+            This can increase  performance but might increase 
+            the error rate. 
+            For instance, some DBs might not support the same 
+            SQL as Vertica.
+        symbol: str, optional
+            One of the following:
+            "$", "€", "£", "%", "@", "&", "§", "%", "?", "!"
+            Symbol used to identify the external connection.
 
-    Returns
-    -------
-    TableSample
-        Result of the query.
+        Returns
+        -------
+        TableSample
+            Result of the query.
 
-    See Also
-    --------
-    TableSample : Object in memory created for rendering purposes.
+        See Also
+        --------
+        TableSample : Object in memory created for rendering 
+                      purposes.
         """
+        query = clean_query(query)
         if conf.get_option("sql_on"):
             print_query(query, title)
         start_time = time.time()
@@ -408,20 +462,20 @@ The TableSample attributes are the same as the parameters.
             values=values, dtype=dtype, max_columns=max_columns,
         ).decimal_to_float()
 
-    def shape(self):
+    def shape(self) -> tuple[int, int]:
         """
-    Computes the TableSample shape.
+        Computes the TableSample shape.
 
-    Returns
-    -------
-    tuple
-        (number of columns, number of rows)
+        Returns
+        -------
+        tuple
+            (number of columns, number of rows)
         """
         cols = [col for col in self.values]
         n, m = len(cols), len(self.values[cols[0]])
         return (n, m)
 
-    def sort(self, column: str, desc: bool = False):
+    def sort(self, column: str, desc: bool = False) -> "TableSample":
         """
         Sorts the TableSample using the input column.
 
@@ -430,12 +484,13 @@ The TableSample attributes are the same as the parameters.
         column: str, optional
             Column used to sort the data.
         desc: bool, optional
-            If set to True, the result is sorted in descending order.
+            If  set to True, the  result is sorted in 
+            descending order.
 
         Returns
         -------
         TableSample
-            self
+            self.
         """
         column = column.replace('"', "").lower()
         columns = [col for col in self.values]
@@ -458,14 +513,14 @@ The TableSample attributes are the same as the parameters.
             self.values[col] = [sort[j][i] for j in range(n)]
         return self
 
-    def transpose(self):
+    def transpose(self) -> "TableSample":
         """
-	Transposes the TableSample.
+    	Transposes the TableSample.
 
- 	Returns
- 	-------
- 	TableSample
- 		transposed TableSample
+     	Returns
+     	-------
+     	TableSample
+     		transposed TableSample.
 		"""
         index = [column for column in self.values]
         first_item = list(self.values.keys())[0]
@@ -482,16 +537,16 @@ The TableSample attributes are the same as the parameters.
             values[item[0]] = item[1 : len(item)]
         return TableSample(values, self.dtype, self.count, self.offset, self.percent)
 
-    def to_list(self):
+    def to_list(self) -> list:
         """
-    Converts the TableSample to a list.
+        Converts the TableSample to a list.
 
-    Returns
-    -------
-    list
-        Python list.
+        Returns
+        -------
+        list
+            Python list.
         """
-        result = []
+        res = []
         all_cols = [elem for elem in self.values]
         if all_cols == []:
             return []
@@ -500,33 +555,35 @@ The TableSample attributes are the same as the parameters.
             for elem in self.values:
                 if elem != "index":
                     result_tmp += [self.values[elem][i]]
-            result += [result_tmp]
-        return result
+            res += [result_tmp]
+        return res
 
-    def to_numpy(self):
+    def to_numpy(self) -> np.ndarray:
         """
-    Converts the TableSample to a numpy array.
+        Converts the TableSample to a numpy array.
 
-    Returns
-    -------
-    numpy.array
-        Numpy Array.
+        Returns
+        -------
+        numpy.array
+            Numpy Array.
         """
         return np.array(self.to_list())
 
-    def to_pandas(self):
+    def to_pandas(self) -> pd.DataFrame:
         """
-	Converts the TableSample to a pandas DataFrame.
+    	Converts the TableSample to a pandas DataFrame.
 
- 	Returns
- 	-------
- 	pandas.DataFrame
- 		pandas DataFrame of the TableSample.
+     	Returns
+     	-------
+     	pandas.DataFrame
+     		pandas DataFrame of the TableSample.
 
-	See Also
-	--------
-	TableSample.to_sql : Generates the SQL query associated to the TableSample.
-	TableSample.to_vdf : Converts the TableSample to vDataFrame.
+    	See Also
+    	--------
+    	TableSample.to_sql : Generates   the   SQL   query 
+                             associated to the TableSample.
+    	TableSample.to_vdf : Converts  the TableSample  to 
+                             vDataFrame.
 		"""
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
@@ -534,84 +591,49 @@ The TableSample attributes are the same as the parameters.
         else:
             return pd.DataFrame(data=self.values)
 
-    def to_sql(self):
+    def to_sql(self) -> str:
         """
-    Generates the SQL query associated to the TableSample.
+        Generates the SQL query associated to the TableSample.
 
-    Returns
-    -------
-    str
-        SQL query associated to the TableSample.
+        Returns
+        -------
+        str
+            SQL query associated to the TableSample.
 
-    See Also
-    --------
-    TableSample.to_pandas : Converts the TableSample to a pandas DataFrame.
-    TableSample.to_sql    : Generates the SQL query associated to the TableSample.
+        See Also
+        --------
+        TableSample.to_pandas : Converts the TableSample to a 
+                                pandas DataFrame.
+        TableSample.to_vdf    : Converts the TableSample to a 
+                                vDataFrame.
         """
-
-        def get_correct_format_and_cast(val):
-            if isinstance(val, str):
-                val = "'" + val.replace("'", "''") + "'"
-            elif val == None:
-                val = "NULL"
-            elif isinstance(val, bytes):
-                val = str(val)[2:-1]
-                val = f"'{val}'::binary({len(val)})"
-            elif isinstance(val, datetime.datetime):
-                val = f"'{val}'::datetime"
-            elif isinstance(val, datetime.date):
-                val = f"'{val}'::date"
-            elif isinstance(val, datetime.timedelta):
-                val = f"'{val}'::interval"
-            elif isinstance(val, datetime.time):
-                val = f"'{val}'::time"
-            elif isinstance(val, datetime.timezone):
-                val = f"'{val}'::timestamptz"
-            elif isinstance(val, (np.ndarray, list)):
-                vertica_version(condition=[10, 0, 0])
-                val = f"""
-                ARRAY[
-                    {", ".join([str(get_correct_format_and_cast(k)) for k in val])}
-                     ]"""
-            elif isinstance(val, dict):
-                vertica_version(condition=[11, 0, 0])
-                all_elems = [
-                    f"{get_correct_format_and_cast(val[k])} AS {k}" for k in val
-                ]
-                val = ", ".join(all_elems)
-                val = f"ROW({val})"
-            try:
-                if math.isnan(val):
-                    val = "NULL"
-            except:
-                pass
-            return val
-
         sql = []
         n = len(self.values[list(self.values.keys())[0]])
         for i in range(n):
             row = []
             for column in self.values:
-                val = get_correct_format_and_cast(self.values[column][i])
+                val = self._get_correct_format_and_cast(self.values[column][i])
                 column_str = '"' + column.replace('"', "") + '"'
                 row += [f"{val} AS {column_str}"]
             sql += [f"(SELECT {', '.join(row)})"]
         sql = " UNION ALL ".join(sql)
         return sql
 
-    def to_vdf(self):
+    def to_vdf(self) -> "vDataFrame":
         """
-	Converts the TableSample to a vDataFrame.
+    	Converts the TableSample to a vDataFrame.
 
- 	Returns
- 	-------
- 	vDataFrame
- 		vDataFrame of the TableSample.
+     	Returns
+     	-------
+     	vDataFrame
+     		vDataFrame of the TableSample.
 
-	See Also
-	--------
-	TableSample.to_pandas : Converts the TableSample to a pandas DataFrame.
-	TableSample.to_sql    : Generates the SQL query associated to the TableSample.
+    	See Also
+    	--------
+    	TableSample.to_pandas : Converts the TableSample to a 
+                                pandas DataFrame.
+    	TableSample.to_sql    : Generates   the   SQL   query 
+                                associated to the TableSample.
 		"""
         from verticapy.core.vdataframe.base import vDataFrame
 

@@ -15,9 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import time, warnings
+from typing import Optional, Union
 
 from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
+
+from vertica_highcharts import Highstock, Highchart
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -34,7 +37,38 @@ from verticapy.plotting._highcharts.base import hchartSQL
 
 @save_verticapy_logs
 @needs_local_scope
-def hchart_magic(line, cell="", local_ns=None):
+def hchart_magic(
+    line: str, cell: str = "", local_ns: Optional[dict] = None
+) -> Union[Highstock, Highchart]:
+    """
+    Draws  responsive charts using the High Chart  API: 
+    https://api.highcharts.com/highcharts/ 
+    The returned object can be customized using the API 
+    parameters and the 'set_dict_options' method.
+
+    -c / --command : SQL Command to execute.
+
+    -f  /   --file : Input File. You can use this option 
+                     if  you  want to execute the  input 
+                     file.
+
+    -k  /  --kind  : Chart  Type.  Can  be  one  of  the 
+                     following.
+                     area  / area_range  / area_ts / bar
+                     biserial   /   boxplot   /   bubble 
+                     candlestick   /   cramer  /   donut 
+                     donut3d  / heatmap / hist / kendall 
+                     line / negative_bar / pearson / pie
+                     pie_half / pie3d / scatter / spider
+                     spline / stacked_bar / stacked_hist
+                     spearman
+
+     -o / --output : Output File. You can use this option 
+                     if  you want to export the result of 
+                     the query to the HTML format.
+
+    """
+
     # Initialization
     query = "" if (not (cell) and (line)) else cell
 
@@ -117,6 +151,7 @@ def hchart_magic(line, cell="", local_ns=None):
     return chart
 
 
-def load_ipython_extension(ipython):
+def load_ipython_extension(ipython) -> None:
     ipython.register_magic_function(hchart_magic, "cell", "hchart")
     ipython.register_magic_function(hchart_magic, "line", "hchart")
+    return None

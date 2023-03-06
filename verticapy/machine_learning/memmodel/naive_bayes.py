@@ -31,14 +31,15 @@ class NaiveBayes(MulticlassClassifier):
     Parameters
     ----------
     attributes: list
-        List of the model's attributes. Each feature must 
+        List  of the model's attributes. Each feature  must 
         be represented by a dictionary, which differs based 
         on the distribution.
           For 'gaussian':
-            Key 'type' must have as value 'gaussian'.
+            Key 'type'  must have as value 'gaussian'.
             Each of the model's classes must include a 
             dictionary with two keys:
-              sigma_sq: Square root of the standard deviation.
+              sigma_sq: Square  root of  the  standard 
+                        deviation.
               mu: Average.
             Example: {'type': 'gaussian', 
                       'C': {'mu': 63.9878308300395, 
@@ -49,24 +50,24 @@ class NaiveBayes(MulticlassClassifier):
                             'sigma_sq': 1428.57067393938}}
           For 'multinomial':
             Key 'type' must have as value 'multinomial'.
-            Each of the model's classes must be represented by 
-            a key with its probability as the value.
+            Each of the model's classes must be represented 
+            by a key with its probability as the value.
             Example: {'type': 'multinomial', 
                       'C': 0.771666666666667, 
                       'Q': 0.910714285714286, 
                       'S': 0.878216123499142}
           For 'bernoulli':
             Key 'type' must have as value 'bernoulli'.
-            Each of the model's classes must be represented by 
-            a key with its probability as the value.
+            Each of the model's classes must be represented 
+            by a key with its probability as the value.
             Example: {'type': 'bernoulli', 
                       'C': 0.537254901960784, 
                       'Q': 0.277777777777778, 
                       'S': 0.324942791762014}
           For 'categorical':
             Key 'type' must have as value 'categorical'.
-            Each of the model's classes must include a dictionary 
-            with all the feature categories.
+            Each  of  the  model's  classes  must  include 
+            a dictionary with all the feature categories.
             Example: {'type': 'categorical', 
                       'C': {'female': 0.407843137254902, 
                             'male': 0.592156862745098}, 
@@ -80,6 +81,8 @@ class NaiveBayes(MulticlassClassifier):
         The model's classes.
     """
 
+    # Properties.
+
     @property
     def _object_type(self) -> Literal["NaiveBayes"]:
         return "NaiveBayes"
@@ -88,6 +91,8 @@ class NaiveBayes(MulticlassClassifier):
     def _attributes(self) -> list[str]:
         return ["attributes_", "prior_", "classes_"]
 
+    # System & Special Methods.
+
     def __init__(
         self, attributes: list[dict], prior: ArrayLike, classes: ArrayLike,
     ) -> None:
@@ -95,6 +100,8 @@ class NaiveBayes(MulticlassClassifier):
         self.prior_ = np.array(prior)
         self.classes_ = np.array(classes)
         return None
+
+    # Prediction / Transformation Methods - IN MEMORY.
 
     def _predict_row(self, X: ArrayLike, return_proba: bool = False) -> np.ndarray:
         """
@@ -167,6 +174,8 @@ class NaiveBayes(MulticlassClassifier):
             Probabilities.
         """
         return np.apply_along_axis(self._predict_proba_row, 1, X)
+
+    # Prediction / Transformation Methods - IN DATABASE.
 
     def _predict_score_sql(self, X: ArrayLike) -> list[str]:
         """

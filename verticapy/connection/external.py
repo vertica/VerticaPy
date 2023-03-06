@@ -19,26 +19,28 @@ from typing import Literal
 from verticapy.connection.global_connection import get_global_connection
 
 
-def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$"):
+def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> None:
     """
-Sets a Connection Identifier Database. It connects to an external
-source using DBLINK. For more information, see:
-https://github.com/vertica/dblink
+    Sets a Connection Identifier Database. It connects to 
+    an external source using DBLINK. For more information, 
+    see: https://github.com/vertica/dblink
 
-Parameters
-----------
-cid: str
-    Connection Identifier Database.
-rowset: int, optional
-    Number of rows retrieved from the remote database during each 
-    SQLFetch() cycle.
-symbol: str, optional
-    One of the following:
-    "$", "€", "£", "%", "@", "&", "§", "?", "!"
-    A special character, to identify the connection. 
-    For example, if the symbol is '$', you can call external tables 
-    with the input cid by writing $$$QUERY$$$, where QUERY represents 
-    a custom query.
+    Parameters
+    ----------
+    cid: str
+        Connection Identifier Database.
+    rowset: int, optional
+        Number of rows retrieved from the remote database 
+        during each SQLFetch() cycle.
+    symbol: str, optional
+        One of the following:
+        "$", "€", "£", "%", "@", "&", "§", "?", "!"
+        A special character, to identify the connection. 
+        For example,  if the symbol is '$', you can call 
+        external tables  with the  input cid by  writing
+        $$$QUERY$$$,  where  QUERY  represents a  custom 
+        query.
     """
     gb_conn = get_global_connection()
     gb_conn._set_external_connections(symbol, cid, rowset)
+    return None

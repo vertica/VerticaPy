@@ -30,10 +30,10 @@ from verticapy.sql.flex import (
     isvmap,
 )
 from verticapy.sql.insert import insert_into
-from verticapy.sql.parsers.all import read_file
-from verticapy.sql.parsers.avro import read_avro
-from verticapy.sql.parsers.csv import read_csv, pcsv
-from verticapy.sql.parsers.json import read_json, pjson
-from verticapy.sql.parsers.pandas import read_pandas as pandas_to_vertica, read_pandas
-from verticapy.sql.parsers.shp import read_shp
+from verticapy.core.parsers.all import read_file
+from verticapy.core.parsers.avro import read_avro
+from verticapy.core.parsers.csv import read_csv, pcsv
+from verticapy.core.parsers.json import read_json, pjson
+from verticapy.core.parsers.pandas import read_pandas as pandas_to_vertica, read_pandas
+from verticapy.core.parsers.shp import read_shp
 from verticapy.sql.dtypes import get_data_types

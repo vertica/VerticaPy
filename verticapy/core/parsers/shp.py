@@ -14,54 +14,60 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ExtensionError
 
+from verticapy.core.vdataframe.base import vDataFrame
+
 
 @save_verticapy_logs
-def read_shp(
-    path: str, schema: str = "public", table_name: str = "",
-):
+def read_shp(path: str, schema: str = "public", table_name: str = "",) -> vDataFrame:
     """
-Ingests a SHP file. For the moment, only files located in the Vertica server 
-can be ingested.
+    Ingests a SHP file.  For the moment, only files 
+    located in  the Vertica server can be ingested.
 
-Parameters
-----------
-path: str
-    Absolute path where the SHP file is located.
-schema: str, optional
-    Schema where the SHP file will be ingested.
-table_name: str, optional
-    Final relation name.
+    Parameters
+    ----------
+    path: str
+        Absolute path where the SHP file is located.
+    schema: str, optional
+        Schema where the SHP  file will be ingested.
+    table_name: str, optional
+        Final relation name.
 
-Returns
--------
-vDataFrame
-    The vDataFrame of the relation.
+    Returns
+    -------
+    vDataFrame
+        The vDataFrame of the relation.
     """
-    from verticapy.core.vdataframe.base import vDataFrame
-
     file = path.split("/")[-1]
     file_extension = file[-3 : len(file)]
     if file_extension != "shp":
         raise ExtensionError("The file extension is incorrect !")
-    query = (
-        f"SELECT /*+LABEL('utilities.read_shp')*/ STV_ShpCreateTable(USING PARAMETERS file='{path}')"
-        " OVER() AS create_shp_table;"
+    result = _executeSQL(
+        query=f"""
+            SELECT 
+                /*+LABEL('read_shp')*/ 
+                STV_ShpCreateTable(USING PARAMETERS file='{path}')
+                OVER() AS create_shp_table;""",
+        title="Getting SHP definition.",
+        method="fetchall",
     )
-    result = _executeSQL(query, title="Getting SHP definition.", method="fetchall")
     if not (table_name):
         table_name = file[:-4]
     result[0] = [f'CREATE TABLE "{schema}"."{table_name}"(']
     result = [elem[0] for elem in result]
     result = "".join(result)
     _executeSQL(result, title="Creating the relation.")
-    query = (
-        f'COPY "{schema}"."{table_name}" WITH SOURCE STV_ShpSource(file=\'{path}\')'
-        " PARSER STV_ShpParser();"
+    _executeSQL(
+        query=f"""
+            COPY "{schema}"."{table_name}" 
+            WITH SOURCE STV_ShpSource(file=\'{path}\')
+            PARSER STV_ShpParser();""",
+        title="Ingesting the data.",
     )
-    _executeSQL(query, title="Ingesting the data.")
-    print(f'The table "{schema}"."{table_name}" has been successfully created.')
+    if conf.get_option("print_info"):
+        print(f'The table "{schema}"."{table_name}" has been successfully created.')
     return vDataFrame(table_name, schema=schema)

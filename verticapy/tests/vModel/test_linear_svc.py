@@ -81,15 +81,15 @@ class TestLinearSVC:
         conf_mat1 = model.confusion_matrix()
 
         assert conf_mat1[0][0] == 568
-        assert conf_mat1[0][1] == 308
-        assert conf_mat1[1][0] == 37
+        assert conf_mat1[1][0] == 308
+        assert conf_mat1[0][1] == 37
         assert conf_mat1[1][1] == 83
 
         conf_mat2 = model.confusion_matrix(cutoff=0.2)
 
         assert conf_mat2[0][0] == 0
-        assert conf_mat2[0][1] == 0
-        assert conf_mat2[1][0] == 605
+        assert conf_mat2[1][0] == 0
+        assert conf_mat2[0][1] == 605
         assert conf_mat2[1][1] == 391
 
     def test_contour(self, titanic_vd):

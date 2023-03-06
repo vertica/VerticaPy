@@ -20,9 +20,9 @@ import verticapy._config.config as conf
 from verticapy._utils._logo import verticapy_logo_html, verticapy_logo_str
 
 
-def help_start():
+def help_start() -> None:
     """
-VERTICAPY Interactive Help (FAQ).
+    VERTICAPY Interactive Help (FAQ).
     """
     path = os.path.dirname(vp.__file__)
     img1 = verticapy_logo_html(size="10%")
@@ -94,3 +94,5 @@ VERTICAPY Interactive Help (FAQ).
         display(Markdown(message))
     else:
         print(message)
+
+    return None

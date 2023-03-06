@@ -31,6 +31,7 @@ from verticapy.machine_learning.memmodel.tree import (
 
 if conf._get_import_success("graphviz"):
     import graphviz
+    from graphviz import Source
 
 
 class Ensemble(InMemoryModel):
@@ -38,11 +39,15 @@ class Ensemble(InMemoryModel):
     InMemoryModel Implementation of Ensemble Algorithms.
     """
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def _predict_trees(self, X: ArrayLike) -> np.ndarray:
         """
         Predicts using all the model trees.
         """
         return np.column_stack([tree.predict(X) for tree in self.trees_])
+
+    # Prediction / Transformation Methods - IN DATABASE.
 
     def _predict_trees_sql(self, X: ArrayLike) -> list[str]:
         """
@@ -50,21 +55,23 @@ class Ensemble(InMemoryModel):
         """
         return [str(tree.predict_sql(X)) for tree in self.trees_]
 
+    # Trees Representation Methods.
+
     def plot_tree(
         self, pic_path: str = "", tree_id: int = 0, *argv, **kwds,
-    ):
+    ) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
 
         Parameters
         ----------
         pic_path: str, optional
-            Absolute path to save the image of the tree.
+            Absolute  path to  save the image of the  tree.
         tree_id: int, optional
-            Unique tree identifier, an integer in the 
+            Unique  tree identifier,   an  integer  in  the 
             range [0, n_estimators - 1].
         *argv, **kwds: Any, optional
-            Arguments to pass to the 'to_graphviz' method.
+            Arguments to pass to the 'to_graphviz'  method.
 
         Returns
         -------
@@ -76,13 +83,16 @@ class Ensemble(InMemoryModel):
 
 class RandomForestRegressor(Ensemble):
     """
-    InMemoryModel Implementation of the Random Forest Regressor Algorithm.
+    InMemoryModel Implementation of the Random 
+    Forest Regressor Algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeRegressor]
         list of BinaryTrees for Regression.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["RandomForestRegressor"]:
@@ -92,9 +102,13 @@ class RandomForestRegressor(Ensemble):
     def _attributes(self) -> list[str]:
         return ["trees_"]
 
+    # System & Special Methods.
+
     def __init__(self, trees: list[BinaryTreeRegressor]) -> None:
         self.trees_ = copy.deepcopy(trees)
         return None
+
+    # Prediction / Transformation Methods - IN MEMORY.
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
@@ -111,6 +125,8 @@ class RandomForestRegressor(Ensemble):
             Predicted values.
         """
         return np.average(self._predict_trees(X), axis=1)
+
+    # Prediction / Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
@@ -132,7 +148,8 @@ class RandomForestRegressor(Ensemble):
 
 class RandomForestClassifier(Ensemble, MulticlassClassifier):
     """
-    InMemoryModel Implementation of the Random Forest Classifier Algorithm.
+    InMemoryModel Implementation of the Random 
+    Forest Classifier Algorithm.
 
     Parameters
     ----------
@@ -142,6 +159,8 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     	The model's classes.
     """
 
+    # Properties.
+
     @property
     def _object_type(self) -> Literal["RandomForestClassifier"]:
         return "RandomForestClassifier"
@@ -149,6 +168,8 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     @property
     def _attributes(self) -> list[str]:
         return ["trees_", "classes_"]
+
+    # System & Special Methods.
 
     def __init__(
         self, trees: list[BinaryTreeClassifier], classes: ArrayLike = []
@@ -160,9 +181,12 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
             self.classes_ = np.array(classes)
         return None
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes the model's probabilites using the input Matrix.
+        Computes  the model's probabilites using  the 
+        input Matrix.
 
         Parameters
         ----------
@@ -182,10 +206,12 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
             trees_prob_sum += tree_prob_i_arg
         return trees_prob_sum / n
 
+    # Prediction / Transformation Methods - IN DATABASE.
+
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model using its 
-        attributes.
+        Returns the SQL code needed to deploy the model 
+        using its attributes.
 
         Parameters
         ----------
@@ -227,17 +253,20 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
 class XGBRegressor(Ensemble):
     """
-    InMemoryModel Implementation of the XGBoost Regressor Algorithm.
+    InMemoryModel Implementation of the XGBoost 
+    Regressor Algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeRegressor]
-        List of BinaryTrees for Regression.
+        List  of  BinaryTrees  for  Regression.
     mean: float, optional
-        Average of the response column.
+        Average   of   the   response   column.
     eta: float, optional
         Learning rate.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["XGBRegressor"]:
@@ -247,6 +276,8 @@ class XGBRegressor(Ensemble):
     def _attributes(self) -> list[str]:
         return ["trees_", "mean_", "eta_"]
 
+    # System & Special Methods.
+
     def __init__(
         self, trees: list[BinaryTreeRegressor], mean: float = 0.0, eta: float = 1.0,
     ) -> None:
@@ -254,6 +285,8 @@ class XGBRegressor(Ensemble):
         self.mean_ = mean
         self.eta_ = eta
         return None
+
+    # Prediction / Transformation Methods - IN MEMORY.
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
@@ -271,6 +304,8 @@ class XGBRegressor(Ensemble):
         """
         trees_pred_sum = np.sum(self._predict_trees(X), axis=1)
         return trees_pred_sum * self.eta_ + self.mean_
+
+    # Prediction / Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
@@ -292,19 +327,23 @@ class XGBRegressor(Ensemble):
 
 class XGBClassifier(Ensemble, MulticlassClassifier):
     """
-    InMemoryModel Implementation of the XGBoost Classifier Algorithm.
+    InMemoryModel Implementation of the XGBoost 
+    Classifier Algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeRegressor]
-        List of BinaryTrees for Regression.
+        List  of   BinaryTrees  for  Regression.
     logodds: ArrayLike[float], optional
-        ArrayLike of the logodds of the response classes.
+        ArrayLike of the logodds of the response 
+        classes.
     classes: ArrayLike, optional
     	The model's classes.
     learning_rate: float, optional
         Learning rate.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["XGBClassifier"]:
@@ -313,6 +352,8 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
     @property
     def _attributes(self) -> list[str]:
         return ["trees_", "logodds_", "classes_", "eta_"]
+
+    # System & Special Methods.
 
     def __init__(
         self,
@@ -330,9 +371,12 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         self.eta_ = learning_rate
         return None
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes the model's probabilites using the input Matrix.
+        Computes the model's probabilites using the input 
+        Matrix.
 
         Parameters
         ----------
@@ -349,8 +393,9 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
             trees_prob += tree.predict_proba(X)
         trees_prob = self.logodds_ + self.eta_ * trees_prob
         logit = 1 / (1 + np.exp(-trees_prob))
-        softmax = logit / np.sum(logit, axis=1)[:, None]
-        return softmax
+        return logit / np.sum(logit, axis=1)[:, None]
+
+    # Prediction / Transformation Methods - IN DATABASE.
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
@@ -382,13 +427,16 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
 class IsolationForest(Ensemble):
     """
-    InMemoryModel Implementation of the Isolation Forest Algorithm.
+    InMemoryModel  Implementation of the Isolation 
+    Forest Algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeAnomaly]
         list of BinaryTrees for Anomaly Detection.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["IsolationForest"]:
@@ -398,9 +446,13 @@ class IsolationForest(Ensemble):
     def _attributes(self) -> list[str]:
         return ["trees_"]
 
+    # System & Special Methods.
+
     def __init__(self, trees: list[BinaryTreeAnomaly]) -> None:
         self.trees_ = copy.deepcopy(trees)
         return None
+
+    # Prediction / Transformation Methods - IN MEMORY.
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
@@ -417,6 +469,8 @@ class IsolationForest(Ensemble):
             Predicted values.
         """
         return 2 ** (-np.average(self._predict_trees(X), axis=1))
+
+    # Prediction / Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """

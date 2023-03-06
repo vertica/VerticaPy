@@ -21,6 +21,10 @@ import matplotlib.colors as plt
 
 import verticapy._config.config as conf
 
+"""
+Colors Options: They are used when drawing graphics.
+"""
+
 COLORS_OPTIONS: dict[str, list] = {
     "rgb": ["red", "green", "blue", "orange", "yellow", "gray"],
     "sunset": ["#36688D", "#F3CD05", "#F49F05", "#F18904", "#BDA589"],
@@ -43,6 +47,9 @@ COLORS_OPTIONS: dict[str, list] = {
 
 
 def color_validator(val: Union[str, list, None]) -> Literal[True]:
+    """
+    Validator used to check and change the colors.
+    """
     if (
         (isinstance(val, str) and val in COLORS_OPTIONS)
         or isinstance(val, list)
@@ -57,8 +64,13 @@ def color_validator(val: Union[str, list, None]) -> Literal[True]:
 
 
 def get_cmap(
-    color: Optional[str] = None, reverse: bool = False
+    color: Union[None, str, list] = None, reverse: bool = False
 ) -> plt.LinearSegmentedColormap:
+    """
+    Returns the CMAP associated to the input color.
+    If  empty, VerticaPy uses  the colors stored as 
+    a global variable.
+    """
     if not (color):
         cm1 = plt.LinearSegmentedColormap.from_list(
             "verticapy_cmap", ["#FFFFFF", get_colors()[0]], N=1000
@@ -83,6 +95,9 @@ def get_cmap(
 
 
 def get_colors(d: Optional[dict] = {}, idx: Optional[int] = None) -> Union[list, str]:
+    """
+    Returns the current colors.
+    """
     if "color" in d:
         if isinstance(d["color"], str):
             return d["color"]

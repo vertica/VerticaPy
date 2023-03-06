@@ -24,6 +24,13 @@ from verticapy._utils._sql._format import clean_query, format_magic
 
 
 class InMemoryModel:
+    """
+    Base Class for In Memory Models. They can be used
+    to score in other DBs or in-memory.
+    """
+
+    # Properties.
+
     @property
     @abstractmethod
     def _object_type(self) -> str:
@@ -36,25 +43,38 @@ class InMemoryModel:
         """Must be overridden in child class"""
         raise NotImplementedError
 
-    def __repr__(self):
+    # System & Special Methods.
+
+    def __repr__(self) -> str:
         """Returns the model Representation."""
         return f"<{self._object_type}>"
 
-    def get_attributes(self):
+    # Attributes Methods.
+
+    def get_attributes(self) -> dict:
         attributes_ = {}
         for att in self._attributes:
             attributes_[att[:-1]] = copy.deepcopy(getattr(self, att))
         return attributes_
 
-    def set_attributes(self, **kwds):
+    def set_attributes(self, **kwds) -> None:
         attributes_ = {**self.get_attributes(), **kwds}
         self.__init__(**attributes_)
+        return None
 
 
 class MulticlassClassifier(InMemoryModel):
+    """
+    Class to represent any in-memory Multiclass Classifier.
+    """
+
+    # Properties.
+
     @property
     def _object_type(self) -> Literal["MulticlassClassifier"]:
         return "MulticlassClassifier"
+
+    # Prediction / Transformation Methods - IN MEMORY.
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
@@ -74,6 +94,8 @@ class MulticlassClassifier(InMemoryModel):
         if len(self.classes_) > 0:
             res = np.array([self.classes_[i] for i in res])
         return res
+
+    # Prediction / Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """

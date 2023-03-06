@@ -17,7 +17,10 @@ permissions and limitations under the License.
 from verticapy._utils._sql._sys import _executeSQL
 
 
-def current_session():
+def current_session() -> int:
+    """
+    Returns the current DB session.
+    """
     res = _executeSQL(
         query="SELECT /*+LABEL(current_session)*/ CURRENT_SESSION();",
         method="fetchfirstelem",
@@ -26,10 +29,12 @@ def current_session():
     return int(res.split(":")[1], base=16)
 
 
-def username():
-    res = _executeSQL(
+def username() -> str:
+    """
+    Returns the current DB username.
+    """
+    return _executeSQL(
         query="SELECT /*+LABEL(username)*/ USERNAME();",
         method="fetchfirstelem",
         print_time_sql=False,
     )
-    return res

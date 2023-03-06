@@ -37,6 +37,8 @@ class Scaler(InMemoryModel):
         Model's features second aggregation.
     """
 
+    # Properties.
+
     @property
     def _object_type(self) -> Literal["Scaler"]:
         return "Scaler"
@@ -45,14 +47,19 @@ class Scaler(InMemoryModel):
     def _attributes(self) -> list[str]:
         return ["sub_", "den_"]
 
+    # System & Special Methods.
+
     def __init__(self, sub: ArrayLike, den: ArrayLike) -> None:
         self.sub_ = np.array(sub)
         self.den_ = np.array(den)
         return None
 
+    # Prediction / Transformation Methods - IN MEMORY.
+
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms and applies the Scaler model to the input matrix.
+        Transforms  and applies the Scaler model to  the 
+        input matrix.
 
         Parameters
         ----------
@@ -66,9 +73,12 @@ class Scaler(InMemoryModel):
         """
         return (np.array(X) - self.sub_) / self.den_
 
+    # Prediction / Transformation Methods - IN DATABASE.
+
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL needed to deploy the Scaler.
+        Transforms and returns the SQL needed to deploy 
+        the Scaler.
 
         Parameters
         ----------
@@ -100,9 +110,13 @@ class StandardScaler(Scaler):
         Model's features standard deviations.
     """
 
+    # Properties.
+
     @property
     def _object_type(self) -> Literal["StandardScaler"]:
         return "StandardScaler"
+
+    # System & Special Methods.
 
     def __init__(self, mean: ArrayLike, std: ArrayLike) -> None:
         self.sub_ = np.array(mean)
@@ -122,9 +136,13 @@ class MinMaxScaler(Scaler):
         Model's features maximums.
     """
 
+    # Properties.
+
     @property
     def _object_type(self) -> Literal["MinMaxScaler"]:
         return "MinMaxScaler"
+
+    # System & Special Methods.
 
     def __init__(self, min_: ArrayLike, max_: ArrayLike) -> None:
         self.sub_ = np.array(min_)
@@ -139,22 +157,24 @@ class OneHotEncoder(InMemoryModel):
     Parameters
     ----------
     categories: ArrayLike
-        ArrayLike of the categories of the different features.
+        ArrayLike  of the categories of  the different  features.
     column_naming: str, optional
-        Appends categorical levels to column names according 
+        Appends  categorical  levels  to column  names  according 
         to the specified method:
-        indices              : Uses integer indices to represent 
+        indices              : Uses integer  indices to represent 
                                categorical levels.
         values/values_relaxed: Both methods use categorical level 
-                               names. If duplicate column names 
-                               occur, the function attempts to 
+                               names.  If duplicate column  names 
+                               occur,  the  function attempts  to 
                                disambiguate them by appending _n, 
-                               where n is a zero-based integer 
+                               where  n  is a zero-based  integer 
                                index (_0, _1,…).
     drop_first: bool, optional
-        If set to False, the first dummy of each category 
-        will be dropped.
+        If set to False, the first dummy of each category will be 
+        dropped.
     """
+
+    # Properties.
 
     @property
     def _object_type(self) -> Literal["OneHotEncoder"]:
@@ -163,6 +183,8 @@ class OneHotEncoder(InMemoryModel):
     @property
     def _attributes(self) -> list[str]:
         return ["categories_", "column_naming_", "drop_first_"]
+
+    # System & Special Methods.
 
     def __init__(
         self,
@@ -174,6 +196,8 @@ class OneHotEncoder(InMemoryModel):
         self.column_naming_ = column_naming
         self.drop_first_ = drop_first
         return None
+
+    # Prediction / Transformation Methods - IN MEMORY.
 
     def _transform_row(self, X: ArrayLike) -> list:
         """
@@ -206,6 +230,8 @@ class OneHotEncoder(InMemoryModel):
             Transformed values.
         """
         return np.apply_along_axis(self._transform_row, 1, X)
+
+    # Prediction / Transformation Methods - IN DATABASE.
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """

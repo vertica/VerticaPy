@@ -90,7 +90,6 @@ class vDFTyping:
     vDataFrame.numcol      : Returns a list of names of the numerical vDataColumns in the 
                              vDataFrame.
         """
-        # -#
         columns = []
         for column in self.get_columns():
             if (self[column].category() == "int") and not (self[column].isbool()):
@@ -203,6 +202,8 @@ class vDCTyping:
     --------
     vDataFrame.astype : Converts the vDataColumns to the input type.
         """
+        from verticapy.core.parsers.csv import guess_sep
+
         dtype = to_sql_dtype(dtype)
         try:
             if (
@@ -220,8 +221,6 @@ class vDCTyping:
                     query, title="getting the biggest string", method="fetchfirstelem",
                 )
                 biggest_str = biggest_str.strip()
-                from verticapy.sql.parsers.csv import guess_sep
-
                 sep = guess_sep(biggest_str)
                 if str(dtype).startswith("vmap"):
                     if len(biggest_str) > 2 and (

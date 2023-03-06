@@ -18,10 +18,18 @@ from verticapy._utils._sql._format import clean_query, erase_comment
 
 
 def is_longvar(ctype: str) -> bool:
+    """
+    Returns True if the input SQL ctype is
+    a long varbinary or long varchar.
+    """
     return ctype.lower()[0:12] in ("long varbina", "long varchar")
 
 
-def is_sql_select(query: str) -> bool:
+def is_dql(query: str) -> bool:
+    """
+    Returns True if the input SQL query
+    is a DQL statement (SELECT).
+    """
     result = False
     query = clean_query(query)
     query = erase_comment(query)

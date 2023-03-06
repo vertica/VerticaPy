@@ -19,7 +19,7 @@ from itertools import combinations_with_replacement
 from typing import Literal, Union
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, SQLColumns
+from verticapy._typing import PythonNumber, TimeInterval, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._cast import to_category, to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -95,11 +95,7 @@ class vDFFill:
 
     @save_verticapy_logs
     def interpolate(
-        self,
-        ts: str,
-        rule: Union[str, datetime.timedelta],
-        method: dict = {},
-        by: SQLColumns = [],
+        self, ts: str, rule: TimeInterval, method: dict = {}, by: SQLColumns = [],
     ):
         """
     Computes a regular time interval vDataFrame by interpolating the missing 
@@ -110,7 +106,7 @@ class vDFFill:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type 
         must be date like (date, datetime, timestamp...)
-    rule: str / time
+    rule: TimeInterval
         Interval used to create the time slices. The final interpolation is 
         divided by these intervals. For example, specifying '5 minutes' 
         creates records separated by time intervals of '5 minutes' 
@@ -361,7 +357,7 @@ class vDCFill:
             mode    : mode (most occurent element).
             0ifnull : 0 when the vDataColumn is null, 1 otherwise.
     expr: str, optional
-        SQL expression.
+        SQL string.
     by: SQLColumns, optional
         vDataColumns used in the partition.
     order_by: SQLColumns, optional

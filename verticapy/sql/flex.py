@@ -26,26 +26,28 @@ from verticapy.core.string_sql.base import StringSQL
 
 
 @save_verticapy_logs
-def compute_flextable_keys(flex_name: str, usecols: list = []):
+def compute_flextable_keys(flex_name: str, usecols: list = []) -> list[tuple]:
     """
-Computes the flex table keys and returns the predicted data types.
+    Computes the flex table keys and returns the 
+    predicted data types.
 
-Parameters
-----------
-flex_name: str
-    Flex table name.
-usecols: list, optional
-    List of columns to consider.
+    Parameters
+    ----------
+    flex_name: str
+        Flex table name.
+    usecols: list, optional
+        List of columns to consider.
 
-Returns
--------
-List of tuples
-    List of virtual column names and their respective data types.
+    Returns
+    -------
+    List of tuples
+        List  of virtual column names and  their 
+        respective data types.
     """
     _executeSQL(
         query=f"""
             SELECT 
-                /*+LABEL('utilities.compute_flex_table_keys')*/
+                /*+LABEL('compute_flex_table_keys')*/
                 compute_flextable_keys('{flex_name}');""",
         title="Guessing flex tables keys.",
     )
@@ -54,118 +56,136 @@ List of tuples
     ]
     usecols_str = ", ".join(usecols_str)
     where = f" WHERE LOWER(key_name) IN ({usecols_str})" if (usecols) else ""
-    result = _executeSQL(
+    return _executeSQL(
         query=f"""
             SELECT 
-                /*+LABEL('utilities.compute_flex_table_keys')*/
+                /*+LABEL('compute_flex_table_keys')*/
                 key_name,
                 data_type_guess 
             FROM {flex_name}_keys{where}""",
         title="Guessing the data types.",
         method="fetchall",
     )
-    return result
 
 
 @save_verticapy_logs
 def compute_vmap_keys(
     expr: Union[str, StringSQL], vmap_col: str, limit: int = 100,
-):
+) -> list[tuple]:
     """
-Computes the most frequent keys in the input VMap.
+    Computes the most frequent keys in the input VMap.
 
-Parameters
-----------
-expr: SQLRelation
-    Input expression. You can also specify a vDataFrame or a customized 
-    relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
-    is allowed, whereas "(SELECT 1)" and "SELECT 1" are not.
-vmap_col: str
-    VMap column.
-limit: int, optional
-    Maximum number of keys to consider.
+    Parameters
+    ----------
+    expr: SQLRelation
+        Input  expression.   You  can  also  specify  a 
+        vDataFrame  or a customized  relation, but  you 
+        must  enclose it  with an  alias.  For example, 
+        "(SELECT 1) x" is allowed, whereas "(SELECT 1)" 
+        and "SELECT 1" are not.
+    vmap_col: str
+        VMap column.
+    limit: int, optional
+        Maximum number of keys to consider.
 
-Returns
--------
-List of tuples
-    List of virtual column names and their respective frequencies.
+    Returns
+    -------
+    List of tuples
+        List of virtual column names and their respective 
+        frequencies.
     """
     from verticapy.core.vdataframe.base import vDataFrame
 
     vmap = quote_ident(vmap_col)
     if isinstance(expr, vDataFrame):
-        assert expr[vmap_col].isvmap(), ParameterError(
-            f"Virtual column {vmap_col} is not a VMAP."
-        )
+        if not (expr[vmap_col].isvmap()):
+            raise ParameterError(f"Virtual column {vmap_col} is not a VMAP.")
         expr = expr._genSQL()
-    result = _executeSQL(
-        (
-            "SELECT /*+LABEL('utilities.compute_vmap_keys')*/ keys, COUNT(*) FROM "
-            f"(SELECT MAPKEYS({vmap}) OVER (PARTITION BEST) FROM {expr})"
-            f" VERTICAPY_SUBTABLE GROUP BY 1 ORDER BY 2 DESC LIMIT {limit};"
-        ),
+    return _executeSQL(
+        query=f"""
+            SELECT 
+                /*+LABEL('compute_vmap_keys')*/ 
+                keys, 
+                COUNT(*) 
+            FROM 
+                (SELECT 
+                    MAPKEYS({vmap}) OVER (PARTITION BEST) 
+                FROM {expr}) VERTICAPY_SUBTABLE 
+            GROUP BY 1 
+            ORDER BY 2 DESC 
+            LIMIT {limit};""",
         title="Getting vmap most occurent keys.",
         method="fetchall",
     )
-    return result
 
 
-def isflextable(table_name: str, schema: str):
+def isflextable(table_name: str, schema: str) -> bool:
     """
-Checks if the input relation is a flextable.
+    Checks if the input relation is a flextable.
 
-Parameters
-----------
-table_name: str
-    Name of the table to check.
-schema: str
-    Table schema.
+    Parameters
+    ----------
+    table_name: str
+        Name of the table to check.
+    schema: str
+        Table schema.
 
-Returns
--------
-bool
-    True if the relation is a flex table.
+    Returns
+    -------
+    bool
+        True if the relation is a flex table.
     """
     table_name = quote_ident(table_name)[1:-1]
     schema = quote_ident(schema)[1:-1]
-    sql = (
-        f"SELECT is_flextable FROM v_catalog.tables WHERE table_name = '{table_name}' AND "
-        f"table_schema = '{schema}' AND is_flextable LIMIT 1;"
+    res = _executeSQL(
+        query=f"""
+            SELECT 
+                is_flextable 
+            FROM v_catalog.tables 
+            WHERE table_name = '{table_name}' 
+              AND table_schema = '{schema}' 
+              AND is_flextable 
+            LIMIT 1;""",
+        title="Checking if the table is a flextable.",
+        method="fetchall",
     )
-    result = _executeSQL(
-        sql, title="Checking if the table is a flextable.", method="fetchall",
-    )
-    return bool(result)
+    return bool(res)
 
 
-def isvmap(
-    expr: Union[str, StringSQL], column: str,
-):
+def isvmap(expr: Union[str, StringSQL], column: str,) -> bool:
     """
-Checks if the input column is a VMap.
+    Checks if the input column is a VMap.
 
-Parameters
-----------
-expr: SQLRelation
-    Any relation or expression. If you enter an expression,
-    you must enclose it in parentheses and provide an alias.
-column: str
-    Name of the column to check.
+    Parameters
+    ----------
+    expr: SQLRelation
+        Any relation or expression. If you enter 
+        an  expression,  you must enclose it  in 
+        parentheses and provide an alias.
+    column: str
+        Name of the column to check.
 
-Returns
--------
-bool
-    True if the column is a VMap.
+    Returns
+    -------
+    bool
+        True if the column is a VMap.
     """
     from verticapy.vdataframe import vDataFrame
 
     column = quote_ident(column)
     if isinstance(expr, vDataFrame):
         expr = expr._genSQL()
-    sql = f"SELECT MAPVERSION({column}) AS isvmap, {column} FROM {expr} WHERE {column} IS NOT NULL LIMIT 1;"
     try:
-        result = _executeSQL(
-            sql, title="Checking if the column is a vmap.", method="fetchall",
+        res = _executeSQL(
+            query=f"""
+                SELECT 
+                    MAPVERSION({column}) AS isvmap, 
+                    {column} 
+                FROM {expr} 
+                WHERE {column} IS NOT NULL 
+                LIMIT 1;""",
+            title="Checking if the column is a vmap.",
+            method="fetchall",
         )
         dtype = current_cursor().description[1][1]
         if dtype not in (
@@ -173,18 +193,17 @@ bool
             116,
         ):  # 116 is for long varbinary and 115 is for long varchar
             return False
-    except Exception as e:
-        if "'utf-8' codec can't decode byte" in str(e):
-            try:
-                sql = f"SELECT MAPVERSION({column}) AS isvmap FROM {expr} WHERE {column} IS NOT NULL LIMIT 1;"
-                result = _executeSQL(
-                    sql, title="Checking if the column is a vmap.", method="fetchall",
-                )
-            except:
-                return False
-        else:
-            return False
-    if len(result) == 0 or (result[0][0] == -1):
+    except UnicodeDecodeError:
+        res = _executeSQL(
+            query=f"""
+                SELECT 
+                    MAPVERSION({column}) AS isvmap 
+                FROM {expr} 
+                WHERE {column} IS NOT NULL 
+                LIMIT 1;""",
+            title="Checking if the column is a vmap.",
+            method="fetchall",
+        )
+    except:
         return False
-    else:
-        return True
+    return len(res) != 0 and (res[0][0] != -1)

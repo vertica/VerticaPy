@@ -29,39 +29,49 @@ def generate_lib_udf(
     include_dependencies: Union[str, list] = [],
     file_path: str = "",
     create_file: bool = False,
-) -> tuple:
+) -> tuple[str, str]:
     """
-Generates the code needed to install a library of Python functions. It will
-use the Vertica SDK to create UDF of the input functions.
+    Generates the code needed to install a library of 
+    Python functions.  It will use the Vertica SDK to 
+    create UDF of the input functions.
 
-Parameters
-----------
-udf_list: list
-	List of tuples including the different functions.
-		function     : [function] Python Function.
-	    arg_types    : [dict/list] List or dictionary of the function input types.
-	    			   Example: {"input1": int, "input2": float} or [int, float]
-	    return_type  : [type/dict] Function output type. In case of many outputs, 
-	    			   it must be a dictionary including all the outputs types and 
-	    			   names. Example: {"result1": int, "result2": float}
-	    parameters   : [dict] Dictionary of the function input optional parameters.
-	    			   Example: {"param1": int, "param2": str}
-	    new_name     : [str] New function name when installed in Vertica.
-library_name: str
-	Library Name.
-include_dependencies: str / list, optional
-	Library files dependencies. The function will copy paste the different files
-	in the UDF definition.
-file_path: str, optional
-	Path to the UDF file.
-create_file: bool, optional
-	If set to True, instead of returning the str of the UDx, the function will
-	create two files: one UDF py file and one SQL file to install it.
+    Parameters
+    ----------
+    udf_list: list
+    	List  of tuples including the different  functions.
+    		function     : [function]   Python    Function.
+    	    arg_types    : [dict/list] List  or  dictionary 
+                           of  the  function  input  types.
+    	    			   Example: {"input1": int, 
+                                     "input2": float}    or 
+                           [int, float]
+    	    return_type  : [type/dict] Function output type. 
+                           In case of many outputs,  it must 
+                           be a dictionary including all the 
+                           outputs types and names. Example: 
+                           {"result1": int, "result2": float}
+    	    parameters   : [dict] Dictionary of the function 
+                           input optional parameters.
+    	    			   Example: {"param1": int, 
+                                     "param2": str}
+    	    new_name     : [str] New function name when 
+                           installed in Vertica.
+    library_name: str
+    	Library Name.
+    include_dependencies: str / list, optional
+    	Library files dependencies. The function will copy paste 
+        the different files in the UDF definition.
+    file_path: str, optional
+    	Path to the UDF file.
+    create_file: bool, optional
+    	If set to True,  instead of returning the str of the UDx, 
+        the function will  create two files:  one UDF py file and 
+        one SQL file to install it.
 
-Returns
--------
-udx_str, sql
-    UDF py file, str needed to install the library.
+    Returns
+    -------
+    udx_str, sql
+        UDF py file, str needed to install the library.
 	"""
     if isinstance(include_dependencies, str):
         include_dependencies = [include_dependencies]
@@ -134,7 +144,11 @@ def generate_udf(
     parameters: dict = {},
     new_name: str = "",
     library_name: str = "",
-) -> tuple:
+) -> tuple[str, str]:
+    """
+    Generates the UDx Python code and the SQL
+    statements needed to install it.
+    """
     if not (hasattr(function, "__call__")):
         raise ValueError(
             f"The function parameter must be a Python function. Found {type(function)}."

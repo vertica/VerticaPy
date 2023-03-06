@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import sys, time, warnings
+from typing import Union
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -35,36 +36,40 @@ def insert_into(
     column_names: list = [],
     copy: bool = True,
     genSQL: bool = False,
-):
+) -> Union[int, str]:
     """
-Inserts the dataset into an existing Vertica table.
+    Inserts the dataset into an existing Vertica 
+    table.
 
-Parameters
-----------
-table_name: str
-    Name of the table to insert into.
-data: list
-    The data to ingest.
-schema: str, optional
-    Schema name.
-column_names: list, optional
-    Name of the column(s) to insert into.
-copy: bool, optional
-    If set to True, the batch insert is converted to a COPY statement 
-    with prepared statements. Otherwise, the INSERTs are performed
-    sequentially.
-genSQL: bool, optional
-    If set to True, the SQL code that would be used to insert the data 
-    is generated, but not executed.
+    Parameters
+    ----------
+    table_name: str
+        Name of the table to insert into.
+    data: list
+        The data to ingest.
+    schema: str, optional
+        Schema name.
+    column_names: list, optional
+        Name of the column(s) to insert into.
+    copy: bool, optional
+        If  set to  True, the  batch  insert  is 
+        converted  to  a   COPY  statement  with 
+        prepared   statements.  Otherwise,   the 
+        INSERTs   are  performed   sequentially.
+    genSQL: bool, optional
+        If  set to True, the SQL code that would 
+        be used to insert the data is generated, 
+        but not executed.
 
-Returns
--------
-int
-    The number of rows ingested.
+    Returns
+    -------
+    int
+        The number of rows ingested.
 
-See Also
---------
-read_pandas : Ingests a pandas DataFrame into the Vertica database.
+    See Also
+    --------
+    read_pandas : Ingests a pandas DataFrame 
+                  into the Vertica database.
     """
     if not (schema):
         schema = conf.get_option("temp_schema")
@@ -72,7 +77,7 @@ read_pandas : Ingests a pandas DataFrame into the Vertica database.
     if not (column_names):
         result = _executeSQL(
             query=f"""
-                SELECT /*+LABEL('utilities.insert_into')*/
+                SELECT /*+LABEL('insert_into')*/
                     column_name
                 FROM columns 
                 WHERE table_name = '{table_name}' 

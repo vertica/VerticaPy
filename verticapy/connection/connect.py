@@ -15,16 +15,26 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import vertica_python
+from vertica_python.vertica.cursor import Cursor
+from vertica_python.vertica.connection import Connection
 
-from verticapy.connection.global_connection import get_global_connection
+from verticapy.connection.global_connection import (
+    get_global_connection,
+    GlobalConnection,
+)
 from verticapy.connection.read import read_dsn
 from verticapy.connection.utils import get_confparser, get_connection_file
 from verticapy.errors import ConnectionError, ParameterError
 
+"""
+Connecting to the DB.
+"""
 
-def auto_connect():
+
+def auto_connect() -> None:
     """
-Automatically creates a connection using the auto-connection.
+    Automatically creates a connection using the 
+    auto-connection.
     """
     gb_conn = get_global_connection()
     confparser = get_confparser()
@@ -38,32 +48,24 @@ Automatically creates a connection using the auto-connection.
             " using the 'set_connection' function."
         )
     connect(section)
+    return None
 
 
 read_auto_connect = auto_connect
 
 
-def close_connection():
+def connect(section: str, dsn: str = "") -> None:
     """
-Closes the connection to the database.
-    """
-    gb_conn = get_global_connection()
-    connection = gb_conn._get_connection()
-    if connection and not (connection.closed()):
-        connection.close()
+    Connects to the database.
 
-
-def connect(section: str, dsn: str = ""):
-    """
-Connects to the database.
-
-Parameters
-----------
-section: str
-    Name of the section in the configuration file.
-dsn: str, optional
-    Path to the file containing the credentials. If empty, the 
-    Connection File will be used.
+    Parameters
+    ----------
+    section: str
+        Name  of the  section in the  configuration 
+        file.
+    dsn: str, optional
+        Path to the file containing the credentials. 
+        If empty, the Connection File will be used.
     """
     gb_conn = get_global_connection()
     prev_conn = gb_conn._get_connection()
@@ -86,16 +88,60 @@ dsn: str, optional
         raise (e)
 
 
-def current_connection():
+def set_connection(conn) -> None:
     """
-Returns the current database connection.
-If the connection is closed, VerticaPy attempts to reconnect with the 
-existing connection.
+    Saves a custom  connection to the VerticaPy object. 
+    This allows you to specify,  for example, a JDBC or 
+    ODBC connection. This should not be confused with a 
+    native   VerticaPy   connection  created   by   the 
+    'new_connection' function.
+    """
+    try:
+        conn.cursor().execute("SELECT /*+LABEL('connect.set_connection')*/ 1;")
+        res = conn.cursor().fetchone()[0]
+        assert res == 1
+    except:
+        ParameterError("The input connector is not working properly.")
+    gb_conn = get_global_connection()
+    gb_conn._set_connection(conn)
+    return None
 
-If the connection attempt fails, VerticaPy attempts to reconnect using 
-stored credentials. If this also fails, VerticaPy attempts to connect using
-an auto connection. Otherwise, VerticaPy attempts to connect to a 
-VerticaLab Environment.
+
+"""
+Closing DB Connection.
+"""
+
+
+def close_connection() -> None:
+    """
+    Closes the connection to the database.
+    """
+    gb_conn = get_global_connection()
+    connection = gb_conn._get_connection()
+    if connection and not (connection.closed()):
+        connection.close()
+    return None
+
+
+"""
+Connections & Cursors Objects.
+"""
+
+# Global Connection.
+
+
+def current_connection() -> GlobalConnection:
+    """
+    Returns the current database connection. If the 
+    connection  is closed,  VerticaPy  attempts  to 
+    reconnect with the existing connection.
+
+    If  the  connection   attempt  fails,  VerticaPy 
+    attempts to reconnect using  stored credentials. 
+    If  this  also  fails,   VerticaPy  attempts  to 
+    connect using  an  auto  connection.  Otherwise, 
+    VerticaPy  attempts  to connect to a  VerticaLab 
+    Environment.
     """
     gb_conn = get_global_connection()
     conn = gb_conn._get_connection()
@@ -118,7 +164,7 @@ VerticaLab Environment.
 
                 try:
                     # Connection to the VerticaLab environment
-                    conn = verticalab_connection()
+                    conn = verticapylab_connection()
                     gb_conn._set_connection(conn)
 
                 except:
@@ -127,63 +173,49 @@ VerticaLab Environment.
     return gb_conn._get_connection()
 
 
-def current_cursor():
+def current_cursor() -> Cursor:
     """
-Returns the current database cursor.
+    Returns the current database cursor.
     """
     return current_connection().cursor()
 
 
-def set_connection(conn):
+# Local Connection.
+
+
+def vertica_connection(section: str, dsn: str = "") -> Connection:
     """
-Saves a custom connection to the VerticaPy object. This allows you to 
-specify, for example, a JDBC or ODBC connection. This should not be 
-confused with a native VerticaPy connection created by the new_connection 
-function.
+    Reads the input DSN and creates a Vertica Database 
+    connection.
 
-Parameters
-----------
-conn: object
-    Connection object.
-    """
-    try:
-        conn.cursor().execute("SELECT /*+LABEL('connect.set_connection')*/ 1;")
-        res = conn.cursor().fetchone()[0]
-        assert res == 1
-    except:
-        ParameterError("The input connector is not working properly.")
-    gb_conn = get_global_connection()
-    gb_conn._set_connection(conn)
+    Parameters
+    ----------
+    section: str
+        Name of the section in the configuration file.
+    dsn: str, optional
+        Path  to the file containing the  credentials. 
+        If empty, the VERTICAPY_CONNECTION environment 
+        variable will be used.
 
-
-def vertica_connection(section: str, dsn: str = ""):
-    """
-Reads the input DSN and creates a Vertica Database connection.
-
-Parameters
-----------
-section: str
-    Name of the section in the configuration file.
-dsn: str, optional
-    Path to the file containing the credentials. If empty, the 
-    VERTICAPY_CONNECTION environment variable will be used.
-
-Returns
--------
-conn
-    Database connection.
+    Returns
+    -------
+    conn
+        Database connection.
     """
     return vertica_python.connect(**read_dsn(section, dsn))
 
 
-def verticalab_connection():
-    """
-Returns the VerticaLab connection if possible.
+# VerticaPy Lab Connection.
 
-Returns
--------
-conn
-    Database connection.
+
+def verticapylab_connection() -> Connection:
+    """
+    Returns the VerticaPyLab connection if possible.
+
+    Returns
+    -------
+    conn
+        Database connection.
     """
     gb_conn = get_global_connection()
     conn_info = {

@@ -21,7 +21,9 @@ import verticapy._config.config as conf
 
 def _current_random(rand_int: Optional[int] = None) -> str:
     """
-    TODO 
+    Returns the 'random' function to be used in the
+    query.  It depends if the random state has been
+    changed and on the input parameter 'rand_int'.
     """
     random_state = conf.get_option("random_state")
     if isinstance(rand_int, int):

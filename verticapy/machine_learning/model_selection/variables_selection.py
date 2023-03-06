@@ -32,7 +32,6 @@ from verticapy.plotting._matplotlib import (
     plot_importance,
 )
 
-from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.metrics import aic_bic
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
@@ -64,7 +63,7 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: SQLColumns
     List of the predictor columns.
@@ -236,7 +235,20 @@ TableSample
             return TableSample(
                 {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
             )
-    reverse = reverse_score(metric)
+    reverse = True
+    if metric in [
+        "logloss",
+        "max",
+        "mae",
+        "median",
+        "mse",
+        "msle",
+        "rmse",
+        "aic",
+        "bic",
+        "auto",
+    ]:
+        reverse = False
     data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
         result = TableSample(
@@ -307,7 +319,7 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: SQLColumns
     List of the predictor columns.

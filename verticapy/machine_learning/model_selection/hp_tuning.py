@@ -38,7 +38,6 @@ from verticapy.datasets.generators import gen_meshgrid, gen_dataset
 from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.timeseries import range_curve
 
-from verticapy.machine_learning._utils import reverse_score
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
 from verticapy.sql.drop import drop
@@ -73,7 +72,7 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: list
     List of the predictor columns.
@@ -238,7 +237,20 @@ TableSample
         drop(relation, method="table")
         vdf.to_db(relation, relation_type="table", inplace=True)
         vdf = hyper_param_estimator.predict(vdf, name="score")
-        reverse = reverse_score(metric)
+        reverse = True
+        if metric in [
+            "logloss",
+            "max",
+            "mae",
+            "median",
+            "mse",
+            "msle",
+            "rmse",
+            "aic",
+            "bic",
+            "auto",
+        ]:
+            reverse = False
         vdf.sort({"score": "desc" if reverse else "asc"})
         result = vdf.head(limit=k_tops)
         new_param_grid = []
@@ -307,7 +319,7 @@ Computes the k-fold grid search using multiple ENet models.
 
 Parameters
 ----------
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: list
     List of the predictor columns.
@@ -1082,7 +1094,7 @@ estimator: object
 param_grid: dict/list
     Dictionary of the parameters to test. It can also be a list of the
     different combinations.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: list
     List of the predictor columns.
@@ -1247,7 +1259,20 @@ TableSample
             return TableSample(
                 {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
             )
-    reverse = reverse_score(metric)
+    reverse = True
+    if metric in [
+        "logloss",
+        "max",
+        "mae",
+        "median",
+        "mse",
+        "msle",
+        "rmse",
+        "aic",
+        "bic",
+        "auto",
+    ]:
+        reverse = False
     data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
         result = TableSample(
@@ -1333,11 +1358,11 @@ vdf: vDataFrame
 column: str
     Response column.
 ts: str
-    vcolumn used as timeline. It will be to use to order the data. 
+    vDataColumn used as timeline. It will be to use to order the data. 
     It can be a numerical or type date like (date, datetime, timestamp...) 
-    vcolumn.
+    vDataColumn.
 by: list, optional
-    vcolumns used in the partition.
+    vDataColumns used in the partition.
 p: int/list, optional
     Int equals to the maximum number of lag to consider during the computation
     or List of the different lags to include during the computation.
@@ -1438,7 +1463,7 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: list
     List of the predictor columns.
@@ -1539,7 +1564,7 @@ param_name: str
     Parameter name.
 param_range: list
     Parameter Range.
-input_relation: str/vDataFrame
+input_relation: SQLRelation
     Relation to use to train the model.
 X: list
     List of the predictor columns.

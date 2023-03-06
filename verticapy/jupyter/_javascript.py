@@ -15,127 +15,74 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime, json, os, uuid
+from typing import Any, TextIO
 import numpy as np
 
-from verticapy._utils._sql._cast import to_category
+from verticapy._typing import ArrayLike
 from verticapy._utils._logo import verticapy_logo_html
+from verticapy._utils._sql._cast import to_category
+
+"""
+Utils Functions.
+"""
 
 
-def _table_header(
-    head: list, table_id, style, classes, dtype: dict = {},
-):
-    """This function returns the HTML table header. Rows are not included."""
-
-    head = beautiful_header(head, dtype=dtype,)
-    thead = "<thead>"
-    thead += "<tr>"
-    thead_style = "border: 1px solid #AAAAAA;"
-    thead_style_first = "border: 1px solid #AAAAAA; min-width: 95px; max-width: 95px;"
-    for i in range(0, len(head)):
-        if i == 0:
-            logo = f'<div style="padding-left: 15px;">{verticapy_logo_html(size="45px")}</div>'
-            thead += f'<td style="{thead_style_first}">{logo}</td>'
-        else:
-            thead += f'<td style="{thead_style}">{head[i]}</td>'
-        # thead += f'<th style="border: 1px solid #AAAAAA;">{elmt}</th>'
-    thead += "</tr>"
-    thead += "<thead>"
-    loading = "<td>Loading...</td>"
-    tbody = f"<tr>{loading}</tr>"
-    if style:
-        style = f'style="{style}"'
-    else:
-        style = ""
-    return f"""<div class="container"><table id="{table_id}" class="{classes}" {style}>{thead}<tbody>{tbody}</tbody></table></div>"""
+def find_package_file(*path) -> str:
+    """
+    Returns the full path to a file from the itables 
+    package.
+    """
+    current_path = os.path.dirname(__file__)
+    return os.path.join(current_path, *path)
 
 
-def replace_value(template, pattern, value, count=1):
-    """Set the given pattern to the desired value in the template,
-    after making sure that the pattern is found exactly once."""
+def read_package_file(*path) -> TextIO:
+    """
+    Returns the content of a file from the itables
+    package.
+    """
+    with open(find_package_file(*path), encoding="utf-8") as fp:
+        return fp.read()
+
+
+def replace_value(template: str, pattern: str, value: Any, count: int = 1) -> str:
+    """
+    Sets the given pattern to the desired value in the template,
+    after making sure that the pattern is found exactly once.
+    """
     assert isinstance(template, str)
     assert template.count(pattern) == count
     return template.replace(pattern, value)
 
 
-def clean_data(data):
-    """Clean the data to improve the html display"""
-
-    for i in range(0, len(data)):
-        for j in range(0, len(data[0])):
-            if j == 0:
-                data[i][j] = f"<b>{data[i][j]}</b>"
-                continue
-            else:
-                val = data[i][j]
-                if isinstance(val, bool) is False and val != None:
-                    data[i][j] = (
-                        '<div style="background-color: transparent; '
-                        "border: none; text-align: center; width: 100%;"
-                        'scrollbar-width: none; overflow-x: scroll; white-space: nowrap;">'
-                        f"{val}</div>"
-                    )
-                    continue
-
-                if isinstance(val, bool):
-                    val = (
-                        "<center>&#9989;</center>"
-                        if (val)
-                        else "<center>&#10060;</center>"
-                    )
-                    data[i][j] = val
-                    continue
-                if val == None:
-                    data[i][j] = "[null]"
-
-    return data
+"""
+Utils Classes.
+"""
 
 
-def datatables_repr(
-    data_columns, repeat_first_column: bool = False, offset: int = 0, dtype: dict = {},
-):
-    """Return the HTML/javascript representation of the table"""
+class DateTimeEncoder(json.JSONEncoder):
+    """
+    Subclass JSONEncoder
+    """
 
-    if not (repeat_first_column):
-        index_column = list(range(1 + offset, len(data_columns[0]) + offset))
-        data_columns = [[""] + [i for i in index_column]] + data_columns
-    columns = []
-    data = []
-    for dc in data_columns:
-        columns.append(dc[0])
-        data.append(dc[1:])
-    data = np.array(data).T.tolist()
-
-    data = clean_data(data)
-    output = read_package_file("html/html_template_connected.html")
-    style = "width:100%"
-    classes = ["hover", "row-border"]
-    if isinstance(classes, list):
-        classes = " ".join(classes)
-    tableId = str(uuid.uuid4())
-    table_header = _table_header(columns, tableId, style, classes, dtype=dtype,)
-    output = replace_value(
-        output,
-        '<table id="table_id"><thead><tr><th>A</th></tr></thead></table>',
-        table_header,
-    )
-    output = replace_value(output, "#table_id", f"#{tableId}", 2)
-    output = replace_value(
-        output,
-        "<style></style>",
-        f"""<style>
-        {read_package_file("html/style.css")}
-        </style>""",
-    )
-    dt_data = json.dumps(data, cls=DateTimeEncoder)
-    output = replace_value(output, "const data = [];", f"const data = {dt_data};")
-
-    return output
+    # Override the default method
+    def default(self, obj: Any) -> Any:
+        """
+        Overrides the default method.
+        """
+        if isinstance(obj, (datetime.date, datetime.datetime)):
+            return obj.isoformat()
 
 
-def beautiful_header(
-    header, dtype: dict = {}, percent: dict = {},
-):
-    """Transform the header columns according to the type"""
+"""
+Main Functions.
+"""
+
+
+def beautiful_header(header: str, dtype: dict = {}, percent: dict = {},) -> str:
+    """
+    Transforms the header columns according to the type.
+    """
 
     n = len(header)
     for i in range(1, n):
@@ -198,21 +145,118 @@ def beautiful_header(
     return header
 
 
-def read_package_file(*path):
-    """Return the content of a file from the itables package"""
-    with open(find_package_file(*path), encoding="utf-8") as fp:
-        return fp.read()
+def _table_header(
+    head: list, table_id: str, style: str, classes: str, dtype: dict = {},
+) -> str:
+    """
+    Returns the HTML table header. Rows are not included.
+    """
+    head = beautiful_header(head, dtype=dtype,)
+    thead = "<thead>"
+    thead += "<tr>"
+    thead_style = "border: 1px solid #AAAAAA;"
+    thead_style_first = "border: 1px solid #AAAAAA; min-width: 95px; max-width: 95px;"
+    for i in range(0, len(head)):
+        if i == 0:
+            logo = f'<div style="padding-left: 15px;">{verticapy_logo_html(size="45px")}</div>'
+            thead += f'<td style="{thead_style_first}">{logo}</td>'
+        else:
+            thead += f'<td style="{thead_style}">{head[i]}</td>'
+        # thead += f'<th style="border: 1px solid #AAAAAA;">{elmt}</th>'
+    thead += "</tr>"
+    thead += "<thead>"
+    loading = "<td>Loading...</td>"
+    tbody = f"<tr>{loading}</tr>"
+    if style:
+        style = f'style="{style}"'
+    else:
+        style = ""
+    return f"""
+        <div class="container">
+            <table id="{table_id}" class="{classes}" {style}>{thead}
+                <tbody>{tbody}</tbody>
+            </table>
+        </div>"""
 
 
-def find_package_file(*path):
-    """Return the full path to a file from the itables package"""
-    current_path = os.path.dirname(__file__)
-    return os.path.join(current_path, *path)
+def clean_data(data: ArrayLike) -> ArrayLike:
+    """
+    Cleans the data to improve the html display.
+    """
+    for i in range(0, len(data)):
+        for j in range(0, len(data[0])):
+            if j == 0:
+                data[i][j] = f"<b>{data[i][j]}</b>"
+                continue
+            else:
+                val = data[i][j]
+                if isinstance(val, bool) is False and val != None:
+                    data[i][
+                        j
+                    ] = f"""
+                        <div style="background-color: transparent;
+                             border: none; text-align: center; 
+                             width: 100%; scrollbar-width: none; 
+                             overflow-x: scroll; white-space: nowrap;">
+                            {val}
+                        </div>"""
+                    continue
+
+                if isinstance(val, bool):
+                    val = (
+                        "<center>&#9989;</center>"
+                        if (val)
+                        else "<center>&#10060;</center>"
+                    )
+                    data[i][j] = val
+                    continue
+                if val == None:
+                    data[i][j] = "[null]"
+    return data
 
 
-# subclass JSONEncoder
-class DateTimeEncoder(json.JSONEncoder):
-    # Override the default method
-    def default(self, obj):
-        if isinstance(obj, (datetime.date, datetime.datetime)):
-            return obj.isoformat()
+def datatables_repr(
+    data_columns: ArrayLike,
+    repeat_first_column: bool = False,
+    offset: int = 0,
+    dtype: dict = {},
+) -> str:
+    """
+    Returns the HTML/javascript representation of the table.
+    """
+
+    if not (repeat_first_column):
+        index_column = list(range(1 + offset, len(data_columns[0]) + offset))
+        data_columns = [[""] + [i for i in index_column]] + data_columns
+    columns = []
+    data = []
+    for dc in data_columns:
+        columns.append(dc[0])
+        data.append(dc[1:])
+    data = np.array(data).T.tolist()
+
+    data = clean_data(data)
+    output = read_package_file("html/html_template_connected.html")
+    style = "width:100%"
+    classes = ["hover", "row-border"]
+    if isinstance(classes, list):
+        classes = " ".join(classes)
+    tableId = str(uuid.uuid4())
+    table_header = _table_header(columns, tableId, style, classes, dtype=dtype,)
+    output = replace_value(
+        output,
+        '<table id="table_id"><thead><tr><th>A</th></tr></thead></table>',
+        table_header,
+    )
+    output = replace_value(output, "#table_id", f"#{tableId}", 2)
+    output = replace_value(
+        output,
+        "<style></style>",
+        f"""<style>
+        {read_package_file("html/style.css")}
+        </style>""",
+    )
+    dt_data = json.dumps(data, cls=DateTimeEncoder)
+    output = replace_value(output, "const data = [];", f"const data = {dt_data};")
+
+    return output

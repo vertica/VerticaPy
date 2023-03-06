@@ -14,9 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings, itertools
+import itertools, warnings
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
+from vertica_python.errors import QueryError
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -129,6 +130,12 @@ class KNeighborsRegressor(Regressor):
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
         return None
 
+    def drop(self) -> bool:
+        """
+        KNN models are not stored in the Vertica DB.
+        """
+        return False
+
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
@@ -151,7 +158,7 @@ class KNeighborsRegressor(Regressor):
         test_relation: str, optional
             Relation to use to do the predictions.
         key_columns: SQLColumns, optional
-            A list of columns to include in the results, 
+            A  list  of columns  to  include in  the  results, 
             but to exclude from computation of the prediction.
 
         Returns
@@ -290,10 +297,10 @@ class KNeighborsClassifier(MulticlassClassifier):
     Parameters
     ----------
     n_neighbors: int, optional
-        Number of neighbors to consider when computing 
-        the score.
+        Number  of neighbors to consider when computing  the 
+        score.
     p: int, optional
-        The p corresponding to the one of the p-distances 
+        The  p corresponding  to the one of the  p-distances 
         (distance metric used during the model computation).
 	"""
 
@@ -335,6 +342,12 @@ class KNeighborsClassifier(MulticlassClassifier):
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
         return None
 
+    def drop(self) -> bool:
+        """
+        KNN models are not stored in the Vertica DB.
+        """
+        return False
+
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
@@ -365,11 +378,12 @@ class KNeighborsClassifier(MulticlassClassifier):
         test_relation: str, optional
             Relation to use to do the predictions.
         predict: bool, optional
-            If set to True, returns the prediction instead of 
-            the probability.
+            If set to True, returns the prediction instead 
+            of the probability.
         key_columns: SQLColumns, optional
-            A list of columns to include in the results, but 
-            to exclude from computation of the prediction.
+            A  list of columns to include in the  results, 
+            but  to   exclude  from   computation  of  the 
+            prediction.
 
         Returns
         -------
@@ -502,17 +516,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             )
             y_score = f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
             y_true = f"DECODE({self.y}, '{pos_label}', 1, 0)"
-            result = mt.confusion_matrix(y_true, y_score, input_relation)
-            if pos_label == 1:
-                return result
-            else:
-                return TableSample(
-                    values={
-                        "index": [f"Non-{pos_label}", str(pos_label),],
-                        f"Non-{pos_label}": result.values[0],
-                        str(pos_label): result.values[1],
-                    },
-                )
+            return mt.confusion_matrix(y_true, y_score, input_relation)
 
     # Model Evaluation Methods.
 
@@ -703,6 +707,9 @@ class KernelDensity(Regressor, Tree):
 
     Parameters
     ----------
+    name: str
+        Name of the model. This is not a built-in model, so 
+        this name will be used  to build the final table.
     bandwidth: PythonNumber, optional
         The bandwidth of the kernel.
     kernel: str, optional
@@ -712,21 +719,21 @@ class KernelDensity(Regressor, Tree):
             sigmoid   : Sigmoid Kernel.
             silverman : Silverman Kernel.
     p: int, optional
-        The p corresponding to the one of the p-distances 
-        (distance metric used during the model computation).
+        The  p corresponding to  the  one of the  p-distances 
+        (distance metric used  during the model computation).
     max_leaf_nodes: PythonNumber, optional
-        The maximum number of leaf nodes, an integer between 
+        The maximum number of leaf nodes,  an integer between 
         1 and 1e9, inclusive.
     max_depth: int, optional
-        The maximum tree depth, an integer between 1 and 100, 
+        The maximum tree depth,  an integer between 1 and 100, 
         inclusive.
     min_samples_leaf: int, optional
-        The minimum number of samples each branch must have 
-        after splitting a node, an integer between 1 and 1e6, 
+        The  minimum number of  samples each branch must  have 
+        after splitting a node,  an integer between 1 and 1e6, 
         inclusive. A split that causes fewer remaining samples 
         is discarded.
     nbins: int, optional 
-        The number of bins to use to discretize the input 
+        The  number  of  bins to use to discretize  the  input 
         features.
     xlim: list, optional
         List of tuples use to compute the kernel window.
@@ -795,11 +802,26 @@ class KernelDensity(Regressor, Tree):
             self._verticapy_store = False
         return None
 
-    # System & Special Methods.
+    def drop(self) -> bool:
+        """
+        Drops the model from the Vertica database.
+        """
+        try:
+            if hasattr(self, "map"):
+                _executeSQL(
+                    query=f"SELECT KDE FROM {self.map} LIMIT 0;",
+                    title="Looking if the KDE table exists.",
+                )
+                drop(self.map, method="table")
+        except QueryError:
+            return False
+        return drop(self.model_name, method="model")
+
+    # Attributes Methods.
 
     def _density_kde(
         self, vdf: vDataFrame, columns: list, kernel: str, x, p: int, h=None
-    ):
+    ) -> str:
         """
         Returns the result of the KDE.
         """
@@ -859,7 +881,7 @@ class KernelDensity(Regressor, Tree):
         kernel: str = "gaussian",
         nbins: int = 5,
         p: int = 2,
-    ):
+    ) -> list:
         """
         Returns the result of the KDE for all the data points.
         """
@@ -873,7 +895,7 @@ class KernelDensity(Regressor, Tree):
                     N = vdf[column].count()
                 except:
                     warning_message = (
-                        f"Wrong xlim for the vcolumn {column}.\n"
+                        f"Wrong xlim for the vDataColumn {column}.\n"
                         "The max and the min will be used instead."
                     )
                     warnings.warn(warning_message, Warning)
@@ -904,7 +926,7 @@ class KernelDensity(Regressor, Tree):
 
         Parameters
         ----------
-        input_relation: str/vDataFrame
+        input_relation: SQLRelation
             Training relation.
         X: list, optional
             List of the predictors.
@@ -939,12 +961,13 @@ class KernelDensity(Regressor, Tree):
         table_name = self.model_name.replace('"', "") + "_KernelDensity_Map"
         if self._verticapy_store:
             _executeSQL(
-                query=f"""CREATE TABLE {table_name} AS    
-                            SELECT 
-                                /*+LABEL('learn.neighbors.KernelDensity.fit')*/
-                                {", ".join(X)}, 0.0::float AS KDE 
-                            FROM {vdf._genSQL()} 
-                            LIMIT 0""",
+                query=f"""
+                    CREATE TABLE {table_name} AS    
+                        SELECT 
+                            /*+LABEL('learn.neighbors.KernelDensity.fit')*/
+                            {", ".join(X)}, 0.0::float AS KDE 
+                        FROM {vdf._genSQL()} 
+                        LIMIT 0""",
                 print_time_sql=False,
             )
             r, idx = 0, 0
@@ -1104,7 +1127,7 @@ class LocalOutlierFactor(VerticaModel):
     Parameters
     ----------
     name: str
-    	Name of the the model. This is not a built-in 
+    	Name  of the  model.  This is not a  built-in 
         model, so this name will be used to build the 
         final table.
     n_neighbors: int, optional
@@ -1148,13 +1171,27 @@ class LocalOutlierFactor(VerticaModel):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
+    def __init__(self, name: str, n_neighbors: int = 20, p: int = 2) -> None:
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+        return None
+
+    def drop(self) -> bool:
+        """
+        Drops the model from the Vertica database.
+        """
+        try:
+            _executeSQL(
+                query=f"SELECT lof_score FROM {self.model_name} LIMIT 0;",
+                title="Looking if the LOF table exists.",
+            )
+            return drop(self.model_name, method="table")
+        except QueryError:
+            return False
 
     # Attributes Methods.
 
-    def _compute_attributes(self):
+    def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
         """
@@ -1165,6 +1202,7 @@ class LocalOutlierFactor(VerticaModel):
             method="fetchfirstelem",
             print_time_sql=False,
         )
+        return None
 
     # Model Fitting Method.
 
@@ -1185,12 +1223,12 @@ class LocalOutlierFactor(VerticaModel):
     	X: SQLColumns, optional
     		List of the predictors.
     	key_columns: list, optional
-    		Columns not used during the algorithm 
-            computation but which will be used to 
+    		Columns  not  used   during  the   algorithm 
+            computation  but   which  will  be  used  to 
             create the final relation.
     	index: str, optional
-    		Index used to identify each row separately. 
-            It is highly recommanded to have one already 
+    		Index  used to identify each row  separately. 
+            It is highly  recommanded to have one already 
             in the main table to avoid creating temporary 
             tables.
 		"""
@@ -1374,7 +1412,7 @@ class LocalOutlierFactor(VerticaModel):
         Parameters
         ----------
         max_nb_points: int
-            Maximum number of points to display.
+            Maximum  number of points to display.
         ax: Axes, optional
             The axes to plot on.
         **style_kwds
