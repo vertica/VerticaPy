@@ -383,9 +383,9 @@ class TableSample:
                             ]
                         ]
         if use_number_as_category:
-            return result, categories_alpha, categories_beta
+            return res, categories_alpha, categories_beta
         else:
-            return result
+            return res
 
     @classmethod
     def read_sql(
