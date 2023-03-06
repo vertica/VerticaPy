@@ -14,9 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
@@ -28,6 +29,8 @@ from verticapy._utils._sql._format import quote_ident, schema_relation
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 
 from verticapy.plotting._matplotlib.base import updated_dict
 
@@ -44,45 +47,55 @@ def best_k(
     gamma: float = 1.0,
     elbow_score_stop: float = 0.8,
     **kwargs,
-):
+) -> int:
     """
-Finds the k-means / k-prototypes k based on a score.
+    Finds the k-means  /  k-prototypes  k based on a score.
 
-Parameters
-----------
-input_relation: SQLRelation
-    Relation to use to train the model.
-X: SQLColumns, optional
-	List of the predictor columns. If empty, all numerical columns will
-    be used.
-n_cluster: tuple/list, optional
-	Tuple representing the number of clusters to start and end with.
-    This can also be customized list with various k values to test.
-init: str / list, optional
-	The method used to find the initial cluster centers.
-		kmeanspp : Use the k-means++ method to initialize the centers.
-                   [Only available when use_kprototype is set to False]
-        random   : Randomly subsamples the data to find initial centers.
-    Default value is 'kmeanspp' if use_kprototype is False; otherwise, 'random'.
-max_iter: int, optional
-	The maximum number of iterations for the algorithm.
-tol: float, optional
-	Determines whether the algorithm has converged. The algorithm is considered 
-	converged after no center has moved more than a distance of 'tol' from the 
-	previous iteration.
-use_kprototype: bool, optional
-    If set to True, the function uses the k-prototypes algorithm instead of
-    k-means. k-prototypes can handle categorical features.
-gamma: float, optional
-    [Only if use_kprototype is set to True] Weighting factor for categorical columns. 
-    It determines the relative importance of numerical and categorical attributes.
-elbow_score_stop: float, optional
-	Stops searching for parameters when the specified elbow score is reached.
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Relation to use to train the model.
+    X: SQLColumns, optional
+    	List  of  the  predictor  columns.  If  empty,  all 
+        numerical columns will  be used.
+    n_cluster: tuple/list, optional
+    	Tuple representing  the number  of clusters to start 
+        and end with. This  can also be customized list with 
+        various k values to test.
+    init: str / list, optional
+    	The method used to  find the initial cluster centers.
+    		kmeanspp : [Only available when use_kprototype is 
+                       set to False]
+                       Use the k-means++ method to initialize 
+                       the centers.
+            random   : Randomly  subsamples the data to  find 
+                       initial centers.
+        Default  value  is  'kmeanspp' if  use_kprototype  is 
+        False; otherwise, 'random'.
+    max_iter: int, optional
+    	The  maximum  number of iterations for the  algorithm.
+    tol: float, optional
+    	Determines  whether  the algorithm has converged.  The 
+        algorithm is considered  converged after no center has 
+        moved more than a  distance of 'tol' from the previous 
+        iteration.
+    use_kprototype: bool, optional
+        If  set  to True, the  function uses the  k-prototypes 
+        algorithm instead of k-means.  k-prototypes can handle 
+        categorical features.
+    gamma: float, optional
+        [Only if use_kprototype is set to True] 
+        Weighting factor for categorical columns. It determines 
+        the  relative  importance of numerical and  categorical 
+        attributes.
+    elbow_score_stop: float, optional
+    	Stops searching for parameters when the specified elbow 
+        score is reached.
 
-Returns
--------
-int
-	the k-means / k-prototypes k
+    Returns
+    -------
+    int
+    	the k-means / k-prototypes k
 	"""
     if isinstance(X, str):
         X = [X]
@@ -90,9 +103,6 @@ int
         init = "random"
     elif not (init):
         init = "kmeanspp"
-
-    from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
-
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
     else:
@@ -139,50 +149,59 @@ def elbow(
     tol: float = 1e-4,
     use_kprototype: bool = False,
     gamma: float = 1.0,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> TableSample:
     """
-Draws an elbow curve.
+    Draws an elbow curve.
 
-Parameters
-----------
-input_relation: SQLRelation
-    Relation to use to train the model.
-X: SQLColumns, optional
-    List of the predictor columns. If empty all the numerical vDataColumns will
-    be used.
-n_cluster: tuple / list, optional
-    Tuple representing the number of cluster to start with and to end with.
-    It can also be customized list with the different K to test.
-init: str / list, optional
-    The method used to find the initial cluster centers.
-        kmeanspp : Use the k-means++ method to initialize the centers.
-                   [Only available when use_kprototype is set to False]
-        random   : Randomly subsamples the data to find initial centers.
-    Default value is 'kmeanspp' if use_kprototype is False; otherwise, 'random'.
-max_iter: int, optional
-    The maximum number of iterations for the algorithm.
-tol: float, optional
-    Determines whether the algorithm has converged. The algorithm is considered 
-    converged after no center has moved more than a distance of 'tol' from the 
-    previous iteration.
-use_kprototype: bool, optional
-    If set to True, the function uses the k-prototypes algorithm instead of
-    k-means. k-prototypes can handle categorical features.
-gamma: float, optional
-    [Only if use_kprototype is set to True] Weighting factor for categorical columns. 
-    It determines the relative importance of numerical and categorical attributes.
-ax: Matplotlib axes object, optional
-    The axes to plot on.
-**style_kwds
-    Any optional parameter to pass to the Matplotlib functions.
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Relation to use to train the model.
+    X: SQLColumns, optional
+        List  of  the  predictor  columns.  If  empty,  all 
+        numerical columns will  be used.
+    n_cluster: tuple/list, optional
+        Tuple representing  the number  of clusters to start 
+        and end with. This  can also be customized list with 
+        various k values to test.
+    init: str / list, optional
+        The method used to  find the initial cluster centers.
+            kmeanspp : [Only available when use_kprototype is 
+                       set to False]
+                       Use the k-means++ method to initialize 
+                       the centers.
+            random   : Randomly  subsamples the data to  find 
+                       initial centers.
+        Default  value  is  'kmeanspp' if  use_kprototype  is 
+        False; otherwise, 'random'.
+    max_iter: int, optional
+        The  maximum  number of iterations for the  algorithm.
+    tol: float, optional
+        Determines  whether  the algorithm has converged.  The 
+        algorithm is considered  converged after no center has 
+        moved more than a  distance of 'tol' from the previous 
+        iteration.
+    use_kprototype: bool, optional
+        If  set  to True, the  function uses the  k-prototypes 
+        algorithm instead of k-means.  k-prototypes can handle 
+        categorical features.
+    gamma: float, optional
+        [Only if use_kprototype is set to True] 
+        Weighting factor for categorical columns. It determines 
+        the  relative  importance of numerical and  categorical 
+        attributes.
+    ax: Axes, optional
+        The axes to plot on.
+    **style_kwds
+        Any  optional  parameter  to  pass  to  the  Matplotlib 
+        functions.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    TableSample
+        Number of Clusters, Elbow Score
     """
     if isinstance(X, str):
         X = [X]
@@ -190,8 +209,6 @@ TableSample
         init = "random"
     elif not (init):
         init = "kmeanspp"
-    from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
-
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
     else:

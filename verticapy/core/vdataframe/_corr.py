@@ -775,7 +775,7 @@ class vDFCorr:
         Focus the computation on only one vDataColumn.
     show: bool, optional
         If set to True, the Correlation Matrix will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1034,7 +1034,7 @@ class vDFCorr:
         Focus the computation on only one vDataColumn.
     show: bool, optional
         If set to True, the Covariance Matrix will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1102,7 +1102,7 @@ class vDFCorr:
         or a numerical vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
-    p: int/list, optional
+    p: int | list, optional
         Int equals to the maximum number of lag to consider during the computation
         or List of the different lags to include during the computation.
         p must be positive or a list of positive integers.
@@ -1140,7 +1140,7 @@ class vDFCorr:
         acf_type is 'heatmap'.
     show: bool, optional
         If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1253,7 +1253,7 @@ class vDFCorr:
         or a numerical vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
-    p: int/list, optional
+    p: int | list, optional
         Int equals to the maximum number of lag to consider during the computation
         or List of the different lags to include during the computation.
         p must be positive or a list of positive integers.
@@ -1269,7 +1269,7 @@ class vDFCorr:
         band width.
     show: bool, optional
         If set to True, the Partial Auto Correlation Plot will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1432,7 +1432,7 @@ class vDFCorr:
                 expression pair.
     show: bool, optional
         If set to True, the Regression Matrix will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1595,7 +1595,7 @@ class vDFCorr:
         Maximum number of bins used for the discretization (must be > 1).
     show: bool, optional
         If set to True, the IV Plot will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     
 

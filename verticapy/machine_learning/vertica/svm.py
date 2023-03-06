@@ -274,7 +274,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         return vpy_plt.svm_classifier_plot(
             self.X,

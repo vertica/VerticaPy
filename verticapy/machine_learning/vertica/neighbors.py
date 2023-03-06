@@ -45,11 +45,6 @@ import verticapy.plotting._matplotlib as vpy_plt
 from verticapy.plotting._matplotlib.base import updated_dict
 
 import verticapy.machine_learning.metrics as mt
-from verticapy.machine_learning.model_selection.model_validation import (
-    prc_curve,
-    roc_curve,
-    lift_chart,
-)
 from verticapy.machine_learning.vertica.base import (
     MulticlassClassifier,
     Regressor,
@@ -1021,7 +1016,7 @@ class KernelDensity(Regressor, Tree):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         if len(self.X) == 1:
             if self._verticapy_store:
@@ -1422,7 +1417,7 @@ class LocalOutlierFactor(VerticaModel):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         sample = 100 * min(float(max_nb_points / self.cnt_), 1)
         return vpy_plt.lof_plot(

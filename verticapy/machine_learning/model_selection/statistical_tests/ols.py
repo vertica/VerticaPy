@@ -20,7 +20,7 @@ import numpy as np
 from scipy.stats import chi2, f
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLRelation
+from verticapy._typing import SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 
@@ -36,7 +36,7 @@ OLS Tests: Heteroscedasticity.
 
 @save_verticapy_logs
 def het_breuschpagan(
-    input_relation: SQLRelation, eps: str, X: list
+    input_relation: SQLRelation, eps: str, X: SQLColumns
 ) -> tuple[float, float, float, float]:
     """
     Uses the Breusch-Pagan to test a model for Heteroscedasticity.
@@ -61,6 +61,8 @@ def het_breuschpagan(
     else:
         vdf = vDataFrame(input_relation)
     eps, X = vdf._format_colnames(eps, X)
+    if isinstance(X, str):
+        X = [X]
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
     vdf_copy = vdf.copy()
@@ -87,7 +89,7 @@ def het_breuschpagan(
 def het_goldfeldquandt(
     input_relation: SQLRelation,
     y: str,
-    X: list,
+    X: SQLColumns,
     idx: int = 0,
     split: float = 0.5,
     alternative: Literal["increasing", "decreasing", "two-sided"] = "increasing",
@@ -101,7 +103,7 @@ def het_goldfeldquandt(
         Input relation.
     y: str
         Response Column.
-    X: list
+    X: SQLColumns
         Exogenous Variables.
     idx: int, optional
         Column index of variable according to which observations 
@@ -120,7 +122,12 @@ def het_goldfeldquandt(
         statistic, p_value
     """
 
-    def model_fit(input_relation, X, y, model):
+    def model_fit(
+        input_relation: SQLRelation, X: SQLColumns, y: str, model: LinearRegression
+    ) -> LinearRegression:
+        """
+        helper functions used to fit the Linear Regression model.
+        """
         mse = []
         for vdf_tmp in input_relation:
             model.drop()
@@ -134,6 +141,8 @@ def het_goldfeldquandt(
     else:
         vdf = vDataFrame(input_relation)
     y, X = vdf._format_colnames(y, X)
+    if isinstance(X, str):
+        X = [X]
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
@@ -161,7 +170,7 @@ def het_goldfeldquandt(
 
 @save_verticapy_logs
 def het_white(
-    input_relation: SQLRelation, eps: str, X: list
+    input_relation: SQLRelation, eps: str, X: SQLColumns
 ) -> tuple[float, float, float, float]:
     """
     White’s Lagrange Multiplier Test for Heteroscedasticity.
@@ -186,6 +195,8 @@ def het_white(
     else:
         vdf = vDataFrame(input_relation)
     eps, X = vdf._format_colnames(eps, X)
+    if isinstance(X, str):
+        X = [X]
     X_0 = ["1"] + X
     variables = []
     variables_names = []
@@ -230,7 +241,7 @@ OLS Tests: Endogeneity.
 
 @save_verticapy_logs
 def endogtest(
-    input_relation: SQLRelation, eps: str, X: list
+    input_relation: SQLRelation, eps: str, X: SQLColumns
 ) -> tuple[float, float, float, float]:
     """
     Endogeneity test.
@@ -255,6 +266,8 @@ def endogtest(
     else:
         vdf = vDataFrame(input_relation)
     eps, X = vdf._format_colnames(eps, X)
+    if isinstance(X, str):
+        X = [X]
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
     try:
@@ -282,7 +295,7 @@ OLS Tests: Multicollinearity.
 
 @save_verticapy_logs
 def variance_inflation_factor(
-    input_relation: SQLRelation, X: list, X_idx: int = None
+    input_relation: SQLRelation, X: SQLColumns, X_idx: int = None
 ) -> Union[float, TableSample]:
     """
     Computes the variance inflation factor (VIF). It can be 
@@ -310,6 +323,8 @@ def variance_inflation_factor(
     else:
         vdf = vDataFrame(input_relation)
     X, X_idx = vdf._format_colnames(X, X_idx)
+    if isinstance(X, str):
+        X = [X]
     if isinstance(X_idx, str):
         for i in range(len(X)):
             if X[i] == X_idx:

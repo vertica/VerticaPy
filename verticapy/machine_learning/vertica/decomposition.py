@@ -273,7 +273,7 @@ class Decomposition(Preprocessing):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         vdf = vDataFrame(self.input_relation)
         ax = self.transform(vdf).scatter(
@@ -312,7 +312,7 @@ class Decomposition(Preprocessing):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         if self._model_type == "SVD":
             x = self.vectors_[:, dimensions[0] - 1]
@@ -348,7 +348,7 @@ class Decomposition(Preprocessing):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         n = len(self.explained_variance_)
         explained_variance = [100 * x for x in self.explained_variance_]
@@ -583,7 +583,7 @@ class MCA(PCA):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         contrib = self.principal_components_[:, dimension - 1]
         contrib = [elem ** 2 for elem in contrib]
@@ -634,7 +634,7 @@ class MCA(PCA):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         cos2_1 = self.cos2_[:, dimensions[0] - 1]
         cos2_2 = self.cos2_[:, dimensions[1] - 1]
@@ -684,7 +684,7 @@ class MCA(PCA):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         x = self.principal_components_[:, dimensions[0] - 1]
         y = self.principal_components_[:, dimensions[1] - 1]

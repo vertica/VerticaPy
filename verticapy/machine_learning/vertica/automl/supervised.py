@@ -641,7 +641,7 @@ class AutoML(VerticaModel):
 
         Parameters
         ----------
-        ax: Matplotlib axes object, optional
+        ax: Axes, optional
             The axes to plot on.
         **kwds
             Any optional  parameter  to  pass  to  the 
@@ -684,7 +684,7 @@ class AutoML(VerticaModel):
             The plot type.
                 champion : champion challenger plot.
                 step     : stepwise plot.
-        ax: Matplotlib axes object, optional
+        ax: Axes, optional
             The axes to plot on.
         **style_kwds
             Any optional  parameter  to pass to  the 
@@ -693,7 +693,7 @@ class AutoML(VerticaModel):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         if mltype == "champion":
             return vpy_plt.plot_bubble_ml(

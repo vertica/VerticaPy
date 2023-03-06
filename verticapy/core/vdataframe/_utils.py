@@ -63,7 +63,7 @@ class vDFUtils:
         x2_f where xi_f represents xi correctly formatted.
     columns: SQLColumns / dict, optional
         List of columns' names to format.
-    expected_nb_of_cols: int / list
+    expected_nb_of_cols: int | list
         [Only used for the function first argument]
         List of the expected number of columns.
         Example: If expected_nb_of_cols is set to [2, 3], the parameters

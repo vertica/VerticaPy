@@ -161,7 +161,7 @@ class Clustering(Unsupervised):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         vdf = vDataFrame(self.input_relation)
         kwds = {
@@ -1100,7 +1100,7 @@ class DBSCAN(VerticaModel):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         return vDataFrame(self.model_name).scatter(
             columns=self.X,

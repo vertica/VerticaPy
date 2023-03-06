@@ -27,9 +27,6 @@ from verticapy.machine_learning.model_selection.hp_tuning import (
 from verticapy.machine_learning.model_selection.model_validation import (
     cross_validate,
     learning_curve,
-    lift_chart,
-    prc_curve,
-    roc_curve,
 )
 from verticapy.machine_learning.model_selection.variables_selection import (
     randomized_features_search_cv,

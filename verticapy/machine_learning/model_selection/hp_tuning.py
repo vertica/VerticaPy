@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import itertools, math, random
-from typing import Literal, Union
+from typing import Any, Literal, TYPE_CHECKING, Union
 from collections.abc import Iterable
 from tqdm.auto import tqdm
 import numpy as np
@@ -39,15 +39,403 @@ from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.timeseries import range_curve
 
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
+import verticapy.machine_learning.vertica as vml
+from verticapy.machine_learning.vertica.base import VerticaModel
 
 from verticapy.sql.drop import drop
 
 
+"""
+Cross Validations
+"""
+
+# RANDOM
+
+
+@save_verticapy_logs
+def randomized_search_cv(
+    estimator: VerticaModel,
+    input_relation: SQLRelation,
+    X: SQLColumns,
+    y: str,
+    metric: str = "auto",
+    cv: int = 3,
+    pos_label: PythonScalar = None,
+    cutoff: float = -1,
+    nbins: int = 1000,
+    lmax: int = 4,
+    optimized_grid: int = 1,
+    print_info: bool = True,
+) -> TableSample:
+    """
+    Computes  the   K-Fold  randomized  search  of  an 
+    estimator.
+
+    Parameters
+    ----------
+    estimator: VerticaModel
+        Vertica estimator with a fit method.
+    input_relation: SQLRelation
+        Relation to use to train the model.
+    X: SQLColumns
+        List of the predictor columns.
+    y: str
+        Response Column.
+    metric: str, optional
+        Metric used to do the model evaluation.
+            auto: logloss for classification & rmse for 
+                  regression.
+        For Classification:
+            accuracy    : Accuracy
+            auc         : Area Under the Curve (ROC)
+            bm          : Informedness 
+                          = tpr + tnr - 1
+            csi         : Critical Success Index 
+                          = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness 
+                          = ppv + npv - 1
+            npv         : Negative Predictive Value 
+                          = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision 
+                          = tp / (tp + fp)
+            recall      : Recall 
+                          = tp / (tp + fn)
+            specificity : Specificity 
+                          = tn / (tn + fp)
+        For Regression:
+            max    : Max error
+            mae    : Mean absolute error
+            median : Median absolute error
+            mse    : Mean squared error
+            msle   : Mean squared log error
+            r2     : R-squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root-mean-squared error
+            var    : Explained variance
+    cv: int, optional
+        Number of folds.
+    pos_label: PythonScalar, optional
+        The main class to be considered as positive 
+        (classification only).
+    cutoff: float, optional
+        The model cutoff (classification only).
+    nbins: int, optional
+        Number of bins used to compute the different 
+        parameters categories.
+    lmax: int, optional
+        Maximum length of each parameter list.
+    optimized_grid: int, optional
+        If set to 0, the randomness is based on the 
+        input parameters.
+        If set to 1,  the randomness is limited  to 
+        some  parameters  while others  are  picked 
+        based on a default grid.
+        If set  to 2, there is no  randomness and a 
+        default grid is returned.
+    print_info: bool, optional
+        If set to True, prints the model information 
+        at each step.
+
+    Returns
+    -------
+    TableSample
+        result of the randomized search.
+    """
+    if isinstance(X, str):
+        X = [X]
+    param_grid = gen_params_grid(estimator, nbins, len(X), lmax, optimized_grid)
+    return grid_search_cv(
+        estimator,
+        param_grid,
+        input_relation,
+        X,
+        y,
+        metric,
+        cv,
+        pos_label,
+        cutoff,
+        True,
+        "no_print",
+        print_info,
+    )
+
+
+# GRID SEARCH
+
+
+@save_verticapy_logs
+def grid_search_cv(
+    estimator: VerticaModel,
+    param_grid: Union[dict, list],
+    input_relation: SQLRelation,
+    X: SQLColumns,
+    y: str,
+    metric: str = "auto",
+    cv: int = 3,
+    pos_label: PythonScalar = None,
+    cutoff: PythonNumber = -1,
+    training_score: bool = True,
+    skip_error: bool = True,
+    print_info: bool = True,
+    **kwargs,
+) -> TableSample:
+    """
+    Computes the k-fold grid search of an estimator.
+
+    Parameters
+    ----------
+    estimator: VerticaModel
+        Vertica estimator with a fit method.
+    param_grid: dict/list
+        Dictionary of the parameters to test. It can 
+        also be a list of the different combinations.
+    input_relation: SQLRelation
+        Relation to use to train the model.
+    X: SQLColumns
+        List of the predictor columns.
+    y: str
+        Response Column.
+    metric: str, optional
+        Metric used to do the model evaluation.
+            auto: logloss for classification & rmse for 
+                  regression.
+        For Classification:
+            accuracy    : Accuracy
+            auc         : Area Under the Curve (ROC)
+            bm          : Informedness 
+                          = tpr + tnr - 1
+            csi         : Critical Success Index 
+                          = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness 
+                          = ppv + npv - 1
+            npv         : Negative Predictive Value 
+                          = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision 
+                          = tp / (tp + fp)
+            recall      : Recall 
+                          = tp / (tp + fn)
+            specificity : Specificity 
+                          = tn / (tn + fp)
+        For Regression:
+            max    : Max error
+            mae    : Mean absolute error
+            median : Median absolute error
+            mse    : Mean squared error
+            msle   : Mean squared log error
+            r2     : R-squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root-mean-squared error
+            var    : Explained variance
+    cv: int, optional
+        Number of folds.
+    pos_label: PythonScalar, optional
+        The main class to  be considered as positive 
+        (classification only).
+    cutoff: float, optional
+        The  model   cutoff  (classification  only).
+    training_score: bool, optional
+        If set to True,  the  training score will be 
+        computed with the validation score.
+    skip_error: bool, optional
+        If set to True and an error occurs,  it will 
+        be displayed and not raised.
+    print_info: bool, optional
+        If set to True, prints the model information 
+        at each step.
+
+    Returns
+    -------
+    TableSample
+        Result of the the grid search.
+    """
+    if isinstance(X, str):
+        X = [X]
+    if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
+        metric = "rmse"
+    elif metric == "auto":
+        metric = "logloss"
+    if isinstance(param_grid, dict):
+        for param in param_grid:
+            assert isinstance(param_grid[param], Iterable) and not (
+                isinstance(param_grid[param], str)
+            ), ParameterError(
+                "When of type dictionary, the parameter 'param_grid'"
+                " must be a dictionary where each value is a list of "
+                f"parameters, found {type(param_grid[param])} for "
+                f"parameter '{param}'."
+            )
+        all_configuration = parameter_grid(param_grid)
+    else:
+        for idx, param in enumerate(param_grid):
+            assert isinstance(param, dict), ParameterError(
+                "When of type List, the parameter 'param_grid' must "
+                f"be a list of dictionaries, found {type(param)} for elem '{idx}'."
+            )
+        all_configuration = param_grid
+    # testing all the config
+    for config in all_configuration:
+        estimator.set_params(config)
+    # applying all the config
+    data = []
+    if all_configuration == []:
+        all_configuration = [{}]
+    if (
+        conf.get_option("tqdm")
+        and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
+        and print_info
+    ):
+        loop = tqdm(all_configuration)
+    else:
+        loop = all_configuration
+    for config in loop:
+        try:
+            estimator.set_params(config)
+            current_cv = cross_validate(
+                estimator,
+                input_relation,
+                X,
+                y,
+                metric,
+                cv,
+                pos_label,
+                cutoff,
+                True,
+                training_score,
+                tqdm=False,
+            )
+            if training_score:
+                keys = [elem for elem in current_cv[0].values]
+                data += [
+                    (
+                        estimator.get_params(),
+                        current_cv[0][keys[1]][cv],
+                        current_cv[1][keys[1]][cv],
+                        current_cv[0][keys[2]][cv],
+                        current_cv[0][keys[1]][cv + 1],
+                        current_cv[1][keys[1]][cv + 1],
+                    )
+                ]
+                if print_info:
+                    print(
+                        f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; "
+                        f"Parameters: {config}; \033[91mTest_score: "
+                        f"{current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score:"
+                        f" {current_cv[1][keys[1]][cv]}\033[0m; \033[94mTime:"
+                        f" {current_cv[0][keys[2]][cv]}\033[0m;"
+                    )
+            else:
+                keys = [elem for elem in current_cv.values]
+                data += [
+                    (
+                        config,
+                        current_cv[keys[1]][cv],
+                        current_cv[keys[2]][cv],
+                        current_cv[keys[1]][cv + 1],
+                    )
+                ]
+                if print_info:
+                    print(
+                        f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; "
+                        f"Parameters: {config}; \033[91mTest_score: "
+                        f"{current_cv[keys[1]][cv]}\033[0m; \033[94mTime:"
+                        f"{current_cv[keys[2]][cv]}\033[0m;"
+                    )
+        except Exception as e:
+            if skip_error and skip_error != "no_print":
+                print(e)
+            elif not (skip_error):
+                raise (e)
+    if not (data):
+        if training_score:
+            return TableSample(
+                {
+                    "parameters": [],
+                    "avg_score": [],
+                    "avg_train_score": [],
+                    "avg_time": [],
+                    "score_std": [],
+                    "score_train_std": [],
+                }
+            )
+        else:
+            return TableSample(
+                {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
+            )
+    reverse = True
+    if metric in [
+        "logloss",
+        "max",
+        "mae",
+        "median",
+        "mse",
+        "msle",
+        "rmse",
+        "aic",
+        "bic",
+        "auto",
+    ]:
+        reverse = False
+    data.sort(key=lambda tup: tup[1], reverse=reverse)
+    if training_score:
+        result = TableSample(
+            {
+                "parameters": [d[0] for d in data],
+                "avg_score": [d[1] for d in data],
+                "avg_train_score": [d[2] for d in data],
+                "avg_time": [d[3] for d in data],
+                "score_std": [d[4] for d in data],
+                "score_train_std": [d[5] for d in data],
+            }
+        )
+        if print_info and (
+            "final_print" not in kwargs or kwargs["final_print"] != "no_print"
+        ):
+            print("\033[1mGrid Search Selected Model\033[0m")
+            print(
+                f"{str(estimator.__class__).split('.')[-1][:-2]}; "
+                f"Parameters: {result['parameters'][0]}; \033"
+                f"[91mTest_score: {result['avg_score'][0]}\033[0m;"
+                f" \033[92mTrain_score: {result['avg_train_score'][0]}"
+                f"\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
+            )
+    else:
+        result = TableSample(
+            {
+                "parameters": [d[0] for d in data],
+                "avg_score": [d[1] for d in data],
+                "avg_time": [d[2] for d in data],
+                "score_std": [d[3] for d in data],
+            }
+        )
+        if print_info and (
+            "final_print" not in kwargs or kwargs["final_print"] != "no_print"
+        ):
+            print("\033[1mGrid Search Selected Model\033[0m")
+            print(
+                f"{str(estimator.__class__).split('.')[-1][:-2]}; "
+                f"Parameters: {result['parameters'][0]}; \033[91mTest_score:"
+                f" {result['avg_score'][0]}\033[0m; \033[94mTime:"
+                f" {result['avg_time'][0]}\033[0m;"
+            )
+    return result
+
+
+# BAYESIAN SEARCH
+
+
 @save_verticapy_logs
 def bayesian_search_cv(
-    estimator,
+    estimator: VerticaModel,
     input_relation: SQLRelation,
-    X: list,
+    X: SQLColumns,
     y: str,
     metric: str = "auto",
     cv: int = 3,
@@ -63,86 +451,106 @@ def bayesian_search_cv(
     RFmodel_params: dict = {},
     print_info: bool = True,
     **kwargs,
-):
+) -> TableSample:
     """
-Computes the k-fold bayesian search of an estimator using a random
-forest model to estimate a probable optimal set of parameters.
-
-Parameters
-----------
-estimator: object
-    Vertica estimator with a fit method.
-input_relation: SQLRelation
-    Relation to use to train the model.
-X: list
-    List of the predictor columns.
-y: str
-    Response Column.
-metric: str, optional
-    Metric used to do the model evaluation.
-        auto: logloss for classification & rmse for regression.
-    For Classification:
-        accuracy    : Accuracy
-        auc         : Area Under the Curve (ROC)
-        bm          : Informedness = tpr + tnr - 1
-        csi         : Critical Success Index = tp / (tp + fn + fp)
-        f1          : F1 Score 
-        logloss     : Log Loss
-        mcc         : Matthews Correlation Coefficient 
-        mk          : Markedness = ppv + npv - 1
-        npv         : Negative Predictive Value = tn / (tn + fn)
-        prc_auc     : Area Under the Curve (PRC)
-        precision   : Precision = tp / (tp + fp)
-        recall      : Recall = tp / (tp + fn)
-        specificity : Specificity = tn / (tn + fp)
-    For Regression:
-        max    : Max error
-        mae    : Mean absolute error
-        median : Median absolute error
-        mse    : Mean squared error
-        msle   : Mean squared log error
-        r2     : R-squared coefficient
-        r2a    : R2 adjusted
-        rmse   : Root-mean-squared error
-        var    : Explained variance
-cv: int, optional
-    Number of folds.
-pos_label: PythonScalar, optional
-    The main class to be considered as positive (classification only).
-cutoff: float, optional
-    The model cutoff (classification only).
-param_grid: dict/list, optional
-    Dictionary of the parameters to test. It can also be a list of the
-    different combinations. If empty, a parameter grid will be generated.
-random_nbins: int, optional
-    Number of bins used to compute the different parameters categories
-    in the random parameters generation.
-bayesian_nbins: int, optional
-    Number of bins used to compute the different parameters categories
-    in the bayesian table generation.
-random_grid: bool, optional
-    If True, the rows used to find the optimal function will be
-    used randomnly. Otherwise, they will be regularly spaced. 
-lmax: int, optional
-    Maximum length of each parameter list.
-nrows: int, optional
-    Number of rows to use when performing the bayesian search.
-k_tops: int, optional
-    When performing the bayesian search, the final stage will be to retrain the top
-    possible combinations. 'k_tops' represents the number of models to train at
-    this stage to find the most efficient model.
-RFmodel_params: dict, optional
-    Dictionary of the random forest model parameters used to estimate a probable 
+    Computes the k-fold bayesian search of an estimator 
+    using a random forest  model to estimate a probable 
     optimal set of parameters.
-print_info: bool, optional
-    If True, prints the model information at each step.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Parameters
+    ----------
+    estimator: object
+        Vertica estimator with a fit method.
+    input_relation: SQLRelation
+        Relation to use to train the model.
+    X: SQLColumns
+        List of the predictor columns.
+    y: str
+        Response Column.
+    metric: str, optional
+        Metric used to do the model evaluation.
+            auto: logloss for classification & rmse for 
+                  regression.
+        For Classification:
+            accuracy    : Accuracy
+            auc         : Area Under the Curve (ROC)
+            bm          : Informedness 
+                          = tpr + tnr - 1
+            csi         : Critical Success Index 
+                          = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness 
+                          = ppv + npv - 1
+            npv         : Negative Predictive Value 
+                          = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision 
+                          = tp / (tp + fp)
+            recall      : Recall 
+                          = tp / (tp + fn)
+            specificity : Specificity 
+                          = tn / (tn + fp)
+        For Regression:
+            max    : Max error
+            mae    : Mean absolute error
+            median : Median absolute error
+            mse    : Mean squared error
+            msle   : Mean squared log error
+            r2     : R-squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root-mean-squared error
+            var    : Explained variance
+    cv: int, optional
+        Number of folds.
+    pos_label: PythonScalar, optional
+        The main class to be considered as positive 
+        (classification only).
+    cutoff: float, optional
+        The model cutoff (classification only).
+    param_grid: dict/list, optional
+        Dictionary of the parameters to test. It can 
+        also be a list of the different combinations. 
+        If empty, a parameter grid will be generated.
+    random_nbins: int, optional
+        Number of bins used to compute the different 
+        parameters    categories   in   the   random 
+        parameters generation.
+    bayesian_nbins: int, optional
+        Number of bins used to compute the different 
+        parameters  categories in the bayesian table 
+        generation.
+    random_grid: bool, optional
+        If  True,  the rows used to find the optimal 
+        function  will be used randomnly.  Otherwise, 
+        they will be regularly spaced. 
+    lmax: int, optional
+        Maximum length of each parameter list.
+    nrows: int, optional
+        Number  of  rows to use when performing  the 
+        bayesian search.
+    k_tops: int, optional
+        When  performing  the bayesian  search,  the 
+        final  stage  will  be  to  retrain  the top
+        possible  combinations. 'k_tops'  represents 
+        the number of  models to train at this stage 
+        to find the most efficient model.
+    RFmodel_params: dict, optional
+        Dictionary   of   the  random  forest  model 
+        parameters  used  to   estimate  a  probable 
+        optimal set of parameters.
+    print_info: bool, optional
+        If True, prints the model information at each 
+        step.
+
+    Returns
+    -------
+    TableSample
+        result of the bayesian search.
     """
+    if isinstance(X, str):
+        X = [X]
     if print_info:
         print(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
         print(
@@ -224,9 +632,7 @@ TableSample
                 },
             }
         all_params = list(dict.fromkeys(model_grid))
-        from verticapy.machine_learning.vertica.ensemble import RandomForestRegressor
-
-        hyper_param_estimator = RandomForestRegressor(
+        hyper_param_estimator = vml.RandomForestRegressor(
             name=estimator.model_name, **RFmodel_params
         )
         hyper_param_estimator.fit(relation, all_params, "score")
@@ -302,75 +708,89 @@ TableSample
     return result
 
 
+# ENET AUTO GRID SEARCH
+
+
 @save_verticapy_logs
 def enet_search_cv(
     input_relation: SQLRelation,
-    X: list,
+    X: SQLColumns,
     y: str,
     metric: str = "auto",
     cv: int = 3,
     estimator_type: Literal["logit", "enet", "auto"] = "auto",
-    cutoff: float = -1,
+    cutoff: float = -1.0,
     print_info: bool = True,
     **kwargs,
-):
+) -> TableSample:
     """
-Computes the k-fold grid search using multiple ENet models.
+    Computes the  k-fold grid search using multiple ENet 
+    models.
 
-Parameters
-----------
-input_relation: SQLRelation
-    Relation to use to train the model.
-X: list
-    List of the predictor columns.
-y: str
-    Response Column.
-metric: str, optional
-    Metric used to do the model evaluation.
-        auto: logloss for classification & rmse for regression.
-    For Classification:
-        accuracy    : Accuracy
-        auc         : Area Under the Curve (ROC)
-        bm          : Informedness = tpr + tnr - 1
-        csi         : Critical Success Index = tp / (tp + fn + fp)
-        f1          : F1 Score 
-        logloss     : Log Loss
-        mcc         : Matthews Correlation Coefficient 
-        mk          : Markedness = ppv + npv - 1
-        npv         : Negative Predictive Value = tn / (tn + fn)
-        prc_auc     : Area Under the Curve (PRC)
-        precision   : Precision = tp / (tp + fp)
-        recall      : Recall = tp / (tp + fn)
-        specificity : Specificity = tn / (tn + fp)
-    For Regression:
-        max    : Max error
-        mae    : Mean absolute error
-        median : Median absolute error
-        mse    : Mean squared error
-        msle   : Mean squared log error
-        r2     : R-squared coefficient
-        r2a    : R2 adjusted
-        rmse   : Root-mean-squared error
-        var    : Explained variance
-cv: int, optional
-    Number of folds.
-estimator_type: str, optional
-    Estimator Type.
-        auto : detects if it is a Logit Model or ENet.
-        logit: Logistic Regression
-        enet : ElasticNet
-cutoff: float, optional
-    The model cutoff (logit only).
-print_info: bool, optional
-    If set to True, prints the model information at each step.
+    Parameters
+    ----------
+    input_relation: SQLRelation
+        Relation to use to train the model.
+    X: SQLColumns
+        List of the predictor columns.
+    y: str
+        Response Column.
+    metric: str, optional
+        Metric used to do the model evaluation.
+            auto: logloss for classification & rmse for 
+                  regression.
+        For Classification:
+            accuracy    : Accuracy
+            auc         : Area Under the Curve (ROC)
+            bm          : Informedness 
+                          = tpr + tnr - 1
+            csi         : Critical Success Index 
+                          = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness 
+                          = ppv + npv - 1
+            npv         : Negative Predictive Value 
+                          = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision 
+                          = tp / (tp + fp)
+            recall      : Recall 
+                          = tp / (tp + fn)
+            specificity : Specificity 
+                          = tn / (tn + fp)
+        For Regression:
+            max    : Max error
+            mae    : Mean absolute error
+            median : Median absolute error
+            mse    : Mean squared error
+            msle   : Mean squared log error
+            r2     : R-squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root-mean-squared error
+            var    : Explained variance
+    cv: int, optional
+        Number of folds.
+    estimator_type: str, optional
+        Estimator Type.
+            auto : detects if it is a Logit Model 
+                   or ENet.
+            logit: Logistic Regression
+            enet : ElasticNet
+    cutoff: float, optional
+        The model cutoff (logit only).
+    print_info: bool, optional
+        If   set   to  True,   prints  the  model 
+        information at each step.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    TableSample
+        result of the ENET search.
     """
-    import verticapy.machine_learning.vertica as vml
+    if isinstance(X, str):
+        X = [X]
 
     param_grid = parameter_grid(
         {
@@ -419,41 +839,333 @@ TableSample
     return result
 
 
+"""
+Plotting
+"""
+
+# Finding ARIMA parameters.
+
+
+@save_verticapy_logs
+def plot_acf_pacf(
+    vdf: vDataFrame,
+    column: str,
+    ts: str,
+    by: SQLColumns = [],
+    p: Union[int, list] = 15,
+    **style_kwds,
+) -> TableSample:
+    """
+    Draws the ACF and PACF Charts.
+
+    Parameters
+    ----------
+    vdf: vDataFrame
+        Input vDataFrame.
+    column: str
+        Response column.
+    ts: str
+        vDataColumn  used as timeline. It will be to use 
+        to order the data. It can be a numerical or type 
+        date   like   (date,   datetime,   timestamp...) 
+        vDataColumn.
+    by: list, optional
+        vDataColumns used in the partition.
+    p: int | list, optional
+        Int  equals  to  the  maximum  number  of lag to 
+        consider during the computation or  List of  the 
+        different lags to include during the computation.
+        p must be positive or a list of positive integers.
+    **style_kwds
+        Any optional  parameter to pass to the Matplotlib 
+        functions.
+
+    Returns
+    -------
+    TableSample
+        acf, pacf, confidence
+    """
+    if isinstance(by, str):
+        by = [by]
+    tmp_style = {}
+    for elem in style_kwds:
+        if elem not in ("color", "colors"):
+            tmp_style[elem] = style_kwds[elem]
+    if "color" in style_kwds:
+        color = style_kwds["color"]
+    else:
+        color = get_colors()[0]
+    by, column, ts = vdf._format_colnames(by, column, ts)
+    acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
+    pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
+    result = TableSample(
+        {
+            "index": [i for i in range(0, len(acf.values["value"]))],
+            "acf": acf.values["value"],
+            "pacf": pacf.values["value"],
+            "confidence": pacf.values["confidence"],
+        }
+    )
+    fig = plt.figure(figsize=(10, 6))
+    plt.rcParams["axes.facecolor"] = "#FCFCFC"
+    ax1 = fig.add_subplot(211)
+    x, y, confidence = (
+        result.values["index"],
+        result.values["acf"],
+        result.values["confidence"],
+    )
+    plt.xlim(-1, x[-1] + 1)
+    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
+    param = {
+        "s": 90,
+        "marker": "o",
+        "facecolors": color,
+        "edgecolors": "black",
+        "zorder": 2,
+    }
+    ax1.scatter(x, y, **updated_dict(param, tmp_style))
+    ax1.plot(
+        [-1] + x + [x[-1] + 1],
+        [0 for elem in range(len(x) + 2)],
+        color=color,
+        zorder=0,
+    )
+    ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
+    ax1.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
+    ax1.set_title("Autocorrelation")
+    y = result.values["pacf"]
+    ax2 = fig.add_subplot(212)
+    ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
+    ax2.scatter(x, y, **updated_dict(param, tmp_style))
+    ax2.plot(
+        [-1] + x + [x[-1] + 1],
+        [0 for elem in range(len(x) + 2)],
+        color=color,
+        zorder=0,
+    )
+    ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
+    ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
+    ax2.set_title("Partial Autocorrelation")
+    plt.show()
+    return result
+
+
+# Tracking Over-fitting.
+
+
+@save_verticapy_logs
+def validation_curve(
+    estimator: VerticaModel,
+    param_name: str,
+    param_range: list,
+    input_relation: SQLRelation,
+    X: SQLColumns,
+    y: str,
+    metric: str = "auto",
+    cv: int = 3,
+    pos_label: PythonScalar = None,
+    cutoff: float = -1,
+    std_coeff: float = 1,
+    ax: Optional[Axes] = None,
+    **style_kwds,
+) -> TableSample:
+    """
+    Draws the validation curve.
+
+    Parameters
+    ----------
+    estimator: VerticaModel
+        Vertica estimator with a fit method.
+    param_name: str
+        Parameter name.
+    param_range: list
+        Parameter Range.
+    input_relation: SQLRelation
+        Relation to use to train the model.
+    X: SQLColumns
+        List of the predictor columns.
+    y: str
+        Response Column.
+    metric: str, optional
+        Metric used to do the model evaluation.
+            auto: logloss for classification & rmse for 
+                  regression.
+        For Classification:
+            accuracy    : Accuracy
+            auc         : Area Under the Curve (ROC)
+            bm          : Informedness 
+                          = tpr + tnr - 1
+            csi         : Critical Success Index 
+                          = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness 
+                          = ppv + npv - 1
+            npv         : Negative Predictive Value 
+                          = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision 
+                          = tp / (tp + fp)
+            recall      : Recall 
+                          = tp / (tp + fn)
+            specificity : Specificity 
+                          = tn / (tn + fp)
+        For Regression:
+            max    : Max error
+            mae    : Mean absolute error
+            median : Median absolute error
+            mse    : Mean squared error
+            msle   : Mean squared log error
+            r2     : R-squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root-mean-squared error
+            var    : Explained variance
+    cv: int, optional
+        Number of folds.
+    pos_label: PythonScalar, optional
+        The main class to be considered as positive 
+        (classification only).
+    cutoff: float, optional
+        The  model  cutoff  (classification  only).
+    std_coeff: float, optional
+        Value of the standard deviation coefficient 
+        used  to compute the area plot around  each 
+        score.
+    ax: Axes, optional
+        The axes to plot on.
+    **style_kwds
+        Any  optional  parameter  to  pass  to  the 
+        Matplotlib functions.
+
+    Returns
+    -------
+    TableSample
+        training_score_lower, training_score, 
+        training_score_upper, test_score_lower,
+        test_score, test_score_upper
+    """
+    if isinstance(X, str):
+        X = [X]
+    if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
+        param_range = [param_range]
+    gs_result = grid_search_cv(
+        estimator,
+        {param_name: param_range},
+        input_relation,
+        X,
+        y,
+        metric,
+        cv,
+        pos_label,
+        cutoff,
+        True,
+        False,
+        False,
+    )
+    gs_result_final = [
+        (
+            gs_result["parameters"][i][param_name],
+            gs_result["avg_score"][i],
+            gs_result["avg_train_score"][i],
+            gs_result["score_std"][i],
+            gs_result["score_train_std"][i],
+        )
+        for i in range(len(param_range))
+    ]
+    gs_result_final.sort(key=lambda tup: tup[0])
+    X = [elem[0] for elem in gs_result_final]
+    Y = [
+        [
+            [elem[2] - std_coeff * elem[4] for elem in gs_result_final],
+            [elem[2] for elem in gs_result_final],
+            [elem[2] + std_coeff * elem[4] for elem in gs_result_final],
+        ],
+        [
+            [elem[1] - std_coeff * elem[3] for elem in gs_result_final],
+            [elem[1] for elem in gs_result_final],
+            [elem[1] + std_coeff * elem[3] for elem in gs_result_final],
+        ],
+    ]
+    result = TableSample(
+        {
+            param_name: X,
+            "training_score_lower": Y[0][0],
+            "training_score": Y[0][1],
+            "training_score_upper": Y[0][2],
+            "test_score_lower": Y[1][0],
+            "test_score": Y[1][1],
+            "test_score_upper": Y[1][2],
+        }
+    )
+    range_curve(X, Y, param_name, metric, ax, ["train", "test"], **style_kwds)
+    return result
+
+
+"""
+Parameters Grids Generation.
+"""
+
+
+@save_verticapy_logs
+def parameter_grid(param_grid: dict) -> list[dict]:
+    """
+    Generates the list of the different combinations 
+    of input parameters.
+
+    Parameters
+    ----------
+    param_grid: dict
+        Dictionary of parameters.
+
+    Returns
+    -------
+    list of dict
+        List of the different combinations.
+    """
+    return [
+        dict(zip(param_grid.keys(), values))
+        for values in itertools.product(*param_grid.values())
+    ]
+
+
 @save_verticapy_logs
 def gen_params_grid(
-    estimator,
+    estimator: VerticaModel,
     nbins: int = 10,
     max_nfeatures: int = 3,
     lmax: int = -1,
     optimized_grid: int = 0,
-):
+) -> dict[str, Any]:
     """
-Generates the estimator grid.
+    Generates the estimator grid.
 
-Parameters
-----------
-estimator: object
-    Vertica estimator with a fit method.
-nbins: int, optional
-    Number of bins used to discretize numberical features.
-max_nfeatures: int, optional
-    Maximum number of features used to compute Random Forest, PCA...
-lmax: int, optional
-    Maximum length of the parameter grid.
-optimized_grid: int, optional
-    If set to 0, the randomness is based on the input parameters.
-    If set to 1, the randomness is limited to some parameters while others
-    are picked based on a default grid.
-    If set to 2, there is no randomness and a default grid is returned.
-    
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Parameters
+    ----------
+    estimator: object
+        Vertica   estimator  with  a  fit   method.
+    nbins: int, optional
+        Number of bins used to discretize numerical 
+        features.
+    max_nfeatures: int, optional
+        Maximum number of  features used to compute 
+        Random Forest, PCA...
+    lmax: int, optional
+        Maximum length of the parameter grid.
+    optimized_grid: int, optional
+        If set to 0, the randomness is based on the 
+        input parameters.
+        If set to 1,  the randomness is limited  to 
+        some  parameters  while others  are  picked 
+        based on a default grid.
+        If set  to 2, there is no  randomness and a 
+        default grid is returned.
+        
+    Returns
+    -------
+    dict
+        Dictionary of parameters.
     """
-    import verticapy.machine_learning.vertica as vml
-
     params_grid = {}
     if isinstance(
         estimator, (vml.DummyTreeRegressor, vml.DummyTreeClassifier, vml.OneHotEncoder)
@@ -1066,607 +1778,3 @@ TableSample
     if len(final_param_grid) > lmax and lmax > 0:
         final_param_grid = random.sample(final_param_grid, lmax)
     return final_param_grid
-
-
-@save_verticapy_logs
-def grid_search_cv(
-    estimator,
-    param_grid: Union[dict, list],
-    input_relation: SQLRelation,
-    X: SQLColumns,
-    y: str,
-    metric: str = "auto",
-    cv: int = 3,
-    pos_label: PythonScalar = None,
-    cutoff: PythonNumber = -1,
-    training_score: bool = True,
-    skip_error: bool = True,
-    print_info: bool = True,
-    **kwargs,
-):
-    """
-Computes the k-fold grid search of an estimator.
-
-Parameters
-----------
-estimator: object
-    Vertica estimator with a fit method.
-param_grid: dict/list
-    Dictionary of the parameters to test. It can also be a list of the
-    different combinations.
-input_relation: SQLRelation
-    Relation to use to train the model.
-X: list
-    List of the predictor columns.
-y: str
-    Response Column.
-metric: str, optional
-    Metric used to do the model evaluation.
-        auto: logloss for classification & rmse for regression.
-    For Classification:
-        accuracy    : Accuracy
-        auc         : Area Under the Curve (ROC)
-        bm          : Informedness = tpr + tnr - 1
-        csi         : Critical Success Index = tp / (tp + fn + fp)
-        f1          : F1 Score 
-        logloss     : Log Loss
-        mcc         : Matthews Correlation Coefficient 
-        mk          : Markedness = ppv + npv - 1
-        npv         : Negative Predictive Value = tn / (tn + fn)
-        prc_auc     : Area Under the Curve (PRC)
-        precision   : Precision = tp / (tp + fp)
-        recall      : Recall = tp / (tp + fn)
-        specificity : Specificity = tn / (tn + fp)
-    For Regression:
-        max    : Max error
-        mae    : Mean absolute error
-        median : Median absolute error
-        mse    : Mean squared error
-        msle   : Mean squared log error
-        r2     : R-squared coefficient
-        r2a    : R2 adjusted
-        rmse   : Root-mean-squared error
-        var    : Explained variance
-cv: int, optional
-    Number of folds.
-pos_label: PythonScalar, optional
-    The main class to be considered as positive (classification only).
-cutoff: float, optional
-    The model cutoff (classification only).
-training_score: bool, optional
-    If set to True, the training score will be computed with the validation score.
-skip_error: bool, optional
-    If set to True and an error occurs, it will be displayed and not raised.
-print_info: bool, optional
-    If set to True, prints the model information at each step.
-
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
-    """
-    if isinstance(X, str):
-        X = [X]
-    if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
-        metric = "rmse"
-    elif metric == "auto":
-        metric = "logloss"
-    if isinstance(param_grid, dict):
-        for param in param_grid:
-            assert isinstance(param_grid[param], Iterable) and not (
-                isinstance(param_grid[param], str)
-            ), ParameterError(
-                "When of type dictionary, the parameter 'param_grid'"
-                " must be a dictionary where each value is a list of "
-                f"parameters, found {type(param_grid[param])} for "
-                f"parameter '{param}'."
-            )
-        all_configuration = parameter_grid(param_grid)
-    else:
-        for idx, param in enumerate(param_grid):
-            assert isinstance(param, dict), ParameterError(
-                "When of type List, the parameter 'param_grid' must "
-                f"be a list of dictionaries, found {type(param)} for elem '{idx}'."
-            )
-        all_configuration = param_grid
-    # testing all the config
-    for config in all_configuration:
-        estimator.set_params(config)
-    # applying all the config
-    data = []
-    if all_configuration == []:
-        all_configuration = [{}]
-    if (
-        conf.get_option("tqdm")
-        and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
-        and print_info
-    ):
-        loop = tqdm(all_configuration)
-    else:
-        loop = all_configuration
-    for config in loop:
-        try:
-            estimator.set_params(config)
-            current_cv = cross_validate(
-                estimator,
-                input_relation,
-                X,
-                y,
-                metric,
-                cv,
-                pos_label,
-                cutoff,
-                True,
-                training_score,
-                tqdm=False,
-            )
-            if training_score:
-                keys = [elem for elem in current_cv[0].values]
-                data += [
-                    (
-                        estimator.get_params(),
-                        current_cv[0][keys[1]][cv],
-                        current_cv[1][keys[1]][cv],
-                        current_cv[0][keys[2]][cv],
-                        current_cv[0][keys[1]][cv + 1],
-                        current_cv[1][keys[1]][cv + 1],
-                    )
-                ]
-                if print_info:
-                    print(
-                        f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; "
-                        f"Parameters: {config}; \033[91mTest_score: "
-                        f"{current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score:"
-                        f" {current_cv[1][keys[1]][cv]}\033[0m; \033[94mTime:"
-                        f" {current_cv[0][keys[2]][cv]}\033[0m;"
-                    )
-            else:
-                keys = [elem for elem in current_cv.values]
-                data += [
-                    (
-                        config,
-                        current_cv[keys[1]][cv],
-                        current_cv[keys[2]][cv],
-                        current_cv[keys[1]][cv + 1],
-                    )
-                ]
-                if print_info:
-                    print(
-                        f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; "
-                        f"Parameters: {config}; \033[91mTest_score: "
-                        f"{current_cv[keys[1]][cv]}\033[0m; \033[94mTime:"
-                        f"{current_cv[keys[2]][cv]}\033[0m;"
-                    )
-        except Exception as e:
-            if skip_error and skip_error != "no_print":
-                print(e)
-            elif not (skip_error):
-                raise (e)
-    if not (data):
-        if training_score:
-            return TableSample(
-                {
-                    "parameters": [],
-                    "avg_score": [],
-                    "avg_train_score": [],
-                    "avg_time": [],
-                    "score_std": [],
-                    "score_train_std": [],
-                }
-            )
-        else:
-            return TableSample(
-                {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
-            )
-    reverse = True
-    if metric in [
-        "logloss",
-        "max",
-        "mae",
-        "median",
-        "mse",
-        "msle",
-        "rmse",
-        "aic",
-        "bic",
-        "auto",
-    ]:
-        reverse = False
-    data.sort(key=lambda tup: tup[1], reverse=reverse)
-    if training_score:
-        result = TableSample(
-            {
-                "parameters": [d[0] for d in data],
-                "avg_score": [d[1] for d in data],
-                "avg_train_score": [d[2] for d in data],
-                "avg_time": [d[3] for d in data],
-                "score_std": [d[4] for d in data],
-                "score_train_std": [d[5] for d in data],
-            }
-        )
-        if print_info and (
-            "final_print" not in kwargs or kwargs["final_print"] != "no_print"
-        ):
-            print("\033[1mGrid Search Selected Model\033[0m")
-            print(
-                f"{str(estimator.__class__).split('.')[-1][:-2]}; "
-                f"Parameters: {result['parameters'][0]}; \033"
-                f"[91mTest_score: {result['avg_score'][0]}\033[0m;"
-                f" \033[92mTrain_score: {result['avg_train_score'][0]}"
-                f"\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
-            )
-    else:
-        result = TableSample(
-            {
-                "parameters": [d[0] for d in data],
-                "avg_score": [d[1] for d in data],
-                "avg_time": [d[2] for d in data],
-                "score_std": [d[3] for d in data],
-            }
-        )
-        if print_info and (
-            "final_print" not in kwargs or kwargs["final_print"] != "no_print"
-        ):
-            print("\033[1mGrid Search Selected Model\033[0m")
-            print(
-                f"{str(estimator.__class__).split('.')[-1][:-2]}; "
-                f"Parameters: {result['parameters'][0]}; \033[91mTest_score:"
-                f" {result['avg_score'][0]}\033[0m; \033[94mTime:"
-                f" {result['avg_time'][0]}\033[0m;"
-            )
-    return result
-
-
-@save_verticapy_logs
-def parameter_grid(param_grid: dict):
-    """
-Generates the list of the different combinations of input parameters.
-
-Parameters
-----------
-param_grid: dict
-    Dictionary of parameters.
-
-Returns
--------
-list of dict
-    List of the different combinations.
-    """
-    return [
-        dict(zip(param_grid.keys(), values))
-        for values in itertools.product(*param_grid.values())
-    ]
-
-
-@save_verticapy_logs
-def plot_acf_pacf(
-    vdf: vDataFrame,
-    column: str,
-    ts: str,
-    by: SQLColumns = [],
-    p: Union[int, list] = 15,
-    **style_kwds,
-):
-    """
-Draws the ACF and PACF Charts.
-
-Parameters
-----------
-vdf: vDataFrame
-    Input vDataFrame.
-column: str
-    Response column.
-ts: str
-    vDataColumn used as timeline. It will be to use to order the data. 
-    It can be a numerical or type date like (date, datetime, timestamp...) 
-    vDataColumn.
-by: list, optional
-    vDataColumns used in the partition.
-p: int/list, optional
-    Int equals to the maximum number of lag to consider during the computation
-    or List of the different lags to include during the computation.
-    p must be positive or a list of positive integers.
-**style_kwds
-    Any optional parameter to pass to the Matplotlib functions.
-
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
-    """
-    if isinstance(by, str):
-        by = [by]
-    tmp_style = {}
-    for elem in style_kwds:
-        if elem not in ("color", "colors"):
-            tmp_style[elem] = style_kwds[elem]
-    if "color" in style_kwds:
-        color = style_kwds["color"]
-    else:
-        color = get_colors()[0]
-    by, column, ts = vdf._format_colnames(by, column, ts)
-    acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
-    pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
-    result = TableSample(
-        {
-            "index": [i for i in range(0, len(acf.values["value"]))],
-            "acf": acf.values["value"],
-            "pacf": pacf.values["value"],
-            "confidence": pacf.values["confidence"],
-        }
-    )
-    fig = plt.figure(figsize=(10, 6))
-    plt.rcParams["axes.facecolor"] = "#FCFCFC"
-    ax1 = fig.add_subplot(211)
-    x, y, confidence = (
-        result.values["index"],
-        result.values["acf"],
-        result.values["confidence"],
-    )
-    plt.xlim(-1, x[-1] + 1)
-    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
-    param = {
-        "s": 90,
-        "marker": "o",
-        "facecolors": color,
-        "edgecolors": "black",
-        "zorder": 2,
-    }
-    ax1.scatter(x, y, **updated_dict(param, tmp_style))
-    ax1.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
-    )
-    ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
-    ax1.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
-    ax1.set_title("Autocorrelation")
-    y = result.values["pacf"]
-    ax2 = fig.add_subplot(212)
-    ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
-    ax2.scatter(x, y, **updated_dict(param, tmp_style))
-    ax2.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
-    )
-    ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
-    ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
-    ax2.set_title("Partial Autocorrelation")
-    plt.show()
-    return result
-
-
-@save_verticapy_logs
-def randomized_search_cv(
-    estimator,
-    input_relation: SQLRelation,
-    X: list,
-    y: str,
-    metric: str = "auto",
-    cv: int = 3,
-    pos_label: PythonScalar = None,
-    cutoff: float = -1,
-    nbins: int = 1000,
-    lmax: int = 4,
-    optimized_grid: int = 1,
-    print_info: bool = True,
-):
-    """
-Computes the K-Fold randomized search of an estimator.
-
-Parameters
-----------
-estimator: object
-    Vertica estimator with a fit method.
-input_relation: SQLRelation
-    Relation to use to train the model.
-X: list
-    List of the predictor columns.
-y: str
-    Response Column.
-metric: str, optional
-    Metric used to do the model evaluation.
-        auto: logloss for classification & rmse for regression.
-    For Classification:
-        accuracy    : Accuracy
-        auc         : Area Under the Curve (ROC)
-        bm          : Informedness = tpr + tnr - 1
-        csi         : Critical Success Index = tp / (tp + fn + fp)
-        f1          : F1 Score 
-        logloss     : Log Loss
-        mcc         : Matthews Correlation Coefficient 
-        mk          : Markedness = ppv + npv - 1
-        npv         : Negative Predictive Value = tn / (tn + fn)
-        prc_auc     : Area Under the Curve (PRC)
-        precision   : Precision = tp / (tp + fp)
-        recall      : Recall = tp / (tp + fn)
-        specificity : Specificity = tn / (tn + fp)
-    For Regression:
-        max    : Max error
-        mae    : Mean absolute error
-        median : Median absolute error
-        mse    : Mean squared error
-        msle   : Mean squared log error
-        r2     : R-squared coefficient
-        r2a    : R2 adjusted
-        rmse   : Root-mean-squared error
-        var    : Explained variance
-cv: int, optional
-    Number of folds.
-pos_label: PythonScalar, optional
-    The main class to be considered as positive (classification only).
-cutoff: float, optional
-    The model cutoff (classification only).
-nbins: int, optional
-    Number of bins used to compute the different parameters categories.
-lmax: int, optional
-    Maximum length of each parameter list.
-optimized_grid: int, optional
-    If set to 0, the randomness is based on the input parameters.
-    If set to 1, the randomness is limited to some parameters while others
-    are picked based on a default grid.
-    If set to 2, there is no randomness and a default grid is returned.
-print_info: bool, optional
-    If set to True, prints the model information at each step.
-
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
-    """
-    param_grid = gen_params_grid(estimator, nbins, len(X), lmax, optimized_grid)
-    return grid_search_cv(
-        estimator,
-        param_grid,
-        input_relation,
-        X,
-        y,
-        metric,
-        cv,
-        pos_label,
-        cutoff,
-        True,
-        "no_print",
-        print_info,
-    )
-
-
-@save_verticapy_logs
-def validation_curve(
-    estimator,
-    param_name: str,
-    param_range: list,
-    input_relation: SQLRelation,
-    X: list,
-    y: str,
-    metric: str = "auto",
-    cv: int = 3,
-    pos_label: PythonScalar = None,
-    cutoff: float = -1,
-    std_coeff: float = 1,
-    ax=None,
-    **style_kwds,
-):
-    """
-Draws the validation curve.
-
-Parameters
-----------
-estimator: object
-    Vertica estimator with a fit method.
-param_name: str
-    Parameter name.
-param_range: list
-    Parameter Range.
-input_relation: SQLRelation
-    Relation to use to train the model.
-X: list
-    List of the predictor columns.
-y: str
-    Response Column.
-metric: str, optional
-    Metric used to do the model evaluation.
-        auto: logloss for classification & rmse for regression.
-    For Classification:
-        accuracy    : Accuracy
-        auc         : Area Under the Curve (ROC)
-        bm          : Informedness = tpr + tnr - 1
-        csi         : Critical Success Index = tp / (tp + fn + fp)
-        f1          : F1 Score 
-        logloss     : Log Loss
-        mcc         : Matthews Correlation Coefficient 
-        mk          : Markedness = ppv + npv - 1
-        npv         : Negative Predictive Value = tn / (tn + fn)
-        prc_auc     : Area Under the Curve (PRC)
-        precision   : Precision = tp / (tp + fp)
-        recall      : Recall = tp / (tp + fn)
-        specificity : Specificity = tn / (tn + fp)
-    For Regression:
-        max    : Max error
-        mae    : Mean absolute error
-        median : Median absolute error
-        mse    : Mean squared error
-        msle   : Mean squared log error
-        r2     : R-squared coefficient
-        r2a    : R2 adjusted
-        rmse   : Root-mean-squared error
-        var    : Explained variance
-cv: int, optional
-    Number of folds.
-pos_label: PythonScalar, optional
-    The main class to be considered as positive (classification only).
-cutoff: float, optional
-    The model cutoff (classification only).
-std_coeff: float, optional
-    Value of the standard deviation coefficient used to compute the area plot 
-    around each score.
-ax: Matplotlib axes object, optional
-    The axes to plot on.
-**style_kwds
-    Any optional parameter to pass to the Matplotlib functions.
-
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
-    """
-    if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
-        param_range = [param_range]
-    gs_result = grid_search_cv(
-        estimator,
-        {param_name: param_range},
-        input_relation,
-        X,
-        y,
-        metric,
-        cv,
-        pos_label,
-        cutoff,
-        True,
-        False,
-        False,
-    )
-    gs_result_final = [
-        (
-            gs_result["parameters"][i][param_name],
-            gs_result["avg_score"][i],
-            gs_result["avg_train_score"][i],
-            gs_result["score_std"][i],
-            gs_result["score_train_std"][i],
-        )
-        for i in range(len(param_range))
-    ]
-    gs_result_final.sort(key=lambda tup: tup[0])
-    X = [elem[0] for elem in gs_result_final]
-    Y = [
-        [
-            [elem[2] - std_coeff * elem[4] for elem in gs_result_final],
-            [elem[2] for elem in gs_result_final],
-            [elem[2] + std_coeff * elem[4] for elem in gs_result_final],
-        ],
-        [
-            [elem[1] - std_coeff * elem[3] for elem in gs_result_final],
-            [elem[1] for elem in gs_result_final],
-            [elem[1] + std_coeff * elem[3] for elem in gs_result_final],
-        ],
-    ]
-    result = TableSample(
-        {
-            param_name: X,
-            "training_score_lower": Y[0][0],
-            "training_score": Y[0][1],
-            "training_score_upper": Y[0][2],
-            "test_score_lower": Y[1][0],
-            "test_score": Y[1][1],
-            "test_score_upper": Y[1][2],
-        }
-    )
-    range_curve(X, Y, param_name, metric, ax, ["train", "test"], **style_kwds)
-    return result

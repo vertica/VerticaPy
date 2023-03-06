@@ -15,8 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import random, itertools
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
+
+from matplotlib.axes import Axes
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
@@ -35,12 +37,14 @@ from verticapy.plotting._matplotlib import (
 from verticapy.machine_learning.metrics import aic_bic
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
+from verticapy.machine_learning.vertica.base import VerticaModel
+
 from verticapy.sql.drop import drop
 
 
 @save_verticapy_logs
 def randomized_features_search_cv(
-    estimator,
+    estimator: VerticaModel,
     input_relation: SQLRelation,
     X: SQLColumns,
     y: str,
@@ -53,82 +57,81 @@ def randomized_features_search_cv(
     skip_error: bool = True,
     print_info: bool = True,
     **kwargs,
-):
+) -> TableSample:
     """
-Computes the k-fold grid search of an estimator using different features
-combinations. It can be used to find the parameters which will optimize
-the model.
+    Computes  the k-fold grid search of an estimator  using 
+    different features combinations. It can be used to find 
+    the set of variables which will optimize the model.
 
-Parameters
-----------
-estimator: object
-    Vertica estimator with a fit method.
-input_relation: SQLRelation
-    Relation to use to train the model.
-X: SQLColumns
-    List of the predictor columns.
-y: str
-    Response Column.
-metric: str, optional
-    Metric used to do the model evaluation.
-        auto: logloss for classification & rmse for 
-              regression.
-    For Classification:
-        accuracy    : Accuracy
-        auc         : Area Under the Curve (ROC)
-        bm          : Informedness 
-                      = tpr + tnr - 1
-        csi         : Critical Success Index 
-                      = tp / (tp + fn + fp)
-        f1          : F1 Score 
-        logloss     : Log Loss
-        mcc         : Matthews Correlation Coefficient 
-        mk          : Markedness 
-                      = ppv + npv - 1
-        npv         : Negative Predictive Value 
-                      = tn / (tn + fn)
-        prc_auc     : Area Under the Curve (PRC)
-        precision   : Precision 
-                      = tp / (tp + fp)
-        recall      : Recall 
-                      = tp / (tp + fn)
-        specificity : Specificity 
-                      = tn / (tn + fp)
-    For Regression:
-        max    : Max error
-        mae    : Mean absolute error
-        median : Median absolute error
-        mse    : Mean squared error
-        msle   : Mean squared log error
-        r2     : R-squared coefficient
-        r2a    : R2 adjusted
-        rmse   : Root-mean-squared error
-        var    : Explained variance
-cv: int, optional
-    Number of folds.
-pos_label: PythonScalar, optional
-    The main class to be considered as positive 
-    (classification only).
-cutoff: float, optional
-    The model cutoff (classification only).
-training_score: bool, optional
-    If set to True, the training score will be 
-    computed with the validation score.
-comb_limit: int, optional
-    Maximum number of features combinations used 
-    to train the model.
-skip_error: bool, optional
-    If set to True and an error occurs, it will be 
-    displayed and not raised.
-print_info: bool, optional
-    If set to True, prints the model information at 
-    each step.
+    Parameters
+    ----------
+    estimator: VerticaModel
+        Vertica estimator with a fit method.
+    input_relation: SQLRelation
+        Relation to use to train the model.
+    X: SQLColumns
+        List of the predictor columns.
+    y: str
+        Response Column.
+    metric: str, optional
+        Metric used to do the model evaluation.
+            auto: logloss for classification & rmse for 
+                  regression.
+        For Classification:
+            accuracy    : Accuracy
+            auc         : Area Under the Curve (ROC)
+            bm          : Informedness 
+                          = tpr + tnr - 1
+            csi         : Critical Success Index 
+                          = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness 
+                          = ppv + npv - 1
+            npv         : Negative Predictive Value 
+                          = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision 
+                          = tp / (tp + fp)
+            recall      : Recall 
+                          = tp / (tp + fn)
+            specificity : Specificity 
+                          = tn / (tn + fp)
+        For Regression:
+            max    : Max error
+            mae    : Mean absolute error
+            median : Median absolute error
+            mse    : Mean squared error
+            msle   : Mean squared log error
+            r2     : R-squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root-mean-squared error
+            var    : Explained variance
+    cv: int, optional
+        Number of folds.
+    pos_label: PythonScalar, optional
+        The main class to be  considered as positive 
+        (classification only).
+    cutoff: float, optional
+        The  model   cutoff  (classification  only).
+    training_score: bool, optional
+        If set to True,  the training score  will be 
+        computed   with    the   validation   score.
+    comb_limit: int, optional
+        Maximum number of features combinations used 
+        to train the model.
+    skip_error: bool, optional
+        If set to True and an error occurs,  it will 
+        be displayed and not raised.
+    print_info: bool, optional
+        If set to True, prints the model information 
+        at each step.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    TableSample
+        result of the randomized features search.
     """
     if isinstance(X, str):
         X = [X]
@@ -251,7 +254,7 @@ TableSample
         reverse = False
     data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
-        result = TableSample(
+        res = TableSample(
             {
                 "features": [d[0] for d in data],
                 "avg_score": [d[1] for d in data],
@@ -267,13 +270,13 @@ TableSample
             print("\033[1mRandomized Features Search Selected Model\033[0m")
             print(
                 f"{str(estimator.__class__).split('.')[-1][:-2]}; Features:"
-                f" {result['features'][0]}; \033[91mTest_score: "
-                f"{result['avg_score'][0]}\033[0m; \033[92mTrain_score: "
-                f"{result['avg_train_score'][0]}\033[0m; \033[94mTime: "
-                f"{result['avg_time'][0]}\033[0m;"
+                f" {res['features'][0]}; \033[91mTest_score: "
+                f"{res['avg_score'][0]}\033[0m; \033[92mTrain_score: "
+                f"{res['avg_train_score'][0]}\033[0m; \033[94mTime: "
+                f"{res['avg_time'][0]}\033[0m;"
             )
     else:
-        result = TableSample(
+        res = TableSample(
             {
                 "features": [d[0] for d in data],
                 "avg_score": [d[1] for d in data],
@@ -287,16 +290,16 @@ TableSample
             print("\033[1mRandomized Features Search Selected Model\033[0m")
             print(
                 f"{str(estimator.__class__).split('.')[-1][:-2]}; Features:"
-                f" {result['features'][0]}; \033[91mTest_score: "
-                f"{result['avg_score'][0]}\033[0m; \033[94mTime: "
-                f"{result['avg_time'][0]}\033[0m;"
+                f" {res['features'][0]}; \033[91mTest_score: "
+                f"{res['avg_score'][0]}\033[0m; \033[94mTime: "
+                f"{res['avg_time'][0]}\033[0m;"
             )
-    return result
+    return res
 
 
 @save_verticapy_logs
 def stepwise(
-    estimator,
+    estimator: VerticaModel,
     input_relation: SQLRelation,
     X: SQLColumns,
     y: str,
@@ -308,68 +311,76 @@ def stepwise(
     x_order: Literal["pearson", "spearman", "random", "none", None] = "pearson",
     print_info: bool = True,
     show: bool = True,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> TableSample:
     """
-Uses the Stepwise algorithm to find the most suitable number of features
-when fitting the estimator.
+    Uses the Stepwise algorithm to find the most suitable 
+    number of features when fitting the estimator.
 
-Parameters
-----------
-estimator: object
-    Vertica estimator with a fit method.
-input_relation: SQLRelation
-    Relation to use to train the model.
-X: SQLColumns
-    List of the predictor columns.
-y: str
-    Response Column.
-criterion: str, optional
-    Criterion used to evaluate the model.
-        aic : Akaike’s Information Criterion
-        bic : Bayesian Information Criterion
-direction: str, optional
-    How to start the stepwise search. Can be done 'backward' or 'forward'.
-max_steps: int, optional
-    The maximum number of steps to be considered.
-criterion_threshold: int, optional
-    Threshold used when comparing the models criterions. If the difference
-    is lesser than the threshold then the current 'best' model is changed.
-drop_final_estimator: bool, optional
-    If set to True, the final estimator will be dropped.
-x_order: str, optional
-    How to preprocess X before using the stepwise algorithm.
-        pearson  : X is ordered based on the Pearson's correlation coefficient.
-        spearman : X is ordered based on the Spearman's correlation coefficient.
-        random   : Shuffles the vector X before applying the stepwise algorithm.
-        none     : Does not change the order of X.
-print_info: bool, optional
-    If set to True, prints the model information at each step.
-show: bool, optional
-    If set to True, the stepwise graphic will be drawn.
-ax: Matplotlib axes object, optional
-    The axes to plot on.
-**style_kwds
-    Any optional parameter to pass to the Matplotlib functions.
+    Parameters
+    ----------
+    estimator: VerticaModel
+        Vertica estimator with a fit method. It must be a 
+        Binary Classifier or a Regressor.
+    input_relation: SQLRelation
+        Relation to use to train the model.
+    X: SQLColumns
+        List of the predictor columns.
+    y: str
+        Response Column.
+    criterion: str, optional
+        Criterion used to evaluate the model.
+            aic : Akaike’s Information Criterion
+            bic : Bayesian Information Criterion
+    direction: str, optional
+        How  to  start the stepwise search. Can  be  done 
+        'backward' or 'forward'.
+    max_steps: int, optional
+        The maximum number of steps to be considered.
+    criterion_threshold: int, optional
+        Threshold used when comparing the models criterions. 
+        If the difference is lesser than the threshold then 
+        the current 'best' model is changed.
+    drop_final_estimator: bool, optional
+        If set to True, the final estimator will be dropped.
+    x_order: str, optional
+        How  to  preprocess  X  before  using  the  stepwise 
+        algorithm.
+            pearson  : X  is ordered based on the  Pearson's 
+                       correlation coefficient.
+            spearman : X is ordered  based on the Spearman's 
+                       correlation coefficient.
+            random   : Shuffles the vector X before applying 
+                       the stepwise algorithm.
+            none     : Does  not  change  the  order  of  X.
+    print_info: bool, optional
+        If set to True, prints the model information at each 
+        step.
+    show: bool, optional
+        If  set to True, the stepwise graphic will be drawn.
+    ax: Axes, optional
+        The axes to plot on.
+    **style_kwds
+        Any  optional  parameter  to pass to the  Matplotlib 
+        functions.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    TableSample
+        result of the stepwise.
     """
     if isinstance(X, str):
         X = [X]
     assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
     if not (conf.get_option("overwrite_model")):
         estimator._is_already_stored(raise_error=True)
-    result, current_step = [], 0
+    res, current_step = [], 0
     table = (
         input_relation if isinstance(input_relation, str) else input_relation._genSQL()
     )
     avg = _executeSQL(
-        f"SELECT /*+LABEL('learn.model_selection.stepwise')*/ AVG({y}) FROM {table}",
+        f"SELECT /*+LABEL('stepwise')*/ AVG({y}) FROM {table}",
         method="fetchfirstelem",
         print_time_sql=False,
     )
@@ -401,7 +412,7 @@ TableSample
         estimator.drop()
         estimator.fit(input_relation, X, y)
         current_score = estimator.score(criterion)
-        result += [(X_current, current_score, None, None, 0, None)]
+        res += [(X_current, current_score, None, None, 0, None)]
         for idx in loop:
             if print_info and idx == 0:
                 print(
@@ -431,12 +442,12 @@ TableSample
                     )
             else:
                 sign = "+"
-            result += [(X_test, test_score, sign, X[idx], idx + 1, score_diff)]
+            res += [(X_test, test_score, sign, X[idx], idx + 1, score_diff)]
             current_step += 1
     else:
         X_current = []
         current_score = aic_bic(y, str(avg), input_relation, 0)[k]
-        result += [(X_current, current_score, None, None, 0, None)]
+        res += [(X_current, current_score, None, None, 0, None)]
         for idx in loop:
             if print_info and idx == 0:
                 print(
@@ -462,7 +473,7 @@ TableSample
                     )
             else:
                 sign = "-"
-            result += [(X_test, test_score, sign, X[idx], idx + 1, score_diff)]
+            res += [(X_test, test_score, sign, X[idx], idx + 1, score_diff)]
             current_step += 1
     if print_info:
         print(f"\033[1m\033[4mSelected Model\033[0m\033[0m\n")
@@ -470,32 +481,32 @@ TableSample
             f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}:"
             f" {current_score}\033[0m; Variables: {X_current}"
         )
-    features = [x[0] for x in result]
+    features = [x[0] for x in res]
     for idx, x in enumerate(features):
         features[idx] = [item.replace('"', "") for item in x]
-    importance = [x[5] if (x[5]) and x[5] > 0 else 0 for x in result]
+    importance = [x[5] if (x[5]) and x[5] > 0 else 0 for x in res]
     importance = [100 * x / sum(importance) for x in importance]
-    result = TableSample(
+    res = TableSample(
         {
-            "index": [x[4] for x in result],
+            "index": [x[4] for x in res],
             "features": features,
-            criterion: [x[1] for x in result],
-            "change": [x[2] for x in result],
-            "variable": [x[3] for x in result],
+            criterion: [x[1] for x in res],
+            "change": [x[2] for x in res],
+            "variable": [x[3] for x in res],
             "importance": importance,
         }
     )
     estimator.drop()
     if not (drop_final_estimator):
         estimator.fit(input_relation, X_current, y)
-    result.best_list_ = X_current
+    res.best_list_ = X_current
     if show:
         plot_stepwise_ml(
-            [len(x) for x in result["features"]],
-            result[criterion],
-            result["variable"],
-            result["change"],
-            [result["features"][0], X_current],
+            [len(x) for x in res["features"]],
+            res[criterion],
+            res["variable"],
+            res["change"],
+            [res["features"][0], X_current],
             x_label="n_features",
             y_label=criterion,
             direction=direction,
@@ -504,7 +515,7 @@ TableSample
         )
         coeff_importances = {}
         for idx in range(len(importance)):
-            if result["variable"][idx] != None:
-                coeff_importances[result["variable"][idx]] = importance[idx]
+            if res["variable"][idx] != None:
+                coeff_importances[res["variable"][idx]] = importance[idx]
         plot_importance(coeff_importances, print_legend=False, ax=ax, **style_kwds)
-    return result
+    return res

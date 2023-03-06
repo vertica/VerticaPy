@@ -48,6 +48,11 @@ from verticapy.machine_learning.metrics.regression import (
     r2_score,
     regression_report,
 )
+from verticapy.machine_learning.metrics.plotting import (
+    lift_chart,
+    prc_curve,
+    roc_curve,
+)
 
 
 FUNCTIONS_CLASSIFICATION_DICTIONNARY = {

@@ -164,7 +164,7 @@ class LinearModel:
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         return vpy_plt.regression_plot(
             self.X,
@@ -226,7 +226,7 @@ class LinearModelClassifier(LinearModel):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         return vpy_plt.logit_plot(
             self.X,
