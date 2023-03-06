@@ -28,12 +28,3 @@ from verticapy.machine_learning.model_selection.hp_tuning.plotting import (
     plot_acf_pacf,
     validation_curve,
 )
-from verticapy.machine_learning.model_selection.model_validation import (
-    cross_validate,
-    learning_curve,
-)
-from verticapy.machine_learning.model_selection.variables_selection import (
-    randomized_features_search_cv,
-    stepwise,
-)
-from verticapy.machine_learning.model_selection.kmeans import best_k, elbow
