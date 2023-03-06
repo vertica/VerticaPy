@@ -41,7 +41,6 @@ from verticapy.errors import (
     QueryError,
 )
 
-from verticapy.core.parsers.pandas import read_pandas
 from verticapy.core.vdataframe._aggregate import vDFAgg, vDCAgg
 from verticapy.core.vdataframe._corr import vDFCorr, vDCCorr
 from verticapy.core.vdataframe._encoding import vDFEncode, vDCEncode
@@ -379,6 +378,8 @@ class vDataFrame(
         return self.__init__(tb.to_sql())
 
     def _from_pandas(self, object_: pd.DataFrame, usecols: list[str] = [],) -> None:
+        from verticapy.core.parsers.pandas import read_pandas
+
         argv = object_[usecols] if usecols else object_
         vdf = read_pandas(argv)
         return self.__init__(input_relation=vdf._vars["main_relation"])

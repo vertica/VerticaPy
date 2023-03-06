@@ -23,7 +23,6 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import ConversionError
 
-from verticapy.core.parsers.csv import guess_sep
 from verticapy.core.tablesample.base import TableSample
 
 from verticapy.sql.flex import isvmap
@@ -203,6 +202,8 @@ class vDCTyping:
     --------
     vDataFrame.astype : Converts the vDataColumns to the input type.
         """
+        from verticapy.core.parsers.csv import guess_sep
+
         dtype = to_sql_dtype(dtype)
         try:
             if (

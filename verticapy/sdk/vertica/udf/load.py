@@ -29,32 +29,43 @@ def import_lib_udf(
     udf_list: list, library_name: str, include_dependencies: Union[str, list] = []
 ) -> bool:
     """
-Install a library of Python functions in Vertica. This function will work only
-when it is executed directly in the server.
+    Install a library of Python functions in Vertica. 
+    This function will work only  when it is executed 
+    directly in the server.
 
-Parameters
-----------
-udf_list: list
-	List of tuples including the different functions.
-		function     : [function] Python Function.
-	    arg_types    : [dict/list] List or dictionary of the function input types.
-	    			   Example: {"input1": int, "input2": float} or [int, float]
-	    return_type  : [type/dict] Function output type. In case of many outputs, 
-	    			   it must be a dictionary including all the outputs types and 
-	    			   names. Example: {"result1": int, "result2": float}
-	    parameters   : [dict] Dictionary of the function input optional parameters.
-	    			   Example: {"param1": int, "param2": str}
-	    new_name     : [str] New function name when installed in Vertica.
-library_name: str
-	Library Name.
-include_dependencies: str / list, optional
-	Library files dependencies. The function will copy paste the different files
-	in the UDF definition.
+    Parameters
+    ----------
+    udf_list: list
+    	List of tuples including the different functions.
+    		function     : [function]  Python   Function.
+    	    arg_types    : [dict/list] List or dictionary 
+                           of  the function input  types.
+    	    			   Example: {"input1": int, 
+                                     "input2": float}  or 
+                           [int, float]
+    	    return_type  : [type/dict] Function output type. 
+                           In case of many  outputs, it must 
+                           be a dictionary including all the 
+                           outputs types and names. 
+                           Example: {"result1": int, 
+                                     "result2": float}
+    	    parameters   : [dict] Dictionary of the function 
+                           input optional parameters.
+    	    			   Example: {"param1": int, 
+                                     "param2": str}
+    	    new_name     : [str] New   function   name  when 
+                           installed in Vertica.
+    library_name: str
+    	Library Name.
+    include_dependencies: str / list, optional
+    	Library files  dependencies.  The function will copy 
+        paste  the  different files in the  UDF  definition.
 
-Returns
--------
-bool
-    True if the installation was a success, False otherwise.
+    Returns
+    -------
+    bool
+        True  if  the  installation  was  a  success,  False 
+        otherwise.
 	"""
     directory = os.path.expanduser("~")
     session_name = f"{current_session()}_{username()}"
