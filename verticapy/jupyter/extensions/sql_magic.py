@@ -25,6 +25,11 @@ permissions and limitations under the License.
 ##
 import re, time, warnings
 
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
 
@@ -44,11 +49,32 @@ from verticapy.jupyter.extensions._utils import get_magic_options
 
 @save_verticapy_logs
 @needs_local_scope
-def sql_magic(line, cell="", local_ns=None):
+def sql_magic(
+    line: str, cell: str = "", local_ns: Optional[dict] = None
+) -> "vDataFrame":
+    """
+    Executes SQL queries in the Jupyter cell.
+
+    -c / --command : SQL Command to execute.
+
+    -f  /   --file : Input  File. You  can use this option 
+                     if  you  want  to  execute the  input 
+                     file.
+
+            -ncols : Maximum number of columns to display.
+
+            -nrows : Maximum  number  of rows to  display.
+
+     -o / --output : Output File. You  can use this option 
+                     if  you want to export the  result of 
+                     the query to  the CSV or JSON format.
+    """
     from verticapy.core.vdataframe.base import vDataFrame
 
-    # We don't want to display the query/time twice if the options are still on
-    # So we save the previous configuration and turn them off.
+    # We don't want to display the query/time twice if
+    # the options are still on.
+    # So we save the previous configuration and turn
+    # them off.
     sql_on, time_on = conf.get_option("sql_on"), conf.get_option("time_on")
     conf.set_option("sql_on", False)
     conf.set_option("time_on", False)
@@ -316,6 +342,7 @@ def sql_magic(line, cell="", local_ns=None):
         conf.set_option("time_on", time_on)
 
 
-def load_ipython_extension(ipython):
+def load_ipython_extension(ipython) -> None:
     ipython.register_magic_function(sql_magic, "cell", "sql")
     ipython.register_magic_function(sql_magic, "line", "sql")
+    return None

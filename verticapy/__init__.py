@@ -86,7 +86,7 @@ from verticapy.connection.write import (
 
 from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
-from verticapy.core.vdataframe import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.sql.create import create_schema, create_table
 from verticapy.sql.drop import drop

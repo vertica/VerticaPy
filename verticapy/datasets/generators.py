@@ -20,42 +20,51 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.errors import ParameterError
 
+from verticapy.core.vdataframe.base import vDataFrame
+
 
 @check_minimum_version
 @save_verticapy_logs
-def gen_dataset(features_ranges: dict, nrows: int = 1000):
+def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
     """
-Generates a dataset using the input parameters.
+    Generates a dataset using the input parameters.
 
-Parameters
-----------
-features_ranges: dict,
-    Dictionary including the features types and ranges.
-        For str      : The subdictionary must include two keys: 'type' must
-                       be set to 'str' and 'value' must include the feature
-                       categories.
-        For int      : The subdictionary must include two keys: 'type' must
-                       be set to 'int' and 'range' must include two integers
-                       that represent the lower and the upper bound.
-        For float    : The subdictionary must include two keys: 'type' must
-                       be set to 'float' and 'range' must include two floats
-                       that represent the lower and the upper bound.
-        For date     : The subdictionary must include two keys: 'type' must
-                       be set to 'date' and 'range' must include the start
-                       date and the number of days after.
-        For datetime : The subdictionary must include two keys: 'type' must
-                       be set to 'date' and 'range' must include the start
-                       date and the number of days after.
-nrows: int, optional
-    The maximum number of rows in the dataset.
+    Parameters
+    ----------
+    features_ranges: dict,
+        Dictionary including the features types and ranges.
+            For str      : The  subdictionary must  include 
+                           two keys: 'type' must be set  to 
+                           'str'  and 'value' must  include 
+                           the feature categories.
+            For int      : The  subdictionary must  include 
+                           two keys: 'type'  must be set to 
+                           'int' and 'range'  must  include 
+                           two integers  that represent the 
+                           lower and the upper bound.
+            For float    : The  subdictionary must  include 
+                           two keys:  'type' must be set to 
+                           'float' and 'range' must include 
+                           two  floats that  represent  the 
+                           lower and the upper bound.
+            For date     : The  subdictionary must  include 
+                           two keys: 'type'  must be set to 
+                           'date' and 'range'  must include 
+                           the start date and the number of 
+                           days after.
+            For datetime : The  subdictionary must  include 
+                           two keys: 'type'  must be set to 
+                           'date' and 'range'  must include 
+                           the start date and the number of 
+                           days after.
+    nrows: int, optional
+        The maximum number of rows in the dataset.
 
-Returns
--------
-vDataFrame
-    Generated dataset.
+    Returns
+    -------
+    vDataFrame
+        Generated dataset.
     """
-    from verticapy.core.vdataframe.base import vDataFrame
-
     sql = []
 
     for param in features_ranges:
@@ -131,40 +140,48 @@ vDataFrame
 
 
 @save_verticapy_logs
-def gen_meshgrid(features_ranges: dict):
+def gen_meshgrid(features_ranges: dict) -> vDataFrame:
     """
-Generates a dataset using regular steps.
+    Generates a dataset using regular steps.
 
-Parameters
-----------
-features_ranges: dict,
-    Dictionary including the features types and ranges.
-        For str      : The subdictionary must include two keys: 'type' must
-                       be set to 'str' and 'value' must include the feature
-                       categories.
-        For int      : The subdictionary must include two keys: 'type' must
-                       be set to 'int' and 'range' must include two integers
-                       that represent the lower and the upper bound.
-        For float    : The subdictionary must include two keys: 'type' must
-                       be set to 'float' and 'range' must include two floats
-                       that represent the lower and the upper bound.
-        For date     : The subdictionary must include two keys: 'type' must
-                       be set to 'date' and 'range' must include the start
-                       date and the number of days after.
-        For datetime : The subdictionary must include two keys: 'type' must
-                       be set to 'date' and 'range' must include the start
-                       date and the number of days after.
-        Numerical and date-like features must have an extra key in the 
-        dictionary named 'nbins' corresponding to the number of bins used to 
-        compute the different categories.
+    Parameters
+    ----------
+    features_ranges: dict,
+        Dictionary including the features types and ranges.
+            For str      : The  subdictionary must  include 
+                           two keys: 'type' must be set  to 
+                           'str'  and 'value' must  include 
+                           the feature categories.
+            For int      : The  subdictionary must  include 
+                           two keys: 'type'  must be set to 
+                           'int' and 'range'  must  include 
+                           two integers  that represent the 
+                           lower and the upper bound.
+            For float    : The  subdictionary must  include 
+                           two keys:  'type' must be set to 
+                           'float' and 'range' must include 
+                           two  floats that  represent  the 
+                           lower and the upper bound.
+            For date     : The  subdictionary must  include 
+                           two keys: 'type'  must be set to 
+                           'date' and 'range'  must include 
+                           the start date and the number of 
+                           days after.
+            For datetime : The  subdictionary must  include 
+                           two keys: 'type'  must be set to 
+                           'date' and 'range'  must include 
+                           the start date and the number of 
+                           days after.
+        Numerical and date-like features must have an extra 
+        key in the  dictionary named 'nbins'  corresponding 
+        to the number of bins used to compute the different 
+        categories.
 
-Returns
--------
-vDataFrame
-    generated dataset.
+    Returns
+    -------
+    vDataFrame
+        generated dataset.
     """
-    from verticapy.core.vdataframe.base import vDataFrame
-
     sql = []
 
     for idx, param in enumerate(features_ranges):

@@ -21,18 +21,22 @@ from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
+
+"""
+General Functions.
+"""
 
 
 def load_dataset(
     schema: str, name: str, dtype: dict, copy_cols: list = [], dataset_name: str = "",
-):
+) -> vDataFrame:
     """
-    General Function to ingest a dataset
+    General Function to ingest a dataset.
     """
-    from verticapy.core.vdataframe.base import vDataFrame
-
     try:
 
         vdf = vDataFrame(name, schema=schema)
@@ -89,191 +93,70 @@ def load_dataset(
     return vdf
 
 
+"""
+Datasets for basic Data Exploration.
+"""
+
+
 @save_verticapy_logs
-def load_airline_passengers(schema: str = "public", name: str = "airline_passengers"):
+def load_market(schema: str = "public", name: str = "market") -> vDataFrame:
     """
-Ingests the airline passengers dataset into the Vertica database. 
-This dataset is ideal for time series and regression models. If a table 
-with the same name and schema already exists, this function will create 
-a vDataFrame from the input relation.
+    Ingests  the  market  dataset into  the  Vertica 
+    database. 
+    This  dataset  is  ideal  for  data exploration.  
+    If  a  table  with  the  same  name  and  schema  
+    already  exists, this  function  will  create  a 
+    vDataFrame from the input relation.
 
-Parameters
-----------
-schema: str, optional
-    Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-    Name of the new relation.
+    Parameters
+    ----------
+    schema: str, optional
+        Schema of the new relation. If empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
 
-Returns
--------
-vDataFrame
-    the airline passengers vDataFrame.
+    Returns
+    -------
+    vDataFrame
+        the market vDataFrame.
     """
     return load_dataset(
         schema=schema,
         name=name,
-        dtype={"date": "Date", "passengers": "Integer"},
-        dataset_name="airline_passengers",
+        dtype={"Form": "Varchar(32)", "Name": "Varchar(32)", "Price": "Float"},
+        dataset_name="market",
     )
 
 
-@save_verticapy_logs
-def load_amazon(schema: str = "public", name: str = "amazon"):
-    """
-Ingests the amazon dataset into the Vertica database. This dataset is ideal
-for time series and regression models. If a table with the same name and 
-schema already exists, this function will create a vDataFrame from the 
-input relation.
-
-Parameters
----------- 
-schema: str, optional
-	Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-	Name of the new relation.
-
-Returns
--------
-vDataFrame
-	the amazon vDataFrame.
-	"""
-    return load_dataset(
-        schema=schema,
-        name=name,
-        dtype={"date": "Date", "state": "Varchar(32)", "number": "Integer"},
-        dataset_name="amazon",
-    )
+"""
+Datasets for Classification.
+"""
 
 
 @save_verticapy_logs
-def load_cities(schema: str = "public", name: str = "cities"):
+def load_iris(schema: str = "public", name: str = "iris") -> vDataFrame:
     """
-Ingests the Cities dataset into the Vertica database. This dataset is ideal
-for geospatial models. If a table with the same name and schema already 
-exists, this function will create a vDataFrame from the input relation.
+    Ingests   the  iris  dataset   into  the  Vertica 
+    database. 
+    This  dataset  is  ideal  for  classification and 
+    clustering  models.  If a  table  with  the  same 
+    name  and  schema  already exists, this  function 
+    will create a vDataFrame from the input relation.
 
-Parameters
-----------
-schema: str, optional
-    Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-    Name of the new relation.
+    Parameters
+    ----------
+    schema: str, optional
+        Schema  of  the  new  relation.  If  empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
 
-Returns
--------
-vDataFrame
-    the Cities vDataFrame.
+    Returns
+    -------
+    vDataFrame
+        the iris vDataFrame.
     """
-    return load_dataset(
-        schema=schema,
-        name=name,
-        dtype={"city": "Varchar(82)", "geometry": "Geometry"},
-        copy_cols=[
-            "city",
-            "gx FILLER LONG VARCHAR(65000)",
-            "geometry AS ST_GeomFromText(gx)",
-        ],
-        dataset_name="cities",
-    )
-
-
-@save_verticapy_logs
-def load_commodities(schema: str = "public", name: str = "commodities"):
-    """
-Ingests the commodities dataset into the Vertica database. This dataset is
-ideal for time series and regression models. If a table with the same name 
-and schema already exists, this function will create a vDataFrame from the 
-input relation.
-
-Parameters
-----------
-schema: str, optional
-    Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-    Name of the new relation.
-
-Returns
--------
-vDataFrame
-    the amazon vDataFrame.
-    """
-    return load_dataset(
-        schema=schema,
-        name=name,
-        dtype={
-            "date": "Date",
-            "Gold": "Float",
-            "Oil": "Float",
-            "Spread": "Float",
-            "Vix": "Float",
-            "Dol_Eur": "Float",
-            "SP500": "Float",
-        },
-        dataset_name="commodities",
-    )
-
-
-@save_verticapy_logs
-def load_gapminder(schema: str = "public", name: str = "gapminder"):
-    """
-Ingests the gapminder dataset into the Vertica database. This dataset is 
-ideal for time series and regression models. If a table with the same name 
-and schema already exists, this function will create a vDataFrame from the 
-input relation.
-
-Parameters
----------- 
-schema: str, optional
-    Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-    Name of the new relation.
-
-Returns
--------
-vDataFrame
-    the gapminder vDataFrame.
-    """
-    return load_dataset(
-        schema=schema,
-        name=name,
-        dtype={
-            "country": "Varchar(96)",
-            "year": "Integer",
-            "pop": "Integer",
-            "continent": "Varchar(52)",
-            "lifeExp": "Float",
-            "gdpPercap": "Float",
-        },
-        dataset_name="gapminder",
-    )
-
-
-@save_verticapy_logs
-def load_iris(schema: str = "public", name: str = "iris"):
-    """
-Ingests the iris dataset into the Vertica database. This dataset is ideal 
-for classification and clustering models. If a table with the same name and 
-schema already exists, this function will create a vDataFrame from the input 
-relation.
-
-Parameters
-----------
-schema: str, optional
-	Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-	Name of the new relation.
-
-Returns
--------
-vDataFrame
-	the iris vDataFrame.
-	"""
     return load_dataset(
         schema=schema,
         name=name,
@@ -297,24 +180,429 @@ vDataFrame
 
 
 @save_verticapy_logs
-def load_laliga(schema: str = "public", name: str = "laliga"):
+def load_titanic(schema: str = "public", name: str = "titanic") -> vDataFrame:
     """
-Ingests the La-Liga dataset into the Vertica database. This dataset is ideal
-to test complex data types. If a table with the same name and schema already 
-exists, this function will create a vDataFrame from the input relation.
+    Ingests the titanic dataset into the Vertica 
+    database. 
+    This  dataset  is  ideal  for classification 
+    models.  If a  able  with the  same name and  
+    schema  already exists,  this  function will 
+    create a vDataFrame from the input relation.
 
-Parameters
-----------
-schema: str, optional
-    Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-    Name of the new relation.
+    Parameters
+    ----------
+    schema: str, optional
+        Schema of  the new relation. If empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
 
-Returns
--------
-vDataFrame
-    the LaLiga vDataFrame.
+    Returns
+    -------
+    vDataFrame
+        the titanic vDataFrame.
+    """
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={
+            "pclass": "Integer",
+            "survived": "Integer",
+            "name": "Varchar(164)",
+            "sex": "Varchar(20)",
+            "age": "Numeric(6,3)",
+            "sibsp": "Integer",
+            "parch": "Integer",
+            "ticket": "Varchar(36)",
+            "fare": "Numeric(10,5)",
+            "cabin": "Varchar(30)",
+            "embarked": "Varchar(20)",
+            "boat": "Varchar(100)",
+            "body": "Integer",
+            "home.dest": "Varchar(100)",
+        },
+        dataset_name="titanic",
+    )
+
+
+"""
+Datasets for Regression.
+"""
+
+
+@save_verticapy_logs
+def load_winequality(schema: str = "public", name: str = "winequality") -> vDataFrame:
+    """
+    Ingests  the winequality dataset into the Vertica 
+    database. 
+    This   dataset  is  ideal  for   regression   and 
+    classification  models. If a table with the  same 
+    name  and  schema  already exists, this  function 
+    will create a vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema  of  the  new  relation.  If empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the winequality vDataFrame.
+    """
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={
+            "fixed_acidity": "Numeric(6,3)",
+            "volatile_acidity": "Numeric(7,4)",
+            "citric_acid": "Numeric(6,3)",
+            "residual_sugar": "Numeric(7,3)",
+            "chlorides": "Float",
+            "free_sulfur_dioxide": "Numeric(7,2)",
+            "total_sulfur_dioxide": "Numeric(7,2)",
+            "density": "Float",
+            "pH": "Numeric(6,3)",
+            "sulphates": "Numeric(6,3)",
+            "alcohol": "Float",
+            "quality": "Integer",
+            "good": "Integer",
+            "color": "Varchar(20)",
+        },
+        dataset_name="winequality",
+    )
+
+
+"""
+Datasets for Time Series.
+"""
+
+
+@save_verticapy_logs
+def load_airline_passengers(
+    schema: str = "public", name: str = "airline_passengers"
+) -> vDataFrame:
+    """
+    Ingests  the airline passengers dataset into  the 
+    Vertica database. 
+    This  dataset  is  ideal  for  time   series  and 
+    regression  models.  If a  table  with  the  same 
+    name  and  schema  already exists, this  function 
+    will create a vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema of the new relation. If empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the airline passengers vDataFrame.
+    """
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={"date": "Date", "passengers": "Integer"},
+        dataset_name="airline_passengers",
+    )
+
+
+@save_verticapy_logs
+def load_amazon(schema: str = "public", name: str = "amazon") -> vDataFrame:
+    """
+    Ingests  the  amazon  dataset  into  the  Vertica 
+    database. 
+    This  dataset  is  ideal  for  time   series  and 
+    regression  models.  If a  table  with  the  same 
+    name  and  schema  already exists, this  function 
+    will create a vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema  of  the  new  relation.  If  empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the amazon vDataFrame.
+	"""
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={"date": "Date", "state": "Varchar(32)", "number": "Integer"},
+        dataset_name="amazon",
+    )
+
+
+@save_verticapy_logs
+def load_commodities(schema: str = "public", name: str = "commodities") -> vDataFrame:
+    """
+    Ingests the commodities  dataset into the Vertica 
+    database. 
+    This  dataset  is  ideal  for  time   series  and 
+    regression  models.  If a  table  with  the  same 
+    name  and  schema  already exists, this  function 
+    will create a vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema  of  the  new  relation.  If  empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the commodities vDataFrame.
+    """
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={
+            "date": "Date",
+            "Gold": "Float",
+            "Oil": "Float",
+            "Spread": "Float",
+            "Vix": "Float",
+            "Dol_Eur": "Float",
+            "SP500": "Float",
+        },
+        dataset_name="commodities",
+    )
+
+
+@save_verticapy_logs
+def load_gapminder(schema: str = "public", name: str = "gapminder") -> vDataFrame:
+    """
+    Ingests  the gapminder  dataset into the  Vertica 
+    database. 
+    This  dataset  is  ideal  for  time   series  and 
+    regression  models.  If a  table  with  the  same 
+    name  and  schema  already exists, this  function 
+    will create a vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema  of  the  new  relation.  If  empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the gapminder vDataFrame.
+    """
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={
+            "country": "Varchar(96)",
+            "year": "Integer",
+            "pop": "Integer",
+            "continent": "Varchar(52)",
+            "lifeExp": "Float",
+            "gdpPercap": "Float",
+        },
+        dataset_name="gapminder",
+    )
+
+
+@save_verticapy_logs
+def load_pop_growth(schema: str = "public", name: str = "pop_growth") -> vDataFrame:
+    """
+    Ingests  the  population growth dataset into  the 
+    Vertica database. 
+    This  dataset  is  ideal  for  time   series  and 
+    geospatial  models.  If a  table  with  the  same 
+    name  and  schema  already exists, this  function 
+    will create a vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema of the new relation. If empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the pop growth vDataFrame.
+    """
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={
+            "year": "Int",
+            "continent": "Varchar(100)",
+            "country": "Varchar(100)",
+            "city": "Varchar(100)",
+            "population": "Float",
+            "lat": "Float",
+            "lon": "Float",
+        },
+        dataset_name="pop_growth",
+    )
+
+
+@save_verticapy_logs
+def load_smart_meters(schema: str = "public", name: str = "smart_meters") -> vDataFrame:
+    """
+    Ingests the smart meters dataset into the Vertica 
+    database. 
+    This  dataset  is  ideal  for  time   series  and 
+    regression  models.  If a  table  with  the  same 
+    name  and  schema  already exists, this  function 
+    will create a vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema  of  the  new  relation. If  empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the smart meters vDataFrame.
+    """
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={"time": "Timestamp", "val": "Numeric(11,7)", "id": "Integer"},
+        dataset_name="smart_meters",
+    )
+
+
+"""
+Datasets for Geospatial.
+"""
+
+
+@save_verticapy_logs
+def load_cities(schema: str = "public", name: str = "cities") -> vDataFrame:
+    """
+    Ingests  the  Cities  dataset  into the  Vertica 
+    database. 
+    This  dataset  is  ideal  for  geospatial models.  
+    If  a  table  with   the  same  name  and  schema  
+    already  exists,  this  function  will  create  a 
+    vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema  of  the  new  relation.  If empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the Cities vDataFrame.
+    """
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={"city": "Varchar(82)", "geometry": "Geometry"},
+        copy_cols=[
+            "city",
+            "gx FILLER LONG VARCHAR(65000)",
+            "geometry AS ST_GeomFromText(gx)",
+        ],
+        dataset_name="cities",
+    )
+
+
+@save_verticapy_logs
+def load_world(schema: str = "public", name: str = "world") -> vDataFrame:
+    """
+    Ingests  the  World  dataset  into  the  Vertica 
+    database. 
+    This  dataset  is  ideal  for  geospatial models.  
+    If a  table  with  the  same 
+    name  and  schema  already exists, this  function 
+    will create a vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema  of  the  new  relation.  If empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the World vDataFrame.
+    """
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={
+            "pop_est": "Int",
+            "continent": "Varchar(32)",
+            "country": "Varchar(82)",
+            "geometry": "Geometry",
+        },
+        copy_cols=[
+            "pop_est",
+            "continent",
+            "country",
+            "gx FILLER LONG VARCHAR(65000)",
+            "geometry AS ST_GeomFromText(gx)",
+        ],
+        dataset_name="world",
+    )
+
+
+"""
+Datasets for Complex Data Analysis.
+"""
+
+
+@save_verticapy_logs
+def load_laliga(schema: str = "public", name: str = "laliga") -> vDataFrame:
+    """
+    Ingests the  LaLiga dataset into the Vertica 
+    database. 
+    This dataset is  ideal to test  complex data 
+    types.  If a table  with  the same name  and  
+    schema  already exists,  this  function will 
+    create a vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema of the new relation. If empty, a 
+        temporary local table will be created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the LaLiga vDataFrame.
     """
     return load_dataset(
         schema=schema,
@@ -360,227 +648,4 @@ vDataFrame
             "season": 'Row("season_id" int, "season_name" varchar)',
         },
         dataset_name="laliga",
-    )
-
-
-@save_verticapy_logs
-def load_market(schema: str = "public", name: str = "market"):
-    """
-Ingests the market dataset into the Vertica database. This dataset is ideal
-for data exploration. If a table with the same name and schema already 
-exists, this function will create a vDataFrame from the input relation.
-
-Parameters
-----------
-schema: str, optional
-	Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-	Name of the new relation.
-
-Returns
--------
-vDataFrame
-	the market vDataFrame.
-	"""
-    return load_dataset(
-        schema=schema,
-        name=name,
-        dtype={"Form": "Varchar(32)", "Name": "Varchar(32)", "Price": "Float"},
-        dataset_name="market",
-    )
-
-
-@save_verticapy_logs
-def load_pop_growth(schema: str = "public", name: str = "pop_growth"):
-    """
-Ingests the population growth dataset into the Vertica database. This 
-dataset is ideal for time series and geospatial models. If a table with 
-the same name and schema already exists, this function will create a 
-vDataFrame from the input relation.
-
-Parameters
-----------
-schema: str, optional
-    Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-    Name of the new relation.
-
-Returns
--------
-vDataFrame
-    the pop growth vDataFrame.
-    """
-    return load_dataset(
-        schema=schema,
-        name=name,
-        dtype={
-            "year": "Int",
-            "continent": "Varchar(100)",
-            "country": "Varchar(100)",
-            "city": "Varchar(100)",
-            "population": "Float",
-            "lat": "Float",
-            "lon": "Float",
-        },
-        dataset_name="pop_growth",
-    )
-
-
-@save_verticapy_logs
-def load_smart_meters(schema: str = "public", name: str = "smart_meters"):
-    """
-Ingests the smart meters dataset into the Vertica database. This dataset is 
-ideal for time series and regression models. If a table with the same name 
-and schema already exists, this function will create a vDataFrame from the 
-input relation.
-
-Parameters
-----------
-schema: str, optional
-	Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-	Name of the new relation.
-
-Returns
--------
-vDataFrame
-	the smart meters vDataFrame.
-	"""
-    return load_dataset(
-        schema=schema,
-        name=name,
-        dtype={"time": "Timestamp", "val": "Numeric(11,7)", "id": "Integer"},
-        dataset_name="smart_meters",
-    )
-
-
-@save_verticapy_logs
-def load_titanic(schema: str = "public", name: str = "titanic"):
-    """
-Ingests the titanic dataset into the Vertica database. This dataset is 
-ideal for classification models. If a table with the same name and schema 
-already exists, this function will create a vDataFrame from the input 
-relation.
-
-Parameters
-----------
-schema: str, optional
-	Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-	Name of the new relation.
-
-Returns
--------
-vDataFrame
-	the titanic vDataFrame.
-	"""
-    return load_dataset(
-        schema=schema,
-        name=name,
-        dtype={
-            "pclass": "Integer",
-            "survived": "Integer",
-            "name": "Varchar(164)",
-            "sex": "Varchar(20)",
-            "age": "Numeric(6,3)",
-            "sibsp": "Integer",
-            "parch": "Integer",
-            "ticket": "Varchar(36)",
-            "fare": "Numeric(10,5)",
-            "cabin": "Varchar(30)",
-            "embarked": "Varchar(20)",
-            "boat": "Varchar(100)",
-            "body": "Integer",
-            "home.dest": "Varchar(100)",
-        },
-        dataset_name="titanic",
-    )
-
-
-@save_verticapy_logs
-def load_winequality(schema: str = "public", name: str = "winequality"):
-    """
-Ingests the winequality dataset into the Vertica database. This dataset is 
-ideal for regression and classification models. If a table with the same 
-name and schema already exists, this function will create a vDataFrame from 
-the input relation.
-
-Parameters
-----------
-schema: str, optional
-	Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-	Name of the new relation.
-
-Returns
--------
-vDataFrame
-	the winequality vDataFrame.
-	"""
-    return load_dataset(
-        schema=schema,
-        name=name,
-        dtype={
-            "fixed_acidity": "Numeric(6,3)",
-            "volatile_acidity": "Numeric(7,4)",
-            "citric_acid": "Numeric(6,3)",
-            "residual_sugar": "Numeric(7,3)",
-            "chlorides": "Float",
-            "free_sulfur_dioxide": "Numeric(7,2)",
-            "total_sulfur_dioxide": "Numeric(7,2)",
-            "density": "Float",
-            "pH": "Numeric(6,3)",
-            "sulphates": "Numeric(6,3)",
-            "alcohol": "Float",
-            "quality": "Integer",
-            "good": "Integer",
-            "color": "Varchar(20)",
-        },
-        dataset_name="winequality",
-    )
-
-
-@save_verticapy_logs
-def load_world(schema: str = "public", name: str = "world"):
-    """
-Ingests the World dataset into the Vertica database. This dataset is ideal 
-for ideal for geospatial models. If a table with the same name and schema 
-already exists, this function will create a vDataFrame from the input 
-relation.
-
-Parameters
-----------
-schema: str, optional
-    Schema of the new relation. If empty, a temporary local table will be
-    created.
-name: str, optional
-    Name of the new relation.
-
-Returns
--------
-vDataFrame
-    the World vDataFrame.
-    """
-    return load_dataset(
-        schema=schema,
-        name=name,
-        dtype={
-            "pop_est": "Int",
-            "continent": "Varchar(32)",
-            "country": "Varchar(82)",
-            "geometry": "Geometry",
-        },
-        copy_cols=[
-            "pop_est",
-            "continent",
-            "country",
-            "gx FILLER LONG VARCHAR(65000)",
-            "geometry AS ST_GeomFromText(gx)",
-        ],
-        dataset_name="world",
     )

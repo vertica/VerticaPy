@@ -20,9 +20,9 @@ from vertica_python.vertica.connection import Connection
 
 from verticapy import __version__
 
-VERTICAPY_AUTO_CONNECTION = "VERTICAPY_AUTO_CONNECTION"
-VERTICAPY_SESSION_IDENTIFIER = str(uuid.uuid1()).replace("-", "")
-VERTICAPY_SESSION_LABEL = f"verticapy-{__version__}-{VERTICAPY_SESSION_IDENTIFIER}"
+VERTICAPY_AUTO_CONNECTION: str = "VERTICAPY_AUTO_CONNECTION"
+VERTICAPY_SESSION_IDENTIFIER: str = str(uuid.uuid1()).replace("-", "")
+VERTICAPY_SESSION_LABEL: str = f"verticapy-{__version__}-{VERTICAPY_SESSION_IDENTIFIER}"
 
 
 class GlobalConnection:
@@ -107,7 +107,7 @@ class GlobalConnection:
             )
 
 
-_global_connection = GlobalConnection()
+_global_connection: GlobalConnection = GlobalConnection()
 
 
 def get_global_connection() -> GlobalConnection:

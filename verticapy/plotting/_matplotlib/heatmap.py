@@ -31,8 +31,6 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.string_sql.base import StringSQL
 
-from verticapy.datasets.generators import gen_meshgrid
-
 from verticapy.plotting._matplotlib.base import updated_dict
 
 
@@ -126,6 +124,8 @@ def contour_plot(
     ax=None,
     **style_kwds,
 ):
+    from verticapy.datasets.generators import gen_meshgrid
+
     if not (cbar_title) and str(type(func)) in (
         "<class 'function'>",
         "<class 'method'>",
