@@ -14,10 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy._utils._sql._format import quote_ident
 
