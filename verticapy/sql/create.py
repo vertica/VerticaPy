@@ -98,7 +98,7 @@ def create_table(
         schema = ""
         temporary_local_table = True
     if schema:
-        input_relation = format_schema_table(schema, table)
+        input_relation = format_schema_table(schema, table_name)
     else:
         input_relation = quote_ident(table_name)
     temp = "TEMPORARY " if temporary_table else ""
