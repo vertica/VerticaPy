@@ -19,6 +19,7 @@ from typing import Union
 from verticapy._typing import PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import SQLRelation
 
 from verticapy.datasets.generators import gen_meshgrid
 
@@ -29,7 +30,7 @@ import verticapy.sql.functions.math as mt
 
 @save_verticapy_logs
 def coordinate_converter(
-    vdf: vDataFrame,
+    vdf: SQLRelation,
     x: str,
     y: str,
     x0: float = 0.0,
@@ -37,29 +38,29 @@ def coordinate_converter(
     reverse: bool = False,
 ) -> vDataFrame:
     """
-Converts between geographic coordinates (latitude and longitude) and 
-Euclidean coordinates (x,y).
+    Converts between geographic coordinates (latitude 
+    and longitude)  and  Euclidean coordinates (x,y).
 
-Parameters
-----------
-vdf: vDataFrame
-    input vDataFrame.
-x: str
-    vDataColumn used as the abscissa (longitude).
-y: str
-    vDataColumn used as the ordinate (latitude).
-x0: float, optional
-    The initial abscissa.
-earth_radius: PythonNumber, optional
-    Earth radius in km.
-reverse: bool, optional
-    If set to True, the Euclidean coordinates are converted to latitude 
-    and longitude.
+    Parameters
+    ----------
+    vdf: SQLRelation
+        input vDataFrame.
+    x: str
+        vDataColumn used as the abscissa (longitude).
+    y: str
+        vDataColumn used as the ordinate  (latitude).
+    x0: float, optional
+        The initial abscissa.
+    earth_radius: PythonNumber, optional
+        Earth radius in km.
+    reverse: bool, optional
+        If set to True, the Euclidean coordinates are 
+        converted to latitude and longitude.
 
-Returns
--------
-vDataFrame
-    result of the transformation.
+    Returns
+    -------
+    vDataFrame
+        result of the transformation.
     """
     x, y = vdf._format_colnames(x, y)
 
@@ -82,32 +83,35 @@ vDataFrame
 
 @save_verticapy_logs
 def intersect(
-    vdf: vDataFrame, index: str, gid: str, g: str = "", x: str = "", y: str = ""
+    vdf: SQLRelation, index: str, gid: str, g: str = "", x: str = "", y: str = ""
 ) -> vDataFrame:
     """
-Spatially intersects a point or points with a set of polygons.
+    Spatially intersects a point or points with a set 
+    of polygons.
 
-Parameters
-----------
-vdf: vDataFrame
-    vDataFrame to use to compute the spatial join.
-index: str
-    Name of the index.
-gid: str
-    An integer column or integer that uniquely identifies the spatial 
-    object(s) of g or x and y.
-g: str, optional
-    A geometry or geography (WGS84) column that contains points. 
-    The g column can contain only point geometries or geographies.
-x: str, optional
-    x-coordinate or longitude.
-y: str, optional
-    y-coordinate or latitude.
+    Parameters
+    ----------
+    vdf: SQLRelation
+        vDataFrame to use to compute the spatial join.
+    index: str
+        Name of the index.
+    gid: str
+        An  integer  column  or integer that  uniquely 
+        identifies the spatial object(s) of g or x and 
+        y.
+    g: str, optional
+        A  geometry  or  geography (WGS84) column that 
+        contains points. The g column can contain only 
+        point geometries or geographies.
+    x: str, optional
+        x-coordinate or longitude.
+    y: str, optional
+        y-coordinate or latitude.
 
-Returns
--------
-vDataFrame
-    object containing the result of the intersection.
+    Returns
+    -------
+    vDataFrame
+        object containing the result of the intersection.
     """
     x, y, gid, g = vdf._format_colnames(x, y, gid, g)
 
@@ -135,24 +139,29 @@ vDataFrame
 @save_verticapy_logs
 def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     """
-Splits a polygon into (nbins ** 2) smaller polygons of approximately equal
-total area. This process is inexact, and the split polygons have 
-approximated edges; greater values for nbins produces more accurate and 
-precise edge approximations.
+    Splits a polygon into  (nbins ** 2) smaller 
+    polygons of approximately equal total area. 
+    This  process  is inexact,  and  the  split 
+    polygons  have approximated edges;  greater 
+    values for nbins produces more accurate and 
+    precise edge approximations.
 
-Parameters
-----------
-p: str
-    String representation of the polygon.
-nbins: int, optional
-    Number of bins used to cut the longitude and the latitude.
-    Split polygons have approximated edges, and greater values for nbins
-    leads to more accurate and precise edge approximations.
+    Parameters
+    ----------
+    p: str
+        String representation of the polygon.
+    nbins: int, optional
+        Number of bins used to cut the longitude 
+        and the latitude.  Split  polygons  have 
+        approximated  edges, and greater  values 
+        for  nbins  leads to more  accurate  and 
+        precise edge approximations.
 
-Returns
--------
-vDataFrame
-    output vDataFrame that includes the new polygons.
+    Returns
+    -------
+    vDataFrame
+        output  vDataFrame that includes the new 
+        polygons.
     """
     sql = f"""SELECT /*+LABEL(split_polygon_n)*/
                 MIN(ST_X(point)), 

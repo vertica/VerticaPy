@@ -48,7 +48,7 @@ vDataFrame
     if file_extension != "shp":
         raise ExtensionError("The file extension is incorrect !")
     query = (
-        f"SELECT /*+LABEL('utilities.read_shp')*/ STV_ShpCreateTable(USING PARAMETERS file='{path}')"
+        f"SELECT /*+LABEL('read_shp')*/ STV_ShpCreateTable(USING PARAMETERS file='{path}')"
         " OVER() AS create_shp_table;"
     )
     result = _executeSQL(query, title="Getting SHP definition.", method="fetchall")

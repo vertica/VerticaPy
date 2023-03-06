@@ -357,7 +357,7 @@ class vDCFill:
             mode    : mode (most occurent element).
             0ifnull : 0 when the vDataColumn is null, 1 otherwise.
     expr: str, optional
-        SQL expression.
+        SQL string.
     by: SQLColumns, optional
         vDataColumns used in the partition.
     order_by: SQLColumns, optional

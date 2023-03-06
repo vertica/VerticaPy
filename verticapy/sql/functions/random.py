@@ -17,47 +17,48 @@ permissions and limitations under the License.
 from verticapy.core.string_sql.base import StringSQL
 
 
-def random():
+def random() -> StringSQL:
     """
-Returns a Random Number.
+    Returns a Random Number.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     return StringSQL("RANDOM()", "float")
 
 
-def randomint(n: int):
+def randomint(n: int) -> StringSQL:
     """
-Returns a Random Number from 0 through n – 1.
+    Returns a Random Number from 0 through n – 1.
 
-Parameters
-----------
-n: int
-    Integer Value.
+    Parameters
+    ----------
+    n: int
+        Integer Value.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     return StringSQL(f"RANDOMINT({n})", "int")
 
 
-def seeded_random(random_state: int):
+def seeded_random(random_state: int) -> StringSQL:
     """
-Returns a Seeded Random Number using the input random state.
+    Returns a Seeded Random Number using the input 
+    random state.
 
-Parameters
-----------
-random_state: int
-    Integer used to seed the randomness.
+    Parameters
+    ----------
+    random_state: int
+        Integer used to seed the randomness.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     return StringSQL(f"SEEDED_RANDOM({random_state})", "float")

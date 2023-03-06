@@ -266,7 +266,7 @@ read_csv : Ingests a CSV file into the Vertica database.
         column_name = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('utilities.{label}')*/ 
+                    /*+LABEL('{label}')*/ 
                     column_name,
                     data_type 
                 FROM columns 
@@ -367,7 +367,7 @@ read_csv : Ingests a CSV file into the Vertica database.
                 _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('utilities.{label}')*/ 
+                            /*+LABEL('{label}')*/ 
                             \"{column_dtype[0]}\"::{column_dtype[1]} 
                         FROM {flex_name} 
                         LIMIT 1000""",
@@ -398,7 +398,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             query3 = f"""
                 CREATE {suffix}TABLE {input_relation}{on_commit} AS 
                     SELECT 
-                        /*+LABEL('utilities.{label}')*/ 
+                        /*+LABEL('{label}')*/ 
                         {", ".join(cols)} 
                     FROM {flex_name}"""
             all_queries = all_queries + [clean_query(query3)]
@@ -433,7 +433,7 @@ read_csv : Ingests a CSV file into the Vertica database.
                     ]
             query = f"""
                 INSERT 
-                    /*+LABEL('utilities.{label}')*/ 
+                    /*+LABEL('{label}')*/ 
                 INTO {input_relation} 
                 SELECT 
                     {", ".join(final_transformation)} 

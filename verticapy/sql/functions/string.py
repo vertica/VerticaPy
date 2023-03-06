@@ -14,67 +14,69 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy._typing import SQLExpression
 from verticapy._utils._sql._format import format_magic
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.string_sql.base import StringSQL
 
 
-def length(expr):
+def length(expr: SQLExpression) -> StringSQL:
     """
-Returns the length of a string.
+    Returns the length of a string.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"LENGTH({expr})", "int")
 
 
-def lower(expr):
+def lower(expr: SQLExpression) -> StringSQL:
     """
-Returns a VARCHAR value containing the argument converted to 
-lowercase letters. 
+    Returns  a VARCHAR value containing  the 
+    argument converted to lowercase letters. 
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"LOWER({expr})", "text")
 
 
-def substr(expr, position: int, extent: int = None):
+def substr(expr: SQLExpression, position: int, extent: int = None) -> StringSQL:
     """
-Returns VARCHAR or VARBINARY value representing a substring of a specified 
-string.
+    Returns   VARCHAR  or  VARBINARY  value 
+    representing a substring of a specified 
+    string.
 
-Parameters
-----------
-expr: object
-    Expression.
-position: int
-    Starting position of the substring.
-extent: int, optional
-    Length of the substring to extract.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
+    position: int
+        Starting position of the substring.
+    extent: int, optional
+        Length of the substring to extract.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     if extent:
@@ -82,20 +84,20 @@ StringSQL
     return StringSQL(f"SUBSTR({expr}, {position})", "text")
 
 
-def upper(expr):
+def upper(expr: SQLExpression) -> StringSQL:
     """
-Returns a VARCHAR value containing the argument converted to uppercase 
-letters. 
+    Returns  a VARCHAR value containing  the 
+    argument converted to uppercase letters. 
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"UPPER({expr})", "text")
@@ -105,23 +107,22 @@ StringSQL
 
 
 @check_minimum_version
-def edit_distance(
-    expr1, expr2,
-):
+def edit_distance(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
     """
-Calculates and returns the Levenshtein distance between the two strings.
+    Calculates and returns the Levenshtein 
+    distance  between   the  two  strings.
 
-Parameters
-----------
-expr1: object
-    Expression.
-expr2: object
-    Expression.
+    Parameters
+    ----------
+    expr1: SQLExpression
+        Expression.
+    expr2: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -132,44 +133,44 @@ levenshtein = edit_distance
 
 
 @check_minimum_version
-def soundex(expr):
+def soundex(expr: SQLExpression) -> StringSQL:
     """
-Returns Soundex encoding of a varchar strings as a four -character string.
+    Returns Soundex encoding of a varchar 
+    strings  as a four character  string.
 
-Parameters
-----------
-expr: object
-    Expression.
+    Parameters
+    ----------
+    expr: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr = format_magic(expr)
     return StringSQL(f"SOUNDEX({expr})", "varchar")
 
 
 @check_minimum_version
-def soundex_matches(
-    expr1, expr2,
-):
+def soundex_matches(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
     """
-Generates and compares Soundex encodings of two strings, and returns a count 
-of the matching characters (ranging from 0 for no match to 4 for an exact 
-match).
+    Generates and compares Soundex encodings of 
+    two  strings,  and  returns a count of  the 
+    matching characters  (ranging from 0 for no 
+    match to 4 for an exact match).
 
-Parameters
-----------
-expr1: object
-    Expression.
-expr2: object
-    Expression.
+    Parameters
+    ----------
+    expr1: SQLExpression
+        Expression.
+    expr2: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -180,23 +181,22 @@ StringSQL
 
 
 @check_minimum_version
-def jaro_distance(
-    expr1, expr2,
-):
+def jaro_distance(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
     """
-Calculates and returns the Jaro distance between two strings.
+    Calculates and returns the Jaro distance 
+    between two strings.
 
-Parameters
-----------
-expr1: object
-    Expression.
-expr2: object
-    Expression.
+    Parameters
+    ----------
+    expr1: SQLExpression
+        Expression.
+    expr2: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -204,23 +204,22 @@ StringSQL
 
 
 @check_minimum_version
-def jaro_winkler_distance(
-    expr1, expr2,
-):
+def jaro_winkler_distance(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
     """
-Calculates and returns the Jaro-Winkler distance between two strings.
+    Calculates and returns the Jaro-Winkler 
+    distance between two strings.
 
-Parameters
-----------
-expr1: object
-    Expression.
-expr2: object
-    Expression.
+    Parameters
+    ----------
+    expr1: SQLExpression
+        Expression.
+    expr2: SQLExpression
+        Expression.
 
-Returns
--------
-StringSQL
-    SQL expression.
+    Returns
+    -------
+    StringSQL
+        SQL string.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)

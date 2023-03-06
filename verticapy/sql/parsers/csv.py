@@ -199,7 +199,7 @@ read_json : Ingests a JSON file into the Vertica database.
         try:
             _executeSQL(
                 query=f"""
-                    SELECT /*+LABEL('utilities.pcsv')*/
+                    SELECT /*+LABEL('pcsv')*/
                         (CASE 
                             WHEN "{column_dtype[0]}"=\'{na_rep}\' THEN NULL 
                             ELSE "{column_dtype[0]}" 
@@ -371,7 +371,7 @@ read_json : Ingests a JSON file into the Vertica database.
         schema_str = schema.replace("'", "''")
         result = _executeSQL(
             query=f"""
-                SELECT /*+LABEL('utilities.read_csv')*/
+                SELECT /*+LABEL('read_csv')*/
                     column_name 
                FROM columns 
                WHERE table_name = '{table_name_str}' 

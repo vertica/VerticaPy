@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import vertica_python, warnings
+import warnings, vertica_python
+from typing import Union
 
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, format_schema_table
@@ -27,21 +28,22 @@ from verticapy.sql.drop import drop
 
 def vertica_python_dtype(
     type_name: str, display_size: int = 0, precision: int = 0, scale: int = 0
-):
+) -> str:
     """
-Takes as input the Vertica Python type code and returns its corresponding data type.
+    Takes as input the Vertica Python type code and 
+    returns its corresponding data type.
     """
-    result = type_name
+    res = type_name
     has_precision_scale = (
         (type_name[0:4].lower() not in ("uuid", "date", "bool"))
         and (type_name[0:5].lower() != "array")
         and (type_name[0:3].lower() not in ("set", "row", "map", "int"))
     )
     if display_size and has_precision_scale:
-        result += f"({display_size})"
+        res += f"({display_size})"
     elif scale and precision and has_precision_scale:
-        result += f"({precision},{scale})"
-    return result
+        res += f"({precision},{scale})"
+    return res
 
 
 def get_data_types(
@@ -50,44 +52,52 @@ def get_data_types(
     table_name: str = "",
     schema: str = "public",
     usecols: list = [],
-):
+) -> Union[tuple, list[tuple]]:
     """
-Returns customized relation columns and the respective data types.
-This process creates a temporary table.
+    Returns customized relation columns and the 
+    respective data types. This process creates 
+    a temporary table.
 
-If table_name is defined, the expression is ignored and the function
-returns the table/view column names and data types.
+    If table_name is defined, the expression is 
+    ignored and the function returns the table/
+    view column names and data types.
 
-Parameters
-----------
-expr: str, optional
-    An expression in pure SQL. If empty, the parameter 'table_name' must be
-    defined.
-column: str, optional
-    If not empty, it will return only the data type of the input column if it
-    is in the relation.
-table_name: str, optional
-    Input table Name.
-schema: str, optional
-    Table schema.
-usecols: list, optional
-    List of columns to consider. This parameter can not be used if 'column'
-    is defined.
+    Parameters
+    ----------
+    expr: str, optional
+        An expression in pure SQL. If empty, the 
+        parameter 'table_name' must be defined.
+    column: str, optional
+        If  not empty,  it will  return only  the 
+        data type of the input column if it is in 
+        the relation.
+    table_name: str, optional
+        Input table Name.
+    schema: str, optional
+        Table schema.
+    usecols: list, optional
+        List   of  columns   to  consider.   This 
+        parameter can not be  used if 'column' is 
+        defined.
 
-Returns
--------
-list of tuples
-    The list of the different columns and their respective type.
+    Returns
+    -------
+    list of tuples
+        The  list  of the  different columns  and 
+        their respective type.
     """
-    assert expr or table_name, ParameterError(
-        "Missing parameter: 'expr' and 'table_name' can not both be empty."
-    )
-    assert not (column) or not (usecols), ParameterError(
-        "Parameters 'column' and 'usecols' can not both be defined."
-    )
-    if expr and table_name:
+    if not (expr) and not (table_name):
+        raise ParameterError(
+            "Missing parameter: 'expr' and 'table_name' can not both be empty."
+        )
+    if (column) and (usecols):
+        raise ParameterError(
+            "Parameters 'column' and 'usecols' can not both be defined."
+        )
+    if (expr) and (table_name):
         warning_message = (
-            "As parameter 'table_name' is defined, parameter 'expression' is ignored."
+            "As parameter 'table_name' is defined, "
+            "parameter 'expression' is ignored."
         )
         warnings.warn(warning_message, Warning)
     if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor) and not (
@@ -165,7 +175,7 @@ list of tuples
     cursor = _executeSQL(
         query=f"""
             SELECT 
-                /*+LABEL('utilities.get_data_types')*/ 
+                /*+LABEL('get_data_types')*/ 
                 column_name,
                 data_type 
             FROM 

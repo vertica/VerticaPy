@@ -30,32 +30,36 @@ def drop(
     raise_error: bool = False,
 ) -> bool:
     """
-Drops the input relation. This can be a model, view, table, text index,
-schema, or geo index.
+    Drops the input relation. This can be a model, 
+    view, table, text index, schema, or geo index.
 
-Parameters
-----------
-name: str, optional
-    Relation name. If empty, it will drop all VerticaPy temporary 
-    elements.
-method: str, optional
-    Method used to drop.
-        auto   : identifies the table/view/index/model to drop. 
-                 It will never drop an entire schema unless the 
-                 method is set to 'schema'.
-        model  : drops the input model.
-        table  : drops the input table.
-        view   : drops the input view.        
-        geo    : drops the input geo index.
-        text   : drops the input text index.
-        schema : drops the input schema.
-raise_error: bool, optional
-    If the object couldn't be dropped, this function raises an error.
+    Parameters
+    ----------
+    name: str, optional
+        Relation name.  If empty, it will drop all 
+        VerticaPy temporary elements.
+    method: str, optional
+        Method used to drop.
+            auto   : identifies the table / view /
+                     index / model to drop. 
+                     It will  never drop an entire 
+                     schema  unless the  method is 
+                     set to 'schema'.
+            model  : drops the input model.
+            table  : drops the input table.
+            view   : drops the input view.        
+            geo    : drops the input geo index.
+            text   : drops the input text index.
+            schema : drops the input schema.
+    raise_error: bool, optional
+        If  the object  couldn't be dropped,  this 
+        function raises an error.
 
-Returns
--------
-bool
-    True if the relation was dropped, False otherwise.
+    Returns
+    -------
+    bool
+        True   if   the   relation   was  dropped, 
+        False otherwise.
     """
     schema, relation = schema_relation(name)
     schema, relation = schema[1:-1], relation[1:-1]
@@ -66,7 +70,7 @@ bool
         result = _executeSQL(
             query=f"""
             SELECT 
-                /*+LABEL('utilities.drop')*/ * 
+                /*+LABEL('drop')*/ * 
             FROM columns 
             WHERE table_schema = '{schema}' 
                 AND table_name = '{relation}'""",
@@ -78,7 +82,7 @@ bool
         result = _executeSQL(
             query=f"""
             SELECT 
-                /*+LABEL('utilities.drop')*/ * 
+                /*+LABEL('drop')*/ * 
             FROM view_columns 
             WHERE table_schema = '{schema}' 
                 AND table_name = '{relation}'""",
@@ -90,7 +94,7 @@ bool
         result = _executeSQL(
             query=f"""
             SELECT 
-                /*+LABEL('utilities.drop')*/ * 
+                /*+LABEL('drop')*/ * 
             FROM models 
             WHERE schema_name = '{schema}' 
                 AND model_name = '{relation}'""",
@@ -102,7 +106,7 @@ bool
         result = _executeSQL(
             query=f"""
             SELECT 
-                /*+LABEL('utilities.drop')*/ * 
+                /*+LABEL('drop')*/ * 
             FROM 
                 (SELECT STV_Describe_Index () OVER ()) x  
             WHERE name IN ('{schema}.{relation}',
@@ -153,7 +157,7 @@ bool
                 raise
             result = False
     elif method == "temp":
-        sql = """SELECT /*+LABEL('utilities.drop')*/
+        sql = """SELECT /*+LABEL('drop')*/
                     table_schema, table_name 
                  FROM columns 
                  WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' 
@@ -164,7 +168,7 @@ bool
                 elem[0].replace('"', '""'), elem[1].replace('"', '""')
             )
             drop(table, method="table")
-        sql = """SELECT /*+LABEL('utilities.drop')*/
+        sql = """SELECT /*+LABEL('drop')*/
                     table_schema, table_name 
                  FROM view_columns 
                  WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' 
