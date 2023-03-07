@@ -16,11 +16,13 @@ permissions and limitations under the License.
 """
 import decimal, math
 from collections.abc import Iterable
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 import numpy as np
 import scipy.stats as scipy_st
 import scipy.special as scipy_special
+
+from matplotlib.axes import Axes
 
 from verticapy._config.colors import get_cmap
 import verticapy._config.config as conf
@@ -46,7 +48,7 @@ class vDFCorr:
         columns: list = [],
         round_nb: int = 3,
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -539,7 +541,7 @@ class vDFCorr:
         columns: list = [],
         round_nb: int = 3,
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -744,7 +746,7 @@ class vDFCorr:
         round_nb: int = 3,
         focus: str = "",
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1019,7 +1021,7 @@ class vDFCorr:
         columns: SQLColumns = [],
         focus: str = "",
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1087,7 +1089,7 @@ class vDFCorr:
         alpha: float = 0.95,
         round_nb: int = 3,
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1238,7 +1240,7 @@ class vDFCorr:
         confidence: bool = True,
         alpha: float = 0.95,
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1402,7 +1404,7 @@ class vDFCorr:
             "alpha",
         ] = "r2",
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1578,7 +1580,7 @@ class vDFCorr:
         columns: SQLColumns = [],
         nbins: int = 10,
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
     ):
         """
     Computes the Information Value (IV) Table. It tells the predictive power of 

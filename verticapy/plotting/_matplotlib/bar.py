@@ -15,8 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
@@ -38,9 +39,9 @@ def bar(
     max_cardinality: int = 6,
     nbins: int = 0,
     h: float = 0,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
     )
@@ -88,9 +89,9 @@ def bar2D(
     stacked: bool = False,
     fully_stacked: bool = False,
     density: bool = False,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     colors = get_colors()
     if fully_stacked:
         if method != "density":
@@ -260,9 +261,9 @@ def hist(
     max_cardinality: int = 6,
     nbins: int = 0,
     h: float = 0,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, method, of, max_cardinality, nbins, h
     )
@@ -311,9 +312,9 @@ def hist2D(
     max_cardinality: tuple = (6, 6),
     h: tuple = (None, None),
     stacked: bool = False,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     colors = get_colors()
     all_columns = vdf.pivot_table(
         columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
@@ -399,9 +400,9 @@ def multiple_hist(
     method: str = "density",
     of: str = "",
     h: float = 0,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     colors = get_colors()
     if len(columns) > 5:
         raise ParameterError(

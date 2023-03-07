@@ -15,10 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, math
-from typing import Union
+from typing import Optional, Union
 import numpy as np
 import scipy.spatial as scipy_st
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
@@ -39,9 +40,9 @@ def logit_plot(
     input_relation: str,
     coefficients: list,
     max_nb_points: int = 50,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     param0 = {
         "marker": "o",
         "s": 50,
@@ -231,9 +232,9 @@ def lof_plot(
     columns: SQLColumns,
     lof: str,
     TableSample: PythonNumber = -1,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     TableSample = f"TABLESAMPLE({TableSample})" if (0 < TableSample < 100) else ""
     colors = []
     if "color" in style_kwds:
@@ -391,7 +392,7 @@ def plot_bubble_ml(
     title: str = "Model Type",
     reverse: tuple = (True, True),
     plt_text=True,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
 ):
     if s:
@@ -556,9 +557,9 @@ def plot_importance(
     coeff_importances: Union[dict, np.ndarray],
     coeff_sign: Union[dict, np.ndarray] = {},
     print_legend: bool = True,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     if isinstance(coeff_importances, dict):
         coefficients, importances, signs = [], [], []
         for coeff in coeff_importances:
@@ -607,9 +608,9 @@ def plot_pca_circle(
     variable_names: list = [],
     explained_variance: tuple = (None, None),
     dimensions: tuple = (1, 2),
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     colors = get_colors()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
@@ -654,9 +655,9 @@ def plot_stepwise_ml(
     x_label: str = "n_features",
     y_label: str = "score",
     direction="forward",
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     colors = get_colors()
     if not (ax):
         fig, ax = plt.subplots()
@@ -748,9 +749,9 @@ def plot_var(
     explained_variance: tuple = (None, None),
     dimensions: tuple = (1, 2),
     bar_name: str = "",
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     colors = get_colors()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
@@ -808,7 +809,7 @@ def regression_plot(
     input_relation: str,
     coefficients: list,
     max_nb_points: int = 50,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
 ):
     param = {
@@ -909,9 +910,9 @@ def regression_tree_plot(
     y: str,
     input_relation: str,
     max_nb_points: int = 10000,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     all_points = _executeSQL(
         query=f"""
         SELECT 
@@ -965,9 +966,9 @@ def svm_classifier_plot(
     input_relation: str,
     coefficients: list,
     max_nb_points: int = 500,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     param0 = {
         "marker": "o",
         "color": get_colors()[0],
@@ -1162,9 +1163,9 @@ def voronoi_plot(
     input_relation: str,
     max_nb_points: int = 1000,
     plot_crosses: bool = True,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     min_x, max_x, min_y, max_y = (
         min([elem[0] for elem in clusters]),
         max([elem[0] for elem in clusters]),

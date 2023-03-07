@@ -15,8 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime, math
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from collections.abc import Iterable
+
+from matplotlib.axes import Axes
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns, SQLExpression
@@ -50,7 +52,7 @@ class vDFPlot:
         interval: int = 300,
         repeat: bool = True,
         return_html: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -249,7 +251,7 @@ class vDFPlot:
             "pyramid",
             "density",
         ] = "auto",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -332,7 +334,9 @@ class vDFPlot:
             )
 
     @save_verticapy_logs
-    def boxplot(self, columns: SQLColumns = [], ax=None, **style_kwds):
+    def boxplot(
+        self, columns: SQLColumns = [], ax: Optional[Axes] = None, **style_kwds
+    ):
         """
     Draws the Box Plot of the input vDataColumns. 
 
@@ -376,7 +380,7 @@ class vDFPlot:
         max_nb_points: int = 20000,
         bbox: list = [],
         img: str = "",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -432,7 +436,12 @@ class vDFPlot:
 
     @save_verticapy_logs
     def contour(
-        self, columns: SQLColumns, func, nbins: int = 100, ax=None, **style_kwds
+        self,
+        columns: SQLColumns,
+        func,
+        nbins: int = 100,
+        ax: Optional[Axes] = None,
+        **style_kwds,
     ):
         """
     Draws the contour plot of the input function two input vDataColumns.
@@ -473,7 +482,7 @@ class vDFPlot:
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 50,
         xlim: tuple = None,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -754,7 +763,7 @@ class vDFPlot:
         method: str = "count",
         of: str = "",
         h: tuple = (None, None),
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -826,7 +835,7 @@ class vDFPlot:
         of: str = "",
         bbox: list = [],
         img: str = "",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -879,7 +888,7 @@ class vDFPlot:
         max_cardinality: tuple = (6, 6),
         h: Union[int, float, tuple] = (None, None),
         hist_type: Literal["auto", "multi", "stacked"] = "auto",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -970,7 +979,7 @@ class vDFPlot:
         inliers_color: str = "white",
         inliers_border_color: str = "red",
         max_nb_points: int = 500,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1024,7 +1033,7 @@ class vDFPlot:
         columns: SQLColumns,
         max_cardinality: Union[int, tuple, list] = None,
         h: Union[float, tuple] = None,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1058,7 +1067,7 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
-        return plt.nested_pie(self, columns, max_cardinality, h, ax=None, **style_kwds)
+        return plt.nested_pie(self, columns, max_cardinality, h, ax=ax, **style_kwds)
 
     @save_verticapy_logs
     def pivot_table(
@@ -1071,7 +1080,7 @@ class vDFPlot:
         show: bool = True,
         with_numbers: bool = True,
         fill_none: float = 0.0,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1147,7 +1156,7 @@ class vDFPlot:
         start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         step: bool = False,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1203,7 +1212,7 @@ class vDFPlot:
         dimensions: tuple = None,
         bbox: list = [],
         img: str = "",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1331,7 +1340,7 @@ class vDFPlot:
         start_date: Union[int, float, str, datetime.datetime, datetime.date] = "",
         end_date: Union[int, float, str, datetime.datetime, datetime.date] = "",
         fully: bool = False,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1483,7 +1492,7 @@ class vDCPlot:
         max_cardinality: int = 6,
         nbins: int = 0,
         h: PythonNumber = 0,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1534,7 +1543,7 @@ class vDCPlot:
         h: PythonNumber = 0,
         max_cardinality: int = 8,
         cat_priority: Union[str, int, datetime.datetime, datetime.date, list] = [],
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1583,7 +1592,7 @@ class vDCPlot:
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 200,
         xlim: tuple = None,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1736,7 +1745,7 @@ class vDCPlot:
         max_cardinality: int = 6,
         nbins: int = 0,
         h: PythonNumber = 0,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1790,7 +1799,7 @@ class vDCPlot:
         max_cardinality: int = 6,
         h: PythonNumber = 0,
         pie_type: Literal["auto", "donut", "rose"] = "auto",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1838,7 +1847,7 @@ class vDCPlot:
         donut, rose = (pie_type == "donut"), (pie_type == "rose")
         of = self._parent._format_colnames(of)
         return plt.pie(
-            self, method, of, max_cardinality, h, donut, rose, ax=None, **style_kwds,
+            self, method, of, max_cardinality, h, donut, rose, ax=ax, **style_kwds,
         )
 
     @save_verticapy_logs
@@ -1850,7 +1859,7 @@ class vDCPlot:
         end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         area: bool = False,
         step: bool = False,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1900,7 +1909,7 @@ class vDCPlot:
         start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         plot_median: bool = False,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1949,7 +1958,7 @@ class vDCPlot:
         of: str = "",
         max_cardinality: Union[int, tuple, list] = (6, 6),
         h: Union[int, float, tuple, list] = (None, None),
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """

@@ -15,12 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 import numpy as np
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-
 
 from verticapy._config.colors import get_cmap, get_colors
 import verticapy._config.config as conf
@@ -45,9 +45,9 @@ def bubble(
     max_nb_points: int = 1000,
     bbox: list = [],
     img: str = "",
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     assert not (catcol) or not (cmap_col), ParameterError(
         "Bubble Plot only accepts either a cmap column or a categorical column. It can not accept both."
     )
@@ -335,9 +335,9 @@ def outliers_contour_plot(
     cmap: str = None,
     max_nb_points: int = 1000,
     threshold: float = 3.0,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     if not (cmap):
         cmap = get_cmap(get_colors()[2])
     all_agg = vdf.agg(["avg", "std", "min", "max"], columns)
@@ -448,9 +448,7 @@ def outliers_contour_plot(
     return ax
 
 
-def scatter_matrix(
-    vdf: "vDataFrame", columns: list = [], **style_kwds,
-):
+def scatter_matrix(vdf: "vDataFrame", columns: list = [], **style_kwds,) -> Axes:
     columns = vdf._format_colnames(columns)
     if not (columns):
         columns = vdf.numcol()
@@ -523,9 +521,9 @@ def scatter(
     max_nb_points: int = 1000,
     bbox: list = [],
     img: str = "",
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     columns, catcol = vdf._format_colnames(columns, catcol, expected_nb_of_cols=[2, 3])
     n = len(columns)
     for col in columns:
@@ -596,8 +594,8 @@ def scatter(
         condition: list = condition,
         all_scatter: list = all_scatter,
         others: list = others,
-        ax=ax,
-    ):
+        ax: Axes = ax,
+    ) -> None:
         condition = copy.deepcopy(condition)
         title = "Selecting random points to draw the scatter plot"
         if not (catcol):

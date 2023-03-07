@@ -15,8 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, warnings
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
@@ -33,9 +34,9 @@ def boxplot(
     h: float = 0,
     max_cardinality: int = 8,
     cat_priority: list = [],
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     colors = []
     if "color" in style_kwds:
         if isinstance(style_kwds["color"], str):
@@ -252,8 +253,8 @@ def boxplot(
 
 
 def boxplot2D(
-    vdf: "vDataFrame", columns: list = [], ax=None, **style_kwds,
-):
+    vdf: "vDataFrame", columns: list = [], ax: Optional[Axes] = None, **style_kwds,
+) -> Axes:
     colors = []
     if "color" in style_kwds:
         if isinstance(style_kwds["color"], str):

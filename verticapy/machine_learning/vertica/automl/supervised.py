@@ -635,7 +635,7 @@ class AutoML(VerticaModel):
 
     # Features Importance Methods.
 
-    def features_importance(self, ax=None, **kwds) -> TableSample:
+    def features_importance(self, ax: Optional[Axes] = None, **kwds) -> TableSample:
         """
         Computes the model's features importance.
 

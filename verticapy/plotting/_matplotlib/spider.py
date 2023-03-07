@@ -15,8 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
@@ -36,9 +37,9 @@ def spider(
     of: str = "",
     max_cardinality: tuple = (6, 6),
     h: tuple = (None, None),
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     unique = vdf[columns[0]].nunique(True)
     if unique < 3:
         raise ParameterError(

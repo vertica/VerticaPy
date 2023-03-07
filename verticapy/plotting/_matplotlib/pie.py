@@ -14,10 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import numpy as np
+
+from matplotlib.axes import Axes
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
@@ -34,9 +36,9 @@ def nested_pie(
     columns: SQLColumns,
     max_cardinality: tuple = None,
     h: tuple = None,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     wedgeprops = dict(width=0.3, edgecolor="w")
     tmp_style = {}
     for elem in style_kwds:
@@ -133,9 +135,9 @@ def pie(
     h: float = 0,
     donut: bool = False,
     rose: bool = False,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     colors = get_colors()
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, max_cardinality=max_cardinality, method=method, of=of, pie=True

@@ -15,8 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
@@ -33,7 +34,7 @@ if conf._get_import_success("dateutil"):
     from dateutil.parser import parse
 
 
-def parse_datetime(D: list):
+def parse_datetime(D: list) -> list:
     try:
         return [parse(d) for d in D]
     except:
@@ -46,9 +47,9 @@ def acf_plot(
     title="",
     confidence=None,
     type_bar: bool = True,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     tmp_style = {}
     for elem in style_kwds:
         if elem not in ("color", "colors"):
@@ -101,9 +102,9 @@ def multi_ts_plot(
     order_by_start: str = "",
     order_by_end: str = "",
     kind: str = "line",
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     if len(columns) == 1 and kind != "area_percent":
         if kind in ("line", "step"):
             area = False
@@ -244,12 +245,12 @@ def range_curve(
     Y,
     param_name="",
     score_name="score",
-    ax=None,
+    ax: Optional[Axes] = None,
     labels=[],
     without_scatter: bool = False,
     plot_median: bool = True,
     **style_kwds,
-):
+) -> Axes:
     if not (ax):
         fig, ax = plt.subplots()
         if conf._get_import_success("jupyter"):
@@ -296,9 +297,9 @@ def range_curve_vdf(
     order_by_start: str = "",
     order_by_end: str = "",
     plot_median: bool = True,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     order_by_start_str, order_by_end_str = "", ""
     if order_by_start:
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
@@ -352,9 +353,9 @@ def ts_plot(
     order_by_end: str = "",
     area: bool = False,
     step: bool = False,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     if order_by_start:
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
     else:

@@ -309,7 +309,6 @@ class TestModelSelection:
             "good",
             "auc",
             cv=3,
-            ax=None,
         )
         plt.close("all")
         assert len(result["tol"]) == 3
@@ -327,7 +326,6 @@ class TestModelSelection:
                 elem,
                 "auc",
                 cv=3,
-                ax=None,
             )
             plt.close("all")
             assert len(result["n"]) == 3

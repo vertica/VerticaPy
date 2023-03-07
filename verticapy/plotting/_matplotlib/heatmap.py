@@ -15,9 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, statistics, copy
-from typing import TYPE_CHECKING, Union
+from typing import Optional, TYPE_CHECKING, Union
 import numpy as np
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap, get_colors
@@ -55,9 +56,9 @@ def cmatrix(
     inverse: bool = False,
     extent: list = [],
     is_pivot: bool = False,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     if is_vector:
         is_vector = True
         vector = [elem for elem in matrix[1]]
@@ -124,9 +125,9 @@ def contour_plot(
     nbins: int = 100,
     cbar_title: str = "",
     pos_label: PythonScalar = None,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     from verticapy.datasets.generators import gen_meshgrid
 
     if not (cbar_title) and str(type(func)) in (
@@ -260,9 +261,9 @@ def hexbin(
     of: str = "",
     bbox: list = [],
     img: str = "",
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
     if len(columns) != 2:
         raise ParameterError(
             "The parameter 'columns' must be exactly of size 2 to draw the hexbin"
@@ -361,11 +362,11 @@ def pivot_table(
     show: bool = True,
     with_numbers: bool = True,
     fill_none: float = 0.0,
-    ax=None,
+    ax: Optional[Axes] = None,
     return_ax: bool = False,
     extent: list = [],
     **style_kwds,
-):
+) -> Axes:
     columns, of = vdf._format_colnames(columns, of)
     other_columns = ""
     method = method.lower()

@@ -16,8 +16,9 @@ permissions and limitations under the License.
 """
 import warnings
 import numpy as np
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
+from matplotlib.axes import Axes
 import matplotlib.animation as animation
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
@@ -63,7 +64,7 @@ def animated_bar(
     repeat: bool = True,
     return_html: bool = True,
     pie: bool = False,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
 ):
     if not (date_style_dict):
@@ -319,7 +320,7 @@ def animated_bubble_plot(
     interval: int = 10,
     repeat: bool = True,
     return_html: bool = True,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
 ):
     if not (date_style_dict):
@@ -581,7 +582,7 @@ def animated_ts_plot(
     interval: int = 5,
     repeat: bool = True,
     return_html: bool = True,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
 ):
     if not (columns):
