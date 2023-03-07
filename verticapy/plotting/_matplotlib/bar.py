@@ -15,27 +15,36 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
+from typing import Optional, TYPE_CHECKING
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy.errors import ParameterError
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
 
 def bar(
-    vdf,
+    vdf: "vDataFrame",
     method: str = "density",
-    of=None,
+    of: Optional[str] = None,
     max_cardinality: int = 6,
     nbins: int = 0,
-    h: float = 0,
-    ax=None,
+    h: float = 0.0,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a bar chart using the Matplotlib API.
+    """
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
     )
@@ -74,18 +83,21 @@ def bar(
 
 
 def bar2D(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     method: str = "density",
     of: str = "",
-    max_cardinality: tuple = (6, 6),
-    h: tuple = (None, None),
+    max_cardinality: tuple[int, int] = (6, 6),
+    h: tuple[Optional[float], Optional[float]] = (None, None),
     stacked: bool = False,
     fully_stacked: bool = False,
     density: bool = False,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a 2D bar chart using the Matplotlib API.
+    """
     colors = get_colors()
     if fully_stacked:
         if method != "density":
@@ -249,15 +261,18 @@ def bar2D(
 
 
 def hist(
-    vdf,
+    vdf: "vDataFrame",
     method: str = "density",
-    of=None,
+    of: Optional[str] = None,
     max_cardinality: int = 6,
     nbins: int = 0,
-    h: float = 0,
-    ax=None,
+    h: float = 0.0,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a histogram using the Matplotlib API.
+    """
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, method, of, max_cardinality, nbins, h
     )
@@ -299,16 +314,21 @@ def hist(
 
 
 def hist2D(
-    vdf,
-    columns: list,
-    method="density",
+    vdf: "vDataFrame",
+    columns: SQLColumns,
+    method: str = "density",
     of: str = "",
-    max_cardinality: tuple = (6, 6),
-    h: tuple = (None, None),
+    max_cardinality: tuple[int, int] = (6, 6),
+    h: tuple[Optional[float], Optional[float]] = (None, None),
     stacked: bool = False,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a 2D Histogram using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     colors = get_colors()
     all_columns = vdf.pivot_table(
         columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
@@ -389,14 +409,19 @@ def hist2D(
 
 
 def multiple_hist(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     method: str = "density",
     of: str = "",
-    h: float = 0,
-    ax=None,
+    h: float = 0.0,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a muli-histogram chart using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     colors = get_colors()
     if len(columns) > 5:
         raise ParameterError(

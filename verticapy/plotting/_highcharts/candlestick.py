@@ -21,7 +21,13 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
 
-def candlestick(query: str, options: dict = {}, width: int = 600, height: int = 400):
+def candlestick(
+    query: str, options: dict = {}, width: int = 600, height: int = 400
+) -> Highstock:
+    """
+    Draws a candlestick using the High Chart API
+    and the input SQL query.
+    """
     data = _executeSQL(
         query,
         title=(

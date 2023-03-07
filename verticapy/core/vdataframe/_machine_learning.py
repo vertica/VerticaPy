@@ -343,14 +343,14 @@ class vDFMachineLearning:
             return tree, idx
 
     @save_verticapy_logs
-    def chaid_columns(self, columns: list = [], max_cardinality: int = 16):
+    def chaid_columns(self, columns: SQLColumns = [], max_cardinality: int = 16):
         """
     Function used to simplify the code. It returns the columns picked by
     the CHAID algorithm.
 
     Parameters
     ----------
-    columns: list
+    columns: SQLColumns
         List of the vDataColumn names.
     max_cardinality: int, optional
         The maximum number of categories for each categorical column. Categorical 

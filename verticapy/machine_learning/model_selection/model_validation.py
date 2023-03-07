@@ -16,35 +16,28 @@ permissions and limitations under the License.
 """
 import random, statistics, time
 from collections.abc import Iterable
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.machine_learning.metrics.classification import (
-    _compute_area,
-    _compute_function_metrics,
-)
+from verticapy.machine_learning.vertica.base import VerticaModel
 
-from verticapy.plotting._matplotlib.base import updated_dict
 from verticapy.plotting._matplotlib.timeseries import range_curve
 
 
 @save_verticapy_logs
 def cross_validate(
-    estimator,
+    estimator: VerticaModel,
     input_relation: SQLRelation,
     X: SQLColumns,
     y: str,
@@ -55,66 +48,78 @@ def cross_validate(
     show_time: bool = True,
     training_score: bool = False,
     **kwargs,
-):
+) -> TableSample:
     """
-Computes the K-Fold cross validation of an estimator.
+    Computes the  K-Fold cross validation  of an estimator.
 
-Parameters
-----------
-estimator: object
-	Vertica estimator with a fit method.
-input_relation: SQLRelation
-	Relation to use to train the model.
-X: SQLColumns
-	List of the predictor columns.
-y: str
-	Response Column.
-metric: str / list, optional
-    Metric used to do the model evaluation. It can also be a list of metrics.
-        all: The model will compute all the possible metrics.
-    For Classification:
-        accuracy    : Accuracy
-        auc         : Area Under the Curve (ROC)
-        best_cutoff : Cutoff which optimised the ROC Curve prediction.
-        bm          : Informedness = tpr + tnr - 1
-        csi         : Critical Success Index = tp / (tp + fn + fp)
-        f1          : F1 Score 
-        logloss     : Log Loss
-        mcc         : Matthews Correlation Coefficient 
-        mk          : Markedness = ppv + npv - 1
-        npv         : Negative Predictive Value = tn / (tn + fn)
-        prc_auc     : Area Under the Curve (PRC)
-        precision   : Precision = tp / (tp + fp)
-        recall      : Recall = tp / (tp + fn)
-        specificity : Specificity = tn / (tn + fp)
-    For Regression:
-        aic    : Akaike’s information criterion
-        bic    : Bayesian information criterion
-        max    : Max error
-        mae    : Mean absolute error
-        median : Median absolute error
-        mse    : Mean squared error
-        msle   : Mean squared log error
-        r2     : R-squared coefficient
-        r2a    : R2 adjusted
-        rmse   : Root-mean-squared error
-        var    : Explained variance
-cv: int, optional
-	Number of folds.
-pos_label: PythonScalar, optional
-	The main class to be considered as positive (classification only).
-cutoff: PythonNumber, optional
-	The model cutoff (classification only).
-show_time: bool, optional
-    If set to True, the time and the average time will be added to the report.
-training_score: bool, optional
-    If set to True, the training score will be computed with the validation score.
+    Parameters
+    ----------
+    estimator: object
+    	Vertica estimator with a fit method.
+    input_relation: SQLRelation
+    	Relation  to use to train the model.
+    X: SQLColumns
+    	List   of  the  predictor   columns.
+    y: str
+    	Response Column.
+    metric: str / list, optional
+        Metric used to do the model evaluation. It can also 
+        be a list of metrics.
+            all: The  model will  compute all the  possible 
+                 metrics.
+        For Classification:
+            accuracy    : Accuracy
+            auc         : Area Under the Curve (ROC)
+            best_cutoff : Cutoff which optimised the ROC 
+                          Curve prediction.
+            bm          : Informedness 
+                          = tpr + tnr - 1
+            csi         : Critical Success Index 
+                          = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness 
+                          = ppv + npv - 1
+            npv         : Negative Predictive Value 
+                          = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision     
+                          = tp / (tp + fp)
+            recall      : Recall 
+                          = tp / (tp + fn)
+            specificity : Specificity 
+                          = tn / (tn + fp)
+        For Regression:
+            aic    : Akaike’s information criterion
+            bic    : Bayesian information criterion
+            max    : Max error
+            mae    : Mean absolute error
+            median : Median absolute error
+            mse    : Mean squared error
+            msle   : Mean squared log error
+            r2     : R-squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root-mean-squared error
+            var    : Explained variance
+    cv: int, optional
+    	Number of folds.
+    pos_label: PythonScalar, optional
+    	The main class to be considered as positive 
+        (classification only).
+    cutoff: PythonNumber, optional
+    	The model cutoff (classification only).
+    show_time: bool, optional
+        If set to True,  the  time  and the average 
+        time   will   be  added  to   the   report.
+    training_score: bool, optional
+        If set to True,  the training score will be 
+        computed   with   the   validation   score.
 
-Returns
--------
-TableSample
- 	An object containing the result. For more information, see
- 	utilities.TableSample.
+    Returns
+    -------
+    TableSample
+     	result of the cross validation.
 	"""
     if isinstance(X, str):
         X = [X]
@@ -314,7 +319,7 @@ TableSample
 
 @save_verticapy_logs
 def learning_curve(
-    estimator,
+    estimator: VerticaModel,
     input_relation: SQLRelation,
     X: SQLColumns,
     y: str,
@@ -325,76 +330,90 @@ def learning_curve(
     pos_label: PythonScalar = None,
     cutoff: PythonNumber = -1,
     std_coeff: PythonNumber = 1,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> TableSample:
     """
-Draws the learning curve.
+    Draws the learning curve.
 
-Parameters
-----------
-estimator: object
-    Vertica estimator with a fit method.
-input_relation: SQLRelation
-    Relation to use to train the model.
-X: SQLColumns
-    List of the predictor columns.
-y: str
-    Response Column.
-sizes: list, optional
-    Different sizes of the dataset used to train the model. Multiple models
-    will be trained using the different sizes.
-method: str, optional
-    Method used to plot the curve.
-        efficiency  : draws train/test score vs sample size.
-        performance : draws score vs time.
-        scalability : draws time vs sample size.
-metric: str, optional
-    Metric used to do the model evaluation.
-        auto: logloss for classification & rmse for regression.
-    For Classification:
-        accuracy    : Accuracy
-        auc         : Area Under the Curve (ROC)
-        bm          : Informedness = tpr + tnr - 1
-        csi         : Critical Success Index = tp / (tp + fn + fp)
-        f1          : F1 Score 
-        logloss     : Log Loss
-        mcc         : Matthews Correlation Coefficient 
-        mk          : Markedness = ppv + npv - 1
-        npv         : Negative Predictive Value = tn / (tn + fn)
-        prc_auc     : Area Under the Curve (PRC)
-        precision   : Precision = tp / (tp + fp)
-        recall      : Recall = tp / (tp + fn)
-        specificity : Specificity = tn / (tn + fp)
-    For Regression:
-        max    : Max error
-        mae    : Mean absolute error
-        median : Median absolute error
-        mse    : Mean squared error
-        msle   : Mean squared log error
-        r2     : R-squared coefficient
-        r2a    : R2 adjusted
-        rmse   : Root-mean-squared error
-        var    : Explained variance
-cv: int, optional
-    Number of folds.
-pos_label: PythonScalar, optional
-    The main class to be considered as positive (classification only).
-cutoff: PythonNumber, optional
-    The model cutoff (classification only).
-std_coeff: PythonNumber, optional
-    Value of the standard deviation coefficient used to compute the area plot 
-    around each score.
-ax: Matplotlib axes object, optional
-    The axes to plot on.
-**style_kwds
-    Any optional parameter to pass to the Matplotlib functions.
+    Parameters
+    ----------
+    estimator: object
+        Vertica estimator with a fit method.
+    input_relation: SQLRelation
+        Relation  to use to train the model.
+    X: SQLColumns
+        List   of  the  predictor   columns.
+    y: str
+        Response Column.
+    sizes: list, optional
+        Different sizes of the dataset used 
+        to train the model. Multiple models
+        will be trained using the different 
+        sizes.
+    method: str, optional
+        Method used to plot the curve.
+            efficiency  : draws train/test score 
+                          vs sample size.
+            performance : draws score  vs  time.
+            scalability : draws time  vs  sample 
+                          size.
+    metric: str, optional
+        Metric used to do the model evaluation.
+            auto: logloss for classification & rmse 
+                  for regression.
+        For Classification:
+            accuracy    : Accuracy
+            auc         : Area Under the Curve (ROC)
+            bm          : Informedness 
+                          = tpr + tnr - 1
+            csi         : Critical Success Index 
+                          = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness 
+                          = ppv + npv - 1
+            npv         : Negative Predictive Value 
+                          = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision 
+                          = tp / (tp + fp)
+            recall      : Recall 
+                          = tp / (tp + fn)
+            specificity : Specificity 
+                          = tn / (tn + fp)
+        For Regression:
+            max    : Max error
+            mae    : Mean absolute error
+            median : Median absolute error
+            mse    : Mean squared error
+            msle   : Mean squared log error
+            r2     : R-squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root-mean-squared error
+            var    : Explained variance
+    cv: int, optional
+        Number of folds.
+    pos_label: PythonScalar, optional
+        The main class to be considered as positive 
+        (classification only).
+    cutoff: PythonNumber, optional
+        The  model  cutoff  (classification  only).
+    std_coeff: PythonNumber, optional
+        Value of the standard deviation coefficient 
+        used to compute the area plot 
+        around each score.
+    ax: Axes, optional
+        The axes to plot on.
+    **style_kwds
+        Any  optional  parameter  to  pass  to  the 
+        Matplotlib functions.
 
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
+    Returns
+    -------
+    TableSample
+        result of the learning curve.
     """
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
@@ -523,299 +542,3 @@ TableSample
         labels = []
     range_curve(X, Y, x_label, y_label, ax, labels, **style_kwds)
     return result
-
-
-@check_minimum_version
-@save_verticapy_logs
-def lift_chart(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
-    nbins: int = 30,
-    ax=None,
-    **style_kwds,
-):
-    """
-Draws the Lift Chart.
-
-Parameters
-----------
-y_true: str
-    Response column.
-y_score: str
-    Prediction Probability.
-input_relation: SQLRelation
-    Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-pos_label: PythonScalar, optional
-    To compute the Lift Chart, one of the response column classes must be the
-    positive one. The parameter 'pos_label' represents this class.
-nbins: int, optional
-    An integer value that determines the number of decision boundaries. Decision 
-    boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
-ax: Matplotlib axes object, optional
-    The axes to plot on.
-**style_kwds
-    Any optional parameter to pass to the Matplotlib functions.
-
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
-    """
-    decision_boundary, positive_prediction_ratio, lift = _compute_function_metrics(
-        y_true=y_true,
-        y_score=y_score,
-        input_relation=input_relation,
-        pos_label=pos_label,
-        nbins=nbins,
-        fun_sql_name="lift_table",
-    )
-    decision_boundary.reverse()
-    if not (ax):
-        fig, ax = plt.subplots()
-        if conf._get_import_success("jupyter"):
-            fig.set_size_inches(8, 6)
-    ax.set_xlabel("Cumulative Data Fraction")
-    max_value = max([0 if elem != elem else elem for elem in lift])
-    lift = [max_value if elem != elem else elem for elem in lift]
-    param1 = {"color": get_colors()[0]}
-    ax.plot(decision_boundary, lift, **updated_dict(param1, style_kwds, 0))
-    param2 = {"color": get_colors()[1]}
-    ax.plot(
-        decision_boundary,
-        positive_prediction_ratio,
-        **updated_dict(param2, style_kwds, 1),
-    )
-    color1, color2 = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
-    if color1 == color2:
-        color2 = get_colors()[1]
-    ax.fill_between(
-        decision_boundary, positive_prediction_ratio, lift, facecolor=color1, alpha=0.2,
-    )
-    ax.fill_between(
-        decision_boundary,
-        [0 for elem in decision_boundary],
-        positive_prediction_ratio,
-        facecolor=color2,
-        alpha=0.2,
-    )
-    ax.set_title("Lift Table")
-    ax.set_axisbelow(True)
-    ax.grid()
-    color1 = mpatches.Patch(color=color1, label="Cumulative Lift")
-    color2 = mpatches.Patch(color=color2, label="Cumulative Capture Rate")
-    ax.legend(handles=[color1, color2], loc="center left", bbox_to_anchor=[1, 0.5])
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0)
-    return TableSample(
-        values={
-            "decision_boundary": decision_boundary,
-            "positive_prediction_ratio": positive_prediction_ratio,
-            "lift": lift,
-        }
-    )
-
-
-@check_minimum_version
-@save_verticapy_logs
-def prc_curve(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
-    nbins: int = 30,
-    ax=None,
-    **style_kwds,
-):
-    """
-Draws the PRC Curve.
-
-Parameters
-----------
-y_true: str
-    Response column.
-y_score: str
-    Prediction Probability.
-input_relation: SQLRelation
-    Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-pos_label: PythonScalar, optional
-    To compute the PRC Curve, one of the response column classes must be the
-    positive one. The parameter 'pos_label' represents this class.
-nbins: int, optional
-    An integer value that determines the number of decision boundaries. Decision 
-    boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
-ax: Matplotlib axes object, optional
-    The axes to plot on.
-**style_kwds
-    Any optional parameter to pass to the Matplotlib functions.
-
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
-    """
-    threshold, recall, precision = _compute_function_metrics(
-        y_true=y_true,
-        y_score=y_score,
-        input_relation=input_relation,
-        pos_label=pos_label,
-        nbins=nbins,
-        fun_sql_name="prc",
-    )
-    auc = _compute_area(precision, recall)
-    if not (ax):
-        fig, ax = plt.subplots()
-        if conf._get_import_success("jupyter"):
-            fig.set_size_inches(8, 6)
-    ax.set_xlabel("Recall")
-    ax.set_ylabel("Precision")
-    param = {"color": get_colors(style_kwds, 0)}
-    ax.plot(recall, precision, **updated_dict(param, style_kwds))
-    ax.fill_between(
-        recall,
-        [0 for item in recall],
-        precision,
-        facecolor=get_colors(style_kwds, 0),
-        alpha=0.1,
-    )
-    ax.set_ylim(0, 1)
-    ax.set_xlim(0, 1)
-    ax.set_title("PRC Curve")
-    ax.text(
-        0.995,
-        0,
-        f"AUC = {round(auc, 4) * 100}%",
-        verticalalignment="bottom",
-        horizontalalignment="right",
-        fontsize=11.5,
-    )
-    ax.set_axisbelow(True)
-    ax.grid()
-    return TableSample(
-        values={"threshold": threshold, "recall": recall, "precision": precision}
-    )
-
-
-@check_minimum_version
-@save_verticapy_logs
-def roc_curve(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
-    nbins: int = 30,
-    cutoff_curve: bool = False,
-    ax=None,
-    **style_kwds,
-):
-    """
-Draws the ROC Curve.
-
-Parameters
-----------
-y_true: str
-    Response column.
-y_score: str
-    Prediction Probability.
-input_relation: SQLRelation
-    Relation to use for scoring. This relation can be a view, table, or a 
-    customized relation (if an alias is used at the end of the relation). 
-    For example: (SELECT ... FROM ...) x
-pos_label: PythonScalar, optional
-    To compute the PRC Curve, one of the response column classes must be the
-    positive one. The parameter 'pos_label' represents this class.
-nbins: int, optional
-    An integer value that determines the number of decision boundaries. Decision 
-    boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
-cutoff_curve: bool, optional
-    If set to True, the Cutoff curve will be drawn.
-ax: Matplotlib axes object, optional
-    The axes to plot on.
-**style_kwds
-    Any optional parameter to pass to the Matplotlib functions.
-
-Returns
--------
-TableSample
-    An object containing the result. For more information, see
-    utilities.TableSample.
-    """
-    threshold, false_positive, true_positive = _compute_function_metrics(
-        y_true=y_true,
-        y_score=y_score,
-        input_relation=input_relation,
-        pos_label=pos_label,
-        nbins=nbins,
-        fun_sql_name="roc",
-    )
-    auc = _compute_area(true_positive, false_positive)
-    if not (ax):
-        fig, ax = plt.subplots()
-        if conf._get_import_success("jupyter"):
-            fig.set_size_inches(8, 6)
-    color1, color2 = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
-    if color1 == color2:
-        color2 = get_colors()[1]
-    if cutoff_curve:
-        ax.plot(
-            threshold,
-            [1 - item for item in false_positive],
-            label="Specificity",
-            **updated_dict({"color": get_colors()[0]}, style_kwds),
-        )
-        ax.plot(
-            threshold,
-            true_positive,
-            label="Sensitivity",
-            **updated_dict({"color": get_colors()[1]}, style_kwds),
-        )
-        ax.fill_between(
-            threshold,
-            [1 - item for item in false_positive],
-            true_positive,
-            facecolor="black",
-            alpha=0.02,
-        )
-        ax.set_xlabel("Decision Boundary")
-        ax.set_title("Cutoff Curve")
-        ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
-    else:
-        ax.set_xlabel("False Positive Rate (1-Specificity)")
-        ax.set_ylabel("True Positive Rate (Sensitivity)")
-        ax.plot(
-            false_positive,
-            true_positive,
-            **updated_dict({"color": get_colors()[0]}, style_kwds),
-        )
-        ax.fill_between(
-            false_positive, false_positive, true_positive, facecolor=color1, alpha=0.1,
-        )
-        ax.fill_between([0, 1], [0, 0], [0, 1], facecolor=color2, alpha=0.1)
-        ax.plot([0, 1], [0, 1], color=color2)
-        ax.set_title("ROC Curve")
-        ax.text(
-            0.995,
-            0,
-            f"AUC = {round(auc, 4) * 100}%",
-            verticalalignment="bottom",
-            horizontalalignment="right",
-            fontsize=11.5,
-        )
-    ax.set_ylim(0, 1)
-    ax.set_xlim(0, 1)
-    ax.set_axisbelow(True)
-    ax.grid()
-    return TableSample(
-        values={
-            "threshold": threshold,
-            "false_positive": false_positive,
-            "true_positive": true_positive,
-        }
-    )

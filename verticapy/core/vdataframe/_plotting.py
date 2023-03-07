@@ -15,8 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime, math
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from collections.abc import Iterable
+
+from matplotlib.axes import Axes
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns, SQLExpression
@@ -50,7 +52,7 @@ class vDFPlot:
         interval: int = 300,
         repeat: bool = True,
         return_html: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -111,7 +113,7 @@ class vDFPlot:
     return_html: bool, optional
         If set to True and if using a Jupyter notebook, the HTML of the animation will be 
         generated.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -249,7 +251,7 @@ class vDFPlot:
             "pyramid",
             "density",
         ] = "auto",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -286,7 +288,7 @@ class vDFPlot:
                             set to 'density'.
             stacked       : Stacked Bar Chart based on 2 vDataColumns.
             fully_stacked : Fully Stacked Bar Chart based on 2 vDataColumns.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -294,7 +296,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
      See Also
      --------
@@ -332,7 +334,9 @@ class vDFPlot:
             )
 
     @save_verticapy_logs
-    def boxplot(self, columns: SQLColumns = [], ax=None, **style_kwds):
+    def boxplot(
+        self, columns: SQLColumns = [], ax: Optional[Axes] = None, **style_kwds
+    ):
         """
     Draws the Box Plot of the input vDataColumns. 
 
@@ -341,7 +345,7 @@ class vDFPlot:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will 
         be used.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -349,7 +353,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -376,7 +380,7 @@ class vDFPlot:
         max_nb_points: int = 20000,
         bbox: list = [],
         img: str = "",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -399,7 +403,7 @@ class vDFPlot:
         It must be similar the following list: [xmin, xmax, ymin, ymax]
     img: str, optional
         Path to the image to display as background.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -407,7 +411,7 @@ class vDFPlot:
     Returns
     -------
     ax
-       Matplotlib axes object
+       Axes
 
     See Also
     --------
@@ -431,20 +435,27 @@ class vDFPlot:
         )
 
     @save_verticapy_logs
-    def contour(self, columns: list, func, nbins: int = 100, ax=None, **style_kwds):
+    def contour(
+        self,
+        columns: SQLColumns,
+        func,
+        nbins: int = 100,
+        ax: Optional[Axes] = None,
+        **style_kwds,
+    ):
         """
     Draws the contour plot of the input function two input vDataColumns.
 
     Parameters
     ----------
-    columns: list
+    columns: SQLColumns
         List of the vDataColumns names. The list must have two elements.
     func: function / str
         Function used to compute the contour score. It can also be a SQL
         expression.
     nbins: int, optional
         Number of bins used to discretize the two input numerical vDataColumns.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -452,7 +463,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
      See Also
      --------
@@ -471,7 +482,7 @@ class vDFPlot:
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 50,
         xlim: tuple = None,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -496,7 +507,7 @@ class vDFPlot:
         the time of the learning and the scoring phases.
     xlim: tuple, optional
         Set the x limits of the current axes.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -504,7 +515,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -752,7 +763,7 @@ class vDFPlot:
         method: str = "count",
         of: str = "",
         h: tuple = (None, None),
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -777,7 +788,7 @@ class vDFPlot:
     h: tuple, optional
         Interval width of the vDataColumns 1 and 2 bars. Optimized h will be computed 
         if the parameter is empty or invalid.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -785,7 +796,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -824,7 +835,7 @@ class vDFPlot:
         of: str = "",
         bbox: list = [],
         img: str = "",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -849,7 +860,7 @@ class vDFPlot:
         It must be similar the following list: [xmin, xmax, ymin, ymax]
     img: str, optional
          Path to the image to display as background.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -857,7 +868,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -877,7 +888,7 @@ class vDFPlot:
         max_cardinality: tuple = (6, 6),
         h: Union[int, float, tuple] = (None, None),
         hist_type: Literal["auto", "multi", "stacked"] = "auto",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -911,7 +922,7 @@ class vDFPlot:
             auto    : Regular Histogram based on 1 or 2 vDataColumns.
             multi   : Multiple Regular Histograms based on 1 to 5 vDataColumns.
             stacked : Stacked Histogram based on 2 vDataColumns.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -919,7 +930,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -968,7 +979,7 @@ class vDFPlot:
         inliers_color: str = "white",
         inliers_border_color: str = "red",
         max_nb_points: int = 500,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -990,14 +1001,14 @@ class vDFPlot:
         Inliers border color.
     max_nb_points: int, optional
         Maximum number of points to display.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
         """
         if isinstance(columns, str):
@@ -1022,7 +1033,7 @@ class vDFPlot:
         columns: SQLColumns,
         max_cardinality: Union[int, tuple, list] = None,
         h: Union[float, tuple] = None,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1030,7 +1041,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: list
+    columns: SQLColumns
         List of the vDataColumns names.
     max_cardinality: int / tuple / list, optional
         Maximum number of the vDataColumn distinct elements to be used as categorical 
@@ -1039,7 +1050,7 @@ class vDFPlot:
     h: float/tuple, optional
         Interval width of the bar. If empty, an optimized h will be computed.
         If of type tuple, it must represent each column 'h'.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1047,7 +1058,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1056,7 +1067,7 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
-        return plt.nested_pie(self, columns, max_cardinality, h, ax=None, **style_kwds)
+        return plt.nested_pie(self, columns, max_cardinality, h, ax=ax, **style_kwds)
 
     @save_verticapy_logs
     def pivot_table(
@@ -1069,7 +1080,7 @@ class vDFPlot:
         show: bool = True,
         with_numbers: bool = True,
         fill_none: float = 0.0,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1104,7 +1115,7 @@ class vDFPlot:
         If set to True, no number will be displayed in the final drawing.
     fill_none: float, optional
         The empty values of the pivot table will be filled by this number.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1141,11 +1152,11 @@ class vDFPlot:
     def plot(
         self,
         ts: str,
-        columns: list = [],
+        columns: SQLColumns = [],
         start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         step: bool = False,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1156,7 +1167,7 @@ class vDFPlot:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     start_date: str / PythonNumber / date, optional
@@ -1167,7 +1178,7 @@ class vDFPlot:
         'ts' is greater than November 1993 the 3rd.
     step: bool, optional
         If set to True, draw a Step Plot.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1175,7 +1186,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1201,7 +1212,7 @@ class vDFPlot:
         dimensions: tuple = None,
         bbox: list = [],
         img: str = "",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1235,7 +1246,7 @@ class vDFPlot:
         It must be similar the following list: [xmin, xmax, ymin, ymax]
     img: str, optional
         Path to the image to display as background.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1243,7 +1254,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1310,7 +1321,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1325,11 +1336,11 @@ class vDFPlot:
     def stacked_area(
         self,
         ts: str,
-        columns: list = [],
+        columns: SQLColumns = [],
         start_date: Union[int, float, str, datetime.datetime, datetime.date] = "",
         end_date: Union[int, float, str, datetime.datetime, datetime.date] = "",
         fully: bool = False,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1340,7 +1351,7 @@ class vDFPlot:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used. They must all include only positive values.
     start_date: PythonScalar / date, optional
@@ -1351,7 +1362,7 @@ class vDFPlot:
         'ts' is greater than November 1993 the 3rd.
     fully: bool, optional
         If set to True, a Fully Stacked Area Chart will be drawn.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1359,7 +1370,7 @@ class vDFPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -1481,7 +1492,7 @@ class vDCPlot:
         max_cardinality: int = 6,
         nbins: int = 0,
         h: PythonNumber = 0,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1508,7 +1519,7 @@ class vDCPlot:
         Number of nbins. If empty, an optimized number of nbins will be computed.
     h: PythonNumber, optional
         Interval width of the bar. If empty, an optimized h will be computed.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1516,7 +1527,7 @@ class vDCPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1532,7 +1543,7 @@ class vDCPlot:
         h: PythonNumber = 0,
         max_cardinality: int = 8,
         cat_priority: Union[str, int, datetime.datetime, datetime.date, list] = [],
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1552,7 +1563,7 @@ class vDCPlot:
     cat_priority: str / int / date / list, optional
         List of the different categories to consider when drawing the box plot.
         The other categories will be filtered.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1560,7 +1571,7 @@ class vDCPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1581,7 +1592,7 @@ class vDCPlot:
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 200,
         xlim: tuple = None,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1605,7 +1616,7 @@ class vDCPlot:
         the time of the learning and scoring phases.
     xlim: tuple, optional
         Set the x limits of the current axes.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1613,7 +1624,7 @@ class vDCPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1702,7 +1713,7 @@ class vDCPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
         """
         columns = [self._alias]
         check = True
@@ -1734,7 +1745,7 @@ class vDCPlot:
         max_cardinality: int = 6,
         nbins: int = 0,
         h: PythonNumber = 0,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1761,7 +1772,7 @@ class vDCPlot:
         Number of bins. If empty, an optimized number of bins will be computed.
     h: PythonNumber, optional
         Interval width of the bar. If empty, an optimized h will be computed.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1769,7 +1780,7 @@ class vDCPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1788,7 +1799,7 @@ class vDCPlot:
         max_cardinality: int = 6,
         h: PythonNumber = 0,
         pie_type: Literal["auto", "donut", "rose"] = "auto",
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1819,7 +1830,7 @@ class vDCPlot:
             donut  : Donut chart.
             rose   : Rose chart.
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1827,7 +1838,7 @@ class vDCPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1836,7 +1847,7 @@ class vDCPlot:
         donut, rose = (pie_type == "donut"), (pie_type == "rose")
         of = self._parent._format_colnames(of)
         return plt.pie(
-            self, method, of, max_cardinality, h, donut, rose, ax=None, **style_kwds,
+            self, method, of, max_cardinality, h, donut, rose, ax=ax, **style_kwds,
         )
 
     @save_verticapy_logs
@@ -1848,7 +1859,7 @@ class vDCPlot:
         end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         area: bool = False,
         step: bool = False,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1871,7 +1882,7 @@ class vDCPlot:
         If set to True, draw an Area Plot.
     step: bool, optional
         If set to True, draw a Step Plot.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1879,7 +1890,7 @@ class vDCPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1898,7 +1909,7 @@ class vDCPlot:
         start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         plot_median: bool = False,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1920,7 +1931,7 @@ class vDCPlot:
         'ts' is greater than November 1993 the 3rd.
     plot_median: bool, optional
         If set to True, the Median will be drawn.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1928,7 +1939,7 @@ class vDCPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------
@@ -1947,7 +1958,7 @@ class vDCPlot:
         of: str = "",
         max_cardinality: Union[int, tuple, list] = (6, 6),
         h: Union[int, float, tuple, list] = (None, None),
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1976,7 +1987,7 @@ class vDCPlot:
     max_cardinality: int / tuple / list, optional
         Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1984,7 +1995,7 @@ class vDCPlot:
     Returns
     -------
     ax
-        Matplotlib axes object
+        Axes
 
     See Also
     --------

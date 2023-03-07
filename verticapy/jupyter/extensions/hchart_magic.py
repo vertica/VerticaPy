@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import time, warnings
-from typing import Optional, Union
+from typing import Optional, Literal, Union
 
 from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
@@ -25,6 +25,8 @@ from vertica_highcharts import Highstock, Highchart
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, replace_vars_in_query
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.connection.connect import current_cursor
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample
@@ -32,7 +34,147 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.jupyter.extensions._utils import get_magic_options
 
-from verticapy.plotting._highcharts.base import hchartSQL
+
+def hchartSQL(
+    query: str,
+    kind: Literal[
+        "area",
+        "area_range",
+        "area_ts",
+        "bar",
+        "biserial",
+        "boxplot",
+        "bubble",
+        "candlestick",
+        "cramer",
+        "donut",
+        "donut3d",
+        "heatmap",
+        "hist",
+        "kendall",
+        "line",
+        "multi_area",
+        "multi_line",
+        "multi_spline",
+        "negative_bar",
+        "pearson",
+        "pie",
+        "pie3d",
+        "pie_half",
+        "scatter",
+        "spearman",
+        "spearmand",
+        "spider",
+        "spline",
+        "stacked_bar",
+        "stacked_hist",
+    ] = "auto",
+    width: int = 600,
+    height: int = 400,
+    options: dict = {},
+) -> Union[Highstock, Highchart]:
+    """
+    Helper Function:
+    Draws a custom High Chart graphic using the 
+    input SQL query.
+    """
+
+    from verticapy.core.vdataframe.base import vDataFrame
+
+    aggregate, stock = False, False
+    data = _executeSQL(
+        query=f"""
+            SELECT 
+                /*+LABEL('highchart.hchartSQL')*/ * 
+            FROM ({query}) VERTICAPY_SUBTABLE LIMIT 0""",
+        method="fetchall",
+        print_time_sql=False,
+    )
+    names = [desc[0] for desc in current_cursor().description]
+    vdf = vDataFrame(query)
+    allnum = vdf.numcol()
+    if kind == "auto":
+        if len(names) == 1:
+            kind = "pie"
+        elif (len(names) == len(allnum)) and (len(names) < 5):
+            kind = "scatter"
+        elif len(names) == 2:
+            if vdf[names[0]].isdate() and vdf[names[1]].isnum():
+                kind = "line"
+            else:
+                kind = "bar"
+        elif len(names) == 3:
+            if vdf[names[0]].isdate() and vdf[names[1]].isnum():
+                kind = "line"
+            elif vdf[names[2]].isnum():
+                kind = "hist"
+            else:
+                kind = "boxplot"
+        else:
+            kind = "boxplot"
+    if kind in (
+        "pearson",
+        "kendall",
+        "cramer",
+        "biserial",
+        "spearman",
+        "spearmand",
+        "boxplot",
+    ):
+        x, y, z, c = allnum, None, None, None
+    elif kind == "scatter":
+        if len(names) < 2:
+            raise ValueError("Scatter Plots need at least 2 columns.")
+        x, y, z, c = names[0], names[1], None, None
+        if len(names) == 3 and len(allnum) == 3:
+            z = names[2]
+        elif len(names) == 3:
+            c = names[2]
+        elif len(names) > 3:
+            z, c = names[2], names[3]
+    elif kind == "bubble":
+        if len(names) < 3:
+            raise ValueError("Bubble Plots need at least 3 columns.")
+        x, y, z, c = names[0], names[1], names[2], None
+        if len(names) > 3:
+            c = names[3]
+    elif kind in (
+        "area",
+        "area_ts",
+        "spline",
+        "line",
+        "area_range",
+        "spider",
+        "candlestick",
+    ):
+        if vdf[names[0]].isdate():
+            stock = True
+        if len(names) < 2:
+            raise ValueError(f"{kind} Plots need at least 2 columns.")
+        x, y, z, c = names[0], names[1:], None, None
+        if kind == "candlestick":
+            aggregate = True
+    else:
+        if len(names) == 1:
+            aggregate = True
+            x, y, z, c = names[0], "COUNT(*) AS cnt", None, None
+        else:
+            x, y, z, c = names[0], names[1], None, None
+        if len(names) > 2:
+            z = names[2]
+    return vdf.hchart(
+        x=x,
+        y=y,
+        z=z,
+        c=c,
+        aggregate=aggregate,
+        kind=kind,
+        width=width,
+        height=height,
+        options=options,
+        max_cardinality=100,
+        stock=stock,
+    )
 
 
 @save_verticapy_logs

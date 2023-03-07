@@ -15,17 +15,22 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
+from typing import Optional, TYPE_CHECKING
 import numpy as np
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-
 from verticapy._config.colors import get_cmap, get_colors
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_dict
 
@@ -33,19 +38,26 @@ MARKERS = ["^", "o", "+", "*", "h", "x", "D", "1"]
 
 
 def bubble(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     catcol: str = "",
     cmap_col: str = "",
     max_nb_points: int = 1000,
     bbox: list = [],
     img: str = "",
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
-    assert not (catcol) or not (cmap_col), ParameterError(
-        "Bubble Plot only accepts either a cmap column or a categorical column. It can not accept both."
-    )
+) -> Axes:
+    """
+    Draws a bubble plot using the Matplotlib API.
+    """
+    if (catcol) and (cmap_col):
+        raise ParameterError(
+            "Bubble Plot only accepts either a cmap column "
+            "or a categorical column. It can not accept both."
+        )
+    if isinstance(columns, str):
+        columns = [columns]
     if len(columns) == 2:
         columns += [1]
     if "color" in style_kwds:
@@ -321,8 +333,8 @@ def bubble(
 
 
 def outliers_contour_plot(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     color: str = "orange",
     outliers_color: str = "black",
     inliers_color: str = "white",
@@ -330,9 +342,14 @@ def outliers_contour_plot(
     cmap: str = None,
     max_nb_points: int = 1000,
     threshold: float = 3.0,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws an outliers contour plot using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     if not (cmap):
         cmap = get_cmap(get_colors()[2])
     all_agg = vdf.agg(["avg", "std", "min", "max"], columns)
@@ -443,9 +460,12 @@ def outliers_contour_plot(
     return ax
 
 
-def scatter_matrix(
-    vdf, columns: list = [], **style_kwds,
-):
+def scatter_matrix(vdf: "vDataFrame", columns: SQLColumns = [], **style_kwds,) -> Axes:
+    """
+    Draws a scatter matrix using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     columns = vdf._format_colnames(columns)
     if not (columns):
         columns = vdf.numcol()
@@ -509,8 +529,8 @@ def scatter_matrix(
 
 
 def scatter(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     catcol: str = "",
     max_cardinality: int = 3,
     cat_priority: list = [],
@@ -518,10 +538,15 @@ def scatter(
     max_nb_points: int = 1000,
     bbox: list = [],
     img: str = "",
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a scatter plot using the Matplotlib API.
+    """
     columns, catcol = vdf._format_colnames(columns, catcol, expected_nb_of_cols=[2, 3])
+    if isinstance(columns, str):
+        columns = [columns]
     n = len(columns)
     for col in columns:
         if not (vdf[col].isnum()):
@@ -591,8 +616,8 @@ def scatter(
         condition: list = condition,
         all_scatter: list = all_scatter,
         others: list = others,
-        ax=ax,
-    ):
+        ax: Axes = ax,
+    ) -> None:
         condition = copy.deepcopy(condition)
         title = "Selecting random points to draw the scatter plot"
         if not (catcol):

@@ -14,22 +14,23 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.machine_learning.model_selection.hp_tuning import (
+from verticapy.machine_learning.model_selection.hp_tuning.cv import (
     bayesian_search_cv,
     enet_search_cv,
-    gen_params_grid,
     grid_search_cv,
-    parameter_grid,
-    plot_acf_pacf,
     randomized_search_cv,
+)
+from verticapy.machine_learning.model_selection.hp_tuning.param_gen import (
+    gen_params_grid,
+    parameter_grid,
+)
+from verticapy.machine_learning.model_selection.hp_tuning.plotting import (
+    plot_acf_pacf,
     validation_curve,
 )
 from verticapy.machine_learning.model_selection.model_validation import (
     cross_validate,
     learning_curve,
-    lift_chart,
-    prc_curve,
-    roc_curve,
 )
 from verticapy.machine_learning.model_selection.variables_selection import (
     randomized_features_search_cv,

@@ -31,7 +31,7 @@ class vDFPivot:
         self,
         vmap_col: SQLExpression = [],
         limit: int = 100,
-        exclude_columns: list = [],
+        exclude_columns: SQLColumns = [],
     ):
         """
     Flatten the selected VMap. A new vDataFrame is returned.
@@ -48,7 +48,7 @@ class vDFPivot:
     limit: int, optional
         Maximum number of keys to consider for each VMap. Only the most occurent 
         keys are used.
-    exclude_columns: list, optional
+    exclude_columns: SQLColumns, optional
         List of VMap columns to exclude.
 
     Returns

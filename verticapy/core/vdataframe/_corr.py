@@ -16,11 +16,13 @@ permissions and limitations under the License.
 """
 import decimal, math
 from collections.abc import Iterable
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 import numpy as np
 import scipy.stats as scipy_st
 import scipy.special as scipy_special
+
+from matplotlib.axes import Axes
 
 from verticapy._config.colors import get_cmap
 import verticapy._config.config as conf
@@ -43,10 +45,10 @@ class vDFCorr:
     def _aggregate_matrix(
         self,
         method: str = "pearson",
-        columns: list = [],
+        columns: SQLColumns = [],
         round_nb: int = 3,
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -536,10 +538,10 @@ class vDFCorr:
         self,
         focus: str,
         method: str = "pearson",
-        columns: list = [],
+        columns: SQLColumns = [],
         round_nb: int = 3,
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -744,7 +746,7 @@ class vDFCorr:
         round_nb: int = 3,
         focus: str = "",
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -775,7 +777,7 @@ class vDFCorr:
         Focus the computation on only one vDataColumn.
     show: bool, optional
         If set to True, the Correlation Matrix will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1019,7 +1021,7 @@ class vDFCorr:
         columns: SQLColumns = [],
         focus: str = "",
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1034,7 +1036,7 @@ class vDFCorr:
         Focus the computation on only one vDataColumn.
     show: bool, optional
         If set to True, the Covariance Matrix will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1087,7 +1089,7 @@ class vDFCorr:
         alpha: float = 0.95,
         round_nb: int = 3,
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1102,7 +1104,7 @@ class vDFCorr:
         or a numerical vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
-    p: int/list, optional
+    p: int | list, optional
         Int equals to the maximum number of lag to consider during the computation
         or List of the different lags to include during the computation.
         p must be positive or a list of positive integers.
@@ -1140,7 +1142,7 @@ class vDFCorr:
         acf_type is 'heatmap'.
     show: bool, optional
         If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1238,7 +1240,7 @@ class vDFCorr:
         confidence: bool = True,
         alpha: float = 0.95,
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1253,7 +1255,7 @@ class vDFCorr:
         or a numerical vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
-    p: int/list, optional
+    p: int | list, optional
         Int equals to the maximum number of lag to consider during the computation
         or List of the different lags to include during the computation.
         p must be positive or a list of positive integers.
@@ -1269,7 +1271,7 @@ class vDFCorr:
         band width.
     show: bool, optional
         If set to True, the Partial Auto Correlation Plot will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1402,7 +1404,7 @@ class vDFCorr:
             "alpha",
         ] = "r2",
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
         **style_kwds,
     ):
         """
@@ -1410,7 +1412,7 @@ class vDFCorr:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     method: str, optional
@@ -1432,7 +1434,7 @@ class vDFCorr:
                 expression pair.
     show: bool, optional
         If set to True, the Regression Matrix will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -1578,7 +1580,7 @@ class vDFCorr:
         columns: SQLColumns = [],
         nbins: int = 10,
         show: bool = True,
-        ax=None,
+        ax: Optional[Axes] = None,
     ):
         """
     Computes the Information Value (IV) Table. It tells the predictive power of 
@@ -1595,7 +1597,7 @@ class vDFCorr:
         Maximum number of bins used for the discretization (must be > 1).
     show: bool, optional
         If set to True, the IV Plot will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
+    ax: Axes, optional
         The axes to plot on.
     
 

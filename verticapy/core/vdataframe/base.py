@@ -22,6 +22,7 @@ import pandas as pd
 
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
+from verticapy._typing import SQLColumns
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._check import is_longvar, is_dql
@@ -187,7 +188,7 @@ class vDataFrame(
     def __init__(
         self,
         input_relation: Union[str, list, dict, pd.DataFrame, np.ndarray, TableSample],
-        usecols: Union[str, list[str]] = [],
+        usecols: SQLColumns = [],
         schema: str = "",
         external: bool = False,
         symbol: str = "$",
@@ -340,8 +341,14 @@ class vDataFrame(
     def _from_object(
         self,
         object_: Union[np.ndarray, list, TableSample, dict],
-        columns: list[str] = [],
+        columns: SQLColumns = [],
     ) -> None:
+        """
+        Creates a vDataFrame from an input object.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+
         if isinstance(object_, (list, np.ndarray)):
 
             if isinstance(object_, list):
@@ -377,8 +384,15 @@ class vDataFrame(
 
         return self.__init__(tb.to_sql())
 
-    def _from_pandas(self, object_: pd.DataFrame, usecols: list[str] = [],) -> None:
+    def _from_pandas(self, object_: pd.DataFrame, usecols: SQLColumns = [],) -> None:
+        """
+        Creates a vDataFrame from a pandas.DataFrame.
+        """
+
         from verticapy.core.parsers.pandas import read_pandas
+
+        if isinstance(usecols, str):
+            usecols = [usecols]
 
         argv = object_[usecols] if usecols else object_
         vdf = read_pandas(argv)

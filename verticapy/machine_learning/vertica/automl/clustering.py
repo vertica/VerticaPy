@@ -25,7 +25,6 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.automl.dataprep import AutoDataPrep
-from verticapy.machine_learning.model_selection import best_k
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 
@@ -164,6 +163,8 @@ class AutoClustering(VerticaModel):
         X: SQLColumns, optional
             List of the predictors.
         """
+        from verticapy.machine_learning.model_selection import best_k
+
         if conf.get_option("overwrite_model"):
             self.drop()
         else:

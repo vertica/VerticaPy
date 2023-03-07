@@ -18,6 +18,7 @@ import copy, re, time, warnings
 from typing import Union
 
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -41,7 +42,10 @@ class vDFSystem:
         return self
 
     def _genSQL(
-        self, split: bool = False, transformations: dict = {}, force_columns: list = [],
+        self,
+        split: bool = False,
+        transformations: dict = {},
+        force_columns: SQLColumns = [],
     ):
         """
     Method to use to generate the SQL final relation. It will look at all 
@@ -57,7 +61,7 @@ class vDFSystem:
         Dictionary of columns and their respective transformation. It 
         will be to use to test if an expression is correct and can be 
         added it in the final relation.
-    force_columns: list, optional
+    force_columns: SQLColumns, optional
         Columns to use to generate the final relation.
 
     Returns
@@ -168,7 +172,11 @@ class vDFSystem:
         return table
 
     def _get_catalog_value(
-        self, column: str = "", key: str = "", method: str = "", columns: list = []
+        self,
+        column: str = "",
+        key: str = "",
+        method: str = "",
+        columns: SQLColumns = [],
     ):
         """
     VERTICAPY stores the already computed aggregations to avoid useless 
@@ -220,7 +228,7 @@ class vDFSystem:
             order_by = self._vars["order_by"][max_pos]
         return order_by
 
-    def _get_sort_syntax(self, columns: list):
+    def _get_sort_syntax(self, columns: SQLColumns):
         """
     Returns the SQL syntax to use to sort the input columns.
         """
@@ -246,7 +254,7 @@ class vDFSystem:
         self,
         values: dict = {},
         erase: bool = False,
-        columns: list = [],
+        columns: SQLColumns = [],
         matrix: str = "",
         column: str = "",
     ):

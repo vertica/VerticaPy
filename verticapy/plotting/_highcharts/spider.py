@@ -20,10 +20,16 @@ from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
+from verticapy.plotting._highcharts.utils import data_to_columns
 
-def spider(query: str, options: dict = {}, width: int = 600, height: int = 400):
-    from verticapy.plotting._highcharts.base import data_to_columns
 
+def spider(
+    query: str, options: dict = {}, width: int = 600, height: int = 400
+) -> Highchart:
+    """
+    Draws a spider plot using the High Chart API 
+    and the input SQL query.
+    """
     data = _executeSQL(
         query,
         title=(

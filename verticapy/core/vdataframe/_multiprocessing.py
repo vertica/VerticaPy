@@ -14,16 +14,29 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import TYPE_CHECKING
+
+from verticapy._typing import SQLColumns
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
-def aggregate_parallel_block(vdf, func: list, columns: list, ncols_block: int, i: int):
+def aggregate_parallel_block(
+    vdf: "vDataFrame", func: list, columns: SQLColumns, ncols_block: int, i: int
+):
     return vdf.aggregate(
         func=func, columns=columns[i : i + ncols_block], ncols_block=ncols_block
     )
 
 
 def describe_parallel_block(
-    vdf, method: str, columns: list, unique: bool, ncols_block: int, i: int,
+    vdf: "vDataFrame",
+    method: str,
+    columns: SQLColumns,
+    unique: bool,
+    ncols_block: int,
+    i: int,
 ):
     return vdf.describe(
         method=method,

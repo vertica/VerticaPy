@@ -15,14 +15,15 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, statistics, copy
-from typing import Union
+from typing import Callable, Optional, TYPE_CHECKING, Union
 import numpy as np
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap, get_colors
 import verticapy._config.config as conf
-from verticapy._typing import PythonScalar
+from verticapy._typing import ArrayLike, PythonScalar, SQLColumns
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -31,13 +32,16 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.string_sql.base import StringSQL
 
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.plotting._matplotlib.base import updated_dict
 
 
 def cmatrix(
-    matrix,
-    columns_x,
-    columns_y,
+    matrix: ArrayLike,
+    columns_x: list[str],
+    columns_y: list[str],
     n: int,
     m: int,
     vmax: float,
@@ -52,9 +56,12 @@ def cmatrix(
     inverse: bool = False,
     extent: list = [],
     is_pivot: bool = False,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a heatmap using the Matplotlib API.
+    """
     if is_vector:
         is_vector = True
         vector = [elem for elem in matrix[1]]
@@ -115,15 +122,19 @@ def cmatrix(
 
 
 def contour_plot(
-    vdf,
-    columns: list,
-    func,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
+    func: Callable,
     nbins: int = 100,
     cbar_title: str = "",
     pos_label: PythonScalar = None,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a contour plot using the Matplotlib API.
+    """
+
     from verticapy.datasets.generators import gen_meshgrid
 
     if not (cbar_title) and str(type(func)) in (
@@ -251,15 +262,18 @@ def contour_plot(
 
 
 def hexbin(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     method: str = "count",
     of: str = "",
     bbox: list = [],
     img: str = "",
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws an hexbin plot using the Matplotlib API.
+    """
     if len(columns) != 2:
         raise ParameterError(
             "The parameter 'columns' must be exactly of size 2 to draw the hexbin"
@@ -349,20 +363,23 @@ def hexbin(
 
 
 def pivot_table(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     method: str = "count",
     of: str = "",
-    h: tuple = (None, None),
-    max_cardinality: tuple = (20, 20),
+    h: tuple[Optional[float], Optional[float]] = (None, None),
+    max_cardinality: tuple[int, int] = (20, 20),
     show: bool = True,
     with_numbers: bool = True,
     fill_none: float = 0.0,
-    ax=None,
+    ax: Optional[Axes] = None,
     return_ax: bool = False,
     extent: list = [],
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a pivot table using the Matplotlib API.
+    """
     columns, of = vdf._format_colnames(columns, of)
     other_columns = ""
     method = method.lower()

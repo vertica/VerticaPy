@@ -45,11 +45,6 @@ import verticapy.plotting._matplotlib as vpy_plt
 from verticapy.plotting._matplotlib.base import updated_dict
 
 import verticapy.machine_learning.metrics as mt
-from verticapy.machine_learning.model_selection.model_validation import (
-    prc_curve,
-    roc_curve,
-    lift_chart,
-)
 from verticapy.machine_learning.vertica.base import (
     MulticlassClassifier,
     Regressor,
@@ -820,7 +815,7 @@ class KernelDensity(Regressor, Tree):
     # Attributes Methods.
 
     def _density_kde(
-        self, vdf: vDataFrame, columns: list, kernel: str, x, p: int, h=None
+        self, vdf: vDataFrame, columns: SQLColumns, kernel: str, x, p: int, h=None
     ) -> str:
         """
         Returns the result of the KDE.
@@ -876,7 +871,7 @@ class KernelDensity(Regressor, Tree):
     def _density_compute(
         self,
         vdf: vDataFrame,
-        columns: list,
+        columns: SQLColumns,
         h=None,
         kernel: str = "gaussian",
         nbins: int = 5,
@@ -1021,7 +1016,7 @@ class KernelDensity(Regressor, Tree):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         if len(self.X) == 1:
             if self._verticapy_store:
@@ -1222,7 +1217,7 @@ class LocalOutlierFactor(VerticaModel):
     		Training relation.
     	X: SQLColumns, optional
     		List of the predictors.
-    	key_columns: list, optional
+    	key_columns: SQLColumns, optional
     		Columns  not  used   during  the   algorithm 
             computation  but   which  will  be  used  to 
             create the final relation.
@@ -1422,7 +1417,7 @@ class LocalOutlierFactor(VerticaModel):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         sample = 100 * min(float(max_nb_points / self.cnt_), 1)
         return vpy_plt.lof_plot(

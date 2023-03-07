@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from collections.abc import Iterable
+from typing import Literal
 
 from vertica_highcharts import Highchart
 
@@ -28,8 +29,12 @@ def scatter(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type: str = "regular",
-):
+    chart_type: str = Literal["bubble", "bubble3d", "scatter", "scatter3d", "regular"],
+) -> Highchart:
+    """
+    Draws a scatter plot using the High Chart API 
+    and the input SQL query.
+    """
     data = _executeSQL(
         query,
         title="Selecting the different values to draw the chart.",

@@ -20,10 +20,16 @@ from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
+from verticapy.plotting._highcharts.utils import data_to_columns, sort_classes
 
-def negative_bar(query: str, options: dict = {}, width: int = 600, height: int = 400):
-    from verticapy.plotting._highcharts.base import data_to_columns, sort_classes
 
+def negative_bar(
+    query: str, options: dict = {}, width: int = 600, height: int = 400
+) -> Highchart:
+    """
+    Draws a negative bar using the High Chart API 
+    and the input SQL query.
+    """
     data = _executeSQL(
         query,
         title="Selecting the categories and their respective aggregations to draw the chart.",

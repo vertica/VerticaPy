@@ -16,14 +16,20 @@ permissions and limitations under the License.
 """
 import warnings
 import numpy as np
+from typing import Callable, Optional, TYPE_CHECKING
 
+from matplotlib.axes import Axes
 import matplotlib.animation as animation
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap, get_colors
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import updated_dict
 
@@ -34,7 +40,11 @@ if conf._get_import_success("dateutil"):
     from dateutil.parser import parse
 
 
-def parse_datetime(D: list):
+def parse_datetime(D: list) -> list:
+    """
+    Parses the list and casts the value to the datetime
+    format if possible.
+    """
     try:
         return [parse(d) for d in D]
     except:
@@ -42,8 +52,8 @@ def parse_datetime(D: list):
 
 
 def animated_bar(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     order_by: str,
     by: str = "",
     order_by_start: str = "",
@@ -52,15 +62,18 @@ def animated_bar(
     limit: int = 1000000,
     fixed_xy_lim: bool = False,
     date_in_title: bool = False,
-    date_f=None,
+    date_f: Optional[Callable] = None,
     date_style_dict: dict = {},
     interval: int = 10,
     repeat: bool = True,
     return_html: bool = True,
     pie: bool = False,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> animation.Animation:
+    """
+    Draws an animated bar chart using the Matplotlib API.
+    """
     if not (date_style_dict):
         date_style_dict = {
             "fontsize": 50,
@@ -295,9 +308,9 @@ def animated_bar(
 
 
 def animated_bubble_plot(
-    vdf,
+    vdf: "vDataFrame",
     order_by: str,
-    columns: list,
+    columns: SQLColumns,
     by: str = "",
     label_name: str = "",
     order_by_start: str = "",
@@ -309,14 +322,19 @@ def animated_bubble_plot(
     bbox: list = [],
     img: str = "",
     date_in_title: bool = False,
-    date_f=None,
+    date_f: Optional[Callable] = None,
     date_style_dict: dict = {},
     interval: int = 10,
     repeat: bool = True,
     return_html: bool = True,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> animation.Animation:
+    """
+    Draws an animated bubble plot using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     if not (date_style_dict):
         date_style_dict = {
             "fontsize": 100,
@@ -564,9 +582,9 @@ def animated_bubble_plot(
 
 
 def animated_ts_plot(
-    vdf,
+    vdf: "vDataFrame",
     order_by: str,
-    columns: list = [],
+    columns: SQLColumns = [],
     order_by_start: str = "",
     order_by_end: str = "",
     limit: int = 1000000,
@@ -576,11 +594,16 @@ def animated_ts_plot(
     interval: int = 5,
     repeat: bool = True,
     return_html: bool = True,
-    ax=None,
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> animation.Animation:
+    """
+    Draws an animated Time Series plot using the Matplotlib API.
+    """
     if not (columns):
         columns = vdf.numcol()
+    if isinstance(columns, str):
+        columns = [columns]
     for column in columns:
         if not (vdf[column].isnum()):
             if vdf._vars["display"]["print_info"]:

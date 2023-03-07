@@ -15,25 +15,36 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
+from typing import Optional, TYPE_CHECKING
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
+from verticapy._typing import SQLColumns
 from verticapy.errors import ParameterError
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import updated_dict
 
 
 def spider(
-    vdf,
-    columns: list,
+    vdf: "vDataFrame",
+    columns: SQLColumns,
     method: str = "density",
     of: str = "",
-    max_cardinality: tuple = (6, 6),
-    h: tuple = (None, None),
-    ax=None,
+    max_cardinality: tuple[int, int] = (6, 6),
+    h: tuple[Optional[float], Optional[float]] = (None, None),
+    ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a spider plot using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     unique = vdf[columns[0]].nunique(True)
     if unique < 3:
         raise ParameterError(

@@ -50,7 +50,6 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.metrics as mt
-import verticapy.machine_learning.model_selection as ms
 
 import verticapy.plotting._matplotlib as vpy_plt
 
@@ -618,7 +617,7 @@ class VerticaModel:
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         return vDataFrame(self.input_relation).contour(
             *self._get_plot_args(method="contour"),
@@ -976,7 +975,7 @@ class Tree:
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         if self._model_subcategory == "REGRESSOR":
             return vpy_plt.regression_tree_plot(
@@ -1433,7 +1432,7 @@ class BinaryClassifier(Classifier):
         TableSample
             cutoff curve data points.
         """
-        return ms.roc_curve(
+        return mt.roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -1464,7 +1463,7 @@ class BinaryClassifier(Classifier):
     	TableSample
     		lift chart data points.
 		"""
-        return ms.lift_chart(
+        return mt.lift_chart(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -1494,7 +1493,7 @@ class BinaryClassifier(Classifier):
     	TableSample
     		PRC curve data points.
 		"""
-        return ms.prc_curve(
+        return mt.prc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -1524,7 +1523,7 @@ class BinaryClassifier(Classifier):
         TableSample
             ROC curve data points.
         """
-        return ms.roc_curve(
+        return mt.roc_curve(
             self.y,
             self.deploySQL(),
             self.test_relation,
@@ -2106,7 +2105,7 @@ class MulticlassClassifier(Classifier):
         Returns
         -------
         Axes
-            Matplotlib axes object.
+            Axes.
         """
         pos_label = self._check_pos_label(pos_label=pos_label)
         return vDataFrame(self.input_relation).contour(
@@ -2146,7 +2145,7 @@ class MulticlassClassifier(Classifier):
         TableSample
             cutoff curve data points.
         """
-        return ms.roc_curve(
+        return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label, method="cutoff"),
             **self._get_plot_kwargs(nbins=nbins, ax=ax, method="cutoff"),
             **style_kwds,
@@ -2183,7 +2182,7 @@ class MulticlassClassifier(Classifier):
     	TableSample
     		lift chart data points.
 		"""
-        return ms.lift_chart(
+        return mt.lift_chart(
             *self._get_plot_args(pos_label=pos_label),
             **self._get_plot_kwargs(nbins=nbins, ax=ax),
             **style_kwds,
@@ -2220,7 +2219,7 @@ class MulticlassClassifier(Classifier):
     	TableSample
     		PRC curve data points.
 		"""
-        return ms.prc_curve(
+        return mt.prc_curve(
             *self._get_plot_args(pos_label=pos_label),
             **self._get_plot_kwargs(nbins=nbins, ax=ax),
             **style_kwds,
@@ -2257,7 +2256,7 @@ class MulticlassClassifier(Classifier):
     	TableSample
     		roc curve data points.
 		"""
-        return ms.roc_curve(
+        return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label),
             **self._get_plot_kwargs(nbins=nbins, ax=ax),
             **style_kwds,

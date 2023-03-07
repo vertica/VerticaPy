@@ -15,10 +15,16 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from collections.abc import Iterable
+from typing import Literal, Optional, TYPE_CHECKING, Union
+
+from vertica_highcharts import Highchart, Highstock
 
 from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._highcharts.bar import bar
 from verticapy.plotting._highcharts.boxplot import boxplot
@@ -32,41 +38,45 @@ from verticapy.plotting._highcharts.scatter import scatter
 from verticapy.plotting._highcharts.spider import spider
 
 
-def sort_classes(categories):
-    try:
-        try:
-            order = []
-            for item in categories:
-                order += [float(item.split(";")[0].split("[")[1])]
-        except:
-            order = []
-            for item in all_subcategories:
-                order += [float(item)]
-        order = [x for _, x in sorted(zip(order, categories))]
-    except:
-        return categories
-    return order
-
-
-def data_to_columns(data: list, n: int):
-    columns = [[]] * n
-    for elem in data:
-        for i in range(n):
-            try:
-                columns[i] = columns[i] + [float(elem[i])]
-            except:
-                columns[i] = columns[i] + [elem[i]]
-    return columns
-
-
 def hchart_from_vdf(
-    vdf,
-    x=None,
-    y=None,
-    z=None,
-    c=None,
+    vdf: "vDataFrame",
+    x: Optional[str] = None,
+    y: Optional[str] = None,
+    z: Optional[str] = None,
+    c: Optional[str] = None,
     aggregate: bool = True,
-    kind="boxplot",
+    kind: Literal[
+        "area",
+        "area_range",
+        "area_ts",
+        "bar",
+        "biserial",
+        "boxplot",
+        "bubble",
+        "candlestick",
+        "cramer",
+        "donut",
+        "donut3d",
+        "heatmap",
+        "hist",
+        "kendall",
+        "line",
+        "multi_area",
+        "multi_line",
+        "multi_spline",
+        "negative_bar",
+        "pearson",
+        "pie",
+        "pie3d",
+        "pie_half",
+        "scatter",
+        "spearman",
+        "spearmand",
+        "spider",
+        "spline",
+        "stacked_bar",
+        "stacked_hist",
+    ] = "boxplot",
     width: int = 600,
     height: int = 400,
     options: dict = {},
@@ -76,7 +86,11 @@ def hchart_from_vdf(
     drilldown: bool = False,
     stock: bool = False,
     alpha: float = 0.25,
-):
+) -> Union[Highchart, Highstock]:
+    """
+    Draws a custom chart using the High Chart API
+    and the input SQL query.
+    """
     if not (x):
         x = vdf.numcol()
     x, y, z, c = vdf._format_colnames(x, y, z, c, raise_error=False)
@@ -552,104 +566,3 @@ def hchart_from_vdf(
             )
         chart.set_dict_options(options)
         return chart
-
-
-def hchartSQL(
-    query: str, kind="auto", width: int = 600, height: int = 400, options: dict = {},
-):
-    from verticapy.core.vdataframe.base import vDataFrame
-
-    aggregate, stock = False, False
-    data = _executeSQL(
-        query=f"""
-            SELECT 
-                /*+LABEL('highchart.hchartSQL')*/ * 
-            FROM ({query}) VERTICAPY_SUBTABLE LIMIT 0""",
-        method="fetchall",
-        print_time_sql=False,
-    )
-    names = [desc[0] for desc in current_cursor().description]
-    vdf = vDataFrame(query)
-    allnum = vdf.numcol()
-    if kind == "auto":
-        if len(names) == 1:
-            kind = "pie"
-        elif (len(names) == len(allnum)) and (len(names) < 5):
-            kind = "scatter"
-        elif len(names) == 2:
-            if vdf[names[0]].isdate() and vdf[names[1]].isnum():
-                kind = "line"
-            else:
-                kind = "bar"
-        elif len(names) == 3:
-            if vdf[names[0]].isdate() and vdf[names[1]].isnum():
-                kind = "line"
-            elif vdf[names[2]].isnum():
-                kind = "hist"
-            else:
-                kind = "boxplot"
-        else:
-            kind = "boxplot"
-    if kind in (
-        "pearson",
-        "kendall",
-        "cramer",
-        "biserial",
-        "spearman",
-        "spearmand",
-        "boxplot",
-    ):
-        x, y, z, c = allnum, None, None, None
-    elif kind == "scatter":
-        if len(names) < 2:
-            raise ValueError("Scatter Plots need at least 2 columns.")
-        x, y, z, c = names[0], names[1], None, None
-        if len(names) == 3 and len(allnum) == 3:
-            z = names[2]
-        elif len(names) == 3:
-            c = names[2]
-        elif len(names) > 3:
-            z, c = names[2], names[3]
-    elif kind == "bubble":
-        if len(names) < 3:
-            raise ValueError("Bubble Plots need at least 3 columns.")
-        x, y, z, c = names[0], names[1], names[2], None
-        if len(names) > 3:
-            c = names[3]
-    elif kind in (
-        "area",
-        "area_ts",
-        "spline",
-        "line",
-        "area_range",
-        "spider",
-        "candlestick",
-    ):
-        if vdf[names[0]].isdate():
-            stock = True
-        if len(names) < 2:
-            raise ValueError(f"{kind} Plots need at least 2 columns.")
-        x, y, z, c = names[0], names[1:], None, None
-        if kind == "candlestick":
-            aggregate = True
-    else:
-        if len(names) == 1:
-            aggregate = True
-            x, y, z, c = names[0], "COUNT(*) AS cnt", None, None
-        else:
-            x, y, z, c = names[0], names[1], None, None
-        if len(names) > 2:
-            z = names[2]
-    return vdf.hchart(
-        x=x,
-        y=y,
-        z=z,
-        c=c,
-        aggregate=aggregate,
-        kind=kind,
-        width=width,
-        height=height,
-        options=options,
-        max_cardinality=100,
-        stock=stock,
-    )

@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Literal
+
 from vertica_highcharts import Highchart, Highstock
 
 from verticapy._config.colors import get_colors
@@ -26,9 +28,22 @@ def line(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type: str = "line",
+    chart_type: Literal[
+        "area",
+        "area_range",
+        "area_ts",
+        "line",
+        "multi_area",
+        "multi_line",
+        "multi_spline",
+        "spline",
+    ] = "line",
     stock: bool = False,
-):
+) -> Highstock:
+    """
+    Draws a line chart using the High Chart API 
+    and the input SQL query.
+    """
     is_ts = True if (chart_type == "area_ts") else False
     is_range = True if (chart_type == "area_range") else False
     is_date = False

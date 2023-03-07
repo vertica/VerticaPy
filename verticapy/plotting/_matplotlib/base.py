@@ -15,22 +15,31 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
+from typing import TYPE_CHECKING
 
+from verticapy._typing import ArrayLike
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 
 def compute_plot_variables(
-    vdf,
+    vdf: "vDataFrame",
     method: str = "density",
     of: str = "",
     max_cardinality: int = 6,
     nbins: int = 0,
-    h: float = 0,
+    h: float = 0.0,
     pie: bool = False,
-):
+) -> tuple[ArrayLike, ArrayLike, ArrayLike, float, bool]:
+    """
+    Computes the aggregations needed to draw a 1D graphic 
+    using the Matplotlib API.
+    """
     other_columns = ""
     if method.lower() == "median":
         method = "50%"
@@ -235,9 +244,10 @@ def compute_plot_variables(
     return [x, y, z, h, is_categorical]
 
 
-def updated_dict(
-    d1: dict, d2: dict, color_idx: int = 0,
-):
+def updated_dict(d1: dict, d2: dict, color_idx: int = 0,) -> dict:
+    """
+    Updates the input dictionary using another one.
+    """
     d = {}
     for elem in d1:
         d[elem] = d1[elem]

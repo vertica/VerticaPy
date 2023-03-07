@@ -831,14 +831,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def aad(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'aad' (Average Absolute Deviation).
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -858,14 +858,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def all(
-        self, columns: list, **agg_kwds,
+        self, columns: SQLColumns, **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'bool_and'.
 
     Parameters
     ----------
-    columns: list
+    columns: SQLColumns
         List of the vDataColumns names.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -885,14 +885,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def any(
-        self, columns: list, **agg_kwds,
+        self, columns: SQLColumns, **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'bool_or'.
 
     Parameters
     ----------
-    columns: list
+    columns: SQLColumns
         List of the vDataColumns names.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -911,14 +911,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def avg(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'avg' (Average).
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -940,7 +940,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def count(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using a list of 'count' (Number of non-missing 
@@ -948,7 +948,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all vDataColumns will be used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1407,14 +1407,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def kurtosis(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'kurtosis'.
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1436,14 +1436,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def mad(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'mad' (Median Absolute Deviation).
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1463,14 +1463,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def max(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'max' (Maximum).
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1490,14 +1490,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def median(
-        self, columns: list = [], approx: bool = True, **agg_kwds,
+        self, columns: SQLColumns = [], approx: bool = True, **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'median'.
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     approx: bool, optional
@@ -1520,14 +1520,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def min(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'min' (Minimum).
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1547,14 +1547,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def nunique(
-        self, columns: list = [], approx: bool = True, **agg_kwds,
+        self, columns: SQLColumns = [], approx: bool = True, **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'unique' (cardinality).
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all vDataColumns will be used.
     approx: bool, optional
         If set to True, the approximate cardinality is returned. By setting 
@@ -1578,14 +1578,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def product(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'product'.
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumn names. If empty, all numerical vDataColumns will be used.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -1608,7 +1608,7 @@ class vDFAgg:
     def quantile(
         self,
         q: Union[PythonNumber, list],
-        columns: list = [],
+        columns: SQLColumns = [],
         approx: bool = True,
         **agg_kwds,
     ):
@@ -1620,7 +1620,7 @@ class vDFAgg:
     q: PythonNumber / list
         List of the different quantiles. They must be numbers between 0 and 1.
         For example [0.25, 0.75] will return Q1 and Q3.
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     approx: bool, optional
@@ -1650,14 +1650,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def sem(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'sem' (Standard Error of the Mean).
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1677,14 +1677,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def skewness(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'skewness'.
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1706,14 +1706,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def std(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'std' (Standard Deviation).
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1735,14 +1735,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def sum(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'sum'.
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
@@ -1762,14 +1762,14 @@ class vDFAgg:
 
     @save_verticapy_logs
     def var(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'variance'.
 
     Parameters
     ----------
-    columns: list, optional
+    columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
     **agg_kwds
