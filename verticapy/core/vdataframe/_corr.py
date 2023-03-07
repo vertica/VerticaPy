@@ -36,7 +36,7 @@ from verticapy.errors import EmptyParameter
 
 from verticapy.core.tablesample.base import TableSample
 
-import verticapy.plotting._matplotlib as plt
+import verticapy.plotting._matplotlib as vpy_plt
 
 from verticapy.sql.drop import drop
 
@@ -495,7 +495,7 @@ class vDFCorr:
                     cm1, cm2 = get_cmap()
                     cmap = cm1 if (method == "cramer") else cm2
                     style_kwds["cmap"] = cmap
-                plt.cmatrix(
+                vpy_plt.HeatMap.cmatrix(
                     matrix,
                     columns,
                     columns,
@@ -713,7 +713,7 @@ class vDFCorr:
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwds["cmap"] = cmap
             title = f"Correlation Vector of {focus} ({method})"
-            plt.cmatrix(
+            vpy_plt.HeatMap.cmatrix(
                 [cols, [focus] + vector],
                 cols,
                 [focus],
@@ -1218,7 +1218,7 @@ class vDFCorr:
             if acf_band:
                 result.values["confidence"] = acf_band
             if show:
-                plt.acf_plot(
+                vpy_plt.ACFPlot.acf_plot(
                     result.values["index"],
                     result.values["value"],
                     title="Autocorrelation",
@@ -1375,7 +1375,7 @@ class vDFCorr:
             if pacf_band:
                 result.values["confidence"] = pacf_band
             if show:
-                plt.acf_plot(
+                vpy_plt.ACFPlot.acf_plot(
                     result.values["index"],
                     result.values["value"],
                     title="Partial Autocorrelation",
@@ -1549,7 +1549,7 @@ class vDFCorr:
                 method_title = "Alpha"
             else:
                 method_title = method
-            plt.cmatrix(
+            vpy_plt.HeatMap.cmatrix(
                 matrix,
                 columns,
                 columns,
@@ -1621,7 +1621,9 @@ class vDFCorr:
         for elem in columns:
             coeff_importances[elem] = self[elem].iv_woe(y=y, nbins=nbins)["iv"][-1]
         if show:
-            ax = plt.plot_importance(coeff_importances, print_legend=False, ax=ax)
+            ax = vpy_plt.ImportanceBarChart.plot_importance(
+                coeff_importances, print_legend=False, ax=ax
+            )
             ax.set_xlabel("IV")
         index = [elem for elem in coeff_importances]
         iv = [coeff_importances[elem] for elem in coeff_importances]

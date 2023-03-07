@@ -662,7 +662,7 @@ class AutoML(VerticaModel):
                     coeff_importances[self.stepwise_["variable"][idx]] = self.stepwise_[
                         "importance"
                     ][idx]
-            return vpy_plt.plot_importance(
+            return vpy_plt.ImportanceBarChart().plot_importance(
                 coeff_importances, print_legend=False, ax=ax, **style_kwds
             )
         return self.best_model_.features_importance(**kwds)
@@ -696,7 +696,7 @@ class AutoML(VerticaModel):
             Axes.
         """
         if mltype == "champion":
-            return vpy_plt.plot_bubble_ml(
+            return vpy_plt.ChampionChallenger().plot_bubble_ml(
                 self.model_grid_["avg_time"],
                 self.model_grid_["avg_score"],
                 self.model_grid_["score_std"],
@@ -709,7 +709,7 @@ class AutoML(VerticaModel):
                 **style_kwds,
             )
         else:
-            return vpy_plt.plot_stepwise_ml(
+            return vpy_plt.StepwisePlot().plot_stepwise_ml(
                 [len(elem) for elem in self.stepwise_["features"]],
                 self.stepwise_[self.parameters["stepwise_criterion"]],
                 self.stepwise_["variable"],

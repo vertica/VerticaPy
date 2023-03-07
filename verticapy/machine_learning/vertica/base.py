@@ -920,7 +920,7 @@ class Tree:
         """
         fi = self._get_features_importance(tree_id=tree_id)
         if show:
-            vpy_plt.plot_importance(
+            vpy_plt.ImportanceBarChart().plot_importance(
                 self.X, fi, print_legend=False, ax=ax, **style_kwds,
             )
         importances = {
@@ -978,7 +978,7 @@ class Tree:
             Axes.
         """
         if self._model_subcategory == "REGRESSOR":
-            return vpy_plt.regression_tree_plot(
+            return vpy_plt.RegressionTreePlot().regression_tree_plot(
                 self.X + [self.deploySQL()],
                 self.y,
                 self.input_relation,

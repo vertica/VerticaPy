@@ -29,10 +29,7 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting._matplotlib import (
-    plot_stepwise_ml,
-    plot_importance,
-)
+import verticapy.plotting._matplotlib as vpy_plt
 
 from verticapy.machine_learning.metrics import aic_bic
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
@@ -501,7 +498,7 @@ def stepwise(
         estimator.fit(input_relation, X_current, y)
     res.best_list_ = X_current
     if show:
-        plot_stepwise_ml(
+        vpy_plt.StepwisePlot().plot_stepwise_ml(
             [len(x) for x in res["features"]],
             res[criterion],
             res["variable"],
@@ -517,5 +514,7 @@ def stepwise(
         for idx in range(len(importance)):
             if res["variable"][idx] != None:
                 coeff_importances[res["variable"][idx]] = importance[idx]
-        plot_importance(coeff_importances, print_legend=False, ax=ax, **style_kwds)
+        vpy_plt.ImportanceBarChart().plot_importance(
+            coeff_importances, print_legend=False, ax=ax, **style_kwds
+        )
     return res

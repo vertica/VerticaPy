@@ -32,7 +32,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 
-from verticapy.plotting._matplotlib.base import updated_dict
+from verticapy.plotting.base import PlottingBase
 
 
 @save_verticapy_logs
@@ -250,7 +250,7 @@ def elbow(
         "markersize": 7,
         "markeredgecolor": "black",
     }
-    ax.plot(L, elbow_score, **updated_dict(param, style_kwds))
+    ax.plot(L, elbow_score, **PlottingBase.updated_dict(param, style_kwds))
     ax.set_title("Elbow Curve")
     ax.set_xlabel("Number of Clusters")
     ax.set_ylabel("Elbow Score (Between-Cluster SS / Total SS)")

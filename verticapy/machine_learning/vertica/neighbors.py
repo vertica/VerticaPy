@@ -40,9 +40,8 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
+from verticapy.plotting.base import PlottingBase
 import verticapy.plotting._matplotlib as vpy_plt
-
-from verticapy.plotting._matplotlib.base import updated_dict
 
 import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.vertica.base import (
@@ -1038,9 +1037,12 @@ class KernelDensity(Regressor, Tree):
             param = {
                 "color": get_colors()[0],
             }
-            ax.plot(x, y, **updated_dict(param, style_kwds))
+            ax.plot(x, y, **PlottingBase.updated_dict(param, style_kwds))
             ax.fill_between(
-                x, y, facecolor=updated_dict(param, style_kwds)["color"], alpha=0.7
+                x,
+                y,
+                facecolor=PlottingBase.updated_dict(param, style_kwds)["color"],
+                alpha=0.7,
             )
             ax.set_xlim(min(x), max(x))
             ax.set_ylim(bottom=0)
@@ -1086,7 +1088,9 @@ class KernelDensity(Regressor, Tree):
             }
             extent = [min(x), max(x), min(y), max(y)]
             extent = [float(v) for v in extent]
-            im = ax.imshow(result, extent=extent, **updated_dict(param, style_kwds))
+            im = ax.imshow(
+                result, extent=extent, **PlottingBase.updated_dict(param, style_kwds)
+            )
             fig.colorbar(im, ax=ax)
             ax.set_ylabel(self.X[1])
             ax.set_xlabel(self.X[0])
@@ -1420,6 +1424,6 @@ class LocalOutlierFactor(VerticaModel):
             Axes.
         """
         sample = 100 * min(float(max_nb_points / self.cnt_), 1)
-        return vpy_plt.lof_plot(
+        return vpy_plt.LOFPlot().lof_plot(
             self.model_name, self.X, "lof_score", sample, ax=ax, **style_kwds
         )
