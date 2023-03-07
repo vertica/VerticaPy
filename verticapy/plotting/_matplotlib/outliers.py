@@ -29,9 +29,10 @@ if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.scatter import ScatterPlot
 
 
-class OutliersPlot(PlottingBase):
+class OutliersPlot(PlottingBase, ScatterPlot):
     def outliers_contour_plot(
         self,
         vdf: "vDataFrame",
@@ -100,7 +101,7 @@ class OutliersPlot(PlottingBase):
             ][0]
             vdf_temp["ZSCORE"] = "ZSCORE + 1.5 * RANDOM()"
             for searchi in [(">", outliers_color), ("<=", inliers_color)]:
-                scatter(
+                self.scatter(
                     vdf_temp.search(f"ZSCORE {searchi[0]} {threshold}"),
                     [columns[0], "ZSCORE"],
                     max_nb_points=max_nb_points,
@@ -132,7 +133,7 @@ class OutliersPlot(PlottingBase):
                     / {all_agg["std"][0]}) <= {threshold} 
                {op} ABS(({columns[1]} - {all_agg["avg"][1]}) 
                     / {all_agg["std"][1]}) <= {threshold}"""
-                scatter(
+                self.scatter(
                     vdf.search(s),
                     columns,
                     max_nb_points=max_nb_points,

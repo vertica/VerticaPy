@@ -31,9 +31,10 @@ if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.scatter import HeatMap
 
 
-class PivotTable(PlottingBase):
+class PivotTable(PlottingBase, HeatMap):
     def pivot_table(
         self,
         vdf: "vDataFrame",
@@ -236,7 +237,7 @@ class PivotTable(PlottingBase):
         ] + all_columns
         if show:
             all_count = [item[2] for item in query_result]
-            ax = cmatrix(
+            ax = self.cmatrix(
                 all_columns,
                 all_column0_categories,
                 all_column1_categories,

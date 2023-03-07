@@ -45,6 +45,8 @@ from verticapy.machine_learning.vertica.base import (
 
 from verticapy.sql.drop import drop
 
+import verticapy.plotting._matplotlib as vpy_plt
+
 if conf._get_import_success("graphviz"):
     from graphviz import Source
 
@@ -367,9 +369,7 @@ class KMeans(Clustering):
             Matplotlib Figure.
         """
         if len(self.X) == 2:
-            from verticapy.plotting._matplotlib import voronoi_plot
-
-            return voronoi_plot(
+            return vpy_plt.KMeansPlot().voronoi_plot(
                 clusters=self.clusters_,
                 columns=self.X,
                 input_relation=self.input_relation,
