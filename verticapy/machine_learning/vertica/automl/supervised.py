@@ -31,11 +31,11 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
-from verticapy.machine_learning.model_selection import (
+from verticapy.machine_learning.model_selection.hp_tuning.cv import grid_search_cv
+from verticapy.machine_learning.model_selection.hp_tuning.param_gen import (
     gen_params_grid,
-    grid_search_cv,
-    stepwise,
 )
+from verticapy.machine_learning.model_selection.variables_selection import stepwise
 from verticapy.machine_learning.vertica.automl.dataprep import AutoDataPrep
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.ensemble import (
