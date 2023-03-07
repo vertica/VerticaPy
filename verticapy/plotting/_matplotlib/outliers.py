@@ -32,7 +32,7 @@ from verticapy.plotting.base import PlottingBase
 from verticapy.plotting._matplotlib.scatter import ScatterPlot
 
 
-class OutliersPlot(PlottingBase, ScatterPlot):
+class OutliersPlot(ScatterPlot):
     def outliers_contour_plot(
         self,
         vdf: "vDataFrame",

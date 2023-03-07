@@ -34,7 +34,7 @@ from verticapy.plotting.base import PlottingBase
 from verticapy.plotting._matplotlib.scatter import HeatMap
 
 
-class PivotTable(PlottingBase, HeatMap):
+class PivotTable(HeatMap):
     def pivot_table(
         self,
         vdf: "vDataFrame",
