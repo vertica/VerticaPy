@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
+from verticapy._typing import SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
 
 if TYPE_CHECKING:
@@ -31,12 +32,15 @@ if TYPE_CHECKING:
 def boxplot(
     vdf: "vDataFrame",
     by: str = "",
-    h: float = 0,
+    h: float = 0.0,
     max_cardinality: int = 8,
     cat_priority: list = [],
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a box plot using the Matplotlib API.
+    """
     colors = []
     if "color" in style_kwds:
         if isinstance(style_kwds["color"], str):
@@ -253,8 +257,16 @@ def boxplot(
 
 
 def boxplot2D(
-    vdf: "vDataFrame", columns: list = [], ax: Optional[Axes] = None, **style_kwds,
+    vdf: "vDataFrame",
+    columns: SQLColumns = [],
+    ax: Optional[Axes] = None,
+    **style_kwds,
 ) -> Axes:
+    """
+    Draws a 2D box plot using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     colors = []
     if "color" in style_kwds:
         if isinstance(style_kwds["color"], str):

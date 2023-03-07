@@ -25,6 +25,7 @@ from vertica_highcharts import Highstock, Highchart
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, replace_vars_in_query
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
 from verticapy.core.tablesample.base import TableSample

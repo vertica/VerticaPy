@@ -448,7 +448,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: list
+    columns: SQLColumns
         List of the vDataColumns names. The list must have two elements.
     func: function / str
         Function used to compute the contour score. It can also be a SQL
@@ -1041,7 +1041,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: list
+    columns: SQLColumns
         List of the vDataColumns names.
     max_cardinality: int / tuple / list, optional
         Maximum number of the vDataColumn distinct elements to be used as categorical 
@@ -1152,7 +1152,7 @@ class vDFPlot:
     def plot(
         self,
         ts: str,
-        columns: list = [],
+        columns: SQLColumns = [],
         start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
         step: bool = False,
@@ -1336,7 +1336,7 @@ class vDFPlot:
     def stacked_area(
         self,
         ts: str,
-        columns: list = [],
+        columns: SQLColumns = [],
         start_date: Union[int, float, str, datetime.datetime, datetime.date] = "",
         end_date: Union[int, float, str, datetime.datetime, datetime.date] = "",
         fully: bool = False,

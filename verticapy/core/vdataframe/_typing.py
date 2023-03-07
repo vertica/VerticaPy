@@ -152,7 +152,7 @@ class vDFTyping:
             values["dtype"] += [self[column].ctype()]
         return TableSample(values)
 
-    def numcol(self, exclude_columns: list = []):
+    def numcol(self, exclude_columns: SQLColumns = []):
         """
     Returns a list of names of the numerical vDataColumns in the vDataFrame.
 

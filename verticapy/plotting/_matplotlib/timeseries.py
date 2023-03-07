@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
+from verticapy._typing import ArrayLike, SQLColumns
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -35,6 +36,10 @@ if conf._get_import_success("dateutil"):
 
 
 def parse_datetime(D: list) -> list:
+    """
+    Parses the list and casts the value to the 
+    datetime format if possible.
+    """
     try:
         return [parse(d) for d in D]
     except:
@@ -44,12 +49,15 @@ def parse_datetime(D: list) -> list:
 def acf_plot(
     x: list,
     y: list,
-    title="",
-    confidence=None,
+    title: str = "",
+    confidence: ArrayLike = None,
     type_bar: bool = True,
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws an ACF Time Series plot using the Matplotlib API.
+    """
     tmp_style = {}
     for elem in style_kwds:
         if elem not in ("color", "colors"):
@@ -88,9 +96,7 @@ def acf_plot(
     ax.set_xticks(x)
     ax.set_xticklabels(x, rotation=90)
     if confidence:
-        ax.fill_between(
-            x, [-elem for elem in confidence], confidence, color=color, alpha=0.1
-        )
+        ax.fill_between(x, [-c for c in confidence], confidence, color=color, alpha=0.1)
     ax.set_xlabel("lag")
     return ax
 
@@ -98,13 +104,18 @@ def acf_plot(
 def multi_ts_plot(
     vdf: "vDataFrame",
     order_by: str,
-    columns: list = [],
+    columns: SQLColumns = [],
     order_by_start: str = "",
     order_by_end: str = "",
     kind: str = "line",
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a multi-time series plot using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     if len(columns) == 1 and kind != "area_percent":
         if kind in ("line", "step"):
             area = False
@@ -241,16 +252,19 @@ def multi_ts_plot(
 
 
 def range_curve(
-    X,
-    Y,
-    param_name="",
-    score_name="score",
+    X: ArrayLike,
+    Y: ArrayLike,
+    param_name: str = "",
+    score_name: str = "score",
     ax: Optional[Axes] = None,
-    labels=[],
+    labels: ArrayLike = [],
     without_scatter: bool = False,
     plot_median: bool = True,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a range curve using the Matplotlib API.
+    """
     if not (ax):
         fig, ax = plt.subplots()
         if conf._get_import_success("jupyter"):
@@ -300,6 +314,9 @@ def range_curve_vdf(
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a range curve using the Matplotlib API.
+    """
     order_by_start_str, order_by_end_str = "", ""
     if order_by_start:
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
@@ -356,6 +373,9 @@ def ts_plot(
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a time series plot using the Matplotlib API.
+    """
     if order_by_start:
         order_by_start_str = f" AND {order_by} > '{order_by_start}'"
     else:

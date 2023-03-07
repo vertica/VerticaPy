@@ -26,7 +26,7 @@ from matplotlib.lines import Line2D
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, SQLColumns
+from verticapy._typing import ArrayLike, PythonNumber, SQLColumns
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
@@ -35,14 +35,19 @@ from verticapy.plotting._matplotlib.base import updated_dict
 
 
 def logit_plot(
-    X: list,
+    X: SQLColumns,
     y: str,
     input_relation: str,
-    coefficients: list,
+    coefficients: ArrayLike,
     max_nb_points: int = 50,
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a Logistic Regression plot using the Matplotlib API.
+    """
+    if isinstance(X, str):
+        X = [X]
     param0 = {
         "marker": "o",
         "s": 50,
@@ -235,6 +240,11 @@ def lof_plot(
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a Local Outlier Plot using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     TableSample = f"TABLESAMPLE({TableSample})" if (0 < TableSample < 100) else ""
     colors = []
     if "color" in style_kwds:
@@ -391,10 +401,13 @@ def plot_bubble_ml(
     y_label: str = "score",
     title: str = "Model Type",
     reverse: tuple = (True, True),
-    plt_text=True,
+    plt_text: bool = True,
     ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a Machine Learning Bubble Plot using the Matplotlib API.
+    """
     if s:
         s = [min(250 + 5000 * elem, 1200) if elem != 0 else 1000 for elem in s]
     if z and s:
@@ -554,12 +567,15 @@ def plot_bubble_ml(
 
 
 def plot_importance(
-    coeff_importances: Union[dict, np.ndarray],
-    coeff_sign: Union[dict, np.ndarray] = {},
+    coeff_importances: Union[dict, ArrayLike],
+    coeff_sign: Union[dict, ArrayLike] = {},
     print_legend: bool = True,
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a coeff importance bar chart using the Matplotlib API.
+    """
     if isinstance(coeff_importances, dict):
         coefficients, importances, signs = [], [], []
         for coeff in coeff_importances:
@@ -606,11 +622,14 @@ def plot_pca_circle(
     x: list,
     y: list,
     variable_names: list = [],
-    explained_variance: tuple = (None, None),
-    dimensions: tuple = (1, 2),
+    explained_variance: tuple[Optional[float], Optional[float]] = (None, None),
+    dimensions: tuple[int, int] = (1, 2),
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a PCA circle plot using the Matplotlib API.
+    """
     colors = get_colors()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
@@ -658,6 +677,9 @@ def plot_stepwise_ml(
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a stepwise plot using the Matplotlib API.
+    """
     colors = get_colors()
     if not (ax):
         fig, ax = plt.subplots()
@@ -746,12 +768,15 @@ def plot_var(
     x: list,
     y: list,
     variable_names: list = [],
-    explained_variance: tuple = (None, None),
-    dimensions: tuple = (1, 2),
+    explained_variance: tuple[Optional[float], Optional[float]] = (None, None),
+    dimensions: tuple[int, int] = (1, 2),
     bar_name: str = "",
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a PCA Variance Plot using the Matplotlib API.
+    """
     colors = get_colors()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
@@ -811,7 +836,10 @@ def regression_plot(
     max_nb_points: int = 50,
     ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> Axes:
+    """
+    Draws a regression plot using the Matplotlib API.
+    """
     param = {
         "marker": "o",
         "color": get_colors()[0],
@@ -913,6 +941,9 @@ def regression_tree_plot(
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a regression tree plot using the Matplotlib API.
+    """
     all_points = _executeSQL(
         query=f"""
         SELECT 
@@ -969,6 +1000,9 @@ def svm_classifier_plot(
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a SVM Classifier plot using the Matplotlib API.
+    """
     param0 = {
         "marker": "o",
         "color": get_colors()[0],
@@ -1158,7 +1192,7 @@ def svm_classifier_plot(
 
 
 def voronoi_plot(
-    clusters: list,
+    clusters: ArrayLike,
     columns: SQLColumns,
     input_relation: str,
     max_nb_points: int = 1000,
@@ -1166,6 +1200,11 @@ def voronoi_plot(
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a KMeans Voronoi plot using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     min_x, max_x, min_y, max_y = (
         min([elem[0] for elem in clusters]),
         max([elem[0] for elem in clusters]),

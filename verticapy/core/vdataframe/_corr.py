@@ -45,7 +45,7 @@ class vDFCorr:
     def _aggregate_matrix(
         self,
         method: str = "pearson",
-        columns: list = [],
+        columns: SQLColumns = [],
         round_nb: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
@@ -538,7 +538,7 @@ class vDFCorr:
         self,
         focus: str,
         method: str = "pearson",
-        columns: list = [],
+        columns: SQLColumns = [],
         round_nb: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,

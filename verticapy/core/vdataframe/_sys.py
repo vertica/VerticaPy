@@ -42,7 +42,10 @@ class vDFSystem:
         return self
 
     def _genSQL(
-        self, split: bool = False, transformations: dict = {}, force_columns: list = [],
+        self,
+        split: bool = False,
+        transformations: dict = {},
+        force_columns: SQLColumns = [],
     ):
         """
     Method to use to generate the SQL final relation. It will look at all 
@@ -169,7 +172,11 @@ class vDFSystem:
         return table
 
     def _get_catalog_value(
-        self, column: str = "", key: str = "", method: str = "", columns: list = []
+        self,
+        column: str = "",
+        key: str = "",
+        method: str = "",
+        columns: SQLColumns = [],
     ):
         """
     VERTICAPY stores the already computed aggregations to avoid useless 
@@ -221,7 +228,7 @@ class vDFSystem:
             order_by = self._vars["order_by"][max_pos]
         return order_by
 
-    def _get_sort_syntax(self, columns: list):
+    def _get_sort_syntax(self, columns: SQLColumns):
         """
     Returns the SQL syntax to use to sort the input columns.
         """
@@ -247,7 +254,7 @@ class vDFSystem:
         self,
         values: dict = {},
         erase: bool = False,
-        columns: list = [],
+        columns: SQLColumns = [],
         matrix: str = "",
         column: str = "",
     ):

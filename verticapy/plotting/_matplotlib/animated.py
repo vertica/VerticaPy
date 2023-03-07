@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import warnings
 import numpy as np
-from typing import Optional, TYPE_CHECKING
+from typing import Callable, Optional, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
@@ -40,7 +40,11 @@ if conf._get_import_success("dateutil"):
     from dateutil.parser import parse
 
 
-def parse_datetime(D: list):
+def parse_datetime(D: list) -> list:
+    """
+    Parses the list and casts the value to the datetime
+    format if possible.
+    """
     try:
         return [parse(d) for d in D]
     except:
@@ -58,7 +62,7 @@ def animated_bar(
     limit: int = 1000000,
     fixed_xy_lim: bool = False,
     date_in_title: bool = False,
-    date_f=None,
+    date_f: Optional[Callable] = None,
     date_style_dict: dict = {},
     interval: int = 10,
     repeat: bool = True,
@@ -66,7 +70,10 @@ def animated_bar(
     pie: bool = False,
     ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> animation.Animation:
+    """
+    Draws an animated bar chart using the Matplotlib API.
+    """
     if not (date_style_dict):
         date_style_dict = {
             "fontsize": 50,
@@ -315,14 +322,19 @@ def animated_bubble_plot(
     bbox: list = [],
     img: str = "",
     date_in_title: bool = False,
-    date_f=None,
+    date_f: Optional[Callable] = None,
     date_style_dict: dict = {},
     interval: int = 10,
     repeat: bool = True,
     return_html: bool = True,
     ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> animation.Animation:
+    """
+    Draws an animated bubble plot using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     if not (date_style_dict):
         date_style_dict = {
             "fontsize": 100,
@@ -572,7 +584,7 @@ def animated_bubble_plot(
 def animated_ts_plot(
     vdf: "vDataFrame",
     order_by: str,
-    columns: list = [],
+    columns: SQLColumns = [],
     order_by_start: str = "",
     order_by_end: str = "",
     limit: int = 1000000,
@@ -584,9 +596,14 @@ def animated_ts_plot(
     return_html: bool = True,
     ax: Optional[Axes] = None,
     **style_kwds,
-):
+) -> animation.Animation:
+    """
+    Draws an animated Time Series plot using the Matplotlib API.
+    """
     if not (columns):
         columns = vdf.numcol()
+    if isinstance(columns, str):
+        columns = [columns]
     for column in columns:
         if not (vdf[column].isnum()):
             if vdf._vars["display"]["print_info"]:

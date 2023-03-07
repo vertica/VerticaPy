@@ -35,13 +35,16 @@ from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_
 def bar(
     vdf: "vDataFrame",
     method: str = "density",
-    of=None,
+    of: Optional[str] = None,
     max_cardinality: int = 6,
     nbins: int = 0,
-    h: float = 0,
+    h: float = 0.0,
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a bar chart using the Matplotlib API.
+    """
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
     )
@@ -84,14 +87,17 @@ def bar2D(
     columns: SQLColumns,
     method: str = "density",
     of: str = "",
-    max_cardinality: tuple = (6, 6),
-    h: tuple = (None, None),
+    max_cardinality: tuple[int, int] = (6, 6),
+    h: tuple[Optional[float], Optional[float]] = (None, None),
     stacked: bool = False,
     fully_stacked: bool = False,
     density: bool = False,
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a 2D bar chart using the Matplotlib API.
+    """
     colors = get_colors()
     if fully_stacked:
         if method != "density":
@@ -257,13 +263,16 @@ def bar2D(
 def hist(
     vdf: "vDataFrame",
     method: str = "density",
-    of=None,
+    of: Optional[str] = None,
     max_cardinality: int = 6,
     nbins: int = 0,
-    h: float = 0,
+    h: float = 0.0,
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a histogram using the Matplotlib API.
+    """
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, method, of, max_cardinality, nbins, h
     )
@@ -307,14 +316,19 @@ def hist(
 def hist2D(
     vdf: "vDataFrame",
     columns: SQLColumns,
-    method="density",
+    method: str = "density",
     of: str = "",
-    max_cardinality: tuple = (6, 6),
-    h: tuple = (None, None),
+    max_cardinality: tuple[int, int] = (6, 6),
+    h: tuple[Optional[float], Optional[float]] = (None, None),
     stacked: bool = False,
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a 2D Histogram using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     colors = get_colors()
     all_columns = vdf.pivot_table(
         columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False,
@@ -399,10 +413,15 @@ def multiple_hist(
     columns: SQLColumns,
     method: str = "density",
     of: str = "",
-    h: float = 0,
+    h: float = 0.0,
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a muli-histogram chart using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     colors = get_colors()
     if len(columns) > 5:
         raise ParameterError(

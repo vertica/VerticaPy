@@ -831,7 +831,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def aad(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'aad' (Average Absolute Deviation).
@@ -865,7 +865,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list
+    columns: SQLColumns
         List of the vDataColumns names.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -892,7 +892,7 @@ class vDFAgg:
 
     Parameters
     ----------
-    columns: list
+    columns: SQLColumns
         List of the vDataColumns names.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
@@ -911,7 +911,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def avg(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'avg' (Average).
@@ -940,7 +940,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def count(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using a list of 'count' (Number of non-missing 
@@ -1407,7 +1407,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def kurtosis(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'kurtosis'.
@@ -1436,7 +1436,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def mad(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'mad' (Median Absolute Deviation).
@@ -1463,7 +1463,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def max(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'max' (Maximum).
@@ -1490,7 +1490,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def median(
-        self, columns: list = [], approx: bool = True, **agg_kwds,
+        self, columns: SQLColumns = [], approx: bool = True, **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'median'.
@@ -1520,7 +1520,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def min(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'min' (Minimum).
@@ -1547,7 +1547,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def nunique(
-        self, columns: list = [], approx: bool = True, **agg_kwds,
+        self, columns: SQLColumns = [], approx: bool = True, **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'unique' (cardinality).
@@ -1578,7 +1578,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def product(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'product'.
@@ -1608,7 +1608,7 @@ class vDFAgg:
     def quantile(
         self,
         q: Union[PythonNumber, list],
-        columns: list = [],
+        columns: SQLColumns = [],
         approx: bool = True,
         **agg_kwds,
     ):
@@ -1650,7 +1650,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def sem(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'sem' (Standard Error of the Mean).
@@ -1677,7 +1677,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def skewness(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'skewness'.
@@ -1706,7 +1706,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def std(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'std' (Standard Deviation).
@@ -1735,7 +1735,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def sum(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'sum'.
@@ -1762,7 +1762,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def var(
-        self, columns: list = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwds,
     ):
         """
     Aggregates the vDataFrame using 'variance'.

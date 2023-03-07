@@ -48,9 +48,16 @@ def bubble(
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
-    assert not (catcol) or not (cmap_col), ParameterError(
-        "Bubble Plot only accepts either a cmap column or a categorical column. It can not accept both."
-    )
+    """
+    Draws a bubble plot using the Matplotlib API.
+    """
+    if (catcol) and (cmap_col):
+        raise ParameterError(
+            "Bubble Plot only accepts either a cmap column "
+            "or a categorical column. It can not accept both."
+        )
+    if isinstance(columns, str):
+        columns = [columns]
     if len(columns) == 2:
         columns += [1]
     if "color" in style_kwds:
@@ -338,6 +345,11 @@ def outliers_contour_plot(
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws an outliers contour plot using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     if not (cmap):
         cmap = get_cmap(get_colors()[2])
     all_agg = vdf.agg(["avg", "std", "min", "max"], columns)
@@ -448,7 +460,12 @@ def outliers_contour_plot(
     return ax
 
 
-def scatter_matrix(vdf: "vDataFrame", columns: list = [], **style_kwds,) -> Axes:
+def scatter_matrix(vdf: "vDataFrame", columns: SQLColumns = [], **style_kwds,) -> Axes:
+    """
+    Draws a scatter matrix using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     columns = vdf._format_colnames(columns)
     if not (columns):
         columns = vdf.numcol()
@@ -524,7 +541,12 @@ def scatter(
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a scatter plot using the Matplotlib API.
+    """
     columns, catcol = vdf._format_colnames(columns, catcol, expected_nb_of_cols=[2, 3])
+    if isinstance(columns, str):
+        columns = [columns]
     n = len(columns)
     for col in columns:
         if not (vdf[col].isnum()):

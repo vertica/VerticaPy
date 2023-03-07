@@ -35,11 +35,16 @@ def spider(
     columns: SQLColumns,
     method: str = "density",
     of: str = "",
-    max_cardinality: tuple = (6, 6),
-    h: tuple = (None, None),
+    max_cardinality: tuple[int, int] = (6, 6),
+    h: tuple[Optional[float], Optional[float]] = (None, None),
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a spider plot using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     unique = vdf[columns[0]].nunique(True)
     if unique < 3:
         raise ParameterError(

@@ -23,7 +23,7 @@ from matplotlib.axes import Axes
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns
+from verticapy._typing import PythonNumber, SQLColumns
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -34,11 +34,16 @@ from verticapy.plotting._matplotlib.base import compute_plot_variables, updated_
 def nested_pie(
     vdf: "vDataFrame",
     columns: SQLColumns,
-    max_cardinality: tuple = None,
-    h: tuple = None,
+    max_cardinality: Optional[int] = None,
+    h: PythonNumber = None,
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a nested pie chart using the Matplotlib API.
+    """
+    if isinstance(columns, str):
+        columns = [columns]
     wedgeprops = dict(width=0.3, edgecolor="w")
     tmp_style = {}
     for elem in style_kwds:
@@ -130,14 +135,17 @@ def nested_pie(
 def pie(
     vdf: "vDataFrame",
     method: str = "density",
-    of=None,
+    of: Optional[str] = None,
     max_cardinality: int = 6,
-    h: float = 0,
+    h: PythonNumber = 0,
     donut: bool = False,
     rose: bool = False,
     ax: Optional[Axes] = None,
     **style_kwds,
 ) -> Axes:
+    """
+    Draws a pie chart using the Matplotlib API.
+    """
     colors = get_colors()
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, max_cardinality=max_cardinality, method=method, of=of, pie=True
