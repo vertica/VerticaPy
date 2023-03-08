@@ -245,4 +245,4 @@ class PivotTable(HeatMap):
         values = {"index": y_labels}
         for idx in range(matrix.shape[1]):
             values[x_labels[idx]] = list(matrix[:, idx])
-        return TableSample(values=values)
+        return TableSample(values=values).transpose()
