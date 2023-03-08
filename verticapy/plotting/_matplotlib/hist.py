@@ -46,7 +46,7 @@ class Histogram(PlottingBase):
         """
         Draws a histogram using the Matplotlib API.
         """
-        x, y, z, h, is_categorical = self.compute_plot_variables(
+        x, y, z, h, is_categorical = self._compute_plot_params(
             vdf, method, of, max_cardinality, nbins, h
         )
         is_numeric = vdf.isnum()
@@ -220,7 +220,7 @@ class Histogram(PlottingBase):
                 h = min(all_h)
             for idx, column in enumerate(columns):
                 if vdf[column].isnum():
-                    [x, y, z, h, is_categorical] = self.compute_plot_variables(
+                    [x, y, z, h, is_categorical] = self._compute_plot_params(
                         vdf[column], method=method, of=of, max_cardinality=1, h=h
                     )
                     h = h / 0.94

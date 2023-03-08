@@ -149,7 +149,7 @@ class PieChart(PlottingBase):
         Draws a pie chart using the Matplotlib API.
         """
         colors = get_colors()
-        x, y, z, h, is_categorical = self.compute_plot_variables(
+        x, y, z, h, is_categorical = self._compute_plot_params(
             vdf, max_cardinality=max_cardinality, method=method, of=of, pie=True
         )
         z.reverse()

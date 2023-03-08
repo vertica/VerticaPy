@@ -2553,7 +2553,14 @@ class Unsupervised(VerticaModel):
             del parameters["method"]
         if self._model_type not in ("Scaler", "MCA"):
             query += " USING PARAMETERS "
-        for param in ("n_cluster", "separator", "null_column_name", "column_naming", "ignore_null", "drop_first"):
+        for param in (
+            "n_cluster",
+            "separator",
+            "null_column_name",
+            "column_naming",
+            "ignore_null",
+            "drop_first",
+        ):
             if param in parameters:
                 del parameters[param]
         if (

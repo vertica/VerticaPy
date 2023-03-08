@@ -46,7 +46,7 @@ class BarChart(PlottingBase):
         """
         Draws a bar chart using the Matplotlib API.
         """
-        x, y, z, h, is_categorical = self.compute_plot_variables(
+        x, y, z, h, is_categorical = self._compute_plot_params(
             vdf, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
         )
         if not (ax):

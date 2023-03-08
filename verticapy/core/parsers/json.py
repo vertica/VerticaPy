@@ -343,7 +343,7 @@ def read_json(
             options += [f"record_terminator={prefix}'{record_terminator}'"]
         if suppress_nonalphanumeric_key_chars and not (is_avro):
             options += ["suppress_nonalphanumeric_key_chars=true"]
-        elif not(is_avro):
+        elif not (is_avro):
             options += ["suppress_nonalphanumeric_key_chars=false"]
         if reject_on_materialized_type_error:
             assert materialize, ParameterError(
@@ -355,11 +355,11 @@ def read_json(
             options += ["reject_on_materialized_type_error=false"]
         if reject_on_duplicate and not (is_avro):
             options += ["reject_on_duplicate=true"]
-        elif not(is_avro):
+        elif not (is_avro):
             options += ["reject_on_duplicate=false"]
         if reject_on_empty_key and not (is_avro):
             options += ["reject_on_empty_key=true"]
-        elif not(is_avro):
+        elif not (is_avro):
             options += ["reject_on_empty_key=false"]
         if flatten_arrays:
             options += ["flatten_arrays=true"]

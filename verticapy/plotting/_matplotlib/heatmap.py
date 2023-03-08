@@ -28,7 +28,7 @@ from verticapy.plotting.base import PlottingBase
 
 
 class HeatMap(PlottingBase):
-    def cmatrix(
+    def color_matrix(
         self,
         matrix: np.ndarray,
         x_labels: list[str],

@@ -592,9 +592,7 @@ class vDFCorr:
                         all_list += [str(pre_comp_val)]
                         nb_precomputed += 1
                     elif method in ("pearson", "spearman", "spearmand"):
-                        all_list += [
-                            f"CORR({focus}{cast_i}, {column}{cast_j})"
-                        ]
+                        all_list += [f"CORR({focus}{cast_i}, {column}{cast_j})"]
                     elif method == "kendall":
                         n = "SQRT(COUNT(*))"
                         n_c = f"""
@@ -670,7 +668,9 @@ class vDFCorr:
         ) or (fail):
             matrix = []
             for column in cols:
-                if column.replace('"', "").lower() == focus.replace('"', "").lower() and method in ("spearman", "spearmand", "pearson", "kendall"):
+                if column.replace('"', "").lower() == focus.replace(
+                    '"', ""
+                ).lower() and method in ("spearman", "spearmand", "pearson", "kendall"):
                     matrix += [1.0]
                 else:
                     matrix += [
