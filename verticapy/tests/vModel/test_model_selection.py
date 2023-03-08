@@ -250,9 +250,9 @@ class TestModelSelection:
         plt.close("all")
         assert result["acf"] == [
             pytest.approx(1.0),
-            pytest.approx(0.673),
-            pytest.approx(0.349),
-            pytest.approx(0.165),
+            pytest.approx(0.672667529541858),
+            pytest.approx(0.349231212451282),
+            pytest.approx(0.164707818699449),
         ]
         assert result["pacf"] == [
             pytest.approx(1.0),

@@ -457,7 +457,7 @@ class vDFCorr:
                             result += [
                                 self._aggregate_matrix(method, [columns[i], columns[j]])
                             ]
-                matrix = np.array([[1 for i in range(0, n)] for i in range(0, n)])
+                matrix = np.array([[1.0 for i in range(0, n)] for i in range(0, n)])
                 k = 0
                 for i in range(i0, n):
                     for j in range(0, i + step):
@@ -1523,7 +1523,7 @@ class vDFCorr:
                             symbol=self._vars["symbol"],
                         )
                     ]
-        matrix = np.array([[1 for i in range(0, n)] for i in range(0, n)])
+        matrix = np.array([[1.0 for i in range(0, n)] for i in range(0, n)])
         k = 0
         for i in range(0, n):
             for j in range(0, n):

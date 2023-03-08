@@ -537,7 +537,7 @@ class vDFMachineLearning:
         for col in columns:
             tmp_res = vdf.pivot_table(
                 columns=[col, response], max_cardinality=(10000, 100), show=False
-            ).to_numpy()[:, 1:]
+            ).to_numpy()
             tmp_res = np.where(tmp_res == "", "0", tmp_res)
             tmp_res = tmp_res.astype(float)
             i = 0
