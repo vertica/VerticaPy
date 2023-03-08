@@ -680,7 +680,7 @@ class vDFCorr:
         matrix = [np.nan if (x == None) else x for x in matrix]
         data = [(cols[i], matrix[i]) for i in range(len(matrix))]
         data.sort(key=lambda tup: abs(tup[1]), reverse=True)
-        cols = [c[0] for c in data], 
+        cols = [c[0] for c in data]
         matrix = np.array([[float(x[1]) for x in data]])
         if show:
             vmin = 0 if (method == "cramer") else -1

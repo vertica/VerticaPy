@@ -323,7 +323,7 @@ class VerticaModel:
             "tol": "epsilon",
             "max_iter": "max_iterations",
             "penalty": "regularization",
-            "C": "lambda",
+            "c": "lambda",
             "l1_ratio": "alpha",
             "n_estimators": "ntree",
             "max_features": "mtry",
