@@ -131,6 +131,7 @@ class LinearSVR(Regressor, LinearModel):
         return {
             "tol": "epsilon",
             "max_iter": "max_iterations",
+            "acceptable_error_margin": "error_tolerance",
         }
 
 

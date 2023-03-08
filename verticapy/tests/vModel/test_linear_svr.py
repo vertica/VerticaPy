@@ -153,7 +153,6 @@ class TestLinearSVR:
             "tol": 0.0001,
             "C": 1.0,
             "max_iter": 100,
-            "fit_intercept": True,
             "intercept_scaling": 1.0,
             "intercept_mode": "regularized",
             "acceptable_error_margin": 0.1,

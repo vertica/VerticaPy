@@ -267,7 +267,6 @@ class TestLinearSVC:
             "tol": 0.0001,
             "C": 1.0,
             "max_iter": 100,
-            "fit_intercept": True,
             "intercept_scaling": 1.0,
             "intercept_mode": "regularized",
             "class_weight": [1, 1],

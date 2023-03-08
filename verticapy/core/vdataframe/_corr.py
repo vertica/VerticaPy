@@ -378,8 +378,7 @@ class vDFCorr:
                                 nb_precomputed += 1
                             elif method in ("pearson", "spearman", "spearmand"):
                                 all_list += [
-                                    f"""ROUND(CORR({columns[i]}{cast_i}, 
-                                                  {columns[j]}{cast_j}), {round_nb})"""
+                                    f"""CORR({columns[i]}{cast_i}, {columns[j]}{cast_j})"""
                                 ]
                             elif method == "kendall":
                                 n_ = "SQRT(COUNT(*))"
@@ -594,7 +593,7 @@ class vDFCorr:
                         nb_precomputed += 1
                     elif method in ("pearson", "spearman", "spearmand"):
                         all_list += [
-                            f"ROUND(CORR({focus}{cast_i}, {column}{cast_j}), {round_nb})"
+                            f"CORR({focus}{cast_i}, {column}{cast_j})"
                         ]
                     elif method == "kendall":
                         n = "SQRT(COUNT(*))"
@@ -678,10 +677,10 @@ class vDFCorr:
                         self._aggregate_matrix(method=method, columns=[column, focus])
                     ]
         matrix = [np.nan if (x == None) else x for x in matrix]
-        data = [(cols[i], matrix[i]) for i in range(len(matrix))]
+        data = [(cols[i], float(matrix[i])) for i in range(len(matrix))]
         data.sort(key=lambda tup: abs(tup[1]), reverse=True)
         cols = [x[0] for x in data]
-        matrix = np.array([[float(x[1]) for x in data]])
+        matrix = np.array([[x[1] for x in data]])
         if show:
             vmin = 0 if (method == "cramer") else -1
             if method == "cov":
@@ -765,7 +764,8 @@ class vDFCorr:
             cramer    : Cramer's V (correlation between categories).
             biserial  : Biserial Point (correlation between binaries and a numericals).
     round_nb: int, optional
-        Rounds the coefficient using the input number of digits.
+        Rounds the coefficient using the input number of digits. It is only used to
+        display the correlation matrix.
     focus: str, optional
         Focus the computation on only one vDataColumn.
     show: bool, optional
@@ -1131,8 +1131,8 @@ class vDFCorr:
         Significance Level. Probability to accept H0. Only used to compute the confidence
         band width.
     round_nb: int, optional
-        Round the coefficient using the input number of digits. It is used only if 
-        acf_type is 'heatmap'.
+        Round the coefficient using the input number of digits. It is used only
+        to display the ACF Matrix (acf_type must be set to 'heatmap').
     show: bool, optional
         If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
     ax: Axes, optional
