@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import decimal, math
+import copy, decimal, math
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
@@ -671,7 +671,7 @@ class vDFCorr:
         ) or (fail):
             matrix = []
             for column in cols:
-                if column.replace('"', "").lower() == focus.replace('"', "").lower():
+                if column.replace('"', "").lower() == focus.replace('"', "").lower() and method in ("spearman", "spearmand", "pearson", "kendall"):
                     matrix += [1.0]
                 else:
                     matrix += [
@@ -680,7 +680,7 @@ class vDFCorr:
         matrix = [np.nan if (x == None) else x for x in matrix]
         data = [(cols[i], matrix[i]) for i in range(len(matrix))]
         data.sort(key=lambda tup: abs(tup[1]), reverse=True)
-        cols = [c[0] for c in data]
+        cols = [x[0] for x in data]
         matrix = np.array([[float(x[1]) for x in data]])
         if show:
             vmin = 0 if (method == "cramer") else -1

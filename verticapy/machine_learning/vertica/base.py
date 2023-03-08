@@ -743,6 +743,9 @@ class Supervised(VerticaModel):
                     parameters["mtry"] = int(len(self.X) / 3 + 1)
                 elif parameters["mtry"] == "'max'":
                     parameters["mtry"] = len(self.X)
+            for param in ("nbtype",):
+                if param in parameters:
+                    del parameters[param]
             fun = self._vertica_fit_sql
             query = f"""
                 SELECT 
@@ -2550,6 +2553,9 @@ class Unsupervised(VerticaModel):
             del parameters["method"]
         if self._model_type not in ("Scaler", "MCA"):
             query += " USING PARAMETERS "
+        for param in ("n_cluster", "separator", "null_column_name", "column_naming", "ignore_null", "drop_first"):
+            if param in parameters:
+                del parameters[param]
         if (
             "init_method" in parameters
             and not (isinstance(parameters["init_method"], str))

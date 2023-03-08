@@ -172,7 +172,7 @@ class TestLinearSVC:
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(model.to_python()([[3.0, 11.0]])[0])
         current_cursor().execute(
-            "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', type='probability', class=1, match_by_pos=True)".format(
+            "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', type='probability', match_by_pos=True)".format(
                 model.model_name
             )
         )
