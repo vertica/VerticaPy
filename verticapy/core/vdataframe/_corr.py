@@ -467,7 +467,6 @@ class vDFCorr:
                             current = np.nan
                         matrix[i][j] = current
                         matrix[j][i] = current
-            matrix = np.array(matrix)
             if show:
                 vmin = 0 if (method == "cramer") else -1
                 if method == "cov":
@@ -673,7 +672,7 @@ class vDFCorr:
             matrix = []
             for column in cols:
                 if column.replace('"', "").lower() == focus.replace('"', "").lower():
-                    matrix += [1]
+                    matrix += [1.0]
                 else:
                     matrix += [
                         self._aggregate_matrix(method=method, columns=[column, focus])
@@ -681,7 +680,8 @@ class vDFCorr:
         matrix = [np.nan if (x == None) else x for x in matrix]
         data = [(cols[i], matrix[i]) for i in range(len(matrix))]
         data.sort(key=lambda tup: abs(tup[1]), reverse=True)
-        cols, matrix = [c[0] for c in data], np.array([[x[1] for x in data]])
+        cols = [c[0] for c in data], 
+        matrix = np.array([[float(x[1]) for x in data]])
         if show:
             vmin = 0 if (method == "cramer") else -1
             if method == "cov":
@@ -1532,7 +1532,6 @@ class vDFCorr:
                 if current == None:
                     current = np.nan
                 matrix[i][j] = current
-        matrix = np.array(matrix)
         if show:
             if method == "slope":
                 method_title = "Beta"
