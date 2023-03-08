@@ -27,8 +27,8 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting._matplotlib.base import updated_dict
-from verticapy.plotting._matplotlib.timeseries import range_curve
+from verticapy.plotting.base import PlottingBase
+import verticapy.plotting._matplotlib as vpy_plt
 
 from verticapy.machine_learning.model_selection.hp_tuning.cv import grid_search_cv
 
@@ -184,7 +184,9 @@ def validation_curve(
             "test_score_upper": Y[1][2],
         }
     )
-    range_curve(X, Y, param_name, metric, ax, ["train", "test"], **style_kwds)
+    vpy_plt.RangeCurve().range_curve(
+        X, Y, param_name, metric, ax, ["train", "test"], **style_kwds
+    )
     return result
 
 
@@ -270,7 +272,7 @@ def plot_acf_pacf(
         "edgecolors": "black",
         "zorder": 2,
     }
-    ax1.scatter(x, y, **updated_dict(param, tmp_style))
+    ax1.scatter(x, y, **PlottingBase.updated_dict(param, tmp_style))
     ax1.plot(
         [-1] + x + [x[-1] + 1],
         [0 for elem in range(len(x) + 2)],
@@ -283,7 +285,7 @@ def plot_acf_pacf(
     y = result.values["pacf"]
     ax2 = fig.add_subplot(212)
     ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
-    ax2.scatter(x, y, **updated_dict(param, tmp_style))
+    ax2.scatter(x, y, **PlottingBase.updated_dict(param, tmp_style))
     ax2.plot(
         [-1] + x + [x[-1] + 1],
         [0 for elem in range(len(x) + 2)],

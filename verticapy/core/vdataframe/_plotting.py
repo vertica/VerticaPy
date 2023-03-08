@@ -26,8 +26,9 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 
+from verticapy.plotting.base import PlottingBase
 from verticapy.plotting._highcharts.base import hchart_from_vdf
-import verticapy.plotting._matplotlib as plt
+import verticapy.plotting._matplotlib as vpy_plt
 
 
 class vDFPlot:
@@ -160,7 +161,7 @@ class vDFPlot:
                 bubble_img["img"] = ""
             if "bbox" not in bubble_img:
                 bubble_img["bbox"] = []
-            return plt.animated_bubble_plot(
+            return vpy_plt.AnimatedBubblePlot().animated_bubble_plot(
                 self,
                 order_by=ts,
                 columns=columns,
@@ -184,7 +185,7 @@ class vDFPlot:
                 **style_kwds,
             )
         elif kind in ("bar", "pie"):
-            return plt.animated_bar(
+            return vpy_plt.AnimatedBarChart().animated_bar(
                 self,
                 order_by=ts,
                 columns=columns,
@@ -217,7 +218,7 @@ class vDFPlot:
                 ts_steps["step"] = 5
             if "window" not in ts_steps:
                 ts_steps["window"] = 100
-            return plt.animated_ts_plot(
+            return vpy_plt.AnimatedLinePlot().animated_ts_plot(
                 vdf,
                 order_by=ts,
                 columns=columns,
@@ -319,7 +320,7 @@ class vDFPlot:
                 stacked = True
             elif hist_type in ("pyramid", "density"):
                 density = True
-            return plt.bar2D(
+            return vpy_plt.BarChart().bar2D(
                 self,
                 columns,
                 method,
@@ -368,7 +369,7 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns) if (columns) else self.numcol()
-        return plt.boxplot2D(self, columns, ax=ax, **style_kwds)
+        return vpy_plt.BoxPlot().boxplot2D(self, columns, ax=ax, **style_kwds)
 
     @save_verticapy_logs
     def bubble(
@@ -422,7 +423,7 @@ class vDFPlot:
         columns, catcol, size_bubble_col, cmap_col = self._format_colnames(
             columns, catcol, size_bubble_col, cmap_col, expected_nb_of_cols=2
         )
-        return plt.bubble(
+        return vpy_plt.BubblePlot().bubble(
             self,
             columns + [size_bubble_col] if size_bubble_col else columns,
             catcol,
@@ -472,7 +473,9 @@ class vDFPlot:
      vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
         columns = self._format_colnames(columns, expected_nb_of_cols=2)
-        return plt.contour_plot(self, columns, func, nbins, ax=ax, **style_kwds,)
+        return vpy_plt.ContourPlot().contour_plot(
+            self, columns, func, nbins, ax=ax, **style_kwds,
+        )
 
     @save_verticapy_logs
     def density(
@@ -548,7 +551,7 @@ class vDFPlot:
                 nbins=nbins,
                 xlim=(xmin, xmax),
                 ax=ax,
-                **updated_dict(param, style_kwds, idx),
+                **PlottingBase.updated_dict(param, style_kwds, idx),
             )
             custom_lines += [
                 Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
@@ -810,7 +813,7 @@ class vDFPlot:
                 f"vDataColumn {column} must be numerical to draw the Heatmap."
             )
         min_max = self.agg(func=["min", "max"], columns=columns).transpose()
-        ax = plt.pivot_table(
+        ax = vpy_plt.PivotTable().pivot_table(
             vdf=self,
             columns=columns,
             method=method,
@@ -877,7 +880,9 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
-        return plt.hexbin(self, columns, method, of, bbox, img, ax=ax, **style_kwds)
+        return vpy_plt.HexbinPlot().hexbin(
+            self, columns, method, of, bbox, img, ax=ax, **style_kwds
+        )
 
     @save_verticapy_logs
     def hist(
@@ -953,11 +958,11 @@ class vDFPlot:
                     h_0 = h
                 else:
                     h_0 = h[0] if (h[0]) else 0
-                return plt.multiple_hist(
+                return vpy_plt.Histogram().multiple_hist(
                     self, columns, method, of, h_0, ax=ax, **style_kwds,
                 )
             else:
-                return plt.hist2D(
+                return vpy_plt.Histogram().hist2D(
                     self,
                     columns,
                     method,
@@ -1014,7 +1019,7 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns, expected_nb_of_cols=[1, 2])
-        return plt.outliers_contour_plot(
+        return vpy_plt.OutliersPlot().outliers_contour_plot(
             self,
             columns,
             color=color,
@@ -1067,7 +1072,9 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
-        return plt.nested_pie(self, columns, max_cardinality, h, ax=ax, **style_kwds)
+        return vpy_plt.PieChart().nested_pie(
+            self, columns, max_cardinality, h, ax=ax, **style_kwds
+        )
 
     @save_verticapy_logs
     def pivot_table(
@@ -1134,7 +1141,7 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
-        return plt.pivot_table(
+        return vpy_plt.PivotTable().pivot_table(
             self,
             columns,
             method,
@@ -1196,7 +1203,7 @@ class vDFPlot:
             columns = [columns]
         columns, ts = self._format_colnames(columns, ts)
         kind = "step" if step else "line"
-        return plt.multi_ts_plot(
+        return vpy_plt.LinePlot().multi_ts_plot(
             self, ts, columns, start_date, end_date, kind, ax=ax, **style_kwds,
         )
 
@@ -1303,7 +1310,7 @@ class vDFPlot:
             bbox,
             img,
         ]
-        return plt.scatter(*args, ax=ax, **style_kwds,)
+        return vpy_plt.ScatterPlot().scatter(*args, ax=ax, **style_kwds,)
 
     @save_verticapy_logs
     def scatter_matrix(self, columns: SQLColumns = [], **style_kwds):
@@ -1330,7 +1337,7 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
-        return plt.scatter_matrix(self, columns, **style_kwds)
+        return vpy_plt.ScatterPlot().scatter_matrix(self, columns, **style_kwds)
 
     @save_verticapy_logs
     def stacked_area(
@@ -1383,7 +1390,7 @@ class vDFPlot:
             "processed by the 'stacked_area' method."
         )
         columns, ts = self._format_colnames(columns, ts)
-        return plt.multi_ts_plot(
+        return vpy_plt.LinePlot().multi_ts_plot(
             self, ts, columns, start_date, end_date, kind=kind, ax=ax, **style_kwds,
         )
 
@@ -1534,7 +1541,9 @@ class vDCPlot:
     vDataFrame[].hist : Draws the histogram of the vDataColumn based on an aggregation.
         """
         of = self._parent._format_colnames(of)
-        return plt.bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
+        return vpy_plt.BarChart().bar(
+            self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds
+        )
 
     @save_verticapy_logs
     def boxplot(
@@ -1580,7 +1589,7 @@ class vDCPlot:
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
         by = self._parent._format_colnames(by)
-        return plt.boxplot(
+        return vpy_plt.BoxPlot().boxplot(
             self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds
         )
 
@@ -1634,7 +1643,7 @@ class vDCPlot:
 
         if by:
             by = self._parent._format_colnames(by)
-            colors = plt.get_colors()
+            colors = vpy_plt.get_colors()
             if not xlim:
                 xmin = self.min()
                 xmax = self.max()
@@ -1652,13 +1661,15 @@ class vDCPlot:
                     nbins=nbins,
                     xlim=(xmin, xmax),
                     ax=ax,
-                    **updated_dict(param, style_kwds, idx),
+                    **PlottingBase.updated_dict(param, style_kwds, idx),
                 )
                 custom_lines += [
                     Line2D(
                         [0],
                         [0],
-                        color=updated_dict(param, style_kwds, idx)["color"],
+                        color=PlottingBase.updated_dict(param, style_kwds, idx)[
+                            "color"
+                        ],
                         lw=4,
                     ),
                 ]
@@ -1787,7 +1798,7 @@ class vDCPlot:
     vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
         of = self._parent._format_colnames(of)
-        return plt.hist(
+        return vpy_plt.Histogram().hist(
             self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds
         )
 
@@ -1846,7 +1857,7 @@ class vDCPlot:
         """
         donut, rose = (pie_type == "donut"), (pie_type == "rose")
         of = self._parent._format_colnames(of)
-        return plt.pie(
+        return vpy_plt.PieChart().pie(
             self, method, of, max_cardinality, h, donut, rose, ax=ax, **style_kwds,
         )
 
@@ -1897,7 +1908,7 @@ class vDCPlot:
     vDataFrame.plot : Draws the time series.
         """
         ts, by = self._parent._format_colnames(ts, by)
-        return plt.ts_plot(
+        return vpy_plt.LinePlot().ts_plot(
             self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwds,
         )
 
@@ -1946,7 +1957,7 @@ class vDCPlot:
     vDataFrame.plot : Draws the time series.
         """
         ts = self._parent._format_colnames(ts)
-        return plt.range_curve_vdf(
+        return vpy_plt.RangeCurve().range_curve_vdf(
             self, ts, q, start_date, end_date, plot_median, ax=ax, **style_kwds,
         )
 
@@ -2005,6 +2016,6 @@ class vDCPlot:
         columns = [self._alias]
         if by:
             columns += [by]
-        return plt.spider(
+        return vpy_plt.SpiderPlot().spider(
             self._parent, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
         )

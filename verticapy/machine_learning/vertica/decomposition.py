@@ -320,7 +320,7 @@ class Decomposition(Preprocessing):
         else:
             x = self.principal_components_[:, dimensions[0] - 1]
             y = self.principal_components_[:, dimensions[1] - 1]
-        return vpy_plt.plot_pca_circle(
+        return vpy_plt.PCAPlot().plot_pca_circle(
             x,
             y,
             self.X,
@@ -715,7 +715,7 @@ class MCA(PCA):
                 style_kwds["cmap"] = get_cmap(
                     color=[get_colors()[0], get_colors()[1], get_colors()[2],]
                 )
-        return vpy_plt.plot_var(
+        return vpy_plt.PCAPlot().plot_var(
             x,
             y,
             self.X,

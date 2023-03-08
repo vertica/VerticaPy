@@ -124,7 +124,7 @@ class LinearModel:
         """
         fi = self._get_features_importance()
         if show:
-            vpy_plt.plot_importance(
+            vpy_plt.ImportanceBarChart().plot_importance(
                 self.X, fi, print_legend=True, ax=ax, **style_kwds,
             )
         importances = {
@@ -166,7 +166,7 @@ class LinearModel:
         Axes
             Axes.
         """
-        return vpy_plt.regression_plot(
+        return vpy_plt.RegressionPlot().regression_plot(
             self.X,
             self.y,
             self.input_relation,
@@ -228,7 +228,7 @@ class LinearModelClassifier(LinearModel):
         Axes
             Axes.
         """
-        return vpy_plt.logit_plot(
+        return vpy_plt.LogisticRegressionPlot().logit_plot(
             self.X,
             self.y,
             self.input_relation,

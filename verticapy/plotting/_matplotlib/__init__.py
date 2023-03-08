@@ -14,45 +14,41 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.plotting._matplotlib.animated import (
-    animated_bar,
-    animated_bubble_plot,
-    animated_ts_plot,
+from verticapy.plotting._matplotlib.animated.bar import AnimatedBarChart
+from verticapy.plotting._matplotlib.animated.bubble import AnimatedBubblePlot
+from verticapy.plotting._matplotlib.animated.line import AnimatedLinePlot
+
+from verticapy.plotting._matplotlib.machine_learning.champion_challenger import (
+    ChampionChallenger,
 )
-from verticapy.plotting._matplotlib.bar import bar, bar2D, hist, hist2D, multiple_hist
-from verticapy.plotting._matplotlib.base import compute_plot_variables
-from verticapy.plotting._matplotlib.boxplot import boxplot, boxplot2D
-from verticapy.plotting._matplotlib.heatmap import (
-    cmatrix,
-    contour_plot,
-    hexbin,
-    pivot_table,
+from verticapy.plotting._matplotlib.machine_learning.importance import (
+    ImportanceBarChart,
 )
-from verticapy.plotting._matplotlib.pie import nested_pie, pie
-from verticapy.plotting._matplotlib.scatter import (
-    bubble,
-    outliers_contour_plot,
-    scatter_matrix,
-    scatter,
+from verticapy.plotting._matplotlib.machine_learning.kmeans import KMeansPlot
+from verticapy.plotting._matplotlib.machine_learning.lof import LOFPlot
+from verticapy.plotting._matplotlib.machine_learning.logistic_reg import (
+    LogisticRegressionPlot,
 )
-from verticapy.plotting._matplotlib.spider import spider
-from verticapy.plotting._matplotlib.timeseries import (
-    acf_plot,
-    multi_ts_plot,
-    range_curve,
-    range_curve_vdf,
-    ts_plot,
+from verticapy.plotting._matplotlib.machine_learning.pca import PCAPlot
+from verticapy.plotting._matplotlib.machine_learning.regression import RegressionPlot
+from verticapy.plotting._matplotlib.machine_learning.regression_tree import (
+    RegressionTreePlot,
 )
-from verticapy.plotting._matplotlib.mlplot import (
-    lof_plot,
-    logit_plot,
-    plot_bubble_ml,
-    plot_importance,
-    plot_pca_circle,
-    plot_stepwise_ml,
-    plot_var,
-    regression_plot,
-    regression_tree_plot,
-    svm_classifier_plot,
-    voronoi_plot,
-)
+from verticapy.plotting._matplotlib.machine_learning.stepwise import StepwisePlot
+from verticapy.plotting._matplotlib.machine_learning.svm import SVMClassifierPlot
+
+from verticapy.plotting._matplotlib.acf import ACFPlot
+from verticapy.plotting._matplotlib.bar import BarChart
+from verticapy.plotting._matplotlib.boxplot import BoxPlot
+from verticapy.plotting._matplotlib.bubble import BubblePlot
+from verticapy.plotting._matplotlib.contour_plot import ContourPlot
+from verticapy.plotting._matplotlib.heatmap import HeatMap
+from verticapy.plotting._matplotlib.hexbin import HexbinPlot
+from verticapy.plotting._matplotlib.hist import Histogram
+from verticapy.plotting._matplotlib.line import LinePlot
+from verticapy.plotting._matplotlib.outliers import OutliersPlot
+from verticapy.plotting._matplotlib.pie import PieChart
+from verticapy.plotting._matplotlib.pivot_table import PivotTable
+from verticapy.plotting._matplotlib.range import RangeCurve
+from verticapy.plotting._matplotlib.scatter import ScatterPlot
+from verticapy.plotting._matplotlib.spider import SpiderPlot

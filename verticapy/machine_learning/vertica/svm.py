@@ -276,7 +276,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         Axes
             Axes.
         """
-        return vpy_plt.svm_classifier_plot(
+        return vpy_plt.SVMClassifierPlot().svm_classifier_plot(
             self.X,
             self.y,
             self.input_relation,

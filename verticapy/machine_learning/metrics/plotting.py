@@ -33,7 +33,7 @@ from verticapy.machine_learning.metrics.classification import (
     _compute_function_metrics,
 )
 
-from verticapy.plotting._matplotlib.base import updated_dict
+from verticapy.plotting.base import PlottingBase
 
 
 @check_minimum_version
@@ -98,12 +98,12 @@ def lift_chart(
     max_value = max([0 if elem != elem else elem for elem in lift])
     lift = [max_value if elem != elem else elem for elem in lift]
     param1 = {"color": get_colors()[0]}
-    ax.plot(decision_boundary, lift, **updated_dict(param1, style_kwds, 0))
+    ax.plot(decision_boundary, lift, **PlottingBase.updated_dict(param1, style_kwds, 0))
     param2 = {"color": get_colors()[1]}
     ax.plot(
         decision_boundary,
         positive_prediction_ratio,
-        **updated_dict(param2, style_kwds, 1),
+        **PlottingBase.updated_dict(param2, style_kwds, 1),
     )
     color1, color2 = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
     if color1 == color2:
@@ -196,7 +196,7 @@ def prc_curve(
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
     param = {"color": get_colors(style_kwds, 0)}
-    ax.plot(recall, precision, **updated_dict(param, style_kwds))
+    ax.plot(recall, precision, **PlottingBase.updated_dict(param, style_kwds))
     ax.fill_between(
         recall,
         [0 for item in recall],
@@ -289,13 +289,13 @@ def roc_curve(
             threshold,
             [1 - item for item in false_positive],
             label="Specificity",
-            **updated_dict({"color": get_colors()[0]}, style_kwds),
+            **PlottingBase.updated_dict({"color": get_colors()[0]}, style_kwds),
         )
         ax.plot(
             threshold,
             true_positive,
             label="Sensitivity",
-            **updated_dict({"color": get_colors()[1]}, style_kwds),
+            **PlottingBase.updated_dict({"color": get_colors()[1]}, style_kwds),
         )
         ax.fill_between(
             threshold,
@@ -313,7 +313,7 @@ def roc_curve(
         ax.plot(
             false_positive,
             true_positive,
-            **updated_dict({"color": get_colors()[0]}, style_kwds),
+            **PlottingBase.updated_dict({"color": get_colors()[0]}, style_kwds),
         )
         ax.fill_between(
             false_positive, false_positive, true_positive, facecolor=color1, alpha=0.1,
