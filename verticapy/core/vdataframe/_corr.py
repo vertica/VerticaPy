@@ -329,7 +329,7 @@ class vDFCorr:
                 for idx, column in enumerate(columns):
                     corr_dict[column] = idx
                 n = len(columns)
-                matrix = [[1 for i in range(0, n)] for i in range(0, n)]
+                matrix = np.array([[1.0 for i in range(0, n)] for i in range(0, n)])
                 for x in result:
                     i = corr_dict[quote_ident(x[0])]
                     j = corr_dict[quote_ident(x[1])]
