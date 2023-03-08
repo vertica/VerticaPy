@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import math, copy
 from typing import Optional, TYPE_CHECKING
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -86,7 +87,7 @@ class PivotTable(HeatMap):
             )
         is_column_date = [False, False]
         timestampadd = ["", ""]
-        all_columns = []
+        matrix = []
         for idx, column in enumerate(columns):
             is_numeric = vdf[column].isnum() and (vdf[column].nunique(True) > 2)
             is_date = vdf[column].isdate()
@@ -120,9 +121,9 @@ class PivotTable(HeatMap):
                                   + {interval}{floor_end}) 
                           || ']'"""
                 if (interval > 1) or (vdf[column].category() == "float"):
-                    all_columns += [expr]
+                    matrix += [expr]
                 else:
-                    all_columns += [f"FLOOR({column}) || ''"]
+                    matrix += [f"FLOOR({column}) || ''"]
                 order_by = f"""ORDER BY MIN(FLOOR({column} 
                                           / {interval}) * {interval}) ASC"""
                 where += [f"{column} IS NOT NULL"]
@@ -132,7 +133,7 @@ class PivotTable(HeatMap):
                 else:
                     interval = max(math.floor(h[idx]), 1)
                 min_date = vdf[column].min()
-                all_columns += [
+                matrix += [
                     f"""FLOOR(DATEDIFF('second',
                                        '{min_date}',
                                        {column})
@@ -145,7 +146,7 @@ class PivotTable(HeatMap):
                 order_by = "ORDER BY 1 ASC"
                 where += [f"{column} IS NOT NULL"]
             else:
-                all_columns += [column]
+                matrix += [column]
                 order_by = "ORDER BY 1 ASC"
                 distinct = vdf[column].topk(max_cardinality[idx]).values["index"]
                 distinct = ["'" + str(c).replace("'", "''") + "'" for c in distinct]
@@ -157,7 +158,7 @@ class PivotTable(HeatMap):
         where = f" WHERE {' AND '.join(where)}"
         over = "/" + str(vdf.shape()[0]) if (method == "density") else ""
         if len(columns) == 1:
-            cast = to_varchar(vdf[columns[0]].category(), all_columns[-1])
+            cast = to_varchar(vdf[columns[0]].category(), matrix[-1])
             return TableSample.read_sql(
                 query=f"""
                     SELECT 
@@ -189,8 +190,8 @@ class PivotTable(HeatMap):
                           {other_columns} 
                       FROM 
                           (SELECT 
-                              {all_columns[0]} AS {columns[0]},
-                              {all_columns[1]} AS {columns[1]}
+                              {matrix[0]} AS {columns[0]},
+                              {matrix[1]} AS {columns[1]}
                               {aggr}
                               {other_columns} 
                            FROM {vdf._genSQL()}{where}) 
@@ -202,7 +203,7 @@ class PivotTable(HeatMap):
             title="Grouping the features to compute the pivot table",
             method="fetchall",
         )
-        all_columns_categories = []
+        matrix_categories = []
         for i in range(2):
             L = list(set([str(item[i]) for item in query_result]))
             L.sort()
@@ -216,41 +217,24 @@ class PivotTable(HeatMap):
                 L = [x for _, x in sorted(zip(order, L))]
             except:
                 pass
-            all_columns_categories += [copy.deepcopy(L)]
-        all_column0_categories, all_column1_categories = all_columns_categories
-        all_columns = [
-            [fill_none for item in all_column0_categories]
-            for item in all_column1_categories
-        ]
+            matrix_categories += [copy.deepcopy(L)]
+        x_labels, y_labels = matrix_categories
+        matrix = [[fill_none for item in x_labels] for item in y_labels]
         for item in query_result:
-            j, i = (
-                all_column0_categories.index(str(item[0])),
-                all_column1_categories.index(str(item[1])),
-            )
-            all_columns[i][j] = item[2]
-        all_columns = [
-            [all_column1_categories[i]] + all_columns[i]
-            for i in range(0, len(all_columns))
-        ]
-        all_columns = [
-            [columns[0] + "/" + columns[1]] + all_column0_categories
-        ] + all_columns
+            j = x_labels.index(str(item[0]))
+            i = y_labels.index(str(item[1]))
+            matrix[i][j] = item[2]
+        matrix = np.array(matrix)
         if show:
             all_count = [item[2] for item in query_result]
             ax = self.cmatrix(
-                all_columns,
-                all_column0_categories,
-                all_column1_categories,
-                len(all_column0_categories),
-                len(all_column1_categories),
+                matrix,
+                y_labels,
+                x_labels,
                 vmax=max(all_count),
                 vmin=min(all_count),
-                title="",
                 colorbar=aggregate,
-                x_label=columns[1],
-                y_label=columns[0],
                 with_numbers=with_numbers,
-                inverse=True,
                 extent=extent,
                 ax=ax,
                 is_pivot=True,
@@ -258,8 +242,7 @@ class PivotTable(HeatMap):
             )
             if return_ax:
                 return ax
-        values = {all_columns[0][0]: all_columns[0][1 : len(all_columns[0])]}
-        del all_columns[0]
-        for column in all_columns:
-            values[column[0]] = column[1 : len(column)]
+        values = {"index": y_labels}
+        for idx in range(matrix.shape[1]):
+            values[x_labels[idx]] = list(matrix[:, idx])
         return TableSample(values=values)

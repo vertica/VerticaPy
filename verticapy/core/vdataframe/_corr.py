@@ -117,7 +117,7 @@ class vDFCorr:
                 elif (self[columns[1]].category() != "int") and (
                     self[columns[0]].category() != "int"
                 ):
-                    return float("nan")
+                    return np.nan
                 elif self[columns[1]].category() == "int":
                     if not (self[columns[1]].isbool()):
                         agg = (
@@ -126,7 +126,7 @@ class vDFCorr:
                             .values[columns[1]]
                         )
                         if (agg[0] != 2) or (agg[1] != 0) or (agg[2] != 1):
-                            return float("nan")
+                            return np.nan
                     column_b, column_n = columns[1], columns[0]
                     cast_b, cast_n = cast_1, cast_0
                 elif self[columns[0]].category() == "int":
@@ -137,11 +137,11 @@ class vDFCorr:
                             .values[columns[0]]
                         )
                         if (agg[0] != 2) or (agg[1] != 0) or (agg[2] != 1):
-                            return float("nan")
+                            return np.nan
                     column_b, column_n = columns[0], columns[1]
                     cast_b, cast_n = cast_0, cast_1
                 else:
-                    return float("nan")
+                    return np.nan
                 query = f"""
                     SELECT 
                         /*+LABEL('vDataframe._aggregate_matrix')*/
@@ -225,11 +225,11 @@ class vDFCorr:
                     symbol=self._vars["symbol"],
                 )
                 if min(k - 1, r - 1) == 0:
-                    result = float("nan")
+                    result = np.nan
                 else:
                     result = float(math.sqrt(result / n / min(k - 1, r - 1)))
                     if result > 1 or result < 0:
-                        result = float("nan")
+                        result = np.nan
                 return result
             elif method == "kendall":
                 if columns[1] == columns[0]:
@@ -280,7 +280,7 @@ class vDFCorr:
                     symbol=self._vars["symbol"],
                 )
             except:
-                result = float("nan")
+                result = np.nan
             self._update_catalog(
                 values={columns[1]: result}, matrix=method, column=columns[0]
             )
@@ -329,16 +329,14 @@ class vDFCorr:
                 for idx, column in enumerate(columns):
                     corr_dict[column] = idx
                 n = len(columns)
-                matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
-                for elem in result:
-                    i, j = (
-                        corr_dict[quote_ident(elem[0])],
-                        corr_dict[quote_ident(elem[1])],
-                    )
-                    matrix[i + 1][j + 1] = elem[2]
-                matrix[0] = [""] + columns
-                for idx, column in enumerate(columns):
-                    matrix[idx + 1][0] = column
+                matrix = [[1 for i in range(0, n)] for i in range(0, n)]
+                for x in result:
+                    i = corr_dict[quote_ident(x[0])]
+                    j = corr_dict[quote_ident(x[1])]
+                    if x[2] != None:
+                        matrix[i][j] = x[2]
+                    else:
+                        matrix[i][j] = np.nan
                 title = f"Correlation Matrix ({method})"
             except:
                 if method in (
@@ -459,19 +457,17 @@ class vDFCorr:
                             result += [
                                 self._aggregate_matrix(method, [columns[i], columns[j]])
                             ]
-                matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
-                matrix[0] = [""] + columns
-                for i in range(0, n + 1):
-                    matrix[i][0] = columns[i - 1]
+                matrix = np.array([[1 for i in range(0, n)] for i in range(0, n)])
                 k = 0
                 for i in range(i0, n):
                     for j in range(0, i + step):
                         current = result[k]
                         k += 1
                         if current == None:
-                            current = float("nan")
-                        matrix[i + 1][j + 1] = current
-                        matrix[j + 1][i + 1] = current
+                            current = np.nan
+                        matrix[i][j] = current
+                        matrix[j][i] = current
+            matrix = np.array(matrix)
             if show:
                 vmin = 0 if (method == "cramer") else -1
                 if method == "cov":
@@ -499,8 +495,6 @@ class vDFCorr:
                     matrix,
                     columns,
                     columns,
-                    n,
-                    n,
                     vmax=vmax,
                     vmin=vmin,
                     title=title,
@@ -508,10 +502,9 @@ class vDFCorr:
                     ax=ax,
                     **style_kwds,
                 )
-            values = {"index": matrix[0][1 : len(matrix[0])]}
-            del matrix[0]
-            for column in matrix:
-                values[column[0]] = column[1 : len(column)]
+            values = {"index": columns}
+            for idx in range(len(matrix)):
+                values[columns[idx]] = list(matrix[:, idx])
             for column1 in values:
                 if column1 != "index":
                     val = {}
@@ -670,25 +663,25 @@ class vDFCorr:
                         sql_push_ext=self._vars["sql_push_ext"],
                         symbol=self._vars["symbol"],
                     )
-                vector = [elem for elem in result]
+                matrix = copy.deepcopy(result)
             except:
                 fail = 1
         if not (
             method in ("spearman", "spearmand", "pearson", "kendall", "cov")
             and (len(cols) >= 1)
         ) or (fail):
-            vector = []
+            matrix = []
             for column in cols:
                 if column.replace('"', "").lower() == focus.replace('"', "").lower():
-                    vector += [1]
+                    matrix += [1]
                 else:
-                    vector += [
+                    matrix += [
                         self._aggregate_matrix(method=method, columns=[column, focus])
                     ]
-        vector = [0 if (elem == None) else elem for elem in vector]
-        data = [(cols[i], vector[i]) for i in range(len(vector))]
+        matrix = [np.nan if (x == None) else x for x in matrix]
+        data = [(cols[i], matrix[i]) for i in range(len(matrix))]
         data.sort(key=lambda tup: abs(tup[1]), reverse=True)
-        cols, vector = [elem[0] for elem in data], [elem[1] for elem in data]
+        cols, matrix = [c[0] for c in data], np.array([[x[1] for x in data]])
         if show:
             vmin = 0 if (method == "cramer") else -1
             if method == "cov":
@@ -714,11 +707,9 @@ class vDFCorr:
                 style_kwds["cmap"] = cmap
             title = f"Correlation Vector of {focus} ({method})"
             vpy_plt.HeatMap().cmatrix(
-                [cols, [focus] + vector],
-                cols,
+                matrix,
                 [focus],
-                len(cols),
-                1,
+                cols,
                 vmax=vmax,
                 vmin=vmin,
                 title=title,
@@ -729,12 +720,14 @@ class vDFCorr:
             )
         for idx, column in enumerate(cols):
             self._update_catalog(
-                values={focus: vector[idx]}, matrix=method, column=column
+                values={focus: matrix[0][idx]}, matrix=method, column=column
             )
             self._update_catalog(
-                values={column: vector[idx]}, matrix=method, column=focus
+                values={column: matrix[0][idx]}, matrix=method, column=focus
             )
-        return TableSample(values={"index": cols, focus: vector}).decimal_to_float()
+        return TableSample(
+            values={"index": cols, focus: list(matrix[0])}
+        ).decimal_to_float()
 
     @save_verticapy_logs
     def corr(
@@ -1530,18 +1523,16 @@ class vDFCorr:
                             symbol=self._vars["symbol"],
                         )
                     ]
-        matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
-        matrix[0] = [""] + columns
-        for i in range(0, n + 1):
-            matrix[i][0] = columns[i - 1]
+        matrix = np.array([[1 for i in range(0, n)] for i in range(0, n)])
         k = 0
         for i in range(0, n):
             for j in range(0, n):
                 current = result[k]
                 k += 1
                 if current == None:
-                    current = float("nan")
-                matrix[i + 1][j + 1] = current
+                    current = np.nan
+                matrix[i][j] = current
+        matrix = np.array(matrix)
         if show:
             if method == "slope":
                 method_title = "Beta"
@@ -1553,18 +1544,13 @@ class vDFCorr:
                 matrix,
                 columns,
                 columns,
-                n,
-                n,
-                vmax=None,
-                vmin=None,
                 title=f"{method_title} Matrix",
                 ax=ax,
                 **style_kwds,
             )
-        values = {"index": matrix[0][1 : len(matrix[0])]}
-        del matrix[0]
-        for column in matrix:
-            values[column[0]] = column[1 : len(column)]
+        values = {"index": columns}
+        for idx in range(len(matrix)):
+            values[columns[idx]] = list(matrix[:, idx])
         for column1 in values:
             if column1 != "index":
                 val = {}

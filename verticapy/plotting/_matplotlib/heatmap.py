@@ -14,14 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from typing import Optional
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap
 import verticapy._config.config as conf
-from verticapy._typing import ArrayLike
 
 from verticapy.plotting.base import PlottingBase
 
@@ -29,21 +30,16 @@ from verticapy.plotting.base import PlottingBase
 class HeatMap(PlottingBase):
     def cmatrix(
         self,
-        matrix: ArrayLike,
-        columns_x: list[str],
-        columns_y: list[str],
-        n: int,
-        m: int,
-        vmax: float,
-        vmin: float,
+        matrix: np.ndarray,
+        x_labels: list[str],
+        y_labels: list[str],
+        vmax: Optional[float] = None,
+        vmin: Optional[float] = None,
         title: str = "",
         colorbar: str = "",
-        x_label: str = "",
-        y_label: str = "",
         with_numbers: bool = True,
         mround: int = 3,
         is_vector: bool = False,
-        inverse: bool = False,
         extent: list = [],
         is_pivot: bool = False,
         ax: Optional[Axes] = None,
@@ -52,31 +48,19 @@ class HeatMap(PlottingBase):
         """
         Draws a heatmap using the Matplotlib API.
         """
-        if is_vector:
-            vector = [elem for elem in matrix[1]]
-            matrix_array = vector[1:]
-            for i in range(len(matrix_array)):
-                matrix_array[i] = round(float(matrix_array[i]), mround)
-            matrix_array = [matrix_array]
-            m, n = n, m
-            x_label, y_label = y_label, x_label
-            columns_x, columns_y = columns_y, columns_x
+        if len(matrix.shape) == 1:
+            n, m = matrix.shape[0], 1
         else:
-            matrix_array = [
-                [
-                    round(float(matrix[i][j]), mround)
-                    if (matrix[i][j] != None and matrix[i][j] != "")
-                    else float("nan")
-                    for i in range(1, m + 1)
-                ]
-                for j in range(1, n + 1)
-            ]
-            if inverse:
-                matrix_array.reverse()
-                columns_x.reverse()
+            n, m = matrix.shape
+        matrix_array = copy.deepcopy(matrix)
+        x_l = list(x_labels)
+        y_l = list(y_labels)
+        if is_pivot:
+            np.flip(matrix_array, axis=1)
+            x_l.reverse()
         if not (ax):
             fig, ax = plt.subplots()
-            if (conf._get_import_success("jupyter") and not (inverse)) or is_pivot:
+            if (conf._get_import_success("jupyter") and not (is_pivot)) or is_pivot:
                 fig.set_size_inches(min(m, 500), min(n, 500))
             else:
                 fig.set_size_inches(8, 6)
@@ -101,9 +85,10 @@ class HeatMap(PlottingBase):
         if not (extent):
             ax.set_yticks([i for i in range(0, n)])
             ax.set_xticks([i for i in range(0, m)])
-            ax.set_xticklabels(columns_y, rotation=90)
-            ax.set_yticklabels(columns_x, rotation=0)
+            ax.set_xticklabels(y_l, rotation=90)
+            ax.set_yticklabels(x_l, rotation=0)
         if with_numbers:
+            matrix_array = matrix_array.round(mround)
             for y_index in range(n):
                 for x_index in range(m):
                     label = matrix_array[y_index][x_index]
