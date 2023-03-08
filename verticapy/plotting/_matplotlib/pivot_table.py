@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting.base import PlottingBase
-from verticapy.plotting._matplotlib.scatter import HeatMap
+from verticapy.plotting._matplotlib.heatmap import HeatMap
 
 
 class PivotTable(HeatMap):

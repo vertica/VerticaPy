@@ -53,7 +53,6 @@ class HeatMap(PlottingBase):
         Draws a heatmap using the Matplotlib API.
         """
         if is_vector:
-            is_vector = True
             vector = [elem for elem in matrix[1]]
             matrix_array = vector[1:]
             for i in range(len(matrix_array)):
