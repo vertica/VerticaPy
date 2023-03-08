@@ -224,13 +224,13 @@ class PivotTable(HeatMap):
             j = x_labels.index(str(item[0]))
             i = y_labels.index(str(item[1]))
             matrix[i][j] = item[2]
-        matrix = np.array(matrix)
+        matrix = np.transpose(np.array(matrix))
         if show:
             all_count = [item[2] for item in query_result]
             ax = self.cmatrix(
                 matrix,
-                y_labels,
                 x_labels,
+                y_labels,
                 vmax=max(all_count),
                 vmin=min(all_count),
                 colorbar=aggregate,
@@ -242,7 +242,7 @@ class PivotTable(HeatMap):
             )
             if return_ax:
                 return ax
-        values = {"index": y_labels}
+        values = {"index": x_labels}
         for idx in range(matrix.shape[1]):
-            values[x_labels[idx]] = list(matrix[:, idx])
-        return TableSample(values=values).transpose()
+            values[y_labels[idx]] = list(matrix[:, idx])
+        return TableSample(values=values)
