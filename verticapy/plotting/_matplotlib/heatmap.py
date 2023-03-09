@@ -50,12 +50,15 @@ class HeatMap(PlottingBase):
         """
         if len(matrix.shape) == 1:
             n, m = matrix.shape[0], 1
+            matrix_array = np.transpose(np.array([matrix]))
+            is_vector = True
         else:
             n, m = matrix.shape
-        matrix_array = copy.deepcopy(matrix)
+            matrix_array = copy.deepcopy(matrix)
+            is_vector = False
         x_l = list(x_labels)
         y_l = list(y_labels)
-        if is_pivot:
+        if is_pivot and not (is_vector):
             np.flip(matrix_array, axis=1)
             x_l.reverse()
         if not (ax):

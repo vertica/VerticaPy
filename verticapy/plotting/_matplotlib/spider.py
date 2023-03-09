@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import math
 from typing import Optional, TYPE_CHECKING
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -50,68 +51,42 @@ class SpiderPlot(PlottingBase):
         unique = vdf[columns[0]].nunique(True)
         if unique < 3:
             raise ParameterError(
-                "The first column of the Spider Plot must have at "
-                f"least 3 categories. Found {int(unique)}."
+                "The column used to draw the Spider Plot must "
+                f"have at least 3 categories. Found {int(unique)}."
             )
-        colors = get_colors()
-        all_columns = vdf.pivot_table(
-            columns,
-            method=method,
-            of=of,
-            h=h,
-            max_cardinality=max_cardinality,
-            show=False,
-        ).values
-        all_cat = [category for category in all_columns]
-        n = len(all_columns)
-        m = len(all_columns[all_cat[0]])
+        matrix, x_labels, y_labels = self._compute_pivot_table(
+            vdf, columns, method=method, of=of, h=h, max_cardinality=max_cardinality,
+        )[0:3]
+        m = matrix.shape[0]
         angles = [i / float(m) * 2 * math.pi for i in range(m)]
         angles += angles[:1]
-        categories = all_columns[all_cat[0]]
         fig = plt.figure()
         if not (ax):
             ax = fig.add_subplot(111, polar=True)
-        all_vals = []
-        for idx, category in enumerate(all_columns):
-            if idx != 0:
-                values = all_columns[category]
-                values += values[:1]
-                for i, v in enumerate(values):
-                    if isinstance(v, str) or v == None:
-                        values[i] = 0
-                    else:
-                        values[i] = float(v)
-                all_vals += values
-                plt.xticks(angles[:-1], categories, color="grey", size=8)
-                ax.set_rlabel_position(0)
-                param = {"linewidth": 1, "linestyle": "solid", "color": colors[idx - 1]}
-                ax.plot(
-                    angles,
-                    values,
-                    label=category,
-                    **self.updated_dict(param, style_kwds, idx - 1),
-                )
-                color = self.updated_dict(param, style_kwds, idx - 1)["color"]
-                ax.fill(angles, values, alpha=0.1, color=color)
-        ax.set_yticks(
-            [min(all_vals), (max(all_vals) + min(all_vals)) / 2, max(all_vals)]
-        )
-        ax.set_rgrids(
-            [min(all_vals), (max(all_vals) + min(all_vals)) / 2, max(all_vals)],
-            angle=180.0,
-            fmt="%0.1f",
-        )
+        spider_vals = np.array([])
+        colors = get_colors()
+        for i, category in enumerate(y_labels):
+            if len(matrix.shape) == 1:
+                values = np.concatenate((matrix, matrix[:1]))
+            else:
+                values = np.concatenate((matrix[:, i], matrix[:, i][:1]))
+            spider_vals = np.concatenate((spider_vals, values))
+            plt.xticks(angles[:-1], x_labels, color="grey", size=8)
+            ax.set_rlabel_position(0)
+            params = {"linewidth": 1, "linestyle": "solid", "color": colors[i]}
+            params = self.updated_dict(params, style_kwds, i)
+            args = [angles, values]
+            ax.plot(*args, label=category, **params)
+            ax.fill(*args, alpha=0.1, color=params["color"])
+        y_ticks = [
+            min(spider_vals),
+            (max(spider_vals) + min(spider_vals)) / 2,
+            max(spider_vals),
+        ]
+        ax.set_yticks(y_ticks)
+        ax.set_rgrids(y_ticks, angle=180.0, fmt="%0.1f")
         ax.set_xlabel(columns[0])
-        if method.lower() == "mean":
-            method = "avg"
-        if method.lower() == "density":
-            ax.set_ylabel("Density")
-        elif (method.lower() in ["avg", "min", "max", "sum"]) and (of != None):
-            ax.set_ylabel(f"{method}({of})")
-        elif method.lower() == "count":
-            ax.set_ylabel("Frequency")
-        else:
-            ax.set_ylabel(method)
+        ax.set_ylabel(self._map_method(method, of)[0])
         if len(columns) > 1:
             ax.legend(
                 title=columns[1], loc="center left", bbox_to_anchor=[1.1, 0.5],

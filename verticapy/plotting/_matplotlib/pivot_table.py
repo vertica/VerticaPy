@@ -49,17 +49,14 @@ class PivotTable(HeatMap):
         """
         Draws a pivot table using the Matplotlib API.
         """
-        matrix, x_labels, y_labels, vmin, vmax, aggregate = (
-            self._compute_pivot_table(
-                vdf=vdf,
-                columns=columns,
-                method=method,
-                of=of,
-                h=h,
-                max_cardinality=max_cardinality,
-                fill_none=fill_none,
-            ),
-            aggregate,
+        matrix, x_labels, y_labels, vmin, vmax, aggregate = self._compute_pivot_table(
+            vdf=vdf,
+            columns=columns,
+            method=method,
+            of=of,
+            h=h,
+            max_cardinality=max_cardinality,
+            fill_none=fill_none,
         )
         if show:
             ax = self.color_matrix(
@@ -75,9 +72,15 @@ class PivotTable(HeatMap):
                 is_pivot=True,
                 **style_kwds,
             )
+            ax.set_ylabel(columns[0])
+            if len(columns) > 1:
+                ax.set_xlabel(columns[1])
             if return_ax:
                 return ax
         values = {"index": x_labels}
-        for idx in range(matrix.shape[1]):
-            values[y_labels[idx]] = list(matrix[:, idx])
+        if len(matrix.shape) == 1:
+            values[aggregate] = list(matrix)
+        else:
+            for idx in range(matrix.shape[1]):
+                values[y_labels[idx]] = list(matrix[:, idx])
         return TableSample(values=values)

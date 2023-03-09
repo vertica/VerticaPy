@@ -25,6 +25,8 @@ from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
+from verticapy.core.tablesample.base import TableSample
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
@@ -360,7 +362,7 @@ class PlottingBase:
         over = "/" + str(vdf.shape()[0]) if (method == "density") else ""
         if len(columns) == 1:
             cast = to_varchar(vdf[columns[0]].category(), matrix[-1])
-            return TableSample.read_sql(
+            res = TableSample.read_sql(
                 query=f"""
                     SELECT 
                         {cast} AS {columns[0]},
@@ -368,7 +370,10 @@ class PlottingBase:
                     FROM {vdf._genSQL()}
                     {where}
                     GROUP BY 1 {order_by}"""
-            )
+            ).to_numpy()
+            matrix = res[:, 1].astype(float)
+            x_labels = list(res[:, 0])
+            return matrix, x_labels, [method], min(matrix), max(matrix), aggregate
         aggr = f", {of}" if (of) else ""
         cols, cast = [], []
         for i in range(2):
