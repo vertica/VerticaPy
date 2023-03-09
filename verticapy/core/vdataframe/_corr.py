@@ -489,7 +489,7 @@ class vDFCorr:
                     cm1, cm2 = get_cmap()
                     cmap = cm1 if (method == "cramer") else cm2
                     style_kwds["cmap"] = cmap
-                vpy_plt.HeatMap().cmatrix(
+                vpy_plt.HeatMap().color_matrix(
                     matrix,
                     columns,
                     columns,
@@ -705,7 +705,7 @@ class vDFCorr:
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwds["cmap"] = cmap
             title = f"Correlation Vector of {focus} ({method})"
-            vpy_plt.HeatMap().cmatrix(
+            vpy_plt.HeatMap().color_matrix(
                 matrix,
                 [focus],
                 cols,
@@ -1539,7 +1539,7 @@ class vDFCorr:
                 method_title = "Alpha"
             else:
                 method_title = method
-            vpy_plt.HeatMap().cmatrix(
+            vpy_plt.HeatMap().color_matrix(
                 matrix,
                 columns,
                 columns,

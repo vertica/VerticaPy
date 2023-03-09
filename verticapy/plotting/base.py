@@ -79,8 +79,8 @@ class PlottingBase:
             )
         return method, aggregate, is_standard
 
-    @staticmethod
     def _compute_plot_params(
+        self,
         vdc: "vDataColumn",
         method: str = "density",
         of: str = "",
@@ -270,7 +270,7 @@ class PlottingBase:
 
     def _compute_pivot_table(
         self,
-        vdc: "vDataFrame",
+        vdf: "vDataFrame",
         columns: SQLColumns,
         method: str = "count",
         of: str = "",
