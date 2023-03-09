@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import warnings
 from typing import Optional, TYPE_CHECKING
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
