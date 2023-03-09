@@ -14,12 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import warnings
 from typing import Optional, TYPE_CHECKING
-import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
@@ -45,42 +44,46 @@ class BarChart(PlottingBase):
         **style_kwds,
     ) -> Axes:
         """
-        Draws a bar chart using the Matplotlib API.
+        Draws a histogram using the Matplotlib API.
         """
         x, y, z, h, is_categorical = self._compute_plot_params(
-            vdf, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
+            vdf, method, of, max_cardinality, nbins, h
         )
+        is_numeric = vdf.isnum()
         if not (ax):
             fig, ax = plt.subplots()
             if conf._get_import_success("jupyter"):
-                fig.set_size_inches(10, min(int(len(x) / 1.8) + 1, 600))
-            ax.xaxis.grid()
+                fig.set_size_inches(min(int(len(x) / 1.8) + 1, 600), 6)
             ax.set_axisbelow(True)
+            ax.yaxis.grid()
         param = {"color": get_colors()[0], "alpha": 0.86}
-        ax.barh(x, y, h, **self.updated_dict(param, style_kwds, 0))
-        ax.set_ylabel(vdf._alias)
+        ax.bar(x, y, h, **self.updated_dict(param, style_kwds))
+        ax.set_xlabel(vdf._alias)
         if is_categorical:
-            if vdf.category() == "text":
+            if not (is_numeric):
                 new_z = []
                 for item in z:
                     new_z += [item[0:47] + "..."] if (len(str(item)) > 50) else [item]
             else:
                 new_z = z
-            ax.set_yticks(x)
-            ax.set_yticklabels(new_z, rotation=0)
+            ax.set_xticks(x)
+            ax.set_xticklabels(new_z, rotation=90)
         else:
-            ax.set_yticks([elem - round(h / 2 / 0.94, 10) for elem in x])
+            L = [elem - round(h / 2 / 0.94, 10) for elem in x]
+            ax.set_xticks(L)
+            ax.set_xticklabels(L, rotation=90)
         if method.lower() == "density":
-            ax.set_xlabel("Density")
-        elif (method.lower() in ["avg", "min", "max", "sum"] or "%" == method[-1]) and (
-            of != None
-        ):
-            aggregate = f"{method.upper()}({of})"
-            ax.set_xlabel(aggregate)
+            ax.set_ylabel("Density")
+        elif (
+            method.lower() in ["avg", "min", "max", "sum", "mean"]
+            or ("%" == method[-1])
+        ) and (of != None):
+            aggregate = f"{method}({of})"
+            ax.set_ylabel(method)
         elif method.lower() == "count":
-            ax.set_xlabel("Frequency")
+            ax.set_ylabel("Frequency")
         else:
-            ax.set_xlabel(method)
+            ax.set_ylabel(method)
         return ax
 
     def bar2D(
@@ -92,87 +95,118 @@ class BarChart(PlottingBase):
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[Optional[float], Optional[float]] = (None, None),
         stacked: bool = False,
-        fully_stacked: bool = False,
-        density: bool = False,
         ax: Optional[Axes] = None,
         **style_kwds,
     ) -> Axes:
         """
-        Draws a 2D bar chart using the Matplotlib API.
+        Draws a 2D BarChart using the Matplotlib API.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         colors = get_colors()
-        if fully_stacked:
-            if method != "density":
-                raise ValueError(
-                    "Fully Stacked Bar works only with the 'density' method."
-                )
-        if density:
-            if method != "density":
-                raise ValueError("Pyramid Bar works only with the 'density' method.")
-            unique = vdf.nunique(columns)["approx_unique"]
-            if unique[1] != 2 and unique[0] != 2:
-                raise ValueError(
-                    "One of the 2 columns must have 2 categories to draw a Pyramid Bar."
-                )
-            if unique[1] != 2:
-                columns = [columns[1], columns[0]]
-        xlabel = self._map_method(method, of)[0]
-        matrix, y_labels, x_labels = self._compute_pivot_table(
+        matrix, x_labels, y_labels = self._compute_pivot_table(
             vdf, columns, method=method, of=of, h=h, max_cardinality=max_cardinality,
         )[0:3]
         m, n = matrix.shape
-        yticks = [j for j in range(m)]
-        bar_height = 0.5
+        bar_width = 0.5
         if not (ax):
             fig, ax = plt.subplots()
             if conf._get_import_success("jupyter"):
-                if density:
-                    fig.set_size_inches(10, min(m * 3, 600) / 8 + 1)
-                else:
-                    fig.set_size_inches(10, min(m * 3, 600) / 2 + 1)
+                fig.set_size_inches(min(600, 3 * m) / 2 + 1, 6)
             ax.set_axisbelow(True)
-            ax.xaxis.grid()
-        if fully_stacked:
-            for i in range(0, m):
-                matrix[i] /= sum(matrix[i])
+            ax.yaxis.grid()
         for i in range(0, n):
-            current_column = matrix[:, i]
             params = {
-                "y": [j for j in range(m)],
-                "width": matrix[:, i],
-                "height": bar_height,
-                "label": x_labels[i],
+                "x": [j for j in range(m)],
+                "height": matrix[:, i],
+                "width": bar_width,
+                "label": y_labels[i],
                 "alpha": 0.86,
                 "color": colors[i % len(colors)],
             }
             params = self.updated_dict(params, style_kwds, i)
-            if stacked or fully_stacked:
+            if stacked:
                 if i == 0:
-                    last_column = np.array([0.0 for j in range(m)])
+                    bottom = np.array([0.0 for j in range(m)])
                 else:
-                    last_column += matrix[:, i - 1].astype(float)
-                params["left"] = last_column
-            elif density:
-                if i == 1:
-                    current_column = [-j for j in current_column]
-                params["width"] = current_column
-                params["height"] = bar_height / 1.5
+                    bottom += matrix[:, i - 1].astype(float)
+                param["bottom"] = bottom
             else:
-                params["y"] = [j + i * bar_height / n for j in range(m)]
-                params["height"] = bar_height / n
-            ax.barh(**params)
-        if not (stacked):
-            yticks = [j + bar_height / 2 - bar_height / 2 / (n - 1) for j in range(m)]
-        ax.set_yticks(yticks)
-        ax.set_yticklabels(y_labels)
-        ax.set_ylabel(columns[0])
-        ax.set_xlabel(xlabel)
-        if density or fully_stacked:
-            vals = ax.get_xticks()
-            max_val = max([abs(x) for x in vals])
-            ax.xaxis.set_major_locator(mticker.FixedLocator(vals))
-            ax.set_xticklabels(["{:,.2%}".format(abs(x)) for x in vals])
+                params["x"] = [j + (i - 1) * bar_width / (n - 1) for j in range(m)]
+                params["width"] = bar_width / (n - 1)
+            ax.bar(**params)
+        if stacked:
+            xticks = [j for j in range(m)]
+        else:
+            xticks = [j + bar_width / 2 - bar_width / 2 / (n - 1) for j in range(m)]
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(x_labels, rotation=90)
+        ax.set_xlabel(columns[0])
+        ax.set_ylabel(self._map_method(method, of)[0])
         ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         return ax
+
+    def multiple_hist(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        method: str = "density",
+        of: str = "",
+        h: float = 0.0,
+        ax: Optional[Axes] = None,
+        **style_kwds,
+    ) -> Axes:
+        """
+        Draws a muli-histogram chart using the Matplotlib API.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        colors = get_colors()
+        if len(columns) > 5:
+            raise ParameterError(
+                "The number of column must be <= 5 to use 'multiple_hist' method"
+            )
+        else:
+            if not (ax):
+                fig, ax = plt.subplots()
+                if conf._get_import_success("jupyter"):
+                    fig.set_size_inches(8, 6)
+                ax.set_axisbelow(True)
+                ax.yaxis.grid()
+            alpha, all_columns, all_h = 1, [], []
+            if h <= 0:
+                for idx, column in enumerate(columns):
+                    all_h += [vdf[column].numh()]
+                h = min(all_h)
+            for idx, column in enumerate(columns):
+                if vdf[column].isnum():
+                    [x, y, z, h, is_categorical] = self._compute_plot_params(
+                        vdf[column], method=method, of=of, max_cardinality=1, h=h
+                    )
+                    h = h / 0.94
+                    param = {"color": colors[idx % len(colors)]}
+                    plt.bar(
+                        x,
+                        y,
+                        h,
+                        label=column,
+                        alpha=alpha,
+                        **self.updated_dict(param, style_kwds, idx),
+                    )
+                    alpha -= 0.2
+                    all_columns += [columns[idx]]
+                else:
+                    if vdf._vars["display"]["print_info"]:
+                        warning_message = (
+                            f"The Virtual Column {column} is not numerical."
+                            " Its histogram will not be drawn."
+                        )
+                        warnings.warn(warning_message, Warning)
+            ax.set_xlabel(", ".join(all_columns))
+            ax.set_ylabel(self._map_method(method, of)[0])
+            ax.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
+            box = ax.get_position()
+            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+            return ax

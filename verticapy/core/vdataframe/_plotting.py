@@ -282,7 +282,7 @@ class vDFPlot:
         Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     hist_type: str, optional
-        The Histogram Type.
+        The BarChart Type.
             auto          : Regular Bar Chart based on 1 or 2 vDataColumns.
             pyramid       : Pyramid Density Bar Chart. Only works if one of
                             the two vDataColumns is binary and the 'method' is 
@@ -320,7 +320,7 @@ class vDFPlot:
                 stacked = True
             elif hist_type in ("pyramid", "density"):
                 density = True
-            return vpy_plt.BarChart().bar2D(
+            return vpy_plt.HorizontalBarChart().barh2D(
                 self,
                 columns,
                 method,
@@ -684,7 +684,7 @@ class vDFPlot:
             donut        : Donut Chart
             donut3d      : 3D Donut Chart
             heatmap      : Heatmap
-            hist         : Histogram
+            hist         : BarChart
             kendall      : Kendall Correlation Matrix. The method will compute the Tau-B 
                            coefficients.
                            \u26A0 Warning : This method uses a CROSS JOIN during computation 
@@ -701,7 +701,7 @@ class vDFPlot:
             spider       : Spider Chart
             spline       : Spline Plot
             stacked_bar  : Stacked Bar Chart
-            stacked_hist : Stacked Histogram
+            stacked_hist : Stacked BarChart
             spearman     : Spearman's Correlation Matrix
             spearmanD    : Spearman's Correlation Matrix using the DENSE RANK
                            function instead of the RANK function.
@@ -719,7 +719,7 @@ class vDFPlot:
     limit: int, optional
         Maximum number of elements to draw.
     drilldown: bool, optional
-        Drilldown Chart: Only possible for Bars, Histograms, donuts and pies.
+        Drilldown Chart: Only possible for Bars, BarCharts, donuts and pies.
                           Instead of drawing 2D charts, this option allows you
                           to add a drilldown effect to 1D Charts.
     stock: bool, optional
@@ -923,10 +923,10 @@ class vDFPlot:
         Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     hist_type: str, optional
-        The Histogram Type.
-            auto    : Regular Histogram based on 1 or 2 vDataColumns.
-            multi   : Multiple Regular Histograms based on 1 to 5 vDataColumns.
-            stacked : Stacked Histogram based on 2 vDataColumns.
+        The BarChart Type.
+            auto    : Regular BarChart based on 1 or 2 vDataColumns.
+            multi   : Multiple Regular BarCharts based on 1 to 5 vDataColumns.
+            stacked : Stacked BarChart based on 2 vDataColumns.
     ax: Axes, optional
         The axes to plot on.
     **style_kwds
@@ -958,11 +958,11 @@ class vDFPlot:
                     h_0 = h
                 else:
                     h_0 = h[0] if (h[0]) else 0
-                return vpy_plt.Histogram().multiple_hist(
+                return vpy_plt.BarChart().multiple_hist(
                     self, columns, method, of, h_0, ax=ax, **style_kwds,
                 )
             else:
-                return vpy_plt.Histogram().hist2D(
+                return vpy_plt.BarChart().bar2D(
                     self,
                     columns,
                     method,
@@ -1541,7 +1541,7 @@ class vDCPlot:
     vDataFrame[].hist : Draws the histogram of the vDataColumn based on an aggregation.
         """
         of = self._parent._format_colnames(of)
-        return vpy_plt.BarChart().bar(
+        return vpy_plt.HorizontalBarChart().barh(
             self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds
         )
 
@@ -1798,7 +1798,7 @@ class vDCPlot:
     vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
         of = self._parent._format_colnames(of)
-        return vpy_plt.Histogram().hist(
+        return vpy_plt.BarChart().bar(
             self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds
         )
 

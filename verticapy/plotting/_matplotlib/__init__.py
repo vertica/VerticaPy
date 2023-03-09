@@ -39,12 +39,12 @@ from verticapy.plotting._matplotlib.machine_learning.svm import SVMClassifierPlo
 
 from verticapy.plotting._matplotlib.acf import ACFPlot
 from verticapy.plotting._matplotlib.bar import BarChart
+from verticapy.plotting._matplotlib.barh import HorizontalBarChart
 from verticapy.plotting._matplotlib.boxplot import BoxPlot
 from verticapy.plotting._matplotlib.bubble import BubblePlot
 from verticapy.plotting._matplotlib.contour_plot import ContourPlot
 from verticapy.plotting._matplotlib.heatmap import HeatMap
 from verticapy.plotting._matplotlib.hexbin import HexbinPlot
-from verticapy.plotting._matplotlib.hist import Histogram
 from verticapy.plotting._matplotlib.line import LinePlot
 from verticapy.plotting._matplotlib.outliers import OutliersPlot
 from verticapy.plotting._matplotlib.pie import PieChart
