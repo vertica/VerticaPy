@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Optional, TYPE_CHECKING
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -102,34 +103,26 @@ class BarChart(PlottingBase):
         colors = get_colors()
         if fully_stacked:
             if method != "density":
-                raise ParameterError(
+                raise ValueError(
                     "Fully Stacked Bar works only with the 'density' method."
                 )
         if density:
             if method != "density":
-                raise ParameterError(
-                    "Pyramid Bar works only with the 'density' method."
-                )
+                raise ValueError("Pyramid Bar works only with the 'density' method.")
             unique = vdf.nunique(columns)["approx_unique"]
             if unique[1] != 2 and unique[0] != 2:
-                raise ParameterError(
+                raise ValueError(
                     "One of the 2 columns must have 2 categories to draw a Pyramid Bar."
                 )
             if unique[1] != 2:
                 columns = [columns[1], columns[0]]
-        all_columns = vdf.pivot_table(
-            columns,
-            method=method,
-            of=of,
-            h=h,
-            max_cardinality=max_cardinality,
-            show=False,
-        ).values
-        all_columns = [[column] + all_columns[column] for column in all_columns]
-        n = len(all_columns)
-        m = len(all_columns[0])
-        n_groups = m - 1
-        bar_width = 0.5
+        xlabel = self._map_method(method, of)[0]
+        matrix, y_labels, x_labels = self._compute_pivot_table(
+            vdf, columns, method=method, of=of, h=h, max_cardinality=max_cardinality,
+        )[0:3]
+        m, n = matrix.shape
+        yticks = [j for j in range(m)]
+        bar_height = 0.5
         if not (ax):
             fig, ax = plt.subplots()
             if conf._get_import_success("jupyter"):
@@ -139,129 +132,41 @@ class BarChart(PlottingBase):
                     fig.set_size_inches(10, min(m * 3, 600) / 2 + 1)
             ax.set_axisbelow(True)
             ax.xaxis.grid()
-        if not (fully_stacked):
-            for i in range(1, n):
-                current_column = all_columns[i][1:m]
-                for idx, item in enumerate(current_column):
-                    try:
-                        current_column[idx] = float(item)
-                    except:
-                        current_column[idx] = 0
-                current_label = str(all_columns[i][0])
-                param = {"alpha": 0.86, "color": colors[(i - 1) % len(colors)]}
-                if stacked:
-                    if i == 1:
-                        last_column = [0 for item in all_columns[i][1:m]]
-                    else:
-                        for idx, item in enumerate(all_columns[i - 1][1:m]):
-                            try:
-                                last_column[idx] += float(item)
-                            except:
-                                last_column[idx] += 0
-                    ax.barh(
-                        [elem for elem in range(n_groups)],
-                        current_column,
-                        bar_width,
-                        label=current_label,
-                        left=last_column,
-                        **self.updated_dict(param, style_kwds, i - 1),
-                    )
-                elif density:
-                    if i == 2:
-                        current_column = [-elem for elem in current_column]
-                    ax.barh(
-                        [elem for elem in range(n_groups)],
-                        current_column,
-                        bar_width / 1.5,
-                        label=current_label,
-                        **self.updated_dict(param, style_kwds, i - 1),
-                    )
+        if fully_stacked:
+            for i in range(0, m):
+                matrix[i] /= sum(matrix[i])
+        for i in range(0, n):
+            current_column = matrix[:, i]
+            params = {
+                "y": [j for j in range(m)],
+                "width": matrix[:, i],
+                "height": bar_height,
+                "label": x_labels[i],
+                "alpha": 0.86,
+                "color": colors[i % len(colors)],
+            }
+            params = self.updated_dict(params, style_kwds, i)
+            if stacked or fully_stacked:
+                if i == 0:
+                    last_column = np.array([0.0 for j in range(m)])
                 else:
-                    ax.barh(
-                        [
-                            elem + (i - 1) * bar_width / (n - 1)
-                            for elem in range(n_groups)
-                        ],
-                        current_column,
-                        bar_width / (n - 1),
-                        label=current_label,
-                        **self.updated_dict(param, style_kwds, i - 1),
-                    )
-            if stacked:
-                ax.set_yticks([elem for elem in range(n_groups)])
-                ax.set_yticklabels(all_columns[0][1:m])
-            else:
-                ax.set_yticks(
-                    [
-                        elem + bar_width / 2 - bar_width / 2 / (n - 1)
-                        for elem in range(n_groups)
-                    ]
-                )
-                ax.set_yticklabels(all_columns[0][1:m])
-            ax.set_ylabel(columns[0])
-            if method.lower() == "mean":
-                method = "avg"
-            if method.lower() == "mean":
-                method = "avg"
-            if method.lower() == "density":
-                ax.set_xlabel("Density")
-            elif (method.lower() in ["avg", "min", "max", "sum"]) and (of != None):
-                ax.set_xlabel(f"{method}({of})")
-            elif method.lower() == "count":
-                ax.set_xlabel("Frequency")
-            else:
-                ax.set_xlabel(method)
-        else:
-            total = [0 for item in range(1, m)]
-            for i in range(1, n):
-                for j in range(1, m):
-                    if not (isinstance(all_columns[i][j], str)):
-                        total[j - 1] += float(
-                            all_columns[i][j] if (all_columns[i][j] != None) else 0
-                        )
-            for i in range(1, n):
-                for j in range(1, m):
-                    if not (isinstance(all_columns[i][j], str)):
-                        if total[j - 1] != 0:
-                            all_columns[i][j] = (
-                                float(
-                                    all_columns[i][j]
-                                    if (all_columns[i][j] != None)
-                                    else 0
-                                )
-                                / total[j - 1]
-                            )
-                        else:
-                            all_columns[i][j] = 0
-            for i in range(1, n):
-                current_column = all_columns[i][1:m]
-                for idx, item in enumerate(current_column):
-                    try:
-                        current_column[idx] = float(item)
-                    except:
-                        current_column[idx] = 0
-                current_label = str(all_columns[i][0])
+                    last_column += matrix[:, i - 1].astype(float)
+                params["left"] = last_column
+            elif density:
                 if i == 1:
-                    last_column = [0 for item in all_columns[i][1:m]]
-                else:
-                    for idx, item in enumerate(all_columns[i - 1][1:m]):
-                        try:
-                            last_column[idx] += float(item)
-                        except:
-                            last_column[idx] += 0
-                param = {"color": colors[(i - 1) % len(colors)], "alpha": 0.86}
-                ax.barh(
-                    [elem for elem in range(n_groups)],
-                    current_column,
-                    bar_width,
-                    label=current_label,
-                    left=last_column,
-                    **self.updated_dict(param, style_kwds, i - 1),
-                )
-            ax.set_yticks([elem for elem in range(n_groups)])
-            ax.set_yticklabels(all_columns[0][1:m])
-            ax.set_ylabel(columns[0])
-            ax.set_xlabel("Density")
+                    current_column = [-j for j in current_column]
+                params["width"] = current_column
+                params["height"] = bar_height / 1.5
+            else:
+                params["y"] = [j + i * bar_height / n for j in range(m)]
+                params["height"] = bar_height / n
+            ax.barh(**params)
+        if not (stacked):
+            yticks = [j + bar_height / 2 - bar_height / 2 / (n - 1) for j in range(m)]
+        ax.set_yticks(yticks)
+        ax.set_yticklabels(y_labels)
+        ax.set_ylabel(columns[0])
+        ax.set_xlabel(xlabel)
         if density or fully_stacked:
             vals = ax.get_xticks()
             max_val = max([abs(x) for x in vals])

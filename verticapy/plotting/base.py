@@ -15,7 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, math
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
+import numpy as np
 
 import verticapy._config.config as conf
 from verticapy._typing import ArrayLike, SQLColumns
@@ -25,7 +26,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
 if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
 if conf._get_import_success("dateutil"):
     from dateutil.parser import parse
@@ -37,7 +38,7 @@ class PlottingBase:
         return ["^", "o", "+", "*", "h", "x", "D", "1"]
 
     @staticmethod
-    def _map_method(method: str) -> tuple[str, str, bool]:
+    def _map_method(method: str, of: str) -> tuple[str, str, bool]:
         is_standard = True
         if method.lower() == "median":
             method = "50%"
@@ -80,7 +81,7 @@ class PlottingBase:
 
     @staticmethod
     def _compute_plot_params(
-        vdf: "vDataFrame",
+        vdc: "vDataColumn",
         method: str = "density",
         of: str = "",
         max_cardinality: int = 6,
@@ -93,18 +94,18 @@ class PlottingBase:
 	    using the Matplotlib API.
 	    """
         other_columns = ""
-        method, aggregate, is_standard = self._map_method(method)
+        method, aggregate, is_standard = self._map_method(method, of)
         if not (is_standard):
             other_columns = ", " + ", ".join(
-                vdf._parent.get_columns(exclude_columns=[vdf._alias])
+                vdc._parent.get_columns(exclude_columns=[vdc._alias])
             )
         # depending on the cardinality, the type, the vDataColumn
         # can be treated as categorical or not
         cardinality, count, is_numeric, is_date, is_categorical = (
-            vdf.nunique(True),
-            vdf._parent.shape()[0],
-            vdf.isnum() and not (vdf.isbool()),
-            (vdf.category() == "date"),
+            vdc.nunique(True),
+            vdc._parent.shape()[0],
+            vdc.isnum() and not (vdc.isbool()),
+            (vdc.category() == "date"),
             False,
         )
         rotation = 0 if ((is_numeric) and (cardinality > max_cardinality)) else 90
@@ -115,33 +116,33 @@ class PlottingBase:
             if (is_numeric) and not (pie):
                 query = f"""
 	                SELECT 
-	                    {vdf._alias},
+	                    {vdc._alias},
 	                    {aggregate}
-	                FROM {vdf._parent._genSQL()} 
-	                WHERE {vdf._alias} IS NOT NULL 
-	                GROUP BY {vdf._alias} 
-	                ORDER BY {vdf._alias} ASC 
+	                FROM {vdc._parent._genSQL()} 
+	                WHERE {vdc._alias} IS NOT NULL 
+	                GROUP BY {vdc._alias} 
+	                ORDER BY {vdc._alias} ASC 
 	                LIMIT {max_cardinality}"""
             else:
-                table = vdf._parent._genSQL()
+                table = vdc._parent._genSQL()
                 if (pie) and (is_numeric):
                     enum_trans = (
-                        vdf.discretize(h=h, return_enum_trans=True)[0].replace(
-                            "{}", vdf._alias
+                        vdc.discretize(h=h, return_enum_trans=True)[0].replace(
+                            "{}", vdc._alias
                         )
                         + " AS "
-                        + vdf._alias
+                        + vdc._alias
                     )
                     if of:
                         enum_trans += f" , {of}"
                     table = (
                         f"(SELECT {enum_trans + other_columns} FROM {table}) enum_table"
                     )
-                cast_alias = to_varchar(vdf.category(), vdf._alias)
+                cast_alias = to_varchar(vdc.category(), vdc._alias)
                 query = f"""
 	                (SELECT 
 	                    /*+LABEL('plotting._matplotlib._compute_plot_params')*/ 
-	                    {cast_alias} AS {vdf._alias},
+	                    {cast_alias} AS {vdc._alias},
 	                    {aggregate}
 	                 FROM {table} 
 	                 GROUP BY {cast_alias} 
@@ -154,11 +155,11 @@ class PlottingBase:
 	                        'Others',
 	                        {aggregate} 
 	                     FROM {table}
-	                     WHERE {vdf._alias} NOT IN
+	                     WHERE {vdc._alias} NOT IN
 	                     (SELECT 
-	                        {vdf._alias} 
+	                        {vdc._alias} 
 	                      FROM {table}
-	                      GROUP BY {vdf._alias}
+	                      GROUP BY {vdc._alias}
 	                      ORDER BY {aggregate} DESC
 	                      LIMIT {max_cardinality}))"""
             query_result = _executeSQL(
@@ -181,28 +182,28 @@ class PlottingBase:
         # case when date
         elif is_date:
             if (h <= 0) and (nbins <= 0):
-                h = vdf.numh()
+                h = vdc.numh()
             elif nbins > 0:
                 query_result = _executeSQL(
                     query=f"""
 	                    SELECT 
 	                        /*+LABEL('plotting._matplotlib._compute_plot_params')*/
-	                        DATEDIFF('second', MIN({vdf._alias}), MAX({vdf._alias}))
-	                    FROM {vdf._parent._genSQL()}""",
+	                        DATEDIFF('second', MIN({vdc._alias}), MAX({vdc._alias}))
+	                    FROM {vdc._parent._genSQL()}""",
                     title="Computing the histogram interval",
                     method="fetchrow",
                 )
                 h = float(query_result[0]) / nbins
-            min_date = vdf.min()
-            converted_date = f"DATEDIFF('second', '{min_date}', {vdf._alias})"
+            min_date = vdc.min()
+            converted_date = f"DATEDIFF('second', '{min_date}', {vdc._alias})"
             query_result = _executeSQL(
                 query=f"""
 	                SELECT 
 	                    /*+LABEL('plotting._matplotlib._compute_plot_params')*/
 	                    FLOOR({converted_date} / {h}) * {h}, 
 	                    {aggregate} 
-	                FROM {vdf._parent._genSQL()}
-	                WHERE {vdf._alias} IS NOT NULL 
+	                FROM {vdc._parent._genSQL()}
+	                WHERE {vdc._alias} IS NOT NULL 
 	                GROUP BY 1 
 	                ORDER BY 1""",
                 title="Computing the histogram heights",
@@ -239,19 +240,19 @@ class PlottingBase:
         # case when numerical
         else:
             if (h <= 0) and (nbins <= 0):
-                h = vdf.numh()
+                h = vdc.numh()
             elif nbins > 0:
-                h = float(vdf.max() - vdf.min()) / nbins
-            if (vdf.ctype == "int") or (h == 0):
+                h = float(vdc.max() - vdc.min()) / nbins
+            if (vdc.ctype == "int") or (h == 0):
                 h = max(1.0, h)
             query_result = _executeSQL(
                 query=f"""
 	                SELECT
 	                    /*+LABEL('plotting._matplotlib._compute_plot_params')*/
-	                    FLOOR({vdf._alias} / {h}) * {h},
+	                    FLOOR({vdc._alias} / {h}) * {h},
 	                    {aggregate} 
-	                FROM {vdf._parent._genSQL()}
-	                WHERE {vdf._alias} IS NOT NULL
+	                FROM {vdc._parent._genSQL()}
+	                WHERE {vdc._alias} IS NOT NULL
 	                GROUP BY 1
 	                ORDER BY 1""",
                 title="Computing the histogram heights",
@@ -267,9 +268,9 @@ class PlottingBase:
             z = None
         return [x, y, z, h, is_categorical]
 
-    @staticmethod
     def _compute_pivot_table(
-        vdf: "vDataFrame",
+        self,
+        vdc: "vDataFrame",
         columns: SQLColumns,
         method: str = "count",
         of: str = "",
@@ -281,11 +282,9 @@ class PlottingBase:
         Draws a pivot table using the Matplotlib API.
         """
         other_columns = ""
-        method, aggregate, is_standard = self._map_method(method)
+        method, aggregate, is_standard = self._map_method(method, of)
         if not (is_standard):
-            other_columns = ", " + ", ".join(
-                vdf._parent.get_columns(exclude_columns=[vdf._alias])
-            )
+            other_columns = ", " + ", ".join(vdf.get_columns(exclude_columns=columns))
         columns, of = vdf._format_colnames(columns, of)
         is_column_date = [False, False]
         timestampadd = ["", ""]
