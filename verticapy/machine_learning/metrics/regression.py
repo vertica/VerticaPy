@@ -420,18 +420,22 @@ def r2_score(
     float
     	score.
 	"""
+    if isinstance(input_relation, str):
+        relation = input_relation
+    else:
+        relation = input_relation._genSQL()
     result = _compute_metric_query(
         "RSQUARED({0}, {1}) OVER()",
         y_true,
         y_score,
-        input_relation,
+        relation,
         "Computing the R2 Score.",
     )
     if adj and k > 0:
         n = _executeSQL(
             query=f"""
                 SELECT /*+LABEL('learn.metrics.r2_score')*/ COUNT(*) 
-                FROM {input_relation} 
+                FROM {relation} 
                 WHERE {y_true} IS NOT NULL 
                   AND {y_score} IS NOT NULL;""",
             title="Computing the table number of elements.",

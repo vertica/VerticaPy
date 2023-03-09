@@ -119,9 +119,9 @@ class TestvDFCorrelation:
             method="spearmanD",
         )
         plt.close("all")
-        assert result5["value"][0] == pytest.approx(1)
+        assert result5["value"][0] == pytest.approx(1.0)
         assert result5["confidence"][0] == pytest.approx(0.024396841824873748, 1e-2)
-        assert result5.values["value"][10] == pytest.approx(0.5, 1e-2)
+        assert result5.values["value"][10] == pytest.approx(0.494663471420921, 1e-2)
         assert result5.values["confidence"][10] == pytest.approx(
             0.06977116419369607, 1e-2
         )
@@ -414,7 +414,9 @@ class TestvDFCorrelation:
 
     def test_vDF_regr(self, titanic_vd):
         # testing vDataFrame.regr (method = 'alpha')
-        result1 = titanic_vd.regr(columns=["survived", "age", "fare"], method="alpha",)
+        result1 = titanic_vd.regr(
+            columns=["survived", "age", "fare"], method="alpha",
+        ).transpose()
         plt.close("all")
         assert result1["survived"][0] == 0.0
         assert result1["survived"][1] == pytest.approx(0.435280333103508, 1e-2)
@@ -427,7 +429,9 @@ class TestvDFCorrelation:
         assert result1["fare"][2] == 0.0
 
         # testing vDataFrame.regr (method = 'beta')
-        result2 = titanic_vd.regr(columns=["survived", "age", "fare"], method="beta")
+        result2 = titanic_vd.regr(
+            columns=["survived", "age", "fare"], method="beta"
+        ).transpose()
         plt.close("all")
         assert result2["survived"][0] == 1.0
         assert result2["survived"][1] == pytest.approx(-0.00142952871080426, 1e-2)
@@ -440,7 +444,9 @@ class TestvDFCorrelation:
         assert result2["fare"][2] == 1.0
 
         # testing vDataFrame.regr (method = 'r2')
-        result3 = titanic_vd.regr(columns=["survived", "age", "fare"], method="r2",)
+        result3 = titanic_vd.regr(
+            columns=["survived", "age", "fare"], method="r2",
+        ).transpose()
         plt.close("all")
         assert result3["survived"][0] == 1.0
         assert result3["survived"][1] == pytest.approx(0.00178460779712559, 1e-2)

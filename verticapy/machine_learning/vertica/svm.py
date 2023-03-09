@@ -53,8 +53,6 @@ class LinearSVR(Regressor, LinearModel):
         The  weight  for  misclassification  cost. 
         The algorithm minimizes the regularization 
         cost and the misclassification cost.
-    fit_intercept: bool, optional
-        A bool to fit also the intercept.
     intercept_scaling: float
         A  float value, serves  as the value of a 
         dummy feature  whose  coefficient Vertica  
@@ -110,7 +108,6 @@ class LinearSVR(Regressor, LinearModel):
         name: str,
         tol: float = 1e-4,
         C: float = 1.0,
-        fit_intercept: bool = True,
         intercept_scaling: float = 1.0,
         intercept_mode: Literal["regularized", "unregularized"] = "regularized",
         acceptable_error_margin: float = 0.1,
@@ -120,7 +117,6 @@ class LinearSVR(Regressor, LinearModel):
         self.parameters = {
             "tol": tol,
             "C": C,
-            "fit_intercept": fit_intercept,
             "intercept_scaling": intercept_scaling,
             "intercept_mode": str(intercept_mode).lower(),
             "acceptable_error_margin": acceptable_error_margin,
@@ -135,6 +131,7 @@ class LinearSVR(Regressor, LinearModel):
         return {
             "tol": "epsilon",
             "max_iter": "max_iterations",
+            "acceptable_error_margin": "error_tolerance",
         }
 
 
@@ -165,8 +162,6 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
     	The weight for misclassification cost.  The 
         algorithm minimizes the regularization cost 
         and the misclassification cost.
-    fit_intercept: bool, optional
-    	A bool to fit also the intercept.
     intercept_scaling: float
     	A  float  value,  serves as  the  value of a 
         dummy feature whose coefficient Vertica uses
@@ -225,7 +220,6 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         name: str,
         tol: float = 1e-4,
         C: float = 1.0,
-        fit_intercept: bool = True,
         intercept_scaling: float = 1.0,
         intercept_mode: Literal["regularized", "unregularized"] = "regularized",
         class_weight: Union[Literal["auto", "none"], list] = [1, 1],
@@ -235,7 +229,6 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         self.parameters = {
             "tol": tol,
             "C": C,
-            "fit_intercept": fit_intercept,
             "intercept_scaling": intercept_scaling,
             "intercept_mode": str(intercept_mode).lower(),
             "class_weight": class_weight,

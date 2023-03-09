@@ -80,7 +80,7 @@ class ScatterPlot(PlottingBase):
                 axes[i][j].get_yaxis().set_ticks([])
                 y = columns[j]
                 if x == y:
-                    x0, y0, z0, h0, is_categorical = self.compute_plot_variables(
+                    x0, y0, z0, h0, is_categorical = self._compute_plot_params(
                         vdf[x], method="density", max_cardinality=1
                     )
                     param = {"color": get_colors(style_kwds, 0), "edgecolor": "black"}
