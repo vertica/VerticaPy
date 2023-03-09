@@ -131,7 +131,7 @@ class BarChart(PlottingBase):
                     bottom = np.array([0.0 for j in range(m)])
                 else:
                     bottom += matrix[:, i - 1].astype(float)
-                param["bottom"] = bottom
+                params["bottom"] = bottom
             else:
                 params["x"] = [j + (i - 1) * bar_width / (n - 1) for j in range(m)]
                 params["width"] = bar_width / (n - 1)
