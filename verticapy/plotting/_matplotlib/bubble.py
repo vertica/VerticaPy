@@ -29,10 +29,10 @@ from verticapy.errors import ParameterError
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class BubblePlot(PlottingBase):
+class BubblePlot(MatplotlibBase):
     def bubble(
         self,
         vdf: "vDataFrame",
@@ -97,12 +97,7 @@ class BubblePlot(PlottingBase):
                 [float(item[0]) for item in query_result],
                 [float(item[1]) for item in query_result],
             )
-            if not (ax):
-                fig, ax = plt.subplots()
-                if conf._get_import_success("jupyter"):
-                    fig.set_size_inches(10, 6)
-                ax.grid()
-                ax.set_axisbelow(True)
+            ax, fig = self._get_ax_fig(ax, size=(10, 6), set_axis_below=True, grid=True)
             if bbox:
                 ax.set_xlim(bbox[0], bbox[1])
                 ax.set_ylim(bbox[2], bbox[3])

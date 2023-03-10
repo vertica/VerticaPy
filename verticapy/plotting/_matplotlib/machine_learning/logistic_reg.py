@@ -27,10 +27,10 @@ from verticapy._typing import ArrayLike, SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class LogisticRegressionPlot(PlottingBase):
+class LogisticRegressionPlot(MatplotlibBase):
     def logit_plot(
         self,
         X: SQLColumns,

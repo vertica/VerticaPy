@@ -27,15 +27,15 @@ from verticapy._typing import SQLColumns
 from verticapy.errors import ParameterError
 
 if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class HorizontalBarChart(PlottingBase):
+class HorizontalBarChart(MatplotlibBase):
     def barh(
         self,
-        vdf: "vDataFrame",
+        vdc: "vDataColumn",
         method: str = "density",
         of: Optional[str] = None,
         max_cardinality: int = 6,
@@ -48,28 +48,20 @@ class HorizontalBarChart(PlottingBase):
         Draws a bar chart using the Matplotlib API.
         """
         x, y, z, h, is_categorical = self._compute_plot_params(
-            vdf, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
+            vdc, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
         )
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(10, min(int(len(x) / 1.8) + 1, 600))
-            ax.xaxis.grid()
-            ax.set_axisbelow(True)
-        param = {"color": get_colors()[0], "alpha": 0.86}
-        ax.barh(x, y, h, **self.updated_dict(param, style_kwds, 0))
-        ax.set_ylabel(vdf._alias)
+        ax, fig = self._get_ax_fig(
+            ax, size=(10, min(int(len(x) / 1.8) + 1, 600)), grid="x"
+        )
+        params = {"color": get_colors()[0], "alpha": 0.86}
+        params = self.updated_dict(params, style_kwds, 0)
+        ax.barh(x, y, h, **params)
+        ax.set_ylabel(vdc._alias)
         if is_categorical:
-            if vdf.category() == "text":
-                new_z = []
-                for item in z:
-                    new_z += [item[0:47] + "..."] if (len(str(item)) > 50) else [item]
-            else:
-                new_z = z
             ax.set_yticks(x)
-            ax.set_yticklabels(new_z, rotation=0)
+            ax.set_yticklabels(self._format_string(z), rotation=0)
         else:
-            ax.set_yticks([elem - round(h / 2 / 0.94, 10) for elem in x])
+            ax.set_yticks([c - round(h / 2 / 0.94, 10) for c in x])
         ax.set_xlabel(self._map_method(method, of)[0])
         return ax
 
@@ -113,15 +105,10 @@ class HorizontalBarChart(PlottingBase):
         m, n = matrix.shape
         yticks = [j for j in range(m)]
         bar_height = 0.5
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                if density:
-                    fig.set_size_inches(10, min(m * 3, 600) / 8 + 1)
-                else:
-                    fig.set_size_inches(10, min(m * 3, 600) / 2 + 1)
-            ax.set_axisbelow(True)
-            ax.xaxis.grid()
+        if density:
+            ax, fig = self._get_ax_fig(ax, size=(10, min(m * 3, 600) / 8 + 1), grid="x")
+        else:
+            ax, fig = self._get_ax_fig(ax, size=(10, min(m * 3, 600) / 2 + 1), grid="x")
         if fully_stacked:
             for i in range(0, m):
                 matrix[i] /= sum(matrix[i])

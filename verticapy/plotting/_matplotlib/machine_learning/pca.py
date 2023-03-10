@@ -22,10 +22,10 @@ import matplotlib.pyplot as plt
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class PCAPlot(PlottingBase):
+class PCAPlot(MatplotlibBase):
     def plot_pca_circle(
         self,
         x: list,
@@ -43,11 +43,7 @@ class PCAPlot(PlottingBase):
         if "color" in style_kwds:
             colors[0] = style_kwds["color"]
         circle1 = plt.Circle((0, 0), 1, edgecolor=colors[0], facecolor="none")
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(6, 6)
-            ax.set_axisbelow(True)
+        ax, fig = self._get_ax_fig(ax, size=(6, 6), set_axis_below=True, grid=False)
         n = len(x)
         ax.add_patch(circle1)
         for i in range(n):
@@ -96,14 +92,7 @@ class PCAPlot(PlottingBase):
         colors = get_colors()
         if "color" in style_kwds:
             colors[0] = style_kwds["color"]
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(6, 6)
-            ax.set_axisbelow(True)
-            ax.grid()
-        else:
-            fig = plt
+        ax, fig = self._get_ax_fig(ax, size=(6, 6), set_axis_below=True, grid=True)
         n = len(x)
         delta_y = (max(y) - min(y)) * 0.04
         delta_x = (max(x) - min(x)) * 0.04

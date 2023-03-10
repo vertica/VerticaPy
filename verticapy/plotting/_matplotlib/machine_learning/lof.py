@@ -25,10 +25,10 @@ from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class LOFPlot(PlottingBase):
+class LOFPlot(MatplotlibBase):
     def lof_plot(
         self,
         input_relation: str,

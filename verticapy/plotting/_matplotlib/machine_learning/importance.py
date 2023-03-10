@@ -26,10 +26,10 @@ from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class ImportanceBarChart(PlottingBase):
+class ImportanceBarChart(MatplotlibBase):
     def plot_importance(
         self,
         coeff_importances: Union[dict, ArrayLike],
@@ -54,12 +54,9 @@ class ImportanceBarChart(PlottingBase):
         importances, coefficients, signs = zip(
             *sorted(zip(importances, coefficients, signs))
         )
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(12, int(len(importances) / 2) + 1)
-            ax.set_axisbelow(True)
-            ax.grid()
+        ax, fig = self._get_ax_fig(
+            ax, size=(12, int(len(importances) / 2) + 1), set_axis_below=True, grid=True
+        )
         color = []
         for item in signs:
             color += (

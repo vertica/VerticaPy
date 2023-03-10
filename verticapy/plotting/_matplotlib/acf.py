@@ -23,10 +23,10 @@ from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class ACFPlot(PlottingBase):
+class ACFPlot(MatplotlibBase):
     def acf_plot(
         self,
         x: list,
@@ -48,10 +48,7 @@ class ACFPlot(PlottingBase):
             color = style_kwds["color"]
         else:
             color = get_colors()[0]
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(10, 3)
+        ax, fig = self._get_ax_fig(ax, size=(10, 3), set_axis_below=False, grid=False)
         if type_bar:
             ax.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
             param = {

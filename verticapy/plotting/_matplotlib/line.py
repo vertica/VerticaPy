@@ -30,10 +30,10 @@ from verticapy._utils._sql._sys import _executeSQL
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class LinePlot(PlottingBase):
+class LinePlot(MatplotlibBase):
     def multi_ts_plot(
         self,
         vdf: "vDataFrame",
@@ -51,14 +51,14 @@ class LinePlot(PlottingBase):
         if isinstance(columns, str):
             columns = [columns]
         if len(columns) == 1 and kind != "area_percent":
-            area = kind in ("line", "step")
-            step = kind == "step"
-            return vdf[columns[0]].plot(
-                ts=order_by,
-                start_date=order_by_start,
-                end_date=order_by_end,
-                area=area,
-                step=step,
+            return self.ts_plot(
+                vdf[columns[0]],
+                order_by=order_by,
+                order_by_start=order_by_start,
+                order_by_end=order_by_end,
+                area=(kind in ("line", "step")),
+                step=(kind == "step"),
+                ax=ax,
                 **style_kwds,
             )
         if not (columns):
@@ -80,13 +80,8 @@ class LinePlot(PlottingBase):
             column=order_by, start=order_by_start, end=order_by_end, inplace=False
         )[[order_by] + columns].to_numpy()
         n, m = matrix.shape
+        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
         plot_fun = ax.step if (kind == "step") else ax.plot
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(8, 6)
-            ax.grid(axis="y")
-            ax.set_axisbelow(True)
         prec = [0 for j in range(n)]
         for i in range(1, m):
             if kind in ("area_percent", "area_stacked"):
@@ -164,13 +159,9 @@ class LinePlot(PlottingBase):
         """
         Draws a time series plot using the Matplotlib API.
         """
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(8, 6)
-            ax.grid(axis="y")
-        colors = get_colors()
+        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
         plot_fun = ax.step if step else ax.plot
+        colors = get_colors()
         plot_param = {
             "marker": "o",
             "markevery": 0.05,
@@ -191,7 +182,7 @@ class LinePlot(PlottingBase):
                     **params,
                     "markerfacecolor": "white",
                 }
-            args = [matrix[:, 0], matrix[:, 1]]
+            args = [matrix[:, 0], matrix[:, 1].astype(float)]
             params = self.updated_dict(params, style_kwds)
             plot_fun(*args, **params)
             if area and not (step):
@@ -204,18 +195,14 @@ class LinePlot(PlottingBase):
         else:
             uniques = vdc._parent[by].distinct()
             for i, c in enumerate(uniques):
-                matrix = (
-                    vdc._parent.between(
-                        column=order_by,
-                        start=order_by_start,
-                        end=order_by_end,
-                        inplace=False,
-                    )
-                    .search(f"""{quote_ident(by)} = '{str(c).replace("'", "''")}'""")[
-                        [order_by, vdc._alias]
-                    ]
-                    .to_numpy()
+                matrix = vdc._parent.between(
+                    column=order_by,
+                    start=order_by_start,
+                    end=order_by_end,
+                    inplace=False,
                 )
+                condition = f"""{quote_ident(by)} = '{str(c).replace("'", "''")}'"""
+                matrix = matrix.search(condition)[[order_by, vdc._alias]].to_numpy()
                 params = {
                     "color": colors[i % len(colors)],
                     "markerfacecolor": colors[i % len(colors)],
@@ -226,7 +213,7 @@ class LinePlot(PlottingBase):
                         **params,
                     }
                 params = self.updated_dict(params, style_kwds, i)
-                plot_fun(matrix[:, 0], matrix[:, 1], label=c, **params)
+                plot_fun(matrix[:, 0], matrix[:, 1].astype(float), label=c, **params)
         ax.set_xlabel(order_by)
         ax.set_ylabel(vdc._alias)
         for tick in ax.get_xticklabels():

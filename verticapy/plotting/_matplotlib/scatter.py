@@ -29,10 +29,10 @@ from verticapy._utils._sql._sys import _executeSQL
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class ScatterPlot(PlottingBase):
+class ScatterPlot(MatplotlibBase):
     def scatter_matrix(
         self, vdf: "vDataFrame", columns: SQLColumns = [], **style_kwds,
     ) -> Axes:
@@ -146,11 +146,9 @@ class ScatterPlot(PlottingBase):
         }
         if not (ax):
             if n == 2:
-                fig, ax = plt.subplots()
-                if conf._get_import_success("jupyter"):
-                    fig.set_size_inches(8, 6)
-                ax.grid()
-                ax.set_axisbelow(True)
+                ax, fig = self._get_ax_fig(
+                    ax, size=(8, 6), set_axis_below=True, grid=True
+                )
             else:
                 if conf._get_import_success("jupyter"):
                     plt.figure(figsize=(8, 6))

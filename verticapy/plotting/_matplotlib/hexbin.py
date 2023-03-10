@@ -30,10 +30,10 @@ from verticapy.errors import ParameterError
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class HexbinPlot(PlottingBase):
+class HexbinPlot(MatplotlibBase):
     def hexbin(
         self,
         vdf: "vDataFrame",
@@ -102,13 +102,7 @@ class HexbinPlot(PlottingBase):
                     column3 += [float(item[2])] * 2
                 else:
                     column3 += [float(item[2]) / 2] * 2
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(9, 7)
-            ax.set_facecolor("white")
-        else:
-            fig = plt
+        ax, fig = self._get_ax_fig(ax, size=(9, 7), set_axis_below=False, grid=False)
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])

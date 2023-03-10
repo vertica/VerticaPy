@@ -28,7 +28,6 @@ from verticapy._typing import SQLColumns
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting.base import PlottingBase
 from verticapy.plotting._matplotlib.scatter import ScatterPlot
 
 
@@ -56,10 +55,7 @@ class OutliersPlot(ScatterPlot):
             cmap = get_cmap(get_colors()[2])
         all_agg = vdf.agg(["avg", "std", "min", "max"], columns)
         xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(8, 6)
+        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=False, grid=False)
         if len(columns) == 1:
             if isinstance(cmap, str):
                 cmap = plt.cm.get_cmap(cmap)

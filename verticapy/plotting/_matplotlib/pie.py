@@ -26,12 +26,12 @@ import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns
 
 if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class PieChart(PlottingBase):
+class PieChart(MatplotlibBase):
     def nested_pie(
         self,
         vdf: "vDataFrame",
@@ -135,7 +135,7 @@ class PieChart(PlottingBase):
 
     def pie(
         self,
-        vdf: "vDataFrame",
+        vdc: "vDataColumn",
         method: str = "density",
         of: Optional[str] = None,
         max_cardinality: int = 6,
@@ -150,7 +150,7 @@ class PieChart(PlottingBase):
         """
         colors = get_colors()
         x, y, z, h, is_categorical = self._compute_plot_params(
-            vdf, max_cardinality=max_cardinality, method=method, of=of, pie=True
+            vdc, max_cardinality=max_cardinality, method=method, of=of, pie=True
         )
         z.reverse()
         y.reverse()
@@ -182,17 +182,16 @@ class PieChart(PlottingBase):
 
             if (method.lower() in ["sum", "count"]) or (
                 (method.lower() in ["min", "max"])
-                and (vdf._parent[of].category == "int")
+                and (vdc._parent[of].category == "int")
             ):
                 category = "int"
             else:
                 category = None
             autopct = make_autopct(y, category)
         if not (rose):
-            if not (ax):
-                fig, ax = plt.subplots()
-                if conf._get_import_success("jupyter"):
-                    fig.set_size_inches(8, 6)
+            ax, fig = self._get_ax_fig(
+                ax, size=(8, 6), set_axis_below=False, grid=False
+            )
             param = {
                 "autopct": autopct,
                 "colors": colors,
@@ -214,7 +213,7 @@ class PieChart(PlottingBase):
             ax.legend(
                 handles,
                 labels,
-                title=vdf._alias,
+                title=vdc._alias,
                 loc="center left",
                 bbox_to_anchor=[1, 0.5],
             )
@@ -268,7 +267,7 @@ class PieChart(PlottingBase):
                 z,
                 bbox_to_anchor=[1.1, 0.5],
                 loc="center left",
-                title=vdf._alias,
+                title=vdc._alias,
                 labelspacing=1,
             )
             box = ax.get_position()
