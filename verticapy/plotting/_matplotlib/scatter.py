@@ -23,7 +23,6 @@ import matplotlib.pyplot as plt
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
-from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 
 if TYPE_CHECKING:
@@ -53,23 +52,8 @@ class ScatterPlot(MatplotlibBase):
         else:
             figsize = min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)
             fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
-        random_func = _current_random()
-        all_scatter_points = _executeSQL(
-            query=f"""
-                SELECT 
-                    /*+LABEL('plotting._matplotlib.scatter_matrix')*/
-                    {", ".join(columns)},
-                    {random_func} AS rand
-                FROM {vdf._genSQL(True)}
-                WHERE __verticapy_split__ < 0.5
-                ORDER BY rand 
-                LIMIT 1000""",
-            title="Selecting random points to draw the scatter plot",
-            method="fetchall",
-        )
-        all_scatter_columns = []
-        for i in range(n):
-            all_scatter_columns += [[item[i] for item in all_scatter_points]]
+        sample = vdf[columns].sample(n=1000).to_numpy()
+        data = {"sample": sample}
         for i in range(n):
             x = columns[i]
             axes[-1][i].set_xlabel(x, rotation=90)
@@ -80,26 +64,29 @@ class ScatterPlot(MatplotlibBase):
                 axes[i][j].get_yaxis().set_ticks([])
                 y = columns[j]
                 if x == y:
-                    x0, y0, z0, h0, is_categorical = self._compute_plot_params(
+                    self._compute_plot_params(
                         vdf[x], method="density", max_cardinality=1
                     )
-                    param = {"color": get_colors(style_kwds, 0), "edgecolor": "black"}
+                    data[f"{i}_{j}"] = copy.deepcopy(self.data)
+                    params = {"color": get_colors(style_kwds, 0), "edgecolor": "black"}
                     if "edgecolor" in style_kwds:
-                        param["edgecolor"] = style_kwds["edgecolor"]
-                    axes[i, j].bar(x0, y0, h0 / 0.94, **param)
+                        params["edgecolor"] = style_kwds["edgecolor"]
+                    axes[i, j].bar(
+                        self.data["x"], self.data["y"], self.data["width"], **params
+                    )
                 else:
-                    param = {
+                    params = {
                         "color": get_colors(style_kwds, 1),
                         "edgecolor": "black",
                         "alpha": 0.9,
                         "s": 40,
                         "marker": "o",
                     }
+                    params = self.updated_dict(params, style_kwds, 1)
                     axes[i, j].scatter(
-                        all_scatter_columns[j],
-                        all_scatter_columns[i],
-                        **self.updated_dict(param, style_kwds, 1),
+                        sample[:, j], sample[:, i], **params,
                     )
+        self.data = data
         return axes
 
     def scatter(

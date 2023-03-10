@@ -48,13 +48,13 @@ class MatplotlibBase(PlottingBase):
             return ax, fig
         else:
             return ax, plt
-            
+
     @staticmethod
     def _format_string(x: ArrayLike, th: int = 50) -> ArrayLike:
         res = copy.deepcopy(x)
         if isinstance(x[0], str):
             n = len(res)
             for i in range(n):
-                if len(str(item)) > th:
-                    res[i] = res[i][: th - 3] + "..."
+                if len(str(res[i])) > th:
+                    res[i] = str(res[i][: th - 3]) + "..."
         return res

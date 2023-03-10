@@ -169,7 +169,6 @@ class PlottingBase:
             )
             if query_result[-1][1] == None:
                 del query_result[-1]
-            z = [item[0] for item in query_result]
             y = (
                 [
                     item[1] / float(count) if item[1] != None else 0
@@ -179,7 +178,8 @@ class PlottingBase:
                 else [item[1] if item[1] != None else 0 for item in query_result]
             )
             x = [0.4 * i + 0.2 for i in range(0, len(y))]
-            h = 0.39
+            adj_width = 0.39
+            labels = [item[0] for item in query_result]
             is_categorical = True
         # case when date
         elif is_date:
@@ -232,12 +232,12 @@ class PlottingBase:
                 else:
                     query += f" UNION {query_tmp.format('')}"
             query += ")"
-            h = 0.94 * h
             query_result = _executeSQL(
                 query, title="Computing the datetime intervals.", method="fetchall"
             )
-            z = [item[0] for item in query_result]
-            z.sort()
+            adj_width = 0.94 * h
+            labels = [item[0] for item in query_result]
+            labels.sort()
             is_categorical = True
         # case when numerical
         else:
@@ -266,9 +266,19 @@ class PlottingBase:
                 else [item[1] for item in query_result]
             )
             x = [float(item[0]) + h / 2 for item in query_result]
-            h = 0.94 * h
-            z = None
-        return [x, y, z, h, is_categorical]
+            adj_width = 0.94 * h
+            labels = None
+        if pie:
+            y.reverse()
+            labels.reverse()
+        self.data = {
+            "x": x,
+            "y": y,
+            "labels": labels,
+            "width": h,
+            "adj_width": adj_width,
+            "is_categorical": is_categorical,
+        }
 
     def _compute_pivot_table(
         self,

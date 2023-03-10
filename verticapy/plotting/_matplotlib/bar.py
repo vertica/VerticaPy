@@ -47,22 +47,23 @@ class BarChart(MatplotlibBase):
         """
         Draws a histogram using the Matplotlib API.
         """
-        x, y, z, h, is_categorical = self._compute_plot_params(
-            vdc, method, of, max_cardinality, nbins, h
-        )
+        self._compute_plot_params(vdc, method, of, max_cardinality, nbins, h)
         is_numeric = vdc.isnum()
         ax, fig = self._get_ax_fig(
-            ax, size=(min(int(len(x) / 1.8) + 1, 600), 6), set_axis_below=True, grid="y"
+            ax,
+            size=(min(int(len(self.data["x"]) / 1.8) + 1, 600), 6),
+            set_axis_below=True,
+            grid="y",
         )
         params = {"color": get_colors()[0], "alpha": 0.86}
         params = self.updated_dict(params, style_kwds)
-        ax.bar(x, y, h, **params)
+        ax.bar(self.data["x"], self.data["y"], self.data["adj_width"], **params)
         ax.set_xlabel(vdc._alias)
-        if is_categorical:
-            xticks = x
-            xticks_label = self._format_string(z)
+        if self.data["is_categorical"]:
+            xticks = self.data["x"]
+            xticks_label = self._format_string(self.data["labels"])
         else:
-            xticks = [c - round(h / 2 / 0.94, 10) for c in x]
+            xticks = [x - round(self.data["width"] / 2, 10) for x in self.data["x"]]
             xticks_label = xticks
         ax.set_xticks(xticks)
         ax.set_xticklabels(xticks_label, rotation=90)

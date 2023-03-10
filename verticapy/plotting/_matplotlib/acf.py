@@ -29,8 +29,8 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 class ACFPlot(MatplotlibBase):
     def acf_plot(
         self,
-        x: list,
-        y: list,
+        x: ArrayLike,
+        y: ArrayLike,
         title: str = "",
         confidence: ArrayLike = None,
         type_bar: bool = True,

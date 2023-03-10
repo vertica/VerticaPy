@@ -47,21 +47,23 @@ class HorizontalBarChart(MatplotlibBase):
         """
         Draws a bar chart using the Matplotlib API.
         """
-        x, y, z, h, is_categorical = self._compute_plot_params(
+        self._compute_plot_params(
             vdc, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
         )
         ax, fig = self._get_ax_fig(
-            ax, size=(10, min(int(len(x) / 1.8) + 1, 600)), grid="x"
+            ax, size=(10, min(int(len(self.data["x"]) / 1.8) + 1, 600)), grid="x"
         )
         params = {"color": get_colors()[0], "alpha": 0.86}
         params = self.updated_dict(params, style_kwds, 0)
-        ax.barh(x, y, h, **params)
+        ax.barh(self.data["x"], self.data["y"], self.data["adj_width"], **params)
         ax.set_ylabel(vdc._alias)
-        if is_categorical:
-            ax.set_yticks(x)
-            ax.set_yticklabels(self._format_string(z), rotation=0)
+        if self.data["is_categorical"]:
+            ax.set_yticks(self.data["x"])
+            ax.set_yticklabels(self._format_string(self.data["labels"]), rotation=0)
         else:
-            ax.set_yticks([c - round(h / 2 / 0.94, 10) for c in x])
+            ax.set_yticks(
+                [x - round(self.data["width"] / 2, 10) for x in self.data["x"]]
+            )
         ax.set_xlabel(self._map_method(method, of)[0])
         return ax
 
