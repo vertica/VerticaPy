@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
+import copy, warnings
 from typing import Optional, TYPE_CHECKING
 import numpy as np
 
@@ -156,23 +156,25 @@ class BarChart(MatplotlibBase):
                 for idx, column in enumerate(columns):
                     all_h += [vdf[column].numh()]
                 h = min(all_h)
+            data = {}
             for idx, column in enumerate(columns):
                 if vdf[column].isnum():
-                    [x, y, z, h, is_categorical] = self._compute_plot_params(
+                    self._compute_plot_params(
                         vdf[column], method=method, of=of, max_cardinality=1, h=h
                     )
-                    h = h / 0.94
-                    param = {"color": colors[idx % len(colors)]}
+                    params = {"color": colors[idx % len(colors)]}
+                    params = self.updated_dict(params, style_kwds, idx)
                     plt.bar(
-                        x,
-                        y,
-                        h,
+                        self.data["x"],
+                        self.data["y"],
+                        self.data["width"],
                         label=column,
                         alpha=alpha,
-                        **self.updated_dict(param, style_kwds, idx),
+                        **params,
                     )
                     alpha -= 0.2
                     all_columns += [columns[idx]]
+                    data[column] = copy.deepcopy(self.data) 
                 else:
                     if vdf._vars["display"]["print_info"]:
                         warning_message = (
@@ -185,4 +187,5 @@ class BarChart(MatplotlibBase):
             ax.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
             box = ax.get_position()
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+            self.data = data
             return ax
