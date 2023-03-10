@@ -22,10 +22,10 @@ import matplotlib.pyplot as plt
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class StepwisePlot(PlottingBase):
+class StepwisePlot(MatplotlibBase):
     def plot_stepwise_ml(
         self,
         x: list,
@@ -43,12 +43,7 @@ class StepwisePlot(PlottingBase):
         Draws a stepwise plot using the Matplotlib API.
         """
         colors = get_colors()
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(8, 6)
-            ax.grid(axis="y")
-            ax.set_axisbelow(True)
+        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
         sign = "+" if direction == "forward" else "-"
         x_new, y_new, z_new = [], [], []
         for idx in range(len(x)):

@@ -26,12 +26,25 @@ import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns
 
 if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
+    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class PieChart(PlottingBase):
+class PieChart(MatplotlibBase):
+    @staticmethod
+    def _make_autopct(values, category):
+        def my_autopct(pct):
+            total = sum(values)
+            val = float(pct) * float(total) / 100.0
+            if category == "int":
+                val = int(round(val))
+                return "{v:d}".format(v=val)
+            else:
+                return "{v:f}".format(v=val)
+
+        return my_autopct
+
     def nested_pie(
         self,
         vdf: "vDataFrame",
@@ -135,7 +148,7 @@ class PieChart(PlottingBase):
 
     def pie(
         self,
-        vdf: "vDataFrame",
+        vdc: "vDataColumn",
         method: str = "density",
         of: Optional[str] = None,
         max_cardinality: int = 6,
@@ -149,16 +162,15 @@ class PieChart(PlottingBase):
         Draws a pie chart using the Matplotlib API.
         """
         colors = get_colors()
-        x, y, z, h, is_categorical = self._compute_plot_params(
-            vdf, max_cardinality=max_cardinality, method=method, of=of, pie=True
+        self._compute_plot_params(
+            vdc, max_cardinality=max_cardinality, method=method, of=of, pie=True
         )
-        z.reverse()
-        y.reverse()
-        explode = [0 for i in y]
-        explode[max(zip(y, range(len(y))))[1]] = 0.13
+        n = len(self.data["y"])
+        explode = [0 for i in range(n)]
+        explode[max(zip(self.data["y"], range(n)))[1]] = 0.13
         current_explode = 0.15
-        total_count = sum(y)
-        for idx, item in enumerate(y):
+        total_count = sum(self.data["y"])
+        for idx, item in enumerate(self.data["y"]):
             if (item < 0.05) or (
                 (item > 1) and (float(item) / float(total_count) < 0.05)
             ):
@@ -167,32 +179,18 @@ class PieChart(PlottingBase):
         if method.lower() == "density":
             autopct = "%1.1f%%"
         else:
-
-            def make_autopct(values, category):
-                def my_autopct(pct):
-                    total = sum(values)
-                    val = float(pct) * float(total) / 100.0
-                    if category == "int":
-                        val = int(round(val))
-                        return "{v:d}".format(v=val)
-                    else:
-                        return "{v:f}".format(v=val)
-
-                return my_autopct
-
             if (method.lower() in ["sum", "count"]) or (
                 (method.lower() in ["min", "max"])
-                and (vdf._parent[of].category == "int")
+                and (vdc._parent[of].category == "int")
             ):
                 category = "int"
             else:
                 category = None
-            autopct = make_autopct(y, category)
+            autopct = self._make_autopct(self.data["y"], category)
         if not (rose):
-            if not (ax):
-                fig, ax = plt.subplots()
-                if conf._get_import_success("jupyter"):
-                    fig.set_size_inches(8, 6)
+            ax, fig = self._get_ax_fig(
+                ax, size=(8, 6), set_axis_below=False, grid=False
+            )
             param = {
                 "autopct": autopct,
                 "colors": colors,
@@ -207,14 +205,16 @@ class PieChart(PlottingBase):
                 param["explode"] = None
                 param["pctdistance"] = 0.8
             ax.pie(
-                y, labels=z, **self.updated_dict(param, style_kwds),
+                self.data["y"],
+                labels=self.data["labels"],
+                **self.updated_dict(param, style_kwds),
             )
             handles, labels = ax.get_legend_handles_labels()
             labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
             ax.legend(
                 handles,
                 labels,
-                title=vdf._alias,
+                title=vdc._alias,
                 loc="center left",
                 bbox_to_anchor=[1, 0.5],
             )
@@ -222,10 +222,14 @@ class PieChart(PlottingBase):
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         else:
             try:
-                y, z = zip(*sorted(zip(y, z), key=lambda t: t[0]))
+                y, labels = zip(
+                    *sorted(
+                        zip(self.data["y"], self.data["labels"]), key=lambda t: t[0]
+                    )
+                )
             except:
-                pass
-            N = len(z)
+                y, labels = self.data["y"], self.data["labels"]
+            N = len(labels)
             width = 2 * np.pi / N
             rad = np.cumsum([width] * N)
 
@@ -242,9 +246,8 @@ class PieChart(PlottingBase):
             }
             colors = self.updated_dict(param, style_kwds, -1)["color"]
             if isinstance(colors, str):
-                colors = [colors] + get_colors()
-            else:
-                colors = colors + get_colors()
+                colors = [colors]
+            colors = colors + get_colors()
             style_kwds["color"] = colors
             ax.bar(
                 rad, y, width=width, **self.updated_dict(param, style_kwds, -1),
@@ -252,23 +255,25 @@ class PieChart(PlottingBase):
             for i in np.arange(N):
                 ax.text(
                     rad[i] + 0.1,
-                    [elem * 1.02 for elem in y][i],
-                    [round(elem, 2) for elem in y][i],
+                    [yi * 1.02 for yi in y][i],
+                    [round(yi, 2) for yi in y][i],
                     rotation=rad[i] * 180 / np.pi,
                     rotation_mode="anchor",
                     alpha=1,
                     color="black",
                 )
             try:
-                z, colors = zip(*sorted(zip(z, colors[:N]), key=lambda t: t[0]))
+                labels, colors = zip(
+                    *sorted(zip(labels, colors[:N]), key=lambda t: t[0])
+                )
             except:
                 pass
             ax.legend(
                 [Line2D([0], [0], color=color) for color in colors],
-                z,
+                labels,
                 bbox_to_anchor=[1.1, 0.5],
                 loc="center left",
-                title=vdf._alias,
+                title=vdc._alias,
                 labelspacing=1,
             )
             box = ax.get_position()

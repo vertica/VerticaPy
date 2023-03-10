@@ -33,10 +33,10 @@ if TYPE_CHECKING:
 if conf._get_import_success("jupyter"):
     from IPython.display import HTML
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class AnimatedBubblePlot(PlottingBase):
+class AnimatedBubblePlot(MatplotlibBase):
     def animated_bubble_plot(
         self,
         vdf: "vDataFrame",

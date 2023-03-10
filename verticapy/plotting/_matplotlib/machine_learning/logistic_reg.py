@@ -27,10 +27,10 @@ from verticapy._typing import ArrayLike, SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class LogisticRegressionPlot(PlottingBase):
+class LogisticRegressionPlot(MatplotlibBase):
     def logit_plot(
         self,
         X: SQLColumns,
@@ -78,12 +78,7 @@ class LogisticRegressionPlot(PlottingBase):
                 method="fetchall",
                 print_time_sql=False,
             )
-            if not (ax):
-                fig, ax = plt.subplots()
-                if conf._get_import_success("jupyter"):
-                    fig.set_size_inches(8, 6)
-                ax.set_axisbelow(True)
-                ax.grid()
+            ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True)
             x0, x1 = [], []
             for idx, item in enumerate(all_points):
                 if item[1] == 0:

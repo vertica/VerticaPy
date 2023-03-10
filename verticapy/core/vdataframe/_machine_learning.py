@@ -21,7 +21,7 @@ import numpy as np
 import scipy.stats as scipy_st
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns
+from verticapy._typing import PythonScalar, SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -604,8 +604,8 @@ class vDFMachineLearning:
         method: Literal["count", "avg", "median"] = "count",
         rating: Union[str, tuple] = "",
         ts: str = "",
-        start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
-        end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        start_date: PythonScalar = "",
+        end_date: PythonScalar = "",
     ):
         """
     Recommend items based on the Collaborative Filtering (CF) technique.

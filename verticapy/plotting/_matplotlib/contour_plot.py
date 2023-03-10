@@ -29,10 +29,10 @@ from verticapy.core.string_sql.base import StringSQL
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class ContourPlot(PlottingBase):
+class ContourPlot(MatplotlibBase):
     def contour_plot(
         self,
         vdf: "vDataFrame",
@@ -149,11 +149,7 @@ class ContourPlot(PlottingBase):
                 Y += [y_tmp]
                 Z += [z_tmp]
             X, Y, Z = np.array(Y), np.array(X), np.array(Z)
-        if not (ax):
-            fig, ax = plt.subplots()
-            fig.set_size_inches(8, 6)
-        else:
-            fig = plt
+        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=False, grid=False)
         param = {"linewidths": 0.5, "levels": 14, "colors": "k"}
         param = self.updated_dict(param, style_kwds)
         if "cmap" in param:

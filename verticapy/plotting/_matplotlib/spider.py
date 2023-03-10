@@ -28,10 +28,10 @@ from verticapy.errors import ParameterError
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class SpiderPlot(PlottingBase):
+class SpiderPlot(MatplotlibBase):
     def spider(
         self,
         vdf: "vDataFrame",

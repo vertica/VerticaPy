@@ -24,10 +24,10 @@ import matplotlib.pyplot as plt
 from verticapy._config.colors import get_cmap
 import verticapy._config.config as conf
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class HeatMap(PlottingBase):
+class HeatMap(MatplotlibBase):
     def color_matrix(
         self,
         matrix: np.ndarray,
@@ -61,14 +61,9 @@ class HeatMap(PlottingBase):
         if is_pivot and not (is_vector):
             np.flip(matrix_array, axis=1)
             x_l.reverse()
-        if not (ax):
-            fig, ax = plt.subplots()
-            if (conf._get_import_success("jupyter") and not (is_pivot)) or is_pivot:
-                fig.set_size_inches(min(m, 500), min(n, 500))
-            else:
-                fig.set_size_inches(8, 6)
-        else:
-            fig = plt
+        ax, fig = self._get_ax_fig(
+            ax, size=(min(m, 500), min(n, 500)), set_axis_below=False, grid=False
+        )
         param = {"cmap": get_cmap()[0], "interpolation": "nearest"}
         if ((vmax == 1) and vmin in [0, -1]) and not (extent):
             im = ax.imshow(

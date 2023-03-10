@@ -24,10 +24,10 @@ from verticapy._config.colors import get_colors
 from verticapy._typing import ArrayLike, SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class KMeansPlot(PlottingBase):
+class KMeansPlot(MatplotlibBase):
     def voronoi_plot(
         self,
         clusters: ArrayLike,

@@ -27,10 +27,10 @@ from verticapy._utils._sql._sys import _executeSQL
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class RangeCurve(PlottingBase):
+class RangeCurve(MatplotlibBase):
     def range_curve(
         self,
         X: ArrayLike,
@@ -46,11 +46,7 @@ class RangeCurve(PlottingBase):
         """
         Draws a range curve using the Matplotlib API.
         """
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(8, 6)
-            ax.grid()
+        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=False, grid=False)
         for i, y in enumerate(Y):
             if labels:
                 label = labels[i]

@@ -28,10 +28,10 @@ from verticapy._utils._sql._sys import _executeSQL
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class BoxPlot(PlottingBase):
+class BoxPlot(MatplotlibBase):
     def boxplot(
         self,
         vdf: "vDataFrame",
@@ -61,11 +61,7 @@ class BoxPlot(PlottingBase):
         colors += get_colors()
         # SINGLE BOXPLOT
         if by == "":
-            if not (ax):
-                fig, ax = plt.subplots()
-                if conf._get_import_success("jupyter"):
-                    fig.set_size_inches(6, 4)
-                ax.xaxis.grid()
+            ax, fig = self._get_ax_fig(ax, size=(6, 4), set_axis_below=False, grid="x")
             if not (vdf.isnum()):
                 raise TypeError(
                     "The column must be numerical in order to draw a boxplot"
@@ -202,11 +198,9 @@ class BoxPlot(PlottingBase):
                         )
                 else:
                     labels = cat_priority
-                if not (ax):
-                    fig, ax = plt.subplots()
-                    if conf._get_import_success("jupyter"):
-                        fig.set_size_inches(10, 6)
-                    ax.yaxis.grid()
+                ax, fig = self._get_ax_fig(
+                    ax, size=(10, 6), set_axis_below=True, grid="y"
+                )
                 ax.set_ylabel(vdf._alias)
                 ax.set_xlabel(by)
                 other_labels = []
@@ -318,10 +312,9 @@ class BoxPlot(PlottingBase):
                 columns = [column for column in summarize.values]
                 del columns[0]
                 del result[0]
-                if not (ax):
-                    fig, ax = plt.subplots()
-                    if conf._get_import_success("jupyter"):
-                        fig.set_size_inches(10, 6)
+                ax, fig = self._get_ax_fig(
+                    ax, size=(10, 6), set_axis_below=False, grid=False
+                )
                 box = ax.boxplot(
                     result,
                     notch=False,

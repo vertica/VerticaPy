@@ -23,10 +23,10 @@ from matplotlib.lines import Line2D
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class ChampionChallenger(PlottingBase):
+class ChampionChallenger(MatplotlibBase):
     def plot_bubble_ml(
         self,
         x: list,
@@ -60,12 +60,7 @@ class ChampionChallenger(PlottingBase):
             y = [elem[1] for elem in data]
             z = [elem[2] for elem in data]
         colors = get_colors()
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(8, 6)
-            ax.grid(axis="y")
-            ax.set_axisbelow(True)
+        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
         if z:
             current_cat = z[0]
             idx = 0
