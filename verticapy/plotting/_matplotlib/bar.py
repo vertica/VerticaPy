@@ -73,18 +73,7 @@ class BarChart(PlottingBase):
             L = [elem - round(h / 2 / 0.94, 10) for elem in x]
             ax.set_xticks(L)
             ax.set_xticklabels(L, rotation=90)
-        if method.lower() == "density":
-            ax.set_ylabel("Density")
-        elif (
-            method.lower() in ["avg", "min", "max", "sum", "mean"]
-            or ("%" == method[-1])
-        ) and (of != None):
-            aggregate = f"{method}({of})"
-            ax.set_ylabel(method)
-        elif method.lower() == "count":
-            ax.set_ylabel("Frequency")
-        else:
-            ax.set_ylabel(method)
+        ax.set_ylabel(self._map_method(method, of)[0])
         return ax
 
     def bar2D(

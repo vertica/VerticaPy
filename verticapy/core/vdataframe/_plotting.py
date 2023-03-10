@@ -21,7 +21,7 @@ from collections.abc import Iterable
 from matplotlib.axes import Axes
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, SQLColumns, SQLExpression
+from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLExpression
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -38,8 +38,8 @@ class vDFPlot:
         ts: str,
         columns: Union[list] = [],
         by: str = "",
-        start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
-        end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        start_date: PythonScalar = "",
+        end_date: PythonScalar = "",
         kind: Literal["auto", "bar", "bubble", "ts", "pie"] = "auto",
         limit_over: int = 6,
         limit: int = 1000000,
@@ -1160,8 +1160,8 @@ class vDFPlot:
         self,
         ts: str,
         columns: SQLColumns = [],
-        start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
-        end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
         step: bool = False,
         ax: Optional[Axes] = None,
         **style_kwds,
@@ -1177,10 +1177,10 @@ class vDFPlot:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    start_date: str / PythonNumber / date, optional
+    start_date: PythonScalar, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str / PythonNumber / date, optional
+    end_date: PythonScalar, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     step: bool, optional
@@ -1344,8 +1344,8 @@ class vDFPlot:
         self,
         ts: str,
         columns: SQLColumns = [],
-        start_date: Union[int, float, str, datetime.datetime, datetime.date] = "",
-        end_date: Union[int, float, str, datetime.datetime, datetime.date] = "",
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
         fully: bool = False,
         ax: Optional[Axes] = None,
         **style_kwds,
@@ -1361,10 +1361,10 @@ class vDFPlot:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used. They must all include only positive values.
-    start_date: PythonScalar / date, optional
+    start_date: PythonScalar, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: PythonScalar / date, optional
+    end_date: PythonScalar, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     fully: bool, optional
@@ -1866,8 +1866,8 @@ class vDCPlot:
         self,
         ts: str,
         by: str = "",
-        start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
-        end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
         area: bool = False,
         step: bool = False,
         ax: Optional[Axes] = None,
@@ -1917,8 +1917,8 @@ class vDCPlot:
         self,
         ts: str,
         q: Union[tuple, list] = (0.25, 0.75),
-        start_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
-        end_date: Union[str, int, float, datetime.datetime, datetime.date] = "",
+        start_date: PythonScalar = "",
+        end_date: PythonScalar = "",
         plot_median: bool = False,
         ax: Optional[Axes] = None,
         **style_kwds,

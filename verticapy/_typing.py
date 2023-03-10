@@ -14,8 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime
-from typing import Union, TYPE_CHECKING
+import datetime, decimal
+from typing import Annotated, Union, TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
@@ -24,13 +24,19 @@ if TYPE_CHECKING:
 
 # Pythonic data types.
 
-ArrayLike = Union[list, np.ndarray]
-PythonNumber = Union[None, int, float]
-PythonScalar = Union[None, bool, float, str]
-TimeInterval = Union[str, datetime.timedelta]
+ArrayLike = Annotated[Union[list, np.ndarray], "Array Like Structure"]
+PythonNumber = Annotated[Union[None, int, float, decimal.Decimal], "Python Numbers"]
+PythonScalar = Annotated[
+    Union[None, bool, float, str, datetime.timedelta, datetime.datetime],
+    "Python Scalar",
+]
+TimeInterval = Annotated[Union[None, str, datetime.timedelta], "Time Interval"]
+Datetime = Annotated[Union[None, str, datetime.datetime], ""]
 
 # SQL data types.
 
-SQLColumns = Union[str, list[str]]
-SQLExpression = Union[str, list[str], "StringSQL", list["StringSQL"]]
-SQLRelation = Union[str, "vDataFrame"]
+SQLColumns = Annotated[
+    Union[str, list[str]], "STRING representing one column or a list of columns"
+]
+SQLExpression = Annotated[Union[str, list[str], "StringSQL", list["StringSQL"]], ""]
+SQLRelation = Annotated[Union[str, "vDataFrame"], ""]

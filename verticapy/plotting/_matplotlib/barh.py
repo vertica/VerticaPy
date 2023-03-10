@@ -70,17 +70,7 @@ class HorizontalBarChart(PlottingBase):
             ax.set_yticklabels(new_z, rotation=0)
         else:
             ax.set_yticks([elem - round(h / 2 / 0.94, 10) for elem in x])
-        if method.lower() == "density":
-            ax.set_xlabel("Density")
-        elif (method.lower() in ["avg", "min", "max", "sum"] or "%" == method[-1]) and (
-            of != None
-        ):
-            aggregate = f"{method.upper()}({of})"
-            ax.set_xlabel(aggregate)
-        elif method.lower() == "count":
-            ax.set_xlabel("Frequency")
-        else:
-            ax.set_xlabel(method)
+        ax.set_xlabel(self._map_method(method, of)[0])
         return ax
 
     def barh2D(
