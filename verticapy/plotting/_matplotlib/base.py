@@ -15,13 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Union
+from typing import Literal, Union
 
 from matplotlib.axes import Axes
 from matplotlib.pyplot import Figure
 import matplotlib.pyplot as plt
 
-import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
 
 from verticapy.plotting.base import PlottingBase

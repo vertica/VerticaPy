@@ -35,9 +35,18 @@ if conf._get_import_success("dateutil"):
 
 
 class PlottingBase:
+
+    # Properties.
+
     @property
-    def _markers(self):
-        return ["^", "o", "+", "*", "h", "x", "D", "1"]
+    def _compute_method(self) -> Literal[None]:
+        """Must be overridden in child class"""
+        return None
+
+    def __init__(*args, **kwargs) -> None:
+        return None
+
+    # Formatting Methods.
 
     @staticmethod
     def _map_method(method: str, of: str) -> tuple[str, str, bool]:
@@ -81,6 +90,39 @@ class PlottingBase:
             )
         return method, aggregate, is_standard
 
+    @staticmethod
+    def _parse_datetime(D: list) -> list:
+        """
+        Parses the list and casts the value to the datetime
+        format if possible.
+        """
+        try:
+            return [parse(d) for d in D]
+        except:
+            return copy.deepcopy(D)
+
+    @staticmethod
+    def _update_dict(d1: dict, d2: dict, color_idx: int = 0,) -> dict:
+        """
+        Updates the input dictionary using another one.
+        """
+        d = {}
+        for elem in d1:
+            d[elem] = d1[elem]
+        for elem in d2:
+            if elem == "color":
+                if isinstance(d2["color"], str):
+                    d["color"] = d2["color"]
+                elif color_idx < 0:
+                    d["color"] = [elem for elem in d2["color"]]
+                else:
+                    d["color"] = d2["color"][color_idx % len(d2["color"])]
+            else:
+                d[elem] = d2[elem]
+        return d
+
+    # Attributes Computations.
+
     def _compute_plot_params(
         self,
         vdc: "vDataColumn",
@@ -90,7 +132,7 @@ class PlottingBase:
         nbins: int = 0,
         h: float = 0.0,
         pie: bool = False,
-    ) -> tuple[ArrayLike, ArrayLike, ArrayLike, float, bool]:
+    ) -> None:
         """
 	    Computes the aggregations needed to draw a 1D graphic 
 	    using the Matplotlib API.
@@ -279,6 +321,7 @@ class PlottingBase:
             "adj_width": adj_width,
             "is_categorical": is_categorical,
         }
+        return None
 
     def _compute_pivot_table(
         self,
@@ -419,7 +462,7 @@ class PlottingBase:
             title="Grouping the features to compute the pivot table",
             method="fetchall",
         )
-        all_count = [item[2] for item in query_result]
+        agg = [item[2] for item in query_result]
         matrix_categories = []
         for i in range(2):
             L = list(set([str(item[i]) for item in query_result]))
@@ -441,42 +484,4 @@ class PlottingBase:
             j = x_labels.index(str(item[0]))
             i = y_labels.index(str(item[1]))
             matrix[i][j] = item[2]
-        return (
-            np.transpose(np.array(matrix)),
-            x_labels,
-            y_labels,
-            min(all_count),
-            max(all_count),
-            aggregate,
-        )
-
-    @staticmethod
-    def parse_datetime(D: list) -> list:
-        """
-	    Parses the list and casts the value to the datetime
-	    format if possible.
-	    """
-        try:
-            return [parse(d) for d in D]
-        except:
-            return copy.deepcopy(D)
-
-    @staticmethod
-    def updated_dict(d1: dict, d2: dict, color_idx: int = 0,) -> dict:
-        """
-	    Updates the input dictionary using another one.
-	    """
-        d = {}
-        for elem in d1:
-            d[elem] = d1[elem]
-        for elem in d2:
-            if elem == "color":
-                if isinstance(d2["color"], str):
-                    d["color"] = d2["color"]
-                elif color_idx < 0:
-                    d["color"] = [elem for elem in d2["color"]]
-                else:
-                    d["color"] = d2["color"][color_idx % len(d2["color"])]
-            else:
-                d[elem] = d2[elem]
-        return d
+        self.data = {"x_labels": x_labels, "y_labels": y_labels, "matrix": matrix}

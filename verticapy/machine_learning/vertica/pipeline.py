@@ -143,7 +143,7 @@ class Pipeline:
             params[step[0]] = step[1].get_params()
         return params
 
-    def set_params(self, parameters: dict[dict] = {}, **kwds) -> None:
+    def set_params(self, parameters: dict[dict] = {}, **kwargs) -> None:
         """
         Sets the parameters of the model.
 
@@ -153,12 +153,12 @@ class Pipeline:
             New parameters.  It must be a  dictionary with 
             as  keys the  Pipeline  names and as value the 
             parameters dictionary.
-        **kwds
+        **kwargs
             New parameters can also be passed as arguments
             Example: set_params(pipeline1 = dict1, 
                                 pipeline2 = dict2)
         """
-        for param in {**parameters, **kwds}:
+        for param in {**parameters, **kwargs}:
             for step in self.steps:
                 if param.lower() == step[0].lower():
                     step[1].set_params(parameters[param])

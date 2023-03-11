@@ -524,7 +524,7 @@ class vDFMath:
         return self.apply(function)
 
     @save_verticapy_logs
-    def case_when(self, name: str, *argv):
+    def case_when(self, name: str, *args):
         """
     Creates a new feature by evaluating some conditions.
     
@@ -532,11 +532,11 @@ class vDFMath:
     ----------
     name: str
         Name of the new feature.
-    argv: object
+    args: object
         Infinite Number of Expressions.
         The expression generated will look like:
-        even: CASE ... WHEN argv[2 * i] THEN argv[2 * i + 1] ... END
-        odd : CASE ... WHEN argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END
+        even: CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... END
+        odd : CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... ELSE args[n] END
 
     Returns
     -------
@@ -550,7 +550,7 @@ class vDFMath:
         """
         from verticapy.sql.functions import case_when
 
-        return self.eval(name=name, expr=case_when(*argv))
+        return self.eval(name=name, expr=case_when(*args))
 
 
 class vDCMath:
@@ -830,17 +830,17 @@ class vDCMath:
         return self.apply(func=f"DATE_PART('{field}', {{}})")
 
     @save_verticapy_logs
-    def decode(self, *argv):
+    def decode(self, *args):
         """
     Encodes the vDataColumn using a user-defined encoding.
 
     Parameters
     ----------
-    argv: object
+    args: object
         Any amount of expressions.
         The expression generated will look like:
-        even: CASE ... WHEN vDataColumn = argv[2 * i] THEN argv[2 * i + 1] ... END
-        odd : CASE ... WHEN vDataColumn = argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END
+        even: CASE ... WHEN vDataColumn = args[2 * i] THEN args[2 * i + 1] ... END
+        odd : CASE ... WHEN vDataColumn = args[2 * i] THEN args[2 * i + 1] ... ELSE args[n] END
 
     Returns
     -------
@@ -855,7 +855,7 @@ class vDCMath:
     vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
     vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
         """
-        return self.apply(func=decode(StringSQL("{}"), *argv))
+        return self.apply(func=decode(StringSQL("{}"), *args))
 
     @save_verticapy_logs
     def div(self, x: PythonNumber):

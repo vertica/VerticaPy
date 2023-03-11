@@ -58,7 +58,7 @@ from verticapy.machine_learning.vertica.neighbors import (
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 
-import verticapy.plotting._matplotlib as vpy_plt
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 
 class AutoML(VerticaModel):
@@ -635,7 +635,7 @@ class AutoML(VerticaModel):
 
     # Features Importance Methods.
 
-    def features_importance(self, ax: Optional[Axes] = None, **kwds) -> TableSample:
+    def features_importance(self, ax: Optional[Axes] = None, **kwargs) -> TableSample:
         """
         Computes the model's features importance.
 
@@ -643,10 +643,10 @@ class AutoML(VerticaModel):
         ----------
         ax: Axes, optional
             The axes to plot on.
-        **kwds
+        **kwargs
             Any optional  parameter  to  pass  to  the 
             best estimator features importance method.
-        **style_kwds
+        **style_kwargs
             Any  optional  parameter  to pass  to  the 
             Matplotlib functions.
 
@@ -662,10 +662,10 @@ class AutoML(VerticaModel):
                     coeff_importances[self.stepwise_["variable"][idx]] = self.stepwise_[
                         "importance"
                     ][idx]
-            return vpy_plt.ImportanceBarChart().plot_importance(
-                coeff_importances, print_legend=False, ax=ax, **style_kwds
+            return vpy_matplotlib_plt.ImportanceBarChart().draw(
+                coeff_importances, print_legend=False, ax=ax, **style_kwargs
             )
-        return self.best_model_.features_importance(**kwds)
+        return self.best_model_.features_importance(**kwargs)
 
     # Plotting Methods.
 
@@ -673,7 +673,7 @@ class AutoML(VerticaModel):
         self,
         mltype: Literal["champion", "step"] = "champion",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws the AutoML plot.
@@ -686,7 +686,7 @@ class AutoML(VerticaModel):
                 step     : stepwise plot.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional  parameter  to pass to  the 
             Matplotlib functions.
 
@@ -696,7 +696,7 @@ class AutoML(VerticaModel):
             Axes.
         """
         if mltype == "champion":
-            return vpy_plt.ChampionChallenger().plot_bubble_ml(
+            return vpy_matplotlib_plt.ChampionChallengerPlot().draw(
                 self.model_grid_["avg_time"],
                 self.model_grid_["avg_score"],
                 self.model_grid_["score_std"],
@@ -706,10 +706,10 @@ class AutoML(VerticaModel):
                 title="Model Type",
                 ax=ax,
                 reverse=(True, self.parameters["reverse"]),
-                **style_kwds,
+                **style_kwargs,
             )
         else:
-            return vpy_plt.StepwisePlot().plot_stepwise_ml(
+            return vpy_matplotlib_plt.StepwisePlot().draw(
                 [len(elem) for elem in self.stepwise_["features"]],
                 self.stepwise_[self.parameters["stepwise_criterion"]],
                 self.stepwise_["variable"],
@@ -719,5 +719,5 @@ class AutoML(VerticaModel):
                 y_label=self.parameters["stepwise_criterion"],
                 direction=self.parameters["stepwise_direction"],
                 ax=ax,
-                **style_kwds,
+                **style_kwargs,
             )

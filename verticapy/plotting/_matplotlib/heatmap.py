@@ -15,20 +15,27 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Optional
+from typing import Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap
-import verticapy._config.config as conf
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class HeatMap(MatplotlibBase):
-    def color_matrix(
+    @property
+    def _category(self) -> Literal["map"]:
+        return "map"
+
+    @property
+    def _kind(self) -> Literal["heatmap"]:
+        return "heatmap"
+
+    def draw(
         self,
         matrix: np.ndarray,
         x_labels: list[str],
@@ -43,7 +50,7 @@ class HeatMap(MatplotlibBase):
         extent: list = [],
         is_pivot: bool = False,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a heatmap using the Matplotlib API.
@@ -70,15 +77,17 @@ class HeatMap(MatplotlibBase):
                 matrix_array,
                 vmax=vmax,
                 vmin=vmin,
-                **self.updated_dict(param, style_kwds),
+                **self._update_dict(param, style_kwargs),
             )
         else:
             try:
                 im = ax.imshow(
-                    matrix_array, extent=extent, **self.updated_dict(param, style_kwds)
+                    matrix_array,
+                    extent=extent,
+                    **self._update_dict(param, style_kwargs),
                 )
             except:
-                im = ax.imshow(matrix_array, **self.updated_dict(param, style_kwds))
+                im = ax.imshow(matrix_array, **self._update_dict(param, style_kwargs))
         fig.colorbar(im, ax=ax).set_label(colorbar)
         if not (extent):
             ax.set_yticks([i for i in range(0, n)])

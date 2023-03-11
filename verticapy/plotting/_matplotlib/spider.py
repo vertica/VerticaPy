@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -31,8 +31,20 @@ if TYPE_CHECKING:
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class SpiderPlot(MatplotlibBase):
-    def spider(
+class SpiderChart(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["spider"]:
+        return "spider"
+
+    @property
+    def _compute_method(self) -> Literal["2D"]:
+        return "2D"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
@@ -41,7 +53,7 @@ class SpiderPlot(MatplotlibBase):
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[Optional[float], Optional[float]] = (None, None),
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a spider plot using the Matplotlib API.
@@ -51,13 +63,13 @@ class SpiderPlot(MatplotlibBase):
         unique = vdf[columns[0]].nunique(True)
         if unique < 3:
             raise ParameterError(
-                "The column used to draw the Spider Plot must "
+                "The column used to draw the Spider Chart must "
                 f"have at least 3 categories. Found {int(unique)}."
             )
-        matrix, x_labels, y_labels = self._compute_pivot_table(
+        self._compute_pivot_table(
             vdf, columns, method=method, of=of, h=h, max_cardinality=max_cardinality,
-        )[0:3]
-        m = matrix.shape[0]
+        )
+        m = self.data["matrix"].shape[0]
         angles = [i / float(m) * 2 * math.pi for i in range(m)]
         angles += angles[:1]
         fig = plt.figure()
@@ -65,16 +77,18 @@ class SpiderPlot(MatplotlibBase):
             ax = fig.add_subplot(111, polar=True)
         spider_vals = np.array([])
         colors = get_colors()
-        for i, category in enumerate(y_labels):
-            if len(matrix.shape) == 1:
-                values = np.concatenate((matrix, matrix[:1]))
+        for i, category in enumerate(self.data["y_labels"]):
+            if len(self.data["matrix"].shape) == 1:
+                values = np.concatenate((self.data["matrix"], self.data["matrix"][:1]))
             else:
-                values = np.concatenate((matrix[:, i], matrix[:, i][:1]))
+                values = np.concatenate(
+                    (self.data["matrix"][:, i], self.data["matrix"][:, i][:1])
+                )
             spider_vals = np.concatenate((spider_vals, values))
-            plt.xticks(angles[:-1], x_labels, color="grey", size=8)
+            plt.xticks(angles[:-1], self.data["x_labels"], color="grey", size=8)
             ax.set_rlabel_position(0)
             params = {"linewidth": 1, "linestyle": "solid", "color": colors[i]}
-            params = self.updated_dict(params, style_kwds, i)
+            params = self._update_dict(params, style_kwargs, i)
             args = [angles, values]
             ax.plot(*args, label=category, **params)
             ax.fill(*args, alpha=0.1, color=params["color"])

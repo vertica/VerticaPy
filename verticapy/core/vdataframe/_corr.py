@@ -36,7 +36,7 @@ from verticapy.errors import EmptyParameter
 
 from verticapy.core.tablesample.base import TableSample
 
-import verticapy.plotting._matplotlib as vpy_plt
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 from verticapy.sql.drop import drop
 
@@ -49,7 +49,7 @@ class vDFCorr:
         round_nb: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Global method to use to compute the Correlation/Cov/Regr Matrix.
@@ -485,11 +485,11 @@ class vDFCorr:
                     )
                     else None
                 )
-                if "cmap" not in style_kwds:
+                if "cmap" not in style_kwargs:
                     cm1, cm2 = get_cmap()
                     cmap = cm1 if (method == "cramer") else cm2
-                    style_kwds["cmap"] = cmap
-                vpy_plt.HeatMap().color_matrix(
+                    style_kwargs["cmap"] = cmap
+                vpy_matplotlib_plt.HeatMap().draw(
                     matrix,
                     columns,
                     columns,
@@ -498,7 +498,7 @@ class vDFCorr:
                     title=title,
                     mround=round_nb,
                     ax=ax,
-                    **style_kwds,
+                    **style_kwargs,
                 )
             values = {"index": columns}
             for idx in range(len(matrix)):
@@ -522,7 +522,11 @@ class vDFCorr:
                     "No numerical column found in the vDataFrame."
                 )
             return self._aggregate_matrix(
-                method=method, columns=cols, round_nb=round_nb, show=show, **style_kwds,
+                method=method,
+                columns=cols,
+                round_nb=round_nb,
+                show=show,
+                **style_kwargs,
             )
 
     def _aggregate_vector(
@@ -533,7 +537,7 @@ class vDFCorr:
         round_nb: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Global method to use to compute the Correlation/Cov/Beta Vector.
@@ -700,12 +704,12 @@ class vDFCorr:
                 )
                 else None
             )
-            if "cmap" not in style_kwds:
+            if "cmap" not in style_kwargs:
                 cm1, cm2 = get_cmap()
                 cmap = cm1 if (method == "cramer") else cm2
-                style_kwds["cmap"] = cmap
+                style_kwargs["cmap"] = cmap
             title = f"Correlation Vector of {focus} ({method})"
-            vpy_plt.HeatMap().color_matrix(
+            vpy_matplotlib_plt.HeatMap().draw(
                 matrix,
                 [focus],
                 cols,
@@ -715,7 +719,7 @@ class vDFCorr:
                 mround=round_nb,
                 is_vector=True,
                 ax=ax,
-                **style_kwds,
+                **style_kwargs,
             )
         for idx, column in enumerate(cols):
             self._update_catalog(
@@ -739,7 +743,7 @@ class vDFCorr:
         focus: str = "",
         show: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Computes the Correlation Matrix of the vDataFrame. 
@@ -772,7 +776,7 @@ class vDFCorr:
         If set to True, the Correlation Matrix will be drawn using Matplotlib.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -793,19 +797,19 @@ class vDFCorr:
             columns = [columns]
         columns, focus = self._format_colnames(columns, focus)
         fun = self._aggregate_matrix
-        argv = []
-        kwds = {
+        args = []
+        kwargs = {
             "method": method,
             "columns": columns,
             "round_nb": round_nb,
             "show": show,
             "ax": ax,
-            **style_kwds,
+            **style_kwargs,
         }
         if focus:
-            argv += [focus]
+            args += [focus]
             fun = self._aggregate_vector
-        return fun(*argv, **kwds)
+        return fun(*args, **kwargs)
 
     @save_verticapy_logs
     def corr_pvalue(
@@ -1015,7 +1019,7 @@ class vDFCorr:
         focus: str = "",
         show: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Computes the covariance matrix of the vDataFrame. 
@@ -1031,7 +1035,7 @@ class vDFCorr:
         If set to True, the Covariance Matrix will be drawn using Matplotlib.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1052,19 +1056,19 @@ class vDFCorr:
 
         columns, focus = self._format_colnames(columns, focus)
         fun = self._aggregate_matrix
-        argv = []
-        kwds = {
+        args = []
+        kwargs = {
             "method": "cov",
             "columns": columns,
             "show": show,
             "ax": ax,
-            **style_kwds,
+            **style_kwargs,
         }
         if focus:
-            argv += [focus]
+            args += [focus]
             fun = self._aggregate_vector
 
-        return fun(*argv, **kwds)
+        return fun(*args, **kwargs)
 
     @save_verticapy_logs
     def acf(
@@ -1083,7 +1087,7 @@ class vDFCorr:
         round_nb: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Computes the correlations of the input vDataColumn and its lags. 
@@ -1137,7 +1141,7 @@ class vDFCorr:
         If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1182,7 +1186,7 @@ class vDFCorr:
                 round_nb=round_nb,
                 focus=column,
                 show=show,
-                **style_kwds,
+                **style_kwargs,
             )
         else:
             result = self._new_vdataframe(query).corr(
@@ -1211,14 +1215,14 @@ class vDFCorr:
             if acf_band:
                 result.values["confidence"] = acf_band
             if show:
-                vpy_plt.ACFPlot().acf_plot(
+                vpy_matplotlib_plt.ACFPlot().draw(
                     result.values["index"],
                     result.values["value"],
                     title="Autocorrelation",
                     confidence=acf_band,
                     type_bar=True if acf_type == "bar" else False,
                     ax=ax,
-                    **style_kwds,
+                    **style_kwargs,
                 )
             return result
 
@@ -1234,7 +1238,7 @@ class vDFCorr:
         alpha: float = 0.95,
         show: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Computes the partial autocorrelations of the input vDataColumn.
@@ -1266,7 +1270,7 @@ class vDFCorr:
         If set to True, the Partial Auto Correlation Plot will be drawn using Matplotlib.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1368,14 +1372,14 @@ class vDFCorr:
             if pacf_band:
                 result.values["confidence"] = pacf_band
             if show:
-                vpy_plt.ACFPlot().acf_plot(
+                vpy_matplotlib_plt.ACFPlot().draw(
                     result.values["index"],
                     result.values["value"],
                     title="Partial Autocorrelation",
                     confidence=pacf_band,
                     type_bar=True,
                     ax=ax,
-                    **style_kwds,
+                    **style_kwargs,
                 )
             return result
 
@@ -1398,7 +1402,7 @@ class vDFCorr:
         ] = "r2",
         show: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Computes the regression matrix of the vDataFrame.
@@ -1429,7 +1433,7 @@ class vDFCorr:
         If set to True, the Regression Matrix will be drawn using Matplotlib.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1539,13 +1543,13 @@ class vDFCorr:
                 method_title = "Alpha"
             else:
                 method_title = method
-            vpy_plt.HeatMap().color_matrix(
+            vpy_matplotlib_plt.HeatMap().draw(
                 matrix,
                 columns,
                 columns,
                 title=f"{method_title} Matrix",
                 ax=ax,
-                **style_kwds,
+                **style_kwargs,
             )
         values = {"index": columns}
         for idx in range(len(matrix)):
@@ -1606,7 +1610,7 @@ class vDFCorr:
         for col in columns:
             coeff_importances[col] = self[col].iv_woe(y=y, nbins=nbins)["iv"][-1]
         if show:
-            ax = vpy_plt.ImportanceBarChart().plot_importance(
+            ax = vpy_matplotlib_plt.ImportanceBarChart().draw(
                 coeff_importances, print_legend=False, ax=ax
             )
             ax.set_xlabel("IV")

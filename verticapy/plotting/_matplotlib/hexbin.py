@@ -15,13 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import statistics
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_cmap
-import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -33,8 +32,16 @@ if TYPE_CHECKING:
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class HexbinPlot(MatplotlibBase):
-    def hexbin(
+class HexbinMap(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["map"]:
+        return "map"
+
+    @property
+    def _kind(self) -> Literal["hexbin"]:
+        return "hexbin"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
@@ -43,7 +50,7 @@ class HexbinPlot(MatplotlibBase):
         bbox: list = [],
         img: str = "",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws an hexbin plot using the Matplotlib API.
@@ -121,7 +128,7 @@ class HexbinPlot(MatplotlibBase):
             column2,
             C=column3,
             reduce_C_function=reduce_C_function,
-            **self.updated_dict(param, style_kwds),
+            **self._update_dict(param, style_kwargs),
         )
         if method.lower() == "density":
             fig.colorbar(imh).set_label(method)

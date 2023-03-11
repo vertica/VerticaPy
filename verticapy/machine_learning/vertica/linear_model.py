@@ -35,7 +35,7 @@ from verticapy.core.tablesample.base import TableSample
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 
-import verticapy.plotting._matplotlib as vpy_plt
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 """
 General Classes.
@@ -102,7 +102,7 @@ class LinearModel:
         return copy.deepcopy(self.features_importance_)
 
     def features_importance(
-        self, show: bool = True, ax: Optional[Axes] = None, **style_kwds
+        self, show: bool = True, ax: Optional[Axes] = None, **style_kwargs
     ) -> TableSample:
         """
         Computes the model's features importance.
@@ -113,7 +113,7 @@ class LinearModel:
             If set to True,  draw the features  importance.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the Matplotlib 
             functions.
 
@@ -124,8 +124,8 @@ class LinearModel:
         """
         fi = self._get_features_importance()
         if show:
-            vpy_plt.ImportanceBarChart().plot_importance(
-                self.X, fi, print_legend=True, ax=ax, **style_kwds,
+            vpy_matplotlib_plt.ImportanceBarChart().draw(
+                self.X, fi, print_legend=True, ax=ax, **style_kwargs,
             )
         importances = {
             "index": [quote_ident(x)[1:-1].lower() for x in self.X],
@@ -146,7 +146,7 @@ class LinearModel:
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws the model.
@@ -157,7 +157,7 @@ class LinearModel:
             Maximum number of points to display.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
@@ -166,14 +166,14 @@ class LinearModel:
         Axes
             Axes.
         """
-        return vpy_plt.RegressionPlot().regression_plot(
+        return vpy_matplotlib_plt.RegressionPlot().draw(
             self.X,
             self.y,
             self.input_relation,
             np.concatenate(([self.intercept_], self.coef_)),
             max_nb_points,
             ax=ax,
-            **style_kwds,
+            **style_kwargs,
         )
 
 
@@ -208,7 +208,7 @@ class LinearModelClassifier(LinearModel):
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws the model.
@@ -219,7 +219,7 @@ class LinearModelClassifier(LinearModel):
             Maximum number of points to display.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
@@ -228,14 +228,14 @@ class LinearModelClassifier(LinearModel):
         Axes
             Axes.
         """
-        return vpy_plt.LogisticRegressionPlot().logit_plot(
+        return vpy_matplotlib_plt.LogisticRegressionPlot().draw(
             self.X,
             self.y,
             self.input_relation,
             np.concatenate(([self.intercept_], self.coef_)),
             max_nb_points,
             ax=ax,
-            **style_kwds,
+            **style_kwargs,
         )
 
 

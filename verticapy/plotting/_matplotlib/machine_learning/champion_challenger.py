@@ -14,20 +14,27 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Literal, Optional
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 from verticapy._config.colors import get_colors
-import verticapy._config.config as conf
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class ChampionChallenger(MatplotlibBase):
-    def plot_bubble_ml(
+class ChampionChallengerPlot(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["champion"]:
+        return "champion"
+
+    def draw(
         self,
         x: list,
         y: list,
@@ -39,7 +46,7 @@ class ChampionChallenger(MatplotlibBase):
         reverse: tuple = (True, True),
         plt_text: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a Machine Learning Bubble Plot using the Matplotlib API.
@@ -87,10 +94,10 @@ class ChampionChallenger(MatplotlibBase):
                         x[i:j],
                         y[i:j],
                         s=size,
-                        **self.updated_dict(param, style_kwds, idx),
+                        **self._update_dict(param, style_kwargs, idx),
                     )
                 ]
-                tmp_colors += [self.updated_dict(param, style_kwds, idx)["color"]]
+                tmp_colors += [self._update_dict(param, style_kwargs, idx)["color"]]
                 if j < len(z):
                     all_categories += [z[j]]
                     current_cat = z[j]
@@ -127,7 +134,7 @@ class ChampionChallenger(MatplotlibBase):
                 size = s
             else:
                 size = 300
-            ax.scatter(x, y, s=size, **self.updated_dict(param, style_kwds, 0))
+            ax.scatter(x, y, s=size, **self._update_dict(param, style_kwargs, 0))
         if reverse[0]:
             ax.set_xlim(
                 max(x) + 0.1 * (1 + max(x) - min(x)),

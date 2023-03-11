@@ -41,7 +41,7 @@ from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting.base import PlottingBase
-import verticapy.plotting._matplotlib as vpy_plt
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.vertica.base import (
@@ -1000,7 +1000,7 @@ class KernelDensity(Regressor, Tree):
 
     # Plotting Methods.
 
-    def plot(self, ax: Optional[Axes] = None, **style_kwds) -> Axes:
+    def plot(self, ax: Optional[Axes] = None, **style_kwargs) -> Axes:
         """
         Draws the Model.
 
@@ -1008,7 +1008,7 @@ class KernelDensity(Regressor, Tree):
         ----------
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
@@ -1037,11 +1037,11 @@ class KernelDensity(Regressor, Tree):
             param = {
                 "color": get_colors()[0],
             }
-            ax.plot(x, y, **PlottingBase.updated_dict(param, style_kwds))
+            ax.plot(x, y, **PlottingBase._update_dict(param, style_kwargs))
             ax.fill_between(
                 x,
                 y,
-                facecolor=PlottingBase.updated_dict(param, style_kwds)["color"],
+                facecolor=PlottingBase._update_dict(param, style_kwargs)["color"],
                 alpha=0.7,
             )
             ax.set_xlim(min(x), max(x))
@@ -1089,7 +1089,7 @@ class KernelDensity(Regressor, Tree):
             extent = [min(x), max(x), min(y), max(y)]
             extent = [float(v) for v in extent]
             im = ax.imshow(
-                result, extent=extent, **PlottingBase.updated_dict(param, style_kwds)
+                result, extent=extent, **PlottingBase._update_dict(param, style_kwargs)
             )
             fig.colorbar(im, ax=ax)
             ax.set_ylabel(self.X[1])
@@ -1403,7 +1403,7 @@ class LocalOutlierFactor(VerticaModel):
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws the model.
@@ -1414,7 +1414,7 @@ class LocalOutlierFactor(VerticaModel):
             Maximum  number of points to display.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
@@ -1424,6 +1424,6 @@ class LocalOutlierFactor(VerticaModel):
             Axes.
         """
         sample = 100 * min(float(max_nb_points / self.cnt_), 1)
-        return vpy_plt.LOFPlot().lof_plot(
-            self.model_name, self.X, "lof_score", sample, ax=ax, **style_kwds
+        return vpy_matplotlib_plt.LOFPlot().draw(
+            self.model_name, self.X, "lof_score", sample, ax=ax, **style_kwargs
         )

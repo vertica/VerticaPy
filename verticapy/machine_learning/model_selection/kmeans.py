@@ -150,7 +150,7 @@ def elbow(
     use_kprototype: bool = False,
     gamma: float = 1.0,
     ax: Optional[Axes] = None,
-    **style_kwds,
+    **style_kwargs,
 ) -> TableSample:
     """
     Draws an elbow curve.
@@ -194,7 +194,7 @@ def elbow(
         attributes.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any  optional  parameter  to  pass  to  the  Matplotlib 
         functions.
 
@@ -250,7 +250,7 @@ def elbow(
         "markersize": 7,
         "markeredgecolor": "black",
     }
-    ax.plot(L, elbow_score, **PlottingBase.updated_dict(param, style_kwds))
+    ax.plot(L, elbow_score, **PlottingBase._update_dict(param, style_kwargs))
     ax.set_title("Elbow Curve")
     ax.set_xlabel("Number of Clusters")
     ax.set_ylabel("Elbow Score (Between-Cluster SS / Total SS)")

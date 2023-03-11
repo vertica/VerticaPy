@@ -14,17 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, warnings
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 import numpy as np
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
-from verticapy.errors import ParameterError
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
@@ -33,7 +29,19 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class BarChart(MatplotlibBase):
-    def bar(
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["bar"]:
+        return "bar"
+
+    @property
+    def _compute_method(self) -> Literal["1D"]:
+        return "1D"
+
+    def draw(
         self,
         vdc: "vDataColumn",
         method: str = "density",
@@ -42,7 +50,7 @@ class BarChart(MatplotlibBase):
         nbins: int = 0,
         h: float = 0.0,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a histogram using the Matplotlib API.
@@ -56,7 +64,7 @@ class BarChart(MatplotlibBase):
             grid="y",
         )
         params = {"color": get_colors()[0], "alpha": 0.86}
-        params = self.updated_dict(params, style_kwds)
+        params = self._update_dict(params, style_kwargs)
         ax.bar(self.data["x"], self.data["y"], self.data["adj_width"], **params)
         ax.set_xlabel(vdc._alias)
         if self.data["is_categorical"]:
@@ -70,7 +78,21 @@ class BarChart(MatplotlibBase):
         ax.set_ylabel(self._map_method(method, of)[0])
         return ax
 
-    def bar2D(
+
+class BarChart2D(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["bar"]:
+        return "bar"
+
+    @property
+    def _compute_method(self) -> Literal["2D"]:
+        return "2D"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
@@ -80,7 +102,7 @@ class BarChart(MatplotlibBase):
         h: tuple[Optional[float], Optional[float]] = (None, None),
         stacked: bool = False,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a 2D BarChart using the Matplotlib API.
@@ -88,10 +110,10 @@ class BarChart(MatplotlibBase):
         if isinstance(columns, str):
             columns = [columns]
         colors = get_colors()
-        matrix, x_labels, y_labels = self._compute_pivot_table(
+        self._compute_pivot_table(
             vdf, columns, method=method, of=of, h=h, max_cardinality=max_cardinality,
-        )[0:3]
-        m, n = matrix.shape
+        )
+        m, n = self.data["matrix"].shape
         bar_width = 0.5
         ax, fig = self._get_ax_fig(
             ax, size=(min(600, 3 * m) / 2 + 1, 6), set_axis_below=True, grid="y"
@@ -99,18 +121,18 @@ class BarChart(MatplotlibBase):
         for i in range(0, n):
             params = {
                 "x": [j for j in range(m)],
-                "height": matrix[:, i],
+                "height": self.data["matrix"][:, i],
                 "width": bar_width,
-                "label": y_labels[i],
+                "label": self.data["y_labels"][i],
                 "alpha": 0.86,
                 "color": colors[i % len(colors)],
             }
-            params = self.updated_dict(params, style_kwds, i)
+            params = self._update_dict(params, style_kwargs, i)
             if stacked:
                 if i == 0:
                     bottom = np.array([0.0 for j in range(m)])
                 else:
-                    bottom += matrix[:, i - 1].astype(float)
+                    bottom += self.data["matrix"][:, i - 1].astype(float)
                 params["bottom"] = bottom
             else:
                 params["x"] = [j + (i - 1) * bar_width / (n - 1) for j in range(m)]
@@ -121,71 +143,10 @@ class BarChart(MatplotlibBase):
         else:
             xticks = [j + bar_width / 2 - bar_width / 2 / (n - 1) for j in range(m)]
         ax.set_xticks(xticks)
-        ax.set_xticklabels(x_labels, rotation=90)
+        ax.set_xticklabels(self.data["x_labels"], rotation=90)
         ax.set_xlabel(columns[0])
         ax.set_ylabel(self._map_method(method, of)[0])
         ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         return ax
-
-    def multiple_hist(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        method: str = "density",
-        of: str = "",
-        h: float = 0.0,
-        ax: Optional[Axes] = None,
-        **style_kwds,
-    ) -> Axes:
-        """
-        Draws a muli-histogram chart using the Matplotlib API.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        colors = get_colors()
-        if len(columns) > 5:
-            raise ParameterError(
-                "The number of column must be <= 5 to use 'multiple_hist' method"
-            )
-        else:
-            ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
-            alpha, all_columns, all_h = 1, [], []
-            if h <= 0:
-                for idx, column in enumerate(columns):
-                    all_h += [vdf[column].numh()]
-                h = min(all_h)
-            data = {}
-            for idx, column in enumerate(columns):
-                if vdf[column].isnum():
-                    self._compute_plot_params(
-                        vdf[column], method=method, of=of, max_cardinality=1, h=h
-                    )
-                    params = {"color": colors[idx % len(colors)]}
-                    params = self.updated_dict(params, style_kwds, idx)
-                    plt.bar(
-                        self.data["x"],
-                        self.data["y"],
-                        self.data["width"],
-                        label=column,
-                        alpha=alpha,
-                        **params,
-                    )
-                    alpha -= 0.2
-                    all_columns += [columns[idx]]
-                    data[column] = copy.deepcopy(self.data) 
-                else:
-                    if vdf._vars["display"]["print_info"]:
-                        warning_message = (
-                            f"The Virtual Column {column} is not numerical."
-                            " Its histogram will not be drawn."
-                        )
-                        warnings.warn(warning_message, Warning)
-            ax.set_xlabel(", ".join(all_columns))
-            ax.set_ylabel(self._map_method(method, of)[0])
-            ax.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
-            box = ax.get_position()
-            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-            self.data = data
-            return ax

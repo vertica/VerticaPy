@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, TYPE_CHECKING
+import copy
+from typing import Literal, Optional, TYPE_CHECKING
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -22,7 +23,6 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 from verticapy._config.colors import get_colors
-import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy.errors import ParameterError
 
@@ -33,7 +33,19 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class HorizontalBarChart(MatplotlibBase):
-    def barh(
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["barh"]:
+        return "barh"
+
+    @property
+    def _compute_method(self) -> Literal["1D"]:
+        return "1D"
+
+    def draw(
         self,
         vdc: "vDataColumn",
         method: str = "density",
@@ -42,7 +54,7 @@ class HorizontalBarChart(MatplotlibBase):
         nbins: int = 0,
         h: float = 0.0,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a bar chart using the Matplotlib API.
@@ -54,7 +66,7 @@ class HorizontalBarChart(MatplotlibBase):
             ax, size=(10, min(int(len(self.data["x"]) / 1.8) + 1, 600)), grid="x"
         )
         params = {"color": get_colors()[0], "alpha": 0.86}
-        params = self.updated_dict(params, style_kwds, 0)
+        params = self._update_dict(params, style_kwargs, 0)
         ax.barh(self.data["x"], self.data["y"], self.data["adj_width"], **params)
         ax.set_ylabel(vdc._alias)
         if self.data["is_categorical"]:
@@ -67,7 +79,21 @@ class HorizontalBarChart(MatplotlibBase):
         ax.set_xlabel(self._map_method(method, of)[0])
         return ax
 
-    def barh2D(
+
+class HorizontalBarChart2D(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["barh"]:
+        return "barh"
+
+    @property
+    def _compute_method(self) -> Literal["2D"]:
+        return "2D"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
@@ -79,7 +105,7 @@ class HorizontalBarChart(MatplotlibBase):
         fully_stacked: bool = False,
         density: bool = False,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a 2D bar chart using the Matplotlib API.
@@ -101,9 +127,7 @@ class HorizontalBarChart(MatplotlibBase):
             if unique[1] != 2:
                 columns = [columns[1], columns[0]]
         xlabel = self._map_method(method, of)[0]
-        matrix, y_labels, x_labels = self._compute_pivot_table(
-            vdf, columns, method=method, of=of, h=h, max_cardinality=max_cardinality,
-        )[0:3]
+        matrix = copy.deepcopy(self.data["matrix"])
         m, n = matrix.shape
         yticks = [j for j in range(m)]
         bar_height = 0.5
@@ -120,11 +144,11 @@ class HorizontalBarChart(MatplotlibBase):
                 "y": [j for j in range(m)],
                 "width": matrix[:, i],
                 "height": bar_height,
-                "label": x_labels[i],
+                "label": self.data["y_labels"][i],
                 "alpha": 0.86,
                 "color": colors[i % len(colors)],
             }
-            params = self.updated_dict(params, style_kwds, i)
+            params = self._update_dict(params, style_kwargs, i)
             if stacked or fully_stacked:
                 if i == 0:
                     last_column = np.array([0.0 for j in range(m)])
@@ -143,7 +167,7 @@ class HorizontalBarChart(MatplotlibBase):
         if not (stacked):
             yticks = [j + bar_height / 2 - bar_height / 2 / (n - 1) for j in range(m)]
         ax.set_yticks(yticks)
-        ax.set_yticklabels(y_labels)
+        ax.set_yticklabels(self.data["x_labels"])
         ax.set_ylabel(columns[0])
         ax.set_xlabel(xlabel)
         if density or fully_stacked:

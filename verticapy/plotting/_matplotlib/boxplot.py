@@ -15,13 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, warnings
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -32,7 +31,15 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class BoxPlot(MatplotlibBase):
-    def boxplot(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["box"]:
+        return "box"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         by: str = "",
@@ -40,24 +47,24 @@ class BoxPlot(MatplotlibBase):
         max_cardinality: int = 8,
         cat_priority: list = [],
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a box plot using the Matplotlib API.
         """
         colors = []
-        if "color" in style_kwds:
-            if isinstance(style_kwds["color"], str):
-                colors = [style_kwds["color"]]
+        if "color" in style_kwargs:
+            if isinstance(style_kwargs["color"], str):
+                colors = [style_kwargs["color"]]
             else:
-                colors = style_kwds["color"]
-            del style_kwds["color"]
-        elif "colors" in style_kwds:
-            if isinstance(style_kwds["colors"], str):
-                colors = [style_kwds["colors"]]
+                colors = style_kwargs["color"]
+            del style_kwargs["color"]
+        elif "colors" in style_kwargs:
+            if isinstance(style_kwargs["colors"], str):
+                colors = [style_kwargs["colors"]]
             else:
-                colors = style_kwds["colors"]
-            del style_kwds["colors"]
+                colors = style_kwargs["colors"]
+            del style_kwargs["colors"]
         colors += get_colors()
         # SINGLE BOXPLOT
         if by == "":
@@ -85,7 +92,7 @@ class BoxPlot(MatplotlibBase):
                 widths=0.7,
                 labels=[""],
                 patch_artist=True,
-                **style_kwds,
+                **style_kwargs,
             )
             for median in box["medians"]:
                 median.set(color="black", linewidth=1)
@@ -250,7 +257,7 @@ class BoxPlot(MatplotlibBase):
                     widths=0.5,
                     labels=labels,
                     patch_artist=True,
-                    **style_kwds,
+                    **style_kwargs,
                 )
                 ax.set_xticklabels(labels, rotation=90)
                 for median in box["medians"]:
@@ -263,31 +270,41 @@ class BoxPlot(MatplotlibBase):
             except Exception as e:
                 raise Exception(f"{e}\nAn error occured during the BoxPlot creation.")
 
-    def boxplot2D(
+
+class MultiBoxPlot(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["box"]:
+        return "box"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns = [],
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
-        Draws a 2D box plot using the Matplotlib API.
+        Draws a multi box plot using the Matplotlib API.
         """
         if isinstance(columns, str):
             columns = [columns]
         colors = []
-        if "color" in style_kwds:
-            if isinstance(style_kwds["color"], str):
-                colors = [style_kwds["color"]]
+        if "color" in style_kwargs:
+            if isinstance(style_kwargs["color"], str):
+                colors = [style_kwargs["color"]]
             else:
-                colors = style_kwds["color"]
-            del style_kwds["color"]
-        elif "colors" in style_kwds:
-            if isinstance(style_kwds["colors"], str):
-                colors = [style_kwds["colors"]]
+                colors = style_kwargs["color"]
+            del style_kwargs["color"]
+        elif "colors" in style_kwargs:
+            if isinstance(style_kwargs["colors"], str):
+                colors = [style_kwargs["colors"]]
             else:
-                colors = style_kwds["colors"]
-            del style_kwds["colors"]
+                colors = style_kwargs["colors"]
+            del style_kwargs["colors"]
         colors += get_colors()
         if not (columns):
             columns = vdf.numcol()
@@ -302,7 +319,7 @@ class BoxPlot(MatplotlibBase):
         # SINGLE BOXPLOT
         if len(columns) == 1:
             vdf[columns[0]].boxplot(
-                ax=ax, **style_kwds,
+                ax=ax, **style_kwargs,
             )
         # MULTI BOXPLOT
         else:
@@ -323,7 +340,7 @@ class BoxPlot(MatplotlibBase):
                     widths=0.5,
                     labels=columns,
                     patch_artist=True,
-                    **style_kwds,
+                    **style_kwargs,
                 )
                 ax.set_xticklabels(columns, rotation=90)
                 for median in box["medians"]:

@@ -14,19 +14,26 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Literal, Optional
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-import verticapy._config.config as conf
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class StepwisePlot(MatplotlibBase):
-    def plot_stepwise_ml(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["stepwise"]:
+        return "stepwise"
+
+    def draw(
         self,
         x: list,
         y: list,
@@ -37,7 +44,7 @@ class StepwisePlot(MatplotlibBase):
         y_label: str = "score",
         direction="forward",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a stepwise plot using the Matplotlib API.
@@ -59,15 +66,15 @@ class StepwisePlot(MatplotlibBase):
             var1 = var[1][0:2] + ["..."] + var[1][-1:]
         else:
             var1 = var[1]
-        if "color" in style_kwds:
-            if isinstance(style_kwds["color"], str):
-                c0, c1 = style_kwds["color"], colors[1]
+        if "color" in style_kwargs:
+            if isinstance(style_kwargs["color"], str):
+                c0, c1 = style_kwargs["color"], colors[1]
             else:
-                c0, c1 = style_kwds["color"][0], style_kwds["color"][1]
+                c0, c1 = style_kwargs["color"][0], style_kwargs["color"][1]
         else:
             c0, c1 = colors[0], colors[1]
-        if "color" in style_kwds:
-            del style_kwds["color"]
+        if "color" in style_kwargs:
+            del style_kwargs["color"]
         if direction == "forward":
             delta_ini, delta_final = 0.1, -0.15
             rot_ini, rot_final = -90, 90
@@ -80,13 +87,13 @@ class StepwisePlot(MatplotlibBase):
             horizontalalignment = "left"
         param = {"marker": "s", "alpha": 0.5, "edgecolors": "black", "s": 400}
         ax.scatter(
-            x_new[1:-1], y_new[1:-1], c=c0, **self.updated_dict(param, style_kwds)
+            x_new[1:-1], y_new[1:-1], c=c0, **self._update_dict(param, style_kwargs)
         )
         ax.scatter(
             [x_new[0], x_new[-1]],
             [y_new[0], y_new[-1]],
             c=c1,
-            **self.updated_dict(param, style_kwds),
+            **self._update_dict(param, style_kwargs),
         )
         ax.text(
             x_new[0] + delta_ini,

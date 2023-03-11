@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 
@@ -30,7 +30,19 @@ from verticapy.plotting._matplotlib.heatmap import HeatMap
 
 
 class PivotTable(HeatMap):
-    def pivot_table(
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["pivot"]:
+        return "pivot"
+
+    @property
+    def _compute_method(self) -> Literal["2D"]:
+        return "2D"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
@@ -44,12 +56,12 @@ class PivotTable(HeatMap):
         ax: Optional[Axes] = None,
         return_ax: bool = False,
         extent: list = [],
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a pivot table using the Matplotlib API.
         """
-        matrix, x_labels, y_labels, vmin, vmax, aggregate = self._compute_pivot_table(
+        self._compute_pivot_table(
             vdf=vdf,
             columns=columns,
             method=method,
@@ -59,18 +71,18 @@ class PivotTable(HeatMap):
             fill_none=fill_none,
         )
         if show:
-            ax = self.color_matrix(
-                matrix,
-                x_labels,
-                y_labels,
-                vmax=vmax,
-                vmin=vmin,
-                colorbar=aggregate,
+            ax = super().draw(
+                self.data["matrix"],
+                self.data["x_labels"],
+                self.data["y_labels"],
+                vmax=matrix.max(),
+                vmin=matrix.min(),
+                colorbar=self._map_method(method, of)[1],
                 with_numbers=with_numbers,
                 extent=extent,
                 ax=ax,
                 is_pivot=True,
-                **style_kwds,
+                **style_kwargs,
             )
             ax.set_ylabel(columns[0])
             if len(columns) > 1:

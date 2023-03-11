@@ -14,27 +14,34 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Literal, Optional
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-import verticapy._config.config as conf
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class RegressionTreePlot(MatplotlibBase):
-    def regression_tree_plot(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["regression_tree"]:
+        return "regression_tree"
+
+    def draw(
         self,
         X: list,
         y: str,
         input_relation: str,
         max_nb_points: int = 10000,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a regression tree plot using the Matplotlib API.
@@ -65,12 +72,12 @@ class RegressionTreePlot(MatplotlibBase):
         x0, y0 = zip(*sorted(zip(x0, y0)))
         x1, y1 = zip(*sorted(zip(x1, y1)))
         color = "black"
-        if "color" in style_kwds:
+        if "color" in style_kwargs:
             if (
-                not (isinstance(style_kwds["color"], str))
-                and len(style_kwds["color"]) > 1
+                not (isinstance(style_kwargs["color"], str))
+                and len(style_kwargs["color"]) > 1
             ):
-                color = style_kwds["color"][1]
+                color = style_kwargs["color"][1]
         ax.step(x1, y1, color=color)
         param = {
             "marker": "o",
@@ -78,7 +85,7 @@ class RegressionTreePlot(MatplotlibBase):
             "s": 50,
             "edgecolors": "black",
         }
-        ax.scatter(x0, y0, **self.updated_dict(param, style_kwds))
+        ax.scatter(x0, y0, **self._update_dict(param, style_kwargs))
         ax.set_xlabel(X[0])
         ax.set_ylabel(y)
         return ax

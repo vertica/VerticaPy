@@ -28,7 +28,7 @@ from verticapy.machine_learning.vertica.linear_model import (
     LinearModelClassifier,
 )
 
-import verticapy.plotting._matplotlib as vpy_plt
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 """
 Algorithms used for regression.
@@ -249,7 +249,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws the model.
@@ -260,7 +260,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
             Maximum  number of points to display.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
@@ -269,12 +269,12 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         Axes
             Axes.
         """
-        return vpy_plt.SVMClassifierPlot().svm_classifier_plot(
+        return vpy_matplotlib_plt.SVMClassifierPlot().draw(
             self.X,
             self.y,
             self.input_relation,
             np.concatenate(([self.intercept_], self.coef_)),
             max_nb_points,
             ax=ax,
-            **style_kwds,
+            **style_kwargs,
         )

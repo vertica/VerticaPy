@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Callable, Optional, TYPE_CHECKING
+from typing import Callable, Literal, Optional, TYPE_CHECKING
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -33,7 +33,15 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ContourPlot(MatplotlibBase):
-    def contour_plot(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["contour"]:
+        return "contour"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
@@ -42,7 +50,7 @@ class ContourPlot(MatplotlibBase):
         cbar_title: str = "",
         pos_label: PythonScalar = None,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a contour plot using the Matplotlib API.
@@ -151,7 +159,7 @@ class ContourPlot(MatplotlibBase):
             X, Y, Z = np.array(Y), np.array(X), np.array(Z)
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=False, grid=False)
         param = {"linewidths": 0.5, "levels": 14, "colors": "k"}
-        param = self.updated_dict(param, style_kwds)
+        param = self._update_dict(param, style_kwargs)
         if "cmap" in param:
             del param["cmap"]
         ax.contour(X, Y, Z, **param)
@@ -159,7 +167,7 @@ class ContourPlot(MatplotlibBase):
             "cmap": get_cmap([get_colors()[2], "#FFFFFF", get_colors()[0]]),
             "levels": 14,
         }
-        param = self.updated_dict(param, style_kwds)
+        param = self._update_dict(param, style_kwargs)
         for elem in ["colors", "color", "linewidths", "linestyles"]:
             if elem in param:
                 del param[elem]

@@ -14,38 +14,44 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Literal, Optional
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ACFPlot(MatplotlibBase):
-    def acf_plot(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["acf"]:
+        return "acf"
+
+    def draw(
         self,
         x: ArrayLike,
         y: ArrayLike,
-        title: str = "",
         confidence: ArrayLike = None,
         type_bar: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws an ACF Time Series plot using the Matplotlib API.
         """
         tmp_style = {}
-        for elem in style_kwds:
+        for elem in style_kwargs:
             if elem not in ("color", "colors"):
-                tmp_style[elem] = style_kwds[elem]
-        if "color" in style_kwds:
-            color = style_kwds["color"]
+                tmp_style[elem] = style_kwargs[elem]
+        if "color" in style_kwargs:
+            color = style_kwargs["color"]
         else:
             color = get_colors()[0]
         ax, fig = self._get_ax_fig(ax, size=(10, 3), set_axis_below=False, grid=False)
@@ -59,7 +65,7 @@ class ACFPlot(MatplotlibBase):
                 "zorder": 2,
             }
             ax.scatter(
-                x, y, **self.updated_dict(param, tmp_style),
+                x, y, **self._update_dict(param, tmp_style),
             )
             ax.plot(
                 [-1] + x + [x[-1] + 1],

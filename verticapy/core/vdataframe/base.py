@@ -177,12 +177,12 @@ class vDataFrame(
         return "vDataFrame"
 
     @staticmethod
-    def _new_vdatacolumn(*argv, **kwds):
-        return vDataColumn(*argv, **kwds)
+    def _new_vdatacolumn(*args, **kwargs):
+        return vDataColumn(*args, **kwargs)
 
     @classmethod
-    def _new_vdataframe(cls, *argv, **kwds):
-        return cls(*argv, **kwds)
+    def _new_vdataframe(cls, *args, **kwargs):
+        return cls(*args, **kwargs)
 
     @save_verticapy_logs
     def __init__(
@@ -394,8 +394,8 @@ class vDataFrame(
         if isinstance(usecols, str):
             usecols = [usecols]
 
-        argv = object_[usecols] if usecols else object_
-        vdf = read_pandas(argv)
+        args = object_[usecols] if usecols else object_
+        vdf = read_pandas(args)
         return self.__init__(input_relation=vdf._vars["main_relation"])
 
 

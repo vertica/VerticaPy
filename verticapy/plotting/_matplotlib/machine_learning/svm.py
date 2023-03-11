@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -29,7 +29,15 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class SVMClassifierPlot(MatplotlibBase):
-    def svm_classifier_plot(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["svm"]:
+        return "svm"
+
+    def draw(
         self,
         X: list,
         y: str,
@@ -37,7 +45,7 @@ class SVMClassifierPlot(MatplotlibBase):
         coefficients: list,
         max_nb_points: int = 500,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a SVM Classifier plot using the Matplotlib API.
@@ -86,12 +94,12 @@ class SVMClassifierPlot(MatplotlibBase):
             ax.plot(x_svm, y_svm, alpha=1, color="black")
             all_scatter = [
                 ax.scatter(
-                    x0, [0 for item in x0], **self.updated_dict(param1, style_kwds, 1)
+                    x0, [0 for item in x0], **self._update_dict(param1, style_kwargs, 1)
                 )
             ]
             all_scatter += [
                 ax.scatter(
-                    x1, [0 for item in x1], **self.updated_dict(param0, style_kwds, 0)
+                    x1, [0 for item in x1], **self._update_dict(param0, style_kwargs, 0)
                 )
             ]
             ax.set_xlabel(X[0])
@@ -140,10 +148,10 @@ class SVMClassifierPlot(MatplotlibBase):
             )
             ax.plot(x_svm, y_svm, alpha=1, color="black")
             all_scatter = [
-                ax.scatter(x0, y0, **self.updated_dict(param1, style_kwds, 1))
+                ax.scatter(x0, y0, **self._update_dict(param1, style_kwargs, 1))
             ]
             all_scatter += [
-                ax.scatter(x1, y1, **self.updated_dict(param0, style_kwds, 0))
+                ax.scatter(x1, y1, **self._update_dict(param0, style_kwargs, 0))
             ]
             ax.set_xlabel(X[0])
             ax.set_ylabel(X[1])
@@ -210,10 +218,10 @@ class SVMClassifierPlot(MatplotlibBase):
             )
             param0["alpha"] = 0.8
             all_scatter = [
-                ax.scatter(x0, y0, z0, **self.updated_dict(param1, style_kwds, 1))
+                ax.scatter(x0, y0, z0, **self._update_dict(param1, style_kwargs, 1))
             ]
             all_scatter += [
-                ax.scatter(x1, y1, z1, **self.updated_dict(param0, style_kwds, 0))
+                ax.scatter(x1, y1, z1, **self._update_dict(param0, style_kwargs, 0))
             ]
             ax.set_xlabel(X[0])
             ax.set_ylabel(X[1])

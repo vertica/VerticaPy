@@ -45,7 +45,7 @@ from verticapy.machine_learning.vertica.base import (
 
 from verticapy.sql.drop import drop
 
-import verticapy.plotting._matplotlib as vpy_plt
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 if conf._get_import_success("graphviz"):
     from graphviz import Source
@@ -145,7 +145,7 @@ class Clustering(Unsupervised):
         return res
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws the model.
@@ -156,7 +156,7 @@ class Clustering(Unsupervised):
             Maximum number  of points to display.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
@@ -166,23 +166,23 @@ class Clustering(Unsupervised):
             Axes.
         """
         vdf = vDataFrame(self.input_relation)
-        kwds = {
+        kwargs = {
             "columns": self.X,
             "max_nb_points": max_nb_points,
             "ax": ax,
-            **style_kwds,
+            **style_kwargs,
         }
         if self._model_subcategory == "ANOMALY_DETECTION":
             fun = vdf.bubble
             name = "anomaly_score"
-            kwds["cmap_col"] = name
+            kwargs["cmap_col"] = name
         else:
             fun = vdf.scatter
             name = "cluster"
-            kwds["catcol"] = name
-            kwds["max_cardinality"] = 100
+            kwargs["catcol"] = name
+            kwargs["max_cardinality"] = 100
         self.predict(vdf, name=name)
-        return fun(**kwds)
+        return fun(**kwargs)
 
 
 """
@@ -345,7 +345,7 @@ class KMeans(Clustering):
         max_nb_points: int = 50,
         plot_crosses: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Figure:
         """
         Draws the Voronoi Graph of the model.
@@ -359,7 +359,7 @@ class KMeans(Clustering):
             by white crosses.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any  optional  parameter  to  pass  to  the 
             Matplotlib functions.
 
@@ -369,14 +369,14 @@ class KMeans(Clustering):
             Matplotlib Figure.
         """
         if len(self.X) == 2:
-            return vpy_plt.KMeansPlot().voronoi_plot(
+            return vpy_matplotlib_plt.VoronoiPlot().draw(
                 clusters=self.clusters_,
                 columns=self.X,
                 input_relation=self.input_relation,
                 plot_crosses=plot_crosses,
                 ax=ax,
                 max_nb_points=max_nb_points,
-                **style_kwds,
+                **style_kwargs,
             )
         else:
             raise Exception("Voronoi Plots are only available in 2D")
@@ -749,7 +749,7 @@ class BisectingKMeans(KMeans, Tree):
             leaf_style=leaf_style,
         )
 
-    def plot_tree(self, pic_path: str = "", *argv, **kwds,) -> "Source":
+    def plot_tree(self, pic_path: str = "", *args, **kwargs,) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
 
@@ -757,7 +757,7 @@ class BisectingKMeans(KMeans, Tree):
         ----------
         pic_path: str, optional
             Absolute  path to save the image of the  tree.
-        *argv, **kwds: Any, optional
+        *args, **kwargs: Any, optional
             Arguments to pass to the 'to_graphviz' method.
 
         Returns
@@ -765,7 +765,7 @@ class BisectingKMeans(KMeans, Tree):
         graphviz.Source
             graphviz object.
         """
-        return self.to_memmodel().plot_tree(pic_path=pic_path, *argv, **kwds,)
+        return self.to_memmodel().plot_tree(pic_path=pic_path, *args, **kwargs,)
 
 
 """
@@ -1082,7 +1082,7 @@ class DBSCAN(VerticaModel):
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws the model.
@@ -1093,7 +1093,7 @@ class DBSCAN(VerticaModel):
             Maximum number of points to display.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
@@ -1108,7 +1108,7 @@ class DBSCAN(VerticaModel):
             max_cardinality=100,
             max_nb_points=max_nb_points,
             ax=ax,
-            **style_kwds,
+            **style_kwargs,
         )
 
 

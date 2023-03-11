@@ -831,7 +831,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def aad(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'aad' (Average Absolute Deviation).
@@ -841,7 +841,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -854,11 +854,11 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["aad"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["aad"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def all(
-        self, columns: SQLColumns, **agg_kwds,
+        self, columns: SQLColumns, **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'bool_and'.
@@ -867,7 +867,7 @@ class vDFAgg:
     ----------
     columns: SQLColumns
         List of the vDataColumns names.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
 
@@ -881,11 +881,11 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["bool_and"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["bool_and"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def any(
-        self, columns: SQLColumns, **agg_kwds,
+        self, columns: SQLColumns, **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'bool_or'.
@@ -894,7 +894,7 @@ class vDFAgg:
     ----------
     columns: SQLColumns
         List of the vDataColumns names.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -907,11 +907,11 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["bool_or"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["bool_or"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def avg(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'avg' (Average).
@@ -921,7 +921,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -934,13 +934,13 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["avg"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["avg"], columns=columns, **agg_kwargs,)
 
     mean = avg
 
     @save_verticapy_logs
     def count(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using a list of 'count' (Number of non-missing 
@@ -950,7 +950,7 @@ class vDFAgg:
     ----------
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all vDataColumns will be used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -963,7 +963,7 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["count"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["count"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def count_percent(
@@ -971,7 +971,7 @@ class vDFAgg:
         columns: SQLColumns = [],
         sort_result: bool = True,
         desc: bool = True,
-        **agg_kwds,
+        **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using a list of 'count' (the number of non-missing 
@@ -986,7 +986,7 @@ class vDFAgg:
     desc: bool, optional
         If set to True and 'sort_result' is set to True, the result will be 
         sorted in descending order.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -999,7 +999,9 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        result = self.aggregate(func=["count", "percent"], columns=columns, **agg_kwds,)
+        result = self.aggregate(
+            func=["count", "percent"], columns=columns, **agg_kwargs,
+        )
         if sort_result:
             result.sort("count", desc)
         return result
@@ -1407,7 +1409,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def kurtosis(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'kurtosis'.
@@ -1417,7 +1419,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1430,13 +1432,13 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["kurtosis"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["kurtosis"], columns=columns, **agg_kwargs,)
 
     kurt = kurtosis
 
     @save_verticapy_logs
     def mad(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'mad' (Median Absolute Deviation).
@@ -1446,7 +1448,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1459,11 +1461,11 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["mad"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["mad"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def max(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'max' (Maximum).
@@ -1473,7 +1475,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1486,11 +1488,11 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["max"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["max"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def median(
-        self, columns: SQLColumns = [], approx: bool = True, **agg_kwds,
+        self, columns: SQLColumns = [], approx: bool = True, **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'median'.
@@ -1503,7 +1505,7 @@ class vDFAgg:
     approx: bool, optional
         If set to True, the approximate median is returned. By setting this 
         parameter to False, the function's performance can drastically decrease.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1516,11 +1518,11 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.quantile(0.5, columns=columns, approx=approx, **agg_kwds,)
+        return self.quantile(0.5, columns=columns, approx=approx, **agg_kwargs,)
 
     @save_verticapy_logs
     def min(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'min' (Minimum).
@@ -1530,7 +1532,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1543,11 +1545,11 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["min"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["min"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def nunique(
-        self, columns: SQLColumns = [], approx: bool = True, **agg_kwds,
+        self, columns: SQLColumns = [], approx: bool = True, **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'unique' (cardinality).
@@ -1560,7 +1562,7 @@ class vDFAgg:
         If set to True, the approximate cardinality is returned. By setting 
         this parameter to False, the function's performance can drastically 
         decrease.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1574,11 +1576,11 @@ class vDFAgg:
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
         func = ["approx_unique"] if approx else ["unique"]
-        return self.aggregate(func=func, columns=columns, **agg_kwds,)
+        return self.aggregate(func=func, columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def product(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'product'.
@@ -1587,7 +1589,7 @@ class vDFAgg:
     ----------
     columns: SQLColumns, optional
         List of the vDataColumn names. If empty, all numerical vDataColumns will be used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1600,7 +1602,7 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["prod"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["prod"], columns=columns, **agg_kwargs,)
 
     prod = product
 
@@ -1610,7 +1612,7 @@ class vDFAgg:
         q: Union[PythonNumber, list],
         columns: SQLColumns = [],
         approx: bool = True,
-        **agg_kwds,
+        **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using a list of 'quantiles'.
@@ -1626,7 +1628,7 @@ class vDFAgg:
     approx: bool, optional
         If set to True, the approximate quantile is returned. By setting this 
         parameter to False, the function's performance can drastically decrease.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1645,12 +1647,12 @@ class vDFAgg:
         return self.aggregate(
             func=[verticapy_agg_name(prefix + f"{float(item) * 100}%") for item in q],
             columns=columns,
-            **agg_kwds,
+            **agg_kwargs,
         )
 
     @save_verticapy_logs
     def sem(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'sem' (Standard Error of the Mean).
@@ -1660,7 +1662,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1673,11 +1675,11 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["sem"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["sem"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def skewness(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'skewness'.
@@ -1687,7 +1689,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1700,13 +1702,13 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["skewness"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["skewness"], columns=columns, **agg_kwargs,)
 
     skew = skewness
 
     @save_verticapy_logs
     def std(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'std' (Standard Deviation).
@@ -1716,7 +1718,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1729,13 +1731,13 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["stddev"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["stddev"], columns=columns, **agg_kwargs,)
 
     stddev = std
 
     @save_verticapy_logs
     def sum(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'sum'.
@@ -1745,7 +1747,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1758,11 +1760,11 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["sum"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["sum"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def var(
-        self, columns: SQLColumns = [], **agg_kwds,
+        self, columns: SQLColumns = [], **agg_kwargs,
     ):
         """
     Aggregates the vDataFrame using 'variance'.
@@ -1772,7 +1774,7 @@ class vDFAgg:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **agg_kwds
+    **agg_kwargs
         Any optional parameter to pass to the Aggregate function.
 
     Returns
@@ -1785,7 +1787,7 @@ class vDFAgg:
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["variance"], columns=columns, **agg_kwds,)
+        return self.aggregate(func=["variance"], columns=columns, **agg_kwargs,)
 
     variance = var
 

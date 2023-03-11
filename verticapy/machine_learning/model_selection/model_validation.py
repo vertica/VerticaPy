@@ -32,7 +32,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.base import VerticaModel
 
-import verticapy.plotting._matplotlib as vpy_plt
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 
 @save_verticapy_logs
@@ -331,7 +331,7 @@ def learning_curve(
     cutoff: PythonNumber = -1,
     std_coeff: PythonNumber = 1,
     ax: Optional[Axes] = None,
-    **style_kwds,
+    **style_kwargs,
 ) -> TableSample:
     """
     Draws the learning curve.
@@ -406,7 +406,7 @@ def learning_curve(
         around each score.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any  optional  parameter  to  pass  to  the 
         Matplotlib functions.
 
@@ -540,5 +540,7 @@ def learning_curve(
         x_label = "n"
         y_label = "time"
         labels = []
-    vpy_plt.RangeCurve().range_curve(X, Y, x_label, y_label, ax, labels, **style_kwds)
+    vpy_matplotlib_plt.RangeCurve().draw(
+        X, Y, x_label, y_label, ax, labels, **style_kwargs
+    )
     return result
