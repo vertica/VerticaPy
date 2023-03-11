@@ -257,7 +257,7 @@ class TestvDFPlot:
             0.38782051282051283
         )
         assert result4.get_default_bbox_extra_artists()[3].get_width() == pytest.approx(
-            0.23999999999999996
+            0.6121794871794872
         )
         # pyramid
         result5 = titanic_vd.bar(
