@@ -43,7 +43,7 @@ class Histogram(MatplotlibBase):
         vdf: "vDataFrame",
         columns: SQLColumns,
         method: str = "density",
-        of: str = "",
+        of: Optional[str] = None,
         h: float = 0.0,
         ax: Optional[Axes] = None,
         **style_kwargs,

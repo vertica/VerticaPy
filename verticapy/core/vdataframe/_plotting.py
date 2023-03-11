@@ -241,10 +241,10 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         method: str = "density",
-        of: str = "",
-        max_cardinality: tuple = (6, 6),
-        h: tuple = (None, None),
-        hist_type: Literal[
+        of: Optional[str] = None,
+        max_cardinality: tuple[int, int] = (6, 6),
+        h: tuple[PythonNumber, PythonNumber] = (None, None),
+        bar_type: Literal[
             "auto",
             "fully_stacked",
             "stacked",
@@ -275,14 +275,14 @@ class vDFPlot:
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
          The vDataColumn to use to compute the aggregation.
+    max_cardinality: tuple, optional
+        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
+        categorical (No h will be picked or computed)
     h: tuple, optional
         Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
         vDataColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
-    max_cardinality: tuple, optional
-        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
-        categorical (No h will be picked or computed)
-    hist_type: str, optional
+    bar_type: str, optional
         The BarChart Type.
             auto          : Regular Bar Chart based on 1 or 2 vDataColumns.
             pyramid       : Pyramid Density Bar Chart. Only works if one of
@@ -312,28 +312,27 @@ class vDFPlot:
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         if len(columns) == 1:
-            return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax, **style_kwargs)
-        else:
-            stacked, fully_stacked, density = False, False, False
-            if hist_type in ("fully", "fully stacked", "fully_stacked"):
-                fully_stacked = True
-            elif hist_type == "stacked":
-                stacked = True
-            elif hist_type in ("pyramid", "density"):
-                density = True
-            return vpy_matplotlib_plt.HorizontalBarChart2D().draw(
-                self,
-                columns,
-                method,
-                of,
-                max_cardinality,
-                h,
-                stacked,
-                fully_stacked,
-                density,
+            return self[columns[0]].bar(
+                method=method,
+                of=of,
+                max_cardinality=max_cardinality[0],
+                h=h[0],
                 ax=ax,
                 **style_kwargs,
             )
+        else:
+            if bar_type in ("fully", "fully stacked"):
+                bar_type = "fully_stacked"
+            elif bar_type == "pyramid":
+                bar_type = "density"
+            return vpy_matplotlib_plt.HorizontalBarChart2D(
+                vdf=self,
+                columns=columns,
+                method=method,
+                of=of,
+                max_cardinality=max_cardinality,
+                h=h,
+            ).draw(bar_type=bar_type, ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
     def boxplot(
@@ -767,7 +766,7 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         method: str = "count",
-        of: str = "",
+        of: Optional[str] = None,
         h: tuple = (None, None),
         ax: Optional[Axes] = None,
         **style_kwargs,
@@ -816,13 +815,14 @@ class vDFPlot:
                 f"vDataColumn {column} must be numerical to draw the Heatmap."
             )
         min_max = self.agg(func=["min", "max"], columns=columns).transpose()
-        ax = vpy_matplotlib_plt.PivotTable().draw(
+        ax = vpy_matplotlib_plt.PivotTable(
             vdf=self,
             columns=columns,
             method=method,
             of=of,
             h=h,
             max_cardinality=(0, 0),
+        ).draw(
             show=True,
             with_numbers=False,
             fill_none=0.0,
@@ -838,7 +838,7 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         method: Literal["density", "count", "avg", "min", "max", "sum"] = "count",
-        of: str = "",
+        of: Optional[str] = None,
         bbox: list = [],
         img: str = "",
         ax: Optional[Axes] = None,
@@ -892,10 +892,10 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         method: str = "density",
-        of: str = "",
-        max_cardinality: tuple = (6, 6),
-        h: Union[int, float, tuple] = (None, None),
-        hist_type: Literal["auto", "multi", "stacked"] = "auto",
+        of: Optional[str] = None,
+        max_cardinality: tuple[int, int] = (6, 6),
+        h: tuple[PythonNumber, PythonNumber] = (None, None),
+        bar_type: Literal["auto", "multi", "stacked"] = "auto",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -918,14 +918,14 @@ class vDFPlot:
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
         The vDataColumn to use to compute the aggregation.
-    h: int / float /tuple, optional
-        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
-        vDataColumns are numerical. Optimized h will be computed if the parameter 
-        is empty or invalid.
     max_cardinality: tuple, optional
         Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
-    hist_type: str, optional
+    h: tuple, optional
+        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
+        vDataColumns are numerical. Optimized h will be computed if the parameter 
+        is empty or invalid.
+    bar_type: str, optional
         The BarChart Type.
             auto    : Regular BarChart based on 1 or 2 vDataColumns.
             multi   : Multiple Regular BarCharts based on 1 to 5 vDataColumns.
@@ -951,31 +951,36 @@ class vDFPlot:
         columns, of = self._format_colnames(
             columns, of, expected_nb_of_cols=[1, 2, 3, 4, 5]
         )
-        stacked = True if (hist_type.lower() == "stacked") else False
-        multi = True if (hist_type.lower() == "multi") else False
+        stacked = True if (bar_type.lower() == "stacked") else False
+        multi = True if (bar_type.lower() == "multi") else False
         if len(columns) == 1:
-            return self[columns[0]].hist(method, of, 6, 0, 0, **style_kwargs)
+            return self[columns[0]].hist(
+                method=method,
+                of=of,
+                max_cardinality=max_cardinality[0],
+                h=h[0],
+                **style_kwargs,
+            )
         else:
             if multi:
-                if isinstance(h, (int, float)):
-                    h_0 = h
-                else:
-                    h_0 = h[0] if (h[0]) else 0
                 return vpy_matplotlib_plt.Histogram().draw(
-                    self, columns, method, of, h_0, ax=ax, **style_kwargs,
-                )
-            else:
-                return vpy_matplotlib_plt.BarChart2D().draw(
-                    self,
-                    columns,
-                    method,
-                    of,
-                    max_cardinality,
-                    h,
-                    stacked,
+                    vdf=self,
+                    columns=columns,
+                    method=method,
+                    of=of,
+                    h=h[0],
                     ax=ax,
                     **style_kwargs,
                 )
+            else:
+                return vpy_matplotlib_plt.BarChart2D(
+                    vdf=self,
+                    columns=columns,
+                    method=method,
+                    of=of,
+                    h=h,
+                    max_cardinality=max_cardinality,
+                ).draw(stacked=stacked, ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
     def outliers_plot(
@@ -1084,9 +1089,9 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         method: str = "count",
-        of: str = "",
-        max_cardinality: tuple = (20, 20),
-        h: tuple = (None, None),
+        of: Optional[str] = None,
+        max_cardinality: tuple[int, int] = (20, 20),
+        h: tuple[PythonNumber, PythonNumber] = (None, None),
         show: bool = True,
         with_numbers: bool = True,
         fill_none: float = 0.0,
@@ -1144,19 +1149,15 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
-        return vpy_matplotlib_plt.PivotTable().draw(
-            self,
-            columns,
+        return vpy_matplotlib_plt.PivotTable(
+            vdf=self,
+            columns=columns,
             method=method,
             of=of,
             h=h,
             max_cardinality=max_cardinality,
             fill_none=fill_none,
-            show=show,
-            with_numbers=with_numbers,
-            ax=ax,
-            **style_kwargs,
-        )
+        ).draw(show=show, with_numbers=with_numbers, ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
     def plot(
@@ -1498,7 +1499,7 @@ class vDCPlot:
     def bar(
         self,
         method: str = "density",
-        of: str = "",
+        of: Optional[str] = None,
         max_cardinality: int = 6,
         nbins: int = 0,
         h: PythonNumber = 0,
@@ -1760,7 +1761,7 @@ class vDCPlot:
     def hist(
         self,
         method: str = "density",
-        of: str = "",
+        of: Optional[str] = None,
         max_cardinality: int = 6,
         nbins: int = 0,
         h: PythonNumber = 0,
@@ -1819,7 +1820,7 @@ class vDCPlot:
     def pie(
         self,
         method: str = "density",
-        of: str = "",
+        of: Optional[str] = None,
         max_cardinality: int = 6,
         h: PythonNumber = 0,
         pie_type: Literal["auto", "donut", "rose"] = "auto",
@@ -1983,9 +1984,9 @@ class vDCPlot:
         self,
         by: str = "",
         method: str = "density",
-        of: str = "",
-        max_cardinality: Union[int, tuple, list] = (6, 6),
-        h: Union[int, float, tuple, list] = (None, None),
+        of: Optional[str] = None,
+        max_cardinality: tuple[int, int] = (6, 6),
+        h: tuple[PythonNumber, PythonNumber] = (None, None),
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -2012,7 +2013,7 @@ class vDCPlot:
         Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
         vDataColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
-    max_cardinality: int / tuple / list, optional
+    max_cardinality: tuple, optional
         Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     ax: Axes, optional
@@ -2033,13 +2034,11 @@ class vDCPlot:
         columns = [self._alias]
         if by:
             columns += [by]
-        return vpy_matplotlib_plt.SpiderChart().draw(
-            self._parent,
-            columns,
-            method,
-            of,
-            max_cardinality,
-            h,
-            ax=ax,
-            **style_kwargs,
-        )
+        return vpy_matplotlib_plt.SpiderChart(
+            vdf=self._parent,
+            columns=columns,
+            method=method,
+            of=of,
+            max_cardinality=max_cardinality,
+            h=h,
+        ).draw(ax=ax, **style_kwargs,)

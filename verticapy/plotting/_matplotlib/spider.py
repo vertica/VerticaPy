@@ -44,32 +44,16 @@ class SpiderChart(MatplotlibBase):
     def _compute_method(self) -> Literal["2D"]:
         return "2D"
 
-    def draw(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        method: str = "density",
-        of: str = "",
-        max_cardinality: tuple[int, int] = (6, 6),
-        h: tuple[Optional[float], Optional[float]] = (None, None),
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a spider plot using the Matplotlib API.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        unique = vdf[columns[0]].nunique(True)
-        if unique < 3:
+        m = self.data["matrix"].shape[0]
+        if m < 3:
             raise ParameterError(
                 "The column used to draw the Spider Chart must "
-                f"have at least 3 categories. Found {int(unique)}."
+                f"have at least 3 categories. Found {int(m)}."
             )
-        self._compute_pivot_table(
-            vdf, columns, method=method, of=of, h=h, max_cardinality=max_cardinality,
-        )
-        m = self.data["matrix"].shape[0]
         angles = [i / float(m) * 2 * math.pi for i in range(m)]
         angles += angles[:1]
         fig = plt.figure()
@@ -99,11 +83,13 @@ class SpiderChart(MatplotlibBase):
         ]
         ax.set_yticks(y_ticks)
         ax.set_rgrids(y_ticks, angle=180.0, fmt="%0.1f")
-        ax.set_xlabel(columns[0])
-        ax.set_ylabel(self._map_method(method, of)[0])
-        if len(columns) > 1:
+        ax.set_xlabel(self.layout["columns"][0])
+        ax.set_ylabel(self.layout["method"])
+        if len(self.layout["columns"]) > 1:
             ax.legend(
-                title=columns[1], loc="center left", bbox_to_anchor=[1.1, 0.5],
+                title=self.layout["columns"][1],
+                loc="center left",
+                bbox_to_anchor=[1.1, 0.5],
             )
             box = ax.get_position()
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

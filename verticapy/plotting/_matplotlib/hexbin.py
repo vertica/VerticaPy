@@ -46,7 +46,7 @@ class HexbinMap(MatplotlibBase):
         vdf: "vDataFrame",
         columns: SQLColumns,
         method: str = "count",
-        of: str = "",
+        of: Optional[str] = None,
         bbox: list = [],
         img: str = "",
         ax: Optional[Axes] = None,

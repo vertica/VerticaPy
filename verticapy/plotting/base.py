@@ -43,7 +43,9 @@ class PlottingBase:
         """Must be overridden in child class"""
         return None
 
-    def __init__(*args, **kwargs) -> None:
+    # System Methods.
+
+    def __init__(self, *args, **kwargs) -> None:
         if self._compute_method == "1D":
             self._compute_plot_params(*args, **kwargs)
         elif self._compute_method == "2D":
@@ -131,7 +133,7 @@ class PlottingBase:
         self,
         vdc: "vDataColumn",
         method: str = "density",
-        of: str = "",
+        of: Optional[str] = None,
         max_cardinality: int = 6,
         nbins: int = 0,
         h: float = 0.0,
@@ -326,11 +328,12 @@ class PlottingBase:
             "is_categorical": is_categorical,
         }
         self.layout = {
-            "x": self._alias,
+            "x": vdc._alias,
             "method": method,
             "of": of,
+            "of_cat": vdc._parent[of].category() if of else None,
             "aggregate": aggregate,
-            "of_cat": vdc._parent[of].category(),
+            "is_standard": is_standard,
         }
         return None
 
@@ -339,7 +342,7 @@ class PlottingBase:
         vdf: "vDataFrame",
         columns: SQLColumns,
         method: str = "count",
-        of: str = "",
+        of: Optional[str] = None,
         h: tuple[Optional[float], Optional[float]] = (None, None),
         max_cardinality: tuple[int, int] = (20, 20),
         fill_none: float = 0.0,
@@ -351,6 +354,8 @@ class PlottingBase:
         method, aggregate, is_standard = self._map_method(method, of)
         if not (is_standard):
             other_columns = ", " + ", ".join(vdf.get_columns(exclude_columns=columns))
+        if isinstance(columns, str):
+            columns = [columns]
         columns, of = vdf._format_colnames(columns, of)
         is_column_date = [False, False]
         timestampadd = ["", ""]
@@ -495,3 +500,11 @@ class PlottingBase:
             i = y_labels.index(str(item[1]))
             matrix[i][j] = item[2]
         self.data = {"x_labels": x_labels, "y_labels": y_labels, "matrix": matrix}
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+            "method": method,
+            "of": of,
+            "of_cat": vdf[of].category() if of else None,
+            "aggregate": aggregate,
+            "is_standard": is_standard,
+        }

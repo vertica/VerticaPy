@@ -82,15 +82,7 @@ class HorizontalBarChart2D(MatplotlibBase):
 
     def draw(
         self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        method: str = "density",
-        of: str = "",
-        max_cardinality: tuple[int, int] = (6, 6),
-        h: tuple[Optional[float], Optional[float]] = (None, None),
-        stacked: bool = False,
-        fully_stacked: bool = False,
-        density: bool = False,
+        bar_type: Literal["auto", "fully_stacked", "stacked", "density"],
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> Axes:
@@ -98,34 +90,37 @@ class HorizontalBarChart2D(MatplotlibBase):
         Draws a 2D bar chart using the Matplotlib API.
         """
         colors = get_colors()
-        if fully_stacked:
-            if method != "density":
+        n, m = self.data["matrix"].shape
+        if bar_type == "fully_stacked":
+            if self.layout["method"] != "density":
                 raise ValueError(
                     "Fully Stacked Bar works only with the 'density' method."
                 )
-        if density:
-            if method != "density":
+        if bar_type == "density":
+            if self.layout["method"] != "density":
                 raise ValueError("Pyramid Bar works only with the 'density' method.")
-            unique = vdf.nunique(columns)["approx_unique"]
-            if unique[1] != 2 and unique[0] != 2:
+            if n != 2 and m != 2:
                 raise ValueError(
                     "One of the 2 columns must have 2 categories to draw a Pyramid Bar."
                 )
-            if unique[1] != 2:
-                columns = [columns[1], columns[0]]
-        xlabel = self._map_method(method, of)[0]
-        self._compute_pivot_table(
-            vdf, columns, method=method, of=of, h=h, max_cardinality=max_cardinality,
-        )
+            if m != 2:
+                self.data["matrix"] = np.transpose(self.data["matrix"])
+                y_labels = self.data["y_labels"]
+                self.data["y_labels"] = self.data["x_labels"]
+                self.data["x_labels"] = y_labels
+                self.layout["columns"] = [
+                    self.layout["columns"][1],
+                    self.layout["columns"][0],
+                ]
         matrix = copy.deepcopy(self.data["matrix"])
         m, n = matrix.shape
         yticks = [j for j in range(m)]
         bar_height = 0.5
-        if density:
+        if bar_type == "density":
             ax, fig = self._get_ax_fig(ax, size=(10, min(m * 3, 600) / 8 + 1), grid="x")
         else:
             ax, fig = self._get_ax_fig(ax, size=(10, min(m * 3, 600) / 2 + 1), grid="x")
-        if fully_stacked:
+        if bar_type == "fully_stacked":
             for i in range(0, m):
                 matrix[i] /= sum(matrix[i])
         for i in range(0, n):
@@ -134,18 +129,18 @@ class HorizontalBarChart2D(MatplotlibBase):
                 "y": [j for j in range(m)],
                 "width": matrix[:, i],
                 "height": bar_height,
-                "label": self.data["y_labels"][i],
+                "label": self.data["x_labels"][i],
                 "alpha": 0.86,
                 "color": colors[i % len(colors)],
             }
             params = self._update_dict(params, style_kwargs, i)
-            if stacked or fully_stacked:
+            if bar_type in ("stacked", "fully_stacked"):
                 if i == 0:
                     last_column = np.array([0.0 for j in range(m)])
                 else:
                     last_column += matrix[:, i - 1].astype(float)
                 params["left"] = last_column
-            elif density:
+            elif bar_type == "density":
                 if i == 1:
                     current_column = [-j for j in current_column]
                 params["width"] = current_column
@@ -154,18 +149,20 @@ class HorizontalBarChart2D(MatplotlibBase):
                 params["y"] = [j + i * bar_height / n for j in range(m)]
                 params["height"] = bar_height / n
             ax.barh(**params)
-        if not (stacked):
+        if bar_type != "stacked":
             yticks = [j + bar_height / 2 - bar_height / 2 / (n - 1) for j in range(m)]
         ax.set_yticks(yticks)
-        ax.set_yticklabels(self.data["x_labels"])
-        ax.set_ylabel(columns[0])
-        ax.set_xlabel(xlabel)
-        if density or fully_stacked:
+        ax.set_yticklabels(self.data["y_labels"])
+        ax.set_ylabel(self.layout["columns"][1])
+        ax.set_xlabel(self.layout["method"])
+        if bar_type in ("density", "fully_stacked"):
             vals = ax.get_xticks()
             max_val = max([abs(x) for x in vals])
             ax.xaxis.set_major_locator(mticker.FixedLocator(vals))
             ax.set_xticklabels(["{:,.2%}".format(abs(x)) for x in vals])
-        ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
+        ax.legend(
+            title=self.layout["columns"][0], loc="center left", bbox_to_anchor=[1, 0.5]
+        )
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         return ax

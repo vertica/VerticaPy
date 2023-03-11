@@ -81,26 +81,12 @@ class BarChart2D(MatplotlibBase):
         return "2D"
 
     def draw(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        method: str = "density",
-        of: str = "",
-        max_cardinality: tuple[int, int] = (6, 6),
-        h: tuple[Optional[float], Optional[float]] = (None, None),
-        stacked: bool = False,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
+        self, stacked: bool = False, ax: Optional[Axes] = None, **style_kwargs,
     ) -> Axes:
         """
         Draws a 2D BarChart using the Matplotlib API.
         """
-        if isinstance(columns, str):
-            columns = [columns]
         colors = get_colors()
-        self._compute_pivot_table(
-            vdf, columns, method=method, of=of, h=h, max_cardinality=max_cardinality,
-        )
         m, n = self.data["matrix"].shape
         bar_width = 0.5
         ax, fig = self._get_ax_fig(
@@ -111,7 +97,7 @@ class BarChart2D(MatplotlibBase):
                 "x": [j for j in range(m)],
                 "height": self.data["matrix"][:, i],
                 "width": bar_width,
-                "label": self.data["y_labels"][i],
+                "label": self.data["x_labels"][i],
                 "alpha": 0.86,
                 "color": colors[i % len(colors)],
             }
@@ -131,10 +117,12 @@ class BarChart2D(MatplotlibBase):
         else:
             xticks = [j + bar_width / 2 - bar_width / 2 / (n - 1) for j in range(m)]
         ax.set_xticks(xticks)
-        ax.set_xticklabels(self.data["x_labels"], rotation=90)
-        ax.set_xlabel(columns[0])
-        ax.set_ylabel(self._map_method(method, of)[0])
-        ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
+        ax.set_xticklabels(self.data["y_labels"], rotation=90)
+        ax.set_xlabel(self.layout["columns"][1])
+        ax.set_ylabel(self.layout["method"])
+        ax.legend(
+            title=self.layout["columns"][0], loc="center left", bbox_to_anchor=[1, 0.5]
+        )
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         return ax
