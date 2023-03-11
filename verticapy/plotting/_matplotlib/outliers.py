@@ -104,7 +104,7 @@ class OutliersPlot(ScatterPlot):
             ][0]
             vdf_temp["ZSCORE"] = "ZSCORE + 1.5 * RANDOM()"
             for searchi in [(">", outliers_color), ("<=", inliers_color)]:
-                self.scatter(
+                super().draw(
                     vdf_temp.search(f"ZSCORE {searchi[0]} {threshold}"),
                     [columns[0], "ZSCORE"],
                     max_nb_points=max_nb_points,

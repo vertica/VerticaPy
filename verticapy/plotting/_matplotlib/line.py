@@ -148,7 +148,7 @@ class MultiLinePlot(MatplotlibBase):
         if isinstance(columns, str):
             columns = [columns]
         if len(columns) == 1 and kind != "area_percent":
-            return LinePlot().ts_plot(
+            return LinePlot().draw(
                 vdf[columns[0]],
                 order_by=order_by,
                 order_by_start=order_by_start,

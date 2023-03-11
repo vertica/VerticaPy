@@ -1218,7 +1218,6 @@ class vDFCorr:
                 vpy_matplotlib_plt.ACFPlot().draw(
                     result.values["index"],
                     result.values["value"],
-                    title="Autocorrelation",
                     confidence=acf_band,
                     type_bar=True if acf_type == "bar" else False,
                     ax=ax,
@@ -1375,7 +1374,6 @@ class vDFCorr:
                 vpy_matplotlib_plt.ACFPlot().draw(
                     result.values["index"],
                     result.values["value"],
-                    title="Partial Autocorrelation",
                     confidence=pacf_band,
                     type_bar=True,
                     ax=ax,

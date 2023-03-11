@@ -127,6 +127,9 @@ class HorizontalBarChart2D(MatplotlibBase):
             if unique[1] != 2:
                 columns = [columns[1], columns[0]]
         xlabel = self._map_method(method, of)[0]
+        self._compute_pivot_table(
+            vdf, columns, method=method, of=of, h=h, max_cardinality=max_cardinality,
+        )
         matrix = copy.deepcopy(self.data["matrix"])
         m, n = matrix.shape
         yticks = [j for j in range(m)]

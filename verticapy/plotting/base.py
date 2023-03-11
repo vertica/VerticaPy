@@ -332,7 +332,7 @@ class PlottingBase:
         h: tuple[Optional[float], Optional[float]] = (None, None),
         max_cardinality: tuple[int, int] = (20, 20),
         fill_none: float = 0.0,
-    ) -> tuple[np.ndarray, list[str], list[str]]:
+    ) -> None:
         """
         Draws a pivot table using the Matplotlib API.
         """
@@ -479,7 +479,7 @@ class PlottingBase:
                 pass
             matrix_categories += [copy.deepcopy(L)]
         x_labels, y_labels = matrix_categories
-        matrix = [[fill_none for item in x_labels] for item in y_labels]
+        matrix = np.array([[fill_none for item in x_labels] for item in y_labels])
         for item in query_result:
             j = x_labels.index(str(item[0]))
             i = y_labels.index(str(item[1]))
