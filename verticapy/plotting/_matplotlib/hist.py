@@ -38,10 +38,6 @@ class Histogram(MatplotlibBase):
     def _kind(self) -> Literal["hist"]:
         return "hist"
 
-    @property
-    def _compute_method(self) -> Literal["1D"]:
-        return "1D"
-
     def draw(
         self,
         vdf: "vDataFrame",

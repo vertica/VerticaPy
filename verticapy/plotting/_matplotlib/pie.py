@@ -26,7 +26,7 @@ import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns
 
 if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
@@ -59,13 +59,7 @@ class PieChart(MatplotlibBase):
 
     def draw(
         self,
-        vdc: "vDataColumn",
-        method: str = "density",
-        of: Optional[str] = None,
-        max_cardinality: int = 6,
-        h: PythonNumber = 0,
-        donut: bool = False,
-        rose: bool = False,
+        pie_type: Literal["auto", "donut", "rose"] = "auto",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> Axes:
@@ -73,9 +67,6 @@ class PieChart(MatplotlibBase):
         Draws a pie chart using the Matplotlib API.
         """
         colors = get_colors()
-        self._compute_plot_params(
-            vdc, max_cardinality=max_cardinality, method=method, of=of, pie=True
-        )
         n = len(self.data["y"])
         explode = [0 for i in range(n)]
         explode[max(zip(self.data["y"], range(n)))[1]] = 0.13
@@ -87,18 +78,18 @@ class PieChart(MatplotlibBase):
             ):
                 current_explode = min(0.9, current_explode * 1.4)
                 explode[idx] = current_explode
-        if method.lower() == "density":
+        if self.layout["method"].lower() == "density":
             autopct = "%1.1f%%"
         else:
-            if (method.lower() in ["sum", "count"]) or (
-                (method.lower() in ["min", "max"])
-                and (vdc._parent[of].category == "int")
+            if (self.layout["method"].lower() in ["sum", "count"]) or (
+                (self.layout["method"].lower() in ["min", "max"])
+                and (self.layout["of_cat"] == "int")
             ):
                 category = "int"
             else:
                 category = None
             autopct = self._make_autopct(self.data["y"], category)
-        if not (rose):
+        if pie_type != "rose":
             ax, fig = self._get_ax_fig(
                 ax, size=(8, 6), set_axis_below=False, grid=False
             )
@@ -111,7 +102,7 @@ class PieChart(MatplotlibBase):
                 "textprops": {"color": "w"},
                 "normalize": True,
             }
-            if donut:
+            if pie_type == "donut":
                 param["wedgeprops"] = dict(width=0.4, edgecolor="w")
                 param["explode"] = None
                 param["pctdistance"] = 0.8
@@ -125,7 +116,7 @@ class PieChart(MatplotlibBase):
             ax.legend(
                 handles,
                 labels,
-                title=vdc._alias,
+                title=self.layout["x"],
                 loc="center left",
                 bbox_to_anchor=[1, 0.5],
             )
@@ -184,7 +175,7 @@ class PieChart(MatplotlibBase):
                 labels,
                 bbox_to_anchor=[1.1, 0.5],
                 loc="center left",
-                title=vdc._alias,
+                title=self.layout["x"],
                 labelspacing=1,
             )
             box = ax.get_position()

@@ -1544,9 +1544,14 @@ class vDCPlot:
     vDataFrame[].hist : Draws the histogram of the vDataColumn based on an aggregation.
         """
         of = self._parent._format_colnames(of)
-        return vpy_matplotlib_plt.HorizontalBarChart().draw(
-            self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwargs
-        )
+        return vpy_matplotlib_plt.HorizontalBarChart(
+            vdc=self,
+            method=method,
+            of=of,
+            max_cardinality=max_cardinality,
+            nbins=nbins,
+            h=h,
+        ).draw(ax=ax, **style_kwargs)
 
     @save_verticapy_logs
     def boxplot(
@@ -1801,9 +1806,14 @@ class vDCPlot:
     vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
         of = self._parent._format_colnames(of)
-        return vpy_matplotlib_plt.BarChart().draw(
-            self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwargs
-        )
+        return vpy_matplotlib_plt.BarChart(
+            vdc=self,
+            method=method,
+            of=of,
+            max_cardinality=max_cardinality,
+            nbins=nbins,
+            h=h,
+        ).draw(ax=ax, **style_kwargs)
 
     @save_verticapy_logs
     def pie(
@@ -1858,11 +1868,15 @@ class vDCPlot:
     --------
     vDataFrame.donut : Draws the donut chart of the vDataColumn based on an aggregation.
         """
-        donut, rose = (pie_type == "donut"), (pie_type == "rose")
         of = self._parent._format_colnames(of)
-        return vpy_matplotlib_plt.PieChart().draw(
-            self, method, of, max_cardinality, h, donut, rose, ax=ax, **style_kwargs,
-        )
+        return vpy_matplotlib_plt.PieChart(
+            vdc=self,
+            method=method,
+            of=of,
+            max_cardinality=max_cardinality,
+            h=h,
+            pie=True,
+        ).draw(pie_type=pie_type, ax=ax, **style_kwargs)
 
     @save_verticapy_logs
     def plot(

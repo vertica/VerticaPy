@@ -44,6 +44,10 @@ class PlottingBase:
         return None
 
     def __init__(*args, **kwargs) -> None:
+        if self._compute_method == "1D":
+            self._compute_plot_params(*args, **kwargs)
+        elif self._compute_method == "2D":
+            self._compute_pivot_table(*args, **kwargs)
         return None
 
     # Formatting Methods.
@@ -321,6 +325,13 @@ class PlottingBase:
             "adj_width": adj_width,
             "is_categorical": is_categorical,
         }
+        self.layout = {
+            "x": self._alias,
+            "method": method,
+            "of": of,
+            "aggregate": aggregate,
+            "of_cat": vdc._parent[of].category(),
+        }
         return None
 
     def _compute_pivot_table(
@@ -462,7 +473,6 @@ class PlottingBase:
             title="Grouping the features to compute the pivot table",
             method="fetchall",
         )
-        agg = [item[2] for item in query_result]
         matrix_categories = []
         for i in range(2):
             L = list(set([str(item[i]) for item in query_result]))

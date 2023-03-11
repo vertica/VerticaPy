@@ -41,22 +41,10 @@ class BarChart(MatplotlibBase):
     def _compute_method(self) -> Literal["1D"]:
         return "1D"
 
-    def draw(
-        self,
-        vdc: "vDataColumn",
-        method: str = "density",
-        of: Optional[str] = None,
-        max_cardinality: int = 6,
-        nbins: int = 0,
-        h: float = 0.0,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a histogram using the Matplotlib API.
         """
-        self._compute_plot_params(vdc, method, of, max_cardinality, nbins, h)
-        is_numeric = vdc.isnum()
         ax, fig = self._get_ax_fig(
             ax,
             size=(min(int(len(self.data["x"]) / 1.8) + 1, 600), 6),
@@ -66,7 +54,7 @@ class BarChart(MatplotlibBase):
         params = {"color": get_colors()[0], "alpha": 0.86}
         params = self._update_dict(params, style_kwargs)
         ax.bar(self.data["x"], self.data["y"], self.data["adj_width"], **params)
-        ax.set_xlabel(vdc._alias)
+        ax.set_xlabel(self.layout["x"])
         if self.data["is_categorical"]:
             xticks = self.data["x"]
             xticks_label = self._format_string(self.data["labels"])
@@ -75,7 +63,7 @@ class BarChart(MatplotlibBase):
             xticks_label = xticks
         ax.set_xticks(xticks)
         ax.set_xticklabels(xticks_label, rotation=90)
-        ax.set_ylabel(self._map_method(method, of)[0])
+        ax.set_ylabel(self.layout["method"])
         return ax
 
 

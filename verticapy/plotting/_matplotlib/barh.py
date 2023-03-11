@@ -45,30 +45,17 @@ class HorizontalBarChart(MatplotlibBase):
     def _compute_method(self) -> Literal["1D"]:
         return "1D"
 
-    def draw(
-        self,
-        vdc: "vDataColumn",
-        method: str = "density",
-        of: Optional[str] = None,
-        max_cardinality: int = 6,
-        nbins: int = 0,
-        h: float = 0.0,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a bar chart using the Matplotlib API.
         """
-        self._compute_plot_params(
-            vdc, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
-        )
         ax, fig = self._get_ax_fig(
             ax, size=(10, min(int(len(self.data["x"]) / 1.8) + 1, 600)), grid="x"
         )
         params = {"color": get_colors()[0], "alpha": 0.86}
         params = self._update_dict(params, style_kwargs, 0)
         ax.barh(self.data["x"], self.data["y"], self.data["adj_width"], **params)
-        ax.set_ylabel(vdc._alias)
+        ax.set_ylabel(self.layout["x"])
         if self.data["is_categorical"]:
             ax.set_yticks(self.data["x"])
             ax.set_yticklabels(self._format_string(self.data["labels"]), rotation=0)
@@ -76,7 +63,7 @@ class HorizontalBarChart(MatplotlibBase):
             ax.set_yticks(
                 [x - round(self.data["width"] / 2, 10) for x in self.data["x"]]
             )
-        ax.set_xlabel(self._map_method(method, of)[0])
+        ax.set_xlabel(self.layout["method"])
         return ax
 
 
