@@ -499,7 +499,7 @@ class PlottingBase:
             j = x_labels.index(str(item[0]))
             i = y_labels.index(str(item[1]))
             matrix[i][j] = item[2]
-        self.data = {"x_labels": x_labels, "y_labels": y_labels, "matrix": matrix}
+        self.data = {"matrix": matrix, "x_labels": x_labels, "y_labels": y_labels}
         self.layout = {
             "columns": copy.deepcopy(columns),
             "method": method,

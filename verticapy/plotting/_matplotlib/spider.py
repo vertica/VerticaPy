@@ -48,11 +48,11 @@ class SpiderChart(MatplotlibBase):
         """
         Draws a spider plot using the Matplotlib API.
         """
-        m = self.data["matrix"].shape[0]
-        if m < 3:
+        m, n = self.data["matrix"].shape
+        if n < 3:
             raise ParameterError(
                 "The column used to draw the Spider Chart must "
-                f"have at least 3 categories. Found {int(m)}."
+                f"have at least 3 categories. Found {int(n)}."
             )
         angles = [i / float(m) * 2 * math.pi for i in range(m)]
         angles += angles[:1]

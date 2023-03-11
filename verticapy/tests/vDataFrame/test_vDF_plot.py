@@ -248,7 +248,7 @@ class TestvDFPlot:
             ].get_width() == pytest.approx(50.0)
             assert result3.get_default_bbox_extra_artists()[
                 3
-            ].get_width() == pytest.approx(77.9583)
+            ].get_width() == pytest.approx(23.0)
         # fully_stacked
         result4 = titanic_vd.bar(
             columns=["pclass", "survived"], bar_type="fully_stacked", color="b",
@@ -600,7 +600,7 @@ class TestvDFPlot:
             ].get_height() == pytest.approx(0.964285714285714)
             assert result3.get_default_bbox_extra_artists()[
                 3
-            ].get_height() == pytest.approx(0.325581395348837)
+            ].get_height() == pytest.approx(0.146341463414634)
             plt.close("all")
         # multi
         result4 = titanic_vd.hist(columns=["fare", "age"], bar_type="multi")

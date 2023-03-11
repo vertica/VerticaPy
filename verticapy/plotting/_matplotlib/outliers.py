@@ -136,7 +136,7 @@ class OutliersPlot(ScatterPlot):
                     / {all_agg["std"][0]}) <= {threshold} 
                {op} ABS(({columns[1]} - {all_agg["avg"][1]}) 
                     / {all_agg["std"][1]}) <= {threshold}"""
-                self.scatter(
+                super().scatter(
                     vdf.search(s),
                     columns,
                     max_nb_points=max_nb_points,
