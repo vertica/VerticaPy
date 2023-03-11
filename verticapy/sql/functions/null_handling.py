@@ -21,7 +21,7 @@ from verticapy._utils._sql._format import format_magic
 from verticapy.core.string_sql.base import StringSQL
 
 
-def coalesce(expr: SQLExpression, *argv) -> StringSQL:
+def coalesce(expr: SQLExpression, *args) -> StringSQL:
     """
     Returns the value of the first non-null 
     expression in the list.
@@ -30,7 +30,7 @@ def coalesce(expr: SQLExpression, *argv) -> StringSQL:
     ----------
     expr: SQLExpression
         Expression.
-    argv: SQLExpression
+    args: SQLExpression
         Infinite Number of Expressions.
 
     Returns
@@ -40,7 +40,7 @@ def coalesce(expr: SQLExpression, *argv) -> StringSQL:
     """
     category = to_dtype_category(expr)
     expr = [format_magic(expr)]
-    for arg in argv:
+    for arg in args:
         expr += [format_magic(arg)]
     expr = ", ".join([str(elem) for elem in expr])
     return StringSQL(f"COALESCE({expr})", category)

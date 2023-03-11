@@ -482,14 +482,14 @@ def gamma(expr: SQLExpression) -> StringSQL:
     return StringSQL(f"({expr} - 1)!", "float")
 
 
-def hash(*argv) -> StringSQL:
+def hash(*args) -> StringSQL:
     """
     Calculates a hash value over the function 
     arguments.
 
     Parameters
     ----------
-    argv: SQLExpression
+    args: SQLExpression
         Infinite Number of Expressions.
 
     Returns
@@ -498,7 +498,7 @@ def hash(*argv) -> StringSQL:
         SQL string.
     """
     expr = []
-    for arg in argv:
+    for arg in args:
         expr += [format_magic(arg)]
     expr = ", ".join([str(elem) for elem in expr])
     return StringSQL(f"HASH({expr})", "float")

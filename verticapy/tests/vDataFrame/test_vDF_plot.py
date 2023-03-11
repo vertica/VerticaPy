@@ -235,12 +235,12 @@ class TestvDFPlot:
 
         # testing vDataFrame.bar
         # auto & stacked
-        for hist_type in ["auto", "stacked"]:
+        for bar_type in ["auto", "stacked"]:
             result3 = titanic_vd.bar(
                 columns=["pclass", "survived"],
                 method="50%",
                 of="fare",
-                hist_type=hist_type,
+                bar_type=bar_type,
                 color="b",
             )
             assert result3.get_default_bbox_extra_artists()[
@@ -251,7 +251,7 @@ class TestvDFPlot:
             ].get_width() == pytest.approx(77.9583)
         # fully_stacked
         result4 = titanic_vd.bar(
-            columns=["pclass", "survived"], hist_type="fully_stacked", color="b",
+            columns=["pclass", "survived"], bar_type="fully_stacked", color="b",
         )
         assert result4.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.38782051282051283
@@ -261,7 +261,7 @@ class TestvDFPlot:
         )
         # pyramid
         result5 = titanic_vd.bar(
-            columns=["pclass", "survived"], hist_type="pyramid", color="b"
+            columns=["pclass", "survived"], bar_type="pyramid", color="b"
         )
         assert result5.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.09805510534846029
@@ -587,12 +587,12 @@ class TestvDFPlot:
 
         # testing vDataFrame.hist
         # auto & stacked
-        for hist_type in ["auto", "stacked"]:
+        for bar_type in ["auto", "stacked"]:
             result3 = titanic_vd.hist(
                 columns=["pclass", "sex"],
                 method="avg",
                 of="survived",
-                hist_type=hist_type,
+                bar_type=bar_type,
                 color="b",
             )
             assert result3.get_default_bbox_extra_artists()[
@@ -603,7 +603,7 @@ class TestvDFPlot:
             ].get_height() == pytest.approx(0.325581395348837)
             plt.close("all")
         # multi
-        result4 = titanic_vd.hist(columns=["fare", "age"], hist_type="multi")
+        result4 = titanic_vd.hist(columns=["fare", "age"], bar_type="multi")
         assert result4.get_default_bbox_extra_artists()[
             0
         ].get_height() == pytest.approx(0.07374392220421394)

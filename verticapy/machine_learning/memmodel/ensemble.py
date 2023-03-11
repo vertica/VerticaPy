@@ -58,7 +58,7 @@ class Ensemble(InMemoryModel):
     # Trees Representation Methods.
 
     def plot_tree(
-        self, pic_path: str = "", tree_id: int = 0, *argv, **kwds,
+        self, pic_path: str = "", tree_id: int = 0, *args, **kwargs,
     ) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
@@ -70,7 +70,7 @@ class Ensemble(InMemoryModel):
         tree_id: int, optional
             Unique  tree identifier,   an  integer  in  the 
             range [0, n_estimators - 1].
-        *argv, **kwds: Any, optional
+        *args, **kwargs: Any, optional
             Arguments to pass to the 'to_graphviz'  method.
 
         Returns
@@ -78,7 +78,7 @@ class Ensemble(InMemoryModel):
         graphviz.Source
             graphviz object.
         """
-        return self.trees_[tree_id].plot_tree(pic_path, *argv, **kwds)
+        return self.trees_[tree_id].plot_tree(pic_path, *args, **kwargs)
 
 
 class RandomForestRegressor(Ensemble):

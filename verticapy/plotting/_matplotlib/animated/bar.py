@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Callable, Optional, TYPE_CHECKING
+from typing import Callable, Literal, Optional, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
@@ -36,7 +36,15 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class AnimatedBarChart(MatplotlibBase):
-    def animated_bar(
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["bar"]:
+        return "animated_bar"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
@@ -55,7 +63,7 @@ class AnimatedBarChart(MatplotlibBase):
         return_html: bool = True,
         pie: bool = False,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> animation.Animation:
         """
         Draws an animated bar chart using the Matplotlib API.
@@ -77,9 +85,9 @@ class AnimatedBarChart(MatplotlibBase):
 
         colors = get_colors()
         for c in ["color", "colors"]:
-            if c in style_kwds:
-                colors = style_kwds[c]
-                del style_kwds[c]
+            if c in style_kwargs:
+                colors = style_kwargs[c]
+                del style_kwargs[c]
                 break
         if isinstance(colors, str):
             colors = []
@@ -161,7 +169,7 @@ class AnimatedBarChart(MatplotlibBase):
                     width=bar_values[i]["width"],
                     color=bar_values[i]["c"],
                     alpha=0.6,
-                    **style_kwds,
+                    **style_kwargs,
                 )
                 if bar_values[i]["width"][0] > 0:
                     ax.barh(
@@ -169,7 +177,7 @@ class AnimatedBarChart(MatplotlibBase):
                         width=[-0.3 * delta_x for elem in bar_values[i]["y"]],
                         color=bar_values[i]["c"],
                         alpha=0.6,
-                        **style_kwds,
+                        **style_kwargs,
                     )
                 if fixed_xy_lim:
                     ax.set_xlim(min(column2), max(column2))
@@ -241,7 +249,7 @@ class AnimatedBarChart(MatplotlibBase):
                     x=bar_values[i]["width"],
                     labels=bar_values[i]["y"],
                     colors=bar_values[i]["c"],
-                    **self.updated_dict(param, style_kwds),
+                    **self._update_dict(param, style_kwargs),
                 )
                 for elem in pie_chart[2]:
                     elem.set_fontweight("normal")
@@ -263,7 +271,7 @@ class AnimatedBarChart(MatplotlibBase):
                                     [0],
                                     color=bar_values[i]["c"][idx],
                                     lw=6,
-                                    alpha=self.updated_dict(param, style_kwds)[
+                                    alpha=self._update_dict(param, style_kwargs)[
                                         "wedgeprops"
                                     ]["alpha"],
                                 )

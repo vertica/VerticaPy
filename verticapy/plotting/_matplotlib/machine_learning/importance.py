@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -23,20 +23,27 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 from verticapy._config.colors import get_colors
-import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ImportanceBarChart(MatplotlibBase):
-    def plot_importance(
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["importance"]:
+        return "importance"
+
+    def draw(
         self,
         coeff_importances: Union[dict, ArrayLike],
         coeff_sign: Union[dict, ArrayLike] = {},
         print_legend: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a coeff importance bar chart using the Matplotlib API.
@@ -60,15 +67,15 @@ class ImportanceBarChart(MatplotlibBase):
         color = []
         for item in signs:
             color += (
-                [get_colors(style_kwds, 0)]
+                [get_colors(style_kwargs, 0)]
                 if (item == 1)
-                else [get_colors(style_kwds, 1)]
+                else [get_colors(style_kwargs, 1)]
             )
-        plus, minus = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
+        plus, minus = get_colors(style_kwargs, 0), get_colors(style_kwargs, 1)
         param = {"alpha": 0.86}
-        style_kwds = self.updated_dict(param, style_kwds)
-        style_kwds["color"] = color
-        ax.barh(range(0, len(importances)), importances, 0.9, **style_kwds)
+        style_kwargs = self._update_dict(param, style_kwargs)
+        style_kwargs["color"] = color
+        ax.barh(range(0, len(importances)), importances, 0.9, **style_kwargs)
         if print_legend:
             orange = mpatches.Patch(color=minus, label="sign -")
             blue = mpatches.Patch(color=plus, label="sign +")

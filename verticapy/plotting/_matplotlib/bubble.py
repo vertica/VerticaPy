@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -33,7 +33,19 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class BubblePlot(MatplotlibBase):
-    def bubble(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["bubble"]:
+        return "bubble"
+
+    @property
+    def _compute_method(self) -> Literal["sample"]:
+        return "sample"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
@@ -43,7 +55,7 @@ class BubblePlot(MatplotlibBase):
         bbox: list = [],
         img: str = "",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a bubble plot using the Matplotlib API.
@@ -57,10 +69,10 @@ class BubblePlot(MatplotlibBase):
             columns = [columns]
         if len(columns) == 2:
             columns += [1]
-        if "color" in style_kwds:
-            colors = style_kwds["color"]
-        elif "colors" in style_kwds:
-            colors = style_kwds["colors"]
+        if "color" in style_kwargs:
+            colors = style_kwargs["color"]
+        elif "colors" in style_kwargs:
+            colors = style_kwargs["colors"]
         else:
             colors = get_colors()
         if isinstance(colors, str):
@@ -116,7 +128,7 @@ class BubblePlot(MatplotlibBase):
                 "edgecolors": "black",
             }
             scatter = ax.scatter(
-                column1, column2, s=size, **self.updated_dict(param, style_kwds),
+                column1, column2, s=size, **self._update_dict(param, style_kwargs),
             )
             if columns[2] != 1:
                 args_legends = [[], []]
@@ -225,7 +237,7 @@ class BubblePlot(MatplotlibBase):
                         column1,
                         column2,
                         s=size,
-                        **self.updated_dict(param, style_kwds, idx),
+                        **self._update_dict(param, style_kwargs, idx),
                     )
                     custom_lines += [
                         Line2D([0], [0], color=colors[idx % len(colors)], lw=6)
@@ -277,7 +289,7 @@ class BubblePlot(MatplotlibBase):
                     column2,
                     c=column3,
                     s=size,
-                    **self.updated_dict(param, style_kwds),
+                    **self._update_dict(param, style_kwargs),
                 )
             if columns[2] != 1:
                 if catcol:

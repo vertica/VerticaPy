@@ -407,7 +407,7 @@ class Tree(InMemoryModel):
                 res += f"\n{i} [label={label}{self._flat_dict(leaf_style)}]"
         return res + "\n}"
 
-    def plot_tree(self, pic_path: str = "", *argv, **kwds,) -> "Source":
+    def plot_tree(self, pic_path: str = "", *args, **kwargs,) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
 
@@ -415,7 +415,7 @@ class Tree(InMemoryModel):
         ----------
         pic_path: str, optional
             Absolute  path to  save the image of the  tree.
-        *argv, **kwds: Any, optional
+        *args, **kwargs: Any, optional
             Arguments to pass to  the 'to_graphviz' method.
 
         Returns
@@ -432,7 +432,7 @@ class Tree(InMemoryModel):
                 "graphviz' in your terminal to install "
                 "the module."
             )
-        res = graphviz.Source(self.to_graphviz(*argv, **kwds))
+        res = graphviz.Source(self.to_graphviz(*args, **kwargs))
         if pic_path:
             res.view(pic_path)
         return res

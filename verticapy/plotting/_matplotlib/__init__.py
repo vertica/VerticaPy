@@ -19,12 +19,12 @@ from verticapy.plotting._matplotlib.animated.bubble import AnimatedBubblePlot
 from verticapy.plotting._matplotlib.animated.line import AnimatedLinePlot
 
 from verticapy.plotting._matplotlib.machine_learning.champion_challenger import (
-    ChampionChallenger,
+    ChampionChallengerPlot,
 )
 from verticapy.plotting._matplotlib.machine_learning.importance import (
     ImportanceBarChart,
 )
-from verticapy.plotting._matplotlib.machine_learning.kmeans import KMeansPlot
+from verticapy.plotting._matplotlib.machine_learning.kmeans import VoronoiPlot
 from verticapy.plotting._matplotlib.machine_learning.lof import LOFPlot
 from verticapy.plotting._matplotlib.machine_learning.logistic_reg import (
     LogisticRegressionPlot,
@@ -38,17 +38,18 @@ from verticapy.plotting._matplotlib.machine_learning.stepwise import StepwisePlo
 from verticapy.plotting._matplotlib.machine_learning.svm import SVMClassifierPlot
 
 from verticapy.plotting._matplotlib.acf import ACFPlot
-from verticapy.plotting._matplotlib.bar import BarChart
-from verticapy.plotting._matplotlib.barh import HorizontalBarChart
-from verticapy.plotting._matplotlib.boxplot import BoxPlot
+from verticapy.plotting._matplotlib.bar import BarChart, BarChart2D
+from verticapy.plotting._matplotlib.barh import HorizontalBarChart, HorizontalBarChart2D
+from verticapy.plotting._matplotlib.boxplot import BoxPlot, MultiBoxPlot
 from verticapy.plotting._matplotlib.bubble import BubblePlot
 from verticapy.plotting._matplotlib.contour_plot import ContourPlot
 from verticapy.plotting._matplotlib.heatmap import HeatMap
-from verticapy.plotting._matplotlib.hexbin import HexbinPlot
-from verticapy.plotting._matplotlib.line import LinePlot
+from verticapy.plotting._matplotlib.hexbin import HexbinMap
+from verticapy.plotting._matplotlib.hist import Histogram
+from verticapy.plotting._matplotlib.line import LinePlot, MultiLinePlot
 from verticapy.plotting._matplotlib.outliers import OutliersPlot
-from verticapy.plotting._matplotlib.pie import PieChart
+from verticapy.plotting._matplotlib.pie import PieChart, NestedPieChart
 from verticapy.plotting._matplotlib.pivot_table import PivotTable
 from verticapy.plotting._matplotlib.range import RangeCurve
-from verticapy.plotting._matplotlib.scatter import ScatterPlot
-from verticapy.plotting._matplotlib.spider import SpiderPlot
+from verticapy.plotting._matplotlib.scatter import ScatterMatrix, ScatterPlot
+from verticapy.plotting._matplotlib.spider import SpiderChart

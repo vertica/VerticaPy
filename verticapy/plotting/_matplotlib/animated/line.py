@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
@@ -36,7 +36,15 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class AnimatedLinePlot(MatplotlibBase):
-    def animated_ts_plot(
+    @property
+    def _category(self) -> Literal["graph"]:
+        return "graph"
+
+    @property
+    def _kind(self) -> Literal["line"]:
+        return "animated_line"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         order_by: str,
@@ -51,7 +59,7 @@ class AnimatedLinePlot(MatplotlibBase):
         repeat: bool = True,
         return_html: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> animation.Animation:
         """
         Draws an animated Time Series plot using the Matplotlib API.
@@ -100,7 +108,7 @@ class AnimatedLinePlot(MatplotlibBase):
         )
         order_by_values = [column[0] for column in query_result]
         if isinstance(order_by_values[0], str) and conf._get_import_success("dateutil"):
-            order_by_values = self.parse_datetime(order_by_values)
+            order_by_values = self._parse_datetime(order_by_values)
         alpha = 0.3
         if not (ax):
             fig, ax = plt.subplots()
@@ -119,7 +127,9 @@ class AnimatedLinePlot(MatplotlibBase):
                 "linewidth": 2,
                 "color": colors[i % len(colors)],
             }
-            all_plots += [ax.plot([], [], **self.updated_dict(param, style_kwds, i))[0]]
+            all_plots += [
+                ax.plot([], [], **self._update_dict(param, style_kwargs, i))[0]
+            ]
         if len(columns) > 1:
             ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
             box = ax.get_position()

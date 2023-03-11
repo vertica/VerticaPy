@@ -93,13 +93,13 @@ class StringSQL:
             f"({self._init_transf}) BETWEEN ({val1}) AND ({val2})", self.category(),
         )
 
-    def _in(self, *argv) -> "StringSQL":
-        if (len(argv) == 1) and (isinstance(argv[0], list)):
-            x = argv[0]
-        elif len(argv) == 0:
+    def _in(self, *args) -> "StringSQL":
+        if (len(args) == 1) and (isinstance(args[0], list)):
+            x = args[0]
+        elif len(args) == 0:
             ParameterError("Method 'in_' doesn't work with no parameters.")
         else:
-            x = [elem for elem in argv]
+            x = [elem for elem in args]
         assert isinstance(x, Iterable) and not (
             isinstance(x, str)
         ), f"Method '_in' only works on iterable elements other than str. Found {x}."
@@ -107,13 +107,13 @@ class StringSQL:
         val = ", ".join(val)
         return StringSQL(f"({self._init_transf}) IN ({val})", self.category())
 
-    def _not_in(self, *argv) -> "StringSQL":
-        if (len(argv) == 1) and (isinstance(argv[0], list)):
-            x = argv[0]
-        elif len(argv) == 0:
+    def _not_in(self, *args) -> "StringSQL":
+        if (len(args) == 1) and (isinstance(args[0], list)):
+            x = args[0]
+        elif len(args) == 0:
             ParameterError("Method '_not_in' doesn't work with no parameters.")
         else:
-            x = [elem for elem in argv]
+            x = [elem for elem in args]
         if not (isinstance(x, Iterable)) or (isinstance(x, str)):
             raise TypeError(
                 "Method '_not_in' only works on iterable "

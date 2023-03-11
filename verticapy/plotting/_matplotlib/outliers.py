@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -22,7 +22,6 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 from verticapy._config.colors import get_cmap, get_colors
-import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 
 if TYPE_CHECKING:
@@ -32,7 +31,15 @@ from verticapy.plotting._matplotlib.scatter import ScatterPlot
 
 
 class OutliersPlot(ScatterPlot):
-    def outliers_contour_plot(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["outliers"]:
+        return "outliers"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
@@ -44,7 +51,7 @@ class OutliersPlot(ScatterPlot):
         max_nb_points: int = 1000,
         threshold: float = 3.0,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws an outliers contour plot using the Matplotlib API.
@@ -97,13 +104,13 @@ class OutliersPlot(ScatterPlot):
             ][0]
             vdf_temp["ZSCORE"] = "ZSCORE + 1.5 * RANDOM()"
             for searchi in [(">", outliers_color), ("<=", inliers_color)]:
-                self.scatter(
+                super().draw(
                     vdf_temp.search(f"ZSCORE {searchi[0]} {threshold}"),
                     [columns[0], "ZSCORE"],
                     max_nb_points=max_nb_points,
                     ax=ax,
                     color=searchi[1],
-                    **style_kwds,
+                    **style_kwargs,
                 )
         elif len(columns) == 2:
             ylist = np.linspace(all_agg["min"][1], all_agg["max"][1], 1000)
@@ -129,16 +136,16 @@ class OutliersPlot(ScatterPlot):
                     / {all_agg["std"][0]}) <= {threshold} 
                {op} ABS(({columns[1]} - {all_agg["avg"][1]}) 
                     / {all_agg["std"][1]}) <= {threshold}"""
-                self.scatter(
+                super().draw(
                     vdf.search(s),
                     columns,
                     max_nb_points=max_nb_points,
                     ax=ax,
                     color=color,
-                    **style_kwds,
+                    **style_kwargs,
                 )
         args = [[0], [0]]
-        kwds = {
+        kwargs = {
             "marker": "o",
             "color": "black",
             "label": "Scatter",
@@ -147,8 +154,8 @@ class OutliersPlot(ScatterPlot):
         ax.legend(
             [
                 Line2D(*args, color=inliers_border_color, lw=4),
-                Line2D(*args, **kwds, markerfacecolor=inliers_color),
-                Line2D(*args, **kwds, markerfacecolor=outliers_color),
+                Line2D(*args, **kwargs, markerfacecolor=inliers_color),
+                Line2D(*args, **kwargs, markerfacecolor=outliers_color),
             ],
             ["threshold", "inliers", "outliers"],
             loc="center left",

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, math
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 import numpy as np
 
 import verticapy._config.config as conf
@@ -35,9 +35,24 @@ if conf._get_import_success("dateutil"):
 
 
 class PlottingBase:
+
+    # Properties.
+
     @property
-    def _markers(self):
-        return ["^", "o", "+", "*", "h", "x", "D", "1"]
+    def _compute_method(self) -> Literal[None]:
+        """Must be overridden in child class"""
+        return None
+
+    # System Methods.
+
+    def __init__(self, *args, **kwargs) -> None:
+        if self._compute_method == "1D":
+            self._compute_plot_params(*args, **kwargs)
+        elif self._compute_method == "2D":
+            self._compute_pivot_table(*args, **kwargs)
+        return None
+
+    # Formatting Methods.
 
     @staticmethod
     def _map_method(method: str, of: str) -> tuple[str, str, bool]:
@@ -81,16 +96,49 @@ class PlottingBase:
             )
         return method, aggregate, is_standard
 
+    @staticmethod
+    def _parse_datetime(D: list) -> list:
+        """
+        Parses the list and casts the value to the datetime
+        format if possible.
+        """
+        try:
+            return [parse(d) for d in D]
+        except:
+            return copy.deepcopy(D)
+
+    @staticmethod
+    def _update_dict(d1: dict, d2: dict, color_idx: int = 0,) -> dict:
+        """
+        Updates the input dictionary using another one.
+        """
+        d = {}
+        for elem in d1:
+            d[elem] = d1[elem]
+        for elem in d2:
+            if elem == "color":
+                if isinstance(d2["color"], str):
+                    d["color"] = d2["color"]
+                elif color_idx < 0:
+                    d["color"] = [elem for elem in d2["color"]]
+                else:
+                    d["color"] = d2["color"][color_idx % len(d2["color"])]
+            else:
+                d[elem] = d2[elem]
+        return d
+
+    # Attributes Computations.
+
     def _compute_plot_params(
         self,
         vdc: "vDataColumn",
         method: str = "density",
-        of: str = "",
+        of: Optional[str] = None,
         max_cardinality: int = 6,
         nbins: int = 0,
         h: float = 0.0,
         pie: bool = False,
-    ) -> tuple[ArrayLike, ArrayLike, ArrayLike, float, bool]:
+    ) -> None:
         """
 	    Computes the aggregations needed to draw a 1D graphic 
 	    using the Matplotlib API.
@@ -279,17 +327,26 @@ class PlottingBase:
             "adj_width": adj_width,
             "is_categorical": is_categorical,
         }
+        self.layout = {
+            "x": vdc._alias,
+            "method": method,
+            "of": of,
+            "of_cat": vdc._parent[of].category() if of else None,
+            "aggregate": aggregate,
+            "is_standard": is_standard,
+        }
+        return None
 
     def _compute_pivot_table(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
         method: str = "count",
-        of: str = "",
+        of: Optional[str] = None,
         h: tuple[Optional[float], Optional[float]] = (None, None),
         max_cardinality: tuple[int, int] = (20, 20),
         fill_none: float = 0.0,
-    ) -> tuple[np.ndarray, list[str], list[str]]:
+    ) -> None:
         """
         Draws a pivot table using the Matplotlib API.
         """
@@ -297,6 +354,8 @@ class PlottingBase:
         method, aggregate, is_standard = self._map_method(method, of)
         if not (is_standard):
             other_columns = ", " + ", ".join(vdf.get_columns(exclude_columns=columns))
+        if isinstance(columns, str):
+            columns = [columns]
         columns, of = vdf._format_colnames(columns, of)
         is_column_date = [False, False]
         timestampadd = ["", ""]
@@ -383,100 +442,74 @@ class PlottingBase:
             ).to_numpy()
             matrix = res[:, 1].astype(float)
             x_labels = list(res[:, 0])
-            return matrix, x_labels, [method], min(matrix), max(matrix), aggregate
-        aggr = f", {of}" if (of) else ""
-        cols, cast = [], []
-        for i in range(2):
-            if is_column_date[0]:
-                cols += [f"{timestampadd[i]} AS {columns[i]}"]
-            else:
-                cols += [columns[i]]
-            cast += [to_varchar(vdf[columns[i]].category(), columns[i])]
-        query_result = _executeSQL(
-            query=f"""
-                SELECT 
-                    /*+LABEL('plotting._matplotlib.pivot_table')*/
-                    {cast[0]} AS {columns[0]},
-                    {cast[1]} AS {columns[1]},
-                    {aggregate}{over}
-                FROM (SELECT 
-                          {cols[0]},
-                          {cols[1]}
-                          {aggr}
-                          {other_columns} 
-                      FROM 
-                          (SELECT 
-                              {matrix[0]} AS {columns[0]},
-                              {matrix[1]} AS {columns[1]}
+            y_labels = [method]
+        else:
+            aggr = f", {of}" if (of) else ""
+            cols, cast = [], []
+            for i in range(2):
+                if is_column_date[0]:
+                    cols += [f"{timestampadd[i]} AS {columns[i]}"]
+                else:
+                    cols += [columns[i]]
+                cast += [to_varchar(vdf[columns[i]].category(), columns[i])]
+            query_result = _executeSQL(
+                query=f"""
+                    SELECT 
+                        /*+LABEL('plotting._matplotlib.pivot_table')*/
+                        {cast[0]} AS {columns[0]},
+                        {cast[1]} AS {columns[1]},
+                        {aggregate}{over}
+                    FROM (SELECT 
+                              {cols[0]},
+                              {cols[1]}
                               {aggr}
                               {other_columns} 
-                           FROM {vdf._genSQL()}{where}) 
-                           pivot_table) pivot_table_date
-                WHERE {columns[0]} IS NOT NULL 
-                  AND {columns[1]} IS NOT NULL
-                GROUP BY {columns[0]}, {columns[1]}
-                ORDER BY {columns[0]}, {columns[1]} ASC""",
-            title="Grouping the features to compute the pivot table",
-            method="fetchall",
-        )
-        all_count = [item[2] for item in query_result]
-        matrix_categories = []
-        for i in range(2):
-            L = list(set([str(item[i]) for item in query_result]))
-            L.sort()
-            try:
+                          FROM 
+                              (SELECT 
+                                  {matrix[0]} AS {columns[0]},
+                                  {matrix[1]} AS {columns[1]}
+                                  {aggr}
+                                  {other_columns} 
+                               FROM {vdf._genSQL()}{where}) 
+                               pivot_table) pivot_table_date
+                    WHERE {columns[0]} IS NOT NULL 
+                      AND {columns[1]} IS NOT NULL
+                    GROUP BY {columns[0]}, {columns[1]}
+                    ORDER BY {columns[0]}, {columns[1]} ASC""",
+                title="Grouping the features to compute the pivot table",
+                method="fetchall",
+            )
+            matrix_categories = []
+            for i in range(2):
+                L = list(set([str(item[i]) for item in query_result]))
+                L.sort()
                 try:
-                    order = []
-                    for item in L:
-                        order += [float(item.split(";")[0].split("[")[1])]
+                    try:
+                        order = []
+                        for item in L:
+                            order += [float(item.split(";")[0].split("[")[1])]
+                    except:
+                        order = [float(item) for item in L]
+                    L = [x for _, x in sorted(zip(order, L))]
                 except:
-                    order = [float(item) for item in L]
-                L = [x for _, x in sorted(zip(order, L))]
-            except:
-                pass
-            matrix_categories += [copy.deepcopy(L)]
-        x_labels, y_labels = matrix_categories
-        matrix = [[fill_none for item in x_labels] for item in y_labels]
-        for item in query_result:
-            j = x_labels.index(str(item[0]))
-            i = y_labels.index(str(item[1]))
-            matrix[i][j] = item[2]
-        return (
-            np.transpose(np.array(matrix)),
-            x_labels,
-            y_labels,
-            min(all_count),
-            max(all_count),
-            aggregate,
-        )
-
-    @staticmethod
-    def parse_datetime(D: list) -> list:
-        """
-	    Parses the list and casts the value to the datetime
-	    format if possible.
-	    """
-        try:
-            return [parse(d) for d in D]
-        except:
-            return copy.deepcopy(D)
-
-    @staticmethod
-    def updated_dict(d1: dict, d2: dict, color_idx: int = 0,) -> dict:
-        """
-	    Updates the input dictionary using another one.
-	    """
-        d = {}
-        for elem in d1:
-            d[elem] = d1[elem]
-        for elem in d2:
-            if elem == "color":
-                if isinstance(d2["color"], str):
-                    d["color"] = d2["color"]
-                elif color_idx < 0:
-                    d["color"] = [elem for elem in d2["color"]]
-                else:
-                    d["color"] = d2["color"][color_idx % len(d2["color"])]
-            else:
-                d[elem] = d2[elem]
-        return d
+                    pass
+                matrix_categories += [copy.deepcopy(L)]
+            x_labels, y_labels = matrix_categories
+            matrix = np.array([[fill_none for item in y_labels] for item in x_labels])
+            for item in query_result:
+                i = x_labels.index(str(item[0]))
+                j = y_labels.index(str(item[1]))
+                matrix[i][j] = item[2]
+        self.data = {
+            "matrix": matrix,
+            "x_labels": x_labels,
+            "y_labels": y_labels,
+        }
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+            "method": method,
+            "of": of,
+            "of_cat": vdf[of].category() if of else None,
+            "aggregate": aggregate,
+            "is_standard": is_standard,
+        }

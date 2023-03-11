@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
-from typing import Optional
+from typing import Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -31,7 +31,15 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class LogisticRegressionPlot(MatplotlibBase):
-    def logit_plot(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["logit"]:
+        return "logit"
+
+    def draw(
         self,
         X: SQLColumns,
         y: str,
@@ -39,7 +47,7 @@ class LogisticRegressionPlot(MatplotlibBase):
         coefficients: ArrayLike,
         max_nb_points: int = 50,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a Logistic Regression plot using the Matplotlib API.
@@ -100,14 +108,14 @@ class LogisticRegressionPlot(MatplotlibBase):
                 ax.scatter(
                     x0,
                     [logit(coefficients[0] + coefficients[1] * item) for item in x0],
-                    **self.updated_dict(param1, style_kwds, 1),
+                    **self._update_dict(param1, style_kwargs, 1),
                 )
             ]
             all_scatter += [
                 ax.scatter(
                     x1,
                     [logit(coefficients[0] + coefficients[1] * item) for item in x1],
-                    **self.updated_dict(param0, style_kwds, 0),
+                    **self._update_dict(param0, style_kwargs, 0),
                 )
             ]
             ax.set_xlabel(X[0])
@@ -189,7 +197,7 @@ class LogisticRegressionPlot(MatplotlibBase):
                         )
                         for i in range(len(x0))
                     ],
-                    **self.updated_dict(param1, style_kwds, 1),
+                    **self._update_dict(param1, style_kwargs, 1),
                 )
             ]
             all_scatter += [
@@ -204,7 +212,7 @@ class LogisticRegressionPlot(MatplotlibBase):
                         )
                         for i in range(len(x1))
                     ],
-                    **self.updated_dict(param0, style_kwds, 0),
+                    **self._update_dict(param0, style_kwargs, 0),
                 )
             ]
             ax.set_xlabel(X[0])

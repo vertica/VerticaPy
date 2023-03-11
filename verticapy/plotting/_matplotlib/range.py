@@ -14,14 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._typing import ArrayLike
+from verticapy._typing import ArrayLike, PythonScalar
 from verticapy._utils._sql._sys import _executeSQL
 
 if TYPE_CHECKING:
@@ -31,6 +31,14 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class RangeCurve(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["graph"]:
+        return "graph"
+
+    @property
+    def _kind(self) -> Literal["range"]:
+        return "range"
+
     def range_curve(
         self,
         X: ArrayLike,
@@ -41,7 +49,7 @@ class RangeCurve(MatplotlibBase):
         labels: ArrayLike = [],
         without_scatter: bool = False,
         plot_median: bool = True,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a range curve using the Matplotlib API.
@@ -56,15 +64,17 @@ class RangeCurve(MatplotlibBase):
                 alpha1, alpha2 = 0.3, 0.5
             else:
                 alpha1, alpha2 = 0.5, 0.9
-            param = {"facecolor": get_colors(style_kwds, i)}
+            param = {"facecolor": get_colors(style_kwargs, i)}
             ax.fill_between(X, y[0], y[2], alpha=alpha1, **param)
-            param = {"color": get_colors(style_kwds, i)}
+            param = {"color": get_colors(style_kwargs, i)}
             for j in [0, 2]:
                 ax.plot(
-                    X, y[j], alpha=alpha2, **self.updated_dict(param, style_kwds, i),
+                    X, y[j], alpha=alpha2, **self._update_dict(param, style_kwargs, i),
                 )
             if plot_median:
-                ax.plot(X, y[1], label=label, **self.updated_dict(param, style_kwds, i))
+                ax.plot(
+                    X, y[1], label=label, **self._update_dict(param, style_kwargs, i)
+                )
             if (not (without_scatter) or len(X) < 20) and plot_median:
                 ax.scatter(
                     X, y[1], c="white", marker="o", s=60, edgecolors="black", zorder=3,
@@ -80,16 +90,16 @@ class RangeCurve(MatplotlibBase):
         ax.set_xlim(X[0], X[-1])
         return ax
 
-    def range_curve_vdf(
+    def draw(
         self,
         vdf: "vDataFrame",
         order_by: str,
         q: tuple = (0.25, 0.75),
-        order_by_start: str = "",
-        order_by_end: str = "",
+        order_by_start: PythonScalar = None,
+        order_by_end: PythonScalar = None,
         plot_median: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a range curve using the Matplotlib API.
@@ -118,7 +128,7 @@ class RangeCurve(MatplotlibBase):
         )
         order_by_values = [item[0] for item in query_result]
         if isinstance(order_by_values[0], str) and conf._get_import_success("dateutil"):
-            order_by_values = self.parse_datetime(order_by_values)
+            order_by_values = self._parse_datetime(order_by_values)
         column_values = [
             [
                 [float(item[1]) for item in query_result],
@@ -135,5 +145,5 @@ class RangeCurve(MatplotlibBase):
             [],
             True,
             plot_median,
-            **style_kwds,
+            **style_kwargs,
         )

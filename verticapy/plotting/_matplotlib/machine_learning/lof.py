@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Literal, Optional
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -29,14 +29,22 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class LOFPlot(MatplotlibBase):
-    def lof_plot(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["lof"]:
+        return "lof"
+
+    def draw(
         self,
         input_relation: str,
         columns: SQLColumns,
         lof: str,
         TableSample: PythonNumber = -1,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a Local Outlier Plot using the Matplotlib API.
@@ -45,18 +53,18 @@ class LOFPlot(MatplotlibBase):
             columns = [columns]
         TableSample = f"TABLESAMPLE({TableSample})" if (0 < TableSample < 100) else ""
         colors = []
-        if "color" in style_kwds:
-            if isinstance(style_kwds["color"], str):
-                colors = [style_kwds["color"]]
+        if "color" in style_kwargs:
+            if isinstance(style_kwargs["color"], str):
+                colors = [style_kwargs["color"]]
             else:
-                colors = style_kwds["color"]
-            del style_kwds["color"]
-        elif "colors" in style_kwds:
-            if isinstance(style_kwds["colors"], str):
-                colors = [style_kwds["colors"]]
+                colors = style_kwargs["color"]
+            del style_kwargs["color"]
+        elif "colors" in style_kwargs:
+            if isinstance(style_kwargs["colors"], str):
+                colors = [style_kwargs["colors"]]
             else:
-                colors = style_kwds["colors"]
-            del style_kwds["colors"]
+                colors = style_kwargs["colors"]
+            del style_kwargs["colors"]
         colors += get_colors()
         param = {
             "s": 50,
@@ -95,7 +103,7 @@ class LOFPlot(MatplotlibBase):
                 column1,
                 column2,
                 label="Data points",
-                **self.updated_dict(param, style_kwds, 0),
+                **self._update_dict(param, style_kwargs, 0),
             )
             ax.scatter(
                 column1,
@@ -138,7 +146,7 @@ class LOFPlot(MatplotlibBase):
                 column1,
                 column2,
                 label="Data points",
-                **self.updated_dict(param, style_kwds, 0),
+                **self._update_dict(param, style_kwargs, 0),
             )
             ax.scatter(
                 column1,
@@ -183,7 +191,7 @@ class LOFPlot(MatplotlibBase):
                 column2,
                 column3,
                 label="Data points",
-                **self.updated_dict(param, style_kwds, 0),
+                **self._update_dict(param, style_kwargs, 0),
             )
             ax.scatter(
                 column1, column2, column3, s=radius, facecolors="none", color=colors[1],

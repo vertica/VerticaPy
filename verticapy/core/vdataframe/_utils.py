@@ -46,7 +46,7 @@ class vDFUtils:
 
     def _format_colnames(
         self,
-        *argv,
+        *args,
         columns: Union[str, list, dict] = [],
         expected_nb_of_cols: Union[int, list] = [],
         raise_error: bool = True,
@@ -56,7 +56,7 @@ class vDFUtils:
 
     Parameters
     ----------
-    *argv: str / list / dict, optional
+    *args: str / list / dict, optional
         List of columns' names to format. It allows to use as input multiple
         objects and to get all of them formatted.
         Example: self._format_colnames(x0, x1, x2) will return x0_f, x1_f, 
@@ -67,7 +67,7 @@ class vDFUtils:
         [Only used for the function first argument]
         List of the expected number of columns.
         Example: If expected_nb_of_cols is set to [2, 3], the parameters
-        'columns' or the first argument of argv should have exactly 2 or
+        'columns' or the first argument of args should have exactly 2 or
         3 elements. Otherwise, the function will raise an error.
     raise_error: bool, optional
         If set to True and if there is an error, it will be raised.
@@ -77,11 +77,11 @@ class vDFUtils:
     SQLExpression
         Formatted columns' names.
         """
-        if argv:
+        if args:
             result = []
-            for arg in argv:
+            for arg in args:
                 result += [self._format_colnames(columns=arg, raise_error=raise_error)]
-            if len(argv) == 1:
+            if len(args) == 1:
                 result = result[0]
         else:
             if not (columns) or isinstance(columns, (int, float)):
@@ -133,8 +133,8 @@ class vDFUtils:
             if isinstance(expected_nb_of_cols, int):
                 expected_nb_of_cols = [expected_nb_of_cols]
             if len(expected_nb_of_cols) > 0:
-                if len(argv) > 0:
-                    columns = argv[0]
+                if len(args) > 0:
+                    columns = args[0]
                 n = len(columns)
                 if n not in expected_nb_of_cols:
                     x = "|".join([str(nb) for nb in expected_nb_of_cols])

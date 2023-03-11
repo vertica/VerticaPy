@@ -31,7 +31,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.preprocessing import Preprocessing
 
-import verticapy.plotting._matplotlib as vpy_plt
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 """
 General Classes.
@@ -254,7 +254,7 @@ class Decomposition(Preprocessing):
     # Plotting Methods.
 
     def plot(
-        self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwds
+        self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws a decomposition scatter plot.
@@ -266,7 +266,7 @@ class Decomposition(Preprocessing):
             IDs of the model's components.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional  parameter to pass to the 
             Matplotlib functions.
 
@@ -280,7 +280,7 @@ class Decomposition(Preprocessing):
             columns=[f"col{dimensions[0]}", f"col{dimensions[1]}"],
             max_nb_points=100000,
             ax=ax,
-            **style_kwds,
+            **style_kwargs,
         )
         if not (self.explained_variance_[dimensions[0] - 1]):
             dimensions_1 = ""
@@ -293,7 +293,7 @@ class Decomposition(Preprocessing):
         return ax
 
     def plot_circle(
-        self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwds
+        self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws a decomposition circle.
@@ -305,7 +305,7 @@ class Decomposition(Preprocessing):
             of the model's components.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any  optional  parameter  to  pass to  the 
             Matplotlib functions.
 
@@ -320,7 +320,7 @@ class Decomposition(Preprocessing):
         else:
             x = self.principal_components_[:, dimensions[0] - 1]
             y = self.principal_components_[:, dimensions[1] - 1]
-        return vpy_plt.PCAPlot().plot_pca_circle(
+        return vpy_matplotlib_plt.PCAPlot().draw_circle(
             x,
             y,
             self.X,
@@ -330,10 +330,10 @@ class Decomposition(Preprocessing):
             ),
             dimensions,
             ax,
-            **style_kwds,
+            **style_kwargs,
         )
 
-    def plot_scree(self, ax: Optional[Axes] = None, **style_kwds) -> Axes:
+    def plot_scree(self, ax: Optional[Axes] = None, **style_kwargs) -> Axes:
         """
         Draws a decomposition scree plot.
 
@@ -341,7 +341,7 @@ class Decomposition(Preprocessing):
         ----------
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
@@ -365,7 +365,7 @@ class Decomposition(Preprocessing):
             h=1,
             max_cardinality=1,
             ax=ax,
-            **style_kwds,
+            **style_kwargs,
         )
         ax = information["percentage_explained_variance"].plot(
             ts="dimensions_center", ax=ax, color="black"
@@ -563,7 +563,7 @@ class MCA(PCA):
     # Plotting Methods.
 
     def plot_contrib(
-        self, dimension: int = 1, ax: Optional[Axes] = None, **style_kwds
+        self, dimension: int = 1, ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws a decomposition  contribution plot of the input 
@@ -576,7 +576,7 @@ class MCA(PCA):
             component.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the Matplotlib 
             functions.
 
@@ -598,7 +598,7 @@ class MCA(PCA):
         ).to_vdf()
         contrib["row_nb_2"] = contrib["row_nb"] + 0.5
         ax = contrib["row_nb"].hist(
-            method="avg", of="contrib", max_cardinality=1, h=1, ax=ax, **style_kwds
+            method="avg", of="contrib", max_cardinality=1, h=1, ax=ax, **style_kwargs
         )
         ax = contrib["contrib"].plot(ts="row_nb_2", ax=ax, color="black")
         ax.set_xlim(1, n + 1)
@@ -615,7 +615,7 @@ class MCA(PCA):
         return ax
 
     def plot_cos2(
-        self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwds
+        self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws a MCA (multiple correspondence analysis) cos2 
@@ -627,7 +627,7 @@ class MCA(PCA):
             Tuple of two IDs of the model's components.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the Matplotlib 
             functions.
 
@@ -647,7 +647,7 @@ class MCA(PCA):
         )
         quality = TableSample({"variables": variables, "quality": quality}).to_vdf()
         ax = quality["variables"].hist(
-            method="avg", of="quality", max_cardinality=n, ax=ax, **style_kwds
+            method="avg", of="quality", max_cardinality=n, ax=ax, **style_kwargs
         )
         ax.set_ylabel("Cos2 - Quality of Representation")
         ax.set_xlabel("")
@@ -659,7 +659,7 @@ class MCA(PCA):
         dimensions: tuple = (1, 2),
         method: Literal["auto", "cos2", "contrib"] = "auto",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws  the  MCA  (multiple correspondence analysis) 
@@ -677,7 +677,7 @@ class MCA(PCA):
                           as CMAP.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the Matplotlib 
             functions.
 
@@ -710,12 +710,12 @@ class MCA(PCA):
                     )
                     for i in range(n)
                 ]
-            style_kwds["c"] = c
-            if "cmap" not in style_kwds:
-                style_kwds["cmap"] = get_cmap(
+            style_kwargs["c"] = c
+            if "cmap" not in style_kwargs:
+                style_kwargs["cmap"] = get_cmap(
                     color=[get_colors()[0], get_colors()[1], get_colors()[2],]
                 )
-        return vpy_plt.PCAPlot().plot_var(
+        return vpy_matplotlib_plt.PCAPlot().draw_var(
             x,
             y,
             self.X,
@@ -726,7 +726,7 @@ class MCA(PCA):
             dimensions,
             method,
             ax,
-            **style_kwds,
+            **style_kwargs,
         )
 
 

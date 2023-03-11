@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -31,9 +31,17 @@ if TYPE_CHECKING:
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class ScatterPlot(MatplotlibBase):
-    def scatter_matrix(
-        self, vdf: "vDataFrame", columns: SQLColumns = [], **style_kwds,
+class ScatterMatrix(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["scatter"]:
+        return "scatter_matrix"
+
+    def draw(
+        self, vdf: "vDataFrame", columns: SQLColumns = [], **style_kwargs,
     ) -> Axes:
         """
         Draws a scatter matrix using the Matplotlib API.
@@ -68,28 +76,49 @@ class ScatterPlot(MatplotlibBase):
                         vdf[x], method="density", max_cardinality=1
                     )
                     data[f"{i}_{j}"] = copy.deepcopy(self.data)
-                    params = {"color": get_colors(style_kwds, 0), "edgecolor": "black"}
-                    if "edgecolor" in style_kwds:
-                        params["edgecolor"] = style_kwds["edgecolor"]
+                    params = {
+                        "color": get_colors(style_kwargs, 0),
+                        "edgecolor": "black",
+                    }
+                    if "edgecolor" in style_kwargs:
+                        params["edgecolor"] = style_kwargs["edgecolor"]
                     axes[i, j].bar(
                         self.data["x"], self.data["y"], self.data["width"], **params
                     )
                 else:
                     params = {
-                        "color": get_colors(style_kwds, 1),
+                        "color": get_colors(style_kwargs, 1),
                         "edgecolor": "black",
                         "alpha": 0.9,
                         "s": 40,
                         "marker": "o",
                     }
-                    params = self.updated_dict(params, style_kwds, 1)
+                    params = self._update_dict(params, style_kwargs, 1)
                     axes[i, j].scatter(
                         sample[:, j], sample[:, i], **params,
                     )
         self.data = data
         return axes
 
-    def scatter(
+
+class ScatterPlot(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["scatter"]:
+        return "scatter"
+
+    @property
+    def _compute_method(self) -> Literal["sample"]:
+        return "sample"
+
+    @property
+    def _markers(self):
+        return ["^", "o", "+", "*", "h", "x", "D", "1"]
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
@@ -101,7 +130,7 @@ class ScatterPlot(MatplotlibBase):
         bbox: list = [],
         img: str = "",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a scatter plot using the Matplotlib API.
@@ -211,7 +240,7 @@ class ScatterPlot(MatplotlibBase):
             if n == 3:
                 args += [[float(d[2]) for d in query_result]]
             all_scatter += [
-                ax.scatter(*args, **self.updated_dict(param, style_kwds, idx),)
+                ax.scatter(*args, **self._update_dict(param, style_kwargs, idx),)
             ]
 
         if not (catcol):

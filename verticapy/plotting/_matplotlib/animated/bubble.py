@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import numpy as np
-from typing import Callable, Optional, TYPE_CHECKING
+from typing import Callable, Literal, Optional, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
@@ -37,7 +37,15 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class AnimatedBubblePlot(MatplotlibBase):
-    def animated_bubble_plot(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["bubble"]:
+        return "animated_bubble"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         order_by: str,
@@ -59,7 +67,7 @@ class AnimatedBubblePlot(MatplotlibBase):
         repeat: bool = True,
         return_html: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> animation.Animation:
         """
         Draws an animated bubble plot using the Matplotlib API.
@@ -81,10 +89,10 @@ class AnimatedBubblePlot(MatplotlibBase):
 
         if len(columns) == 2:
             columns += [1]
-        if "color" in style_kwds:
-            colors = style_kwds["color"]
-        elif "colors" in style_kwds:
-            colors = style_kwds["colors"]
+        if "color" in style_kwargs:
+            colors = style_kwargs["color"]
+        elif "colors" in style_kwargs:
+            colors = style_kwargs["colors"]
         else:
             colors = get_colors()
         if isinstance(colors, str):
@@ -196,7 +204,7 @@ class AnimatedBubblePlot(MatplotlibBase):
             scatter_values[0]["y"],
             c=scatter_values[0]["c"],
             s=scatter_values[0]["s"],
-            **self.updated_dict(param, style_kwds),
+            **self._update_dict(param, style_kwargs),
         )
         if label_name:
             text_plots = []
@@ -276,8 +284,8 @@ class AnimatedBubblePlot(MatplotlibBase):
                 im.set_array(np.array(scatter_values[i]["c"]))
             elif label_name:
                 im.set_color(np.array(scatter_values[i]["c"]))
-            if "edgecolors" in self.updated_dict(param, style_kwds):
-                im.set_edgecolor(self.updated_dict(param, style_kwds)["edgecolors"])
+            if "edgecolors" in self._update_dict(param, style_kwargs):
+                im.set_edgecolor(self._update_dict(param, style_kwargs)["edgecolors"])
             if label_name:
                 for k in range(lim_labels):
                     text_plots[k].set_position(

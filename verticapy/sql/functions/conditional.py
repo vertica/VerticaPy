@@ -22,52 +22,52 @@ from verticapy.errors import ParameterError
 from verticapy.core.string_sql.base import StringSQL
 
 
-def case_when(*argv) -> StringSQL:
+def case_when(*args) -> StringSQL:
     """
     Returns the conditional statement of the input 
     arguments.
 
     Parameters
     ----------
-    argv: SQLExpression
+    args: SQLExpression
         Infinite Number of Expressions.
         The expression generated will look like:
-        even: CASE ... WHEN argv[2 * i] 
-                       THEN argv[2 * i + 1] ... END
-        odd : CASE ... WHEN argv[2 * i] 
-                       THEN argv[2 * i + 1] ... 
-                       ELSE argv[n] END
+        even: CASE ... WHEN args[2 * i] 
+                       THEN args[2 * i + 1] ... END
+        odd : CASE ... WHEN args[2 * i] 
+                       THEN args[2 * i + 1] ... 
+                       ELSE args[n] END
 
     Returns
     -------
     StringSQL
         SQL string.
     """
-    n = len(argv)
+    n = len(args)
     if n < 2:
         raise ParameterError(
             "The number of arguments of the 'case_when' function must be strictly greater than 1."
         )
-    category = to_dtype_category(argv[1])
+    category = to_dtype_category(args[1])
     i = 0
     expr = "CASE"
     while i < n:
         if i + 1 == n:
-            expr += " ELSE " + str(format_magic(argv[i]))
+            expr += " ELSE " + str(format_magic(args[i]))
             i += 1
         else:
             expr += (
                 " WHEN "
-                + str(format_magic(argv[i]))
+                + str(format_magic(args[i]))
                 + " THEN "
-                + str(format_magic(argv[i + 1]))
+                + str(format_magic(args[i + 1]))
             )
             i += 2
     expr += " END"
     return StringSQL(expr, category)
 
 
-def decode(expr: SQLExpression, *argv) -> StringSQL:
+def decode(expr: SQLExpression, *args) -> StringSQL:
     """
     Compares expression to each search value one 
     by one.
@@ -76,31 +76,31 @@ def decode(expr: SQLExpression, *argv) -> StringSQL:
     ----------
     expr: SQLExpression
         Expression.
-    argv: SQLExpression
+    args: SQLExpression
         Infinite Number of Expressions.
         The expression generated will look like:
-        even: CASE ... WHEN expr = argv[2 * i] 
-                       THEN argv[2 * i + 1] ... END
-        odd : CASE ... WHEN expr = argv[2 * i] 
-                       THEN argv[2 * i + 1] ... 
-                       ELSE argv[n] END
+        even: CASE ... WHEN expr = args[2 * i] 
+                       THEN args[2 * i + 1] ... END
+        odd : CASE ... WHEN expr = args[2 * i] 
+                       THEN args[2 * i + 1] ... 
+                       ELSE args[n] END
 
     Returns
     -------
     StringSQL
         SQL string.
     """
-    n = len(argv)
+    n = len(args)
     if n < 2:
         raise ParameterError(
             "The number of arguments of the 'decode' function must be greater than 3."
         )
-    category = to_dtype_category(argv[1])
+    category = to_dtype_category(args[1])
     expr = (
         "DECODE("
         + str(format_magic(expr))
         + ", "
-        + ", ".join([str(format_magic(elem)) for elem in argv])
+        + ", ".join([str(format_magic(elem)) for elem in args])
         + ")"
     )
     return StringSQL(expr, category)

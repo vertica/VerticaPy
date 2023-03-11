@@ -14,19 +14,26 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Literal, Optional
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
-import verticapy._config.config as conf
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class PCAPlot(MatplotlibBase):
-    def plot_pca_circle(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["pca"]:
+        return "pca"
+
+    def draw_circle(
         self,
         x: list,
         y: list,
@@ -34,14 +41,14 @@ class PCAPlot(MatplotlibBase):
         explained_variance: tuple[Optional[float], Optional[float]] = (None, None),
         dimensions: tuple[int, int] = (1, 2),
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a PCA circle plot using the Matplotlib API.
         """
         colors = get_colors()
-        if "color" in style_kwds:
-            colors[0] = style_kwds["color"]
+        if "color" in style_kwargs:
+            colors[0] = style_kwargs["color"]
         circle1 = plt.Circle((0, 0), 1, edgecolor=colors[0], facecolor="none")
         ax, fig = self._get_ax_fig(ax, size=(6, 6), set_axis_below=True, grid=False)
         n = len(x)
@@ -75,7 +82,7 @@ class PCAPlot(MatplotlibBase):
         ax.set_ylim(-1.1, 1.1)
         return ax
 
-    def plot_var(
+    def draw_var(
         self,
         x: list,
         y: list,
@@ -84,14 +91,14 @@ class PCAPlot(MatplotlibBase):
         dimensions: tuple[int, int] = (1, 2),
         bar_name: str = "",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a PCA Variance Plot using the Matplotlib API.
         """
         colors = get_colors()
-        if "color" in style_kwds:
-            colors[0] = style_kwds["color"]
+        if "color" in style_kwargs:
+            colors[0] = style_kwargs["color"]
         ax, fig = self._get_ax_fig(ax, size=(6, 6), set_axis_below=True, grid=True)
         n = len(x)
         delta_y = (max(y) - min(y)) * 0.04
@@ -101,9 +108,9 @@ class PCAPlot(MatplotlibBase):
                 x[i], y[i] + delta_y, variable_names[i], horizontalalignment="center"
             )
         param = {"marker": "^", "s": 100, "edgecolors": "black"}
-        if "c" not in style_kwds:
+        if "c" not in style_kwargs:
             param["color"] = colors[0]
-        img = ax.scatter(x, y, **self.updated_dict(param, style_kwds, 0))
+        img = ax.scatter(x, y, **self._update_dict(param, style_kwargs, 0))
         ax.plot(
             [min(x) - 5 * delta_x, max(x) + 5 * delta_x],
             [0.0, 0.0],
@@ -130,6 +137,6 @@ class PCAPlot(MatplotlibBase):
         ax.set_ylabel(f"Dim{dimensions[1]} {dim1}")
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
-        if "c" in style_kwds:
+        if "c" in style_kwargs:
             fig.colorbar(img).set_label(bar_name)
         return ax

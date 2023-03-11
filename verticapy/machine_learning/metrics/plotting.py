@@ -45,7 +45,7 @@ def lift_chart(
     pos_label: PythonScalar = 1,
     nbins: int = 30,
     ax: Optional[Axes] = None,
-    **style_kwds,
+    **style_kwargs,
 ) -> TableSample:
     """
     Draws the Lift Chart.
@@ -72,7 +72,7 @@ def lift_chart(
         1, inclusive.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any   optional  parameter  to  pass  to   the 
         Matplotlib functions.
 
@@ -98,14 +98,16 @@ def lift_chart(
     max_value = max([0 if elem != elem else elem for elem in lift])
     lift = [max_value if elem != elem else elem for elem in lift]
     param1 = {"color": get_colors()[0]}
-    ax.plot(decision_boundary, lift, **PlottingBase.updated_dict(param1, style_kwds, 0))
+    ax.plot(
+        decision_boundary, lift, **PlottingBase._update_dict(param1, style_kwargs, 0)
+    )
     param2 = {"color": get_colors()[1]}
     ax.plot(
         decision_boundary,
         positive_prediction_ratio,
-        **PlottingBase.updated_dict(param2, style_kwds, 1),
+        **PlottingBase._update_dict(param2, style_kwargs, 1),
     )
-    color1, color2 = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
+    color1, color2 = get_colors(style_kwargs, 0), get_colors(style_kwargs, 1)
     if color1 == color2:
         color2 = get_colors()[1]
     ax.fill_between(
@@ -144,7 +146,7 @@ def prc_curve(
     pos_label: PythonScalar = 1,
     nbins: int = 30,
     ax: Optional[Axes] = None,
-    **style_kwds,
+    **style_kwargs,
 ) -> TableSample:
     """
     Draws the PRC Curve.
@@ -171,7 +173,7 @@ def prc_curve(
         1, inclusive.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any   optional  parameter  to  pass  to   the 
         Matplotlib functions.
 
@@ -195,13 +197,13 @@ def prc_curve(
             fig.set_size_inches(8, 6)
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
-    param = {"color": get_colors(style_kwds, 0)}
-    ax.plot(recall, precision, **PlottingBase.updated_dict(param, style_kwds))
+    param = {"color": get_colors(style_kwargs, 0)}
+    ax.plot(recall, precision, **PlottingBase._update_dict(param, style_kwargs))
     ax.fill_between(
         recall,
         [0 for item in recall],
         precision,
-        facecolor=get_colors(style_kwds, 0),
+        facecolor=get_colors(style_kwargs, 0),
         alpha=0.1,
     )
     ax.set_ylim(0, 1)
@@ -232,7 +234,7 @@ def roc_curve(
     nbins: int = 30,
     cutoff_curve: bool = False,
     ax: Optional[Axes] = None,
-    **style_kwds,
+    **style_kwargs,
 ) -> TableSample:
     """
     Draws the ROC Curve.
@@ -259,7 +261,7 @@ def roc_curve(
         1, inclusive.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any   optional  parameter  to  pass  to   the 
         Matplotlib functions.
 
@@ -281,7 +283,7 @@ def roc_curve(
         fig, ax = plt.subplots()
         if conf._get_import_success("jupyter"):
             fig.set_size_inches(8, 6)
-    color1, color2 = get_colors(style_kwds, 0), get_colors(style_kwds, 1)
+    color1, color2 = get_colors(style_kwargs, 0), get_colors(style_kwargs, 1)
     if color1 == color2:
         color2 = get_colors()[1]
     if cutoff_curve:
@@ -289,13 +291,13 @@ def roc_curve(
             threshold,
             [1 - item for item in false_positive],
             label="Specificity",
-            **PlottingBase.updated_dict({"color": get_colors()[0]}, style_kwds),
+            **PlottingBase._update_dict({"color": get_colors()[0]}, style_kwargs),
         )
         ax.plot(
             threshold,
             true_positive,
             label="Sensitivity",
-            **PlottingBase.updated_dict({"color": get_colors()[1]}, style_kwds),
+            **PlottingBase._update_dict({"color": get_colors()[1]}, style_kwargs),
         )
         ax.fill_between(
             threshold,
@@ -313,7 +315,7 @@ def roc_curve(
         ax.plot(
             false_positive,
             true_positive,
-            **PlottingBase.updated_dict({"color": get_colors()[0]}, style_kwds),
+            **PlottingBase._update_dict({"color": get_colors()[0]}, style_kwargs),
         )
         ax.fill_between(
             false_positive, false_positive, true_positive, facecolor=color1, alpha=0.1,

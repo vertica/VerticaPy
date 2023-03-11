@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,12 +26,24 @@ import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns
 
 if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class PieChart(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["pie"]:
+        return "pie"
+
+    @property
+    def _compute_method(self) -> Literal["1D"]:
+        return "1D"
+
     @staticmethod
     def _make_autopct(values, category):
         def my_autopct(pct):
@@ -45,14 +57,149 @@ class PieChart(MatplotlibBase):
 
         return my_autopct
 
-    def nested_pie(
+    def draw(
+        self,
+        pie_type: Literal["auto", "donut", "rose"] = "auto",
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
+        """
+        Draws a pie chart using the Matplotlib API.
+        """
+        colors = get_colors()
+        n = len(self.data["y"])
+        explode = [0 for i in range(n)]
+        explode[max(zip(self.data["y"], range(n)))[1]] = 0.13
+        current_explode = 0.15
+        total_count = sum(self.data["y"])
+        for idx, item in enumerate(self.data["y"]):
+            if (item < 0.05) or (
+                (item > 1) and (float(item) / float(total_count) < 0.05)
+            ):
+                current_explode = min(0.9, current_explode * 1.4)
+                explode[idx] = current_explode
+        if self.layout["method"].lower() == "density":
+            autopct = "%1.1f%%"
+        else:
+            if (self.layout["method"].lower() in ["sum", "count"]) or (
+                (self.layout["method"].lower() in ["min", "max"])
+                and (self.layout["of_cat"] == "int")
+            ):
+                category = "int"
+            else:
+                category = None
+            autopct = self._make_autopct(self.data["y"], category)
+        if pie_type != "rose":
+            ax, fig = self._get_ax_fig(
+                ax, size=(8, 6), set_axis_below=False, grid=False
+            )
+            param = {
+                "autopct": autopct,
+                "colors": colors,
+                "shadow": True,
+                "startangle": 290,
+                "explode": explode,
+                "textprops": {"color": "w"},
+                "normalize": True,
+            }
+            if pie_type == "donut":
+                param["wedgeprops"] = dict(width=0.4, edgecolor="w")
+                param["explode"] = None
+                param["pctdistance"] = 0.8
+            ax.pie(
+                self.data["y"],
+                labels=self.data["labels"],
+                **self._update_dict(param, style_kwargs),
+            )
+            handles, labels = ax.get_legend_handles_labels()
+            labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
+            ax.legend(
+                handles,
+                labels,
+                title=self.layout["x"],
+                loc="center left",
+                bbox_to_anchor=[1, 0.5],
+            )
+            box = ax.get_position()
+            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+        else:
+            try:
+                y, labels = zip(
+                    *sorted(
+                        zip(self.data["y"], self.data["labels"]), key=lambda t: t[0]
+                    )
+                )
+            except:
+                y, labels = self.data["y"], self.data["labels"]
+            N = len(labels)
+            width = 2 * np.pi / N
+            rad = np.cumsum([width] * N)
+
+            fig = plt.figure()
+            if not (ax):
+                ax = fig.add_subplot(111, polar=True)
+            ax.grid(False)
+            ax.spines["polar"].set_visible(False)
+            ax.set_yticks([])
+            ax.set_thetagrids([])
+            ax.set_theta_zero_location("N")
+            param = {
+                "color": colors,
+            }
+            colors = self._update_dict(param, style_kwargs, -1)["color"]
+            if isinstance(colors, str):
+                colors = [colors]
+            colors = colors + get_colors()
+            style_kwargs["color"] = colors
+            ax.bar(
+                rad, y, width=width, **self._update_dict(param, style_kwargs, -1),
+            )
+            for i in np.arange(N):
+                ax.text(
+                    rad[i] + 0.1,
+                    [yi * 1.02 for yi in y][i],
+                    [round(yi, 2) for yi in y][i],
+                    rotation=rad[i] * 180 / np.pi,
+                    rotation_mode="anchor",
+                    alpha=1,
+                    color="black",
+                )
+            try:
+                labels, colors = zip(
+                    *sorted(zip(labels, colors[:N]), key=lambda t: t[0])
+                )
+            except:
+                pass
+            ax.legend(
+                [Line2D([0], [0], color=color) for color in colors],
+                labels,
+                bbox_to_anchor=[1.1, 0.5],
+                loc="center left",
+                title=self.layout["x"],
+                labelspacing=1,
+            )
+            box = ax.get_position()
+            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+        return ax
+
+
+class NestedPieChart(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["pie"]:
+        return "pie"
+
+    def draw(
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
         max_cardinality: Optional[int] = None,
         h: PythonNumber = None,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a nested pie chart using the Matplotlib API.
@@ -61,15 +208,15 @@ class PieChart(MatplotlibBase):
             columns = [columns]
         wedgeprops = dict(width=0.3, edgecolor="w")
         tmp_style = {}
-        for elem in style_kwds:
+        for elem in style_kwargs:
             if elem not in ("color", "colors", "wedgeprops"):
-                tmp_style[elem] = style_kwds[elem]
-        if "wedgeprops" in style_kwds:
-            wedgeprops = style_kwds["wedgeprops"]
-        if "colors" in style_kwds:
-            colors, n = style_kwds["colors"], len(columns)
-        elif "color" in style_kwds:
-            colors, n = style_kwds["color"], len(columns)
+                tmp_style[elem] = style_kwargs[elem]
+        if "wedgeprops" in style_kwargs:
+            wedgeprops = style_kwargs["wedgeprops"]
+        if "colors" in style_kwargs:
+            colors, n = style_kwargs["colors"], len(columns)
+        elif "color" in style_kwargs:
+            colors, n = style_kwargs["color"], len(columns)
         else:
             colors, n = get_colors(), len(columns)
         m, k = len(colors), 0
@@ -144,138 +291,4 @@ class PieChart(MatplotlibBase):
             box = ax.get_position()
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
             plt.gca().add_artist(legend)
-        return ax
-
-    def pie(
-        self,
-        vdc: "vDataColumn",
-        method: str = "density",
-        of: Optional[str] = None,
-        max_cardinality: int = 6,
-        h: PythonNumber = 0,
-        donut: bool = False,
-        rose: bool = False,
-        ax: Optional[Axes] = None,
-        **style_kwds,
-    ) -> Axes:
-        """
-        Draws a pie chart using the Matplotlib API.
-        """
-        colors = get_colors()
-        self._compute_plot_params(
-            vdc, max_cardinality=max_cardinality, method=method, of=of, pie=True
-        )
-        n = len(self.data["y"])
-        explode = [0 for i in range(n)]
-        explode[max(zip(self.data["y"], range(n)))[1]] = 0.13
-        current_explode = 0.15
-        total_count = sum(self.data["y"])
-        for idx, item in enumerate(self.data["y"]):
-            if (item < 0.05) or (
-                (item > 1) and (float(item) / float(total_count) < 0.05)
-            ):
-                current_explode = min(0.9, current_explode * 1.4)
-                explode[idx] = current_explode
-        if method.lower() == "density":
-            autopct = "%1.1f%%"
-        else:
-            if (method.lower() in ["sum", "count"]) or (
-                (method.lower() in ["min", "max"])
-                and (vdc._parent[of].category == "int")
-            ):
-                category = "int"
-            else:
-                category = None
-            autopct = self._make_autopct(self.data["y"], category)
-        if not (rose):
-            ax, fig = self._get_ax_fig(
-                ax, size=(8, 6), set_axis_below=False, grid=False
-            )
-            param = {
-                "autopct": autopct,
-                "colors": colors,
-                "shadow": True,
-                "startangle": 290,
-                "explode": explode,
-                "textprops": {"color": "w"},
-                "normalize": True,
-            }
-            if donut:
-                param["wedgeprops"] = dict(width=0.4, edgecolor="w")
-                param["explode"] = None
-                param["pctdistance"] = 0.8
-            ax.pie(
-                self.data["y"],
-                labels=self.data["labels"],
-                **self.updated_dict(param, style_kwds),
-            )
-            handles, labels = ax.get_legend_handles_labels()
-            labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
-            ax.legend(
-                handles,
-                labels,
-                title=vdc._alias,
-                loc="center left",
-                bbox_to_anchor=[1, 0.5],
-            )
-            box = ax.get_position()
-            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-        else:
-            try:
-                y, labels = zip(
-                    *sorted(
-                        zip(self.data["y"], self.data["labels"]), key=lambda t: t[0]
-                    )
-                )
-            except:
-                y, labels = self.data["y"], self.data["labels"]
-            N = len(labels)
-            width = 2 * np.pi / N
-            rad = np.cumsum([width] * N)
-
-            fig = plt.figure()
-            if not (ax):
-                ax = fig.add_subplot(111, polar=True)
-            ax.grid(False)
-            ax.spines["polar"].set_visible(False)
-            ax.set_yticks([])
-            ax.set_thetagrids([])
-            ax.set_theta_zero_location("N")
-            param = {
-                "color": colors,
-            }
-            colors = self.updated_dict(param, style_kwds, -1)["color"]
-            if isinstance(colors, str):
-                colors = [colors]
-            colors = colors + get_colors()
-            style_kwds["color"] = colors
-            ax.bar(
-                rad, y, width=width, **self.updated_dict(param, style_kwds, -1),
-            )
-            for i in np.arange(N):
-                ax.text(
-                    rad[i] + 0.1,
-                    [yi * 1.02 for yi in y][i],
-                    [round(yi, 2) for yi in y][i],
-                    rotation=rad[i] * 180 / np.pi,
-                    rotation_mode="anchor",
-                    alpha=1,
-                    color="black",
-                )
-            try:
-                labels, colors = zip(
-                    *sorted(zip(labels, colors[:N]), key=lambda t: t[0])
-                )
-            except:
-                pass
-            ax.legend(
-                [Line2D([0], [0], color=color) for color in colors],
-                labels,
-                bbox_to_anchor=[1.1, 0.5],
-                loc="center left",
-                title=vdc._alias,
-                labelspacing=1,
-            )
-            box = ax.get_position()
-            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         return ax

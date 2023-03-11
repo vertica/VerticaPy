@@ -20,6 +20,7 @@ from collections.abc import Iterable
 
 from matplotlib.axes import Axes
 
+from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLExpression
 from verticapy._utils._gen import gen_tmp_name
@@ -28,7 +29,7 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.plotting.base import PlottingBase
 from verticapy.plotting._highcharts.base import hchart_from_vdf
-import verticapy.plotting._matplotlib as vpy_plt
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 
 class vDFPlot:
@@ -54,7 +55,7 @@ class vDFPlot:
         repeat: bool = True,
         return_html: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the animated chart.
@@ -116,7 +117,7 @@ class vDFPlot:
         generated.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -161,7 +162,7 @@ class vDFPlot:
                 bubble_img["img"] = ""
             if "bbox" not in bubble_img:
                 bubble_img["bbox"] = []
-            return vpy_plt.AnimatedBubblePlot().animated_bubble_plot(
+            return vpy_matplotlib_plt.AnimatedBubblePlot().draw(
                 self,
                 order_by=ts,
                 columns=columns,
@@ -182,10 +183,10 @@ class vDFPlot:
                 img=bubble_img["img"],
                 bbox=bubble_img["bbox"],
                 ax=ax,
-                **style_kwds,
+                **style_kwargs,
             )
         elif kind in ("bar", "pie"):
-            return vpy_plt.AnimatedBarChart().animated_bar(
+            return vpy_matplotlib_plt.AnimatedBarChart().draw(
                 self,
                 order_by=ts,
                 columns=columns,
@@ -203,7 +204,7 @@ class vDFPlot:
                 return_html=return_html,
                 pie=(kind == "pie"),
                 ax=ax,
-                **style_kwds,
+                **style_kwargs,
             )
         else:
             if by:
@@ -218,7 +219,7 @@ class vDFPlot:
                 ts_steps["step"] = 5
             if "window" not in ts_steps:
                 ts_steps["window"] = 100
-            return vpy_plt.AnimatedLinePlot().animated_ts_plot(
+            return vpy_matplotlib_plt.AnimatedLinePlot().draw(
                 vdf,
                 order_by=ts,
                 columns=columns,
@@ -232,7 +233,7 @@ class vDFPlot:
                 repeat=repeat,
                 return_html=return_html,
                 ax=ax,
-                **style_kwds,
+                **style_kwargs,
             )
 
     @save_verticapy_logs
@@ -240,10 +241,10 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         method: str = "density",
-        of: str = "",
-        max_cardinality: tuple = (6, 6),
-        h: tuple = (None, None),
-        hist_type: Literal[
+        of: Optional[str] = None,
+        max_cardinality: tuple[int, int] = (6, 6),
+        h: tuple[PythonNumber, PythonNumber] = (None, None),
+        bar_type: Literal[
             "auto",
             "fully_stacked",
             "stacked",
@@ -253,7 +254,7 @@ class vDFPlot:
             "density",
         ] = "auto",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the bar chart of the input vDataColumns based on an aggregation.
@@ -274,14 +275,14 @@ class vDFPlot:
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
          The vDataColumn to use to compute the aggregation.
+    max_cardinality: tuple, optional
+        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
+        categorical (No h will be picked or computed)
     h: tuple, optional
         Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
         vDataColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
-    max_cardinality: tuple, optional
-        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
-        categorical (No h will be picked or computed)
-    hist_type: str, optional
+    bar_type: str, optional
         The BarChart Type.
             auto          : Regular Bar Chart based on 1 or 2 vDataColumns.
             pyramid       : Pyramid Density Bar Chart. Only works if one of
@@ -291,7 +292,7 @@ class vDFPlot:
             fully_stacked : Fully Stacked Bar Chart based on 2 vDataColumns.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -311,32 +312,31 @@ class vDFPlot:
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         if len(columns) == 1:
-            return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax, **style_kwds)
-        else:
-            stacked, fully_stacked, density = False, False, False
-            if hist_type in ("fully", "fully stacked", "fully_stacked"):
-                fully_stacked = True
-            elif hist_type == "stacked":
-                stacked = True
-            elif hist_type in ("pyramid", "density"):
-                density = True
-            return vpy_plt.HorizontalBarChart().barh2D(
-                self,
-                columns,
-                method,
-                of,
-                max_cardinality,
-                h,
-                stacked,
-                fully_stacked,
-                density,
+            return self[columns[0]].bar(
+                method=method,
+                of=of,
+                max_cardinality=max_cardinality[0],
+                h=h[0],
                 ax=ax,
-                **style_kwds,
+                **style_kwargs,
             )
+        else:
+            if bar_type in ("fully", "fully stacked"):
+                bar_type = "fully_stacked"
+            elif bar_type == "pyramid":
+                bar_type = "density"
+            return vpy_matplotlib_plt.HorizontalBarChart2D(
+                vdf=self,
+                columns=columns,
+                method=method,
+                of=of,
+                max_cardinality=max_cardinality,
+                h=h,
+            ).draw(bar_type=bar_type, ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
     def boxplot(
-        self, columns: SQLColumns = [], ax: Optional[Axes] = None, **style_kwds
+        self, columns: SQLColumns = [], ax: Optional[Axes] = None, **style_kwargs
     ):
         """
     Draws the Box Plot of the input vDataColumns. 
@@ -348,7 +348,7 @@ class vDFPlot:
         be used.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -369,7 +369,9 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns) if (columns) else self.numcol()
-        return vpy_plt.BoxPlot().boxplot2D(self, columns, ax=ax, **style_kwds)
+        return vpy_matplotlib_plt.MultiBoxPlot().draw(
+            self, columns, ax=ax, **style_kwargs
+        )
 
     @save_verticapy_logs
     def bubble(
@@ -382,7 +384,7 @@ class vDFPlot:
         bbox: list = [],
         img: str = "",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the bubble plot of the input vDataColumns.
@@ -406,7 +408,7 @@ class vDFPlot:
         Path to the image to display as background.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -423,7 +425,7 @@ class vDFPlot:
         columns, catcol, size_bubble_col, cmap_col = self._format_colnames(
             columns, catcol, size_bubble_col, cmap_col, expected_nb_of_cols=2
         )
-        return vpy_plt.BubblePlot().bubble(
+        return vpy_matplotlib_plt.BubblePlot().draw(
             self,
             columns + [size_bubble_col] if size_bubble_col else columns,
             catcol,
@@ -432,7 +434,7 @@ class vDFPlot:
             bbox,
             img,
             ax=ax,
-            **style_kwds,
+            **style_kwargs,
         )
 
     @save_verticapy_logs
@@ -442,7 +444,7 @@ class vDFPlot:
         func,
         nbins: int = 100,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the contour plot of the input function two input vDataColumns.
@@ -458,7 +460,7 @@ class vDFPlot:
         Number of bins used to discretize the two input numerical vDataColumns.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -473,8 +475,8 @@ class vDFPlot:
      vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
         columns = self._format_colnames(columns, expected_nb_of_cols=2)
-        return vpy_plt.ContourPlot().contour_plot(
-            self, columns, func, nbins, ax=ax, **style_kwds,
+        return vpy_matplotlib_plt.ContourPlot().draw(
+            self, columns, func, nbins, ax=ax, **style_kwargs,
         )
 
     @save_verticapy_logs
@@ -486,7 +488,7 @@ class vDFPlot:
         nbins: int = 50,
         xlim: tuple = None,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the vDataColumns Density Plot.
@@ -512,7 +514,7 @@ class vDFPlot:
         Set the x limits of the current axes.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -551,7 +553,7 @@ class vDFPlot:
                 nbins=nbins,
                 xlim=(xmin, xmax),
                 ax=ax,
-                **PlottingBase.updated_dict(param, style_kwds, idx),
+                **PlottingBase._update_dict(param, style_kwargs, idx),
             )
             custom_lines += [
                 Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
@@ -764,10 +766,10 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         method: str = "count",
-        of: str = "",
+        of: Optional[str] = None,
         h: tuple = (None, None),
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the Heatmap of the two input vDataColumns.
@@ -793,7 +795,7 @@ class vDFPlot:
         if the parameter is empty or invalid.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -813,20 +815,21 @@ class vDFPlot:
                 f"vDataColumn {column} must be numerical to draw the Heatmap."
             )
         min_max = self.agg(func=["min", "max"], columns=columns).transpose()
-        ax = vpy_plt.PivotTable().pivot_table(
+        ax = vpy_matplotlib_plt.PivotTable(
             vdf=self,
             columns=columns,
             method=method,
             of=of,
             h=h,
             max_cardinality=(0, 0),
+        ).draw(
             show=True,
             with_numbers=False,
             fill_none=0.0,
             ax=ax,
             return_ax=True,
             extent=min_max[columns[0]] + min_max[columns[1]],
-            **style_kwds,
+            **style_kwargs,
         )
         return ax
 
@@ -835,11 +838,11 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         method: Literal["density", "count", "avg", "min", "max", "sum"] = "count",
-        of: str = "",
+        of: Optional[str] = None,
         bbox: list = [],
         img: str = "",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the Hexbin of the input vDataColumns based on an aggregation.
@@ -865,7 +868,7 @@ class vDFPlot:
          Path to the image to display as background.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -880,8 +883,8 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
-        return vpy_plt.HexbinPlot().hexbin(
-            self, columns, method, of, bbox, img, ax=ax, **style_kwds
+        return vpy_matplotlib_plt.HexbinMap().draw(
+            self, columns, method, of, bbox, img, ax=ax, **style_kwargs
         )
 
     @save_verticapy_logs
@@ -889,12 +892,12 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         method: str = "density",
-        of: str = "",
-        max_cardinality: tuple = (6, 6),
-        h: Union[int, float, tuple] = (None, None),
-        hist_type: Literal["auto", "multi", "stacked"] = "auto",
+        of: Optional[str] = None,
+        max_cardinality: tuple[int, int] = (6, 6),
+        h: tuple[PythonNumber, PythonNumber] = (None, None),
+        bar_type: Literal["auto", "multi", "stacked"] = "auto",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the histogram of the input vDataColumns based on an aggregation.
@@ -915,21 +918,21 @@ class vDFPlot:
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
         The vDataColumn to use to compute the aggregation.
-    h: int / float /tuple, optional
-        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
-        vDataColumns are numerical. Optimized h will be computed if the parameter 
-        is empty or invalid.
     max_cardinality: tuple, optional
         Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
-    hist_type: str, optional
+    h: tuple, optional
+        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
+        vDataColumns are numerical. Optimized h will be computed if the parameter 
+        is empty or invalid.
+    bar_type: str, optional
         The BarChart Type.
             auto    : Regular BarChart based on 1 or 2 vDataColumns.
             multi   : Multiple Regular BarCharts based on 1 to 5 vDataColumns.
             stacked : Stacked BarChart based on 2 vDataColumns.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -948,31 +951,36 @@ class vDFPlot:
         columns, of = self._format_colnames(
             columns, of, expected_nb_of_cols=[1, 2, 3, 4, 5]
         )
-        stacked = True if (hist_type.lower() == "stacked") else False
-        multi = True if (hist_type.lower() == "multi") else False
+        stacked = True if (bar_type.lower() == "stacked") else False
+        multi = True if (bar_type.lower() == "multi") else False
         if len(columns) == 1:
-            return self[columns[0]].hist(method, of, 6, 0, 0, **style_kwds)
+            return self[columns[0]].hist(
+                method=method,
+                of=of,
+                max_cardinality=max_cardinality[0],
+                h=h[0],
+                **style_kwargs,
+            )
         else:
             if multi:
-                if isinstance(h, (int, float)):
-                    h_0 = h
-                else:
-                    h_0 = h[0] if (h[0]) else 0
-                return vpy_plt.BarChart().multiple_hist(
-                    self, columns, method, of, h_0, ax=ax, **style_kwds,
+                return vpy_matplotlib_plt.Histogram().draw(
+                    vdf=self,
+                    columns=columns,
+                    method=method,
+                    of=of,
+                    h=h[0],
+                    ax=ax,
+                    **style_kwargs,
                 )
             else:
-                return vpy_plt.BarChart().bar2D(
-                    self,
-                    columns,
-                    method,
-                    of,
-                    max_cardinality,
-                    h,
-                    stacked,
-                    ax=ax,
-                    **style_kwds,
-                )
+                return vpy_matplotlib_plt.BarChart2D(
+                    vdf=self,
+                    columns=columns,
+                    method=method,
+                    of=of,
+                    h=h,
+                    max_cardinality=max_cardinality,
+                ).draw(stacked=stacked, ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
     def outliers_plot(
@@ -985,7 +993,7 @@ class vDFPlot:
         inliers_border_color: str = "red",
         max_nb_points: int = 500,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the global outliers plot of one or two columns based on their ZSCORE.
@@ -1008,7 +1016,7 @@ class vDFPlot:
         Maximum number of points to display.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1019,7 +1027,7 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns, expected_nb_of_cols=[1, 2])
-        return vpy_plt.OutliersPlot().outliers_contour_plot(
+        return vpy_matplotlib_plt.OutliersPlot().draw(
             self,
             columns,
             color=color,
@@ -1029,7 +1037,7 @@ class vDFPlot:
             inliers_border_color=inliers_border_color,
             max_nb_points=max_nb_points,
             ax=ax,
-            **style_kwds,
+            **style_kwargs,
         )
 
     @save_verticapy_logs
@@ -1039,7 +1047,7 @@ class vDFPlot:
         max_cardinality: Union[int, tuple, list] = None,
         h: Union[float, tuple] = None,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the nested density pie chart of the input vDataColumns.
@@ -1057,7 +1065,7 @@ class vDFPlot:
         If of type tuple, it must represent each column 'h'.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1072,8 +1080,8 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
-        return vpy_plt.PieChart().nested_pie(
-            self, columns, max_cardinality, h, ax=ax, **style_kwds
+        return vpy_matplotlib_plt.NestedPieChart().draw(
+            self, columns, max_cardinality, h, ax=ax, **style_kwargs
         )
 
     @save_verticapy_logs
@@ -1081,14 +1089,14 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         method: str = "count",
-        of: str = "",
-        max_cardinality: tuple = (20, 20),
-        h: tuple = (None, None),
+        of: Optional[str] = None,
+        max_cardinality: tuple[int, int] = (20, 20),
+        h: tuple[PythonNumber, PythonNumber] = (None, None),
         show: bool = True,
         with_numbers: bool = True,
         fill_none: float = 0.0,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the pivot table of one or two columns based on an aggregation.
@@ -1124,7 +1132,7 @@ class vDFPlot:
         The empty values of the pivot table will be filled by this number.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1141,19 +1149,15 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
-        return vpy_plt.PivotTable().pivot_table(
-            self,
-            columns,
+        return vpy_matplotlib_plt.PivotTable(
+            vdf=self,
+            columns=columns,
             method=method,
             of=of,
             h=h,
             max_cardinality=max_cardinality,
             fill_none=fill_none,
-            show=show,
-            with_numbers=with_numbers,
-            ax=ax,
-            **style_kwds,
-        )
+        ).draw(show=show, with_numbers=with_numbers, ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
     def plot(
@@ -1164,7 +1168,7 @@ class vDFPlot:
         end_date: PythonScalar = None,
         step: bool = False,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the time series.
@@ -1187,7 +1191,7 @@ class vDFPlot:
         If set to True, draw a Step Plot.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1203,8 +1207,8 @@ class vDFPlot:
             columns = [columns]
         columns, ts = self._format_colnames(columns, ts)
         kind = "step" if step else "line"
-        return vpy_plt.LinePlot().multi_ts_plot(
-            self, ts, columns, start_date, end_date, kind, ax=ax, **style_kwds,
+        return vpy_matplotlib_plt.MultiLinePlot().draw(
+            self, ts, columns, start_date, end_date, kind, ax=ax, **style_kwargs,
         )
 
     @save_verticapy_logs
@@ -1220,7 +1224,7 @@ class vDFPlot:
         bbox: list = [],
         img: str = "",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the scatter plot of the input vDataColumns.
@@ -1255,7 +1259,7 @@ class vDFPlot:
         Path to the image to display as background.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1286,7 +1290,7 @@ class vDFPlot:
                     max_cardinality=100,
                     max_nb_points=max_nb_points,
                     ax=ax,
-                    **style_kwds,
+                    **style_kwargs,
                 )
                 explained_variance = model.explained_variance_["explained_variance"]
                 for idx, fun in enumerate([ax.set_xlabel, ax.set_ylabel]):
@@ -1310,10 +1314,10 @@ class vDFPlot:
             bbox,
             img,
         ]
-        return vpy_plt.ScatterPlot().scatter(*args, ax=ax, **style_kwds,)
+        return vpy_matplotlib_plt.ScatterPlot().draw(*args, ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
-    def scatter_matrix(self, columns: SQLColumns = [], **style_kwds):
+    def scatter_matrix(self, columns: SQLColumns = [], **style_kwargs):
         """
     Draws the scatter matrix of the vDataFrame.
 
@@ -1322,7 +1326,7 @@ class vDFPlot:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1337,7 +1341,7 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
-        return vpy_plt.ScatterPlot().scatter_matrix(self, columns, **style_kwds)
+        return vpy_matplotlib_plt.ScatterMatrix().draw(self, columns, **style_kwargs)
 
     @save_verticapy_logs
     def stacked_area(
@@ -1348,7 +1352,7 @@ class vDFPlot:
         end_date: PythonScalar = None,
         fully: bool = False,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the stacked area chart of the time series.
@@ -1371,7 +1375,7 @@ class vDFPlot:
         If set to True, a Fully Stacked Area Chart will be drawn.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1390,8 +1394,8 @@ class vDFPlot:
             "processed by the 'stacked_area' method."
         )
         columns, ts = self._format_colnames(columns, ts)
-        return vpy_plt.LinePlot().multi_ts_plot(
-            self, ts, columns, start_date, end_date, kind=kind, ax=ax, **style_kwds,
+        return vpy_matplotlib_plt.MultiLinePlot().draw(
+            self, ts, columns, start_date, end_date, kind=kind, ax=ax, **style_kwargs,
         )
 
 
@@ -1495,12 +1499,12 @@ class vDCPlot:
     def bar(
         self,
         method: str = "density",
-        of: str = "",
+        of: Optional[str] = None,
         max_cardinality: int = 6,
         nbins: int = 0,
         h: PythonNumber = 0,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the bar chart of the vDataColumn based on an aggregation.
@@ -1528,7 +1532,7 @@ class vDCPlot:
         Interval width of the bar. If empty, an optimized h will be computed.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1541,9 +1545,14 @@ class vDCPlot:
     vDataFrame[].hist : Draws the histogram of the vDataColumn based on an aggregation.
         """
         of = self._parent._format_colnames(of)
-        return vpy_plt.HorizontalBarChart().barh(
-            self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds
-        )
+        return vpy_matplotlib_plt.HorizontalBarChart(
+            vdc=self,
+            method=method,
+            of=of,
+            max_cardinality=max_cardinality,
+            nbins=nbins,
+            h=h,
+        ).draw(ax=ax, **style_kwargs)
 
     @save_verticapy_logs
     def boxplot(
@@ -1553,7 +1562,7 @@ class vDCPlot:
         max_cardinality: int = 8,
         cat_priority: Union[str, int, datetime.datetime, datetime.date, list] = [],
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the box plot of the vDataColumn.
@@ -1574,7 +1583,7 @@ class vDCPlot:
         The other categories will be filtered.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1589,8 +1598,8 @@ class vDCPlot:
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
         by = self._parent._format_colnames(by)
-        return vpy_plt.BoxPlot().boxplot(
-            self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds
+        return vpy_matplotlib_plt.BoxPlot().draw(
+            self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwargs
         )
 
     @save_verticapy_logs
@@ -1602,7 +1611,7 @@ class vDCPlot:
         nbins: int = 200,
         xlim: tuple = None,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the vDataColumn Density Plot.
@@ -1627,7 +1636,7 @@ class vDCPlot:
         Set the x limits of the current axes.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1643,7 +1652,7 @@ class vDCPlot:
 
         if by:
             by = self._parent._format_colnames(by)
-            colors = vpy_plt.get_colors()
+            colors = get_colors()
             if not xlim:
                 xmin = self.min()
                 xmax = self.max()
@@ -1661,13 +1670,13 @@ class vDCPlot:
                     nbins=nbins,
                     xlim=(xmin, xmax),
                     ax=ax,
-                    **PlottingBase.updated_dict(param, style_kwds, idx),
+                    **PlottingBase._update_dict(param, style_kwargs, idx),
                 )
                 custom_lines += [
                     Line2D(
                         [0],
                         [0],
-                        color=PlottingBase.updated_dict(param, style_kwds, idx)[
+                        color=PlottingBase._update_dict(param, style_kwargs, idx)[
                             "color"
                         ],
                         lw=4,
@@ -1702,7 +1711,7 @@ class vDCPlot:
         )
         try:
             result = model.fit(self._parent._genSQL(), [self._alias]).plot(
-                ax=ax, **style_kwds
+                ax=ax, **style_kwargs
             )
             return result
         finally:
@@ -1752,12 +1761,12 @@ class vDCPlot:
     def hist(
         self,
         method: str = "density",
-        of: str = "",
+        of: Optional[str] = None,
         max_cardinality: int = 6,
         nbins: int = 0,
         h: PythonNumber = 0,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the histogram of the vDataColumn based on an aggregation.
@@ -1785,7 +1794,7 @@ class vDCPlot:
         Interval width of the bar. If empty, an optimized h will be computed.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1798,20 +1807,25 @@ class vDCPlot:
     vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
         of = self._parent._format_colnames(of)
-        return vpy_plt.BarChart().bar(
-            self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds
-        )
+        return vpy_matplotlib_plt.BarChart(
+            vdc=self,
+            method=method,
+            of=of,
+            max_cardinality=max_cardinality,
+            nbins=nbins,
+            h=h,
+        ).draw(ax=ax, **style_kwargs)
 
     @save_verticapy_logs
     def pie(
         self,
         method: str = "density",
-        of: str = "",
+        of: Optional[str] = None,
         max_cardinality: int = 6,
         h: PythonNumber = 0,
         pie_type: Literal["auto", "donut", "rose"] = "auto",
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the pie chart of the vDataColumn based on an aggregation.
@@ -1843,7 +1857,7 @@ class vDCPlot:
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1855,11 +1869,15 @@ class vDCPlot:
     --------
     vDataFrame.donut : Draws the donut chart of the vDataColumn based on an aggregation.
         """
-        donut, rose = (pie_type == "donut"), (pie_type == "rose")
         of = self._parent._format_colnames(of)
-        return vpy_plt.PieChart().pie(
-            self, method, of, max_cardinality, h, donut, rose, ax=ax, **style_kwds,
-        )
+        return vpy_matplotlib_plt.PieChart(
+            vdc=self,
+            method=method,
+            of=of,
+            max_cardinality=max_cardinality,
+            h=h,
+            pie=True,
+        ).draw(pie_type=pie_type, ax=ax, **style_kwargs)
 
     @save_verticapy_logs
     def plot(
@@ -1871,7 +1889,7 @@ class vDCPlot:
         area: bool = False,
         step: bool = False,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the Time Series of the vDataColumn.
@@ -1895,7 +1913,7 @@ class vDCPlot:
         If set to True, draw a Step Plot.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1908,8 +1926,8 @@ class vDCPlot:
     vDataFrame.plot : Draws the time series.
         """
         ts, by = self._parent._format_colnames(ts, by)
-        return vpy_plt.LinePlot().ts_plot(
-            self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwds,
+        return vpy_matplotlib_plt.LinePlot().draw(
+            self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwargs,
         )
 
     @save_verticapy_logs
@@ -1921,7 +1939,7 @@ class vDCPlot:
         end_date: PythonScalar = "",
         plot_median: bool = False,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the range plot of the vDataColumn. The aggregations used are the median 
@@ -1944,7 +1962,7 @@ class vDCPlot:
         If set to True, the Median will be drawn.
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -1957,8 +1975,8 @@ class vDCPlot:
     vDataFrame.plot : Draws the time series.
         """
         ts = self._parent._format_colnames(ts)
-        return vpy_plt.RangeCurve().range_curve_vdf(
-            self, ts, q, start_date, end_date, plot_median, ax=ax, **style_kwds,
+        return vpy_matplotlib_plt.RangeCurve().draw(
+            self, ts, q, start_date, end_date, plot_median, ax=ax, **style_kwargs,
         )
 
     @save_verticapy_logs
@@ -1966,11 +1984,11 @@ class vDCPlot:
         self,
         by: str = "",
         method: str = "density",
-        of: str = "",
-        max_cardinality: Union[int, tuple, list] = (6, 6),
-        h: Union[int, float, tuple, list] = (None, None),
+        of: Optional[str] = None,
+        max_cardinality: tuple[int, int] = (6, 6),
+        h: tuple[PythonNumber, PythonNumber] = (None, None),
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ):
         """
     Draws the spider plot of the input vDataColumn based on an aggregation.
@@ -1995,12 +2013,12 @@ class vDCPlot:
         Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
         vDataColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
-    max_cardinality: int / tuple / list, optional
+    max_cardinality: tuple, optional
         Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     ax: Axes, optional
         The axes to plot on.
-    **style_kwds
+    **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
     Returns
@@ -2016,6 +2034,11 @@ class vDCPlot:
         columns = [self._alias]
         if by:
             columns += [by]
-        return vpy_plt.SpiderPlot().spider(
-            self._parent, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
-        )
+        return vpy_matplotlib_plt.SpiderChart(
+            vdf=self._parent,
+            columns=columns,
+            method=method,
+            of=of,
+            max_cardinality=max_cardinality,
+            h=h,
+        ).draw(ax=ax, **style_kwargs,)

@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Literal, Optional
 import scipy.spatial as scipy_st
 
 from matplotlib.axes import Axes
@@ -27,8 +27,16 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class KMeansPlot(MatplotlibBase):
-    def voronoi_plot(
+class VoronoiPlot(MatplotlibBase):
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["voronoi"]:
+        return "voronoi"
+
+    def draw(
         self,
         clusters: ArrayLike,
         columns: SQLColumns,
@@ -36,7 +44,7 @@ class KMeansPlot(MatplotlibBase):
         max_nb_points: int = 1000,
         plot_crosses: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a KMeans Voronoi plot using the Matplotlib API.
@@ -59,7 +67,7 @@ class KMeansPlot(MatplotlibBase):
             clusters = clusters.tolist()
         v = scipy_st.Voronoi(clusters + dummies_point)
         param = {"show_vertices": False}
-        scipy_st.voronoi_plot_2d(v, ax=ax, **self.updated_dict(param, style_kwds))
+        scipy_st.voronoi_plot_2d(v, ax=ax, **self._update_dict(param, style_kwargs))
         if not (ax):
             ax = plt
             ax.xlabel(columns[0])
@@ -68,11 +76,11 @@ class KMeansPlot(MatplotlibBase):
         for idx, region in enumerate(v.regions):
             if not -1 in region:
                 polygon = [v.vertices[i] for i in region]
-                if "color" in style_kwds:
-                    if isinstance(style_kwds["color"], str):
-                        color = style_kwds["color"]
+                if "color" in style_kwargs:
+                    if isinstance(style_kwargs["color"], str):
+                        color = style_kwargs["color"]
                     else:
-                        color = style_kwds["color"][idx % len(style_kwds["color"])]
+                        color = style_kwargs["color"][idx % len(style_kwargs["color"])]
                 else:
                     color = colors[idx % len(colors)]
                 ax.fill(*zip(*polygon), alpha=0.4, color=color)

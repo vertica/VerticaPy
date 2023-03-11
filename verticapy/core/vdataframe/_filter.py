@@ -339,7 +339,7 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def filter(self, conditions: Union[list, str] = [], *argv, **kwds):
+    def filter(self, conditions: Union[list, str] = [], *args, **kwargs):
         """
     Filters the vDataFrame using the input expressions.
 
@@ -366,12 +366,12 @@ class vDFFilter:
         """
         count = self.shape()[0]
         conj = "s were " if count > 1 else " was "
-        if not (isinstance(conditions, str)) or (argv):
+        if not (isinstance(conditions, str)) or (args):
             if isinstance(conditions, str) or not (isinstance(conditions, Iterable)):
                 conditions = [conditions]
             else:
                 conditions = list(conditions)
-            conditions += list(argv)
+            conditions += list(args)
             for condition in conditions:
                 self.filter(str(condition), print_info=False)
             count -= self.shape()[0]
@@ -417,7 +417,7 @@ class vDFFilter:
                 self._update_catalog(erase=True)
                 self._vars["count"] = new_count
                 conj = "s were " if count > 1 else " was "
-                if conf.get_option("print_info") and "print_info" not in kwds:
+                if conf.get_option("print_info") and "print_info" not in kwargs:
                     print(f"{count} element{conj}filtered.")
                 conditions_clean = clean_query(conditions)
                 self._add_to_history(
@@ -426,7 +426,7 @@ class vDFFilter:
                 )
             else:
                 del self._vars["where"][-1]
-                if conf.get_option("print_info") and "print_info" not in kwds:
+                if conf.get_option("print_info") and "print_info" not in kwargs:
                     print("Nothing was filtered.")
         return self
 

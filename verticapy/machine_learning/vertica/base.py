@@ -51,7 +51,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.metrics as mt
 
-import verticapy.plotting._matplotlib as vpy_plt
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 from verticapy.sql.drop import drop
 
@@ -390,14 +390,14 @@ class VerticaModel:
                 return key
         return param
 
-    def _get_verticapy_param_dict(self, options: dict = {}, **kwds) -> dict:
+    def _get_verticapy_param_dict(self, options: dict = {}, **kwargs) -> dict:
         """
         Takes as input a dictionary of Vertica options and 
         returns  the  associated  dictionary of  VerticaPy
         options.
         """
         parameters = {}
-        map_dict = {**options, **kwds}
+        map_dict = {**options, **kwargs}
         for param in map_dict:
             parameters[self._map_to_verticapy_param_name(param)] = map_dict[param]
         return parameters
@@ -419,7 +419,7 @@ class VerticaModel:
                 del parameters[p]
         return parameters
 
-    def set_params(self, parameters: dict = {}, **kwds) -> None:
+    def set_params(self, parameters: dict = {}, **kwargs) -> None:
         """
         Sets the parameters of the model.
 
@@ -427,12 +427,12 @@ class VerticaModel:
         ----------
         parameters: dict, optional
             New parameters.
-        **kwds
+        **kwargs
             New  parameters can  also be passed as  arguments
             Example: set_params(param1 = val1, param2 = val2)
         """
         all_init_params = list(get_type_hints(self.__init__).keys())
-        new_parameters = copy.deepcopy({**self.parameters, **kwds})
+        new_parameters = copy.deepcopy({**self.parameters, **kwargs})
         new_parameters_keys = list(new_parameters.keys())
         for p in new_parameters_keys:
             if p not in all_init_params:
@@ -598,7 +598,7 @@ class VerticaModel:
         return res
 
     def contour(
-        self, nbins: int = 100, ax: Optional[Axes] = None, **style_kwds,
+        self, nbins: int = 100, ax: Optional[Axes] = None, **style_kwargs,
     ) -> Axes:
         """
         Draws the model's contour plot.
@@ -610,7 +610,7 @@ class VerticaModel:
             two predictors.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
@@ -622,7 +622,7 @@ class VerticaModel:
         return vDataFrame(self.input_relation).contour(
             *self._get_plot_args(method="contour"),
             **self._get_plot_kwargs(nbins=nbins, ax=ax, method="contour"),
-            **style_kwds,
+            **style_kwargs,
         )
 
 
@@ -899,7 +899,7 @@ class Tree:
         tree_id: Optional[int] = None,
         show: bool = True,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> TableSample:
         """
         Computes the model's features importance.
@@ -912,7 +912,7 @@ class Tree:
             If  set to True,  draw the features  importance.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the Matplotlib 
             functions.
 
@@ -923,8 +923,8 @@ class Tree:
         """
         fi = self._get_features_importance(tree_id=tree_id)
         if show:
-            vpy_plt.ImportanceBarChart().plot_importance(
-                self.X, fi, print_legend=False, ax=ax, **style_kwds,
+            vpy_matplotlib_plt.ImportanceBarChart().draw(
+                self.X, fi, print_legend=False, ax=ax, **style_kwargs,
             )
         importances = {
             "index": [quote_ident(x)[1:-1].lower() for x in self.X],
@@ -960,7 +960,7 @@ class Tree:
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwds
+        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
     ) -> Axes:
         """
         Draws the model.
@@ -971,7 +971,7 @@ class Tree:
             Maximum  number of points to display.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
@@ -981,13 +981,13 @@ class Tree:
             Axes.
         """
         if self._model_subcategory == "REGRESSOR":
-            return vpy_plt.RegressionTreePlot().regression_tree_plot(
+            return vpy_matplotlib_plt.RegressionTreePlot().draw(
                 self.X + [self.deploySQL()],
                 self.y,
                 self.input_relation,
                 max_nb_points,
                 ax=ax,
-                **style_kwds,
+                **style_kwargs,
             )
         else:
             raise NotImplementedError
@@ -1078,7 +1078,7 @@ class Tree:
         )
 
     def plot_tree(
-        self, tree_id: int = 0, pic_path: str = "", *argv, **kwds,
+        self, tree_id: int = 0, pic_path: str = "", *args, **kwargs,
     ) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
@@ -1090,7 +1090,7 @@ class Tree:
             [0, n_estimators - 1].
         pic_path: str, optional
             Absolute  path to save  the image of the  tree.
-        *argv, **kwds: Any, optional
+        *args, **kwargs: Any, optional
             Arguments to pass to the 'to_graphviz'  method.
 
         Returns
@@ -1099,7 +1099,7 @@ class Tree:
             graphviz object.
         """
         return self.trees_[tree_id].plot_tree(
-            pic_path=pic_path, feature_names=self.X, *argv, **kwds,
+            pic_path=pic_path, feature_names=self.X, *args, **kwargs,
         )
 
 
@@ -1279,14 +1279,14 @@ class BinaryClassifier(Classifier):
         else:
             args2 = self.deploySQL(cutoff)
         args = [self.y, args2, self.test_relation]
-        kwds = {}
+        kwargs = {}
         if method in ("accuracy", "acc"):
-            kwds["pos_label"] = 1
+            kwargs["pos_label"] = 1
         elif method in ("aic", "bic"):
             args += [len(self.X)]
         elif method in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
-            kwds["nbins"] = nbins
-        return fun(*args, **kwds)
+            kwargs["nbins"] = nbins
+        return fun(*args, **kwargs)
 
     # Prediction / Transformation Methods.
 
@@ -1415,7 +1415,7 @@ class BinaryClassifier(Classifier):
     # Plotting Methods.
 
     def cutoff_curve(
-        self, nbins: int = 30, ax: Optional[Axes] = None, **style_kwds
+        self, nbins: int = 30, ax: Optional[Axes] = None, **style_kwargs
     ) -> TableSample:
         """
         Draws the model Cutoff curve.
@@ -1426,7 +1426,7 @@ class BinaryClassifier(Classifier):
             The number of bins.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass 
             to the Matplotlib functions.
 
@@ -1442,11 +1442,11 @@ class BinaryClassifier(Classifier):
             ax=ax,
             cutoff_curve=True,
             nbins=nbins,
-            **style_kwds,
+            **style_kwargs,
         )
 
     def lift_chart(
-        self, nbins: int = 1000, ax: Optional[Axes] = None, **style_kwds
+        self, nbins: int = 1000, ax: Optional[Axes] = None, **style_kwargs
     ) -> TableSample:
         """
     	Draws the model Lift Chart.
@@ -1457,7 +1457,7 @@ class BinaryClassifier(Classifier):
             The number of bins.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass 
             to the Matplotlib functions.
 
@@ -1472,11 +1472,11 @@ class BinaryClassifier(Classifier):
             self.test_relation,
             ax=ax,
             nbins=nbins,
-            **style_kwds,
+            **style_kwargs,
         )
 
     def prc_curve(
-        self, nbins: int = 30, ax: Optional[Axes] = None, **style_kwds
+        self, nbins: int = 30, ax: Optional[Axes] = None, **style_kwargs
     ) -> TableSample:
         """
     	Draws the model PRC curve.
@@ -1487,7 +1487,7 @@ class BinaryClassifier(Classifier):
             The number of bins.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass 
             to the Matplotlib functions.
 
@@ -1502,11 +1502,11 @@ class BinaryClassifier(Classifier):
             self.test_relation,
             ax=ax,
             nbins=nbins,
-            **style_kwds,
+            **style_kwargs,
         )
 
     def roc_curve(
-        self, nbins: int = 30, ax: Optional[Axes] = None, **style_kwds
+        self, nbins: int = 30, ax: Optional[Axes] = None, **style_kwargs
     ) -> TableSample:
         """
         Draws the model ROC curve.
@@ -1517,7 +1517,7 @@ class BinaryClassifier(Classifier):
             The number of bins.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass 
             to the Matplotlib functions.
 
@@ -1532,7 +1532,7 @@ class BinaryClassifier(Classifier):
             self.test_relation,
             ax=ax,
             nbins=nbins,
-            **style_kwds,
+            **style_kwargs,
         )
 
 
@@ -1854,7 +1854,7 @@ class MulticlassClassifier(Classifier):
         y_score = self._get_y_score(pos_label=pos_label, cutoff=cutoff)
         final_relation = self._get_final_relation(pos_label=pos_label)
         args = [self.y, y_score, final_relation]
-        kwds = {}
+        kwargs = {}
         if method in ("accuracy", "acc"):
             args += [pos_label]
         elif method in ("aic", "bic"):
@@ -1873,8 +1873,8 @@ class MulticlassClassifier(Classifier):
                 final_relation,
             ]
             if method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
-                kwds["nbins"] = nbins
-        return fun(*args, **kwds)
+                kwargs["nbins"] = nbins
+        return fun(*args, **kwargs)
 
     # Prediction / Transformation Methods.
 
@@ -2085,7 +2085,7 @@ class MulticlassClassifier(Classifier):
         pos_label: PythonScalar = None,
         nbins: int = 100,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws the model's contour plot.
@@ -2101,7 +2101,7 @@ class MulticlassClassifier(Classifier):
              predictors.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any optional parameter to pass to the Matplotlib 
             functions.
 
@@ -2114,7 +2114,7 @@ class MulticlassClassifier(Classifier):
         return vDataFrame(self.input_relation).contour(
             *self._get_plot_args(pos_label=pos_label, method="contour"),
             **self._get_plot_kwargs(nbins=nbins, ax=ax, method="contour"),
-            **style_kwds,
+            **style_kwargs,
         )
 
     def cutoff_curve(
@@ -2122,7 +2122,7 @@ class MulticlassClassifier(Classifier):
         pos_label: PythonScalar = None,
         nbins: int = 30,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> TableSample:
         """
         Draws the model Cutoff curve.
@@ -2139,7 +2139,7 @@ class MulticlassClassifier(Classifier):
             -spaced intervals between 0 and 1, inclusive.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any  optional  parameter  to  pass  to  the  Matplotlib 
             functions.
 
@@ -2151,7 +2151,7 @@ class MulticlassClassifier(Classifier):
         return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label, method="cutoff"),
             **self._get_plot_kwargs(nbins=nbins, ax=ax, method="cutoff"),
-            **style_kwds,
+            **style_kwargs,
         )
 
     def lift_chart(
@@ -2159,7 +2159,7 @@ class MulticlassClassifier(Classifier):
         pos_label: PythonScalar = None,
         nbins: int = 1000,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> TableSample:
         """
     	Draws the model Lift Chart.
@@ -2176,7 +2176,7 @@ class MulticlassClassifier(Classifier):
             -spaced intervals between 0 and 1, inclusive.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any  optional  parameter  to  pass  to  the  Matplotlib 
             functions.
 
@@ -2188,7 +2188,7 @@ class MulticlassClassifier(Classifier):
         return mt.lift_chart(
             *self._get_plot_args(pos_label=pos_label),
             **self._get_plot_kwargs(nbins=nbins, ax=ax),
-            **style_kwds,
+            **style_kwargs,
         )
 
     def prc_curve(
@@ -2196,7 +2196,7 @@ class MulticlassClassifier(Classifier):
         pos_label: PythonScalar = None,
         nbins: int = 30,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> TableSample:
         """
     	Draws the model PRC curve.
@@ -2213,7 +2213,7 @@ class MulticlassClassifier(Classifier):
             -spaced intervals between 0 and 1, inclusive.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any  optional  parameter  to  pass  to  the  Matplotlib 
             functions.
 
@@ -2225,7 +2225,7 @@ class MulticlassClassifier(Classifier):
         return mt.prc_curve(
             *self._get_plot_args(pos_label=pos_label),
             **self._get_plot_kwargs(nbins=nbins, ax=ax),
-            **style_kwds,
+            **style_kwargs,
         )
 
     def roc_curve(
@@ -2233,7 +2233,7 @@ class MulticlassClassifier(Classifier):
         pos_label: PythonScalar = None,
         nbins: int = 30,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> TableSample:
         """
     	Draws the model ROC curve.
@@ -2250,7 +2250,7 @@ class MulticlassClassifier(Classifier):
             -spaced intervals between 0 and 1, inclusive.
         ax: Axes, optional
             The axes to plot on.
-        **style_kwds
+        **style_kwargs
             Any  optional  parameter  to  pass  to  the  Matplotlib 
             functions.
 
@@ -2262,7 +2262,7 @@ class MulticlassClassifier(Classifier):
         return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label),
             **self._get_plot_kwargs(nbins=nbins, ax=ax),
-            **style_kwds,
+            **style_kwargs,
         )
 
 

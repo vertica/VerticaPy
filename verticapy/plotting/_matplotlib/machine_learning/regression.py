@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -29,7 +29,15 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class RegressionPlot(MatplotlibBase):
-    def regression_plot(
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["regression"]:
+        return "regression"
+
+    def draw(
         self,
         X: list,
         y: str,
@@ -37,7 +45,7 @@ class RegressionPlot(MatplotlibBase):
         coefficients: list,
         max_nb_points: int = 50,
         ax: Optional[Axes] = None,
-        **style_kwds,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a regression plot using the Matplotlib API.
@@ -71,7 +79,7 @@ class RegressionPlot(MatplotlibBase):
             y_reg = [coefficients[0] + coefficients[1] * item for item in x_reg]
             ax.plot(x_reg, y_reg, alpha=1, color="black")
             ax.scatter(
-                x0, y0, **self.updated_dict(param, style_kwds, 0),
+                x0, y0, **self._update_dict(param, style_kwargs, 0),
             )
             ax.set_xlabel(X[0])
             ax.set_ylabel(y)
@@ -120,7 +128,7 @@ class RegressionPlot(MatplotlibBase):
                 X_reg, Y_reg, Z_reg, rstride=1, cstride=1, alpha=0.5, color="gray"
             )
             ax.scatter(
-                x0, y0, z0, **self.updated_dict(param, style_kwds, 0),
+                x0, y0, z0, **self._update_dict(param, style_kwargs, 0),
             )
             ax.set_xlabel(X[0])
             ax.set_ylabel(X[1])

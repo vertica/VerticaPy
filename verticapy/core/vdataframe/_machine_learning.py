@@ -166,7 +166,7 @@ class vDFMachineLearning:
         nbins: int = 4,
         method: Literal["smart", "same_width"] = "same_width",
         RFmodel_params: dict = {},
-        **kwds,
+        **kwargs,
     ):
         """
     Returns a CHAID (Chi-square Automatic Interaction Detector) tree.
@@ -206,7 +206,7 @@ class vDFMachineLearning:
         """
         from verticapy.machine_learning.memmodel.tree import NonBinaryTree
 
-        if "process" not in kwds or kwds["process"]:
+        if "process" not in kwargs or kwargs["process"]:
             if isinstance(columns, str):
                 columns = [columns]
             assert 2 <= nbins <= 16, ParameterError(
@@ -215,7 +215,7 @@ class vDFMachineLearning:
             columns = self.chaid_columns(columns)
             if not (columns):
                 raise ValueError("No column to process.")
-        idx = 0 if ("node_id" not in kwds) else kwds["node_id"]
+        idx = 0 if ("node_id" not in kwargs) else kwargs["node_id"]
         p = self.pivot_table_chi2(response, columns, nbins, method, RFmodel_params)
         categories, split_predictor, is_numerical, chi2 = (
             p["categories"][0],
@@ -226,8 +226,8 @@ class vDFMachineLearning:
         split_predictor_idx = self._get_match_index(
             split_predictor,
             columns
-            if "process" not in kwds or kwds["process"]
-            else kwds["columns_init"],
+            if "process" not in kwargs or kwargs["process"]
+            else kwargs["columns_init"],
         )
         tree = {
             "split_predictor": split_predictor,
@@ -249,10 +249,10 @@ class vDFMachineLearning:
                     ctype = "int"
             else:
                 categories, ctype = [], "int"
-        if "process" not in kwds or kwds["process"]:
+        if "process" not in kwargs or kwargs["process"]:
             classes = self[response].distinct()
         else:
-            classes = kwds["classes"]
+            classes = kwargs["classes"]
         if len(columns) == 1:
             if categories:
                 if is_numerical:
@@ -303,7 +303,7 @@ class vDFMachineLearning:
                     "node_id": idx,
                 }
             tree["children"] = children
-            if "process" not in kwds or kwds["process"]:
+            if "process" not in kwargs or kwargs["process"]:
                 return InMemoryModel(
                     "CHAID", attributes={"tree": tree, "classes": classes}
                 )
@@ -338,7 +338,7 @@ class vDFMachineLearning:
                     classes=classes,
                     node_id=idx + 1,
                 )
-            if "process" not in kwds or kwds["process"]:
+            if "process" not in kwargs or kwargs["process"]:
                 return NonBinaryTree(tree=tree, classes=classes)
             return tree, idx
 
@@ -768,8 +768,8 @@ class vDFMachineLearning:
                                input aggregations.
         """
         y_true, y_score = self._format_colnames(y_true, y_score)
-        argv = [y_true, y_score, self._genSQL()]
-        return FUNCTIONS_DICTIONNARY[method](*argv)
+        args = [y_true, y_score, self._genSQL()]
+        return FUNCTIONS_DICTIONNARY[method](*args)
 
     @save_verticapy_logs
     def sessionize(

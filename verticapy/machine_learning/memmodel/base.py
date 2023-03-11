@@ -57,8 +57,8 @@ class InMemoryModel:
             attributes_[att[:-1]] = copy.deepcopy(getattr(self, att))
         return attributes_
 
-    def set_attributes(self, **kwds) -> None:
-        attributes_ = {**self.get_attributes(), **kwds}
+    def set_attributes(self, **kwargs) -> None:
+        attributes_ = {**self.get_attributes(), **kwargs}
         self.__init__(**attributes_)
         return None
 
