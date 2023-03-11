@@ -105,9 +105,9 @@ class HorizontalBarChart2D(MatplotlibBase):
                 )
             if m != 2:
                 self.data["matrix"] = np.transpose(self.data["matrix"])
-                y_labels = self.data["y_labels"]
-                self.data["y_labels"] = self.data["x_labels"]
-                self.data["x_labels"] = y_labels
+                y_labels = self.data["x_labels"]
+                self.data["x_labels"] = self.data["y_labels"]
+                self.data["y_labels"] = y_labels
                 self.layout["columns"] = [
                     self.layout["columns"][1],
                     self.layout["columns"][0],
@@ -129,7 +129,7 @@ class HorizontalBarChart2D(MatplotlibBase):
                 "y": [j for j in range(m)],
                 "width": matrix[:, i],
                 "height": bar_height,
-                "label": self.data["x_labels"][i],
+                "label": self.data["y_labels"][i],
                 "alpha": 0.86,
                 "color": colors[i % len(colors)],
             }
@@ -152,8 +152,8 @@ class HorizontalBarChart2D(MatplotlibBase):
         if bar_type != "stacked":
             yticks = [j + bar_height / 2 - bar_height / 2 / (n - 1) for j in range(m)]
         ax.set_yticks(yticks)
-        ax.set_yticklabels(self.data["y_labels"])
-        ax.set_ylabel(self.layout["columns"][1])
+        ax.set_yticklabels(self.data["x_labels"])
+        ax.set_ylabel(self.layout["columns"][0])
         ax.set_xlabel(self.layout["method"])
         if bar_type in ("density", "fully_stacked"):
             vals = ax.get_xticks()
@@ -161,7 +161,7 @@ class HorizontalBarChart2D(MatplotlibBase):
             ax.xaxis.set_major_locator(mticker.FixedLocator(vals))
             ax.set_xticklabels(["{:,.2%}".format(abs(x)) for x in vals])
         ax.legend(
-            title=self.layout["columns"][0], loc="center left", bbox_to_anchor=[1, 0.5]
+            title=self.layout["columns"][1], loc="center left", bbox_to_anchor=[1, 0.5]
         )
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

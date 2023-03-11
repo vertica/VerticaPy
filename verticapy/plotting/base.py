@@ -442,64 +442,69 @@ class PlottingBase:
             ).to_numpy()
             matrix = res[:, 1].astype(float)
             x_labels = list(res[:, 0])
-            return matrix, x_labels, [method], min(matrix), max(matrix), aggregate
-        aggr = f", {of}" if (of) else ""
-        cols, cast = [], []
-        for i in range(2):
-            if is_column_date[0]:
-                cols += [f"{timestampadd[i]} AS {columns[i]}"]
-            else:
-                cols += [columns[i]]
-            cast += [to_varchar(vdf[columns[i]].category(), columns[i])]
-        query_result = _executeSQL(
-            query=f"""
-                SELECT 
-                    /*+LABEL('plotting._matplotlib.pivot_table')*/
-                    {cast[0]} AS {columns[0]},
-                    {cast[1]} AS {columns[1]},
-                    {aggregate}{over}
-                FROM (SELECT 
-                          {cols[0]},
-                          {cols[1]}
-                          {aggr}
-                          {other_columns} 
-                      FROM 
-                          (SELECT 
-                              {matrix[0]} AS {columns[0]},
-                              {matrix[1]} AS {columns[1]}
+            y_labels = [method]
+        else:
+            aggr = f", {of}" if (of) else ""
+            cols, cast = [], []
+            for i in range(2):
+                if is_column_date[0]:
+                    cols += [f"{timestampadd[i]} AS {columns[i]}"]
+                else:
+                    cols += [columns[i]]
+                cast += [to_varchar(vdf[columns[i]].category(), columns[i])]
+            query_result = _executeSQL(
+                query=f"""
+                    SELECT 
+                        /*+LABEL('plotting._matplotlib.pivot_table')*/
+                        {cast[0]} AS {columns[0]},
+                        {cast[1]} AS {columns[1]},
+                        {aggregate}{over}
+                    FROM (SELECT 
+                              {cols[0]},
+                              {cols[1]}
                               {aggr}
                               {other_columns} 
-                           FROM {vdf._genSQL()}{where}) 
-                           pivot_table) pivot_table_date
-                WHERE {columns[0]} IS NOT NULL 
-                  AND {columns[1]} IS NOT NULL
-                GROUP BY {columns[0]}, {columns[1]}
-                ORDER BY {columns[0]}, {columns[1]} ASC""",
-            title="Grouping the features to compute the pivot table",
-            method="fetchall",
-        )
-        matrix_categories = []
-        for i in range(2):
-            L = list(set([str(item[i]) for item in query_result]))
-            L.sort()
-            try:
+                          FROM 
+                              (SELECT 
+                                  {matrix[0]} AS {columns[0]},
+                                  {matrix[1]} AS {columns[1]}
+                                  {aggr}
+                                  {other_columns} 
+                               FROM {vdf._genSQL()}{where}) 
+                               pivot_table) pivot_table_date
+                    WHERE {columns[0]} IS NOT NULL 
+                      AND {columns[1]} IS NOT NULL
+                    GROUP BY {columns[0]}, {columns[1]}
+                    ORDER BY {columns[0]}, {columns[1]} ASC""",
+                title="Grouping the features to compute the pivot table",
+                method="fetchall",
+            )
+            matrix_categories = []
+            for i in range(2):
+                L = list(set([str(item[i]) for item in query_result]))
+                L.sort()
                 try:
-                    order = []
-                    for item in L:
-                        order += [float(item.split(";")[0].split("[")[1])]
+                    try:
+                        order = []
+                        for item in L:
+                            order += [float(item.split(";")[0].split("[")[1])]
+                    except:
+                        order = [float(item) for item in L]
+                    L = [x for _, x in sorted(zip(order, L))]
                 except:
-                    order = [float(item) for item in L]
-                L = [x for _, x in sorted(zip(order, L))]
-            except:
-                pass
-            matrix_categories += [copy.deepcopy(L)]
-        x_labels, y_labels = matrix_categories
-        matrix = np.array([[fill_none for item in x_labels] for item in y_labels])
-        for item in query_result:
-            j = x_labels.index(str(item[0]))
-            i = y_labels.index(str(item[1]))
-            matrix[i][j] = item[2]
-        self.data = {"matrix": matrix, "x_labels": x_labels, "y_labels": y_labels}
+                    pass
+                matrix_categories += [copy.deepcopy(L)]
+            x_labels, y_labels = matrix_categories
+            matrix = np.array([[fill_none for item in y_labels] for item in x_labels])
+            for item in query_result:
+                i = x_labels.index(str(item[0]))
+                j = y_labels.index(str(item[1]))
+                matrix[i][j] = item[2]
+        self.data = {
+            "matrix": matrix,
+            "x_labels": x_labels,
+            "y_labels": y_labels,
+        }
         self.layout = {
             "columns": copy.deepcopy(columns),
             "method": method,

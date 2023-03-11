@@ -57,8 +57,8 @@ class PivotTable(HeatMap):
         if show:
             ax = super().draw(
                 self.data["matrix"],
-                self.data["y_labels"],
                 self.data["x_labels"],
+                self.data["y_labels"],
                 vmax=self.data["matrix"].max(),
                 vmin=self.data["matrix"].min(),
                 colorbar=self.layout["aggregate"],
@@ -73,10 +73,10 @@ class PivotTable(HeatMap):
                 ax.set_xlabel(self.layout["columns"][1])
             if return_ax:
                 return ax
-        values = {"index": self.data["y_labels"]}
+        values = {"index": self.data["x_labels"]}
         if len(self.data["matrix"].shape) == 1:
             values[self.layout["aggregate"]] = list(self.data["matrix"])
         else:
             for idx in range(self.data["matrix"].shape[1]):
-                values[self.data["x_labels"][idx]] = list(self.data["matrix"][:, idx])
+                values[self.data["y_labels"][idx]] = list(self.data["matrix"][:, idx])
         return TableSample(values=values)

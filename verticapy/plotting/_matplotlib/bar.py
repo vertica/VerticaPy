@@ -97,7 +97,7 @@ class BarChart2D(MatplotlibBase):
                 "x": [j for j in range(m)],
                 "height": self.data["matrix"][:, i],
                 "width": bar_width,
-                "label": self.data["x_labels"][i],
+                "label": self.data["y_labels"][i],
                 "alpha": 0.86,
                 "color": colors[i % len(colors)],
             }
@@ -117,11 +117,11 @@ class BarChart2D(MatplotlibBase):
         else:
             xticks = [j + bar_width / 2 - bar_width / 2 / (n - 1) for j in range(m)]
         ax.set_xticks(xticks)
-        ax.set_xticklabels(self.data["y_labels"], rotation=90)
-        ax.set_xlabel(self.layout["columns"][1])
+        ax.set_xticklabels(self.data["x_labels"], rotation=90)
+        ax.set_xlabel(self.layout["columns"][0])
         ax.set_ylabel(self.layout["method"])
         ax.legend(
-            title=self.layout["columns"][0], loc="center left", bbox_to_anchor=[1, 0.5]
+            title=self.layout["columns"][1], loc="center left", bbox_to_anchor=[1, 0.5]
         )
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

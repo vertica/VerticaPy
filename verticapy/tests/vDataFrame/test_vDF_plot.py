@@ -257,7 +257,7 @@ class TestvDFPlot:
             0.15433673469387757
         )
         assert result4.get_default_bbox_extra_artists()[3].get_width() == pytest.approx(
-            0.6121794871794872
+            0.23999999999999996
         )
         # pyramid
         result5 = titanic_vd.bar(
@@ -763,5 +763,5 @@ class TestvDFPlot:
 
     def test_vDF_spider(self, titanic_vd):
         result = titanic_vd["pclass"].spider("survived", color="b")
-        assert len(result.get_default_bbox_extra_artists()) == 9
+        assert len(result.get_default_bbox_extra_artists()) == 11
         plt.close("all")

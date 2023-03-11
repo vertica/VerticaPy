@@ -48,12 +48,7 @@ class SpiderChart(MatplotlibBase):
         """
         Draws a spider plot using the Matplotlib API.
         """
-        m, n = self.data["matrix"].shape
-        if n < 3:
-            raise ParameterError(
-                "The column used to draw the Spider Chart must "
-                f"have at least 3 categories. Found {int(n)}."
-            )
+        m = self.data["matrix"].shape[0]
         angles = [i / float(m) * 2 * math.pi for i in range(m)]
         angles += angles[:1]
         fig = plt.figure()
@@ -61,7 +56,7 @@ class SpiderChart(MatplotlibBase):
             ax = fig.add_subplot(111, polar=True)
         spider_vals = np.array([])
         colors = get_colors()
-        for i, category in enumerate(self.data["x_labels"]):
+        for i, category in enumerate(self.data["y_labels"]):
             if len(self.data["matrix"].shape) == 1:
                 values = np.concatenate((self.data["matrix"], self.data["matrix"][:1]))
             else:
@@ -69,7 +64,7 @@ class SpiderChart(MatplotlibBase):
                     (self.data["matrix"][:, i], self.data["matrix"][:, i][:1])
                 )
             spider_vals = np.concatenate((spider_vals, values))
-            plt.xticks(angles[:-1], self.data["y_labels"], color="grey", size=8)
+            plt.xticks(angles[:-1], self.data["x_labels"], color="grey", size=8)
             ax.set_rlabel_position(0)
             params = {"linewidth": 1, "linestyle": "solid", "color": colors[i]}
             params = self._update_dict(params, style_kwargs, i)
