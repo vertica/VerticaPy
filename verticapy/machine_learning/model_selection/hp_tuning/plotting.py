@@ -184,7 +184,7 @@ def validation_curve(
             "test_score_upper": Y[1][2],
         }
     )
-    vpy_matplotlib_plt.RangeCurve().draw(
+    vpy_matplotlib_plt.RangeCurve().range_curve(
         X, Y, param_name, metric, ax, ["train", "test"], **style_kwargs
     )
     return result

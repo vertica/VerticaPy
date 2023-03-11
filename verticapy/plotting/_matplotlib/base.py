@@ -21,6 +21,7 @@ from matplotlib.axes import Axes
 from matplotlib.pyplot import Figure
 import matplotlib.pyplot as plt
 
+import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
 
 from verticapy.plotting.base import PlottingBase

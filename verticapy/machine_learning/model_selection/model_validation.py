@@ -540,7 +540,7 @@ def learning_curve(
         x_label = "n"
         y_label = "time"
         labels = []
-    vpy_matplotlib_plt.RangeCurve().draw(
+    vpy_matplotlib_plt.RangeCurve().range_curve(
         X, Y, x_label, y_label, ax, labels, **style_kwargs
     )
     return result
