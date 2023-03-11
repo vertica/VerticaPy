@@ -1219,7 +1219,7 @@ class vDFCorr:
                     result.values["index"],
                     result.values["value"],
                     confidence=acf_band,
-                    type_bar=True if acf_type == "bar" else False,
+                    bar_type=True if acf_type == "bar" else False,
                     ax=ax,
                     **style_kwargs,
                 )
@@ -1375,7 +1375,7 @@ class vDFCorr:
                     result.values["index"],
                     result.values["value"],
                     confidence=pacf_band,
-                    type_bar=True,
+                    bar_type=True,
                     ax=ax,
                     **style_kwargs,
                 )

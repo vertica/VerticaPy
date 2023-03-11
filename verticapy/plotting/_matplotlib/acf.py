@@ -39,7 +39,7 @@ class ACFPlot(MatplotlibBase):
         x: ArrayLike,
         y: ArrayLike,
         confidence: ArrayLike = None,
-        type_bar: bool = True,
+        bar_type: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> Axes:
@@ -55,7 +55,7 @@ class ACFPlot(MatplotlibBase):
         else:
             color = get_colors()[0]
         ax, fig = self._get_ax_fig(ax, size=(10, 3), set_axis_below=False, grid=False)
-        if type_bar:
+        if bar_type:
             ax.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
             param = {
                 "s": 90,

@@ -254,7 +254,7 @@ class TestvDFPlot:
             columns=["pclass", "survived"], bar_type="fully_stacked", color="b",
         )
         assert result4.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
-            0.38782051282051283
+            0.15433673469387757
         )
         assert result4.get_default_bbox_extra_artists()[3].get_width() == pytest.approx(
             0.6121794871794872

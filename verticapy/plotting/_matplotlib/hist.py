@@ -61,7 +61,7 @@ class Histogram(MatplotlibBase):
         else:
             ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
             alpha, all_columns, all_h = 1, [], []
-            if h <= 0:
+            if h == None or h <= 0:
                 for idx, column in enumerate(columns):
                     all_h += [vdf[column].numh()]
                 h = min(all_h)

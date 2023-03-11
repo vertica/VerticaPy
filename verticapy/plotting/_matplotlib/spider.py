@@ -61,7 +61,7 @@ class SpiderChart(MatplotlibBase):
             ax = fig.add_subplot(111, polar=True)
         spider_vals = np.array([])
         colors = get_colors()
-        for i, category in enumerate(self.data["y_labels"]):
+        for i, category in enumerate(self.data["x_labels"]):
             if len(self.data["matrix"].shape) == 1:
                 values = np.concatenate((self.data["matrix"], self.data["matrix"][:1]))
             else:
@@ -69,7 +69,7 @@ class SpiderChart(MatplotlibBase):
                     (self.data["matrix"][:, i], self.data["matrix"][:, i][:1])
                 )
             spider_vals = np.concatenate((spider_vals, values))
-            plt.xticks(angles[:-1], self.data["x_labels"], color="grey", size=8)
+            plt.xticks(angles[:-1], self.data["y_labels"], color="grey", size=8)
             ax.set_rlabel_position(0)
             params = {"linewidth": 1, "linestyle": "solid", "color": colors[i]}
             params = self._update_dict(params, style_kwargs, i)
