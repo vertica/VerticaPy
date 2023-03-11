@@ -109,13 +109,13 @@ class BarChart2D(MatplotlibBase):
                     bottom += self.data["matrix"][:, i - 1].astype(float)
                 params["bottom"] = bottom
             else:
-                params["x"] = [j + (i - 1) * bar_width / (n - 1) for j in range(m)]
-                params["width"] = bar_width / (n - 1)
+                params["x"] = [j + i * bar_width / n for j in range(m)]
+                params["width"] = bar_width / n
             ax.bar(**params)
         if stacked:
             xticks = [j for j in range(m)]
         else:
-            xticks = [j + bar_width / 2 - bar_width / 2 / (n - 1) for j in range(m)]
+            xticks = [j + bar_width / 2 - bar_width / 2 / n for j in range(m)]
         ax.set_xticks(xticks)
         ax.set_xticklabels(self.data["x_labels"], rotation=90)
         ax.set_xlabel(self.layout["columns"][0])

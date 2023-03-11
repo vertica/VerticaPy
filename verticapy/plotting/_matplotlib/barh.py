@@ -150,7 +150,7 @@ class HorizontalBarChart2D(MatplotlibBase):
                 params["height"] = bar_height / n
             ax.barh(**params)
         if bar_type != "stacked":
-            yticks = [j + bar_height / 2 - bar_height / 2 / (n - 1) for j in range(m)]
+            yticks = [j + bar_height / 2 - bar_height / 2 / n for j in range(m)]
         ax.set_yticks(yticks)
         ax.set_yticklabels(self.data["x_labels"])
         ax.set_ylabel(self.layout["columns"][0])

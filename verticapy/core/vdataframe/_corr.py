@@ -337,7 +337,6 @@ class vDFCorr:
                         matrix[i][j] = x[2]
                     else:
                         matrix[i][j] = np.nan
-                title = f"Correlation Matrix ({method})"
             except:
                 if method in (
                     "pearson",
@@ -347,15 +346,13 @@ class vDFCorr:
                     "biserial",
                     "cramer",
                 ):
-                    title_query = "Computing all Correlations in a single query"
-                    title = f"Correlation Matrix ({method})"
+                    title = "Computing all Correlations in a single query"
                     if method == "biserial":
                         i0, step = 0, 1
                     else:
                         i0, step = 1, 0
                 elif method == "cov":
-                    title_query = "Computing all covariances in a single query"
-                    title = "Covariance Matrix"
+                    title = "Computing all covariances in a single query"
                     i0, step = 0, 1
                 n = len(columns)
                 loop = tqdm(range(i0, n)) if conf.get_option("tqdm") else range(i0, n)
@@ -443,7 +440,7 @@ class vDFCorr:
                                     /*+LABEL('vDataframe._aggregate_matrix')*/ 
                                     {', '.join(all_list)} 
                                 FROM {table}""",
-                            title=title_query,
+                            title=title,
                             method="fetchrow",
                             sql_push_ext=self._vars["sql_push_ext"],
                             symbol=self._vars["symbol"],
@@ -495,7 +492,6 @@ class vDFCorr:
                     columns,
                     vmax=vmax,
                     vmin=vmin,
-                    title=title,
                     mround=round_nb,
                     ax=ax,
                     **style_kwargs,
@@ -708,16 +704,13 @@ class vDFCorr:
                 cm1, cm2 = get_cmap()
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwargs["cmap"] = cmap
-            title = f"Correlation Vector of {focus} ({method})"
             vpy_matplotlib_plt.HeatMap().draw(
                 matrix,
                 [focus],
                 cols,
                 vmax=vmax,
                 vmin=vmin,
-                title=title,
                 mround=round_nb,
-                is_vector=True,
                 ax=ax,
                 **style_kwargs,
             )
@@ -1535,19 +1528,8 @@ class vDFCorr:
                     current = np.nan
                 matrix[i][j] = current
         if show:
-            if method == "slope":
-                method_title = "Beta"
-            elif method == "intercept":
-                method_title = "Alpha"
-            else:
-                method_title = method
             vpy_matplotlib_plt.HeatMap().draw(
-                matrix,
-                columns,
-                columns,
-                title=f"{method_title} Matrix",
-                ax=ax,
-                **style_kwargs,
+                matrix, columns, columns, ax=ax, **style_kwargs,
             )
         values = {"index": columns}
         for idx in range(len(matrix)):
