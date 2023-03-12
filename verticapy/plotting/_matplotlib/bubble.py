@@ -20,7 +20,6 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-from verticapy._config.colors import get_cmap, get_colors
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
@@ -74,7 +73,7 @@ class BubblePlot(MatplotlibBase):
         elif "colors" in style_kwargs:
             colors = style_kwargs["colors"]
         else:
-            colors = get_colors()
+            colors = self.get_colors()
         if isinstance(colors, str):
             colors = [colors]
         if not (catcol) and not (cmap_col):
@@ -281,7 +280,7 @@ class BubblePlot(MatplotlibBase):
                 )
                 param = {
                     "alpha": 0.8,
-                    "cmap": get_cmap()[0],
+                    "cmap": self.get_cmap(idx=0),
                     "edgecolors": "black",
                 }
                 im = ax.scatter(

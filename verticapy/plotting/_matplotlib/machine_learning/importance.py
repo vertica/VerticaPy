@@ -22,7 +22,6 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import ArrayLike
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
@@ -67,11 +66,14 @@ class ImportanceBarChart(MatplotlibBase):
         color = []
         for item in signs:
             color += (
-                [get_colors(style_kwargs, 0)]
+                [self.get_colors(d=style_kwargs, idx=0)]
                 if (item == 1)
-                else [get_colors(style_kwargs, 1)]
+                else [self.get_colors(d=style_kwargs, idx=1)]
             )
-        plus, minus = get_colors(style_kwargs, 0), get_colors(style_kwargs, 1)
+        plus, minus = (
+            self.get_colors(d=style_kwargs, idx=0),
+            self.get_colors(d=style_kwargs, idx=1),
+        )
         param = {"alpha": 0.86}
         style_kwargs = self._update_dict(param, style_kwargs)
         style_kwargs["color"] = color

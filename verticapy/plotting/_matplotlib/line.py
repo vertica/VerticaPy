@@ -21,7 +21,6 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import PythonScalar, SQLColumns
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -58,7 +57,7 @@ class LinePlot(MatplotlibBase):
         """
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
         plot_fun = ax.step if step else ax.plot
-        colors = get_colors()
+        colors = self.get_colors()
         plot_param = {
             "marker": "o",
             "markevery": 0.05,
@@ -172,7 +171,7 @@ class MultiLinePlot(MatplotlibBase):
                     columns.remove(column)
         if not (columns):
             raise EmptyParameter("No numerical columns found to draw the multi TS plot")
-        colors = get_colors()
+        colors = self.get_colors()
         matrix = vdf.between(
             column=order_by, start=order_by_start, end=order_by_end, inplace=False
         )[[order_by] + columns].to_numpy()
@@ -219,7 +218,7 @@ class MultiLinePlot(MatplotlibBase):
                     }
             param["color"] = color
             if "color" in style_kwargs and n < 20:
-                param["markerfacecolor"] = get_colors(style_kwargs, i)
+                param["markerfacecolor"] = self.get_colors(d=style_kwargs, idx=i)
             plot_fun(matrix[:, 0], points, **param)
             if kind not in ("line", "step"):
                 args = [matrix[:, 0], prec, points]

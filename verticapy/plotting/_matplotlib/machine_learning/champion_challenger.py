@@ -20,8 +20,6 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-from verticapy._config.colors import get_colors
-
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
@@ -66,7 +64,7 @@ class ChampionChallengerPlot(MatplotlibBase):
             x = [elem[0] for elem in data]
             y = [elem[1] for elem in data]
             z = [elem[2] for elem in data]
-        colors = get_colors()
+        colors = self.get_colors()
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
         if z:
             current_cat = z[0]
@@ -163,7 +161,10 @@ class ChampionChallengerPlot(MatplotlibBase):
                 ha="center",
                 va="center",
                 bbox=dict(
-                    boxstyle="round", ec=get_colors()[0], fc=get_colors()[0], alpha=0.3,
+                    boxstyle="round",
+                    ec=self.get_colors(idx=0),
+                    fc=self.get_colors(idx=0),
+                    alpha=0.3,
                 ),
             )
             plt.text(
@@ -175,7 +176,10 @@ class ChampionChallengerPlot(MatplotlibBase):
                 ha="center",
                 va="center",
                 bbox=dict(
-                    boxstyle="round", ec=get_colors()[1], fc=get_colors()[1], alpha=0.3,
+                    boxstyle="round",
+                    ec=self.get_colors(idx=1),
+                    fc=self.get_colors(idx=1),
+                    alpha=0.3,
                 ),
             )
             plt.text(
@@ -187,7 +191,10 @@ class ChampionChallengerPlot(MatplotlibBase):
                 ha="center",
                 va="center",
                 bbox=dict(
-                    boxstyle="round", ec=get_colors()[2], fc=get_colors()[2], alpha=0.3,
+                    boxstyle="round",
+                    ec=self.get_colors(idx=2),
+                    fc=self.get_colors(idx=2),
+                    alpha=0.3,
                 ),
             )
             plt.text(
@@ -199,7 +206,10 @@ class ChampionChallengerPlot(MatplotlibBase):
                 ha="center",
                 va="center",
                 bbox=dict(
-                    boxstyle="round", ec=get_colors()[3], fc=get_colors()[3], alpha=0.3,
+                    boxstyle="round",
+                    ec=self.get_colors(idx=3),
+                    fc=self.get_colors(idx=3),
+                    alpha=0.3,
                 ),
             )
         else:

@@ -14,25 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import statistics
-from typing import Literal, Optional, TYPE_CHECKING
+from typing import Literal, Optional
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_cmap
-from verticapy._typing import SQLColumns
-from verticapy._utils._sql._format import quote_ident
-from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
-
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class HexbinMap(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["map"]:
         return "map"
@@ -41,74 +37,40 @@ class HexbinMap(MatplotlibBase):
     def _kind(self) -> Literal["hexbin"]:
         return "hexbin"
 
+    @property
+    def _compute_method(self) -> Literal["aggregate"]:
+        return "aggregate"
+
+    @property
+    def _dimension_bounds(self) -> tuple[int, int]:
+        return (2, 2)
+
+    @property
+    def _only_standard(self) -> Literal[True]:
+        return True
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        """Must be overridden in child class"""
+        self.init_style = {
+            "cmap": self.get_cmap(idx=0),
+            "gridsize": 10,
+            "mincnt": 1,
+            "edgecolors": None,
+        }
+        return None
+
+    # Draw.
+
     def draw(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        method: str = "count",
-        of: Optional[str] = None,
-        bbox: list = [],
-        img: str = "",
-        ax: Optional[Axes] = None,
-        **style_kwargs,
+        self, bbox: list = [], img: str = "", ax: Optional[Axes] = None, **style_kwargs,
     ) -> Axes:
         """
         Draws an hexbin plot using the Matplotlib API.
         """
-        if len(columns) != 2:
-            raise ParameterError(
-                "The parameter 'columns' must be exactly of size 2 to draw the hexbin"
-            )
-        if method.lower() == "mean":
-            method = "avg"
-        if (
-            (method.lower() in ["avg", "min", "max", "sum"])
-            and (of)
-            and ((of in vdf.get_columns()) or (quote_ident(of) in vdf.get_columns()))
-        ):
-            aggregate = f"{method}({of})"
-            others_aggregate = method
-            if method.lower() == "avg":
-                reduce_C_function = statistics.mean
-            elif method.lower() == "min":
-                reduce_C_function = min
-            elif method.lower() == "max":
-                reduce_C_function = max
-            elif method.lower() == "sum":
-                reduce_C_function = sum
-        elif method.lower() in ("count", "density"):
-            aggregate = "count(*)"
-            reduce_C_function = sum
-        else:
-            raise ParameterError(
-                "The parameter 'method' must be in [avg|mean|min|max|sum|median]"
-            )
-        count = vdf.shape()[0]
-        if method.lower() == "density":
-            over = "/" + str(float(count))
-        else:
-            over = ""
-        query_result = _executeSQL(
-            query=f"""
-                SELECT
-                    /*+LABEL('plotting._matplotlib.hexbin')*/
-                    {columns[0]},
-                    {columns[1]},
-                    {aggregate}{over}
-                FROM {vdf._genSQL()}
-                GROUP BY {columns[0]}, {columns[1]}""",
-            title="Grouping all the elements for the Hexbin Plot",
-            method="fetchall",
-        )
-        column1, column2, column3 = [], [], []
-        for item in query_result:
-            if (item[0] != None) and (item[1] != None) and (item[2] != None):
-                column1 += [float(item[0])] * 2
-                column2 += [float(item[1])] * 2
-                if reduce_C_function in [min, max, statistics.mean]:
-                    column3 += [float(item[2])] * 2
-                else:
-                    column3 += [float(item[2]) / 2] * 2
+        matrix = self.data["X"]
+        matrix = matrix[(matrix != np.array(None)).all(axis=1)].astype(float)
         ax, fig = self._get_ax_fig(ax, size=(9, 7), set_axis_below=False, grid=False)
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
@@ -116,22 +78,23 @@ class HexbinMap(MatplotlibBase):
         if img:
             im = plt.imread(img)
             if not (bbox):
-                bbox = (min(column1), max(column1), min(column2), max(column2))
+                bbox = (
+                    min(matrix[:, 0]),
+                    max(matrix[:, 0]),
+                    min(matrix[:, 1]),
+                    max(matrix[:, 1]),
+                )
                 ax.set_xlim(bbox[0], bbox[1])
                 ax.set_ylim(bbox[2], bbox[3])
             ax.imshow(im, extent=bbox)
-        ax.set_ylabel(columns[1])
-        ax.set_xlabel(columns[0])
-        param = {"cmap": get_cmap()[0], "gridsize": 10, "mincnt": 1, "edgecolors": None}
+        ax.set_xlabel(self.layout["columns"][0])
+        ax.set_ylabel(self.layout["columns"][1])
         imh = ax.hexbin(
-            column1,
-            column2,
-            C=column3,
-            reduce_C_function=reduce_C_function,
-            **self._update_dict(param, style_kwargs),
+            matrix[:, 0],
+            matrix[:, 1],
+            C=matrix[:, 2],
+            reduce_C_function=self.layout["aggregate_fun"],
+            **self._update_dict(self.init_style, style_kwargs),
         )
-        if method.lower() == "density":
-            fig.colorbar(imh).set_label(method)
-        else:
-            fig.colorbar(imh).set_label(aggregate)
+        fig.colorbar(imh).set_label(self.layout["method_of"])
         return ax

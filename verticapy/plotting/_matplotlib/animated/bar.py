@@ -21,7 +21,6 @@ import matplotlib.animation as animation
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
@@ -83,7 +82,7 @@ class AnimatedBarChart(MatplotlibBase):
             def date_f(x):
                 return str(x)
 
-        colors = get_colors()
+        colors = self.get_colors()
         for c in ["color", "colors"]:
             if c in style_kwargs:
                 colors = style_kwargs[c]

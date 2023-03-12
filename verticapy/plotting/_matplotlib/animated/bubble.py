@@ -22,7 +22,6 @@ import matplotlib.animation as animation
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_cmap, get_colors
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
@@ -94,7 +93,7 @@ class AnimatedBubblePlot(MatplotlibBase):
         elif "colors" in style_kwargs:
             colors = style_kwargs["colors"]
         else:
-            colors = get_colors()
+            colors = self.get_colors()
         if isinstance(colors, str):
             colors = [colors]
         param = {
@@ -105,7 +104,7 @@ class AnimatedBubblePlot(MatplotlibBase):
             if vdf[by].isnum():
                 param = {
                     "alpha": 0.8,
-                    "cmap": get_cmap()[0],
+                    "cmap": self.get_cmap(idx=0),
                     "edgecolors": "black",
                 }
             else:

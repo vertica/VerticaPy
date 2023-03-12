@@ -20,7 +20,6 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
@@ -52,13 +51,13 @@ class SVMClassifierPlot(MatplotlibBase):
         """
         param0 = {
             "marker": "o",
-            "color": get_colors()[0],
+            "color": self.get_colors(idx=0),
             "s": 50,
             "edgecolors": "black",
         }
         param1 = {
             "marker": "o",
-            "color": get_colors()[1],
+            "color": self.get_colors(idx=1),
             "s": 50,
             "edgecolors": "black",
         }

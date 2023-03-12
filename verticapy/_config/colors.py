@@ -63,37 +63,6 @@ def color_validator(val: Union[str, list, None]) -> Literal[True]:
         )
 
 
-def get_cmap(
-    color: Union[None, str, list] = None, reverse: bool = False
-) -> plt.LinearSegmentedColormap:
-    """
-    Returns the CMAP associated to the input color.
-    If  empty, VerticaPy uses  the colors stored as 
-    a global variable.
-    """
-    if not (color):
-        cm1 = plt.LinearSegmentedColormap.from_list(
-            "verticapy_cmap", ["#FFFFFF", get_colors()[0]], N=1000
-        )
-        cm2 = plt.LinearSegmentedColormap.from_list(
-            "verticapy_cmap", [get_colors()[1], "#FFFFFF", get_colors()[0]], N=1000,
-        )
-        return (cm1, cm2)
-    else:
-        if isinstance(color, list):
-            return plt.LinearSegmentedColormap.from_list(
-                "verticapy_cmap", color, N=1000
-            )
-        elif reverse:
-            return plt.LinearSegmentedColormap.from_list(
-                "verticapy_cmap", [color, "#FFFFFF"], N=1000
-            )
-        else:
-            return plt.LinearSegmentedColormap.from_list(
-                "verticapy_cmap", ["#FFFFFF", color], N=1000
-            )
-
-
 def get_colors(d: Optional[dict] = {}, idx: Optional[int] = None) -> Union[list, str]:
     """
     Returns the current colors.

@@ -21,7 +21,6 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-from verticapy._config.colors import get_cmap, get_colors
 from verticapy._typing import SQLColumns
 
 if TYPE_CHECKING:
@@ -59,13 +58,11 @@ class OutliersPlot(ScatterPlot):
         if isinstance(columns, str):
             columns = [columns]
         if not (cmap):
-            cmap = get_cmap(get_colors()[2])
+            cmap = self.get_cmap(color=self.get_colors(idx=2))
         all_agg = vdf.agg(["avg", "std", "min", "max"], columns)
         xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=False, grid=False)
         if len(columns) == 1:
-            if isinstance(cmap, str):
-                cmap = plt.cm.get_cmap(cmap)
             min_zscore = (all_agg["min"][0] - all_agg["avg"][0]) / (all_agg["std"][0])
             max_zscore = (all_agg["max"][0] - all_agg["avg"][0]) / (all_agg["std"][0])
             for i in range(int(min_zscore) - 1, int(max_zscore) + 1):

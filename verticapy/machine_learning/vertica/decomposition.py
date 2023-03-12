@@ -19,7 +19,7 @@ import numpy as np
 
 from matplotlib.axes import Axes
 
-from verticapy._config.colors import get_cmap, get_colors
+from verticapy._config.colors import get_colors
 from verticapy._typing import PythonNumber, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
@@ -31,6 +31,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.preprocessing import Preprocessing
 
+from verticapy.plotting.base import PlottingBase
 import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 """
@@ -712,8 +713,8 @@ class MCA(PCA):
                 ]
             style_kwargs["c"] = c
             if "cmap" not in style_kwargs:
-                style_kwargs["cmap"] = get_cmap(
-                    color=[get_colors()[0], get_colors()[1], get_colors()[2],]
+                style_kwargs["cmap"] = PlottingBase().get_cmap(
+                    color=[get_colors(idx=0), get_colors(idx=1), get_colors(idx=2),]
                 )
         return vpy_matplotlib_plt.PCAPlot().draw_var(
             x,

@@ -21,7 +21,6 @@ from matplotlib.axes import Axes
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
@@ -119,7 +118,7 @@ class AnimatedLinePlot(MatplotlibBase):
         else:
             fig = plt
         all_plots = []
-        colors = get_colors()
+        colors = self.get_colors()
         for i in range(0, len(columns)):
             param = {
                 "linewidth": 1,

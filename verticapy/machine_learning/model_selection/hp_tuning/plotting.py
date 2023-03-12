@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Optional, Union
 from collections.abc import Iterable
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -160,32 +161,32 @@ def validation_curve(
         for i in range(len(param_range))
     ]
     gs_result_final.sort(key=lambda tup: tup[0])
-    X = [elem[0] for elem in gs_result_final]
-    Y = [
-        [
-            [elem[2] - std_coeff * elem[4] for elem in gs_result_final],
-            [elem[2] for elem in gs_result_final],
-            [elem[2] + std_coeff * elem[4] for elem in gs_result_final],
-        ],
-        [
-            [elem[1] - std_coeff * elem[3] for elem in gs_result_final],
-            [elem[1] for elem in gs_result_final],
-            [elem[1] + std_coeff * elem[3] for elem in gs_result_final],
-        ],
-    ]
+    x = np.array([s[0] for s in gs_result_final])
+    Y = np.column_stack(
+        (
+            [s[2] - std_coeff * s[4] for s in gs_result_final],
+            [s[2] for s in gs_result_final],
+            [s[2] + std_coeff * s[4] for s in gs_result_final],
+            [s[1] - std_coeff * s[3] for s in gs_result_final],
+            [s[1] for s in gs_result_final],
+            [s[1] + std_coeff * s[3] for s in gs_result_final],
+        )
+    )
     result = TableSample(
         {
-            param_name: X,
-            "training_score_lower": Y[0][0],
-            "training_score": Y[0][1],
-            "training_score_upper": Y[0][2],
-            "test_score_lower": Y[1][0],
-            "test_score": Y[1][1],
-            "test_score_upper": Y[1][2],
+            param_name: x,
+            "training_score_lower": Y[:, 0],
+            "training_score": Y[:, 1],
+            "training_score_upper": Y[:, 2],
+            "test_score_lower": Y[:, 3],
+            "test_score": Y[:, 4],
+            "test_score_upper": Y[:, 5],
         }
     )
-    vpy_matplotlib_plt.RangeCurve().range_curve(
-        X, Y, param_name, metric, ax, ["train", "test"], **style_kwargs
+    data = {"x": x, "Y": Y}
+    layout = {"columns": ["train", "test"], "order_by": param_name}
+    vpy_matplotlib_plt.RangeCurve(data=data, layout=layout).draw(
+        ax=ax, y_label=metric, **style_kwargs
     )
     return result
 
