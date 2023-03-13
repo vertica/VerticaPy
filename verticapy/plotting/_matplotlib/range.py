@@ -41,11 +41,11 @@ class RangeCurve(MatplotlibBase):
     def _kind(self) -> Literal["range"]:
         return "range"
 
-    # Styling Methods.
-
     @property
     def _compute_method(self) -> Literal["range"]:
         return "range"
+
+    # Styling Methods.
 
     def _init_style(self) -> None:
         self.init_style = {"alpha1": 0.5, "alpha2": 0.9}

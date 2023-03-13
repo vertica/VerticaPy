@@ -1206,11 +1206,16 @@ class vDFPlot:
         """
         if isinstance(columns, str):
             columns = [columns]
+        elif not (columns):
+            columns = self.numcol()
         columns, ts = self._format_colnames(columns, ts)
-        kind = "step" if step else "line"
-        return vpy_matplotlib_plt.MultiLinePlot().draw(
-            self, ts, columns, start_date, end_date, kind, ax=ax, **style_kwargs,
-        )
+        return vpy_matplotlib_plt.MultiLinePlot(
+            vdf=self,
+            order_by=ts,
+            columns=columns,
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(kind="step" if step else "line", ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
     def range_plot(
@@ -1443,18 +1448,20 @@ class vDFPlot:
         """
         if isinstance(columns, str):
             columns = [columns]
-        if fully:
-            kind = "area_percent"
-        else:
-            kind = "area_stacked"
+        elif not (columns):
+            columns = self.numcol()
         assert min(self.min(columns)["min"]) >= 0, ValueError(
             "Columns having negative values can not be "
             "processed by the 'stacked_area' method."
         )
         columns, ts = self._format_colnames(columns, ts)
-        return vpy_matplotlib_plt.MultiLinePlot().draw(
-            self, ts, columns, start_date, end_date, kind=kind, ax=ax, **style_kwargs,
-        )
+        return vpy_matplotlib_plt.MultiLinePlot(
+            vdf=self,
+            order_by=ts,
+            columns=columns,
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(kind="area_percent" if fully else "area_stacked", ax=ax, **style_kwargs,)
 
 
 class vDCPlot:
@@ -1984,9 +1991,13 @@ class vDCPlot:
     vDataFrame.plot : Draws the time series.
         """
         ts, by = self._parent._format_colnames(ts, by)
-        return vpy_matplotlib_plt.LinePlot().draw(
-            self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwargs,
-        )
+        return vpy_matplotlib_plt.LinePlot(
+            vdf=self._parent,
+            order_by=ts,
+            columns=[self._alias, by] if by else [self._alias],
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(area=area, step=step, ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
     def range_plot(

@@ -64,9 +64,10 @@ class PlottingBase:
                 "2D": self._compute_method,
                 "aggregate": self._compute_aggregate,
                 "range": self._compute_range,
-                None: None,
+                "line": self._filter_line,
             }
-            functions[self._compute_method](*args, **kwargs)
+            if self._compute_method in functions:
+                functions[self._compute_method](*args, **kwargs)
         else:
             self.data = copy.deepcopy(kwargs["data"])
             self.layout = copy.deepcopy(kwargs["layout"])
@@ -480,8 +481,8 @@ class PlottingBase:
     def _compute_range(
         self,
         vdf: "vDataFrame",
-        columns: SQLColumns,
         order_by: str,
+        columns: SQLColumns,
         q: tuple = (0.25, 0.75),
         order_by_start: PythonScalar = None,
         order_by_end: PythonScalar = None,
@@ -509,6 +510,41 @@ class PlottingBase:
         self.layout = {
             "columns": columns,
             "order_by": order_by,
+        }
+
+    def _filter_line(
+        self,
+        vdf: "vDataFrame",
+        order_by: str,
+        columns: SQLColumns,
+        order_by_start: PythonScalar = None,
+        order_by_end: PythonScalar = None,
+    ) -> None:
+        columns, order_by = vdf._format_colnames(columns, order_by)
+        matrix = (
+            vdf.between(
+                column=order_by, start=order_by_start, end=order_by_end, inplace=False
+            )[[order_by] + columns]
+            .sort(columns=[order_by])
+            .to_numpy()
+        )
+        if not (vdf[columns[-1]].isnum()):
+            self.data = {
+                "x": matrix[:, 0],
+                "Y": matrix[:, 1:-1].astype(float),
+                "z": matrix[:, -1],
+            }
+            has_category = True
+        else:
+            self.data = {
+                "x": matrix[:, 0],
+                "Y": matrix[:, 1:],
+            }
+            has_category = False
+        self.layout = {
+            "columns": columns,
+            "order_by": order_by,
+            "has_category": has_category,
         }
 
     def _compute_pivot_table(
