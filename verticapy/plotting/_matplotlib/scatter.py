@@ -86,7 +86,7 @@ class ScatterMatrix(MatplotlibBase):
                     )
                 else:
                     params = {
-                        "color": get_colors(d=style_kwargs, idx=1),
+                        "color": self.get_colors(d=style_kwargs, idx=1),
                         "edgecolor": "black",
                         "alpha": 0.9,
                         "s": 40,

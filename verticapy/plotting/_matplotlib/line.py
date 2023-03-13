@@ -73,7 +73,7 @@ class LinePlot(MatplotlibBase):
                 **self.init_style,
                 **kwargs,
             }
-        return self._update_dict(kwargs, style_kwargs, idx)
+        return kwargs
 
     # Draw.
 
@@ -106,7 +106,8 @@ class LinePlot(MatplotlibBase):
             for i, c in enumerate(uniques):
                 x = self.data["x"][self.data["z"] == c]
                 y = self.data["Y"][:, 0][self.data["z"] == c]
-                plot_fun(x, y, label=c, **self._get_style(idx=i))
+                kwargs = self._update_dict(self._get_style(idx=i), style_kwargs, i)
+                plot_fun(x, y, label=c, **kwargs)
         ax.set_xlabel(self.layout["order_by"])
         ax.set_ylabel(self.layout["columns"][0])
         for tick in ax.get_xticklabels():
@@ -218,6 +219,7 @@ class MultiLinePlot(MatplotlibBase):
             kwargs = self._get_style(kind=kind, idx=i)
             if "color" in style_kwargs and n < 20:
                 kwargs["markerfacecolor"] = self.get_colors(d=style_kwargs, idx=i)
+            kwargs = self._update_dict(kwargs, style_kwargs, i)
             plot_fun(self.data["x"], points, **kwargs)
             if kind not in ("line", "step"):
                 args = [self.data["x"], prec, points]

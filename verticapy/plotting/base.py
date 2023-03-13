@@ -61,7 +61,7 @@ class PlottingBase:
         if "data" not in kwargs or "layout" not in kwargs:
             functions = {
                 "1D": self._compute_plot_params,
-                "2D": self._compute_method,
+                "2D": self._compute_pivot_table,
                 "aggregate": self._compute_aggregate,
                 "range": self._compute_range,
                 "line": self._filter_line,
