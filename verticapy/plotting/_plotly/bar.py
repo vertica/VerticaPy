@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal
 
+import plotly.express as px
 
 from verticapy.plotting._plotly.base import PlotlyBase
 
@@ -39,7 +40,8 @@ class BarChart(PlotlyBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        self.init_style = {}
+        self.init_trace_style = {"marker_color": PlotlyBase.get_colors(idx=0)}
+        self.init_layout_style = {"width": 200*len(self.layout['labels']), "height": 500}
         return None
 
     # Draw.
@@ -48,9 +50,15 @@ class BarChart(PlotlyBase):
         """
         Draws a bar chart using the Plotly API.
         """
-        print(self.data)
-        print(self.layout)
-
+        y_data=self.data['y']
+        x_data=self.layout['labels']
+        fig = px.bar(x=x_data, y=y_data)
+        if self.data['is_categorical']:
+            fig.update_xaxes(type='category')
+        params = self._update_dict(self.init_layout_style, style_kwargs)
+        fig.update_layout(**params)
+        fig.update_traces(**self.init_trace_style)
+        return fig
 
 class BarChart2D(PlotlyBase):
 
