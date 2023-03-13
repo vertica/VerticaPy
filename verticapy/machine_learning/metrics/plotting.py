@@ -71,6 +71,7 @@ def lift_chart(
         set at equally-spaced intervals  between 0 and 
         1, inclusive.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any   optional  parameter  to  pass  to   the 
@@ -172,6 +173,7 @@ def prc_curve(
         set at equally-spaced intervals  between 0 and 
         1, inclusive.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any   optional  parameter  to  pass  to   the 
@@ -260,6 +262,7 @@ def roc_curve(
         set at equally-spaced intervals  between 0 and 
         1, inclusive.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any   optional  parameter  to  pass  to   the 

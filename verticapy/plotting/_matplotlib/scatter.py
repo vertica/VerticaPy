@@ -51,7 +51,7 @@ class ScatterMatrix(MatplotlibBase):
         if not (columns):
             columns = vdf.numcol()
         elif len(columns) == 1:
-            return vdf[columns[0]].hist()
+            return vdf[columns[0]].bar()
         n = len(columns)
         if conf._get_import_success("jupyter"):
             figsize = min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)

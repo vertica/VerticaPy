@@ -193,6 +193,7 @@ def elbow(
         the  relative  importance of numerical and  categorical 
         attributes.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any  optional  parameter  to  pass  to  the  Matplotlib 

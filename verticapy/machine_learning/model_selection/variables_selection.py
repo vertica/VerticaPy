@@ -357,6 +357,7 @@ def stepwise(
     show: bool, optional
         If  set to True, the stepwise graphic will be drawn.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any  optional  parameter  to pass to the  Matplotlib 

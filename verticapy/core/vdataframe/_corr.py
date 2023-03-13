@@ -768,6 +768,7 @@ class vDFCorr:
     show: bool, optional
         If set to True, the Correlation Matrix will be drawn using Matplotlib.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
@@ -1027,6 +1028,7 @@ class vDFCorr:
     show: bool, optional
         If set to True, the Covariance Matrix will be drawn using Matplotlib.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
@@ -1133,6 +1135,7 @@ class vDFCorr:
     show: bool, optional
         If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
@@ -1261,6 +1264,7 @@ class vDFCorr:
     show: bool, optional
         If set to True, the Partial Auto Correlation Plot will be drawn using Matplotlib.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
@@ -1423,6 +1427,7 @@ class vDFCorr:
     show: bool, optional
         If set to True, the Regression Matrix will be drawn using Matplotlib.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
@@ -1567,6 +1572,7 @@ class vDFCorr:
     show: bool, optional
         If set to True, the IV Plot will be drawn using Matplotlib.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     
 
