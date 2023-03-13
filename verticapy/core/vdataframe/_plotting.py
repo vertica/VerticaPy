@@ -500,7 +500,11 @@ class vDFPlot:
 
     @save_verticapy_logs
     def boxplot(
-        self, columns: SQLColumns = [], ax: Optional[Axes] = None, **style_kwargs
+        self,
+        columns: SQLColumns = [],
+        q: tuple = (0.25, 0.75),
+        ax: Optional[Axes] = None,
+        **style_kwargs,
     ):
         """
     Draws the Box Plot of the input vDataColumns. 
@@ -510,6 +514,8 @@ class vDFPlot:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will 
         be used.
+    q: tuple, optional
+        Tuple including the 2 quantiles used to draw the BoxPlot.
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
@@ -534,9 +540,13 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns) if (columns) else self.numcol()
-        return vpy_matplotlib_plt.MultiBoxPlot().draw(
-            self, columns, ax=ax, **style_kwargs
-        )
+        if columns:
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
+            )
+            return vpy_plt.BoxPlot(vdf=self, columns=columns, q=q,).draw(**kwargs)
+        else:
+            raise MissingColumn("No numerical columns found to draw the BoxPlot")
 
     @save_verticapy_logs
     def bubble(
@@ -1316,7 +1326,7 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         ts: str,
-        q: Union[tuple, list] = (0.25, 0.75),
+        q: tuple = (0.25, 0.75),
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
         plot_median: bool = False,
@@ -1334,7 +1344,7 @@ class vDFPlot:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    q: tuple / list, optional
+    q: tuple, optional
         Tuple including the 2 quantiles used to draw the Plot.
     start_date: str / PythonNumber / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
@@ -1845,10 +1855,11 @@ class vDCPlot:
     @save_verticapy_logs
     def boxplot(
         self,
-        by: str = "",
+        by: Optional[str] = None,
+        q: tuple = (0.25, 0.75),
         h: PythonNumber = 0,
         max_cardinality: int = 8,
-        cat_priority: Union[str, int, datetime.datetime, datetime.date, list] = [],
+        cat_priority: Union[PythonScalar, list] = [],
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -1859,14 +1870,16 @@ class vDCPlot:
     ----------
     by: str, optional
         vDataColumn to use to partition the data.
+    q: tuple, optional
+        Tuple including the 2 quantiles used to draw the BoxPlot.
     h: PythonNumber, optional
-        Interval width if the vDataColumn is numerical or of type date like. Optimized 
+        Interval width if the 'by' vDataColumn is numerical or of type date like. Optimized 
         h will be computed if the parameter is empty or invalid.
     max_cardinality: int, optional
         Maximum number of vDataColumn distinct elements to be used as categorical. 
         The less frequent elements will be gathered together to create a new 
         category : 'Others'.
-    cat_priority: str / int / date / list, optional
+    cat_priority: PythonScalar / list, optional
         List of the different categories to consider when drawing the box plot.
         The other categories will be filtered.
     ax: Axes, optional
@@ -1887,9 +1900,18 @@ class vDCPlot:
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
         by = self._parent._format_colnames(by)
-        return vpy_matplotlib_plt.BoxPlot().draw(
-            self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwargs
+        vpy_plt, kwargs = self._parent._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
         )
+        return vpy_plt.BoxPlot(
+            vdf=self._parent,
+            columns=[self._alias],
+            by=by,
+            q=q,
+            h=h,
+            max_cardinality=max_cardinality,
+            cat_priority=cat_priority,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def density(
@@ -2179,7 +2201,7 @@ class vDCPlot:
     def range_plot(
         self,
         ts: str,
-        q: Union[tuple, list] = (0.25, 0.75),
+        q: tuple = (0.25, 0.75),
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
         plot_median: bool = False,
@@ -2195,7 +2217,7 @@ class vDCPlot:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    q: tuple / list, optional
+    q: tuple, optional
         Tuple including the 2 quantiles used to draw the Plot.
     start_date: str / PythonNumber / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
