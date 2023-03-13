@@ -1361,7 +1361,7 @@ class vDFPlot:
         """
         columns, ts = self._format_colnames(columns, ts)
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax, "plot_median": "plot_median",},
+            matplotlib_kwargs={"ax": ax, "plot_median": plot_median,},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.RangeCurve(
