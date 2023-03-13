@@ -406,6 +406,7 @@ def learning_curve(
         used to compute the area plot 
         around each score.
     ax: Axes, optional
+        [Only for MATPLOTLIB]
         The axes to plot on.
     **style_kwargs
         Any  optional  parameter  to  pass  to  the 

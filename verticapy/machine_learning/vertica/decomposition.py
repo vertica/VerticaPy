@@ -360,7 +360,7 @@ class Decomposition(Preprocessing):
             }
         ).to_vdf()
         information["dimensions_center"] = information["dimensions"] + 0.5
-        ax = information["dimensions"].hist(
+        ax = information["dimensions"].bar(
             method="avg",
             of="percentage_explained_variance",
             h=1,
@@ -598,7 +598,7 @@ class MCA(PCA):
             {"row_nb": [i + 1 for i in range(n)], "contrib": contribution}
         ).to_vdf()
         contrib["row_nb_2"] = contrib["row_nb"] + 0.5
-        ax = contrib["row_nb"].hist(
+        ax = contrib["row_nb"].bar(
             method="avg", of="contrib", max_cardinality=1, h=1, ax=ax, **style_kwargs
         )
         ax = contrib["contrib"].plot(ts="row_nb_2", ax=ax, color="black")
@@ -647,7 +647,7 @@ class MCA(PCA):
             *sorted(zip(self.X, quality), key=lambda t: t[1], reverse=True)
         )
         quality = TableSample({"variables": variables, "quality": quality}).to_vdf()
-        ax = quality["variables"].hist(
+        ax = quality["variables"].bar(
             method="avg", of="quality", max_cardinality=n, ax=ax, **style_kwargs
         )
         ax.set_ylabel("Cos2 - Quality of Representation")
