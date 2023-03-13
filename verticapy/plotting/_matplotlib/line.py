@@ -15,13 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
-from typing import Literal, Optional, TYPE_CHECKING
+from typing import Any, Literal, Optional, TYPE_CHECKING
 import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import PythonScalar, SQLColumns
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -33,6 +32,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class LinePlot(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["graph"]:
         return "graph"
@@ -41,13 +43,42 @@ class LinePlot(MatplotlibBase):
     def _kind(self) -> Literal["line"]:
         return "line"
 
+    @property
+    def _compute_method(self) -> Literal["line"]:
+        return "line"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "color": self.get_colors(idx=0),
+            "linewidth": 2,
+            "marker": "o",
+            "markevery": 0.05,
+            "markersize": 7,
+            "markeredgecolor": "black",
+        }
+        if len(self.data["x"]) < 20:
+            self.init_style["markerfacecolor"] = "white"
+        return None
+
+    def _get_style(self, idx: int = 0) -> dict[str, Any]:
+        colors = self.get_colors()
+        kwargs = {
+            "color": colors[idx % len(colors)],
+            "markerfacecolor": colors[idx % len(colors)],
+        }
+        if len(self.data["x"]) < 20:
+            kwargs = {
+                **self.init_style,
+                **kwargs,
+            }
+        return kwargs
+
+    # Draw.
+
     def draw(
         self,
-        vdc: "vDataColumn",
-        order_by: str,
-        by: str = "",
-        order_by_start: PythonScalar = None,
-        order_by_end: PythonScalar = None,
         area: bool = False,
         step: bool = False,
         ax: Optional[Axes] = None,
@@ -56,73 +87,46 @@ class LinePlot(MatplotlibBase):
         """
         Draws a time series plot using the Matplotlib API.
         """
+        colors = self.get_colors()
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
         plot_fun = ax.step if step else ax.plot
-        colors = get_colors()
-        plot_param = {
-            "marker": "o",
-            "markevery": 0.05,
-            "markersize": 7,
-            "markeredgecolor": "black",
-        }
-        if not (by):
-            matrix = vdc._parent.between(
-                column=order_by, start=order_by_start, end=order_by_end, inplace=False
-            )[[order_by, vdc._alias]].to_numpy()
-            params = {
-                "color": colors[0],
-                "linewidth": 2,
-            }
-            if len(matrix[:, 0]) < 20:
-                params = {
-                    **plot_param,
-                    **params,
-                    "markerfacecolor": "white",
-                }
-            args = [matrix[:, 0], matrix[:, 1].astype(float)]
-            params = self._update_dict(params, style_kwargs)
-            plot_fun(*args, **params)
+        if not (self.layout["has_category"]):
+            args = [self.data["x"], self.data["Y"][:, 0]]
+            kwargs = self._update_dict(self.init_style, style_kwargs)
+            plot_fun(*args, **kwargs)
             if area and not (step):
-                if "color" in self._update_dict(params, style_kwargs):
-                    color = self._update_dict(params, style_kwargs)["color"]
+                if "color" in self._update_dict(kwargs, style_kwargs):
+                    color = self._update_dict(kwargs, style_kwargs)["color"]
                 else:
                     color = colors[0]
                 ax.fill_between(*args, facecolor=color, alpha=0.2)
-            ax.set_xlim(min(matrix[:, 0]), max(matrix[:, 0]))
+            ax.set_xlim(min(self.data["x"]), max(self.data["x"]))
         else:
-            uniques = vdc._parent[by].distinct()
+            uniques = np.unique(self.data["z"])
             for i, c in enumerate(uniques):
-                matrix = vdc._parent.between(
-                    column=order_by,
-                    start=order_by_start,
-                    end=order_by_end,
-                    inplace=False,
-                )
-                condition = f"""{quote_ident(by)} = '{str(c).replace("'", "''")}'"""
-                matrix = matrix.search(condition)[[order_by, vdc._alias]].to_numpy()
-                params = {
-                    "color": colors[i % len(colors)],
-                    "markerfacecolor": colors[i % len(colors)],
-                }
-                if len(matrix[:, 0]) < 20:
-                    params = {
-                        **plot_param,
-                        **params,
-                    }
-                params = self._update_dict(params, style_kwargs, i)
-                plot_fun(matrix[:, 0], matrix[:, 1].astype(float), label=c, **params)
-        ax.set_xlabel(order_by)
-        ax.set_ylabel(vdc._alias)
+                x = self.data["x"][self.data["z"] == c]
+                y = self.data["Y"][:, 0][self.data["z"] == c]
+                kwargs = self._update_dict(self._get_style(idx=i), style_kwargs, i)
+                plot_fun(x, y, label=c, **kwargs)
+        ax.set_xlabel(self.layout["order_by"])
+        ax.set_ylabel(self.layout["columns"][0])
         for tick in ax.get_xticklabels():
             tick.set_rotation(90)
-        if by:
-            ax.legend(title=by, loc="center left", bbox_to_anchor=[1, 0.5])
+        if self.layout["has_category"]:
+            ax.legend(
+                title=self.layout["order_by"],
+                loc="center left",
+                bbox_to_anchor=[1, 0.5],
+            )
             box = ax.get_position()
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         return ax
 
 
 class MultiLinePlot(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["graph"]:
         return "graph"
@@ -131,105 +135,101 @@ class MultiLinePlot(MatplotlibBase):
     def _kind(self) -> Literal["line"]:
         return "line"
 
+    @property
+    def _compute_method(self) -> Literal["line"]:
+        return "line"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "color": self.get_colors(idx=0),
+            "linewidth": 2,
+            "marker": "o",
+            "markevery": 0.05,
+            "markersize": 7,
+            "markeredgecolor": "black",
+        }
+        if len(self.data["x"]) < 20:
+            self.init_style["markerfacecolor"] = "white"
+        return None
+
+    def _get_style(
+        self,
+        kind: Literal["step", "line", "area_percent", "area_stacked"],
+        idx: int = 0,
+    ) -> dict[str, Any]:
+        colors = self.get_colors()
+        kwargs = {"linewidth": 1}
+        kwargs_small = {
+            "marker": "o",
+            "markevery": 0.05,
+            "markerfacecolor": colors[idx],
+            "markersize": 7,
+        }
+        if kind in ("line", "step"):
+            color = colors[idx]
+            if self.data["Y"].shape[0] < 20:
+                kwargs = {
+                    **kwargs_small,
+                    "markeredgecolor": "black",
+                }
+            kwargs["label"] = self.layout["columns"][idx]
+            kwargs["linewidth"] = 2
+        elif kind == "area_percent":
+            color = "white"
+            if self.data["Y"].shape[0] < 20:
+                kwargs = {
+                    **kwargs_small,
+                    "markeredgecolor": "white",
+                }
+        else:
+            color = "black"
+            if self.data["Y"].shape[0] < 20:
+                kwargs = {
+                    **kwargs_small,
+                    "markeredgecolor": "black",
+                }
+        kwargs["color"] = color
+        return kwargs
+
+    # Draw.
+
     def draw(
         self,
-        vdf: "vDataFrame",
-        order_by: str,
-        columns: SQLColumns = [],
-        order_by_start: PythonScalar = None,
-        order_by_end: PythonScalar = None,
-        kind: str = "line",
+        kind: Literal["step", "line", "area_percent", "area_stacked"] = "line",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> Axes:
         """
         Draws a multi-time series plot using the Matplotlib API.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        if len(columns) == 1 and kind != "area_percent":
-            return LinePlot().draw(
-                vdf[columns[0]],
-                order_by=order_by,
-                order_by_start=order_by_start,
-                order_by_end=order_by_end,
-                area=(kind in ("line", "step")),
-                step=(kind == "step"),
-                ax=ax,
-                **style_kwargs,
-            )
-        if not (columns):
-            columns = vdf.numcol()
-        else:
-            for column in columns:
-                if not (vdf[column].isnum()):
-                    if vdf._vars["display"]["print_info"]:
-                        warning_message = (
-                            f"The Virtual Column {column} is "
-                            "not numerical.\nIt will be ignored."
-                        )
-                        warnings.warn(warning_message, Warning)
-                    columns.remove(column)
-        if not (columns):
-            raise EmptyParameter("No numerical columns found to draw the multi TS plot")
-        colors = get_colors()
-        matrix = vdf.between(
-            column=order_by, start=order_by_start, end=order_by_end, inplace=False
-        )[[order_by] + columns].to_numpy()
-        n, m = matrix.shape
+        colors = self.get_colors()
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
+        n, m = self.data["Y"].shape
         plot_fun = ax.step if (kind == "step") else ax.plot
         prec = [0 for j in range(n)]
-        for i in range(1, m):
+        for i in range(0, m):
             if kind in ("area_percent", "area_stacked"):
-                points = np.sum(matrix[:, 1 : i + 1], axis=1).astype(float)
+                points = np.sum(self.data["Y"][:, : i + 1], axis=1).astype(float)
                 if kind == "area_percent":
-                    points /= np.sum(matrix[:, 1:], axis=1).astype(float)
+                    points /= np.sum(self.data["Y"], axis=1).astype(float)
             else:
-                points = matrix[:, i].astype(float)
-            param = {"linewidth": 1}
-            param_style = {
-                "marker": "o",
-                "markevery": 0.05,
-                "markerfacecolor": colors[i - 1],
-                "markersize": 7,
-            }
-            if kind in ("line", "step"):
-                color = colors[i - 1]
-                if n < 20:
-                    param = {
-                        **param_style,
-                        "markeredgecolor": "black",
-                    }
-                param["label"] = columns[i - 1]
-                param["linewidth"] = 2
-            elif kind == "area_percent":
-                color = "white"
-                if n < 20:
-                    param = {
-                        **param_style,
-                        "markeredgecolor": "white",
-                    }
-            else:
-                color = "black"
-                if n < 20:
-                    param = {
-                        **param_style,
-                        "markeredgecolor": "black",
-                    }
-            param["color"] = color
+                points = self.data["Y"][:, i].astype(float)
+            kwargs = self._get_style(kind=kind, idx=i)
             if "color" in style_kwargs and n < 20:
-                param["markerfacecolor"] = get_colors(style_kwargs, i)
-            plot_fun(matrix[:, 0], points, **param)
+                kwargs["markerfacecolor"] = self.get_colors(d=style_kwargs, idx=i)
+            kwargs = self._update_dict(kwargs, style_kwargs, i)
+            plot_fun(self.data["x"], points, **kwargs)
             if kind not in ("line", "step"):
-                args = [matrix[:, 0], prec, points]
+                args = [self.data["x"], prec, points]
                 kwargs = {
-                    "label": columns[i - 1],
-                    "color": colors[i - 1],
+                    "label": self.layout["columns"][i],
+                    "color": colors[i],
                     **style_kwargs,
                 }
                 if not (isinstance(kwargs["color"], str)):
-                    kwargs["color"] = kwargs["color"][(i - 1) % len(kwargs["color"])]
+                    kwargs["color"] = kwargs["color"][i % len(kwargs["color"])]
                 ax.fill_between(*args, **kwargs)
                 prec = points
         for tick in ax.get_xticklabels():
@@ -238,8 +238,8 @@ class MultiLinePlot(MatplotlibBase):
             ax.set_ylim(0, 1)
         elif kind == "area_stacked":
             ax.set_ylim(0)
-        ax.set_xlim(min(matrix[:, 0]), max(matrix[:, 0]))
-        ax.set_xlabel(order_by)
+        ax.set_xlim(min(self.data["x"]), max(self.data["x"]))
+        ax.set_xlabel(self.layout["order_by"])
         ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

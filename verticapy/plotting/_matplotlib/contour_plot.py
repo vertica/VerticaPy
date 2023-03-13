@@ -20,7 +20,6 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_cmap, get_colors
 from verticapy._typing import PythonScalar, SQLColumns
 from verticapy._utils._sql._format import quote_ident
 
@@ -164,7 +163,9 @@ class ContourPlot(MatplotlibBase):
             del param["cmap"]
         ax.contour(X, Y, Z, **param)
         param = {
-            "cmap": get_cmap([get_colors()[2], "#FFFFFF", get_colors()[0]]),
+            "cmap": self.get_cmap(
+                color=[self.get_colors(idx=2), "#FFFFFF", self.get_colors(idx=0)]
+            ),
             "levels": 14,
         }
         param = self._update_dict(param, style_kwargs)

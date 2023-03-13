@@ -22,7 +22,6 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import SQLColumns
 from verticapy.errors import ParameterError
 
@@ -33,6 +32,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class HorizontalBarChart(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["chart"]:
         return "chart"
@@ -45,6 +47,14 @@ class HorizontalBarChart(MatplotlibBase):
     def _compute_method(self) -> Literal["1D"]:
         return "1D"
 
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {"color": self.get_colors(idx=0), "alpha": 0.86}
+        return None
+
+    # Draw.
+
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a bar chart using the Matplotlib API.
@@ -52,13 +62,16 @@ class HorizontalBarChart(MatplotlibBase):
         ax, fig = self._get_ax_fig(
             ax, size=(10, min(int(len(self.data["x"]) / 1.8) + 1, 600)), grid="x"
         )
-        params = {"color": get_colors()[0], "alpha": 0.86}
-        params = self._update_dict(params, style_kwargs, 0)
-        ax.barh(self.data["x"], self.data["y"], self.data["adj_width"], **params)
-        ax.set_ylabel(self.layout["x"])
+        ax.barh(
+            self.data["x"],
+            self.data["y"],
+            self.data["adj_width"],
+            **self._update_dict(self.init_style, style_kwargs, 0),
+        )
+        ax.set_ylabel(self.layout["column"])
         if self.data["is_categorical"]:
             ax.set_yticks(self.data["x"])
-            ax.set_yticklabels(self._format_string(self.data["labels"]), rotation=0)
+            ax.set_yticklabels(self._format_string(self.layout["labels"]), rotation=0)
         else:
             ax.set_yticks(
                 [x - round(self.data["width"] / 2, 10) for x in self.data["x"]]
@@ -68,6 +81,9 @@ class HorizontalBarChart(MatplotlibBase):
 
 
 class HorizontalBarChart2D(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["chart"]:
         return "chart"
@@ -80,6 +96,14 @@ class HorizontalBarChart2D(MatplotlibBase):
     def _compute_method(self) -> Literal["2D"]:
         return "2D"
 
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {"height": 0.5, "alpha": 0.86}
+        return None
+
+    # Draw.
+
     def draw(
         self,
         bar_type: Literal["auto", "fully_stacked", "stacked", "density"],
@@ -89,8 +113,8 @@ class HorizontalBarChart2D(MatplotlibBase):
         """
         Draws a 2D bar chart using the Matplotlib API.
         """
-        colors = get_colors()
-        n, m = self.data["matrix"].shape
+        colors = self.get_colors()
+        n, m = self.data["X"].shape
         if bar_type == "fully_stacked":
             if self.layout["method"] != "density":
                 raise ValueError(
@@ -104,15 +128,15 @@ class HorizontalBarChart2D(MatplotlibBase):
                     "One of the 2 columns must have 2 categories to draw a Pyramid Bar."
                 )
             if m != 2:
-                self.data["matrix"] = np.transpose(self.data["matrix"])
-                y_labels = self.data["x_labels"]
-                self.data["x_labels"] = self.data["y_labels"]
-                self.data["y_labels"] = y_labels
+                self.data["X"] = np.transpose(self.data["X"])
+                y_labels = self.layout["x_labels"]
+                self.layout["x_labels"] = self.layout["y_labels"]
+                self.layout["y_labels"] = y_labels
                 self.layout["columns"] = [
                     self.layout["columns"][1],
                     self.layout["columns"][0],
                 ]
-        matrix = copy.deepcopy(self.data["matrix"])
+        matrix = copy.deepcopy(self.data["X"])
         m, n = matrix.shape
         yticks = [j for j in range(m)]
         bar_height = 0.5
@@ -128,10 +152,9 @@ class HorizontalBarChart2D(MatplotlibBase):
             params = {
                 "y": [j for j in range(m)],
                 "width": matrix[:, i],
-                "height": bar_height,
-                "label": self.data["y_labels"][i],
-                "alpha": 0.86,
+                "label": self.layout["y_labels"][i],
                 "color": colors[i % len(colors)],
+                **self.init_style,
             }
             params = self._update_dict(params, style_kwargs, i)
             if bar_type in ("stacked", "fully_stacked"):
@@ -144,15 +167,18 @@ class HorizontalBarChart2D(MatplotlibBase):
                 if i == 1:
                     current_column = [-j for j in current_column]
                 params["width"] = current_column
-                params["height"] = bar_height / 1.5
+                params["height"] = self.init_style["height"] / 1.5
             else:
-                params["y"] = [j + i * bar_height / n for j in range(m)]
-                params["height"] = bar_height / n
+                params["y"] = [j + i * self.init_style["height"] / n for j in range(m)]
+                params["height"] = self.init_style["height"] / n
             ax.barh(**params)
         if bar_type != "stacked":
-            yticks = [j + bar_height / 2 - bar_height / 2 / n for j in range(m)]
+            yticks = [
+                j + self.init_style["height"] / 2 - self.init_style["height"] / 2 / n
+                for j in range(m)
+            ]
         ax.set_yticks(yticks)
-        ax.set_yticklabels(self.data["x_labels"])
+        ax.set_yticklabels(self.layout["x_labels"])
         ax.set_ylabel(self.layout["columns"][0])
         ax.set_xlabel(self.layout["method"])
         if bar_type in ("density", "fully_stacked"):

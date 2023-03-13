@@ -16,10 +16,10 @@ permissions and limitations under the License.
 """
 from typing import Literal, Union
 
-from verticapy._typing import SQLExpression
+from verticapy._typing import SQLColumns, SQLExpression
+from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import extract_and_rename_subquery
-from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import ParameterError
@@ -276,13 +276,13 @@ class vDFJoinUnionSort:
         return self._new_vdataframe(query)
 
     @save_verticapy_logs
-    def sort(self, columns: Union[str, dict, list]):
+    def sort(self, columns: Union[SQLColumns, dict]):
         """
     Sorts the vDataFrame using the input vDataColumns.
 
     Parameters
     ----------
-    columns: str / dict / list
+    columns: SQLColumns / dict
         List of the vDataColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}

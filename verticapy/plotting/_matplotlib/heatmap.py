@@ -21,8 +21,6 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_cmap
-
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
@@ -69,7 +67,7 @@ class HeatMap(MatplotlibBase):
         ax, fig = self._get_ax_fig(
             ax, size=(min(m, 500), min(n, 500)), set_axis_below=False, grid=False
         )
-        param = {"cmap": get_cmap()[0], "interpolation": "nearest"}
+        param = {"cmap": self.get_cmap(idx=0), "interpolation": "nearest"}
         if ((vmax == 1) and vmin in [0, -1]) and not (extent):
             im = ax.imshow(
                 matrix_array,

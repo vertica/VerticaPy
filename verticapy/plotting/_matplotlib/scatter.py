@@ -20,7 +20,6 @@ from typing import Literal, Optional, TYPE_CHECKING
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
@@ -77,7 +76,7 @@ class ScatterMatrix(MatplotlibBase):
                     )
                     data[f"{i}_{j}"] = copy.deepcopy(self.data)
                     params = {
-                        "color": get_colors(style_kwargs, 0),
+                        "color": self.get_colors(d=style_kwargs, idx=0),
                         "edgecolor": "black",
                     }
                     if "edgecolor" in style_kwargs:
@@ -87,7 +86,7 @@ class ScatterMatrix(MatplotlibBase):
                     )
                 else:
                     params = {
-                        "color": get_colors(style_kwargs, 1),
+                        "color": self.get_colors(d=style_kwargs, idx=1),
                         "edgecolor": "black",
                         "alpha": 0.9,
                         "s": 40,
@@ -153,7 +152,7 @@ class ScatterPlot(MatplotlibBase):
             )
             warnings.warn(warning_message, Warning)
             bbox = []
-        colors = get_colors()
+        colors = self.get_colors()
         markers = self._markers * 10
         param = {
             "s": 50,

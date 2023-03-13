@@ -19,7 +19,6 @@ import numpy as np
 
 from matplotlib.axes import Axes
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import SQLColumns
 
 if TYPE_CHECKING:
@@ -29,6 +28,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class BarChart(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["chart"]:
         return "chart"
@@ -41,6 +43,14 @@ class BarChart(MatplotlibBase):
     def _compute_method(self) -> Literal["1D"]:
         return "1D"
 
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {"color": self.get_colors(idx=0), "alpha": 0.86}
+        return None
+
+    # Draw.
+
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a histogram using the Matplotlib API.
@@ -51,13 +61,16 @@ class BarChart(MatplotlibBase):
             set_axis_below=True,
             grid="y",
         )
-        params = {"color": get_colors()[0], "alpha": 0.86}
-        params = self._update_dict(params, style_kwargs)
-        ax.bar(self.data["x"], self.data["y"], self.data["adj_width"], **params)
-        ax.set_xlabel(self.layout["x"])
+        ax.bar(
+            self.data["x"],
+            self.data["y"],
+            self.data["adj_width"],
+            **self._update_dict(self.init_style, style_kwargs),
+        )
+        ax.set_xlabel(self.layout["column"])
         if self.data["is_categorical"]:
             xticks = self.data["x"]
-            xticks_label = self._format_string(self.data["labels"])
+            xticks_label = self._format_string(self.layout["labels"])
         else:
             xticks = [x - round(self.data["width"] / 2, 10) for x in self.data["x"]]
             xticks_label = xticks
@@ -68,6 +81,9 @@ class BarChart(MatplotlibBase):
 
 
 class BarChart2D(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["chart"]:
         return "chart"
@@ -80,44 +96,53 @@ class BarChart2D(MatplotlibBase):
     def _compute_method(self) -> Literal["2D"]:
         return "2D"
 
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {"width": 0.5, "alpha": 0.86}
+        return None
+
+    # Draw.
+
     def draw(
         self, stacked: bool = False, ax: Optional[Axes] = None, **style_kwargs,
     ) -> Axes:
         """
         Draws a 2D BarChart using the Matplotlib API.
         """
-        colors = get_colors()
-        m, n = self.data["matrix"].shape
-        bar_width = 0.5
+        colors = self.get_colors()
+        m, n = self.data["X"].shape
         ax, fig = self._get_ax_fig(
             ax, size=(min(600, 3 * m) / 2 + 1, 6), set_axis_below=True, grid="y"
         )
         for i in range(0, n):
             params = {
                 "x": [j for j in range(m)],
-                "height": self.data["matrix"][:, i],
-                "width": bar_width,
-                "label": self.data["y_labels"][i],
-                "alpha": 0.86,
+                "height": self.data["X"][:, i],
+                "label": self.layout["y_labels"][i],
                 "color": colors[i % len(colors)],
+                **self.init_style,
             }
             params = self._update_dict(params, style_kwargs, i)
             if stacked:
                 if i == 0:
                     bottom = np.array([0.0 for j in range(m)])
                 else:
-                    bottom += self.data["matrix"][:, i - 1].astype(float)
+                    bottom += self.data["X"][:, i - 1].astype(float)
                 params["bottom"] = bottom
             else:
-                params["x"] = [j + i * bar_width / n for j in range(m)]
-                params["width"] = bar_width / n
+                params["x"] = [j + i * self.init_style["width"] / n for j in range(m)]
+                params["width"] = self.init_style["width"] / n
             ax.bar(**params)
         if stacked:
             xticks = [j for j in range(m)]
         else:
-            xticks = [j + bar_width / 2 - bar_width / 2 / n for j in range(m)]
+            xticks = [
+                j + self.init_style["width"] / 2 - self.init_style["width"] / 2 / n
+                for j in range(m)
+            ]
         ax.set_xticks(xticks)
-        ax.set_xticklabels(self.data["x_labels"], rotation=90)
+        ax.set_xticklabels(self.layout["x_labels"], rotation=90)
         ax.set_xlabel(self.layout["columns"][0])
         ax.set_ylabel(self.layout["method"])
         ax.legend(

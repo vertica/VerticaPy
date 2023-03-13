@@ -15,13 +15,16 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, math
-from typing import Literal, Optional, TYPE_CHECKING
+from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 import numpy as np
 
+import matplotlib.colors as plt_colors
+
 import verticapy._config.config as conf
-from verticapy._typing import ArrayLike, SQLColumns
+from verticapy._config.colors import get_colors
+from verticapy._typing import ArrayLike, PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._sql._cast import to_varchar
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
@@ -43,58 +46,154 @@ class PlottingBase:
         """Must be overridden in child class"""
         return None
 
+    @property
+    def _dimension_bounds(self) -> tuple[PythonNumber, PythonNumber]:
+        """Must be overridden in child class"""
+        return (-np.inf, np.inf)
+
+    @property
+    def _only_standard(self) -> Literal[False]:
+        return False
+
     # System Methods.
 
     def __init__(self, *args, **kwargs) -> None:
-        if self._compute_method == "1D":
-            self._compute_plot_params(*args, **kwargs)
-        elif self._compute_method == "2D":
-            self._compute_pivot_table(*args, **kwargs)
+        if "data" not in kwargs or "layout" not in kwargs:
+            functions = {
+                "1D": self._compute_plot_params,
+                "2D": self._compute_pivot_table,
+                "aggregate": self._compute_aggregate,
+                "range": self._compute_range,
+                "line": self._filter_line,
+            }
+            if self._compute_method in functions:
+                functions[self._compute_method](*args, **kwargs)
+        else:
+            self.data = copy.deepcopy(kwargs["data"])
+            self.layout = copy.deepcopy(kwargs["layout"])
+        self._init_style()
         return None
+
+    def _init_check(self, dim: int, is_standard: bool) -> None:
+        lower, upper = self._dimension_bounds
+        if not (lower <= dim <= upper):
+            if lower == upper:
+                message = f"exactly {lower}"
+            else:
+                message = f"between {lower} and {upper}."
+            raise ParameterError(
+                f"The number of columns to draw the plot must be {message}. Found {n}."
+            )
+        if self._only_standard and not (is_standard):
+            raise ParameterError(
+                f"When drawing {self._kind} {self._category}s, the parameter "
+                "'method' can not represent a customized aggregation."
+            )
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        """Must be overridden in child class"""
+        self.init_style = {}
+        return None
+
+    @staticmethod
+    def get_colors(
+        d: Optional[dict] = {}, idx: Optional[int] = None
+    ) -> Union[list, str]:
+        return get_colors(d=d, idx=idx)
+
+    def get_cmap(
+        self,
+        color: Union[None, str, list] = None,
+        reverse: bool = False,
+        idx: Optional[int] = None,
+    ) -> Union[
+        tuple[plt_colors.LinearSegmentedColormap, plt_colors.LinearSegmentedColormap],
+        plt_colors.LinearSegmentedColormap,
+    ]:
+        """
+        Returns the CMAP associated to the input color.
+        If  empty, VerticaPy uses  the colors stored as 
+        a global variable.
+        """
+        cmap_from_list = plt_colors.LinearSegmentedColormap.from_list
+        kwargs = {"N": 1000}
+        args = ["verticapy_cmap"]
+        if not (color):
+            args1 = args + [["#FFFFFF", self.get_colors(idx=0)]]
+            args2 = args + [[self.get_colors(idx=1), "#FFFFFF", self.get_colors(idx=0)]]
+            cm1 = cmap_from_list(*args1, **kwargs)
+            cm2 = cmap_from_list(*args2, **kwargs)
+            if idx == None:
+                return (cm1, cm2)
+            elif idx == 0:
+                return cm1
+            else:
+                return cm2
+        else:
+            if isinstance(color, list):
+                args += [color]
+            elif reverse:
+                args += [[color, "#FFFFFF"]]
+            else:
+                args += [["#FFFFFF", color]]
+            return cmap_from_list(*args, **kwargs)
 
     # Formatting Methods.
 
     @staticmethod
-    def _map_method(method: str, of: str) -> tuple[str, str, bool]:
+    def _map_method(method: str, of: str) -> tuple[str, str, Optional[Callable], bool]:
         is_standard = True
-        if method.lower() == "median":
+        fun_map = {
+            "avg": np.mean,
+            "min": min,
+            "max": max,
+            "sum": sum,
+        }
+        method = method.lower()
+        if method == "median":
             method = "50%"
-        elif method.lower() == "mean":
+        elif method == "mean":
             method = "avg"
         if (
-            method.lower() not in ["avg", "min", "max", "sum", "density", "count"]
+            method not in ["avg", "min", "max", "sum", "density", "count"]
             and "%" != method[-1]
         ) and of:
             raise ParameterError(
                 "Parameter 'of' must be empty when using customized aggregations."
             )
         if (
-            (method.lower() in ["avg", "min", "max", "sum"])
-            or (method.lower() and method[-1] == "%")
+            (method in ["avg", "min", "max", "sum"]) or (method and method[-1] == "%")
         ) and (of):
-            if method.lower() in ["avg", "min", "max", "sum"]:
+            if method in ["avg", "min", "max", "sum"]:
                 aggregate = f"{method.upper()}({quote_ident(of)})"
+                fun = fun_map[method]
             elif method and method[-1] == "%":
+                q = float(method[0:-1]) / 100
                 aggregate = f"""
                     APPROXIMATE_PERCENTILE({quote_ident(of)} 
                         USING PARAMETERS
-                        percentile = {float(method[0:-1]) / 100})"""
+                        percentile = {q})"""
+                fun = lambda x: np.quantile(x, q)
             else:
                 raise ValueError(
                     "The parameter 'method' must be in [avg|mean|min|max|sum|"
                     f"median|q%] or a customized aggregation. Found {method}."
                 )
-        elif method.lower() in ["density", "count"]:
+        elif method in ["density", "count"]:
             aggregate = "count(*)"
+            fun = sum
         elif isinstance(method, str):
             aggregate = method
+            fun = None
             is_standard = False
         else:
             raise ParameterError(
                 "The parameter 'method' must be in [avg|mean|min|max|sum|"
                 f"median|q%] or a customized aggregation. Found {method}."
             )
-        return method, aggregate, is_standard
+        return method, aggregate, fun, is_standard
 
     @staticmethod
     def _parse_datetime(D: list) -> list:
@@ -103,7 +202,7 @@ class PlottingBase:
         format if possible.
         """
         try:
-            return [parse(d) for d in D]
+            return np.array([parse(d) for d in D])
         except:
             return copy.deepcopy(D)
 
@@ -144,7 +243,7 @@ class PlottingBase:
 	    using the Matplotlib API.
 	    """
         other_columns = ""
-        method, aggregate, is_standard = self._map_method(method, of)
+        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         if not (is_standard):
             other_columns = ", " + ", ".join(
                 vdc._parent.get_columns(exclude_columns=[vdc._alias])
@@ -322,20 +421,131 @@ class PlottingBase:
         self.data = {
             "x": x,
             "y": y,
-            "labels": labels,
             "width": h,
             "adj_width": adj_width,
             "is_categorical": is_categorical,
         }
         self.layout = {
-            "x": vdc._alias,
+            "labels": labels,
+            "column": vdc._alias,
             "method": method,
+            "method_of": method + f"({of})" if of else method,
             "of": of,
             "of_cat": vdc._parent[of].category() if of else None,
-            "aggregate": aggregate,
+            "aggregate": clean_query(aggregate),
+            "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
         return None
+
+    def _compute_aggregate(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        method: str = "count",
+        of: Optional[str] = None,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
+        self._init_check(dim=len(columns), is_standard=is_standard)
+        if method == "density":
+            over = "/" + str(float(vdf.shape()[0]))
+        else:
+            over = ""
+        X = np.array(
+            _executeSQL(
+                query=f"""
+                SELECT
+                    /*+LABEL('plotting._compute_aggregate')*/
+                    {", ".join(columns)},
+                    {aggregate}{over}
+                FROM {vdf._genSQL()}
+                GROUP BY {", ".join(columns)}""",
+                title="Grouping all the elements for the Hexbin Plot",
+                method="fetchall",
+            )
+        )
+        self.data = {"X": X}
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+            "method": method,
+            "method_of": method + f"({of})" if of else method,
+            "of": of,
+            "of_cat": vdf[of].category() if of else None,
+            "aggregate": clean_query(aggregate),
+            "aggregate_fun": aggregate_fun,
+            "is_standard": is_standard,
+        }
+
+    def _compute_range(
+        self,
+        vdf: "vDataFrame",
+        order_by: str,
+        columns: SQLColumns,
+        q: tuple = (0.25, 0.75),
+        order_by_start: PythonScalar = None,
+        order_by_end: PythonScalar = None,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        columns, order_by = vdf._format_colnames(columns, order_by)
+        expr = []
+        for column in columns:
+            expr += [
+                f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[0]})",
+                f"APPROXIMATE_MEDIAN({column})",
+                f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[1]})",
+            ]
+        X = (
+            vdf.between(column=order_by, start=order_by_start, end=order_by_end)
+            .groupby(columns=[order_by], expr=expr,)
+            .sort(columns=[order_by])
+            .to_numpy()
+        )
+        self.data = {
+            "x": self._parse_datetime(X[:, 0]),
+            "Y": X[:, 1:].astype(float),
+        }
+        self.layout = {
+            "columns": columns,
+            "order_by": order_by,
+        }
+
+    def _filter_line(
+        self,
+        vdf: "vDataFrame",
+        order_by: str,
+        columns: SQLColumns,
+        order_by_start: PythonScalar = None,
+        order_by_end: PythonScalar = None,
+    ) -> None:
+        columns, order_by = vdf._format_colnames(columns, order_by)
+        matrix = (
+            vdf.between(
+                column=order_by, start=order_by_start, end=order_by_end, inplace=False
+            )[[order_by] + columns]
+            .sort(columns=[order_by])
+            .to_numpy()
+        )
+        if not (vdf[columns[-1]].isnum()):
+            self.data = {
+                "x": matrix[:, 0],
+                "Y": matrix[:, 1:-1].astype(float),
+                "z": matrix[:, -1],
+            }
+            has_category = True
+        else:
+            self.data = {
+                "x": matrix[:, 0],
+                "Y": matrix[:, 1:],
+            }
+            has_category = False
+        self.layout = {
+            "columns": columns,
+            "order_by": order_by,
+            "has_category": has_category,
+        }
 
     def _compute_pivot_table(
         self,
@@ -351,7 +561,8 @@ class PlottingBase:
         Draws a pivot table using the Matplotlib API.
         """
         other_columns = ""
-        method, aggregate, is_standard = self._map_method(method, of)
+        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
+        self._init_check(dim=len(columns), is_standard=is_standard)
         if not (is_standard):
             other_columns = ", " + ", ".join(vdf.get_columns(exclude_columns=columns))
         if isinstance(columns, str):
@@ -495,21 +706,23 @@ class PlottingBase:
                     pass
                 matrix_categories += [copy.deepcopy(L)]
             x_labels, y_labels = matrix_categories
-            matrix = np.array([[fill_none for item in y_labels] for item in x_labels])
+            X = np.array([[fill_none for item in y_labels] for item in x_labels])
             for item in query_result:
                 i = x_labels.index(str(item[0]))
                 j = y_labels.index(str(item[1]))
-                matrix[i][j] = item[2]
+                X[i][j] = item[2]
         self.data = {
-            "matrix": matrix,
-            "x_labels": x_labels,
-            "y_labels": y_labels,
+            "X": X,
         }
         self.layout = {
+            "x_labels": x_labels,
+            "y_labels": y_labels,
             "columns": copy.deepcopy(columns),
             "method": method,
+            "method_of": method + f"({of})" if of else method,
             "of": of,
             "of_cat": vdf[of].category() if of else None,
-            "aggregate": aggregate,
+            "aggregate": clean_query(aggregate),
+            "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }

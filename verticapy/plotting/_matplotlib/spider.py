@@ -21,7 +21,6 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import SQLColumns
 from verticapy.errors import ParameterError
 
@@ -32,6 +31,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class SpiderChart(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["chart"]:
         return "chart"
@@ -44,33 +46,41 @@ class SpiderChart(MatplotlibBase):
     def _compute_method(self) -> Literal["2D"]:
         return "2D"
 
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {"linewidth": 1, "linestyle": "solid"}
+        return None
+
+    # Draw.
+
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a spider plot using the Matplotlib API.
         """
-        m = self.data["matrix"].shape[0]
+        m = self.data["X"].shape[0]
         angles = [i / float(m) * 2 * math.pi for i in range(m)]
         angles += angles[:1]
         fig = plt.figure()
         if not (ax):
             ax = fig.add_subplot(111, polar=True)
         spider_vals = np.array([])
-        colors = get_colors()
-        for i, category in enumerate(self.data["y_labels"]):
-            if len(self.data["matrix"].shape) == 1:
-                values = np.concatenate((self.data["matrix"], self.data["matrix"][:1]))
+        colors = self.get_colors()
+        for i, category in enumerate(self.layout["y_labels"]):
+            if len(self.data["X"].shape) == 1:
+                values = np.concatenate((self.data["X"], self.data["X"][:1]))
             else:
                 values = np.concatenate(
-                    (self.data["matrix"][:, i], self.data["matrix"][:, i][:1])
+                    (self.data["X"][:, i], self.data["X"][:, i][:1])
                 )
             spider_vals = np.concatenate((spider_vals, values))
-            plt.xticks(angles[:-1], self.data["x_labels"], color="grey", size=8)
+            plt.xticks(angles[:-1], self.layout["x_labels"], color="grey", size=8)
             ax.set_rlabel_position(0)
-            params = {"linewidth": 1, "linestyle": "solid", "color": colors[i]}
-            params = self._update_dict(params, style_kwargs, i)
+            kwargs = {"color": colors[i], **self.init_style}
+            kwargs = self._update_dict(kwargs, style_kwargs, i)
             args = [angles, values]
-            ax.plot(*args, label=category, **params)
-            ax.fill(*args, alpha=0.1, color=params["color"])
+            ax.plot(*args, label=category, **kwargs)
+            ax.fill(*args, alpha=0.1, color=kwargs["color"])
         y_ticks = [
             min(spider_vals),
             (max(spider_vals) + min(spider_vals)) / 2,

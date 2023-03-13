@@ -24,7 +24,6 @@ import scipy.special as scipy_special
 
 from matplotlib.axes import Axes
 
-from verticapy._config.colors import get_cmap
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._gen import gen_name, gen_tmp_name
@@ -36,6 +35,7 @@ from verticapy.errors import EmptyParameter
 
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.plotting.base import PlottingBase
 import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 from verticapy.sql.drop import drop
@@ -483,7 +483,7 @@ class vDFCorr:
                     else None
                 )
                 if "cmap" not in style_kwargs:
-                    cm1, cm2 = get_cmap()
+                    cm1, cm2 = PlottingBase().get_cmap()
                     cmap = cm1 if (method == "cramer") else cm2
                     style_kwargs["cmap"] = cmap
                 vpy_matplotlib_plt.HeatMap().draw(
@@ -701,7 +701,7 @@ class vDFCorr:
                 else None
             )
             if "cmap" not in style_kwargs:
-                cm1, cm2 = get_cmap()
+                cm1, cm2 = PlottingBase().get_cmap()
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwargs["cmap"] = cmap
             vpy_matplotlib_plt.HeatMap().draw(

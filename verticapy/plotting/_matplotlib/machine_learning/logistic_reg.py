@@ -21,7 +21,6 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import ArrayLike, SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
@@ -57,14 +56,14 @@ class LogisticRegressionPlot(MatplotlibBase):
         param0 = {
             "marker": "o",
             "s": 50,
-            "color": get_colors()[0],
+            "color": self.get_colors(idx=0),
             "edgecolors": "black",
             "alpha": 0.8,
         }
         param1 = {
             "marker": "o",
             "s": 50,
-            "color": get_colors()[1],
+            "color": self.get_colors(idx=1),
             "edgecolors": "black",
         }
 

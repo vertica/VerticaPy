@@ -19,7 +19,6 @@ from typing import Literal, Optional
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import ArrayLike
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
@@ -53,7 +52,7 @@ class ACFPlot(MatplotlibBase):
         if "color" in style_kwargs:
             color = style_kwargs["color"]
         else:
-            color = get_colors()[0]
+            color = self.get_colors(idx=0)
         ax, fig = self._get_ax_fig(ax, size=(10, 3), set_axis_below=False, grid=False)
         if bar_type:
             ax.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)

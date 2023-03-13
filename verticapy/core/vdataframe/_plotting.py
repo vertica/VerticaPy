@@ -30,6 +30,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.plotting.base import PlottingBase
 from verticapy.plotting._highcharts.base import hchart_from_vdf
 import verticapy.plotting._matplotlib as vpy_matplotlib_plt
+import verticapy.plotting._plotly as vpy_plotly_plt
 
 
 class vDFPlot:
@@ -859,6 +860,7 @@ class vDFPlot:
             min     : Minimum of the vDataColumn 'of'.
             max     : Maximum of the vDataColumn 'of'.
             sum     : Sum of the vDataColumn 'of'.
+            q%      : q Quantile of the vDataColumn 'of (ex: 50% to get the median).
     of: str, optional
         The vDataColumn to use to compute the aggregation.
     bbox: list, optional
@@ -883,9 +885,9 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
-        return vpy_matplotlib_plt.HexbinMap().draw(
-            self, columns, method, of, bbox, img, ax=ax, **style_kwargs
-        )
+        return vpy_matplotlib_plt.HexbinMap(
+            vdf=self, columns=columns, method=method, of=of,
+        ).draw(bbox=bbox, img=img, ax=ax, **style_kwargs)
 
     @save_verticapy_logs
     def hist(
@@ -1205,11 +1207,73 @@ class vDFPlot:
         """
         if isinstance(columns, str):
             columns = [columns]
+        elif not (columns):
+            columns = self.numcol()
         columns, ts = self._format_colnames(columns, ts)
-        kind = "step" if step else "line"
-        return vpy_matplotlib_plt.MultiLinePlot().draw(
-            self, ts, columns, start_date, end_date, kind, ax=ax, **style_kwargs,
-        )
+        return vpy_matplotlib_plt.MultiLinePlot(
+            vdf=self,
+            order_by=ts,
+            columns=columns,
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(kind="step" if step else "line", ax=ax, **style_kwargs,)
+
+    @save_verticapy_logs
+    def range_plot(
+        self,
+        columns: SQLColumns,
+        ts: str,
+        q: Union[tuple, list] = (0.25, 0.75),
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
+        plot_median: bool = False,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ):
+        """
+    Draws the range plot of the input vDataColumns. The aggregations used are the median 
+    and two input quantiles.
+
+    Parameters
+    ----------
+    columns: SQLColumns
+        List of vDataColumns names.
+    ts: str
+        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
+        date like (date, datetime, timestamp...) or numerical.
+    q: tuple / list, optional
+        Tuple including the 2 quantiles used to draw the Plot.
+    start_date: str / PythonNumber / date, optional
+        Input Start Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is lesser than November 1993 the 3rd.
+    end_date: str / PythonNumber / date, optional
+        Input End Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is greater than November 1993 the 3rd.
+    plot_median: bool, optional
+        If set to True, the Median will be drawn.
+    ax: Axes, optional
+        The axes to plot on.
+    **style_kwargs
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Axes
+
+    See Also
+    --------
+    vDataFrame.plot : Draws the time series.
+        """
+        columns, ts = self._format_colnames(columns, ts)
+        return vpy_matplotlib_plt.RangeCurve(
+            vdf=self,
+            columns=columns,
+            order_by=ts,
+            q=q,
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(plot_median=plot_median, ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
     def scatter(
@@ -1231,7 +1295,7 @@ class vDFPlot:
 
     Parameters
     ----------
-    columns: str, list
+    columns: SQLColumns
         List of the vDataColumns names. 
     catcol: str, optional
         Categorical vDataColumn to use to label the data.
@@ -1385,18 +1449,20 @@ class vDFPlot:
         """
         if isinstance(columns, str):
             columns = [columns]
-        if fully:
-            kind = "area_percent"
-        else:
-            kind = "area_stacked"
+        elif not (columns):
+            columns = self.numcol()
         assert min(self.min(columns)["min"]) >= 0, ValueError(
             "Columns having negative values can not be "
             "processed by the 'stacked_area' method."
         )
         columns, ts = self._format_colnames(columns, ts)
-        return vpy_matplotlib_plt.MultiLinePlot().draw(
-            self, ts, columns, start_date, end_date, kind=kind, ax=ax, **style_kwargs,
-        )
+        return vpy_matplotlib_plt.MultiLinePlot(
+            vdf=self,
+            order_by=ts,
+            columns=columns,
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(kind="area_percent" if fully else "area_stacked", ax=ax, **style_kwargs,)
 
 
 class vDCPlot:
@@ -1747,10 +1813,10 @@ class vDCPlot:
             column = self._parent._format_colnames(column)
             columns += [column]
             if not ("cmap" in kwargs):
-                kwargs["cmap"] = get_cmap()[0]
+                kwargs["cmap"] = PlottingBase().get_cmap(idx=0)
         else:
             if not ("color" in kwargs):
-                kwargs["color"] = get_colors()[0]
+                kwargs["color"] = get_colors(idx=0)
         if not ("legend" in kwargs):
             kwargs["legend"] = True
         if not ("figsize" in kwargs):
@@ -1807,14 +1873,20 @@ class vDCPlot:
     vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
         of = self._parent._format_colnames(of)
-        return vpy_matplotlib_plt.BarChart(
+        if conf.get_option("plotting_lib") == "plotly":
+            vpy_plt = vpy_plotly_plt
+            kwargs = style_kwargs
+        else:
+            vpy_plt = vpy_matplotlib_plt
+            kwargs = {"ax": ax, **style_kwargs}
+        return vpy_plt.BarChart(
             vdc=self,
             method=method,
             of=of,
             max_cardinality=max_cardinality,
             nbins=nbins,
             h=h,
-        ).draw(ax=ax, **style_kwargs)
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def pie(
@@ -1926,17 +1998,21 @@ class vDCPlot:
     vDataFrame.plot : Draws the time series.
         """
         ts, by = self._parent._format_colnames(ts, by)
-        return vpy_matplotlib_plt.LinePlot().draw(
-            self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwargs,
-        )
+        return vpy_matplotlib_plt.LinePlot(
+            vdf=self._parent,
+            order_by=ts,
+            columns=[self._alias, by] if by else [self._alias],
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(area=area, step=step, ax=ax, **style_kwargs,)
 
     @save_verticapy_logs
     def range_plot(
         self,
         ts: str,
         q: Union[tuple, list] = (0.25, 0.75),
-        start_date: PythonScalar = "",
-        end_date: PythonScalar = "",
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
         plot_median: bool = False,
         ax: Optional[Axes] = None,
         **style_kwargs,
@@ -1974,9 +2050,15 @@ class vDCPlot:
     --------
     vDataFrame.plot : Draws the time series.
         """
-        ts = self._parent._format_colnames(ts)
-        return vpy_matplotlib_plt.RangeCurve().draw(
-            self, ts, q, start_date, end_date, plot_median, ax=ax, **style_kwargs,
+        return self._parent.range_plot(
+            columns=[self._alias],
+            ts=ts,
+            q=q,
+            start_date=start_date,
+            end_date=end_date,
+            plot_median=plot_median,
+            ax=ax,
+            **style_kwargs,
         )
 
     @save_verticapy_logs

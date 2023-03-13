@@ -19,8 +19,6 @@ from typing import Literal, Optional
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
-
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
@@ -46,7 +44,7 @@ class PCAPlot(MatplotlibBase):
         """
         Draws a PCA circle plot using the Matplotlib API.
         """
-        colors = get_colors()
+        colors = self.get_colors()
         if "color" in style_kwargs:
             colors[0] = style_kwargs["color"]
         circle1 = plt.Circle((0, 0), 1, edgecolor=colors[0], facecolor="none")
@@ -96,7 +94,7 @@ class PCAPlot(MatplotlibBase):
         """
         Draws a PCA Variance Plot using the Matplotlib API.
         """
-        colors = get_colors()
+        colors = self.get_colors()
         if "color" in style_kwargs:
             colors[0] = style_kwargs["color"]
         ax, fig = self._get_ax_fig(ax, size=(6, 6), set_axis_below=True, grid=True)

@@ -19,7 +19,6 @@ from typing import Literal, Optional
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
@@ -81,7 +80,7 @@ class RegressionTreePlot(MatplotlibBase):
         ax.step(x1, y1, color=color)
         param = {
             "marker": "o",
-            "color": get_colors()[0],
+            "color": self.get_colors(idx=0),
             "s": 50,
             "edgecolors": "black",
         }

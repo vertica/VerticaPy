@@ -18,6 +18,7 @@ import random, statistics, time
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
+import numpy as np
 
 from matplotlib.axes import Axes
 
@@ -471,9 +472,9 @@ def learning_curve(
         }
     )
     if method == "efficiency":
-        X = result["n"]
-        Y = [
-            [
+        x = np.array(result["n"])
+        Y = np.column_stack(
+            (
                 [
                     result[metric][i] - std_coeff * result[metric + "_std"][i]
                     for i in range(len(sizes))
@@ -483,8 +484,6 @@ def learning_curve(
                     result[metric][i] + std_coeff * result[metric + "_std"][i]
                     for i in range(len(sizes))
                 ],
-            ],
-            [
                 [
                     result[metric + "_train"][i]
                     - std_coeff * result[metric + "_train_std"][i]
@@ -496,18 +495,18 @@ def learning_curve(
                     + std_coeff * result[metric + "_train_std"][i]
                     for i in range(len(sizes))
                 ],
-            ],
-        ]
-        x_label = "n"
+            ),
+        )
+        order_by = "n"
         y_label = metric
-        labels = [
+        columns = [
             "test",
             "train",
         ]
     elif method == "performance":
-        X = result["time"]
-        Y = [
-            [
+        x = np.array(result["time"])
+        Y = np.column_stack(
+            (
                 [
                     result[metric][i] - std_coeff * result[metric + "_std"][i]
                     for i in range(len(sizes))
@@ -517,15 +516,15 @@ def learning_curve(
                     result[metric][i] + std_coeff * result[metric + "_std"][i]
                     for i in range(len(sizes))
                 ],
-            ],
-        ]
-        x_label = "time"
-        y_label = metric
-        labels = []
+            )
+        )
+        order_by = "time"
+        y_label = None
+        columns = [metric]
     else:
-        X = result["n"]
-        Y = [
-            [
+        x = np.array(result["n"])
+        Y = np.column_stack(
+            (
                 [
                     result["time"][i] - std_coeff * result["time_std"][i]
                     for i in range(len(sizes))
@@ -535,12 +534,14 @@ def learning_curve(
                     result["time"][i] + std_coeff * result["time_std"][i]
                     for i in range(len(sizes))
                 ],
-            ],
-        ]
-        x_label = "n"
-        y_label = "time"
-        labels = []
-    vpy_matplotlib_plt.RangeCurve().range_curve(
-        X, Y, x_label, y_label, ax, labels, **style_kwargs
+            )
+        )
+        order_by = "n"
+        y_label = None
+        columns = ["time"]
+    data = {"x": x, "Y": Y}
+    layout = {"columns": columns, "order_by": order_by}
+    vpy_matplotlib_plt.RangeCurve(data=data, layout=layout).draw(
+        ax=ax, y_label=y_label, **style_kwargs
     )
     return result

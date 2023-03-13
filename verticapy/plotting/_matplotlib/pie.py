@@ -21,7 +21,6 @@ import numpy as np
 
 from matplotlib.axes import Axes
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns
 
@@ -66,7 +65,7 @@ class PieChart(MatplotlibBase):
         """
         Draws a pie chart using the Matplotlib API.
         """
-        colors = get_colors()
+        colors = self.get_colors()
         n = len(self.data["y"])
         explode = [0 for i in range(n)]
         explode[max(zip(self.data["y"], range(n)))[1]] = 0.13
@@ -108,7 +107,7 @@ class PieChart(MatplotlibBase):
                 param["pctdistance"] = 0.8
             ax.pie(
                 self.data["y"],
-                labels=self.data["labels"],
+                labels=self.layout["labels"],
                 **self._update_dict(param, style_kwargs),
             )
             handles, labels = ax.get_legend_handles_labels()
@@ -116,7 +115,7 @@ class PieChart(MatplotlibBase):
             ax.legend(
                 handles,
                 labels,
-                title=self.layout["x"],
+                title=self.layout["column"],
                 loc="center left",
                 bbox_to_anchor=[1, 0.5],
             )
@@ -126,11 +125,11 @@ class PieChart(MatplotlibBase):
             try:
                 y, labels = zip(
                     *sorted(
-                        zip(self.data["y"], self.data["labels"]), key=lambda t: t[0]
+                        zip(self.data["y"], self.layout["labels"]), key=lambda t: t[0]
                     )
                 )
             except:
-                y, labels = self.data["y"], self.data["labels"]
+                y, labels = self.data["y"], self.layout["labels"]
             N = len(labels)
             width = 2 * np.pi / N
             rad = np.cumsum([width] * N)
@@ -149,7 +148,7 @@ class PieChart(MatplotlibBase):
             colors = self._update_dict(param, style_kwargs, -1)["color"]
             if isinstance(colors, str):
                 colors = [colors]
-            colors = colors + get_colors()
+            colors = colors + self.get_colors()
             style_kwargs["color"] = colors
             ax.bar(
                 rad, y, width=width, **self._update_dict(param, style_kwargs, -1),
@@ -175,7 +174,7 @@ class PieChart(MatplotlibBase):
                 labels,
                 bbox_to_anchor=[1.1, 0.5],
                 loc="center left",
-                title=self.layout["x"],
+                title=self.layout["column"],
                 labelspacing=1,
             )
             box = ax.get_position()
@@ -218,7 +217,7 @@ class NestedPieChart(MatplotlibBase):
         elif "color" in style_kwargs:
             colors, n = style_kwargs["color"], len(columns)
         else:
-            colors, n = get_colors(), len(columns)
+            colors, n = self.get_colors(), len(columns)
         m, k = len(colors), 0
         if isinstance(h, (int, float, type(None))):
             h = (h,) * n

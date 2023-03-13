@@ -19,8 +19,6 @@ from typing import Literal, Optional
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
-
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
@@ -49,7 +47,7 @@ class StepwisePlot(MatplotlibBase):
         """
         Draws a stepwise plot using the Matplotlib API.
         """
-        colors = get_colors()
+        colors = self.get_colors()
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
         sign = "+" if direction == "forward" else "-"
         x_new, y_new, z_new = [], [], []

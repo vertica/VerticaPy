@@ -218,3 +218,6 @@ register_option(Option("random_state", None, "", optional_positive_int_validator
 register_option(Option("temp_schema", "public", "", str_validator))
 register_option(Option("time_on", False, "", bool_validator))
 register_option(Option("tqdm", True, "", bool_validator))
+register_option(
+    Option("plotting_lib", "matplotlib", "", in_validator(["matplotlib", "plotly"]))
+)

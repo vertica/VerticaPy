@@ -20,7 +20,6 @@ from typing import Literal, Optional, TYPE_CHECKING
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import SQLColumns
 
 if TYPE_CHECKING:
@@ -30,6 +29,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class Histogram(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["chart"]:
         return "chart"
@@ -37,6 +39,8 @@ class Histogram(MatplotlibBase):
     @property
     def _kind(self) -> Literal["hist"]:
         return "hist"
+
+    # Draw.
 
     def draw(
         self,
@@ -53,7 +57,7 @@ class Histogram(MatplotlibBase):
         """
         if isinstance(columns, str):
             columns = [columns]
-        colors = get_colors()
+        colors = self.get_colors()
         if len(columns) > 5:
             raise ValueError(
                 "The number of column must be <= 5 to use 'multiple_hist' method"

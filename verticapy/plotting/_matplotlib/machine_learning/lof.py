@@ -19,7 +19,6 @@ from typing import Literal, Optional
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._sql._format import quote_ident
@@ -65,7 +64,7 @@ class LOFPlot(MatplotlibBase):
             else:
                 colors = style_kwargs["colors"]
             del style_kwargs["colors"]
-        colors += get_colors()
+        colors += self.get_colors()
         param = {
             "s": 50,
             "edgecolors": "black",

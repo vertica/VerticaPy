@@ -20,7 +20,6 @@ from typing import Literal, Optional, TYPE_CHECKING
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -65,7 +64,7 @@ class BoxPlot(MatplotlibBase):
             else:
                 colors = style_kwargs["colors"]
             del style_kwargs["colors"]
-        colors += get_colors()
+        colors += self.get_colors()
         # SINGLE BOXPLOT
         if by == "":
             ax, fig = self._get_ax_fig(ax, size=(6, 4), set_axis_below=False, grid="x")
@@ -305,7 +304,7 @@ class MultiBoxPlot(MatplotlibBase):
             else:
                 colors = style_kwargs["colors"]
             del style_kwargs["colors"]
-        colors += get_colors()
+        colors += self.get_colors()
         if not (columns):
             columns = vdf.numcol()
         for column in columns:

@@ -20,7 +20,6 @@ import scipy.spatial as scipy_st
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import ArrayLike, SQLColumns
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -72,7 +71,7 @@ class VoronoiPlot(MatplotlibBase):
             ax = plt
             ax.xlabel(columns[0])
             ax.ylabel(columns[1])
-        colors = get_colors()
+        colors = self.get_colors()
         for idx, region in enumerate(v.regions):
             if not -1 in region:
                 polygon = [v.vertices[i] for i in region]
