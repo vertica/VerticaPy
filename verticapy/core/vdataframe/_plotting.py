@@ -30,6 +30,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.plotting.base import PlottingBase
 from verticapy.plotting._highcharts.base import hchart_from_vdf
 import verticapy.plotting._matplotlib as vpy_matplotlib_plt
+import verticapy.plotting._plotly as vpy_plotly_plt
 
 
 class vDFPlot:
@@ -1872,14 +1873,20 @@ class vDCPlot:
     vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
         of = self._parent._format_colnames(of)
-        return vpy_matplotlib_plt.BarChart(
+        if conf.get_option("plotting_lib") == "plotly":
+            vpy_plt = vpy_plotly_plt
+            kwargs = style_kwargs
+        else:
+            vpy_plt = vpy_matplotlib_plt
+            kwargs = {"ax": ax, **style_kwargs}
+        return vpy_plt.BarChart(
             vdc=self,
             method=method,
             of=of,
             max_cardinality=max_cardinality,
             nbins=nbins,
             h=h,
-        ).draw(ax=ax, **style_kwargs)
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def pie(
