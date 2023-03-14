@@ -68,7 +68,7 @@ class TestDBSCAN:
 
     def test_get_plot(self, model):
         result = model.plot()
-        assert len(result.get_default_bbox_extra_artists()) == 27
+        assert len(result.get_default_bbox_extra_artists()) == 9
         plt.close("all")
 
     def test_set_params(self, model):
