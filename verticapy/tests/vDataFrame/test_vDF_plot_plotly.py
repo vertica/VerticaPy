@@ -99,6 +99,7 @@ class TestvDFPlotPlotly:
     def test_vDF_hist(self, titanic_vd,load_plotly):
         # for plotly
         ## 1D bar charts
+        load_plotly
         survived_values=titanic_vd.to_pandas()["survived"]
         test_fig=px.bar(
             x=[0,1], 
