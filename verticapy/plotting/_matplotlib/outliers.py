@@ -38,6 +38,10 @@ class OutliersPlot(ScatterPlot):
     def _kind(self) -> Literal["outliers"]:
         return "outliers"
 
+    @property
+    def _compute_method(self) -> Literal[None]:
+        return None
+
     def draw(
         self,
         vdf: "vDataFrame",

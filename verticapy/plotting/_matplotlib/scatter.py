@@ -16,9 +16,11 @@ permissions and limitations under the License.
 """
 import copy, warnings
 from typing import Literal, Optional, TYPE_CHECKING
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
@@ -101,6 +103,9 @@ class ScatterMatrix(MatplotlibBase):
 
 
 class ScatterPlot(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"
@@ -113,54 +118,32 @@ class ScatterPlot(MatplotlibBase):
     def _compute_method(self) -> Literal["sample"]:
         return "sample"
 
-    @property
-    def _markers(self):
-        return ["^", "o", "+", "*", "h", "x", "D", "1"]
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        """Must be overridden in child class"""
+        self.init_style = {
+            "s": 50,
+            "edgecolors": "black",
+            "marker": "o",
+        }
+        return None
+
+    # Draw.
 
     def draw(
         self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        catcol: str = "",
-        max_cardinality: int = 3,
-        cat_priority: list = [],
-        with_others: bool = True,
-        max_nb_points: int = 1000,
-        bbox: list = [],
-        img: str = "",
+        bbox: Optional[tuple] = None,
+        img: Optional[str] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> Axes:
         """
         Draws a scatter plot using the Matplotlib API.
         """
-        columns, catcol = vdf._format_colnames(
-            columns, catcol, expected_nb_of_cols=[2, 3]
-        )
-        if isinstance(columns, str):
-            columns = [columns]
-        n = len(columns)
-        for col in columns:
-            if not (vdf[col].isnum()):
-                raise TypeError(
-                    "The parameter 'columns' must only include numerical columns."
-                )
-        if n == 2 and (bbox) and len(bbox) != 4:
-            warning_message = (
-                "Parameter 'bbox' must be a list of 4 numerics containing"
-                " the 'xlim' and 'ylim'.\nIt was ignored."
-            )
-            warnings.warn(warning_message, Warning)
-            bbox = []
-        colors = self.get_colors()
-        markers = self._markers * 10
-        param = {
-            "s": 50,
-            "edgecolors": "black",
-            "marker": "o",
-        }
+        n, m = self.data["X"].shape
         if not (ax):
-            if n == 2:
+            if m == 2:
                 ax, fig = self._get_ax_fig(
                     ax, size=(8, 6), set_axis_below=True, grid=True
                 )
@@ -168,130 +151,58 @@ class ScatterPlot(MatplotlibBase):
                 if conf._get_import_success("jupyter"):
                     plt.figure(figsize=(8, 6))
                 ax = plt.axes(projection="3d")
-        all_scatter, others = [], []
-        if not (catcol):
-            TableSample = max_nb_points / vdf.shape()[0]
-            limit = max_nb_points
-        else:
-            TableSample = 10 if (vdf.shape()[0] > 10000) else 90
-            if cat_priority:
-                all_categories = copy.deepcopy(cat_priority)
-            else:
-                all_categories = vdf[catcol].topk(k=max_cardinality)["index"]
-            limit = int(max_nb_points / len(all_categories))
-            groupby_cardinality = vdf[catcol].nunique(True)
-        query = f"""
-            SELECT 
-                /*+LABEL('plotting._matplotlib.scatter')*/
-                {columns[0]},
-                {columns[1]}
-                {{}}
-            FROM {vdf._genSQL(True)}
-            WHERE {{}}
-                  {columns[0]} IS NOT NULL
-              AND {columns[1]} IS NOT NULL
-              {{}}
-              AND __verticapy_split__ < {TableSample} 
-            LIMIT {limit}"""
-        if n == 3:
-            condition = [f", {columns[2]}", f"{columns[2]} IS NOT NULL AND"]
-        else:
-            condition = ["", ""]
-
-        def draw_points(
-            idx: int = 0,
-            category: str = None,
-            w_others: bool = False,
-            param: dict = param,
-            condition: list = condition,
-            all_scatter: list = all_scatter,
-            others: list = others,
-            ax: Axes = ax,
-        ) -> None:
-            condition = copy.deepcopy(condition)
-            title = "Selecting random points to draw the scatter plot"
-            if not (catcol):
-                param["color"] = colors[0]
-                condition += [""]
-            elif w_others:
-                param["color"] = colors[idx + 1 % len(colors)]
-                condition += ["AND" + " AND ".join(others)]
-            else:
-                category_str = str(category).replace("'", "''")
-                param = {
-                    **param,
-                    "alpha": 0.8,
-                    "color": colors[idx % len(colors)],
-                }
-                if (max_cardinality < groupby_cardinality) or (
-                    len(cat_priority) < groupby_cardinality
-                ):
-                    others += [f"{catcol} != '{category_str}'"]
-                condition += [f"AND {catcol} = '{category_str}'"]
-                title = f" (category = '{category}')"
-            query_result = _executeSQL(
-                query=query.format(*condition), title=title, method="fetchall",
-            )
-            args = [
-                [float(d[0]) for d in query_result],
-                [float(d[1]) for d in query_result],
-            ]
-            if n == 3:
-                args += [[float(d[2]) for d in query_result]]
-            all_scatter += [
-                ax.scatter(*args, **self._update_dict(param, style_kwargs, idx),)
-            ]
-
-        if not (catcol):
-            draw_points()
-        else:
-            for idx, category in enumerate(all_categories):
-                draw_points(idx, category)
-            if with_others and idx + 1 < groupby_cardinality:
-                all_categories += ["others"]
-                draw_points(idx, w_others=True)
-            for idx, c in enumerate(all_categories):
-                if len(str(c)) > 20:
-                    all_categories[idx] = str(c)[0:20] + "..."
-        ax.set_xlabel(columns[0])
-        ax.set_ylabel(columns[1])
-        if n == 2:
-            if bbox:
-                ax.set_xlim(bbox[0], bbox[1])
-                ax.set_ylim(bbox[2], bbox[3])
-            if img:
-                im = plt.imread(img)
-                if not (bbox):
-                    aggr = vdf.agg(
-                        columns=[columns[0], columns[1]], func=["min", "max"]
+        args = [self.data["X"][:, i] for i in range(m)]
+        kwargs = self._update_dict(self.init_style, style_kwargs, 0)
+        if self.layout["has_size"]:
+            s_min, s_max = min(self.data["s"]), max(self.data["s"])
+            if s_max != s_min:
+                kwargs["s"] = 1000 * (self.data["s"] - s_min) / (s_max - s_min) + 1e-50
+        if self.layout["has_category"]:
+            uniques = self._format_string(np.unique(self.data["c"]), th=20)
+            colors = self.data["c"]
+            marker = style_kwargs["marker"] if "marker" in style_kwargs else "o"
+            legend = []
+            for i, c in enumerate(uniques):
+                color = self.get_colors(idx=i)
+                colors[colors == c] = color
+                legend += [
+                    Line2D(
+                        [0],
+                        [0],
+                        marker=marker,
+                        color="w",
+                        markerfacecolor=color,
+                        label=c,
+                        markersize=8,
                     )
-                    bbox = (
-                        aggr.values["min"][0],
-                        aggr.values["max"][0],
-                        aggr.values["min"][1],
-                        aggr.values["max"][1],
-                    )
-                    ax.set_xlim(bbox[0], bbox[1])
-                    ax.set_ylim(bbox[2], bbox[3])
-                ax.imshow(im, extent=bbox)
-            bbox_to_anchor = [1, 0.5]
-            scatterpoints = {"scatterpoints": 1}
-        elif n == 3:
-            ax.set_zlabel(columns[2])
+                ]
+            kwargs["color"] = colors
+        elif self.layout["has_cmap"]:
+            kwargs["color"] = self.data["c"]
+            if "cmap" not in kwargs:
+                kwargs["cmap"] = self.get_cmap(idx=0)
+        ax.scatter(*args, **kwargs)
+        ax.set_xlabel(self.layout["columns"][0])
+        bbox_to_anchor = [1, 0.5]
+        if m > 1:
+            ax.set_ylabel(self.layout["columns"][1])
+        if m > 2:
+            ax.set_zlabel(self.layout["columns"][2])
             ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             bbox_to_anchor = [1.1, 0.5]
-            scatterpoints = {}
-        if catcol:
+        if m == 2:
+            if bbox:
+                ax.set_xlim(bbox[0], bbox[1])
+                ax.set_ylim(bbox[2], bbox[3])
+            if img:
+                ax.imshow(im, extent=bbox)
+        if self.layout["has_category"]:
             ax.legend(
-                all_scatter,
-                all_categories,
-                title=catcol,
+                handles=legend,
                 loc="center left",
+                title=self.layout["c"],
                 bbox_to_anchor=bbox_to_anchor,
-                **scatterpoints,
             )
-            box = ax.get_position()
-            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         return ax

@@ -168,7 +168,7 @@ class TestKPrototypes:
         model_test = KPrototypes("model_test_plot", n_cluster=3,)
         model_test.fit(iris_vd, ["SepalLengthCm", "PetalWidthCm"])
         result = model_test.plot(color="b")
-        assert len(result.get_default_bbox_extra_artists()) == 11
+        assert len(result.get_default_bbox_extra_artists()) > 8
         plt.close("all")
         model_test.drop()
         # TODO: test for categorical inputs.

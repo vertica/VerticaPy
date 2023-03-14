@@ -63,8 +63,10 @@ class PlottingBase:
                 "1D": self._compute_plot_params,
                 "2D": self._compute_pivot_table,
                 "aggregate": self._compute_aggregate,
+                "describe": self._compute_statistics,
                 "range": self._compute_range,
                 "line": self._filter_line,
+                "sample": self._sample,
             }
             if self._compute_method in functions:
                 functions[self._compute_method](*args, **kwargs)
@@ -512,6 +514,68 @@ class PlottingBase:
             "order_by": order_by,
         }
 
+    def _compute_statistics(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        by: Optional[str] = None,
+        q: tuple = (0.25, 0.75),
+        h: PythonNumber = 0.0,
+        max_cardinality: int = 8,
+        cat_priority: Union[PythonScalar, list] = [],
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        columns = vdf._format_colnames(columns)
+        if len(columns) == 1 and (by):
+            expr = [
+                f"MIN({columns[0]})",
+                f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[0]})",
+                f"APPROXIMATE_MEDIAN({columns[0]})",
+                f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[1]})",
+                f"MAX({columns[0]})",
+            ]
+            if vdf[by].isnum():
+                _by = vdf[by].discretize(h=h, return_enum_trans=True)
+                is_num_transf = True
+            else:
+                _by = vdf[by].discretize(
+                    k=max_cardinality, method="topk", return_enum_trans=True
+                )
+                is_num_transf = False
+            _by = _by[0].replace("{}", by) + f" AS {by}"
+            vdf_tmp = vdf.copy()
+            if cat_priority:
+                vdf_tmp = vdf_tmp[by].isin(cat_priority)
+            vdf_tmp = vdf_tmp[[_by] + columns]
+            X = vdf_tmp.groupby(columns=[by], expr=expr,).sort(columns=[by]).to_numpy()
+            if is_num_transf:
+                X_num = np.array(
+                    [
+                        float(x[1:].split(";")[0]) if isinstance(x, str) else x
+                        for x in X[:, 0]
+                    ]
+                ).astype(float)
+                X = X[X_num.argsort()]
+            self.layout = {
+                "x_label": by,
+                "y_label": columns[0],
+                "labels": X[:, 0],
+                "has_category": True,
+            }
+            X = X[:, 1:].astype(float)
+        else:
+            self.layout = {
+                "labels": copy.deepcopy(columns),
+                "has_category": False,
+            }
+            X = vdf.quantile(
+                q=[0.0, q[0], 0.5, q[1], 1.0], columns=columns, approx=True
+            ).to_numpy()
+        self.data = {
+            "X": np.transpose(X),
+        }
+
     def _filter_line(
         self,
         vdf: "vDataFrame",
@@ -521,7 +585,7 @@ class PlottingBase:
         order_by_end: PythonScalar = None,
     ) -> None:
         columns, order_by = vdf._format_colnames(columns, order_by)
-        matrix = (
+        X = (
             vdf.between(
                 column=order_by, start=order_by_start, end=order_by_end, inplace=False
             )[[order_by] + columns]
@@ -530,15 +594,15 @@ class PlottingBase:
         )
         if not (vdf[columns[-1]].isnum()):
             self.data = {
-                "x": matrix[:, 0],
-                "Y": matrix[:, 1:-1].astype(float),
-                "z": matrix[:, -1],
+                "x": X[:, 0],
+                "Y": X[:, 1:-1].astype(float),
+                "z": X[:, -1],
             }
             has_category = True
         else:
             self.data = {
-                "x": matrix[:, 0],
-                "Y": matrix[:, 1:],
+                "x": X[:, 0],
+                "Y": X[:, 1:],
             }
             has_category = False
         self.layout = {
@@ -726,3 +790,64 @@ class PlottingBase:
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+
+    def _sample(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        size_bubble_col: Optional[str] = None,
+        catcol: Optional[str] = None,
+        cmap_col: Optional[str] = None,
+        max_nb_points: int = 20000,
+        h: PythonNumber = 0.0,
+        max_cardinality: int = 8,
+        cat_priority: Union[PythonScalar, list] = [],
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        columns = vdf._format_colnames(columns, expected_nb_of_cols=[2, 3])
+        cols_to_select = copy.deepcopy(columns)
+        vdf_tmp = vdf.copy()
+        has_category, has_cmap, has_size = False, False, False
+        if size_bubble_col != None:
+            cols_to_select += [vdf._format_colnames(size_bubble_col)]
+            has_size = True
+        if catcol != None:
+            has_category = True
+            catcol = vdf._format_colnames(catcol)
+            if vdf[catcol].isnum():
+                cols_to_select += [
+                    vdf[catcol]
+                    .discretize(h=h, return_enum_trans=True)[0]
+                    .replace("{}", catcol)
+                    + f" AS {catcol}"
+                ]
+            else:
+                cols_to_select += [
+                    vdf[catcol]
+                    .discretize(
+                        k=max_cardinality, method="topk", return_enum_trans=True
+                    )[0]
+                    .replace("{}", catcol)
+                    + f" AS {catcol}"
+                ]
+            if cat_priority:
+                vdf_tmp = vdf_tmp[catcol].isin(cat_priority)
+        elif cmap_col != None:
+            cols_to_select += [vdf._format_colnames(cmap)]
+            has_cmap = True
+        X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
+        n = len(columns)
+        self.data = {"X": X[:, :n].astype(float), "s": None, "c": None}
+        self.layout = {
+            "columns": columns,
+            "size": size_bubble_col,
+            "c": catcol if (catcol != None) else cmap_col,
+            "has_category": has_category,
+            "has_cmap": has_cmap,
+            "has_size": has_size,
+        }
+        if size_bubble_col != None:
+            self.data["s"] = X[:, n].astype(float)
+        if (catcol != None) or (cmap_col != None):
+            self.data["c"] = X[:, -1]

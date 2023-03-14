@@ -22,7 +22,13 @@ from matplotlib.axes import Axes
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLExpression
+from verticapy._typing import (
+    ArrayLike,
+    PythonNumber,
+    PythonScalar,
+    SQLColumns,
+    SQLExpression,
+)
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -500,7 +506,11 @@ class vDFPlot:
 
     @save_verticapy_logs
     def boxplot(
-        self, columns: SQLColumns = [], ax: Optional[Axes] = None, **style_kwargs
+        self,
+        columns: SQLColumns = [],
+        q: tuple = (0.25, 0.75),
+        ax: Optional[Axes] = None,
+        **style_kwargs,
     ):
         """
     Draws the Box Plot of the input vDataColumns. 
@@ -510,6 +520,8 @@ class vDFPlot:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will 
         be used.
+    q: tuple, optional
+        Tuple including the 2 quantiles used to draw the BoxPlot.
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
@@ -534,74 +546,13 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns) if (columns) else self.numcol()
-        return vpy_matplotlib_plt.MultiBoxPlot().draw(
-            self, columns, ax=ax, **style_kwargs
-        )
-
-    @save_verticapy_logs
-    def bubble(
-        self,
-        columns: SQLColumns,
-        size_bubble_col: str = "",
-        catcol: str = "",
-        cmap_col: str = "",
-        max_nb_points: int = 20000,
-        bbox: list = [],
-        img: str = "",
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Draws the bubble plot of the input vDataColumns.
-
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns names. The list must have two elements.
-    size_bubble_col: str
-        Numerical vDataColumn to use to represent the Bubble size.
-    catcol: str, optional
-        Categorical column used as color.
-    cmap_col: str, optional
-        Numerical column used with a color map as color.
-    max_nb_points: int, optional
-        Maximum number of points to display.
-    bbox: list, optional
-        List of 4 elements to delimit the boundaries of the final Plot. 
-        It must be similar the following list: [xmin, xmax, ymin, ymax]
-    img: str, optional
-        Path to the image to display as background.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    ax
-       Axes
-
-    See Also
-    --------
-    vDataFrame.scatter : Draws the scatter plot of the input vDataColumns.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        columns, catcol, size_bubble_col, cmap_col = self._format_colnames(
-            columns, catcol, size_bubble_col, cmap_col, expected_nb_of_cols=2
-        )
-        return vpy_matplotlib_plt.BubblePlot().draw(
-            self,
-            columns + [size_bubble_col] if size_bubble_col else columns,
-            catcol,
-            cmap_col,
-            max_nb_points,
-            bbox,
-            img,
-            ax=ax,
-            **style_kwargs,
-        )
+        if columns:
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
+            )
+            return vpy_plt.BoxPlot(vdf=self, columns=columns, q=q,).draw(**kwargs)
+        else:
+            raise MissingColumn("No numerical columns found to draw the BoxPlot")
 
     @save_verticapy_logs
     def contour(
@@ -1316,7 +1267,7 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         ts: str,
-        q: Union[tuple, list] = (0.25, 0.75),
+        q: tuple = (0.25, 0.75),
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
         plot_median: bool = False,
@@ -1334,7 +1285,7 @@ class vDFPlot:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    q: tuple / list, optional
+    q: tuple, optional
         Tuple including the 2 quantiles used to draw the Plot.
     start_date: str / PythonNumber / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
@@ -1377,14 +1328,15 @@ class vDFPlot:
     def scatter(
         self,
         columns: SQLColumns,
-        catcol: str = "",
+        catcol: Optional[str] = None,
+        cmap_col: Optional[str] = None,
+        size_bubble_col: Optional[str] = None,
         max_cardinality: int = 6,
-        cat_priority: list = [],
-        with_others: bool = True,
+        cat_priority: Union[None, PythonScalar, ArrayLike] = None,
         max_nb_points: int = 20000,
         dimensions: tuple = None,
-        bbox: list = [],
-        img: str = "",
+        bbox: Optional[tuple] = None,
+        img: Optional[str] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -1397,17 +1349,17 @@ class vDFPlot:
         List of the vDataColumns names. 
     catcol: str, optional
         Categorical vDataColumn to use to label the data.
+    cmap_col: str, optional
+        Numerical column used with a color map as color.
+    size_bubble_col: str
+        Numerical vDataColumn to use to represent the Bubble size.
     max_cardinality: int, optional
         Maximum number of distinct elements for 'catcol' to be used as 
         categorical. The less frequent elements will be gathered together to 
         create a new category: 'Others'.
-    cat_priority: list, optional
-        List of the different categories to consider when labeling the data using
+    cat_priority: PythonScalar / ArrayLike, optional
+        ArrayLike of the different categories to consider when labeling the data using
         the vDataColumn 'catcol'. The other categories will be filtered.
-    with_others: bool, optional
-        If set to false and the cardinality of the vDataColumn 'catcol' is too big then
-        the less frequent element will not be merged to another category and they 
-        will not be drawn.
     max_nb_points: int, optional
         Maximum number of points to display.
     dimensions: tuple, optional
@@ -1415,7 +1367,7 @@ class vDFPlot:
         If empty and the number of input columns is greater than 3, the
         first and second PCA will be drawn.
     bbox: list, optional
-        List of 4 elements to delimit the boundaries of the final Plot. 
+        Tuple of 4 elements to delimit the boundaries of the final Plot. 
         It must be similar the following list: [xmin, xmax, ymin, ymax]
     img: str, optional
         Path to the image to display as background.
@@ -1437,6 +1389,14 @@ class vDFPlot:
         """
         from verticapy.machine_learning.vertica.decomposition import PCA
 
+        if img and not (bbox) and len(columns) == 2:
+            aggr = self.agg(columns=columns, func=["min", "max"])
+            bbox = (
+                aggr.values["min"][0],
+                aggr.values["max"][0],
+                aggr.values["min"][1],
+                aggr.values["max"][1],
+            )
         if len(columns) > 3 and dimensions == None:
             dimensions = (1, 2)
         if isinstance(dimensions, Iterable):
@@ -1450,34 +1410,42 @@ class vDFPlot:
                 ax = model.transform(self).scatter(
                     columns=["col1", "col2"],
                     catcol=catcol,
-                    max_cardinality=100,
+                    cmap_col=cmap_col,
+                    size_bubble_col=size_bubble_col,
+                    max_cardinality=max_cardinality,
+                    cat_priority=cat_priority,
                     max_nb_points=max_nb_points,
+                    bbox=bbox,
+                    img=img,
                     ax=ax,
                     **style_kwargs,
                 )
-                explained_variance = model.explained_variance_["explained_variance"]
                 for idx, fun in enumerate([ax.set_xlabel, ax.set_ylabel]):
-                    if not (explained_variance[dimensions[idx] - 1]):
+                    if not (model.explained_variance_[dimensions[idx] - 1]):
                         dimension2 = ""
                     else:
-                        x2 = round(explained_variance[dimensions[idx] - 1] * 100, 1)
+                        x2 = round(
+                            model.explained_variance_[dimensions[idx] - 1] * 100, 1
+                        )
                         dimension2 = f"({x2}%)"
                     fun(f"Dim{dimensions[idx]} {dimension2}")
             finally:
                 model.drop()
             return ax
-        args = [
-            self,
-            columns,
-            catcol,
-            max_cardinality,
-            cat_priority,
-            with_others,
-            max_nb_points,
-            bbox,
-            img,
-        ]
-        return vpy_matplotlib_plt.ScatterPlot().draw(*args, ax=ax, **style_kwargs,)
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax, "bbox": bbox, "img": img,},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.ScatterPlot(
+            vdf=self,
+            columns=columns,
+            catcol=catcol,
+            cmap_col=cmap_col,
+            size_bubble_col=size_bubble_col,
+            max_cardinality=max_cardinality,
+            cat_priority=cat_priority,
+            max_nb_points=max_nb_points,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def scatter_matrix(self, columns: SQLColumns = [], **style_kwargs):
@@ -1845,10 +1813,11 @@ class vDCPlot:
     @save_verticapy_logs
     def boxplot(
         self,
-        by: str = "",
+        by: Optional[str] = None,
+        q: tuple = (0.25, 0.75),
         h: PythonNumber = 0,
         max_cardinality: int = 8,
-        cat_priority: Union[str, int, datetime.datetime, datetime.date, list] = [],
+        cat_priority: Union[None, PythonScalar, ArrayLike] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -1859,15 +1828,17 @@ class vDCPlot:
     ----------
     by: str, optional
         vDataColumn to use to partition the data.
+    q: tuple, optional
+        Tuple including the 2 quantiles used to draw the BoxPlot.
     h: PythonNumber, optional
-        Interval width if the vDataColumn is numerical or of type date like. Optimized 
+        Interval width if the 'by' vDataColumn is numerical or of type date like. Optimized 
         h will be computed if the parameter is empty or invalid.
     max_cardinality: int, optional
         Maximum number of vDataColumn distinct elements to be used as categorical. 
         The less frequent elements will be gathered together to create a new 
         category : 'Others'.
-    cat_priority: str / int / date / list, optional
-        List of the different categories to consider when drawing the box plot.
+    cat_priority: PythonScalar / ArrayLike, optional
+        ArrayLike of the different categories to consider when drawing the box plot.
         The other categories will be filtered.
     ax: Axes, optional
         [Only for MATPLOTLIB]
@@ -1887,9 +1858,18 @@ class vDCPlot:
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
             cat_priority = [cat_priority]
         by = self._parent._format_colnames(by)
-        return vpy_matplotlib_plt.BoxPlot().draw(
-            self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwargs
+        vpy_plt, kwargs = self._parent._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
         )
+        return vpy_plt.BoxPlot(
+            vdf=self._parent,
+            columns=[self._alias],
+            by=by,
+            q=q,
+            h=h,
+            max_cardinality=max_cardinality,
+            cat_priority=cat_priority,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def density(
@@ -2179,7 +2159,7 @@ class vDCPlot:
     def range_plot(
         self,
         ts: str,
-        q: Union[tuple, list] = (0.25, 0.75),
+        q: tuple = (0.25, 0.75),
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
         plot_median: bool = False,
@@ -2195,7 +2175,7 @@ class vDCPlot:
     ts: str
         TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    q: tuple / list, optional
+    q: tuple, optional
         Tuple including the 2 quantiles used to draw the Plot.
     start_date: str / PythonNumber / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 

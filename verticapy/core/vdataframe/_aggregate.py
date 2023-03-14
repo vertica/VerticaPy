@@ -19,7 +19,7 @@ from typing import Literal, Union
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, SQLColumns, SQLExpression
+from verticapy._typing import ArrayLike, PythonNumber, SQLColumns, SQLExpression
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -1609,17 +1609,17 @@ class vDFAgg:
     @save_verticapy_logs
     def quantile(
         self,
-        q: Union[PythonNumber, list],
+        q: Union[PythonNumber, ArrayLike],
         columns: SQLColumns = [],
         approx: bool = True,
         **agg_kwargs,
     ):
         """
-    Aggregates the vDataFrame using a list of 'quantiles'.
+    Aggregates the vDataFrame using an ArrayLike of 'quantiles'.
 
     Parameters
     ----------
-    q: PythonNumber / list
+    q: PythonNumber / ArrayLike
         List of the different quantiles. They must be numbers between 0 and 1.
         For example [0.25, 0.75] will return Q1 and Q3.
     columns: SQLColumns, optional

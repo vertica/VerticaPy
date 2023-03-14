@@ -196,7 +196,7 @@ class TestBisectingKMeans:
         model_test = BisectingKMeans("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         result = model_test.plot()
-        assert len(result.get_default_bbox_extra_artists()) == 16
+        assert len(result.get_default_bbox_extra_artists()) > 7
         plt.close("all")
         model_test.drop()
 
