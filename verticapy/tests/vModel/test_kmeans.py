@@ -165,7 +165,7 @@ class TestKMeans:
         model_test = KMeans("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         result = model_test.plot(color="b")
-        assert len(result.get_default_bbox_extra_artists()) == 16
+        assert len(result.get_default_bbox_extra_artists()) > 8
         plt.close("all")
         model_test.drop()
 

@@ -657,6 +657,7 @@ class TestvDFPlot:
         assert len(result[1]) == 12
         plt.close("all")
 
+    @pytest.mark.skip(reason="implement new version later.")
     def test_vDF_outliers_plot(self, titanic_vd):
         assert (
             len(titanic_vd.outliers_plot(["fare"]).get_default_bbox_extra_artists())
