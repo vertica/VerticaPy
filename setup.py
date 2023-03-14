@@ -44,6 +44,7 @@ setuptools.setup(
         "scipy>=1.0.0",
         "tqdm>=4.0.0",
         "vertica-python>=1.2.0",
+        "plotly>=5.10.0",
     ],
     extras_require={
         "all": [
