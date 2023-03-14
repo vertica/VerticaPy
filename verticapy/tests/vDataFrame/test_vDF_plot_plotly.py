@@ -89,13 +89,16 @@ def gapminder_vd():
     yield gapminder
     drop(name="public.gapminder")
 
+@pytest.fixture(scope="module")
+def load_plotly():
+    conf.set_option("plotting_lib","plotly")
+    yield
+    conf.set_option("plotting_lib","matplotlib")
 
 class TestvDFPlotPlotly:
-    conf.set_option("plotting_lib","plotly")
-    def test_vDF_hist(self, titanic_vd):
+    def test_vDF_hist(self, titanic_vd,load_plotly):
         # for plotly
         ## 1D bar charts
-
         survived_values=titanic_vd.to_pandas()["survived"]
         test_fig=px.bar(
             x=[0,1], 
