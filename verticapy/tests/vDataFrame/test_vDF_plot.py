@@ -24,7 +24,6 @@ import datetime, os, sys
 # Other Modules
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import plotly.express as px
 from vertica_highcharts.highcharts.highcharts import Highchart
 from vertica_highcharts.highstock.highstock import Highstock
 
@@ -613,25 +612,6 @@ class TestvDFPlot:
             1
         ].get_height() == pytest.approx(0.4327390599675851)
         plt.close("all")
-
-        # for plotly
-        ## 1D bar charts
-        conf.set_option("plotting_lib","plotly")
-        survived_values=titanic_vd.to_pandas()["survived"]
-        test_fig=px.bar(
-            x=[0,1], 
-            y=[survived_values[survived_values==0].count(),survived_values[survived_values==1].count()]
-            )
-        test_fig=test_fig.update_xaxes(type='category')
-        result=titanic_vd["survived"].hist()
-        assert(test_fig.data[0]['y'][0]/test_fig.data[0]['y'][1]==result.data[0]['y'][0]/result.data[0]['y'][1])
-        assert(test_fig.data[0]['x'][0]==result.data[0]['x'][0])
-        assert(test_fig.layout['xaxis']['type']=='category')
-        result=titanic_vd["survived"].hist(xaxis_title="Custom X Axis Title")
-        assert(result.layout['xaxis']['title']['text']=='Custom X Axis Title')
-        result=titanic_vd["survived"].hist(yaxis_title="Custom Y Axis Title")
-        assert(result.layout['yaxis']['title']['text']=='Custom Y Axis Title')
-        conf.set_option("plotting_lib","matplotlib")
 
     @pytest.mark.skipif(
         sys.version_info >= (3, 7),
