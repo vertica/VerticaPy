@@ -781,6 +781,8 @@ class PlottingBase:
         self.layout = {
             "x_labels": x_labels,
             "y_labels": y_labels,
+            "vmax": None,
+            "vmin": None,
             "columns": copy.deepcopy(columns),
             "method": method,
             "method_of": method + f"({of})" if of else method,

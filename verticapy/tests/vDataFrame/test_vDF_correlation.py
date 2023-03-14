@@ -84,7 +84,7 @@ class TestvDFCorrelation:
             p=12,
             unit="month",
             method="pearson",
-            round_nb=3,
+            mround=3,
             acf_type="heatmap",
         )
         plt.close("all")

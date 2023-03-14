@@ -946,7 +946,7 @@ class vDFPlot:
             },
             style_kwargs=style_kwargs,
         )
-        return vpy_matplotlib_plt.PivotTable(
+        return vpy_plt.HeatMap(
             vdf=self,
             columns=columns,
             method=method,
@@ -1187,10 +1187,10 @@ class vDFPlot:
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax, "show": show, "with_numbers": with_numbers},
+            matplotlib_kwargs={"ax": ax, "with_numbers": with_numbers},
             style_kwargs=style_kwargs,
         )
-        return vpy_plt.PivotTable(
+        plt_obj = vpy_plt.HeatMap(
             vdf=self,
             columns=columns,
             method=method,
@@ -1198,7 +1198,18 @@ class vDFPlot:
             h=h,
             max_cardinality=max_cardinality,
             fill_none=fill_none,
-        ).draw(**kwargs)
+        )
+        if show:
+            return plt_obj.draw(**kwargs)
+        values = {"index": plt_obj.layout["x_labels"]}
+        if len(plt_obj.data["X"].shape) == 1:
+            values[plt_obj.layout["aggregate"]] = list(plt_obj.data["X"])
+        else:
+            for idx in range(plt_obj.data["X"].shape[1]):
+                values[plt_obj.layout["y_labels"][idx]] = list(
+                    plt_obj.data["X"][:, idx]
+                )
+        return TableSample(values=values)
 
     @save_verticapy_logs
     def plot(

@@ -46,7 +46,7 @@ class vDFCorr:
         self,
         method: str = "pearson",
         columns: SQLColumns = [],
-        round_nb: int = 3,
+        mround: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
@@ -486,16 +486,18 @@ class vDFCorr:
                     cm1, cm2 = PlottingBase().get_cmap()
                     cmap = cm1 if (method == "cramer") else cm2
                     style_kwargs["cmap"] = cmap
-                vpy_matplotlib_plt.HeatMap().draw(
-                    matrix,
-                    columns,
-                    columns,
-                    vmax=vmax,
-                    vmin=vmin,
-                    mround=round_nb,
-                    ax=ax,
-                    **style_kwargs,
+                vpy_plt, kwargs = self._get_plotting_lib(
+                    matplotlib_kwargs={"ax": ax, "mround": mround,},
+                    style_kwargs=style_kwargs,
                 )
+                data = {"X": matrix}
+                layout = {
+                    "x_labels": columns,
+                    "y_labels": columns,
+                    "vmax": vmax,
+                    "vmin": vmin,
+                }
+                return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
             values = {"index": columns}
             for idx in range(len(matrix)):
                 values[columns[idx]] = list(matrix[:, idx])
@@ -518,11 +520,7 @@ class vDFCorr:
                     "No numerical column found in the vDataFrame."
                 )
             return self._aggregate_matrix(
-                method=method,
-                columns=cols,
-                round_nb=round_nb,
-                show=show,
-                **style_kwargs,
+                method=method, columns=cols, mround=mround, show=show, **style_kwargs,
             )
 
     def _aggregate_vector(
@@ -530,7 +528,7 @@ class vDFCorr:
         focus: str,
         method: str = "pearson",
         columns: SQLColumns = [],
-        round_nb: int = 3,
+        mround: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
@@ -704,16 +702,13 @@ class vDFCorr:
                 cm1, cm2 = PlottingBase().get_cmap()
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwargs["cmap"] = cmap
-            vpy_matplotlib_plt.HeatMap().draw(
-                matrix,
-                [focus],
-                cols,
-                vmax=vmax,
-                vmin=vmin,
-                mround=round_nb,
-                ax=ax,
-                **style_kwargs,
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax, "mround": mround,},
+                style_kwargs=style_kwargs,
             )
+            data = {"X": matrix}
+            layout = {"x_labels": [focus], "y_labels": cols, "vmax": vmax, "vmin": vmin}
+            return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
         for idx, column in enumerate(cols):
             self._update_catalog(
                 values={focus: matrix[0][idx]}, matrix=method, column=column
@@ -732,7 +727,7 @@ class vDFCorr:
         method: Literal[
             "pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"
         ] = "pearson",
-        round_nb: int = 3,
+        mround: int = 3,
         focus: str = "",
         show: bool = True,
         ax: Optional[Axes] = None,
@@ -760,7 +755,7 @@ class vDFCorr:
                                          vDataFrame.
             cramer    : Cramer's V (correlation between categories).
             biserial  : Biserial Point (correlation between binaries and a numericals).
-    round_nb: int, optional
+    mround: int, optional
         Rounds the coefficient using the input number of digits. It is only used to
         display the correlation matrix.
     focus: str, optional
@@ -795,7 +790,7 @@ class vDFCorr:
         kwargs = {
             "method": method,
             "columns": columns,
-            "round_nb": round_nb,
+            "mround": mround,
             "show": show,
             "ax": ax,
             **style_kwargs,
@@ -1079,7 +1074,7 @@ class vDFCorr:
         acf_type: Literal["line", "heatmap", "bar"] = "bar",
         confidence: bool = True,
         alpha: float = 0.95,
-        round_nb: int = 3,
+        mround: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
@@ -1129,7 +1124,7 @@ class vDFCorr:
     alpha: float, optional
         Significance Level. Probability to accept H0. Only used to compute the confidence
         band width.
-    round_nb: int, optional
+    mround: int, optional
         Round the coefficient using the input number of digits. It is used only
         to display the ACF Matrix (acf_type must be set to 'heatmap').
     show: bool, optional
@@ -1179,7 +1174,7 @@ class vDFCorr:
             return self._new_vdataframe(query).corr(
                 [],
                 method=method,
-                round_nb=round_nb,
+                mround=mround,
                 focus=column,
                 show=show,
                 **style_kwargs,
@@ -1211,7 +1206,7 @@ class vDFCorr:
             if acf_band:
                 result.values["confidence"] = acf_band
             if show:
-                vpy_matplotlib_plt.ACFPlot().draw(
+                return vpy_matplotlib_plt.ACFPlot().draw(
                     result.values["index"],
                     result.values["value"],
                     confidence=acf_band,
@@ -1368,7 +1363,7 @@ class vDFCorr:
             if pacf_band:
                 result.values["confidence"] = pacf_band
             if show:
-                vpy_matplotlib_plt.ACFPlot().draw(
+                return vpy_matplotlib_plt.ACFPlot().draw(
                     result.values["index"],
                     result.values["value"],
                     confidence=pacf_band,
@@ -1533,9 +1528,12 @@ class vDFCorr:
                     current = np.nan
                 matrix[i][j] = current
         if show:
-            vpy_matplotlib_plt.HeatMap().draw(
-                matrix, columns, columns, ax=ax, **style_kwargs,
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
             )
+            data = {"X": matrix}
+            layout = {"x_labels": columns, "y_labels": columns}
+            return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
         values = {"index": columns}
         for idx in range(len(matrix)):
             values[columns[idx]] = list(matrix[:, idx])
@@ -1600,6 +1598,7 @@ class vDFCorr:
                 coeff_importances, print_legend=False, ax=ax
             )
             ax.set_xlabel("IV")
+            return ax
         index = [col for col in coeff_importances]
         iv = [coeff_importances[col] for col in coeff_importances]
         data = [(index[i], iv[i]) for i in range(len(iv))]
