@@ -24,6 +24,7 @@ import datetime, os, sys
 # Other Modules
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import plotly.express as px
 from vertica_highcharts.highcharts.highcharts import Highchart
 from vertica_highcharts.highstock.highstock import Highstock
 
