@@ -310,7 +310,7 @@ class TestvDFPlot:
     )
     def test_vDF_bubble(self, iris_vd, titanic_vd):
         # testing vDataFrame.bubble - img
-        result = titanic_vd.bubble(
+        result = titanic_vd.scatter(
             columns=["fare", "age"],
             size_bubble_col="pclass",
             color="b",
@@ -321,7 +321,7 @@ class TestvDFPlot:
         assert max([elem[0] for elem in result.get_offsets().data]) == 512.3292
         plt.close("all")
         # testing vDataFrame.bubble
-        result = iris_vd.bubble(
+        result = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm"],
             size_bubble_col="PetalWidthCm",
             color="b",
@@ -331,7 +331,7 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
         plt.close("all")
         # testing vDataFrame.scatter using parameter catcol
-        result2 = iris_vd.bubble(
+        result2 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm"],
             size_bubble_col="PetalWidthCm",
             catcol="Species",
@@ -342,7 +342,7 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result2.get_offsets().data]) <= 7.9
         plt.close("all")
         # testing vDataFrame.scatter using parameter cmap_col
-        result3 = iris_vd.bubble(
+        result3 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm"],
             size_bubble_col="PetalWidthCm",
             cmap_col="SepalWidthCm",

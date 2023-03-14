@@ -66,6 +66,7 @@ class PlottingBase:
                 "describe": self._compute_statistics,
                 "range": self._compute_range,
                 "line": self._filter_line,
+                "sample": self._sample,
             }
             if self._compute_method in functions:
                 functions[self._compute_method](*args, **kwargs)
@@ -789,3 +790,64 @@ class PlottingBase:
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+
+    def _sample(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        size_bubble_col: Optional[str] = None,
+        catcol: Optional[str] = None,
+        cmap_col: Optional[str] = None,
+        max_nb_points: int = 20000,
+        h: PythonNumber = 0.0,
+        max_cardinality: int = 8,
+        cat_priority: Union[PythonScalar, list] = [],
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        columns = vdf._format_colnames(columns, expected_nb_of_cols=[2, 3])
+        cols_to_select = copy.deepcopy(columns)
+        vdf_tmp = vdf.copy()
+        has_category, has_cmap, has_size = False, False, False
+        if size_bubble_col != None:
+            cols_to_select += [vdf._format_colnames(size_bubble_col)]
+            has_size = True
+        if catcol != None:
+            has_category = True
+            catcol = vdf._format_colnames(catcol)
+            if vdf[catcol].isnum():
+                cols_to_select += [
+                    vdf[catcol]
+                    .discretize(h=h, return_enum_trans=True)[0]
+                    .replace("{}", catcol)
+                    + f" AS {catcol}"
+                ]
+            else:
+                cols_to_select += [
+                    vdf[catcol]
+                    .discretize(
+                        k=max_cardinality, method="topk", return_enum_trans=True
+                    )[0]
+                    .replace("{}", catcol)
+                    + f" AS {catcol}"
+                ]
+            if cat_priority:
+                vdf_tmp = vdf_tmp[catcol].isin(cat_priority)
+        elif cmap_col != None:
+            cols_to_select += [vdf._format_colnames(cmap)]
+            has_cmap = True
+        X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
+        n = len(columns)
+        self.data = {"X": X[:, :n].astype(float), "s": None, "c": None}
+        self.layout = {
+            "columns": columns,
+            "size": size_bubble_col,
+            "c": catcol if (catcol != None) else cmap_col,
+            "has_category": has_category,
+            "has_cmap": has_cmap,
+            "has_size": has_size,
+        }
+        if size_bubble_col != None:
+            self.data["s"] = X[:, n].astype(float)
+        if (catcol != None) or (cmap_col != None):
+            self.data["c"] = X[:, -1]
