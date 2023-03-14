@@ -33,6 +33,8 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 
+from verticapy.core.tablesample.base import TableSample
+
 from verticapy.plotting.base import PlottingBase
 from verticapy.plotting._highcharts.base import hchart_from_vdf
 import verticapy.plotting._matplotlib as vpy_matplotlib_plt
