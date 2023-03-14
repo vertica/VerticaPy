@@ -100,6 +100,7 @@ class TestvDFPlotPlotly:
         # for plotly
         ## 1D bar charts
         load_plotly
+        assert(conf.get_option("plotting_lib")=="plotly")
         survived_values=titanic_vd.to_pandas()["survived"]
         test_fig=px.bar(
             x=[0,1], 
