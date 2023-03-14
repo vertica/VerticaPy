@@ -17,6 +17,7 @@ permissions and limitations under the License.
 from typing import Literal
 
 import plotly.express as px
+from plotly.graph_objs._figure import Figure
 
 from verticapy.plotting._plotly.base import PlotlyBase
 
@@ -46,7 +47,7 @@ class BarChart(PlotlyBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> ...:
+    def draw(self, **style_kwargs,) -> Figure:
         """
         Draws a bar chart using the Plotly API.
         """
