@@ -99,7 +99,6 @@ class TestvDFPlotPlotly:
     def test_vDF_hist(self, titanic_vd,load_plotly):
         # for plotly
         ## 1D bar charts
-        load_plotly
         assert(conf.get_option("plotting_lib")=="plotly")
         survived_values=titanic_vd.to_pandas()["survived"]
         test_fig=px.bar(
@@ -108,6 +107,8 @@ class TestvDFPlotPlotly:
             )
         test_fig=test_fig.update_xaxes(type='category')
         result=titanic_vd["survived"].hist()
+        assert(type(test_fig)==plotly.graph_objs._figure.Figure)
+        assert(type(result)==plotly.graph_objs._figure.Figure)
         assert(test_fig.data[0]['y'][0]/test_fig.data[0]['y'][1]==result.data[0]['y'][0]/result.data[0]['y'][1])
         assert(test_fig.data[0]['x'][0]==result.data[0]['x'][0])
         assert(test_fig.layout['xaxis']['type']=='category')
