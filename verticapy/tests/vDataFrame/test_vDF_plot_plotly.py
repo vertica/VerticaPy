@@ -23,7 +23,7 @@ import datetime, os, sys
 
 # Other Modules
 import plotly.express as px
-
+import plotly
 
 # VerticaPy
 import verticapy
