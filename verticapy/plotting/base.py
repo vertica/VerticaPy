@@ -62,6 +62,7 @@ class PlottingBase:
             functions = {
                 "1D": self._compute_plot_params,
                 "2D": self._compute_pivot_table,
+                "matrix": self._compute_scatter_matrix,
                 "aggregate": self._compute_aggregate,
                 "describe": self._compute_statistics,
                 "range": self._compute_range,
@@ -791,6 +792,31 @@ class PlottingBase:
             "aggregate": clean_query(aggregate),
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
+        }
+
+    def _compute_scatter_matrix(
+        self, vdf: "vDataFrame", columns: SQLColumns, max_nb_points: int = 20000,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not (columns):
+            columns = vdf.numcol()
+        columns = vdf._format_colnames(columns)
+        n = len(columns)
+        data = {
+            "scatter": {"X": vdf[columns].sample(n=max_nb_points).to_numpy()},
+            "hist": {},
+        }
+        for i in range(n):
+            for j in range(n):
+                if columns[i] == columns[j]:
+                    self._compute_plot_params(
+                        vdf[columns[i]], method="density", max_cardinality=1
+                    )
+                    data["hist"][columns[i]] = copy.deepcopy(self.data)
+        self.data = data
+        self.layout = {
+            "columns": copy.deepcopy(columns),
         }
 
     def _sample(

@@ -33,6 +33,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ScatterMatrix(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"
@@ -41,42 +44,31 @@ class ScatterMatrix(MatplotlibBase):
     def _kind(self) -> Literal["scatter"]:
         return "scatter_matrix"
 
-    def draw(
-        self, vdf: "vDataFrame", columns: SQLColumns = [], **style_kwargs,
-    ) -> Axes:
+    @property
+    def _compute_method(self) -> Literal["matrix"]:
+        return "matrix"
+
+    # Draw.
+
+    def draw(self, **style_kwargs,) -> Axes:
         """
         Draws a scatter matrix using the Matplotlib API.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        columns = vdf._format_colnames(columns)
-        if not (columns):
-            columns = vdf.numcol()
-        elif len(columns) == 1:
-            return vdf[columns[0]].bar()
-        n = len(columns)
+        n = len(self.layout["columns"])
         if conf._get_import_success("jupyter"):
             figsize = min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)
             fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
         else:
             figsize = min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)
             fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
-        sample = vdf[columns].sample(n=1000).to_numpy()
-        data = {"sample": sample}
         for i in range(n):
-            x = columns[i]
-            axes[-1][i].set_xlabel(x, rotation=90)
-            axes[i][0].set_ylabel(x, rotation=0)
+            axes[-1][i].set_xlabel(self.layout["columns"][i], rotation=90)
+            axes[i][0].set_ylabel(self.layout["columns"][i], rotation=0)
             axes[i][0].yaxis.get_label().set_ha("right")
             for j in range(n):
                 axes[i][j].get_xaxis().set_ticks([])
                 axes[i][j].get_yaxis().set_ticks([])
-                y = columns[j]
-                if x == y:
-                    self._compute_plot_params(
-                        vdf[x], method="density", max_cardinality=1
-                    )
-                    data[f"{i}_{j}"] = copy.deepcopy(self.data)
+                if self.layout["columns"][i] == self.layout["columns"][j]:
                     params = {
                         "color": self.get_colors(d=style_kwargs, idx=0),
                         "edgecolor": "black",
@@ -84,7 +76,10 @@ class ScatterMatrix(MatplotlibBase):
                     if "edgecolor" in style_kwargs:
                         params["edgecolor"] = style_kwargs["edgecolor"]
                     axes[i, j].bar(
-                        self.data["x"], self.data["y"], self.data["width"], **params
+                        self.data["hist"][self.layout["columns"][i]]["x"],
+                        self.data["hist"][self.layout["columns"][i]]["y"],
+                        self.data["hist"][self.layout["columns"][i]]["width"],
+                        **params,
                     )
                 else:
                     params = {
@@ -96,9 +91,10 @@ class ScatterMatrix(MatplotlibBase):
                     }
                     params = self._update_dict(params, style_kwargs, 1)
                     axes[i, j].scatter(
-                        sample[:, j], sample[:, i], **params,
+                        self.data["scatter"]["X"][:, j],
+                        self.data["scatter"]["X"][:, i],
+                        **params,
                     )
-        self.data = data
         return axes
 
 

@@ -1461,7 +1461,9 @@ class vDFPlot:
         ).draw(**kwargs)
 
     @save_verticapy_logs
-    def scatter_matrix(self, columns: SQLColumns = [], **style_kwargs):
+    def scatter_matrix(
+        self, columns: SQLColumns = [], max_nb_points: int = 1000, **style_kwargs
+    ):
         """
     Draws the scatter matrix of the vDataFrame.
 
@@ -1470,6 +1472,8 @@ class vDFPlot:
     columns: SQLColumns, optional
         List of the vDataColumns names. If empty, all numerical vDataColumns will be 
         used.
+    max_nb_points: int, optional
+        Maximum number of points to display for each scatter plot.
     **style_kwargs
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -1485,7 +1489,10 @@ class vDFPlot:
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
-        return vpy_matplotlib_plt.ScatterMatrix().draw(self, columns, **style_kwargs)
+        vpy_plt, kwargs = self._get_plotting_lib(style_kwargs=style_kwargs,)
+        return vpy_plt.ScatterMatrix(
+            vdf=self, columns=columns, max_nb_points=max_nb_points
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def stacked_area(

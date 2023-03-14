@@ -37,6 +37,18 @@ class ACFPlot(MatplotlibBase):
     def _kind(self) -> Literal["acf"]:
         return "acf"
 
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "s": 90,
+            "marker": "o",
+            "facecolors": self.get_colors(idx=0),
+            "edgecolors": "black",
+            "zorder": 2,
+        }
+        return None
+
     # Draw.
 
     def draw(
@@ -48,14 +60,6 @@ class ACFPlot(MatplotlibBase):
         """
         Draws an ACF Time Series plot using the Matplotlib API.
         """
-        tmp_style = {}
-        for elem in style_kwargs:
-            if elem not in ("color", "colors"):
-                tmp_style[elem] = style_kwargs[elem]
-        if "color" in style_kwargs:
-            color = style_kwargs["color"]
-        else:
-            color = self.get_colors(idx=0)
         ax, fig = self._get_ax_fig(ax, size=(10, 3), set_axis_below=False, grid=False)
         if bar_type == "bar":
             ax.bar(
@@ -66,15 +70,10 @@ class ACFPlot(MatplotlibBase):
                 zorder=1,
                 linewidth=0,
             )
-            param = {
-                "s": 90,
-                "marker": "o",
-                "facecolors": color,
-                "edgecolors": "black",
-                "zorder": 2,
-            }
             ax.scatter(
-                self.data["x"], self.data["y"], **self._update_dict(param, tmp_style),
+                self.data["x"],
+                self.data["y"],
+                **self._update_dict(self.init_style, style_kwargs),
             )
             ax.plot(
                 np.concatenate(([-1], self.data["x"], [self.data["x"][-1] + 1])),
@@ -85,7 +84,9 @@ class ACFPlot(MatplotlibBase):
             ax.set_xlim(-1, self.data["x"][-1] + 1)
         else:
             ax.plot(
-                self.data["x"], self.data["y"], color=color, **tmp_style,
+                self.data["x"],
+                self.data["y"],
+                **self._update_dict(self.init_style, style_kwargs),
             )
         ax.set_xticks(self.data["x"])
         ax.set_xticklabels(self.data["x"], rotation=90)
