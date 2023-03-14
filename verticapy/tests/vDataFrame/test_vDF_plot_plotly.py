@@ -22,11 +22,8 @@ import pytest
 import datetime, os, sys
 
 # Other Modules
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import plotly.express as px
-from vertica_highcharts.highcharts.highcharts import Highchart
-from vertica_highcharts.highstock.highstock import Highstock
+
 
 # VerticaPy
 import verticapy
@@ -43,7 +40,6 @@ from verticapy.datasets import (
 )
 
 set_option("print_info", False)
-conf.set_option("plotting_lib","plotly")
 
 @pytest.fixture(scope="module")
 def titanic_vd():
@@ -94,8 +90,8 @@ def gapminder_vd():
     drop(name="public.gapminder")
 
 
-class TestvDFPlot:
-    
+class TestvDFPlotPlotly:
+    conf.set_option("plotting_lib","plotly")
     def test_vDF_hist(self, titanic_vd):
         # for plotly
         ## 1D bar charts
