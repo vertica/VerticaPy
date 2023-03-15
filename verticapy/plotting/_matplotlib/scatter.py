@@ -48,6 +48,17 @@ class ScatterMatrix(MatplotlibBase):
     def _compute_method(self) -> Literal["matrix"]:
         return "matrix"
 
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "edgecolor": "black",
+            "alpha": 0.9,
+            "s": 40,
+            "marker": "o",
+        }
+        return None
+
     # Draw.
 
     def draw(self, **style_kwargs,) -> Axes:
@@ -69,31 +80,27 @@ class ScatterMatrix(MatplotlibBase):
                 axes[i][j].get_xaxis().set_ticks([])
                 axes[i][j].get_yaxis().set_ticks([])
                 if self.layout["columns"][i] == self.layout["columns"][j]:
-                    params = {
+                    kwargs = {
                         "color": self.get_colors(d=style_kwargs, idx=0),
                         "edgecolor": "black",
                     }
                     if "edgecolor" in style_kwargs:
-                        params["edgecolor"] = style_kwargs["edgecolor"]
+                        kwargs["edgecolor"] = style_kwargs["edgecolor"]
                     axes[i, j].bar(
                         self.data["hist"][self.layout["columns"][i]]["x"],
                         self.data["hist"][self.layout["columns"][i]]["y"],
                         self.data["hist"][self.layout["columns"][i]]["width"],
-                        **params,
+                        **kwargs,
                     )
                 else:
-                    params = {
+                    kwargs = {
                         "color": self.get_colors(d=style_kwargs, idx=1),
-                        "edgecolor": "black",
-                        "alpha": 0.9,
-                        "s": 40,
-                        "marker": "o",
+                        **self.init_style,
                     }
-                    params = self._update_dict(params, style_kwargs, 1)
                     axes[i, j].scatter(
                         self.data["scatter"]["X"][:, j],
                         self.data["scatter"]["X"][:, i],
-                        **params,
+                        **self._update_dict(kwargs, style_kwargs, 1),
                     )
         return axes
 
