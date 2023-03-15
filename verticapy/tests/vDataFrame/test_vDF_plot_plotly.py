@@ -48,22 +48,31 @@ class TestvDFPlotPlotly:
     def test_vDF_hist(self, titanic_vd,load_plotly):
         # 1D bar charts
 
+        ## Checking plotting library 
         assert(conf.get_option("plotting_lib")=="plotly")
         survived_values=titanic_vd.to_pandas()["survived"]
+        
+        ## Creating a test figure to compare 
         test_fig=px.bar(
             x=[0,1], 
             y=[survived_values[survived_values==0].count(),survived_values[survived_values==1].count()]
             )
         test_fig=test_fig.update_xaxes(type='category')
         result=titanic_vd["survived"].bar()
-        assert(type(test_fig)==plotly.graph_objs._figure.Figure)
+        
+        ## Testing Plot Properties
+        ### Checking if correct object is created
         assert(type(result)==plotly.graph_objs._figure.Figure)
-        # Comparing result with a test figure
+        ### Checking if the x-axis is a category instead of integer
+        assert(result.layout['xaxis']['type']=='category')
+
+        ## Testing Data
+        ### Comparing result with a test figure
         assert(test_fig.data[0]['y'][0]/test_fig.data[0]['y'][1]==result.data[0]['y'][0]/result.data[0]['y'][1])
         assert(test_fig.data[0]['x'][0]==result.data[0]['x'][0])
-        # Testing if the x-axis is category
-        assert(result.layout['xaxis']['type']=='category')
-        # Testing keyword arguments (kwargs)
+
+        ## Testing Additional Options
+        ### Testing keyword arguments (kwargs)
         result=titanic_vd["survived"].bar(xaxis_title="Custom X Axis Title")
         assert(result.layout['xaxis']['title']['text']=='Custom X Axis Title')
         result=titanic_vd["survived"].bar(yaxis_title="Custom Y Axis Title")
