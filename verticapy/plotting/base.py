@@ -67,6 +67,7 @@ class PlottingBase:
                 "hist": self._compute_hists_params,
                 "line": self._filter_line,
                 "matrix": self._compute_scatter_matrix,
+                "outliers": self._compute_outliers_params,
                 "range": self._compute_range,
                 "sample": self._sample,
             }
@@ -443,6 +444,32 @@ class PlottingBase:
         }
         return None
 
+    def _compute_outliers_params(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        max_nb_points: int = 1000,
+        threshold: float = 3.0,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        columns = vdf._format_colnames(columns)
+        aggregations = vdf.agg(
+            func=["avg", "std", "min", "max"], columns=columns
+        ).to_numpy()
+        self.data = {
+            "X": vdf[columns].sample(n=max_nb_points).to_numpy().astype(float),
+            "avg": aggregations[:, 0],
+            "std": aggregations[:, 1],
+            "min": aggregations[:, 2],
+            "max": aggregations[:, 3],
+            "th": threshold,
+        }
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+        }
+        return None
+
     def _compute_aggregate(
         self,
         vdf: "vDataFrame",
@@ -452,6 +479,7 @@ class PlottingBase:
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
+        columns = vdf._format_colnames(columns)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         self._init_check(dim=len(columns), is_standard=is_standard)
         if method == "density":
@@ -482,6 +510,7 @@ class PlottingBase:
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+        return None
 
     def _compute_hists_params(
         self,
@@ -598,6 +627,7 @@ class PlottingBase:
             "columns": columns,
             "order_by": order_by,
         }
+        return None
 
     def _compute_statistics(
         self,
@@ -703,6 +733,7 @@ class PlottingBase:
             "order_by": order_by,
             "has_category": has_category,
         }
+        return None
 
     def _compute_pivot_table(
         self,
@@ -885,6 +916,7 @@ class PlottingBase:
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+        return None
 
     def _compute_scatter_matrix(
         self, vdf: "vDataFrame", columns: SQLColumns, max_nb_points: int = 20000,
@@ -910,6 +942,7 @@ class PlottingBase:
         self.layout = {
             "columns": copy.deepcopy(columns),
         }
+        return None
 
     def _sample(
         self,
@@ -954,7 +987,7 @@ class PlottingBase:
             if cat_priority:
                 vdf_tmp = vdf_tmp[catcol].isin(cat_priority)
         elif cmap_col != None:
-            cols_to_select += [vdf._format_colnames(cmap)]
+            cols_to_select += [vdf._format_colnames(cmap_col)]
             has_cmap = True
         X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
         n = len(columns)
@@ -971,3 +1004,4 @@ class PlottingBase:
             self.data["s"] = X[:, n].astype(float)
         if (catcol != None) or (cmap_col != None):
             self.data["c"] = X[:, -1]
+        return None

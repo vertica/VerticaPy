@@ -181,10 +181,11 @@ class ScatterPlot(MatplotlibBase):
                 ]
             kwargs["color"] = colors
         elif self.layout["has_cmap"]:
-            kwargs["color"] = self.data["c"]
+            kwargs["color"] = None
+            kwargs["c"] = self.data["c"]
             if "cmap" not in kwargs:
                 kwargs["cmap"] = self.get_cmap(idx=0)
-        ax.scatter(*args, **kwargs)
+        sc = ax.scatter(*args, **kwargs)
         ax.set_xlabel(self.layout["columns"][0])
         bbox_to_anchor = [1, 0.5]
         if m > 1:
@@ -208,4 +209,6 @@ class ScatterPlot(MatplotlibBase):
                 title=self.layout["c"],
                 bbox_to_anchor=bbox_to_anchor,
             )
+        elif self.layout["has_cmap"]:
+            fig.colorbar(sc).set_label(self.layout["c"])
         return ax

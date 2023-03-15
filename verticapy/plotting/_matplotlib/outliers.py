@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import random
 from typing import Literal, Optional, TYPE_CHECKING
 import numpy as np
 
@@ -30,6 +31,9 @@ from verticapy.plotting._matplotlib.scatter import ScatterPlot
 
 
 class OutliersPlot(ScatterPlot):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"
@@ -39,112 +43,103 @@ class OutliersPlot(ScatterPlot):
         return "outliers"
 
     @property
-    def _compute_method(self) -> Literal[None]:
+    def _compute_method(self) -> Literal["outliers"]:
+        return "outliers"
+
+    @property
+    def _dimension_bounds(self) -> tuple[int, int]:
+        return (1, 2)
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "edgecolor": "black",
+            "alpha": 0.9,
+            "s": 40,
+            "marker": "o",
+        }
         return None
+
+    # Draw.
 
     def draw(
         self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
         color: str = "orange",
         outliers_color: str = "black",
         inliers_color: str = "white",
         inliers_border_color: str = "red",
         cmap: str = None,
-        max_nb_points: int = 1000,
-        threshold: float = 3.0,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> Axes:
         """
         Draws an outliers contour plot using the Matplotlib API.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        min0, max0 = self.data["min"][0], self.data["max"][0]
+        avg0, std0 = self.data["avg"][0], self.data["std"][0]
+        th = self.data["th"]
         if not (cmap):
             cmap = self.get_cmap(color=self.get_colors(idx=2))
-        all_agg = vdf.agg(["avg", "std", "min", "max"], columns)
-        xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
+        xlist = np.linspace(min0, max0, 1000)
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=False, grid=False)
-        if len(columns) == 1:
-            min_zscore = (all_agg["min"][0] - all_agg["avg"][0]) / (all_agg["std"][0])
-            max_zscore = (all_agg["max"][0] - all_agg["avg"][0]) / (all_agg["std"][0])
-            for i in range(int(min_zscore) - 1, int(max_zscore) + 1):
-                if abs(i) < threshold:
-                    alpha = 0
-                else:
-                    alpha = (abs(i) - threshold) / (int(max_zscore) + 1 - 3)
-                ax.fill_between(
-                    [all_agg["min"][0], all_agg["max"][0]],
-                    [i, i],
-                    [i + 1, i + 1],
-                    facecolor=cmap(10000),
-                    alpha=alpha,
-                )
-            ax.fill_between(
-                [all_agg["min"][0], all_agg["max"][0]],
-                [-threshold, -threshold],
-                [threshold, threshold],
-                facecolor=color,
-            )
-            for i in [-1, 1]:
-                ax.plot(
-                    [all_agg["min"][0], all_agg["max"][0]],
-                    [i * threshold, i * threshold],
-                    color=inliers_border_color,
-                )
+        if len(self.layout["columns"]) == 1:
+            ylist = np.linspace(-1, 1, 1000)
+            X, Y = np.meshgrid(xlist, ylist)
+            Z = (X - avg0) / std0
+            cp = ax.contourf(X, Y, Z, cmap=cmap, levels=np.linspace(th, Z.max(), 8))
+            zvals = [-th * std0 + avg0, th * std0 + avg0]
+            ax.fill_between(zvals, [-1, -1], [1, 1], facecolor=color)
+            for x0 in zvals:
+                ax.plot([x0, x0], [-1, 1], color=inliers_border_color)
             for tick in ax.get_xticklabels():
                 tick.set_rotation(90)
-            ax.set_xlabel(columns[0])
-            ax.set_ylabel("ZSCORE")
-            ax.set_xlim(all_agg["min"][0], all_agg["max"][0])
-            ax.set_ylim(int(min_zscore) - 1, int(max_zscore) + 1)
-            vdf_temp = vdf[columns]
-            vdf_temp["ZSCORE"] = (vdf_temp[columns[0]] - all_agg["avg"][0]) / all_agg[
-                "std"
-            ][0]
-            vdf_temp["ZSCORE"] = "ZSCORE + 1.5 * RANDOM()"
-            for searchi in [(">", outliers_color), ("<=", inliers_color)]:
-                super().draw(
-                    vdf_temp.search(f"ZSCORE {searchi[0]} {threshold}"),
-                    [columns[0], "ZSCORE"],
-                    max_nb_points=max_nb_points,
-                    ax=ax,
-                    color=searchi[1],
-                    **style_kwargs,
+            ax.set_xlabel(self.layout["columns"][0])
+            ax.set_yticks([], [])
+            ax.set_ylim(-1, 1)
+            x = self.data["X"][:, 0]
+            zs = abs(x - avg0) / std0
+            for x0, c in [
+                (x[abs(zs) <= th], inliers_color),
+                (x[abs(zs) > th], outliers_color),
+            ]:
+                y0 = np.array([2 * (random.random() - 0.5) for i in range(len(x0))])
+                ax.scatter(
+                    x0, y0, color=c, **{**self.init_style, **style_kwargs,},
                 )
-        elif len(columns) == 2:
-            ylist = np.linspace(all_agg["min"][1], all_agg["max"][1], 1000)
+        elif len(self.layout["columns"]) == 2:
+            min1, max1 = self.data["min"][1], self.data["max"][1]
+            avg1, std1 = self.data["avg"][1], self.data["std"][1]
+            ylist = np.linspace(min1, max1, 1000)
             X, Y = np.meshgrid(xlist, ylist)
-            Z = np.sqrt(
-                ((X - all_agg["avg"][0]) / all_agg["std"][0]) ** 2
-                + ((Y - all_agg["avg"][1]) / all_agg["std"][1]) ** 2
-            )
-            cp = ax.contourf(X, Y, Z, colors=color)
+            Z = np.sqrt(((X - avg0) / std0) ** 2 + ((Y - avg1) / std1) ** 2)
+            ax.contourf(X, Y, Z, colors=color)
             ax.contour(
-                X, Y, Z, levels=[threshold], linewidths=2, colors=inliers_border_color
+                X, Y, Z, levels=[th], linewidths=2, colors=inliers_border_color,
             )
-            cp = ax.contourf(
-                X, Y, Z, cmap=cmap, levels=np.linspace(threshold, Z.max(), 8)
-            )
-            fig.colorbar(cp).set_label("ZSCORE")
-            ax.set_xlabel(columns[0])
-            ax.set_ylabel(columns[1])
-            s = []
-            for op, color in [("OR", outliers_color), ("AND", inliers_color)]:
-                s = f"""
-                    ABS(({columns[0]} - {all_agg["avg"][0]}) 
-                    / {all_agg["std"][0]}) <= {threshold} 
-               {op} ABS(({columns[1]} - {all_agg["avg"][1]}) 
-                    / {all_agg["std"][1]}) <= {threshold}"""
-                super().draw(
-                    vdf.search(s),
-                    columns,
-                    max_nb_points=max_nb_points,
-                    ax=ax,
-                    color=color,
-                    **style_kwargs,
+            cp = ax.contourf(X, Y, Z, cmap=cmap, levels=np.linspace(th, Z.max(), 8))
+            ax.set_xlabel(self.layout["columns"][0])
+            ax.set_ylabel(self.layout["columns"][1])
+            x = self.data["X"][:, 0]
+            y = self.data["X"][:, 1]
+            X = [
+                self.data["X"][
+                    (abs(x - avg0) / std0 <= th) & (abs(y - avg1) / std1 <= th)
+                ]
+            ]
+            X += [
+                self.data["X"][
+                    (abs(x - avg0) / std0 > th) | (abs(y - avg1) / std1 > th)
+                ]
+            ]
+            for i, c in enumerate([inliers_color, outliers_color]):
+                ax.scatter(
+                    X[i][:, 0],
+                    X[i][:, 1],
+                    color=c,
+                    **{**self.init_style, **style_kwargs,},
                 )
+        fig.colorbar(cp).set_label("ZSCORE")
         args = [[0], [0]]
         kwargs = {
             "marker": "o",

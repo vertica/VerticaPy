@@ -1053,21 +1053,19 @@ class vDFPlot:
         [Only for MATPLOTLIB]
         The axes to plot on.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        columns = self._format_colnames(columns, expected_nb_of_cols=[1, 2])
-        return vpy_matplotlib_plt.OutliersPlot().draw(
-            self,
-            columns,
-            color=color,
-            threshold=threshold,
-            outliers_color=outliers_color,
-            inliers_color=inliers_color,
-            inliers_border_color=inliers_border_color,
-            max_nb_points=max_nb_points,
-            ax=ax,
-            **style_kwargs,
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={
+                "ax": ax,
+                "color": color,
+                "outliers_color": outliers_color,
+                "inliers_color": inliers_color,
+                "inliers_border_color": inliers_border_color,
+            },
+            style_kwargs=style_kwargs,
         )
+        return vpy_plt.OutliersPlot(
+            vdf=self, columns=columns, threshold=threshold, max_nb_points=max_nb_points,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def pie(
