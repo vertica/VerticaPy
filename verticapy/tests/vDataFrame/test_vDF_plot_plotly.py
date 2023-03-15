@@ -27,10 +27,10 @@ import plotly
 
 # VerticaPy
 import verticapy._config.config as conf
-from verticapy import drop, set_option
+from verticapy import drop
 from verticapy.datasets import (load_titanic)
 
-set_option("print_info", False)
+conf.set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def titanic_vd():
