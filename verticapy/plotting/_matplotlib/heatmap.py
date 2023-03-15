@@ -25,6 +25,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class HeatMap(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["map"]:
         return "map"
@@ -33,17 +36,24 @@ class HeatMap(MatplotlibBase):
     def _kind(self) -> Literal["heatmap"]:
         return "heatmap"
 
+    @property
+    def _compute_method(self) -> Literal["2D"]:
+        return "2D"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {"cmap": self.get_cmap(idx=0), "interpolation": "nearest"}
+        return None
+
+    # Draw.
+
     def draw(
         self,
-        matrix: np.ndarray,
-        x_labels: list[str],
-        y_labels: list[str],
-        vmax: Optional[float] = None,
-        vmin: Optional[float] = None,
         colorbar: str = "",
         with_numbers: bool = True,
         mround: int = 3,
-        extent: list = [],
+        extent: Optional[list] = None,
         is_pivot: bool = False,
         ax: Optional[Axes] = None,
         **style_kwargs,
@@ -51,51 +61,56 @@ class HeatMap(MatplotlibBase):
         """
         Draws a heatmap using the Matplotlib API.
         """
-        if len(matrix.shape) == 1:
-            n, m = matrix.shape[0], 1
-            matrix_array = np.transpose(np.array([matrix]))
+        if len(self.data["X"].shape) == 1:
+            n, m = self.data["X"].shape[0], 1
+            X = np.transpose(np.array([self.data["X"]]))
             is_vector = True
         else:
-            n, m = matrix.shape
-            matrix_array = copy.deepcopy(matrix)
+            n, m = self.data["X"].shape
+            X = copy.deepcopy(self.data["X"])
             is_vector = False
-        x_l = list(x_labels)
-        y_l = list(y_labels)
+        x_labels = list(self.layout["x_labels"])
+        y_labels = list(self.layout["y_labels"])
         if is_pivot and not (is_vector):
-            np.flip(matrix_array, axis=1)
-            x_l.reverse()
+            np.flip(X, axis=1)
+            x_labels.reverse()
         ax, fig = self._get_ax_fig(
             ax, size=(min(m, 500), min(n, 500)), set_axis_below=False, grid=False
         )
-        param = {"cmap": self.get_cmap(idx=0), "interpolation": "nearest"}
-        if ((vmax == 1) and vmin in [0, -1]) and not (extent):
-            im = ax.imshow(
-                matrix_array,
-                vmax=vmax,
-                vmin=vmin,
-                **self._update_dict(param, style_kwargs),
-            )
-        else:
-            try:
-                im = ax.imshow(
-                    matrix_array,
-                    extent=extent,
-                    **self._update_dict(param, style_kwargs),
-                )
-            except:
-                im = ax.imshow(matrix_array, **self._update_dict(param, style_kwargs))
+        kwargs = {
+            **self.init_style,
+            "extent": extent,
+        }
+        if "vmax" in self.layout:
+            kwargs["vmax"] = self.layout["vmax"]
+        if "vmin" in self.layout:
+            kwargs["vmin"] = self.layout["vmin"]
+        kwargs = self._update_dict(kwargs, style_kwargs)
+        try:
+            im = ax.imshow(X, **kwargs)
+        except:
+            if kwargs["extent"] != None:
+                kwargs["extent"] = None
+                im = ax.imshow(X, **kwargs)
+            else:
+                raise
         fig.colorbar(im, ax=ax).set_label(colorbar)
         if not (extent):
             ax.set_yticks([i for i in range(0, n)])
             ax.set_xticks([i for i in range(0, m)])
-            ax.set_xticklabels(y_l, rotation=90)
-            ax.set_yticklabels(x_l, rotation=0)
+            ax.set_xticklabels(y_labels, rotation=90)
+            ax.set_yticklabels(x_labels, rotation=0)
         if with_numbers:
-            matrix_array = matrix_array.round(mround)
+            X = X.round(mround)
             for y_index in range(n):
                 for x_index in range(m):
-                    label = matrix_array[y_index][x_index]
+                    label = X[y_index][x_index]
                     ax.text(
                         x_index, y_index, label, color="black", ha="center", va="center"
                     )
+        if "columns" in self.layout:
+            if len(self.layout["columns"]) > 0:
+                ax.set_ylabel(self.layout["columns"][0])
+            if len(self.layout["columns"]) > 1:
+                ax.set_xlabel(self.layout["columns"][1])
         return ax

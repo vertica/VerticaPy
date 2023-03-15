@@ -40,65 +40,36 @@ class Histogram(MatplotlibBase):
     def _kind(self) -> Literal["hist"]:
         return "hist"
 
+    @property
+    def _compute_method(self) -> Literal["hist"]:
+        return "hist"
+
     # Draw.
 
-    def draw(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        method: str = "density",
-        of: Optional[str] = None,
-        h: float = 0.0,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a muli-histogram chart using the Matplotlib API.
+        Draws an histogram using the Matplotlib API.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        colors = self.get_colors()
-        if len(columns) > 5:
-            raise ValueError(
-                "The number of column must be <= 5 to use 'multiple_hist' method"
+        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
+        alpha, colors = 1.0, self.get_colors()
+        key = "categories" if self.layout["has_category"] else "columns"
+        delta = alpha / len(self.layout[key]) * 0.8
+        for i, column in enumerate(self.layout[key]):
+            kwargs = {"color": colors[i % len(colors)]}
+            kwargs = self._update_dict(kwargs, style_kwargs, i)
+            plt.bar(
+                self.data[column]["x"],
+                self.data[column]["y"],
+                self.data["width"],
+                label=column,
+                alpha=alpha,
+                **kwargs,
             )
-        else:
-            ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
-            alpha, all_columns, all_h = 1, [], []
-            if h == None or h <= 0:
-                for idx, column in enumerate(columns):
-                    all_h += [vdf[column].numh()]
-                h = min(all_h)
-            data = {}
-            for idx, column in enumerate(columns):
-                if vdf[column].isnum():
-                    self._compute_plot_params(
-                        vdf[column], method=method, of=of, max_cardinality=1, h=h
-                    )
-                    params = {"color": colors[idx % len(colors)]}
-                    params = self._update_dict(params, style_kwargs, idx)
-                    plt.bar(
-                        self.data["x"],
-                        self.data["y"],
-                        self.data["width"],
-                        label=column,
-                        alpha=alpha,
-                        **params,
-                    )
-                    alpha -= 0.2
-                    all_columns += [columns[idx]]
-                    data[column] = copy.deepcopy(self.data)
-                else:
-                    if vdf._vars["display"]["print_info"]:
-                        warning_message = (
-                            f"The Virtual Column {column} is not numerical."
-                            " Its histogram will not be drawn."
-                        )
-                        warnings.warn(warning_message, Warning)
-            ax.set_xlabel(", ".join(all_columns))
-            ax.set_ylabel(self._map_method(method, of)[0])
-            ax.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
-            box = ax.get_position()
-            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-            self.data = data
-            return ax
+            alpha -= delta
+        ax.set_ylabel(self.layout["method_of"])
+        if len(self.layout["columns"]) == 1:
+            ax.set_xlabel(self.layout["columns"][0])
+        ax.legend(title=self.layout["by"], loc="center left", bbox_to_anchor=[1, 0.5])
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+        return ax

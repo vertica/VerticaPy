@@ -646,7 +646,11 @@ class TestvDFPlot:
 
     def test_vDF_pivot_table(self, titanic_vd):
         result = titanic_vd.pivot_table(
-            columns=["age", "pclass"], method="avg", of="survived", cmap="Reds",
+            columns=["age", "pclass"],
+            method="avg",
+            of="survived",
+            cmap="Reds",
+            show=False,
         )
         assert result[1][0] == pytest.approx(0.75)
         assert result[1][1] == pytest.approx(1.0)
@@ -655,7 +659,7 @@ class TestvDFPlot:
         assert result[2][1] == pytest.approx(0.875)
         assert result[2][2] == pytest.approx(0.375)
         assert len(result[1]) == 12
-        plt.close("all")
+        # plt.close("all")
 
     @pytest.mark.skip(reason="implement new version later.")
     def test_vDF_outliers_plot(self, titanic_vd):
