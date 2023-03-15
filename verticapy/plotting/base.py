@@ -64,8 +64,11 @@ class PlottingBase:
                 "2D": self._compute_pivot_table,
                 "aggregate": self._compute_aggregate,
                 "describe": self._compute_statistics,
-                "range": self._compute_range,
+                "hist": self._compute_hists_params,
                 "line": self._filter_line,
+                "matrix": self._compute_scatter_matrix,
+                "outliers": self._compute_outliers_params,
+                "range": self._compute_range,
                 "sample": self._sample,
             }
             if self._compute_method in functions:
@@ -245,6 +248,7 @@ class PlottingBase:
 	    using the Matplotlib API.
 	    """
         other_columns = ""
+        of = vdc._parent._format_colnames(of)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         if not (is_standard):
             other_columns = ", " + ", ".join(
@@ -440,6 +444,32 @@ class PlottingBase:
         }
         return None
 
+    def _compute_outliers_params(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        max_nb_points: int = 1000,
+        threshold: float = 3.0,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        columns = vdf._format_colnames(columns)
+        aggregations = vdf.agg(
+            func=["avg", "std", "min", "max"], columns=columns
+        ).to_numpy()
+        self.data = {
+            "X": vdf[columns].sample(n=max_nb_points).to_numpy().astype(float),
+            "avg": aggregations[:, 0],
+            "std": aggregations[:, 1],
+            "min": aggregations[:, 2],
+            "max": aggregations[:, 3],
+            "th": threshold,
+        }
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+        }
+        return None
+
     def _compute_aggregate(
         self,
         vdf: "vDataFrame",
@@ -449,6 +479,7 @@ class PlottingBase:
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
+        columns = vdf._format_colnames(columns)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         self._init_check(dim=len(columns), is_standard=is_standard)
         if method == "density":
@@ -479,6 +510,89 @@ class PlottingBase:
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+        return None
+
+    def _compute_hists_params(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        by: Optional[str] = None,
+        method: str = "density",
+        of: Optional[str] = None,
+        h: PythonNumber = 0.0,
+        h_by: PythonNumber = 0.0,
+        max_cardinality: int = 8,
+        cat_priority: Union[None, PythonScalar, ArrayLike] = None,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not (columns):
+            columns = vdf.numcol()
+        if not (columns):
+            raise ValueError("No numerical columns found to compute the statistics.")
+        columns, by = vdf._format_colnames(columns, by)
+        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
+        self._init_check(dim=len(columns), is_standard=is_standard)
+        if by and len(columns) == 1:
+            column = columns[0]
+            cols = [column]
+            if not (h) or h <= 0:
+                h = vdf[column].numh()
+            data, categories = {"width": h}, []
+            vdf_tmp = vdf[by].isin(cat_priority) if cat_priority else vdf.copy()
+            if vdf_tmp[by].isnum():
+                vdf_tmp[by].discretize(h=h_by)
+            else:
+                vdf_tmp[by].discretize(
+                    k=max_cardinality, method="topk",
+                )
+            uniques = vdf_tmp[by].distinct()
+            for idx, category in enumerate(uniques):
+                self._compute_plot_params(
+                    vdf_tmp[by].isin(category)[column],
+                    method=method,
+                    of=of,
+                    max_cardinality=1,
+                    h=h,
+                )
+                categories += [category]
+                data[category] = copy.deepcopy(self.data)
+        else:
+            h_, categories = [], None
+            if h == None or h <= 0:
+                for idx, column in enumerate(columns):
+                    h_ += [vdf[column].numh()]
+                h = min(h_)
+            data, cols = {"width": h}, []
+            for idx, column in enumerate(columns):
+                if vdf[column].isnum():
+                    self._compute_plot_params(
+                        vdf[column], method=method, of=of, max_cardinality=1, h=h
+                    )
+                    cols += [column]
+                    data[column] = copy.deepcopy(self.data)
+                else:
+                    if vdf._vars["display"]["print_info"]:
+                        warning_message = (
+                            f"The Virtual Column {column} is not numerical."
+                            " Its histogram will not be drawn."
+                        )
+                        warnings.warn(warning_message, Warning)
+        self.data = data
+        self.layout = {
+            "columns": cols,
+            "categories": categories,
+            "by": by,
+            "method": method,
+            "method_of": method + f"({of})" if of else method,
+            "of": of,
+            "of_cat": vdf[of].category() if of else None,
+            "aggregate": clean_query(aggregate),
+            "aggregate_fun": aggregate_fun,
+            "is_standard": is_standard,
+            "has_category": bool(categories),
+        }
+        return None
 
     def _compute_range(
         self,
@@ -513,6 +627,7 @@ class PlottingBase:
             "columns": columns,
             "order_by": order_by,
         }
+        return None
 
     def _compute_statistics(
         self,
@@ -522,11 +637,15 @@ class PlottingBase:
         q: tuple = (0.25, 0.75),
         h: PythonNumber = 0.0,
         max_cardinality: int = 8,
-        cat_priority: Union[PythonScalar, list] = [],
+        cat_priority: Union[None, PythonScalar, ArrayLike] = None,
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
-        columns = vdf._format_colnames(columns)
+        elif not (columns):
+            columns = vdf.numcol()
+        if not (columns):
+            raise ValueError("No numerical columns found to compute the statistics.")
+        columns, by = vdf._format_colnames(columns, by)
         if len(columns) == 1 and (by):
             expr = [
                 f"MIN({columns[0]})",
@@ -584,6 +703,10 @@ class PlottingBase:
         order_by_start: PythonScalar = None,
         order_by_end: PythonScalar = None,
     ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not (columns):
+            columns = vdf.numcol()
         columns, order_by = vdf._format_colnames(columns, order_by)
         X = (
             vdf.between(
@@ -610,6 +733,7 @@ class PlottingBase:
             "order_by": order_by,
             "has_category": has_category,
         }
+        return None
 
     def _compute_pivot_table(
         self,
@@ -781,6 +905,8 @@ class PlottingBase:
         self.layout = {
             "x_labels": x_labels,
             "y_labels": y_labels,
+            "vmax": None,
+            "vmin": None,
             "columns": copy.deepcopy(columns),
             "method": method,
             "method_of": method + f"({of})" if of else method,
@@ -790,6 +916,33 @@ class PlottingBase:
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+        return None
+
+    def _compute_scatter_matrix(
+        self, vdf: "vDataFrame", columns: SQLColumns, max_nb_points: int = 20000,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not (columns):
+            columns = vdf.numcol()
+        columns = vdf._format_colnames(columns)
+        n = len(columns)
+        data = {
+            "scatter": {"X": vdf[columns].sample(n=max_nb_points).to_numpy()},
+            "hist": {},
+        }
+        for i in range(n):
+            for j in range(n):
+                if columns[i] == columns[j]:
+                    self._compute_plot_params(
+                        vdf[columns[i]], method="density", max_cardinality=1
+                    )
+                    data["hist"][columns[i]] = copy.deepcopy(self.data)
+        self.data = data
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+        }
+        return None
 
     def _sample(
         self,
@@ -801,7 +954,7 @@ class PlottingBase:
         max_nb_points: int = 20000,
         h: PythonNumber = 0.0,
         max_cardinality: int = 8,
-        cat_priority: Union[PythonScalar, list] = [],
+        cat_priority: Union[None, PythonScalar, ArrayLike] = None,
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
@@ -834,7 +987,7 @@ class PlottingBase:
             if cat_priority:
                 vdf_tmp = vdf_tmp[catcol].isin(cat_priority)
         elif cmap_col != None:
-            cols_to_select += [vdf._format_colnames(cmap)]
+            cols_to_select += [vdf._format_colnames(cmap_col)]
             has_cmap = True
         X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
         n = len(columns)
@@ -851,3 +1004,4 @@ class PlottingBase:
             self.data["s"] = X[:, n].astype(float)
         if (catcol != None) or (cmap_col != None):
             self.data["c"] = X[:, -1]
+        return None

@@ -32,6 +32,9 @@ from verticapy.sql.flex import isvmap
 
 
 class vDFSystem:
+    def __format__(self, format_spec) -> str:
+        return format(self._genSQL(), format_spec)
+
     def _add_to_history(self, message: str):
         """
     VERTICAPY stores the user modification and help the user to look at 
@@ -605,6 +608,9 @@ class vDFSystem:
 
 
 class vDCSystem:
+    def __format__(self, format_spec) -> str:
+        return format(self._alias, format_spec)
+
     def add_copy(self, name: str):
         """
     Adds a copy vDataColumn to the parent vDataFrame.
