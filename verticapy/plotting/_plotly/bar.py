@@ -41,23 +41,30 @@ class BarChart(PlotlyBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        self.init_trace_style = {"marker_color": PlotlyBase.get_colors(idx=0)}
-        self.init_layout_style = {"width": 200*len(self.layout['labels']), "height": 500}
+        self.init_trace_style = {"marker_color": self.get_colors(idx=0)}
+        self.init_layout_style = {
+            "width": 200 * len(self.layout["labels"]),
+            "height": 500,
+        }
         return None
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a bar chart using the Plotly API.
         """
-        fig = px.bar(x=self.layout['labels'], y=self.data['y'])
-        if self.data['is_categorical']:
-            fig.update_xaxes(type='category')
+        fig = px.bar(x=self.layout["labels"], y=self.data["y"])
+        if self.data["is_categorical"]:
+            fig.update_xaxes(type="category")
         params = self._update_dict(self.init_layout_style, style_kwargs)
         fig.update_layout(**params)
         fig.update_traces(**self.init_trace_style)
         return fig
+
 
 class BarChart2D(PlotlyBase):
 

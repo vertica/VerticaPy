@@ -26,18 +26,9 @@ import plotly.express as px
 import plotly
 
 # VerticaPy
-import verticapy
 import verticapy._config.config as conf
 from verticapy import drop, set_option
-from verticapy.datasets import (
-    load_titanic,
-    load_amazon,
-    load_commodities,
-    load_iris,
-    load_world,
-    load_pop_growth,
-    load_gapminder,
-)
+from verticapy.datasets import (load_titanic)
 
 set_option("print_info", False)
 
