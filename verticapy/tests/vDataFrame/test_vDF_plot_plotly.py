@@ -63,8 +63,11 @@ class TestvDFPlotPlotly:
     def test_vDF_hist(self, titanic_vd, load_plotly):
         # 1D bar charts
 
+        ## Checking plotting library
         assert conf.get_option("plotting_lib") == "plotly"
         survived_values = titanic_vd.to_pandas()["survived"]
+
+        ## Creating a test figure to compare
         test_fig = px.bar(
             x=[0, 1],
             y=[
@@ -74,17 +77,23 @@ class TestvDFPlotPlotly:
         )
         test_fig = test_fig.update_xaxes(type="category")
         result = titanic_vd["survived"].bar()
-        assert type(test_fig) == plotly.graph_objs._figure.Figure
+
+        ## Testing Plot Properties
+        ### Checking if correct object is created
         assert type(result) == plotly.graph_objs._figure.Figure
-        # Comparing result with a test figure
+        ### Checking if the x-axis is a category instead of integer
+        assert result.layout["xaxis"]["type"] == "category"
+
+        ## Testing Data
+        ### Comparing result with a test figure
         assert (
             test_fig.data[0]["y"][0] / test_fig.data[0]["y"][1]
             == result.data[0]["y"][0] / result.data[0]["y"][1]
         )
         assert test_fig.data[0]["x"][0] == result.data[0]["x"][0]
-        # Testing if the x-axis is category
-        assert result.layout["xaxis"]["type"] == "category"
-        # Testing keyword arguments (kwargs)
+
+        ## Testing Additional Options
+        ### Testing keyword arguments (kwargs)
         result = titanic_vd["survived"].bar(xaxis_title="Custom X Axis Title")
         assert result.layout["xaxis"]["title"]["text"] == "Custom X Axis Title"
         result = titanic_vd["survived"].bar(yaxis_title="Custom Y Axis Title")
@@ -93,26 +102,33 @@ class TestvDFPlotPlotly:
     def test_vDF_pie(self, dummy_vd, load_plotly):
         # 1D pie charts
 
-        # check labels
+        ## Creating a pie chart
         result = dummy_vd["check 1"].pie()
-        assert result.data[0]["labels"] == ("0", "1")
-        # check value corresponding to 0s
+
+        ## Testing Data
+        ### check value corresponding to 0s
         assert (
             result.data[0]["values"][0]
             == dummy_vd[dummy_vd["check 1"] == 0]["check 1"].count()
             / dummy_vd["check 1"].count()
         )
-        # check value corresponding to 1s
+        ### check value corresponding to 1s
         assert (
             result.data[0]["values"][1]
             == dummy_vd[dummy_vd["check 1"] == 1]["check 1"].count()
             / dummy_vd["check 1"].count()
         )
-        # check title
+
+        ## Testing Plot Properties
+        ### checking the label
+        assert result.data[0]["labels"] == ("0", "1")
+        ### check title
         assert result.layout["title"]["text"] == "check 1"
-        # check hole option
+
+        ## Testing Additional Options
+        ### check hole option
         result = dummy_vd["check 1"].pie(pie_type="donut")
         assert result.data[0]["hole"] == 0.2
-        # check exploded option
+        ### check exploded option
         result = dummy_vd["check 1"].pie(exploded=True)
         assert len(result.data[0]["pull"]) > 0
