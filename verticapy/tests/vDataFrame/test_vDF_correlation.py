@@ -196,9 +196,9 @@ class TestvDFCorrelation:
             ["survived"], ["AVG(age) AS age", "AVG(fare) AS fare"]
         )
         result2 = titanic_vd_gb.corr(
-            columns=["survived", "age", "fare"], method="spearman",
+            columns=["survived", "age", "fare"], method="spearman", show=False,
         )
-        plt.close("all")
+        # plt.close("all")
         assert result2["survived"][0] == 1.0
         assert result2["survived"][1] == pytest.approx(-0.221388367729831, 1e-2)
         assert result2["survived"][2] == pytest.approx(0.425515947467167, 1e-2)

@@ -497,14 +497,12 @@ class vDFPlot:
     vDataFrame.boxplot     : Draws the Box Plot of the input vDataColumns.
     vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        columns, of = self._format_colnames(
-            columns, of, expected_nb_of_cols=[1, 2, 3, 4, 5]
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
         )
-        return vpy_matplotlib_plt.Histogram().draw(
-            vdf=self, columns=columns, method=method, of=of, h=h, ax=ax, **style_kwargs,
-        )
+        return vpy_plt.Histogram(
+            vdf=self, columns=columns, method=method, of=of, h=h,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def boxplot(
@@ -545,16 +543,10 @@ class vDFPlot:
     vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an 
                              aggregation.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        columns = self._format_colnames(columns) if (columns) else self.numcol()
-        if columns:
-            vpy_plt, kwargs = self._get_plotting_lib(
-                matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
-            )
-            return vpy_plt.BoxPlot(vdf=self, columns=columns, q=q,).draw(**kwargs)
-        else:
-            raise MissingColumn("No numerical columns found to draw the BoxPlot")
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
+        )
+        return vpy_plt.BoxPlot(vdf=self, columns=columns, q=q,).draw(**kwargs)
 
     @save_verticapy_logs
     def contour(
@@ -1258,11 +1250,6 @@ class vDFPlot:
     --------
     vDataFrame[].plot : Draws the Time Series of one vDataColumn.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        elif not (columns):
-            columns = self.numcol()
-        columns, ts = self._format_colnames(columns, ts)
         vpy_plt, kwargs = self._get_plotting_lib(
             matplotlib_kwargs={"ax": ax, "kind": "step" if step else "line",},
             style_kwargs=style_kwargs,
@@ -1323,7 +1310,6 @@ class vDFPlot:
     --------
     vDataFrame.plot : Draws the time series.
         """
-        columns, ts = self._format_colnames(columns, ts)
         vpy_plt, kwargs = self._get_plotting_lib(
             matplotlib_kwargs={"ax": ax, "plot_median": plot_median,},
             style_kwargs=style_kwargs,
@@ -1706,7 +1692,6 @@ class vDCPlot:
     --------
     vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
-        of = self._parent._format_colnames(of)
         vpy_plt, kwargs = self._parent._get_plotting_lib(
             matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
         )
@@ -1769,7 +1754,6 @@ class vDCPlot:
     --------
     vDataFrame[].bar : Draws the bar chart of the vDataColumn based on an aggregation.
         """
-        of = self._parent._format_colnames(of)
         vpy_plt, kwargs = self._parent._get_plotting_lib(
             matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
         )
@@ -1785,9 +1769,13 @@ class vDCPlot:
     @save_verticapy_logs
     def hist(
         self,
+        by: Optional[str] = None,
         method: str = "density",
         of: Optional[str] = None,
         h: PythonNumber = None,
+        h_by: PythonNumber = 0,
+        max_cardinality: int = 8,
+        cat_priority: Union[None, PythonScalar, ArrayLike] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -1796,6 +1784,8 @@ class vDCPlot:
 
     Parameters
     ----------
+    by: str, optional
+        vDataColumn to use to partition the data.
     method: str, optional
         The method to use to aggregate the data.
             count   : Number of elements.
@@ -1808,9 +1798,19 @@ class vDCPlot:
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
         The vDataColumn to use to compute the aggregation.
-    h: tuple, optional
+    h: PythonNumber, optional
         Interval width of the input vDataColumns. Optimized h will be computed 
         if the parameter is empty or invalid.
+    h_by: PythonNumber, optional
+        Interval width if the 'by' vDataColumn is numerical or of type date like. Optimized 
+        h will be computed if the parameter is empty or invalid.
+    max_cardinality: int, optional
+        Maximum number of vDataColumn distinct elements to be used as categorical. 
+        The less frequent elements will be gathered together to create a new 
+        category : 'Others'.
+    cat_priority: PythonScalar / ArrayLike, optional
+        ArrayLike of the different categories to consider when drawing the box plot.
+        The other categories will be filtered.
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
@@ -1826,9 +1826,20 @@ class vDCPlot:
     --------
     vDataFrame[].bar : Draws the bar chart of the vDataColumn based on an aggregation.
         """
-        return self._parent.hist(
-            columns=[self._alias], method=method, of=of, h=h, ax=ax, **style_kwargs
+        vpy_plt, kwargs = self._parent._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
         )
+        return vpy_plt.Histogram(
+            vdf=self._parent,
+            columns=[self._alias],
+            by=by,
+            method=method,
+            of=of,
+            h=h,
+            h_by=h_by,
+            max_cardinality=max_cardinality,
+            cat_priority=cat_priority,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def boxplot(
@@ -1875,9 +1886,6 @@ class vDCPlot:
     --------
     vDataFrame.boxplot : Draws the Box Plot of the input vDataColumns. 
         """
-        if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
-            cat_priority = [cat_priority]
-        by = self._parent._format_colnames(by)
         vpy_plt, kwargs = self._parent._get_plotting_lib(
             matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
         )
@@ -2101,7 +2109,6 @@ class vDCPlot:
     --------
     vDataFrame.donut : Draws the donut chart of the vDataColumn based on an aggregation.
         """
-        of = self._parent._format_colnames(of)
         vpy_plt, kwargs = self._parent._get_plotting_lib(
             matplotlib_kwargs={"ax": ax, "pie_type": pie_type},
             style_kwargs=style_kwargs,

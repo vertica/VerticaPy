@@ -62,11 +62,12 @@ class PlottingBase:
             functions = {
                 "1D": self._compute_plot_params,
                 "2D": self._compute_pivot_table,
-                "matrix": self._compute_scatter_matrix,
                 "aggregate": self._compute_aggregate,
                 "describe": self._compute_statistics,
-                "range": self._compute_range,
+                "hist": self._compute_hists_params,
                 "line": self._filter_line,
+                "matrix": self._compute_scatter_matrix,
+                "range": self._compute_range,
                 "sample": self._sample,
             }
             if self._compute_method in functions:
@@ -246,6 +247,7 @@ class PlottingBase:
 	    using the Matplotlib API.
 	    """
         other_columns = ""
+        of = vdc._parent._format_colnames(of)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         if not (is_standard):
             other_columns = ", " + ", ".join(
@@ -481,6 +483,88 @@ class PlottingBase:
             "is_standard": is_standard,
         }
 
+    def _compute_hists_params(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        by: Optional[str] = None,
+        method: str = "density",
+        of: Optional[str] = None,
+        h: PythonNumber = 0.0,
+        h_by: PythonNumber = 0.0,
+        max_cardinality: int = 8,
+        cat_priority: Union[None, PythonScalar, ArrayLike] = None,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not (columns):
+            columns = vdf.numcol()
+        if not (columns):
+            raise ValueError("No numerical columns found to compute the statistics.")
+        columns, by = vdf._format_colnames(columns, by)
+        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
+        self._init_check(dim=len(columns), is_standard=is_standard)
+        if by and len(columns) == 1:
+            column = columns[0]
+            cols = [column]
+            if not (h) or h <= 0:
+                h = vdf[column].numh()
+            data, categories = {"width": h}, []
+            vdf_tmp = vdf[by].isin(cat_priority) if cat_priority else vdf.copy()
+            if vdf_tmp[by].isnum():
+                vdf_tmp[by].discretize(h=h_by)
+            else:
+                vdf_tmp[by].discretize(
+                    k=max_cardinality, method="topk",
+                )
+            uniques = vdf_tmp[by].distinct()
+            for idx, category in enumerate(uniques):
+                self._compute_plot_params(
+                    vdf_tmp[by].isin(category)[column],
+                    method=method,
+                    of=of,
+                    max_cardinality=1,
+                    h=h,
+                )
+                categories += [category]
+                data[category] = copy.deepcopy(self.data)
+        else:
+            h_, categories = [], None
+            if h == None or h <= 0:
+                for idx, column in enumerate(columns):
+                    h_ += [vdf[column].numh()]
+                h = min(h_)
+            data, cols = {"width": h}, []
+            for idx, column in enumerate(columns):
+                if vdf[column].isnum():
+                    self._compute_plot_params(
+                        vdf[column], method=method, of=of, max_cardinality=1, h=h
+                    )
+                    cols += [column]
+                    data[column] = copy.deepcopy(self.data)
+                else:
+                    if vdf._vars["display"]["print_info"]:
+                        warning_message = (
+                            f"The Virtual Column {column} is not numerical."
+                            " Its histogram will not be drawn."
+                        )
+                        warnings.warn(warning_message, Warning)
+        self.data = data
+        self.layout = {
+            "columns": cols,
+            "categories": categories,
+            "by": by,
+            "method": method,
+            "method_of": method + f"({of})" if of else method,
+            "of": of,
+            "of_cat": vdf[of].category() if of else None,
+            "aggregate": clean_query(aggregate),
+            "aggregate_fun": aggregate_fun,
+            "is_standard": is_standard,
+            "has_category": bool(categories),
+        }
+        return None
+
     def _compute_range(
         self,
         vdf: "vDataFrame",
@@ -523,11 +607,15 @@ class PlottingBase:
         q: tuple = (0.25, 0.75),
         h: PythonNumber = 0.0,
         max_cardinality: int = 8,
-        cat_priority: Union[PythonScalar, list] = [],
+        cat_priority: Union[None, PythonScalar, ArrayLike] = None,
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
-        columns = vdf._format_colnames(columns)
+        elif not (columns):
+            columns = vdf.numcol()
+        if not (columns):
+            raise ValueError("No numerical columns found to compute the statistics.")
+        columns, by = vdf._format_colnames(columns, by)
         if len(columns) == 1 and (by):
             expr = [
                 f"MIN({columns[0]})",
@@ -585,6 +673,10 @@ class PlottingBase:
         order_by_start: PythonScalar = None,
         order_by_end: PythonScalar = None,
     ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not (columns):
+            columns = vdf.numcol()
         columns, order_by = vdf._format_colnames(columns, order_by)
         X = (
             vdf.between(
@@ -829,7 +921,7 @@ class PlottingBase:
         max_nb_points: int = 20000,
         h: PythonNumber = 0.0,
         max_cardinality: int = 8,
-        cat_priority: Union[PythonScalar, list] = [],
+        cat_priority: Union[None, PythonScalar, ArrayLike] = None,
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
