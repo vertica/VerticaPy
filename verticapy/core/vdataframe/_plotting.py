@@ -2109,6 +2109,7 @@ class vDCPlot:
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
             matplotlib_kwargs={"ax": ax, "pie_type": pie_type},
+            plotly_kwargs={"pie_type": pie_type},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.PieChart(
