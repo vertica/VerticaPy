@@ -586,10 +586,16 @@ class vDFPlot:
      vDataFrame.bar         : Draws the Bar Chart of the input vDataColumns based on an aggregation.
      vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
-        columns = self._format_colnames(columns, expected_nb_of_cols=2)
-        return vpy_matplotlib_plt.ContourPlot().draw(
-            self, columns, func, nbins, ax=ax, **style_kwargs,
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
         )
+        func_name = None
+        if "func_name" in kwargs:
+            func_name = kwargs["func_name"]
+            del kwargs["func_name"]
+        return vpy_plt.ContourPlot(
+            vdf=self, columns=columns, func=func, nbins=nbins, func_name=func_name,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def density(

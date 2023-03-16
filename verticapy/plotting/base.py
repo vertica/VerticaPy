@@ -28,6 +28,7 @@ from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
+from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
 
 if TYPE_CHECKING:
@@ -63,6 +64,7 @@ class PlottingBase:
                 "1D": self._compute_plot_params,
                 "2D": self._compute_pivot_table,
                 "aggregate": self._compute_aggregate,
+                "contour": self._compute_contour_grid,
                 "describe": self._compute_statistics,
                 "hist": self._compute_hists_params,
                 "line": self._filter_line,
@@ -232,6 +234,80 @@ class PlottingBase:
         return d
 
     # Attributes Computations.
+
+    def _compute_contour_grid(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        func: Union[str, StringSQL, Callable],
+        nbins: int = 100,
+        func_name: Optional[str] = None,
+    ) -> None:
+        from verticapy.datasets.generators import gen_meshgrid
+
+        columns = vdf._format_colnames(columns)
+        aggregations = vdf.agg(["min", "max"], columns).to_numpy()
+        self.data = {
+            "min": aggregations[:, 0],
+            "max": aggregations[:, 1],
+        }
+        if isinstance(func, Callable):
+            x_grid = np.linspace(self.data["min"][0], self.data["max"][0], nbins)
+            y_grid = np.linspace(self.data["min"][1], self.data["max"][1], nbins)
+            X, Y = np.meshgrid(x_grid, y_grid)
+            Z = func(X, Y)
+        elif isinstance(func, (str, StringSQL)):
+            d = {}
+            for i in range(2):
+                d[quote_ident(columns[i])[1:-1]] = {
+                    "type": float,
+                    "range": [self.data["min"][i], self.data["max"][i]],
+                    "nbins": nbins,
+                }
+            vdf_tmp = gen_meshgrid(d)
+            if "{0}" in func and "{1}" in func:
+                vdf_tmp = vdf._new_vdataframe(func.format("_contour_Z", vdf_tmp))
+            else:
+                vdf_tmp["_contour_Z"] = func
+            dataset = (
+                vdf_tmp[[columns[1], columns[0], "_contour_Z"]].sort(columns).to_numpy()
+            )
+            i, y_start, y_new = 0, dataset[0][1], dataset[0][1]
+            n = len(dataset)
+            X, Y, Z = [], [], []
+            while i < n:
+                x_tmp, y_tmp, z_tmp = [], [], []
+                j, last_non_null_value = 0, 0
+                while y_start == y_new and i < n and j < nbins:
+                    if dataset[i][2] != None:
+                        last_non_null_value = float(dataset[i][2])
+                    x_tmp += [float(dataset[i][1])]
+                    y_tmp += [float(dataset[i][0])]
+                    z_tmp += [
+                        float(
+                            dataset[i][2]
+                            if (dataset[i][2] != None)
+                            else last_non_null_value
+                        )
+                    ]
+                    y_new = dataset[i][1]
+                    i, j = i + 1, j + 1
+                    if j == nbins:
+                        while y_start == y_new and i < n:
+                            y_new = dataset[i][1]
+                            i += 1
+                y_start = y_new
+                X, Y, Z = X + [x_tmp], Y + [y_tmp], Z + [z_tmp]
+        else:
+            raise TypeError
+        self.data = {**self.data, "X": np.array(X), "Y": np.array(Y), "Z": np.array(Z)}
+        func_repr = func.__name__ if isinstance(func, Callable) else str(func)
+        self.layout = {
+            "columns": columns,
+            "func": func,
+            "func_repr": func_name if func_name != None else func_repr,
+        }
+        return None
 
     def _compute_plot_params(
         self,

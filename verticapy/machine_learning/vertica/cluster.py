@@ -137,9 +137,9 @@ class Clustering(Unsupervised):
         res = {"nbins": nbins, "ax": ax}
         if method == "contour":
             if self._model_subcategory == "ANOMALY_DETECTION":
-                res["cbar_title"] = "anomaly_score"
+                res["func_name"] = "anomaly_score"
             else:
-                res["cbar_title"] = "cluster"
+                res["func_name"] = "cluster"
         else:
             raise NotImplementedError
         return res

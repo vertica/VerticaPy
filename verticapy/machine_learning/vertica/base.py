@@ -592,7 +592,10 @@ class VerticaModel:
         """
         res = {"nbins": nbins, "ax": ax}
         if method == "contour":
-            res["cbar_title"] = self.y
+            if self._model_subcategory == "CLASSIFIER":
+                res["func_name"] = f"p({self.y} = 1)"
+            else:
+                res["func_name"] = self.y
         else:
             raise NotImplementedError
         return res
@@ -2075,7 +2078,7 @@ class MulticlassClassifier(Classifier):
         pos_label = self._check_pos_label(pos_label)
         res = {"nbins": nbins, "ax": ax}
         if method == "contour":
-            res["cbar_title"] = self.y
+            res["func_name"] = f"p({self.y} = '{pos_label}')"
         elif method == "cutoff":
             res["cutoff_curve"] = True
         return res
@@ -2113,7 +2116,9 @@ class MulticlassClassifier(Classifier):
         pos_label = self._check_pos_label(pos_label=pos_label)
         return vDataFrame(self.input_relation).contour(
             *self._get_plot_args(pos_label=pos_label, method="contour"),
-            **self._get_plot_kwargs(nbins=nbins, ax=ax, method="contour"),
+            **self._get_plot_kwargs(
+                pos_label=pos_label, nbins=nbins, ax=ax, method="contour"
+            ),
             **style_kwargs,
         )
 
