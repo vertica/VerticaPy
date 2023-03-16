@@ -170,6 +170,8 @@ class KNeighborsRegressor(Regressor):
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
+            if not (key_columns):
+                key_columns = [self.y]
         p = self.parameters["p"]
         X_str = ", ".join([f"x.{x}" for x in X])
         if key_columns:
@@ -397,6 +399,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         X = [quote_ident(x) for x in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
+            if not (key_columns):
+                key_columns = [self.y]
         p = self.parameters["p"]
         n_neighbors = self.parameters["n_neighbors"]
         X_str = ", ".join([f"x.{x}" for x in X])

@@ -31,6 +31,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class PieChart(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["chart"]:
         return "chart"
@@ -42,6 +45,8 @@ class PieChart(MatplotlibBase):
     @property
     def _compute_method(self) -> Literal["1D"]:
         return "1D"
+
+    # Formatting Methods.
 
     @staticmethod
     def _make_autopct(values, category):
@@ -55,6 +60,8 @@ class PieChart(MatplotlibBase):
                 return "{v:f}".format(v=val)
 
         return my_autopct
+
+    # Draw.
 
     def draw(
         self,
@@ -183,6 +190,9 @@ class PieChart(MatplotlibBase):
 
 
 class NestedPieChart(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["chart"]:
         return "chart"
@@ -191,20 +201,17 @@ class NestedPieChart(MatplotlibBase):
     def _kind(self) -> Literal["pie"]:
         return "pie"
 
-    def draw(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        max_cardinality: Optional[int] = None,
-        h: PythonNumber = None,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
+    @property
+    def _compute_method(self) -> Literal["rollup"]:
+        return "rollup"
+
+    # Draw.
+
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a nested pie chart using the Matplotlib API.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        n = len(self.layout["columns"])
         wedgeprops = dict(width=0.3, edgecolor="w")
         tmp_style = {}
         for elem in style_kwargs:
@@ -213,27 +220,13 @@ class NestedPieChart(MatplotlibBase):
         if "wedgeprops" in style_kwargs:
             wedgeprops = style_kwargs["wedgeprops"]
         if "colors" in style_kwargs:
-            colors, n = style_kwargs["colors"], len(columns)
+            colors = style_kwargs["colors"]
         elif "color" in style_kwargs:
-            colors, n = style_kwargs["color"], len(columns)
+            colors = style_kwargs["color"]
         else:
-            colors, n = self.get_colors(), len(columns)
+            colors = self.get_colors()
         m, k = len(colors), 0
-        if isinstance(h, (int, float, type(None))):
-            h = (h,) * n
-        if isinstance(max_cardinality, (int, float, type(None))):
-            if max_cardinality == None:
-                max_cardinality = (6,) * n
-            else:
-                max_cardinality = (max_cardinality,) * n
-        vdf_tmp = vdf[columns]
-        for idx, column in enumerate(columns):
-            vdf_tmp[column].discretize(h=h[idx])
-            vdf_tmp[column].discretize(method="topk", k=max_cardinality[idx])
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(8, 6)
+        ax, fig = self._get_ax_fig(ax, size=(12, 8), set_axis_below=False, grid=False,)
         all_colors_dict, all_categories, all_categories_col = {}, {}, []
         for i in range(0, n):
             if i in [0]:
@@ -244,15 +237,10 @@ class NestedPieChart(MatplotlibBase):
                 pctdistance = 0.88
             else:
                 pctdistance = 0.85
-            result = (
-                vdf_tmp.groupby(columns[: n - i], ["COUNT(*) AS cnt"])
-                .sort(columns[: n - i])
-                .to_numpy()
-                .T
-            )
+            result = self.data["groups"][i]
             all_colors_dict[i] = {}
             all_categories[i] = list(dict.fromkeys(result[-2]))
-            all_categories_col += [columns[n - i - 1]]
+            all_categories_col += [self.layout["columns"][n - i - 1]]
             for elem in all_categories[i]:
                 all_colors_dict[i][elem] = colors[k % m]
                 k += 1

@@ -71,6 +71,7 @@ class PlottingBase:
                 "matrix": self._compute_scatter_matrix,
                 "outliers": self._compute_outliers_params,
                 "range": self._compute_range,
+                "rollup": self._compute_rollup,
                 "sample": self._sample,
             }
             if self._compute_method in functions:
@@ -705,6 +706,51 @@ class PlottingBase:
         }
         return None
 
+    def _compute_rollup(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        method: str = "density",
+        of: Optional[str] = None,
+        max_cardinality: Union[int, tuple, list] = None,
+        h: Union[int, tuple, list] = None,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
+        n = len(columns)
+        if isinstance(h, (int, float, type(None))):
+            h = (h,) * n
+        if isinstance(max_cardinality, (int, float, type(None))):
+            if max_cardinality == None:
+                max_cardinality = (6,) * n
+            else:
+                max_cardinality = (max_cardinality,) * n
+        vdf_tmp = vdf[columns]
+        for idx, column in enumerate(columns):
+            vdf_tmp[column].discretize(h=h[idx])
+            vdf_tmp[column].discretize(method="topk", k=max_cardinality[idx])
+        groups = []
+        for i in range(0, n):
+            groups += [
+                vdf_tmp.groupby(columns[: n - i], [aggregate])
+                .sort(columns[: n - i])
+                .to_numpy()
+                .T
+            ]
+        self.data = {"groups": np.array(groups, dtype=object)}
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+            "method": method,
+            "method_of": method + f"({of})" if of else method,
+            "of": of,
+            "of_cat": vdf[of].category() if of else None,
+            "aggregate": clean_query(aggregate),
+            "aggregate_fun": aggregate_fun,
+            "is_standard": is_standard,
+        }
+        return None
+
     def _compute_statistics(
         self,
         vdf: "vDataFrame",
@@ -714,7 +760,11 @@ class PlottingBase:
         h: PythonNumber = 0.0,
         max_cardinality: int = 8,
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
+        whis: float = 1.5,
+        max_nb_fliers: int = 30,
     ) -> None:
+        if not (0 <= q[0] < 0.5 < q[1] <= 1):
+            raise ValueError
         if isinstance(columns, str):
             columns = [columns]
         elif not (columns):
@@ -724,11 +774,9 @@ class PlottingBase:
         columns, by = vdf._format_colnames(columns, by)
         if len(columns) == 1 and (by):
             expr = [
-                f"MIN({columns[0]})",
                 f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[0]})",
                 f"APPROXIMATE_MEDIAN({columns[0]})",
                 f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[1]})",
-                f"MAX({columns[0]})",
             ]
             if vdf[by].isnum():
                 _by = vdf[by].discretize(h=h, return_enum_trans=True)
@@ -745,12 +793,17 @@ class PlottingBase:
             vdf_tmp = vdf_tmp[[_by] + columns]
             X = vdf_tmp.groupby(columns=[by], expr=expr,).sort(columns=[by]).to_numpy()
             if is_num_transf:
-                X_num = np.array(
-                    [
-                        float(x[1:].split(";")[0]) if isinstance(x, str) else x
-                        for x in X[:, 0]
-                    ]
-                ).astype(float)
+                try:
+                    X_num = np.array(
+                        [
+                            float(x[1:].split(";")[0]) if isinstance(x, str) else x
+                            for x in X[:, 0]
+                        ]
+                    ).astype(float)
+                except ValueError:
+                    X_num = np.array(
+                        [float(x) if isinstance(x, str) else x for x in X[:, 0]]
+                    ).astype(float)
                 X = X[X_num.argsort()]
             self.layout = {
                 "x_label": by,
@@ -765,10 +818,33 @@ class PlottingBase:
                 "has_category": False,
             }
             X = vdf.quantile(
-                q=[0.0, q[0], 0.5, q[1], 1.0], columns=columns, approx=True
+                q=[q[0], 0.5, q[1]], columns=columns, approx=True
             ).to_numpy()
+        X = np.transpose(X)
+        IQR = X[2] - X[0]
+        X = np.vstack([X, X[2] + whis * IQR])
+        X = np.vstack([X[0] - whis * IQR, X])
+        n, m = X.shape
+        fliers = []
+        for i in range(m):
+            if max_nb_fliers > 0:
+                if self.layout["has_category"]:
+                    f, k = vdf_tmp[by].isin(self.layout["labels"][i]), 0
+                else:
+                    f, k = vdf, i
+                f = f[[columns[k]]].search(
+                    f"{columns[k]} < {X[:, i][0]} OR {columns[k]} > {X[:, i][-1]}"
+                )
+                try:
+                    fliers += [f.sample(n=max_nb_fliers).to_numpy()[:, 0]]
+                except ZeroDivisionError:
+                    fliers += [np.array([])]
+            else:
+                fliers += [np.array([])]
         self.data = {
-            "X": np.transpose(X),
+            "X": X,
+            "fliers": fliers,
+            "whis": whis,
         }
 
     def _filter_line(

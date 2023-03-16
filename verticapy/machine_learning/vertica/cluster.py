@@ -116,18 +116,6 @@ class Clustering(Unsupervised):
         else:
             return vdf.copy().eval(name, self.deploySQL(X=X))
 
-    # Plotting Methods.
-
-    def _get_plot_args(self, method: Optional[str] = None) -> list:
-        """
-        Returns the args used by plotting methods.
-        """
-        if method == "contour":
-            args = [self.X, self]
-        else:
-            raise NotImplementedError
-        return args
-
     def _get_plot_kwargs(
         self, nbins: int = 30, ax: Optional[Axes] = None, method: Optional[str] = None,
     ) -> dict:
@@ -136,10 +124,7 @@ class Clustering(Unsupervised):
         """
         res = {"nbins": nbins, "ax": ax}
         if method == "contour":
-            if self._model_subcategory == "ANOMALY_DETECTION":
-                res["func_name"] = "anomaly_score"
-            else:
-                res["func_name"] = "cluster"
+            res["func_name"] = "cluster"
         else:
             raise NotImplementedError
         return res
