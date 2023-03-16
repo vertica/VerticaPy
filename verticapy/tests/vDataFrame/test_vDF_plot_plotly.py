@@ -24,13 +24,25 @@ import datetime, os, sys
 # Other Modules
 import plotly.express as px
 import plotly
+import pandas as pd
+import numpy as np
 
 # VerticaPy
+import verticapy
 import verticapy._config.config as conf
 from verticapy import drop
 from verticapy.datasets import load_titanic
 
 conf.set_option("print_info", False)
+
+
+@pytest.fixture(scope="module")
+def dummy_vd():
+    arr1 = np.concatenate((np.ones(60), np.zeros(40))).astype(int)
+    np.random.shuffle(arr1)
+    arr2 = np.random.choice(["A", "B", "C"], size=100, p=[0.15, 0.3, 0.55])
+    dummy = verticapy.vDataFrame(list(zip(arr1, arr2)), ["check 1", "check 2"])
+    yield dummy
 
 
 @pytest.fixture(scope="module")
@@ -86,3 +98,37 @@ class TestvDFPlotPlotly:
         assert result.layout["xaxis"]["title"]["text"] == "Custom X Axis Title"
         result = titanic_vd["survived"].bar(yaxis_title="Custom Y Axis Title")
         assert result.layout["yaxis"]["title"]["text"] == "Custom Y Axis Title"
+
+    def test_vDF_pie(self, dummy_vd, load_plotly):
+        # 1D pie charts
+
+        ## Creating a pie chart
+        result = dummy_vd["check 1"].pie()
+
+        ## Testing Data
+        ### check value corresponding to 0s
+        assert (
+            result.data[0]["values"][0]
+            == dummy_vd[dummy_vd["check 1"] == 0]["check 1"].count()
+            / dummy_vd["check 1"].count()
+        )
+        ### check value corresponding to 1s
+        assert (
+            result.data[0]["values"][1]
+            == dummy_vd[dummy_vd["check 1"] == 1]["check 1"].count()
+            / dummy_vd["check 1"].count()
+        )
+
+        ## Testing Plot Properties
+        ### checking the label
+        assert result.data[0]["labels"] == ("0", "1")
+        ### check title
+        assert result.layout["title"]["text"] == "check 1"
+
+        ## Testing Additional Options
+        ### check hole option
+        result = dummy_vd["check 1"].pie(pie_type="donut")
+        assert result.data[0]["hole"] == 0.2
+        ### check exploded option
+        result = dummy_vd["check 1"].pie(exploded=True)
+        assert len(result.data[0]["pull"]) > 0
