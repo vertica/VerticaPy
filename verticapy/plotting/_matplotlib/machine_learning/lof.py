@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -28,6 +29,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class LOFPlot(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"
@@ -36,21 +40,24 @@ class LOFPlot(MatplotlibBase):
     def _kind(self) -> Literal["lof"]:
         return "lof"
 
-    def draw(
-        self,
-        input_relation: str,
-        columns: SQLColumns,
-        lof: str,
-        TableSample: PythonNumber = -1,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
-        """
-        Draws a Local Outlier Plot using the Matplotlib API.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        TableSample = f"TABLESAMPLE({TableSample})" if (0 < TableSample < 100) else ""
+    @property
+    def _compute_method(self) -> Literal["sample"]:
+        return "sample"
+
+    @property
+    def _dimension_bounds(self) -> tuple[int, int]:
+        return (2, 4)
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "s": 50,
+            "edgecolors": "black",
+        }
+        return None
+
+    def _get_colors(self, style_kwargs: dict) -> list:
         colors = []
         if "color" in style_kwargs:
             if isinstance(style_kwargs["color"], str):
@@ -65,136 +72,66 @@ class LOFPlot(MatplotlibBase):
                 colors = style_kwargs["colors"]
             del style_kwargs["colors"]
         colors += self.get_colors()
+        return colors
+
+    # Draw.
+
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+        """
+        Draws a Local Outlier Plot using the Matplotlib API.
+        """
+        colors = self._get_colors(style_kwargs=style_kwargs)
         param = {
-            "s": 50,
-            "edgecolors": "black",
+            **self.init_style,
             "color": colors[0],
         }
-        if len(columns) == 1:
-            column = quote_ident(columns[0])
-            query_result = _executeSQL(
-                query=f"""
-                    SELECT 
-                        /*+LABEL('plotting._matplotlib.lof_plot')*/ 
-                        {column}, 
-                        {lof} 
-                    FROM {input_relation} {TableSample} 
-                    WHERE {column} IS NOT NULL""",
-                method="fetchall",
-                print_time_sql=False,
-            )
-            column1, lof = (
-                [item[0] for item in query_result],
-                [item[1] for item in query_result],
-            )
-            column2 = [0] * len(column1)
-            if not (ax):
-                fig, ax = plt.subplots()
-                if conf._get_import_success("jupyter"):
-                    fig.set_size_inches(8, 2)
-                ax.set_axisbelow(True)
-                ax.grid()
-            ax.set_xlabel(column)
-            radius = [
-                2 * 1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof
+        min_lof, max_lof = self.data["X"][:, -1].min(), self.data["X"][:, -1].max()
+        radius = 1000 * (self.data["X"][:, -1] - min_lof) / (max_lof - min_lof)
+        x_label = self.layout["columns"][0]
+        if 2 <= len(self.layout["columns"]) <= 3:
+            X = self.data["X"][:, 0]
+            if len(self.layout["columns"]) == 2:
+                Y = np.array([0 for x in range(len(X))])
+                size = (8, 2)
+                y_label = None
+            else:
+                Y = self.data["X"][:, 1]
+                size = (8, 6)
+                y_label = self.layout["columns"][1]
+            ax, fig = self._get_ax_fig(ax, size=size, set_axis_below=True, grid=True)
+            if y_label == None:
+                ax.set_yticks([])
+            else:
+                ax.set_ylabel(y_label)
+            kwargs = [
+                {"label": "Data points", **self._update_dict(param, style_kwargs, 0)},
+                {
+                    "s": radius,
+                    "label": "Outlier scores",
+                    "facecolors": "none",
+                    "color": colors[1],
+                },
             ]
-            ax.scatter(
-                column1,
-                column2,
-                label="Data points",
-                **self._update_dict(param, style_kwargs, 0),
-            )
-            ax.scatter(
-                column1,
-                column2,
-                s=radius,
-                label="Outlier scores",
-                facecolors="none",
-                color=colors[1],
-            )
-        elif len(columns) == 2:
-            columns = [quote_ident(column) for column in columns]
-            query_result = _executeSQL(
-                query=f"""
-                SELECT 
-                    /*+LABEL('plotting._matplotlib.lof_plot')*/ 
-                    {columns[0]}, 
-                    {columns[1]}, 
-                    {lof} 
-                FROM {input_relation} {TableSample} 
-                WHERE {columns[0]} IS NOT NULL 
-                  AND {columns[1]} IS NOT NULL""",
-                method="fetchall",
-                print_time_sql=False,
-            )
-            column1, column2, lof = (
-                [item[0] for item in query_result],
-                [item[1] for item in query_result],
-                [item[2] for item in query_result],
-            )
-            if not (ax):
-                fig, ax = plt.subplots()
-                if conf._get_import_success("jupyter"):
-                    fig.set_size_inches(8, 6)
-                ax.set_axisbelow(True)
-                ax.grid()
-            ax.set_ylabel(columns[1])
-            ax.set_xlabel(columns[0])
-            radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
-            ax.scatter(
-                column1,
-                column2,
-                label="Data points",
-                **self._update_dict(param, style_kwargs, 0),
-            )
-            ax.scatter(
-                column1,
-                column2,
-                s=radius,
-                label="Outlier scores",
-                facecolors="none",
-                color=colors[1],
-            )
-        elif len(columns) == 3:
-            query_result = _executeSQL(
-                query=f"""
-                SELECT 
-                    /*+LABEL('plotting._matplotlib.lof_plot')*/ 
-                    {columns[0]}, 
-                    {columns[1]}, 
-                    {columns[2]}, 
-                    {lof} 
-                FROM {input_relation} {TableSample} 
-                WHERE {columns[0]} IS NOT NULL 
-                  AND {columns[1]} IS NOT NULL 
-                  AND {columns[2]} IS NOT NULL""",
-                method="fetchall",
-                print_time_sql=False,
-            )
-            column1, column2, column3, lof = (
-                [float(item[0]) for item in query_result],
-                [float(item[1]) for item in query_result],
-                [float(item[2]) for item in query_result],
-                [float(item[3]) for item in query_result],
-            )
+            for kwds in kwargs:
+                ax.scatter(X, Y, **kwds)
+        elif len(self.layout["columns"]) == 4:
             if not (ax):
                 if conf._get_import_success("jupyter"):
                     plt.figure(figsize=(8, 6))
                 ax = plt.axes(projection="3d")
-            ax.set_xlabel(columns[0])
-            ax.set_ylabel(columns[1])
-            ax.set_zlabel(columns[2])
-            radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
-            ax.scatter(
-                column1,
-                column2,
-                column3,
-                label="Data points",
-                **self._update_dict(param, style_kwargs, 0),
-            )
-            ax.scatter(
-                column1, column2, column3, s=radius, facecolors="none", color=colors[1],
-            )
+            ax.set_ylabel(self.layout["columns"][1])
+            ax.set_zlabel(self.layout["columns"][2])
+            kwargs = [
+                {"label": "Data points", **self._update_dict(param, style_kwargs, 0)},
+                {"s": radius, "facecolors": "none", "color": colors[1]},
+            ]
+            for kwds in kwargs:
+                ax.scatter(
+                    self.data["X"][:, 0],
+                    self.data["X"][:, 1],
+                    self.data["X"][:, 2],
+                    **kwds,
+                )
             ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
@@ -202,4 +139,5 @@ class LOFPlot(MatplotlibBase):
             raise Exception(
                 "LocalOutlierFactor Plot is available for a maximum of 3 columns"
             )
+        ax.set_xlabel(x_label)
         return ax

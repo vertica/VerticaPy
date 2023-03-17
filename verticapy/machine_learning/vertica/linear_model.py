@@ -167,17 +167,14 @@ class LinearModel:
         Axes
             Axes.
         """
-        vdf = vDataFrame(self.input_relation)
-        vdf["_prediction"] = self.deploySQL()
-        coefficients = np.concatenate(([self.intercept_], self.coef_))
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"coefficients": coefficients, "ax": ax,},
-            style_kwargs=style_kwargs,
+            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
         )
         return vpy_plt.RegressionPlot(
             vdf=vDataFrame(self.input_relation),
             columns=self.X + [self.y],
             max_nb_points=max_nb_points,
+            misc_data={"coef": np.concatenate(([self.intercept_], self.coef_))},
         ).draw(**kwargs)
 
 

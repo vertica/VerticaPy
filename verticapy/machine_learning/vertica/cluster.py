@@ -45,8 +45,6 @@ from verticapy.machine_learning.vertica.base import (
 
 from verticapy.sql.drop import drop
 
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
-
 if conf._get_import_success("graphviz"):
     from graphviz import Source
 
@@ -354,15 +352,16 @@ class KMeans(Clustering):
             Matplotlib Figure.
         """
         if len(self.X) == 2:
-            return vpy_matplotlib_plt.VoronoiPlot().draw(
-                clusters=self.clusters_,
-                columns=self.X,
-                input_relation=self.input_relation,
-                plot_crosses=plot_crosses,
-                ax=ax,
-                max_nb_points=max_nb_points,
-                **style_kwargs,
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax, "plot_crosses": plot_crosses},
+                style_kwargs=style_kwargs,
             )
+            return vpy_plt.VoronoiPlot(
+                vdf=vDataFrame(self.input_relation),
+                columns=self.X,
+                max_nb_points=max_nb_points,
+                misc_data={"clusters": self.clusters_},
+            ).draw(**kwargs)
         else:
             raise Exception("Voronoi Plots are only available in 2D")
 

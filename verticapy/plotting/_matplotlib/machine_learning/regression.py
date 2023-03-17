@@ -58,9 +58,7 @@ class RegressionPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(
-        self, coefficients: list, ax: Optional[Axes] = None, **style_kwargs,
-    ) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a regression plot using the Matplotlib API.
         """
@@ -70,7 +68,9 @@ class RegressionPlot(MatplotlibBase):
         if len(self.layout["columns"]) == 2:
             ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True)
             x_reg = [min_reg_x, max_reg_x]
-            y_reg = [coefficients[0] + coefficients[1] * item for item in x_reg]
+            y_reg = [
+                self.data["coef"][0] + self.data["coef"][1] * item for item in x_reg
+            ]
             ax.plot(x_reg, y_reg, alpha=1, color="black")
             ax.scatter(
                 x0, y0, **self._update_dict(self.init_style, style_kwargs, 0),
@@ -93,7 +93,11 @@ class RegressionPlot(MatplotlibBase):
                 else [max_reg_y]
             )
             X_reg, Y_reg = np.meshgrid(X_reg, Y_reg)
-            Z_reg = coefficients[0] + coefficients[1] * X_reg + coefficients[2] * Y_reg
+            Z_reg = (
+                self.data["coef"][0]
+                + self.data["coef"][1] * X_reg
+                + self.data["coef"][2] * Y_reg
+            )
             if not (ax):
                 if conf._get_import_success("jupyter"):
                     plt.figure(figsize=(8, 6))

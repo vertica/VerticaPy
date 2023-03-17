@@ -59,7 +59,13 @@ class PlottingBase:
     # System Methods.
 
     def __init__(self, *args, **kwargs) -> None:
-        if "data" not in kwargs or "layout" not in kwargs:
+        kwds = copy.deepcopy(kwargs)
+        if "misc_data" in kwds:
+            misc_data = copy.deepcopy(kwds["misc_data"])
+            del kwds["misc_data"]
+        else:
+            misc_data = {}
+        if "data" not in kwds or "layout" not in kwds:
             functions = {
                 "1D": self._compute_plot_params,
                 "2D": self._compute_pivot_table,
@@ -75,10 +81,15 @@ class PlottingBase:
                 "sample": self._sample,
             }
             if self._compute_method in functions:
-                functions[self._compute_method](*args, **kwargs)
+                functions[self._compute_method](*args, **kwds)
         else:
-            self.data = copy.deepcopy(kwargs["data"])
-            self.layout = copy.deepcopy(kwargs["layout"])
+            self.data = copy.deepcopy(kwds["data"])
+            self.layout = copy.deepcopy(kwds["layout"])
+        if hasattr(self, "data"):
+            self.data = {
+                **self.data,
+                **misc_data,
+            }
         self._init_style()
         return None
 
@@ -1110,40 +1121,45 @@ class PlottingBase:
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
-        columns = vdf._format_colnames(columns, expected_nb_of_cols=[2, 3])
+        columns = vdf._format_colnames(columns)
         cols_to_select = copy.deepcopy(columns)
         vdf_tmp = vdf.copy()
         has_category, has_cmap, has_size = False, False, False
-        if size_bubble_col != None:
-            cols_to_select += [vdf._format_colnames(size_bubble_col)]
-            has_size = True
-        if catcol != None:
-            has_category = True
-            catcol = vdf._format_colnames(catcol)
-            if vdf[catcol].isnum():
-                cols_to_select += [
-                    vdf[catcol]
-                    .discretize(h=h, return_enum_trans=True)[0]
-                    .replace("{}", catcol)
-                    + f" AS {catcol}"
-                ]
-            else:
-                cols_to_select += [
-                    vdf[catcol]
-                    .discretize(
-                        k=max_cardinality, method="topk", return_enum_trans=True
-                    )[0]
-                    .replace("{}", catcol)
-                    + f" AS {catcol}"
-                ]
-            if cat_priority:
-                vdf_tmp = vdf_tmp[catcol].isin(cat_priority)
-        elif cmap_col != None:
-            cols_to_select += [vdf._format_colnames(cmap_col)]
-            has_cmap = True
-        X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
-        n = len(columns)
-        self.data = {"X": X[:, :n].astype(float), "s": None, "c": None}
+        if max_nb_points > 0:
+            if size_bubble_col != None:
+                cols_to_select += [vdf._format_colnames(size_bubble_col)]
+                has_size = True
+            if catcol != None:
+                has_category = True
+                catcol = vdf._format_colnames(catcol)
+                if vdf[catcol].isnum():
+                    cols_to_select += [
+                        vdf[catcol]
+                        .discretize(h=h, return_enum_trans=True)[0]
+                        .replace("{}", catcol)
+                        + f" AS {catcol}"
+                    ]
+                else:
+                    cols_to_select += [
+                        vdf[catcol]
+                        .discretize(
+                            k=max_cardinality, method="topk", return_enum_trans=True
+                        )[0]
+                        .replace("{}", catcol)
+                        + f" AS {catcol}"
+                    ]
+                if cat_priority:
+                    vdf_tmp = vdf_tmp[catcol].isin(cat_priority)
+            elif cmap_col != None:
+                cols_to_select += [vdf._format_colnames(cmap_col)]
+                has_cmap = True
+            X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
+            n = len(columns)
+            if len(X) > 0:
+                X = X[:max_nb_points, :n].astype(float)
+        else:
+            X = np.array([])
+        self.data = {"X": X, "s": None, "c": None}
         self.layout = {
             "columns": columns,
             "size": size_bubble_col,
@@ -1152,8 +1168,8 @@ class PlottingBase:
             "has_cmap": has_cmap,
             "has_size": has_size,
         }
-        if size_bubble_col != None:
+        if (size_bubble_col != None) and (max_nb_points > 0):
             self.data["s"] = X[:, n].astype(float)
-        if (catcol != None) or (cmap_col != None):
+        if ((catcol != None) or (cmap_col != None)) and (max_nb_points > 0):
             self.data["c"] = X[:, -1]
         return None

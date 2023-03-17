@@ -1442,7 +1442,11 @@ class LocalOutlierFactor(VerticaModel):
         Axes
             Axes.
         """
-        sample = 100 * min(float(max_nb_points / self.cnt_), 1)
-        return vpy_matplotlib_plt.LOFPlot().draw(
-            self.model_name, self.X, "lof_score", sample, ax=ax, **style_kwargs
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
         )
+        return vpy_plt.LOFPlot(
+            vdf=vDataFrame(self.model_name),
+            columns=self.X + ["lof_score"],
+            max_nb_points=max_nb_points,
+        ).draw(**kwargs)
